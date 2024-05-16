@@ -336,6 +336,11 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		$product      = $this->express_checkout_helper->get_product();
 		$is_supported = true;
 
+		/**
+		 * Ignore undefined classes from 3rd party plugins.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
 		if ( is_null( $product )
 			|| ! is_object( $product )
 			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
@@ -478,6 +483,11 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
 			}
 			if ( $is_deposit ) {
+				/**
+				 * Ignore undefined classes from 3rd party plugins.
+				 *
+				 * @psalm-suppress UndefinedClass
+				 */
 				$deposit_type       = WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
 				$available_plan_ids = WC_Deposits_Plans_Manager::get_plan_ids_for_product( $product->get_id() );
 				// Default to first (default) plan if no plan is specified.
