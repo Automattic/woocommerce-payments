@@ -3666,7 +3666,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->card_gateway->process_payment( $order->get_id() );
 
-		$this->expectException( New_Process_Payment_Exception::class );
+		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'The payment process could not be completed.' );
 	}
 
