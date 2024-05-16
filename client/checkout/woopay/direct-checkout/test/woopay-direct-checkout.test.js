@@ -4,7 +4,7 @@
 import WooPayDirectCheckout from '../woopay-direct-checkout';
 
 describe( 'WooPayDirectCheckout', () => {
-	describe( 'redirectToWooPay', () => {
+	describe( 'addRedirectToWooPayEventListener', () => {
 		const originalLocation = window.location;
 		let elements;
 
@@ -44,7 +44,7 @@ describe( 'WooPayDirectCheckout', () => {
 				element.addEventListener = jest.fn();
 			} );
 
-			WooPayDirectCheckout.redirectToWooPay( elements );
+			WooPayDirectCheckout.addRedirectToWooPayEventListener( elements );
 
 			elements.forEach( ( element ) => {
 				expect( element.addEventListener ).toHaveBeenCalledWith(
@@ -55,7 +55,10 @@ describe( 'WooPayDirectCheckout', () => {
 		} );
 
 		it( 'should add loading spinner when shortcode cart button is clicked', () => {
-			WooPayDirectCheckout.redirectToWooPay( elements, false );
+			WooPayDirectCheckout.addRedirectToWooPayEventListener(
+				elements,
+				false
+			);
 
 			elements[ 0 ].click();
 
@@ -71,7 +74,10 @@ describe( 'WooPayDirectCheckout', () => {
 				'https://woopay.test/woopay?checkout_redirect=1&blog_id=1&session=1&iv=1&hash=1'
 			);
 
-			WooPayDirectCheckout.redirectToWooPay( elements, false );
+			WooPayDirectCheckout.addRedirectToWooPayEventListener(
+				elements,
+				false
+			);
 
 			elements[ 0 ].click();
 
@@ -91,7 +97,10 @@ describe( 'WooPayDirectCheckout', () => {
 				'https://woopay.test/woopay?platform_checkout_key=1234567890'
 			);
 
-			WooPayDirectCheckout.redirectToWooPay( elements, true );
+			WooPayDirectCheckout.addRedirectToWooPayEventListener(
+				elements,
+				true
+			);
 
 			elements[ 0 ].click();
 
@@ -112,7 +121,10 @@ describe( 'WooPayDirectCheckout', () => {
 				new Error( 'Could not retrieve WooPay checkout URL.' )
 			);
 
-			WooPayDirectCheckout.redirectToWooPay( elements, true );
+			WooPayDirectCheckout.addRedirectToWooPayEventListener(
+				elements,
+				true
+			);
 
 			elements[ 0 ].click();
 
