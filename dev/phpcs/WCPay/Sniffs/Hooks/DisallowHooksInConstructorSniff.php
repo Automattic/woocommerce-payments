@@ -60,7 +60,7 @@ class DisallowHooksInConstructorSniff implements Sniff {
 				$phpcsFile->addError(
 					"Usage of $currentTokenContent in __construct() is not allowed",
 					$i,
-					'WCPay.CodingStandards.DisallowHooksInConstructor',
+					'Found',
 					[ $token['content'] ]
 				);
 			}
