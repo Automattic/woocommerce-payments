@@ -199,7 +199,11 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return boolean
 	 */
 	public function has_allowed_items_in_cart() {
-		// Pre Orders compatbility where we don't support charge upon release.
+		/**
+		 * Pre Orders compatbility where we don't support charge upon release.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
 		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
 			return false;
 		}
@@ -223,7 +227,11 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				return false;
 			}
 
-			// Trial subscriptions with shipping are not supported.
+			/**
+			 * Trial subscriptions with shipping are not supported.
+			 *
+			 * @psalm-suppress UndefinedClass
+			 */
 			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
@@ -461,8 +469,12 @@ class WC_Payments_Express_Checkout_Button_Handler {
 
 		// If WooCommerce Deposits is active, we need to get the correct price for the product.
 		if ( class_exists( 'WC_Deposits_Product_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
-			// If is_deposit is null, we use the default deposit type for the product.
 			if ( is_null( $is_deposit ) ) {
+				/**
+				 * If is_deposit is null, we use the default deposit type for the product.
+				 *
+				 * @psalm-suppress UndefinedClass
+				 */
 				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
 			}
 			if ( $is_deposit ) {
