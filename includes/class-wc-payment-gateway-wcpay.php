@@ -1072,8 +1072,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * and if the answer is yes, uses it and returns the result.
 	 *
 	 * @param WC_Order $order Order that needs payment.
-	 * @return array|null     Array if processed, null if the new process is not supported.
-	 * @throws Exception      If the payment process could not be completed.
+	 * @return array|null Array  if processed, null if the new process is not supported.
+	 * @throws New_Process_Payment_Exception Error processing the payment.
 	 */
 	public function new_process_payment( WC_Order $order ) {
 		$manual_capture = $this->get_capture_type() === Payment_Capture_Type::MANUAL();
@@ -1119,7 +1119,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		throw new Exception( __( 'The payment process could not be completed.', 'woocommerce-payments' ) );
+		throw new New_Process_Payment_Exception( __( 'The payment process could not be completed.', 'woocommerce-payments' ) );
 	}
 
 	/**

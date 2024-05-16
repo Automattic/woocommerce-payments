@@ -3661,6 +3661,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_new_process_payment_throw_exception() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->card_gateway->process_payment( $order->get_id() );
+
+		$this->expectException( New_Process_Payment_Exception::class );
+		$this->expectExceptionMessage( 'The payment process could not be completed.' );
+	}
+
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
 		$order = WC_Helper_Order::create_order();
 
