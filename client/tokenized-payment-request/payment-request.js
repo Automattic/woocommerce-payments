@@ -195,30 +195,35 @@ export default class WooPaymentsPaymentRequest {
 				return;
 			}
 
-			// First check if product can be added to cart.
-			if ( $addToCartButton.is( '.disabled' ) ) {
-				event.preventDefault(); // Prevent showing payment request modal.
-				if ( $addToCartButton.is( '.wc-variation-is-unavailable' ) ) {
-					window.alert(
-						window.wc_add_to_cart_variation_params
-							?.i18n_unavailable_text ||
+			// If the button is on a product page, we need to add the product to an anonymous cart before proceeding.
+			if ( wcpayPaymentRequestParams.button_context === 'product' ) {
+				// First check if product can be added to cart.
+				if ( $addToCartButton.is( '.disabled' ) ) {
+					event.preventDefault(); // Prevent showing payment request modal.
+					if (
+						$addToCartButton.is( '.wc-variation-is-unavailable' )
+					) {
+						window.alert(
+							window.wc_add_to_cart_variation_params
+								?.i18n_unavailable_text ||
+								__(
+									'Sorry, this product is unavailable. Please choose a different combination.',
+									'woocommerce-payments'
+								)
+						);
+					} else {
+						window.alert(
 							__(
-								'Sorry, this product is unavailable. Please choose a different combination.',
+								'Please select your product options before proceeding.',
 								'woocommerce-payments'
 							)
-					);
-				} else {
-					window.alert(
-						__(
-							'Please select your product options before proceeding.',
-							'woocommerce-payments'
-						)
-					);
+						);
+					}
+					return;
 				}
-				return;
-			}
 
-			_self.paymentRequestCartApi.addProductToCart();
+				_self.paymentRequestCartApi.addProductToCart();
+			}
 		} );
 
 		paymentRequest.on( 'cancel', () => {
@@ -235,7 +240,8 @@ export default class WooPaymentsPaymentRequest {
 				const cartData = await _self.paymentRequestCartApi.updateCustomer(
 					transformStripeShippingAddressForStoreApi(
 						event.shippingAddress
-					)
+					),
+					wcpayPaymentRequestParams.button_context
 				);
 
 				event.updateWith( {
@@ -263,7 +269,8 @@ export default class WooPaymentsPaymentRequest {
 		paymentRequest.on( 'shippingoptionchange', async ( event ) => {
 			try {
 				const cartData = await _self.paymentRequestCartApi.selectShippingRate(
-					{ package_id: 0, rate_id: event.shippingOption.id }
+					{ package_id: 0, rate_id: event.shippingOption.id },
+					wcpayPaymentRequestParams.button_context
 				);
 
 				event.updateWith( {
@@ -283,15 +290,18 @@ export default class WooPaymentsPaymentRequest {
 		paymentRequest.on( 'paymentmethod', async ( event ) => {
 			// TODO: this works for PDPs - need to handle checkout scenarios for pay-for-order, cart, checkout.
 			try {
-				const response = await _self.paymentRequestCartApi.placeOrder( {
-					// adding extension data as a separate action,
-					// so that we make it harder for external plugins to modify or intercept checkout data.
-					...transformStripePaymentMethodForStoreApi( event ),
-					extensions: applyFilters(
-						'wcpay.payment-request.cart-place-order-extension-data',
-						{}
-					),
-				} );
+				const response = await _self.paymentRequestCartApi.placeOrder(
+					{
+						// adding extension data as a separate action,
+						// so that we make it harder for external plugins to modify or intercept checkout data.
+						...transformStripePaymentMethodForStoreApi( event ),
+						extensions: applyFilters(
+							'wcpay.payment-request.cart-place-order-extension-data',
+							{}
+						),
+					},
+					wcpayPaymentRequestParams.button_context
+				);
 
 				const confirmationRequest = _self.wcpayApi.confirmIntent(
 					response.payment_result.redirect_url
