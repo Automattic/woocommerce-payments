@@ -137,7 +137,7 @@
 	<rule ref="PEAR.WhiteSpace.ObjectOperatorIndent" />
 
 	<!-- Custom WCPay rules -->
-	<rule ref="./dev/phpcs/ruleset.xml"/>
+	<rule ref="./dev/phpcs/WCPay/ruleset.xml"/>
 
 	<!-- Check the class structure (ordering of methods, properties, etc.) -->
 	<rule ref="SlevomatCodingStandard.Classes.ClassStructure">

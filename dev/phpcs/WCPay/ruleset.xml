@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<ruleset name="WCPay" namespace="WCPay\CodingStandards">
+<ruleset name="WCPay">
 	<description>WCPay custom coding standards.</description>
 
-	<rule ref="./Sniffs/DisallowHooksInConstructorSniff.php">
+	<rule ref="WCPay.Hooks.DisallowHooksInConstructor">
 		<!-- https://github.com/Automattic/woocommerce-payments/issues/7259 -->
 		<exclude-pattern>*/includes/subscriptions/*</exclude-pattern>
 		<exclude-pattern>*/includes/compat/subscriptions/*</exclude-pattern>
@@ -14,6 +14,7 @@
 		<exclude-pattern>*/includes/class-woopay-tracker.php</exclude-pattern>
 		<exclude-pattern>*/includes/woopay/*</exclude-pattern>
 		<exclude-pattern>*/includes/woopay-user/*</exclude-pattern>
+
 		<exclude-pattern>*/includes/class-wc-payments-order-success-page.php</exclude-pattern>
 
 		<!-- https://github.com/Automattic/woocommerce-payments/issues/7264 -->
