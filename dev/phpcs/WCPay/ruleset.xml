@@ -13,7 +13,10 @@
 	<exclude-pattern>*/includes/class-woopay-tracker.php</exclude-pattern>
 	<exclude-pattern>*/includes/woopay/*</exclude-pattern>
 	<exclude-pattern>*/includes/woopay-user/*</exclude-pattern>
-	<exclude-pattern>*/includes/class-wc-payments-order-success-page.php</exclude-pattern>
+
+	<rule ref="WCPay.Hooks.DisallowHooksInConstructor">
+		<exclude-pattern>*/includes/class-wc-payments-order-success-page.php</exclude-pattern>
+	</rule>
 
 	<!-- https://github.com/Automattic/woocommerce-payments/issues/7264 -->
 	<exclude-pattern>*/includes/class-wc-payments-customer-service.php</exclude-pattern>
