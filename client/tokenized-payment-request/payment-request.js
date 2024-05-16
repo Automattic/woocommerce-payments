@@ -105,15 +105,9 @@ export default class WooPaymentsPaymentRequest {
 			return;
 		}
 
-		// TODO: Don't display custom button when paymentRequestType is `apple_pay` or `google_pay`.
-		let buttonBranding = null;
-		if ( paymentPermissionResult.applePay ) {
-			buttonBranding = 'apple_pay';
-		} else if ( paymentPermissionResult.googlePay ) {
-			buttonBranding = 'google_pay';
-		} else {
-			buttonBranding = 'payment_request_api';
-		}
+		const buttonBranding = paymentPermissionResult.applePay
+			? 'apple_pay'
+			: 'google_pay';
 
 		doAction( 'wcpay.payment-request.availability', {
 			paymentRequestType: buttonBranding,
