@@ -197,6 +197,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * Checks the cart to see if all items are allowed to be used.
 	 *
 	 * @return boolean
+	 *
+	 * @psalm-suppress UndefinedClass
 	 */
 	public function has_allowed_items_in_cart() {
 		/**
@@ -463,6 +465,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return mixed Total price.
 	 *
 	 * @throws Invalid_Price_Exception Whenever a product has no price.
+	 *
+	 * @psalm-suppress UndefinedClass
 	 */
 	public function get_product_price( $product, ?bool $is_deposit = null, int $deposit_plan_id = 0 ) {
 		// If prices should include tax, using tax inclusive price.
