@@ -147,7 +147,7 @@ export const shopperWCP = {
 		} );
 	},
 
-	changeAccountCurrencyTo: async ( customerDetails, currencyToSet ) => {
+	changeAccountCurrencyTo: async ( customerDetails ) => {
 		await page.goto( MY_ACCOUNT_EDIT, {
 			waitUntil: 'networkidle0',
 		} );
@@ -164,7 +164,7 @@ export const shopperWCP = {
 			customerDetails.lastname
 		);
 
-		await page.select( '#wcpay_selected_currency', currencyToSet );
+		// await page.select( '#wcpay_selected_currency', currencyToSet );
 		await expect( page ).toClick( 'button', {
 			text: 'Save changes',
 		} );

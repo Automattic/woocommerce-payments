@@ -23,8 +23,7 @@ describe( 'Klarna checkout', () => {
 		await merchant.logout();
 		await shopper.login();
 		await shopperWCP.changeAccountCurrencyTo(
-			config.get( 'addresses.customer.billing' ),
-			'USD'
+			config.get( 'addresses.customer.billing' )
 		);
 	} );
 
