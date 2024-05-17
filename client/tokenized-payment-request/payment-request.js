@@ -1,4 +1,4 @@
-/* global jQuery, wcpayPaymentRequestParams */
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -105,15 +105,9 @@ export default class WooPaymentsPaymentRequest {
 			return;
 		}
 
-		// TODO: Don't display custom button when paymentRequestType is `apple_pay` or `google_pay`.
-		let buttonBranding = null;
-		if ( paymentPermissionResult.applePay ) {
-			buttonBranding = 'apple_pay';
-		} else if ( paymentPermissionResult.googlePay ) {
-			buttonBranding = 'google_pay';
-		} else {
-			buttonBranding = 'payment_request_api';
-		}
+		const buttonBranding = paymentPermissionResult.applePay
+			? 'apple_pay'
+			: 'google_pay';
 
 		doAction( 'wcpay.payment-request.availability', {
 			paymentRequestType: buttonBranding,
@@ -121,13 +115,13 @@ export default class WooPaymentsPaymentRequest {
 
 		setPaymentRequestBranding( buttonBranding );
 		trackPaymentRequestButtonLoad(
-			wcpayPaymentRequestParams.button_context
+			getPaymentRequestData( 'button_context' )
 		);
 
 		// On PDP pages, we need to use an anonymous cart to check out.
 		// On cart, checkout, place order pages we instead use the cart itself.
-		if ( wcpayPaymentRequestParams.button_context === 'product' ) {
-			this.paymentRequestCartApi.createAnonymousCart().then( noop );
+		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
+			await this.paymentRequestCartApi.createAnonymousCart();
 		}
 
 		const paymentRequestButton = this.wcpayApi
@@ -137,9 +131,9 @@ export default class WooPaymentsPaymentRequest {
 				paymentRequest: paymentRequest,
 				style: {
 					paymentRequestButton: {
-						type: wcpayPaymentRequestParams.button.type,
-						theme: wcpayPaymentRequestParams.button.theme,
-						height: wcpayPaymentRequestParams.button.height + 'px',
+						type: getPaymentRequestData( 'button' ).type,
+						theme: getPaymentRequestData( 'button' ).theme,
+						height: getPaymentRequestData( 'button' ).height + 'px',
 					},
 				},
 			} );
@@ -195,7 +189,7 @@ export default class WooPaymentsPaymentRequest {
 			trackPaymentRequestButtonClick( 'product' );
 
 			// If login is required for checkout, display redirect confirmation dialog.
-			if ( wcpayPaymentRequestParams.login_confirmation ) {
+			if ( getPaymentRequestData( 'login_confirmation' ) ) {
 				event.preventDefault();
 				displayLoginConfirmationDialog( buttonBranding );
 				return;
@@ -379,7 +373,7 @@ export default class WooPaymentsPaymentRequest {
 	}
 
 	async getCartData() {
-		if ( wcpayPaymentRequestParams.button_context !== 'product' ) {
+		if ( getPaymentRequestData( 'button_context' ) !== 'product' ) {
 			return await this.paymentRequestCartApi.getCart();
 		}
 

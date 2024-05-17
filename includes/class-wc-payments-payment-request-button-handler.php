@@ -107,6 +107,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+			add_filter(
+				'rest_post_dispatch',
+				[ $this, 'tokenized_cart_store_api_nonce_headers' ],
+				10,
+				3
+			);
 		}
 	}
 
@@ -125,6 +131,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return $response;
 		}
 
+		// header added as additional layer of security.
+		$nonce = $request->get_header( 'X-WooPayments-Express-Payment-Request-Nonce' );
+		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+			return $response;
+		}
+
 		// This route is used to get shipping rates.
 		// GooglePay/ApplePay might provide us with "trimmed" zip codes.
 		// If that's the case, let's temporarily allow to skip the zip code validation, in order to get some shipping rates.
@@ -138,6 +150,25 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 		if ( isset( $request_data['billing_address'] ) ) {
 			$request->set_param( 'billing_address', $this->transform_prb_address_data( $request_data['billing_address'] ) );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * In order to create an additional layer of security, we're adding a custom nonce to the Store API REST responses.
+	 * This nonce is added as a response header on the Store API, because nonces are tied to user sessions,
+	 * and anonymous carts count as separate user sessions.
+	 *
+	 * @param \WP_HTTP_Response $response Response to replace the requested version with.
+	 * @param \WP_REST_Server   $server Server instance.
+	 * @param \WP_REST_Request  $request Request used to generate the response.
+	 *
+	 * @return \WP_HTTP_Response
+	 */
+	public function tokenized_cart_store_api_nonce_headers( $response, $server, $request ) {
+		if ( $request->get_route() === '/wc/store/v1/cart' ) {
+			$response->header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
 		}
 
 		return $response;
@@ -828,6 +859,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
 				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
 				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
+				'tokenized_cart_nonce'      => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
 			],
 			'checkout'           => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),

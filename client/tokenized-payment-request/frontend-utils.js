@@ -64,7 +64,7 @@ export const getPaymentRequest = ( { stripe, cartData, productData } ) => {
 						amount: parseInt( cartData.totals.total_price, 10 ),
 					},
 					requestShipping:
-						wcpayPaymentRequestParams.button_context ===
+						getPaymentRequestData( 'button_context' ) ===
 						'pay_for_order'
 							? false
 							: cartData.needs_shipping,
@@ -86,12 +86,10 @@ export const displayLoginConfirmationDialog = ( paymentRequestType ) => {
 	let message = getPaymentRequestData( 'login_confirmation' )?.message;
 
 	// Replace dialog text with specific payment request type "Apple Pay" or "Google Pay".
-	if ( paymentRequestType !== 'payment_request_api' ) {
-		message = message.replace(
-			/\*\*.*?\*\*/,
-			paymentRequestType === 'apple_pay' ? 'Apple Pay' : 'Google Pay'
-		);
-	}
+	message = message.replace(
+		/\*\*.*?\*\*/,
+		paymentRequestType === 'apple_pay' ? 'Apple Pay' : 'Google Pay'
+	);
 
 	// Remove asterisks from string.
 	message = message.replace( /\*\*/g, '' );

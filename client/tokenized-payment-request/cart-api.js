@@ -7,6 +7,11 @@ import apiFetch from '@wordpress/api-fetch';
 import { applyFilters } from '@wordpress/hooks';
 import { addQueryArgs } from '@wordpress/url';
 
+/**
+ * Internal dependencies
+ */
+import { getPaymentRequestData } from './frontend-utils';
+
 export default class PaymentRequestCartApi {
 	// Used on product pages to interact with an anonymous cart.
 	// This anonymous cart is separate from the customer's cart, which might contain additional products.
@@ -26,7 +31,9 @@ export default class PaymentRequestCartApi {
 			path: addQueryArgs( options.path, {
 				// `wcpayPaymentRequestParams` will always be defined if this file is needed.
 				// If there's an issue with it, ask yourself why this file is queued and `wcpayPaymentRequestParams` isn't present.
-				currency: window.wcpayPaymentRequestParams.checkout.currency_code.toUpperCase(),
+				currency: getPaymentRequestData(
+					'checkout'
+				).currency_code.toUpperCase(),
 			} ),
 			headers: {
 				...this.cartRequestHeaders,
@@ -53,6 +60,12 @@ export default class PaymentRequestCartApi {
 			method: 'POST',
 			path: '/wc/store/v1/checkout',
 			credentials: 'omit',
+			headers: {
+				'X-WooPayments-Express-Payment-Request': true,
+				'X-WooPayments-Express-Payment-Request-Nonce':
+					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
+					undefined,
+			},
 			data: paymentData,
 		} );
 	}
@@ -78,9 +91,7 @@ export default class PaymentRequestCartApi {
 	async createAnonymousCart() {
 		const response = await this._request( {
 			method: 'GET',
-			path: addQueryArgs( '/wc/store/v1/cart', {
-				currency: window.wcpayPaymentRequestParams.checkout.currency_code.toUpperCase(),
-			} ),
+			path: '/wc/store/v1/cart',
 			// omitting credentials, to create a new cart object separate from the user's cart.
 			credentials: 'omit',
 			// parse: false to ensure we can get the response headers
@@ -90,6 +101,9 @@ export default class PaymentRequestCartApi {
 		this.cartRequestHeaders = {
 			Nonce: response.headers.get( 'Nonce' ),
 			'Cart-Token': response.headers.get( 'Cart-Token' ),
+			'X-WooPayments-Express-Payment-Request-Nonce': response.headers.get(
+				'X-WooPayments-Express-Payment-Request-Nonce'
+			),
 		};
 	}
 
@@ -106,12 +120,13 @@ export default class PaymentRequestCartApi {
 	async updateCustomer( customerData ) {
 		return await this._request( {
 			method: 'POST',
-			path: addQueryArgs( '/wc/store/v1/cart/update-customer', {
-				currency: window.wcpayPaymentRequestParams.checkout.currency_code.toUpperCase(),
-			} ),
+			path: '/wc/store/v1/cart/update-customer',
 			credentials: 'omit',
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
+				'X-WooPayments-Express-Payment-Request-Nonce':
+					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
+					undefined,
 			},
 			data: customerData,
 		} );

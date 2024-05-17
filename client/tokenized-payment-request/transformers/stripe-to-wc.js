@@ -47,12 +47,8 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 	const billing = paymentData.paymentMethod?.billing_details?.address ?? {};
 	const shipping = paymentData.shippingAddress ?? {};
 
-	let paymentRequestType = 'payment_request_api';
-	if ( paymentData.walletName === 'applePay' ) {
-		paymentRequestType = 'apple_pay';
-	} else if ( paymentData.walletName === 'googlePay' ) {
-		paymentRequestType = 'google_pay';
-	}
+	const paymentRequestType =
+		paymentData.walletName === 'applePay' ? 'apple_pay' : 'google_pay';
 
 	return {
 		customer_note: paymentData.order_comments,
