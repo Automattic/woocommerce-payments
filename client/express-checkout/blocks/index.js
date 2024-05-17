@@ -5,8 +5,8 @@
  */
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from '../../checkout/constants';
 import { ExpressCheckout } from './express-checkout';
-import { ApplePayPreview } from './apple-pay-preview';
 import { getConfig } from '../../utils/checkout';
+import ApplePayPreview from './apple-pay-preview';
 
 const expressCheckoutElementPaymentMethod = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
