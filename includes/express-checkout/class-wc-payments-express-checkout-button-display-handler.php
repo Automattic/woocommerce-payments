@@ -118,6 +118,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			}
 				$this->payment_request_button_handler->display_payment_request_button_html();
 			?>
+			<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>
 			</div >
 			<?php
 			$this->display_express_checkout_separator_if_necessary( $separator_starts_hidden );
