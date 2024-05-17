@@ -7,12 +7,11 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Exceptions\Invalid_Price_Exception;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 
