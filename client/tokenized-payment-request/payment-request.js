@@ -121,7 +121,7 @@ export default class WooPaymentsPaymentRequest {
 		// On PDP pages, we need to use an anonymous cart to check out.
 		// On cart, checkout, place order pages we instead use the cart itself.
 		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
-			this.paymentRequestCartApi.createAnonymousCart().then( noop );
+			await this.paymentRequestCartApi.createAnonymousCart();
 		}
 
 		const paymentRequestButton = this.wcpayApi
