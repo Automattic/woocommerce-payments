@@ -18,7 +18,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception, Fraud_Prevention_Enabled_Exception, Invalid_Phone_Number_Exception, Rate_Limiter_Enabled_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception, Fraud_Prevention_Enabled_Exception, Invalid_Phone_Number_Exception, Rate_Limiter_Enabled_Exception, Order_ID_Mismatch_Exception };
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -1409,9 +1409,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WCPay\Payment_Information $payment_information Payment info.
 	 * @param bool                      $scheduled_subscription_payment Used to determinate is scheduled subscription payment to add more fields into API request.
 	 *
-	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception
-	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
+	 * @throws Exception
+	 * @throws Invalid_Address_Exception
+	 * @throws Order_Not_Found_Exception
+	 * @throws Order_ID_Mismatch_Exception When the payment intent could not be authenticated.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception When request class filter filed to extend request class because of incompatibility.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception When immutable parameter gets changed in request class.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception When you send incorrect request value via setters.
@@ -1514,7 +1517,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 				if ( $intent_meta_order_id !== $order_id ) {
-					throw new Intent_Authentication_Exception(
+					throw new Order_ID_Mismatch_Exception(
 						sprintf(
 							/* translators: %s: metadata. We do not need to translate WooPayMeta */
 							esc_html( __( 'We\'re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: %1$s, order_id: %2$s', 'woocommerce-payments' ) ),
@@ -1625,7 +1628,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 
 				if ( $intent_meta_order_id !== $order_id ) {
-					throw new Intent_Authentication_Exception(
+					throw new Order_ID_Mismatch_Exception(
 						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
 						'order_id_mismatch'
 					);
@@ -4487,6 +4490,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
 	 * @param Payment_Information          $payment_information   The payment information object.
 	 * @param WC_Order                     $order                 The order object.
+	 * @throws Invalid_Address_Exception
 	 *
 	 * @return void
 	 */

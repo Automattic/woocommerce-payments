@@ -22,6 +22,7 @@ use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Fraud_Prevention_Enabled_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Exceptions\Order_ID_Mismatch_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Payment\Router;
@@ -2557,6 +2558,33 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'The selected payment method requires a total amount of at least $0.50.' );
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_process_payment_for_order_rejects_with_order_id_mismatch() {
+		$order                = WC_Helper_Order::create_order();
+		$woopay_intent_id     = 'pi_mock';
+		$intent_meta_order_id = 'intent_mock';
+
+		$pi      = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status' => 'success',
+			]
+		);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->returnValue( $payment_intent ) );
+
+		try {
+			$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+		} catch ( Exception $e ) {
+			$this->assertEquals( 'Exception', get_class( $e ) );
+			$this->assertEquals( "We're not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: " . $intent_meta_order_id . ', order_id: ' . $order->get_id(), $e->getMessage() );
+			$this->assertEquals( 'WCPay\Exceptions\Order_ID_Mismatch_Exception', get_class( $e->getPrevious() ) );
+		}
 	}
 
 	public function test_set_mandate_data_to_payment_intent_if_not_required() {
