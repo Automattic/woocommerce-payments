@@ -371,7 +371,7 @@ jQuery( ( $ ) => {
 				} );
 			} else {
 				// If this is the cart or checkout page, we need to request the
-				// cart details for the payment request.
+				// cart details.
 				api.paymentRequestGetCartDetails().then( ( cart ) => {
 					wcpayECE.startExpressCheckoutElement( {
 						mode: 'payment',
@@ -383,12 +383,12 @@ jQuery( ( $ ) => {
 				} );
 			}
 
-			// After initializing a new payment request, we need to reset the paymentAborted flag.
+			// After initializing a new element, we need to reset the paymentAborted flag.
 			wcpayECE.paymentAborted = false;
 		},
 	};
 
-	// We don't need to initialize payment request on the checkout page now because it will be initialized by updated_checkout event.
+	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
 		! wcpayExpressCheckoutParams.is_checkout_page ||
 		wcpayExpressCheckoutParams.is_pay_for_order
@@ -396,12 +396,12 @@ jQuery( ( $ ) => {
 		wcpayECE.init();
 	}
 
-	// We need to refresh payment request data when total is updated.
+	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
 		wcpayECE.init();
 	} );
 
-	// We need to refresh payment request data when total is updated.
+	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
 		wcpayECE.init();
 	} );
