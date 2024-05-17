@@ -11,9 +11,6 @@ import {
 	paymentMethodHandler,
 } from './event-handlers.js';
 import '../checkout/express-checkout-buttons.scss';
-import { recordUserEvent } from 'tracks';
-
-import { displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -45,25 +42,10 @@ jQuery( ( $ ) => {
 		}
 	);
 
-	let paymentRequestType;
-
-	// Track the payment request button click event.
-	const trackPaymentRequestButtonClick = ( source ) => {
-		const paymentRequestTypeEvents = {
-			google_pay: 'gpay_button_click',
-			apple_pay: 'applepay_button_click',
-		};
-
-		if ( paymentRequestTypeEvents.hasOwnProperty( paymentRequestType ) ) {
-			const event = paymentRequestTypeEvents[ paymentRequestType ];
-			recordUserEvent( event, { source } );
-		}
-	};
-
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
-	const wcpayPaymentRequest = {
+	const wcpayECE = {
 		/**
 		 * Whether the payment was aborted by the customer.
 		 */
@@ -131,7 +113,7 @@ jQuery( ( $ ) => {
 		 * @param {string} url Order thank you page URL.
 		 */
 		completePayment: ( url ) => {
-			wcpayPaymentRequest.block();
+			wcpayECE.block();
 			window.location = url;
 		},
 
@@ -168,7 +150,7 @@ jQuery( ( $ ) => {
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
 				attributes: $( '.variations_form' ).length
-					? wcpayPaymentRequest.getAttributes().data
+					? wcpayECE.getAttributes().data
 					: [],
 			};
 
@@ -196,32 +178,27 @@ jQuery( ( $ ) => {
 		},
 
 		/**
-		 * Starts the payment request
+		 * Starts the Express Checkout Element
 		 *
-		 * @param {Object} options Payment request options.
+		 * @param {Object} options ECE options.
 		 */
-		startPaymentRequest: ( options ) => {
+		startExpressCheckoutElement: ( options ) => {
 			const elements = api.getStripe().elements( {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
 				currency: options?.currency,
 			} );
 
-			const eceButton = wcpayPaymentRequest.createPaymentRequestButton(
-				elements,
-				{
-					buttonType: {
-						googlePay: wcpayExpressCheckoutParams.button.type,
-						applePay: wcpayExpressCheckoutParams.button.type,
-					},
-				}
-			);
+			const eceButton = wcpayECE.createButton( elements, {
+				buttonType: {
+					googlePay: wcpayExpressCheckoutParams.button.type,
+					applePay: wcpayExpressCheckoutParams.button.type,
+				},
+			} );
 
-			wcpayPaymentRequest.showPaymentRequestButton( eceButton );
+			wcpayECE.showButton( eceButton );
 
-			wcpayPaymentRequest.attachPaymentRequestButtonEventListeners(
-				eceButton
-			);
+			wcpayECE.attachButtonEventListeners( eceButton );
 
 			eceButton.on( 'click', function ( event ) {
 				const clickOptions = {
@@ -250,7 +227,7 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'cancel', () => {
-				wcpayPaymentRequest.paymentAborted = true;
+				wcpayECE.paymentAborted = true;
 			} );
 
 			eceButton.on( 'shippingaddresschange', ( event ) => {
@@ -266,8 +243,8 @@ jQuery( ( $ ) => {
 
 				handler(
 					api,
-					wcpayPaymentRequest.completePayment,
-					wcpayPaymentRequest.abortPayment,
+					wcpayECE.completePayment,
+					wcpayECE.abortPayment,
 					event
 				);
 			} );
@@ -311,45 +288,13 @@ jQuery( ( $ ) => {
 				product_id: productId,
 				qty: $( '.quantity .qty' ).val(),
 				attributes: $( '.variations_form' ).length
-					? wcpayPaymentRequest.getAttributes().data
+					? wcpayECE.getAttributes().data
 					: [],
 				addon_value: addonValue,
 				...depositObject,
 			};
 
 			return api.paymentRequestGetSelectedProductData( data );
-		},
-
-		/**
-		 * Creates a wrapper around a function that ensures a function can not
-		 * called in rappid succesion. The function can only be executed once and then agin after
-		 * the wait time has expired.  Even if the wrapper is called multiple times, the wrapped
-		 * function only excecutes once and then blocks until the wait time expires.
-		 *
-		 * @param {int} wait       Milliseconds wait for the next time a function can be executed.
-		 * @param {Function} func       The function to be wrapped.
-		 * @param {bool} immediate Overriding the wait time, will force the function to fire everytime.
-		 *
-		 * @return {Function} A wrapped function with execution limited by the wait time.
-		 */
-		debounce: ( wait, func, immediate ) => {
-			let timeout;
-			return function () {
-				const context = this,
-					args = arguments;
-				const later = () => {
-					timeout = null;
-					if ( ! immediate ) {
-						func.apply( context, args );
-					}
-				};
-				const callNow = immediate && ! timeout;
-				clearTimeout( timeout );
-				timeout = setTimeout( later, wait );
-				if ( callNow ) {
-					func.apply( context, args );
-				}
-			};
 		},
 
 		/**
@@ -360,117 +305,8 @@ jQuery( ( $ ) => {
 		 *
 		 * @return {Object} Stripe Express Checkout Element.
 		 */
-		createPaymentRequestButton: ( elements, options ) => {
+		createButton: ( elements, options ) => {
 			return elements.create( 'expressCheckout', options );
-		},
-
-		attachPaymentRequestButtonEventListeners: (
-			prButton,
-			paymentRequest
-		) => {
-			if ( wcpayExpressCheckoutParams.is_product_page ) {
-				wcpayPaymentRequest.attachProductPageEventListeners(
-					prButton,
-					paymentRequest
-				);
-			} else {
-				wcpayPaymentRequest.attachCartPageEventListeners( prButton );
-			}
-		},
-
-		attachProductPageEventListeners: ( prButton, paymentRequest ) => {
-			// WooCommerce Deposits support.
-			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
-			$(
-				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-			).on( 'change', () => {
-				$( 'form' )
-					.has(
-						'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-					)
-					.trigger( 'woocommerce_variation_has_changed' );
-			} );
-
-			$( document.body ).on( 'woocommerce_variation_has_changed', () => {
-				wcpayPaymentRequest.blockPaymentRequestButton();
-
-				$.when( wcpayPaymentRequest.getSelectedProductData() )
-					.then( ( response ) => {
-						/**
-						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
-						 * options are refetched. If the customer didn't abort the payment request, and the product's shipping status is
-						 * consistent, we can simply update the payment request button with the new total and display items.
-						 */
-						if (
-							! wcpayPaymentRequest.paymentAborted &&
-							wcpayExpressCheckoutParams.product
-								.needs_shipping === response.needs_shipping
-						) {
-							paymentRequest.update( {
-								total: response.total,
-								displayItems: response.displayItems,
-							} );
-						} else {
-							wcpayPaymentRequest.reInitPaymentRequest(
-								response
-							);
-						}
-
-						wcpayPaymentRequest.unblockPaymentRequestButton();
-					} )
-					.catch( () => {
-						wcpayPaymentRequest.hide();
-					} );
-			} );
-
-			// Block the payment request button as soon as an "input" event is fired, to avoid sync issues
-			// when the customer clicks on the button before the debounced event is processed.
-			$( '.quantity' ).on( 'input', '.qty', () => {
-				wcpayPaymentRequest.blockPaymentRequestButton();
-			} );
-
-			$( '.quantity' )
-				.off( 'input', '.qty' )
-				.on(
-					'input',
-					'.qty',
-					wcpayPaymentRequest.debounce( 250, () => {
-						wcpayPaymentRequest.blockPaymentRequestButton();
-
-						$.when(
-							wcpayPaymentRequest.getSelectedProductData()
-						).then( ( response ) => {
-							if (
-								! wcpayPaymentRequest.paymentAborted &&
-								wcpayExpressCheckoutParams.product
-									.needs_shipping === response.needs_shipping
-							) {
-								paymentRequest.update( {
-									total: response.total,
-									displayItems: response.displayItems,
-								} );
-							} else {
-								wcpayPaymentRequest.reInitPaymentRequest(
-									response
-								);
-							}
-							wcpayPaymentRequest.unblockPaymentRequestButton();
-						} );
-					} )
-				);
-		},
-
-		attachCartPageEventListeners: ( prButton ) => {
-			prButton.on( 'click', ( evt ) => {
-				// If login is required for checkout, display redirect confirmation dialog.
-				if ( wcpayExpressCheckoutParams.login_confirmation ) {
-					evt.preventDefault();
-					displayLoginConfirmation( paymentRequestType );
-				}
-				trackPaymentRequestButtonClick(
-					wcpayExpressCheckoutParams.button_context
-				);
-			} );
 		},
 
 		getElements: () => {
@@ -480,21 +316,21 @@ jQuery( ( $ ) => {
 		},
 
 		hide: () => {
-			wcpayPaymentRequest.getElements().hide();
+			wcpayECE.getElements().hide();
 		},
 
 		show: () => {
-			wcpayPaymentRequest.getElements().show();
+			wcpayECE.getElements().show();
 		},
 
-		showPaymentRequestButton: ( prButton ) => {
+		showButton: ( eceButton ) => {
 			if ( $( '#wcpay-express-checkout-element' ).length ) {
-				wcpayPaymentRequest.show();
-				prButton.mount( '#wcpay-express-checkout-element' );
+				wcpayECE.show();
+				eceButton.mount( '#wcpay-express-checkout-element' );
 			}
 		},
 
-		blockPaymentRequestButton: () => {
+		blockButton: () => {
 			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
 			// blockUI.isBlocked is either undefined or 0 when element is not blocked
 			if (
@@ -508,29 +344,9 @@ jQuery( ( $ ) => {
 			$( '#wcpay-express-checkout-button' ).block( { message: null } );
 		},
 
-		unblockPaymentRequestButton: () => {
-			wcpayPaymentRequest.show();
+		unblockButton: () => {
+			wcpayECE.show();
 			$( '#wcpay-express-checkout-button' ).unblock();
-		},
-
-		/**
-		 * Re init the payment request button.
-		 *
-		 * This ensures that when the customer clicks on the payment button, the available shipping options are
-		 * refetched based on the selected variable product's data and the chosen address.
-		 *
-		 *  This is also useful when the customer changes the quantity of a product, as the total and display items
-		 *  need to be updated.
-		 *
-		 * @param {Object} response Response from the server containing the updated product data.
-		 */
-		reInitPaymentRequest: ( response ) => {
-			wcpayExpressCheckoutParams.product.needs_shipping =
-				response.needs_shipping;
-			wcpayExpressCheckoutParams.product.total = response.total;
-			wcpayExpressCheckoutParams.product.displayItems =
-				response.displayItems;
-			wcpayPaymentRequest.init();
 		},
 
 		/**
@@ -538,13 +354,13 @@ jQuery( ( $ ) => {
 		 */
 		init: () => {
 			if ( wcpayExpressCheckoutParams.is_pay_for_order ) {
-				if ( ! window.wcpayPaymentRequestPayForOrderParams ) {
+				if ( ! window.wcpayECEPayForOrderParams ) {
 					return;
 				}
 
-				wcpayPaymentRequest.startPaymentRequest();
+				wcpayECE.startExpressCheckoutElement();
 			} else if ( wcpayExpressCheckoutParams.is_product_page ) {
-				wcpayPaymentRequest.startPaymentRequest( {
+				wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: wcpayExpressCheckoutParams.product.total.amount,
 					currency: 'usd',
@@ -557,7 +373,7 @@ jQuery( ( $ ) => {
 				// If this is the cart or checkout page, we need to request the
 				// cart details for the payment request.
 				api.paymentRequestGetCartDetails().then( ( cart ) => {
-					wcpayPaymentRequest.startPaymentRequest( {
+					wcpayECE.startExpressCheckoutElement( {
 						mode: 'payment',
 						total: 1000,
 						currency: 'usd',
@@ -568,7 +384,7 @@ jQuery( ( $ ) => {
 			}
 
 			// After initializing a new payment request, we need to reset the paymentAborted flag.
-			wcpayPaymentRequest.paymentAborted = false;
+			wcpayECE.paymentAborted = false;
 		},
 	};
 
@@ -577,52 +393,16 @@ jQuery( ( $ ) => {
 		! wcpayExpressCheckoutParams.is_checkout_page ||
 		wcpayExpressCheckoutParams.is_pay_for_order
 	) {
-		wcpayPaymentRequest.init();
+		wcpayECE.init();
 	}
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
-		wcpayPaymentRequest.init();
+		wcpayECE.init();
 	} );
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
-		wcpayPaymentRequest.init();
-	} );
-
-	// Handle bookable products on the product page.
-	let wcBookingFormChanged = false;
-
-	$( document.body )
-		.off( 'wc_booking_form_changed' )
-		.on( 'wc_booking_form_changed', () => {
-			wcBookingFormChanged = true;
-		} );
-
-	// Listen for the WC Bookings wc_bookings_calculate_costs event to complete
-	// and add the bookable product to the cart, using the response to update the
-	// payment request request params with correct totals.
-	$( document ).ajaxComplete( function ( event, xhr, settings ) {
-		if ( wcBookingFormChanged ) {
-			if (
-				settings.url === window.booking_form_params.ajax_url &&
-				settings.data.includes( 'wc_bookings_calculate_costs' ) &&
-				xhr.responseText.includes( 'SUCCESS' )
-			) {
-				wcpayPaymentRequest.blockPaymentRequestButton();
-				wcBookingFormChanged = false;
-				return wcpayPaymentRequest.addToCart().then( ( response ) => {
-					wcpayExpressCheckoutParams.product.total = response.total;
-					wcpayExpressCheckoutParams.product.displayItems =
-						response.displayItems;
-					// Empty the cart to avoid having 2 products in the cart when payment request is not used.
-					api.paymentRequestEmptyCart( response.bookingId );
-
-					wcpayPaymentRequest.init();
-
-					wcpayPaymentRequest.unblockPaymentRequestButton();
-				} );
-			}
-		}
+		wcpayECE.init();
 	} );
 } );
