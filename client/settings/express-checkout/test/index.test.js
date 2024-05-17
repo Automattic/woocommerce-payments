@@ -236,7 +236,7 @@ describe( 'ExpressCheckout', () => {
 
 		expect(
 			screen.queryByText(
-				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
+				'Your custom checkout fields may not be compatible with these payment methods.'
 			)
 		).toBeInTheDocument();
 	} );

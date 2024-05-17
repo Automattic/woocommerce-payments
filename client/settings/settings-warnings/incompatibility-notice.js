@@ -51,7 +51,7 @@ export const WooPayIncompatibilityNotice = () => (
 export const ExpressCheckoutIncompatibilityNotice = () => (
 	<IncompatibilityNotice
 		message={ __(
-			'One or more of your extensions alters checkout fields. This might cause issues with this payment method.',
+			'Your custom checkout fields may not be compatible with these payment methods.',
 			'woocommerce-payments'
 		) }
 		// eslint-disable-next-line max-len
