@@ -62,9 +62,11 @@ export default class PaymentRequestCartApi {
 			credentials: 'omit',
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
+				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
 				'X-WooPayments-Express-Payment-Request-Nonce':
 					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
 					undefined,
+				...this.cartRequestHeaders,
 			},
 			data: paymentData,
 		} );
@@ -124,9 +126,11 @@ export default class PaymentRequestCartApi {
 			credentials: 'omit',
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
+				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
 				'X-WooPayments-Express-Payment-Request-Nonce':
 					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
 					undefined,
+				...this.cartRequestHeaders,
 			},
 			data: customerData,
 		} );
