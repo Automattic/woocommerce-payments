@@ -24,6 +24,7 @@ class WC_Payments_Features {
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
 	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
+	const TOKENIZED_CART_PRB_FLAG_NAME      = '_wcpay_feature_tokenized_cart_prb';
 	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME = '_wcpay_feature_payment_overview_widget';
 
 	/**
@@ -35,6 +36,15 @@ class WC_Payments_Features {
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 
 		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Checks whether the "tokenized cart" feature for PRBs is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_tokenized_cart_prb_enabled(): bool {
+		return '1' === get_option( self::TOKENIZED_CART_PRB_FLAG_NAME, '0' );
 	}
 
 	/**
