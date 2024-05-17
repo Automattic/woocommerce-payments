@@ -6,6 +6,11 @@
 import apiFetch from '@wordpress/api-fetch';
 import { applyFilters } from '@wordpress/hooks';
 
+/**
+ * Internal dependencies
+ */
+import { getPaymentRequestData } from './frontend-utils';
+
 export default class PaymentRequestCartApi {
 	// Used on product pages to interact with an anonymous cart.
 	// This anonymous cart is separate from the customer's cart, which might contain additional products.
@@ -34,8 +39,8 @@ export default class PaymentRequestCartApi {
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
 				'X-WooPayments-Express-Payment-Request-Nonce':
-					window.wcpayPaymentRequestParams.nonce
-						.tokenized_cart_nonce || undefined,
+					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
+					undefined,
 				...this.cartRequestHeaders,
 			},
 			data: paymentData,
@@ -100,8 +105,8 @@ export default class PaymentRequestCartApi {
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
 				'X-WooPayments-Express-Payment-Request-Nonce':
-					window.wcpayPaymentRequestParams.nonce
-						.tokenized_cart_nonce || undefined,
+					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
+					undefined,
 				...this.cartRequestHeaders,
 			},
 			data: customerData,

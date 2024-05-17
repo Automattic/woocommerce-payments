@@ -1,4 +1,4 @@
-/* global jQuery, wcpayPaymentRequestParams */
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -11,6 +11,7 @@ import WCPayAPI from '../checkout/api';
 import PaymentRequestCartApi from './cart-api';
 import WooPaymentsPaymentRequest from './payment-request';
 import paymentRequestButtonUi from './button-ui';
+import { getPaymentRequestData } from './frontend-utils';
 import './compatibility/wc-deposits';
 import './compatibility/wc-order-attribution';
 import './compatibility/wc-product-variations';
@@ -20,13 +21,13 @@ import '../checkout/express-checkout-buttons.scss';
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if (
-		wcpayPaymentRequestParams.has_block &&
-		wcpayPaymentRequestParams.button_context !== 'pay_for_order'
+		getPaymentRequestData( 'has_block' ) &&
+		getPaymentRequestData( 'button_context' ) !== 'pay_for_order'
 	) {
 		return;
 	}
 
-	const publishableKey = wcpayPaymentRequestParams.stripe.publishableKey;
+	const publishableKey = getPaymentRequestData( 'stripe' ).publishableKey;
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, we can't do anything.
@@ -41,8 +42,8 @@ jQuery( ( $ ) => {
 	const api = new WCPayAPI(
 		{
 			publishableKey,
-			accountId: wcpayPaymentRequestParams.stripe.accountId,
-			locale: wcpayPaymentRequestParams.stripe.locale,
+			accountId: getPaymentRequestData( 'stripe' ).accountId,
+			locale: getPaymentRequestData( 'stripe' ).locale,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -56,13 +57,13 @@ jQuery( ( $ ) => {
 	const wooPaymentsPaymentRequest = new WooPaymentsPaymentRequest( {
 		wcpayApi: api,
 		paymentRequestCartApi,
-		productData: wcpayPaymentRequestParams.product || undefined,
+		productData: getPaymentRequestData( 'product' ) || undefined,
 	} );
 
 	// We don't need to initialize payment request on the checkout page now because it will be initialized by updated_checkout event.
 	if (
-		wcpayPaymentRequestParams.button_context !== 'checkout' ||
-		wcpayPaymentRequestParams.button_context === 'pay_for_order'
+		getPaymentRequestData( 'button_context' ) !== 'checkout' ||
+		getPaymentRequestData( 'button_context' ) === 'pay_for_order'
 	) {
 		wooPaymentsPaymentRequest.init();
 	}

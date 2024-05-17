@@ -64,7 +64,7 @@ export const getPaymentRequest = ( { stripe, cartData, productData } ) => {
 						amount: parseInt( cartData.totals.total_price, 10 ),
 					},
 					requestShipping:
-						wcpayPaymentRequestParams.button_context ===
+						getPaymentRequestData( 'button_context' ) ===
 						'pay_for_order'
 							? false
 							: cartData.needs_shipping,
