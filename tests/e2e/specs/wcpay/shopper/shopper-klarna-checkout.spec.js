@@ -76,7 +76,7 @@ describe( 'Klarna checkout', () => {
 		);
 	} );
 
-	it.skip( `should successfully place an order with Klarna`, async () => {
+	it( `should successfully place an order with Klarna`, async () => {
 		console.log( '1' );
 		await setupProductCheckout(
 			{
@@ -89,19 +89,14 @@ describe( 'Klarna checkout', () => {
 			[ [ 'Beanie', 3 ] ]
 		);
 
-		console.log( '1.5' );
-
 		await uiUnblocked();
-
-		console.log( '2' );
 
 		await page.waitForXPath( checkoutPaymentMethodSelector );
 
-		console.log( '3' );
 		const [ paymentMethodLabel ] = await page.$x(
 			checkoutPaymentMethodSelector
 		);
-		console.log( '4' );
+
 		await page.waitFor( 2000 );
 		await paymentMethodLabel.click();
 		console.log( '5' );
