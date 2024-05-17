@@ -151,7 +151,7 @@ class WooPay_Session {
 		// If the email is verified on WooPay, matches session email (set during the redirection),
 		// and the store has an adapted extension installed,
 		// return the user to get extension data without authentication.
-		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
+		if ( ( is_countable( $enabled_adapted_extensions ) ? count( $enabled_adapted_extensions ) : 0 ) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
 			$user = get_user_by( 'email', $woopay_verified_email_address );
 
 			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
@@ -194,7 +194,7 @@ class WooPay_Session {
 
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) === 0 ) {
+		if ( ( is_countable( $enabled_adapted_extensions ) ? count( $enabled_adapted_extensions ) : 0 ) === 0 ) {
 			return;
 		}
 
@@ -346,9 +346,9 @@ class WooPay_Session {
 	 * If the request doesn't come from WooPay, this uses the same strategy in
 	 * `hydrate_from_api` on the Checkout Block to retrieve cart data.
 	 *
-	 * @param int|null $order_id Pay-for-order order ID.
-	 * @param string|null $key Pay-for-order key.
-	 * @param string|null $billing_email Pay-for-order billing email.
+	 * @param int|null             $order_id Pay-for-order order ID.
+	 * @param string|null          $key Pay-for-order key.
+	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
 	 * @return array The cart data.
 	 */
@@ -356,11 +356,11 @@ class WooPay_Session {
 		if ( ! $woopay_request ) {
 			return ! $is_pay_for_order
 			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
-			: rest_preload_api_request( [], "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) )[ "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) ]['body'];
+			: rest_preload_api_request( [], '/wc/store/v1/order/' . urlencode( $order_id ) . '?key=' . urlencode( $key ) . '&billing_email=' . urlencode( $billing_email ) )[ '/wc/store/v1/order/' . urlencode( $order_id ) . '?key=' . urlencode( $key ) . '&billing_email=' . urlencode( $billing_email ) ]['body'];
 		}
 
 		$cart_request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
-		$cart_request->set_header( 'Cart-Token', $woopay_request->get_header('cart_token') );
+		$cart_request->set_header( 'Cart-Token', $woopay_request->get_header( 'cart_token' ) );
 		return rest_do_request( $cart_request )->get_data();
 	}
 
@@ -378,10 +378,10 @@ class WooPay_Session {
 
 		if ( ! $woopay_request ) {
 			$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
-			$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
+			$checkout_data           = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
 		} else {
 			$checkout_request = new WP_REST_Request( 'GET', '/wc/store/v1/checkout' );
-			$checkout_request->set_header( 'Cart-Token', $woopay_request->get_header('cart_token') );
+			$checkout_request->set_header( 'Cart-Token', $woopay_request->get_header( 'cart_token' ) );
 			$checkout_data = rest_do_request( $checkout_request )->get_data();
 		}
 
@@ -393,9 +393,9 @@ class WooPay_Session {
 	/**
 	 * Returns the initial session request data.
 	 *
-	 * @param int|null $order_id Pay-for-order order ID.
-	 * @param string|null $key Pay-for-order key.
-	 * @param string|null $billing_email Pay-for-order billing email.
+	 * @param int|null             $order_id Pay-for-order order ID.
+	 * @param string|null          $key Pay-for-order key.
+	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
 	 * @return array The initial session request data without email and user_session.
 	 */
@@ -435,7 +435,7 @@ class WooPay_Session {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
-		$cart_data = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
+		$cart_data     = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
 		$checkout_data = self::get_checkout_data( $woopay_request );
 
 		if ( $woopay_request ) {
@@ -483,8 +483,8 @@ class WooPay_Session {
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity(),
 		];
 
-		$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
-		$request['extension_data']     = $woopay_adapted_extensions->get_extension_data();
+		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
+		$request['extension_data'] = $woopay_adapted_extensions->get_extension_data();
 
 		if ( ! empty( $email ) ) {
 			// Save email in session to skip TYP verify email and check if
@@ -573,7 +573,7 @@ class WooPay_Session {
 			);
 		}
 
-		$blog_id = Jetpack_Options::get_option('id');
+		$blog_id = Jetpack_Options::get_option( 'id' );
 		if ( empty( $blog_id ) ) {
 			wp_send_json_error(
 				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
@@ -599,7 +599,7 @@ class WooPay_Session {
 			);
 		}
 
-		$blog_id = Jetpack_Options::get_option('id');
+		$blog_id = Jetpack_Options::get_option( 'id' );
 		if ( empty( $blog_id ) ) {
 			wp_send_json_error(
 				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
@@ -758,7 +758,7 @@ class WooPay_Session {
 	private static function get_formatted_custom_message() {
 		$custom_message = WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' );
 
-		$terms_value = wc_terms_and_conditions_page_id() ?
+		$terms_value          = wc_terms_and_conditions_page_id() ?
 			'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
 			__( 'Terms of Service', 'woocommerce-payments' );
 		$privacy_policy_value = wc_privacy_policy_page_id() ?
