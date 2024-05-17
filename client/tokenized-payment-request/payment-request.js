@@ -1,4 +1,4 @@
-/* global jQuery, wcpayPaymentRequestParams */
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -115,13 +115,13 @@ export default class WooPaymentsPaymentRequest {
 
 		setPaymentRequestBranding( buttonBranding );
 		trackPaymentRequestButtonLoad(
-			wcpayPaymentRequestParams.button_context
+			getPaymentRequestData( 'button_context' )
 		);
 
 		// On PDP pages, we need to use an anonymous cart to check out.
 		// On cart, checkout, place order pages we instead use the cart itself.
-		if ( wcpayPaymentRequestParams.button_context === 'product' ) {
-			this.paymentRequestCartApi.createAnonymousCart().then( noop );
+		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
+			await this.paymentRequestCartApi.createAnonymousCart();
 		}
 
 		const paymentRequestButton = this.wcpayApi
@@ -131,9 +131,9 @@ export default class WooPaymentsPaymentRequest {
 				paymentRequest: paymentRequest,
 				style: {
 					paymentRequestButton: {
-						type: wcpayPaymentRequestParams.button.type,
-						theme: wcpayPaymentRequestParams.button.theme,
-						height: wcpayPaymentRequestParams.button.height + 'px',
+						type: getPaymentRequestData( 'button' ).type,
+						theme: getPaymentRequestData( 'button' ).theme,
+						height: getPaymentRequestData( 'button' ).height + 'px',
 					},
 				},
 			} );
@@ -189,14 +189,14 @@ export default class WooPaymentsPaymentRequest {
 			trackPaymentRequestButtonClick( 'product' );
 
 			// If login is required for checkout, display redirect confirmation dialog.
-			if ( wcpayPaymentRequestParams.login_confirmation ) {
+			if ( getPaymentRequestData( 'login_confirmation' ) ) {
 				event.preventDefault();
 				displayLoginConfirmationDialog( buttonBranding );
 				return;
 			}
 
 			// If the button is on a product page, we need to add the product to an anonymous cart before proceeding.
-			if ( wcpayPaymentRequestParams.button_context === 'product' ) {
+			if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
 				// First check if product can be added to cart.
 				if ( $addToCartButton.is( '.disabled' ) ) {
 					event.preventDefault(); // Prevent showing payment request modal.
@@ -241,7 +241,7 @@ export default class WooPaymentsPaymentRequest {
 					transformStripeShippingAddressForStoreApi(
 						event.shippingAddress
 					),
-					wcpayPaymentRequestParams.button_context
+					getPaymentRequestData( 'button_context' )
 				);
 
 				event.updateWith( {
@@ -270,7 +270,7 @@ export default class WooPaymentsPaymentRequest {
 			try {
 				const cartData = await _self.paymentRequestCartApi.selectShippingRate(
 					{ package_id: 0, rate_id: event.shippingOption.id },
-					wcpayPaymentRequestParams.button_context
+					getPaymentRequestData( 'button_context' )
 				);
 
 				event.updateWith( {
@@ -300,7 +300,7 @@ export default class WooPaymentsPaymentRequest {
 							{}
 						),
 					},
-					wcpayPaymentRequestParams.button_context
+					getPaymentRequestData( 'button_context' )
 				);
 
 				const confirmationRequest = _self.wcpayApi.confirmIntent(
@@ -383,7 +383,7 @@ export default class WooPaymentsPaymentRequest {
 	}
 
 	async getCartData() {
-		if ( wcpayPaymentRequestParams.button_context !== 'product' ) {
+		if ( getPaymentRequestData( 'button_context' ) !== 'product' ) {
 			return await this.paymentRequestCartApi.getCart();
 		}
 

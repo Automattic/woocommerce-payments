@@ -5,6 +5,12 @@
  */
 import apiFetch from '@wordpress/api-fetch';
 import { applyFilters } from '@wordpress/hooks';
+import { addQueryArgs } from '@wordpress/url';
+
+/**
+ * Internal dependencies
+ */
+import { getPaymentRequestData } from './frontend-utils';
 
 export default class PaymentRequestCartApi {
 	// Used on product pages to interact with an anonymous cart.
@@ -12,6 +18,29 @@ export default class PaymentRequestCartApi {
 	// This functionality is also useful to calculate product/shipping pricing (and shipping needs)
 	// for compatibility scenarios with other plugins (like WC Bookings, Product Add-Ons, WC Deposits, etc.).
 	cartRequestHeaders = {};
+
+	/**
+	 * Makes a request to the API.
+	 *
+	 * @param {Object} options The options to pass to `apiFetch`.
+	 * @return {Promise} Result from `apiFetch`.
+	 */
+	async _request( options ) {
+		return await apiFetch( {
+			...options,
+			path: addQueryArgs( options.path, {
+				// `wcpayPaymentRequestParams` will always be defined if this file is needed.
+				// If there's an issue with it, ask yourself why this file is queued and `wcpayPaymentRequestParams` isn't present.
+				currency: getPaymentRequestData(
+					'checkout'
+				).currency_code.toUpperCase(),
+			} ),
+			headers: {
+				...this.cartRequestHeaders,
+				...options.headers,
+			},
+		} );
+	}
 
 	/**
 	 * Creates an order from the cart object.
@@ -28,15 +57,16 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Result of the order creation request.
 	 */
 	async placeOrder( paymentData, context ) {
-		return await apiFetch( {
+		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/checkout',
 			credentials: context === 'product' ? 'omit' : 'same-origin',
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
+				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
 				'X-WooPayments-Express-Payment-Request-Nonce':
-					window.wcpayPaymentRequestParams.nonce
-						.tokenized_cart_nonce || undefined,
+					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
+					undefined,
 				...this.cartRequestHeaders,
 			},
 			data: paymentData,
@@ -50,12 +80,9 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart response object.
 	 */
 	async getCart() {
-		const response = await apiFetch( {
+		const response = await this._request( {
 			method: 'GET',
 			path: '/wc/store/v1/cart',
-			headers: {
-				...this.cartRequestHeaders,
-			},
 			parse: false,
 		} );
 
@@ -72,7 +99,7 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart response object.
 	 */
 	async createAnonymousCart() {
-		const response = await apiFetch( {
+		const response = await this._request( {
 			method: 'GET',
 			path: '/wc/store/v1/cart',
 			// omitting credentials, to create a new cart object separate from the user's cart.
@@ -102,15 +129,16 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */
 	async updateCustomer( customerData, context ) {
-		return await apiFetch( {
+		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/update-customer',
 			credentials: context === 'product' ? 'omit' : 'same-origin',
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
+				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
 				'X-WooPayments-Express-Payment-Request-Nonce':
-					window.wcpayPaymentRequestParams.nonce
-						.tokenized_cart_nonce || undefined,
+					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
+					undefined,
 				...this.cartRequestHeaders,
 			},
 			data: customerData,
@@ -126,13 +154,10 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */
 	async selectShippingRate( shippingRate, context ) {
-		return await apiFetch( {
+		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/select-shipping-rate',
 			credentials: context === 'product' ? 'omit' : 'same-origin',
-			headers: {
-				...this.cartRequestHeaders,
-			},
 			data: shippingRate,
 		} );
 	}
@@ -152,13 +177,10 @@ export default class PaymentRequestCartApi {
 			variation: [],
 		};
 
-		return await apiFetch( {
+		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/add-item',
 			credentials: 'omit',
-			headers: {
-				...this.cartRequestHeaders,
-			},
 			data: applyFilters(
 				'wcpay.payment-request.cart-add-item',
 				productData
@@ -174,23 +196,17 @@ export default class PaymentRequestCartApi {
 	 */
 	async emptyCart() {
 		try {
-			const cartData = await apiFetch( {
+			const cartData = await this._request( {
 				method: 'GET',
 				path: '/wc/store/v1/cart',
 				credentials: 'omit',
-				headers: {
-					...this.cartRequestHeaders,
-				},
 			} );
 
 			const removeItemsPromises = cartData.items.map( ( item ) => {
-				return apiFetch( {
+				return this._request( {
 					method: 'POST',
 					path: '/wc/store/v1/cart/remove-item',
 					credentials: 'omit',
-					headers: {
-						...this.cartRequestHeaders,
-					},
 					data: {
 						key: item.key,
 					},
