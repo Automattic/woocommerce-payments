@@ -4,12 +4,6 @@
  * Internal dependencies
  */
 import WCPayAPI from '../checkout/api';
-
-import {
-	shippingAddressChangeHandler,
-	shippingOptionChangeHandler,
-	paymentMethodHandler,
-} from './event-handlers.js';
 import '../checkout/express-checkout-buttons.scss';
 
 jQuery( ( $ ) => {
@@ -228,25 +222,6 @@ jQuery( ( $ ) => {
 
 			eceButton.on( 'cancel', () => {
 				wcpayECE.paymentAborted = true;
-			} );
-
-			eceButton.on( 'shippingaddresschange', ( event ) => {
-				shippingAddressChangeHandler( api, event );
-			} );
-
-			eceButton.on( 'shippingratechange', function ( event ) {
-				shippingOptionChangeHandler( api, event );
-			} );
-
-			eceButton.on( 'paymentmethod', ( event ) => {
-				const handler = options.handler ?? paymentMethodHandler;
-
-				handler(
-					api,
-					wcpayECE.completePayment,
-					wcpayECE.abortPayment,
-					event
-				);
 			} );
 		},
 
