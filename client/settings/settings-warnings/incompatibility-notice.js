@@ -7,48 +7,35 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { Notice } from '@wordpress/components';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import './style.scss';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const IncompatibilityNotice = ( { message, learnMoreLinkHref } ) => (
-	<Notice
+	<InlineNotice
 		status="warning"
+		icon={ true }
 		isDismissible={ false }
-		className="express-checkout__notice express-checkout__incompatibility-warning"
+		className="express-checkout__notice"
 	>
-		<span>
-			<NoticeOutlineIcon
-				style={ {
-					color: '#F0B849',
-					fill: 'currentColor',
-					marginBottom: '-5px',
-					marginRight: '10px',
-				} }
-				size={ 20 }
-			/>
-		</span>
-		<span>
-			{ message }
-			<br />
-			{ interpolateComponents( {
-				mixedString: __(
-					'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
-					'woocommerce-payments'
+		{ message }
+		<br />
+		{ interpolateComponents( {
+			mixedString: __(
+				'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
+				'woocommerce-payments'
+			),
+			components: {
+				learnMoreLink: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						target="_blank"
+						rel="noreferrer"
+						href={ learnMoreLinkHref }
+					/>
 				),
-				components: {
-					learnMoreLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noreferrer"
-							href={ learnMoreLinkHref }
-						/>
-					),
-				},
-			} ) }
-		</span>
-	</Notice>
+			},
+		} ) }
+	</InlineNotice>
 );
 
 export const WooPayIncompatibilityNotice = () => (
