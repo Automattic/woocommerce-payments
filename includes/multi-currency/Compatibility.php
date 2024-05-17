@@ -78,7 +78,7 @@ class Compatibility extends BaseCompatibility {
 	}
 
 	/**
-	 * Checks to see if the if the selected currency needs to be overridden.
+	 * Checks to see if the selected currency needs to be overridden.
 	 *
 	 * @return mixed Three letter currency code or false if not.
 	 */

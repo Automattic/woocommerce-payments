@@ -57,7 +57,7 @@ class Utils {
 	 * @return boolean
 	 */
 	public static function is_admin_api_request(): bool {
-		return 0 === stripos( wp_get_referer(), admin_url() ) && WC()->is_rest_api_request();
+		return 0 === stripos( wp_get_referer(), admin_url() ) && WC()->is_rest_api_request() && ! \WC_Payments_Utils::is_store_api_request();
 	}
 
 

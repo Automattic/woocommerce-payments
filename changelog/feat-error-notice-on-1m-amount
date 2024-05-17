@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+feat: error message on 1M+ amount
