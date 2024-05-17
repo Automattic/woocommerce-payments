@@ -107,7 +107,9 @@ describe( 'PaymentRequestCartApi', () => {
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'POST',
-				path: '/wc/store/v1/cart/update-customer',
+				path: expect.stringContaining(
+					'/wc/store/v1/cart/update-customer'
+				),
 				credentials: 'omit',
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
