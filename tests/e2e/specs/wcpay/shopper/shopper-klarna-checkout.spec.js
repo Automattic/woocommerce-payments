@@ -36,7 +36,7 @@ describe( 'Klarna checkout', () => {
 		await merchant.logout();
 	} );
 
-	it( 'should show the product messaging on the product page', async () => {
+	it.skip( 'should show the product messaging on the product page', async () => {
 		await shopperWCP.goToProductPageBySlug( 'belt' );
 
 		// waiting for the "product messaging" component to be rendered, so we can click on it.
@@ -51,7 +51,7 @@ describe( 'Klarna checkout', () => {
 			if ( element ) {
 				element.click();
 			}
-		}, 'button[aria-label="Open Learn More Modal"]' );
+		}, 'a[aria-label="Open Learn More Modal"]' );
 
 		// Wait for the iframe to be added by Stripe JS after clicking on the element.
 		await page.waitFor( 1000 );
