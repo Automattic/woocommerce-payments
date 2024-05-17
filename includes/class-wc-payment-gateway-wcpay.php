@@ -4468,8 +4468,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$billing_data = $this->order_service->get_billing_data_from_order( $order );
-		if ( $check_if_usable( $billing_data['address'] ) ) {
-			$request->set_shipping( $billing_data );
+		// Afterpay fails if we send more parameters than expected in the shipping address.
+		// This ensures that we only send the name and address fields, as in get_shipping_data_from_order.
+		$shipping_data = [
+			'name'    => $billing_data['name'] ?? '',
+			'address' => $billing_data['address'] ?? [],
+		];
+		if ( $check_if_usable( $shipping_data['address'] ) ) {
+			$request->set_shipping( $shipping_data );
 			return;
 		}
 
