@@ -108,6 +108,8 @@ describe( 'Klarna checkout', () => {
 		await page.waitFor( 2000 );
 		await shopper.placeOrder();
 
+		await page.waitFor( 5000 );
+
 		// Klarna is rendered in an iframe, so we need to get its reference.
 		// Sometimes the iframe is updated (or removed from the page),
 		// this function has been created so that we always get the most updated reference.
