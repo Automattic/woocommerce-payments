@@ -98,7 +98,7 @@ describe( 'Klarna checkout', () => {
 		);
 
 		console.log( '4' );
-		await page.waitFor( 2000 );
+		await page.waitFor( 4000 );
 		await paymentMethodLabel.click();
 
 		await uiUnblocked();
@@ -133,7 +133,7 @@ describe( 'Klarna checkout', () => {
 		};
 
 		// Add frame navigation event listener.
-		page.on( 'framenavigated', frameNavigationHandler );
+		// page.on( 'framenavigated', frameNavigationHandler );
 
 		console.log( '9' );
 
