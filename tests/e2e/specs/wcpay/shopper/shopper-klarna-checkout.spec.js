@@ -84,28 +84,31 @@ describe( 'Klarna checkout', () => {
 				// https://docs.klarna.com/resources/test-environment/sample-customer-data/#united-states-of-america
 				email: 'customer@email.us',
 				phone: '+13106683312',
-				firstname: 'John',
-				lastname: 'Doe',
+				firstname: 'Test',
+				lastname: 'Person-us',
 			},
 			[ [ 'Beanie', 3 ] ]
 		);
 
 		await uiUnblocked();
-
+		console.log( '3' );
 		await page.waitForXPath( checkoutPaymentMethodSelector );
-
 		const [ paymentMethodLabel ] = await page.$x(
 			checkoutPaymentMethodSelector
 		);
 
+		console.log( '4' );
 		await page.waitFor( 2000 );
 		await paymentMethodLabel.click();
 
 		await uiUnblocked();
 
+		console.log( '5' );
+
 		await page.waitFor( 2000 );
 		await shopper.placeOrder();
 
+		console.log( '6' );
 		// Klarna is rendered in an iframe, so we need to get its reference.
 		// Sometimes the iframe is updated (or removed from the page),
 		// this function has been created so that we always get the most updated reference.
@@ -117,6 +120,7 @@ describe( 'Klarna checkout', () => {
 			return await klarnaFrameHandle.contentFrame();
 		};
 
+		console.log( '7' );
 		let klarnaIframe = await getNewKlarnaIframe();
 
 		console.log( '8' );
@@ -133,7 +137,7 @@ describe( 'Klarna checkout', () => {
 
 		console.log( '9' );
 
-		// await page.waitFor( 2000 );
+		await page.waitFor( 2000 );
 
 		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
 		// this is the "confirm phone number" page - we just click "continue".
@@ -151,7 +155,7 @@ describe( 'Klarna checkout', () => {
 		await klarnaIframe.waitForSelector( '#phoneOtp' );
 		await expect( klarnaIframe ).toFill(
 			'[data-testid="kaf-field"]',
-			'000000'
+			'123456'
 		);
 
 		await page.waitFor( 2000 );
