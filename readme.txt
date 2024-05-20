@@ -94,6 +94,25 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.7.0-test-2 - unreleased =
+* Add - Add the WooPay Direct Checkout flow to the blocks mini cart widget.
+* Add - feat: add multi-currency support to Store API
+* Add - feat: error message on 1M+ amount
+* Add - feat: tokenized cart PRBs on PDPs via feature flag.
+* Add - Render ECE buttons behind a feature flag.
+* Fix - Charm pricing and rounding options corrected for all currencies that aren't presented with decimal points.
+* Fix - fix: remove WooPay checkout pages scripts from non-checkout pages
+* Fix - Fix a bug in Tracks where shopper events are not fired properly.
+* Fix - Fix Payment block render error while editing the block checkout page.
+* Fix - Fix shortcode orders when using WooPay Direct Checkout.
+* Fix - Improve visibility of WooPay button on light and outline button themes
+* Fix - Updating saved payment method billing address before processing the payment
+* Update - Do not auto-redirect to WooPay on page load.
+* Update - Removed deprecated deposit_status key from account status
+* Update - Update XPF currency formatting.
+* Dev - Add command to run QIT PHPStan tests.
+* Dev - Upgrade jetpack sync package version.
+
 = 7.6.0 - 2024-05-08 =
 * Add - Add additional data to Compatibility service
 * Add - Add User Satisfaction Survey for Payments Overview Widget
