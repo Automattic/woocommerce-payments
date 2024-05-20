@@ -11,7 +11,7 @@
  * the readme will list any important changes.
  *
  * @see https://woocommerce.com/document/template-structure/
- * @package WooCommerce\Payments\Templates\Emails
+ * @package WooCommerce\Payments\Templates\PluginsPage
  * @version 1.0.0
  */
 
@@ -19,6 +19,6 @@ defined( 'ABSPATH' ) || exit;
 ?>
 <div id="woopayments-plugins-page-app">
 	<!--
-	The content is renender from React.
+	The content is rendered from React.
 	-->
 </div>

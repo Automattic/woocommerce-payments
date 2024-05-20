@@ -70,7 +70,7 @@ const PluginsPage = () => {
 			return null;
 		}
 
-		// Handle click event
+		// Handle click event.
 		deactivationLink.addEventListener( 'click', handleLinkClick );
 
 		return () => {
