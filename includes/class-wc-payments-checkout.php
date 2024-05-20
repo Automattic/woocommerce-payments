@@ -193,7 +193,6 @@ class WC_Payments_Checkout {
 			'isWoopayFirstPartyAuthEnabled'  => $this->woopay_util->is_woopay_first_party_auth_enabled(),
 			'isWooPayEmailInputEnabled'      => $this->woopay_util->is_woopay_email_input_enabled(),
 			'isWooPayDirectCheckoutEnabled'  => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
-			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'woopayHost'                     => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),

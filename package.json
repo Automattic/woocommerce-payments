@@ -81,7 +81,6 @@
     "@woocommerce/explat": "2.3.0",
     "@woocommerce/number": "2.4.0",
     "canvas-confetti": "1.9.2",
-    "crypto-js": "4.1.1",
     "debug": "4.1.1",
     "intl-tel-input": "17.0.15",
     "lodash": "4.17.21"

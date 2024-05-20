@@ -9,7 +9,6 @@ import {
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
 } from '../../payment-request/utils';
-import { decryptClientSecret } from '../utils/encryption';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -253,7 +252,7 @@ export default class WCPayAPI {
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
 				return this.getStripe().handleNextAction( {
-					clientSecret: decryptClientSecret( clientSecret ),
+					clientSecret: clientSecret,
 				} );
 			}
 
@@ -264,18 +263,13 @@ export default class WCPayAPI {
 					publishableKey,
 					locale,
 					accountIdForIntentConfirmation
-				).confirmCardPayment(
-					decryptClientSecret(
-						clientSecret,
-						accountIdForIntentConfirmation
-					)
-				);
+				).confirmCardPayment( clientSecret );
 			}
 
 			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
 			return this.getStripe( true ).handleNextAction( {
-				clientSecret: decryptClientSecret( clientSecret ),
+				clientSecret: clientSecret,
 			} );
 		};
 
@@ -353,9 +347,7 @@ export default class WCPayAPI {
 			}
 
 			return this.getStripe()
-				.confirmCardSetup(
-					decryptClientSecret( response.data.client_secret )
-				)
+				.confirmCardSetup( response.data.client_secret )
 				.then( ( confirmedSetupIntent ) => {
 					const { setupIntent, error } = confirmedSetupIntent;
 					if ( error ) {

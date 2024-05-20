@@ -306,7 +306,7 @@ class WooPay_Session {
 	 * @return array The encrypted session request or an empty array if the server is not eligible for encryption.
 	 */
 	public static function get_frontend_init_session_request() {
-		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+		if ( ! extension_loaded( 'openssl' ) || ! function_exists( 'openssl_encrypt' ) ) {
 			return [];
 		}
 
@@ -597,7 +597,7 @@ class WooPay_Session {
 	 * @return array Array of minimum session data used by WooPay or false on failures.
 	 */
 	public static function get_woopay_minimum_session_data() {
-		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+		if ( ! extension_loaded( 'openssl' ) || ! function_exists( 'openssl_encrypt' ) ) {
 			return [];
 		}
 
