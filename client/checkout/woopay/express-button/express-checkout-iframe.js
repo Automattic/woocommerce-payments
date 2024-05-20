@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import {
 	getTargetElement,
 	validateEmail,
