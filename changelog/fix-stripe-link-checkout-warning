@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent Stripe Link from triggering the checkout fields warning

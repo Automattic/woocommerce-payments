@@ -408,7 +408,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		if ( is_product() ) {
 			return wc_get_product( $post->ID );
-		} elseif ( wc_post_content_has_shortcode( 'product_page' ) ) {
+		}
+
+		if ( wc_post_content_has_shortcode( 'product_page' ) ) {
 			// Get id from product_page shortcode.
 			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
 			if ( isset( $shortcode_match['id'] ) ) {

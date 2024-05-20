@@ -756,14 +756,20 @@ class WC_Payments_Admin {
 		$currency_data = [];
 
 		foreach ( $locale_info as $key => $value ) {
-			$currency_code         = $value['currency_code'] ?? '';
-			$currency_data[ $key ] = [
+			$currency_code             = $value['currency_code'] ?? '';
+			$default_locale_formatting = $value['locales']['default'] ?? [];
+			$currency_data[ $key ]     = [
 				'code'              => $currency_code,
 				'symbol'            => $value['short_symbol'] ?? $symbols[ $currency_code ] ?? '',
 				'symbolPosition'    => $value['currency_pos'] ?? '',
 				'thousandSeparator' => $value['thousand_sep'] ?? '',
 				'decimalSeparator'  => $value['decimal_sep'] ?? '',
 				'precision'         => $value['num_decimals'],
+				'defaultLocale'     => [
+					'symbolPosition'    => $default_locale_formatting['currency_pos'] ?? '',
+					'thousandSeparator' => $default_locale_formatting['thousand_sep'] ?? '',
+					'decimalSeparator'  => $default_locale_formatting['decimal_sep'] ?? '',
+				],
 			];
 		}
 

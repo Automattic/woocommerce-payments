@@ -45,6 +45,13 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 	private $woocommerce_bookings;
 
 	/**
+	 * WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -54,6 +61,7 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 		$this->mock_utils               = $this->createMock( Utils::class );
 		$this->mock_frontend_currencies = $this->createMock( FrontendCurrencies::class );
 		$this->woocommerce_bookings     = new WooCommerceBookings( $this->mock_multi_currency, $this->mock_utils, $this->mock_frontend_currencies );
+		$this->localization_service     = new WC_Payments_Localization_Service();
 	}
 
 	public function test_get_price_returns_empty_string() {
@@ -152,7 +160,7 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 			'price_format'       => '%1$s%2$s',
 		];
 
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $expected['currency'] ) );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, $expected['currency'] ) );
 		$this->mock_frontend_currencies->method( 'get_price_decimal_separator' )->willReturn( $expected['decimal_separator'] );
 		$this->mock_frontend_currencies->method( 'get_price_thousand_separator' )->willReturn( $expected['thousand_separator'] );
 		$this->mock_frontend_currencies->method( 'get_price_decimals' )->willReturn( $expected['decimals'] );
