@@ -11,6 +11,7 @@ class WooPayUserConnect extends WoopayConnect {
 		this.listeners = {
 			...this.listeners,
 			getIsUserLoggedInCallback: () => {},
+			getUserEmailCallback: () => {},
 		};
 	}
 
@@ -27,6 +28,18 @@ class WooPayUserConnect extends WoopayConnect {
 	}
 
 	/**
+	 * Retrieves the email of the logged in user.
+	 *
+	 * @return {Promise<string>} Resolves to the user's email if they're logged in, and an empty string otherwise.
+	 */
+	async getUserEmail() {
+		return await this.sendMessageAndListenWith(
+			{ action: 'getUserEmail' },
+			'getUserEmailCallback'
+		);
+	}
+
+	/**
 	 * Handles the callback from the WooPayConnectIframe.
 	 *
 	 * @param {Object} data The data from the WooPayConnectIframe.
@@ -37,6 +50,9 @@ class WooPayUserConnect extends WoopayConnect {
 		switch ( data.action ) {
 			case 'get_is_user_logged_in_success':
 				this.listeners.getIsUserLoggedInCallback( data.value );
+				break;
+			case 'get_user_email_success':
+				this.listeners.getUserEmailCallback( data.value );
 				break;
 		}
 	}

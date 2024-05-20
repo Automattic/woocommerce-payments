@@ -79,10 +79,19 @@ class WooPayDirectCheckout {
 	/**
 	 * Checks if the user is logged in.
 	 *
-	 * @return {Promise<*>} Resolves to true if the user is logged in.
+	 * @return {Promise<bool>} Resolves to true if the user is logged in.
 	 */
 	static async isUserLoggedIn() {
 		return this.getUserConnect().isUserLoggedIn();
+	}
+
+	/**
+	 * Retrieves the email of the logged in user.
+	 *
+	 * @return {Promise<string>} Resolves to the user's email if they're logged in, and an empty string otherwise.
+	 */
+	static async getUserEmail() {
+		return this.getUserConnect().getUserEmail();
 	}
 
 	/**
@@ -363,10 +372,12 @@ class WooPayDirectCheckout {
 	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay session response.
 	 */
 	static async getEncryptedSessionData() {
+		const email = await this.getUserEmail();
 		return request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+				...( email && { email } ),
 			}
 		);
 	}
