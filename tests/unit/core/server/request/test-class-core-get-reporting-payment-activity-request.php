@@ -50,13 +50,23 @@ class Get_Reporting_Payment_Activity_Test extends WCPAY_UnitTestCase {
 		$request->get_params();
 	}
 
-	public function test_exception_will_throw_if_date_is_invalid() {
+	public function test_exception_will_throw_if_date_start_is_invalid() {
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$this->expectExceptionMessage( 'abc is not a valid date' );
 
 		$request = new Get_Reporting_Payment_Activity( $this->mock_api_client, $this->mock_wc_payments_http_client, null );
 		$request->set_date_start( 'abc' );
 		$request->set_date_end( '2024-05-06T23:59:59' );
+		$request->set_timezone( 'America/Los_Angeles' );
+	}
+
+	public function test_exception_will_throw_if_date_end_is_invalid() {
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$this->expectExceptionMessage( 'abc is not a valid date' );
+
+		$request = new Get_Reporting_Payment_Activity( $this->mock_api_client, $this->mock_wc_payments_http_client, null );
+		$request->set_date_start( '2024-05-06T23:59:59' );
+		$request->set_date_end( 'abc' );
 		$request->set_timezone( 'America/Los_Angeles' );
 	}
 
