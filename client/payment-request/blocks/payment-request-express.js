@@ -9,7 +9,6 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
  * Internal dependencies
  */
 import { useInitialization } from './use-initialization';
-import { getPaymentRequestData } from '../utils';
 import { recordUserEvent } from 'tracks';
 import { useEffect, useState } from 'react';
 
@@ -28,6 +27,7 @@ const PaymentRequestExpressComponent = ( {
 	onClick,
 	onClose,
 	onPaymentRequestAvailable,
+	buttonAttributes,
 } ) => {
 	// TODO: Don't display custom button when result.requestType
 	// is `apple_pay` or `google_pay`.
@@ -44,13 +44,14 @@ const PaymentRequestExpressComponent = ( {
 		onClose,
 	} );
 
-	const { type, theme, height } = getPaymentRequestData( 'button' );
+	// const { type, theme, height } = getPaymentRequestData( 'button' );
+	const { label, darkMode, height } = buttonAttributes;
 
 	const paymentRequestButtonStyle = {
 		paymentRequestButton: {
-			type,
-			theme,
-			height: height + 'px',
+			type: label,
+			theme: darkMode ? 'light' : 'dark',
+			height,
 		},
 	};
 

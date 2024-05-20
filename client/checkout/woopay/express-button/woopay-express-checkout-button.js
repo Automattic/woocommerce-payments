@@ -38,6 +38,7 @@ export const WoopayExpressCheckoutButton = ( {
 	api,
 	isProductPage = false,
 	emailSelector = '#email',
+	buttonAttributes,
 } ) => {
 	const buttonWidthTypes = {
 		narrow: 'narrow',
@@ -46,14 +47,20 @@ export const WoopayExpressCheckoutButton = ( {
 	const onClickCallbackRef = useRef( null );
 	const buttonRef = useRef( null );
 	const isLoadingRef = useRef( false );
-	const { type: buttonType, height, size, theme, context } = buttonSettings;
+	const { context } = buttonSettings;
+	const {
+		label: buttonLabel,
+		height: buttonHeight,
+		darkMode,
+	} = buttonAttributes;
+	const theme = darkMode ? 'light' : 'dark';
 	const [ isLoading, setIsLoading ] = useState( false );
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
 	);
 
 	const buttonText =
-		ButtonTypeTextMap[ buttonType || 'default' ] ??
+		ButtonTypeTextMap[ buttonLabel || 'default' ] ??
 		ButtonTypeTextMap.default;
 
 	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
@@ -334,17 +341,16 @@ export const WoopayExpressCheckoutButton = ( {
 	return (
 		<button
 			ref={ buttonRef }
-			key={ `${ buttonType }-${ theme }-${ size }` }
+			key={ `${ buttonLabel }-${ theme }` }
 			aria-label={ buttonText }
 			onClick={ ( e ) => onClickCallbackRef.current( e ) }
 			className={ classNames( 'woopay-express-button', {
 				'is-loading': isLoading,
 			} ) }
-			data-type={ buttonType }
-			data-size={ size }
+			data-type={ buttonLabel }
 			data-theme={ theme }
 			data-width-type={ buttonWidthType }
-			style={ { height: `${ height }px` } }
+			style={ { height: `${ buttonHeight }` } }
 			disabled={ isLoading }
 		>
 			{ isLoading ? (
