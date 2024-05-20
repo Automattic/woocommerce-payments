@@ -8,7 +8,7 @@ import {
 	getPaymentRequestData,
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
-} from '../../payment-request/utils';
+} from 'utils/express-checkout';
 
 /**
  * Handles generic connections to the server and Stripe.
