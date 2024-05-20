@@ -16,7 +16,7 @@ import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from '@automattic/interpolate-components';
-import { getPaymentRequestData } from '../../payment-request/utils';
+import { getPaymentRequestData } from 'utils/express-checkout';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import {
 	usePaymentRequestButtonType,

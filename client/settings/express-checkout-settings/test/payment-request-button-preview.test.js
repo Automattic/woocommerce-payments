@@ -11,14 +11,14 @@ import { useStripe } from '@stripe/react-stripe-js';
  * Internal dependencies
  */
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
-import { shouldUseGooglePayBrand } from 'payment-request/utils';
+import { shouldUseGooglePayBrand } from 'utils/express-checkout';
 
 jest.mock( '@wordpress/a11y', () => ( {
 	...jest.requireActual( '@wordpress/a11y' ),
 	speak: jest.fn(),
 } ) );
 
-jest.mock( 'payment-request/utils', () => ( {
+jest.mock( 'utils/express-checkout', () => ( {
 	shouldUseGooglePayBrand: jest.fn(),
 } ) );
 
