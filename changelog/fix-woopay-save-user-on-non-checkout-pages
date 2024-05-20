@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: remove WooPay checkout pages scripts from non-checkout pages
