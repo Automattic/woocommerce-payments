@@ -372,6 +372,29 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Retrieves the user email from the current session.
+	 *
+	 * @param WP_User $user The user object.
+	 * @return string The user email.
+	 */
+	private static function get_user_email( $user ) {
+		if ( ! empty( $_POST['email'] ) ) {
+			return sanitize_email( wp_unslash( $_POST['email'] ) );
+		}
+
+		if ( ! empty( $_GET['email'] ) ) {
+			return sanitize_email( wp_unslash( $_GET['email'] ) );
+		}
+
+		// As a last resort, we try to get the email from the customer logged in the store.
+		if ( $user->ID > 0 ) {
+			return $user->user_email;
+		}
+
+		return '';
+	}
+
+	/**
 	 * Returns the initial session request data.
 	 *
 	 * @param int|null $order_id Pay-for-order order ID.
@@ -416,14 +439,13 @@ class WooPay_Session {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
-		$cart_data = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
+		$cart_data     = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
 		$checkout_data = self::get_checkout_data( $woopay_request );
+		$email         = self::get_user_email( $user );
 
 		if ( $woopay_request ) {
 			$order_id = $checkout_data['order_id'] ?? null;
 		}
-
-		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
