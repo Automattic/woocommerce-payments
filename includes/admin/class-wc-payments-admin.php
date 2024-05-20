@@ -588,7 +588,7 @@ class WC_Payments_Admin {
 		WC_Payments_Utils::register_style(
 			'WCPAY_PLUGINS_PAGE',
 			plugins_url( 'dist/plugins-page.css', WCPAY_PLUGIN_FILE ),
-			[ 'wc-components' ],
+			[ 'wp-components', 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/plugins-page.css' ),
 			'all'
 		);
