@@ -21,7 +21,7 @@ class Get_Reporting_Payment_Activity_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_api_client;
 	/**
-	 * Mock WC_Payments_API_Client.
+	 * Mock WC_Payments_Http_Interface.
 	 *
 	 * @var WC_Payments_Http_Interface|MockObject
 	 */
