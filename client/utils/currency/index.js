@@ -69,6 +69,48 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
 /* eslint-enable valid-jsdoc */
 
 /**
+ * Gets wc-admin currency for the given currency code. Unlike `getCurrency`, this function
+ * will return the currency based only on the currency itself and locale. This means that the
+ * currency object will not be modified based on the store's country settings,
+ * or on another given currency.
+ *
+ * @param {string} currencyCode Currency code
+ * @return {Object} Currency object.
+ */
+export const getCurrencyByLocale = ( currencyCode ) => {
+	const code = currencyCode.toUpperCase();
+	const {
+		currencyData,
+		connect: { country = 'US' },
+	} = wcpaySettings;
+
+	// If store's country currency matches the provided currency code, return store's country currency.
+	if ( currencyData[ country ]?.code === code ) {
+		return Currency( currencyData[ country ] );
+	}
+
+	const currency = find( currencyData, { code } );
+
+	if ( currency ) {
+		const { defaultLocale = {} } = currency;
+
+		if (
+			defaultLocale.hasOwnProperty( 'decimalSeparator' ) &&
+			defaultLocale.hasOwnProperty( 'thousandSeparator' ) &&
+			defaultLocale.hasOwnProperty( 'symbolPosition' )
+		) {
+			currency.decimalSeparator = defaultLocale.decimalSeparator;
+			currency.thousandSeparator = defaultLocale.thousandSeparator;
+			currency.symbolPosition = defaultLocale.symbolPosition;
+		}
+
+		return Currency( currency );
+	}
+
+	return null;
+};
+
+/**
  * Determines if the given currency is zero decimal.
  *
  * @param {string} currencyCode Currency code
@@ -105,13 +147,17 @@ export const formatExportAmount = ( amount, currencyCode ) => {
  * @param {number} amount       Amount
  * @param {string} currencyCode Currency code
  * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
+ * @param {boolean} useLocaleFormatting If `baseCurrencyCode` isn't provided, the currency will be
+ * formatted based on the store's country currency. This parameter allows to override this behavior
+ * and get the default formatting.
  *
  * @return {string} formatted currency representation
  */
 export const formatCurrency = (
 	amount,
 	currencyCode = 'USD',
-	baseCurrencyCode = null
+	baseCurrencyCode = null,
+	useLocaleFormatting = false
 ) => {
 	// Normalize amount with respect to zer decimal currencies and provided data formats
 	const isZeroDecimal = isZeroDecimalCurrency( currencyCode );
@@ -122,7 +168,9 @@ export const formatCurrency = (
 	const isNegative = amount < 0;
 	const positiveAmount = isNegative ? -1 * amount : amount;
 	const prefix = isNegative ? '-' : '';
-	const currency = getCurrency( currencyCode, baseCurrencyCode );
+	const currency = useLocaleFormatting
+		? getCurrencyByLocale( currencyCode )
+		: getCurrency( currencyCode, baseCurrencyCode );
 
 	if ( currency === null ) {
 		return (

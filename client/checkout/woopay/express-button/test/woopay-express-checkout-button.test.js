@@ -36,7 +36,6 @@ jest.mock( 'tracks', () => ( {
 	events: {
 		WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
 		WOOPAY_OFFERED: 'checkout_woopay_save_my_info_offered',
-		WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
 		WOOPAY_SKIPPED: 'woopay_skipped',
 		WOOPAY_BUTTON_LOAD: 'woopay_button_load',
 		WOOPAY_BUTTON_CLICK: 'woopay_button_click',

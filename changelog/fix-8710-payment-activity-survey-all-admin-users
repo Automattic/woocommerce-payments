@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Part of Payment Activity Card behind feature flag. Allow non-accountholder users to submit the feedback survey.
-
-
