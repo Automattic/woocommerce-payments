@@ -1741,7 +1741,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
+							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
 						// Include the payment method ID so the Blocks integration can save cards.
@@ -1966,7 +1966,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
+							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						);
 						wp_safe_redirect( $redirect_url );
@@ -1978,7 +1978,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
 			$is_order_id_mismatched_exception =
-				is_a( $e, Process_Payment_Exception::class )
+				$e instanceof Process_Payment_Exception
 				&& self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE === $e->get_error_code();
 
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
@@ -3756,10 +3756,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$setup_intent_output = [
 				'id'            => $setup_intent->get_id(),
 				'status'        => $setup_intent->get_status(),
-				'client_secret' => WC_Payments_Utils::encrypt_client_secret(
-					$this->account->get_stripe_account_id(),
-					$setup_intent->get_client_secret()
-				),
+				'client_secret' => $setup_intent->get_client_secret(),
 			];
 
 			wp_send_json_success( $setup_intent_output, 200 );
@@ -4467,8 +4464,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$billing_data = $this->order_service->get_billing_data_from_order( $order );
-		if ( $check_if_usable( $billing_data['address'] ) ) {
-			$request->set_shipping( $billing_data );
+		// Afterpay fails if we send more parameters than expected in the shipping address.
+		// This ensures that we only send the name and address fields, as in get_shipping_data_from_order.
+		$shipping_data = [
+			'name'    => $billing_data['name'] ?? '',
+			'address' => $billing_data['address'] ?? [],
+		];
+		if ( $check_if_usable( $shipping_data['address'] ) ) {
+			$request->set_shipping( $shipping_data );
 			return;
 		}
 

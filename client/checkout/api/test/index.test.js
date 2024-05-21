@@ -3,13 +3,13 @@
  */
 import WCPayAPI from '..';
 import request from 'wcpay/checkout/utils/request';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import { getConfig } from 'wcpay/utils/checkout';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
 	jest.fn( () => Promise.resolve( {} ).finally( () => {} ) )
 );
-jest.mock( 'wcpay/payment-request/utils', () => ( {
+jest.mock( 'wcpay/utils/express-checkout', () => ( {
 	buildAjaxURL: jest.fn(),
 } ) );
 jest.mock( 'wcpay/utils/checkout', () => ( {

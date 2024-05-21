@@ -20,7 +20,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 * @return void
 	 */
 	public function init() {
-		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
+		add_action( 'wp_footer', [ $this, 'scripts' ] );
 		add_filter( 'woocommerce_create_order', [ $this, 'maybe_use_store_api_draft_order_id' ] );
 	}
 
@@ -67,8 +67,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 * @return void
 	 */
 	public function scripts() {
-		// Only enqueue the script on the cart page, for now.
-		if ( ! $this->is_cart_page() ) {
+		if ( ! $this->should_enqueue_scripts() ) {
 			return;
 		}
 
@@ -89,11 +88,25 @@ class WC_Payments_WooPay_Direct_Checkout {
 	}
 
 	/**
+	 * Check if the direct checkout scripts should be enqueued on the page.
+	 *
+	 * Scripts should be enqueued if:
+	 * - The current page is the cart page.
+	 * - The current page has a cart block.
+	 * - The current page has the blocks mini cart widget, i.e 'woocommerce_blocks_cart_enqueue_data' has been fired.
+	 *
+	 * @return bool True if the scripts should be enqueued, false otherwise.
+	 */
+	private function should_enqueue_scripts(): bool {
+		return $this->is_cart_page() || did_action( 'woocommerce_blocks_cart_enqueue_data' ) > 0;
+	}
+
+	/**
 	 * Check if the current page is the cart page.
 	 *
 	 * @return bool True if the current page is the cart page, false otherwise.
 	 */
-	public function is_cart_page(): bool {
+	private function is_cart_page(): bool {
 		return is_cart() || has_block( 'woocommerce/cart' );
 	}
 
@@ -102,7 +115,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 *
 	 * @return bool True if the current page is the product page, false otherwise.
 	 */
-	public function is_product_page() {
+	private function is_product_page() {
 		return is_product() || wc_post_content_has_shortcode( 'product_page' );
 	}
 }

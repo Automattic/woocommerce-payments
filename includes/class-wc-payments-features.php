@@ -17,12 +17,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments_Features {
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const STRIPE_BILLING_FLAG_NAME          = '_wcpay_feature_stripe_billing';
+	const STRIPE_ECE_FLAG_NAME              = '_wcpay_feature_stripe_ece';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME = '_wcpay_feature_woopay_first_party_auth';
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME  = '_wcpay_feature_woopay_direct_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
 	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
+	const TOKENIZED_CART_PRB_FLAG_NAME      = '_wcpay_feature_tokenized_cart_prb';
 	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME = '_wcpay_feature_payment_overview_widget';
 
 	/**
@@ -34,6 +36,15 @@ class WC_Payments_Features {
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 
 		return is_array( $account ) && ( $account['payments_enabled'] ?? false );
+	}
+
+	/**
+	 * Checks whether the "tokenized cart" feature for PRBs is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_tokenized_cart_prb_enabled(): bool {
+		return '1' === get_option( self::TOKENIZED_CART_PRB_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -65,30 +76,6 @@ class WC_Payments_Features {
 	 */
 	public static function is_customer_multi_currency_enabled() {
 		return '1' === get_option( '_wcpay_feature_customer_multi_currency', '1' );
-	}
-
-	/**
-	 * Returns if the encryption libraries are loaded and the encrypt method exists.
-	 *
-	 * @return bool
-	 */
-	public static function is_client_secret_encryption_eligible() {
-		return extension_loaded( 'openssl' ) && function_exists( 'openssl_encrypt' );
-	}
-
-	/**
-	 * Checks whether the client secret encryption feature is enabled.
-	 *
-	 * @return  bool
-	 */
-	public static function is_client_secret_encryption_enabled() {
-		$enabled = '1' === get_option( '_wcpay_feature_client_secret_encryption', '0' );
-		// Check if it can be enabled when it's enabled, it needs openssl to operate.
-		if ( $enabled && ! self::is_client_secret_encryption_eligible() ) {
-			update_option( '_wcpay_feature_client_secret_encryption', '0' );
-			$enabled = false;
-		}
-		return $enabled;
 	}
 
 	/**
@@ -351,6 +338,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Stripe Express Checkout Element feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_ece_enabled(): bool {
+		return '1' === get_option( self::STRIPE_ECE_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Checks whether Dispute issuer evidence feature should be enabled. Disabled by default.
 	 *
 	 * @return bool
@@ -379,7 +375,6 @@ class WC_Payments_Features {
 				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
 				'woopay'                         => self::is_woopay_eligible(),
 				'documents'                      => self::is_documents_section_enabled(),
-				'clientSecretEncryption'         => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
