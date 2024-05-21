@@ -19,6 +19,13 @@ class WCPay_Multi_Currency_User_Settings_Tests extends WCPAY_UnitTestCase {
 	private $mock_multi_currency;
 
 	/**
+	 * WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * WCPay\MultiCurrency\UserSettings instance.
 	 *
 	 * @var WCPay\MultiCurrency\UserSettings
@@ -31,14 +38,15 @@ class WCPay_Multi_Currency_User_Settings_Tests extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->mock_multi_currency  = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->localization_service = new WC_Payments_Localization_Service();
 		$this->mock_multi_currency
 			->method( 'get_enabled_currencies' )
 			->willReturn(
 				[
-					new Currency( 'USD' ),
-					new Currency( 'GBP' ),
-					new Currency( 'EUR' ),
+					new Currency( $this->localization_service, 'USD' ),
+					new Currency( $this->localization_service, 'GBP' ),
+					new Currency( $this->localization_service, 'EUR' ),
 				]
 			);
 
@@ -65,7 +73,7 @@ class WCPay_Multi_Currency_User_Settings_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_add_presentment_currency_switch_selects_selected_currency() {
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'EUR' ) );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'EUR' ) );
 		$this->user_settings->add_presentment_currency_switch();
 		$this->expectOutputRegex( '/<option value="GBP">&pound; GBP.+<option value="EUR" selected>&euro; EUR/s' );
 	}

@@ -67,23 +67,31 @@ class Currency implements \JsonSerializable {
 	private $last_updated;
 
 	/**
+	 * Instance of WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param string   $code Three letter currency code.
-	 * @param float    $rate The conversion rate.
-	 * @param int|null $last_updated The time this currency was last updated.
+	 * @param WC_Payments_Localization_Service $localization_service Localization service instance.
+	 * @param string                           $code Three letter currency code.
+	 * @param float                            $rate The conversion rate.
+	 * @param int|null                         $last_updated The time this currency was last updated.
 	 */
-	public function __construct( string $code = '', float $rate = 1.0, $last_updated = null ) {
-		$this->code = $code;
-		$this->rate = $rate;
+	public function __construct( WC_Payments_Localization_Service $localization_service, $code = '', float $rate = 1.0, $last_updated = null ) {
+		$this->localization_service = $localization_service;
+		$this->code                 = $code;
+		$this->rate                 = $rate;
 
 		if ( get_woocommerce_currency() === $code ) {
 			$this->is_default = true;
 		}
 
-		if ( in_array( strtolower( $code ), WC_Payments_Utils::zero_decimal_currencies(), true ) ) {
-			$this->is_zero_decimal = true;
-		}
+		// Set zero-decimal style based on WC locale information.
+		$this->is_zero_decimal = 0 === $this->localization_service->get_currency_format( $code )['num_decimals'];
 
 		if ( ! is_null( $last_updated ) ) {
 			$this->last_updated = $last_updated;
@@ -189,8 +197,7 @@ class Currency implements \JsonSerializable {
 	 * @return  string  Currency position (left/right).
 	 */
 	public function get_symbol_position(): string {
-		$localization_service = new WC_Payments_Localization_Service();
-		return $localization_service->get_currency_format( $this->code )['currency_pos'];
+		return $this->localization_service->get_currency_format( $this->code )['currency_pos'];
 	}
 
 	/**

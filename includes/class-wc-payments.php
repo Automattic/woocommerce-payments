@@ -411,6 +411,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
@@ -489,7 +490,7 @@ class WC_Payments {
 		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
 		self::$session_service                      = new WC_Payments_Session_Service( self::$api_client );
 		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service, self::$session_service );
-		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache, self::$session_service );
+		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache, self::$session_service, self::$order_service );
 		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account, self::$session_service, self::$database_cache );
@@ -992,7 +993,7 @@ class WC_Payments {
 		$conn_tokens_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-orders-controller.php';
-		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::get_gateway(), self::$customer_service, self::$order_service, self::$token_service );
+		$orders_controller = new WC_REST_Payments_Orders_Controller( self::$api_client, self::get_gateway(), self::$customer_service, self::$order_service );
 		$orders_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-fraud-outcomes-controller.php';
@@ -1326,6 +1327,26 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the token service instance.
+	 *
+	 * @return WC_Payments_Token_Service
+	 */
+	public static function get_token_service(): WC_Payments_Token_Service {
+		return self::$token_service;
+	}
+
+	/**
+	 * Sets the token service instance. This is needed only for tests.
+	 *
+	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
+	 *
+	 * @return void
+	 */
+	public static function set_token_service( WC_Payments_Token_Service $token_service ) {
+		self::$token_service = $token_service;
+	}
+
+	/**
 	 * Sets the customer service instance. This is needed only for tests.
 	 *
 	 * @param WC_Payments_Customer_Service $customer_service_class Instance of WC_Payments_Customer_Service.
@@ -1597,7 +1618,8 @@ class WC_Payments {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
 			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), self::get_express_checkout_helper() );
 			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, self::get_express_checkout_helper() );
-			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, self::get_express_checkout_helper() );
+			$express_checkout_element_button_handler = new WC_Payments_Express_Checkout_Button_Handler( self::$account, self::get_gateway(), self::get_express_checkout_helper() );
+			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, $express_checkout_element_button_handler, self::get_express_checkout_helper() );
 			$express_checkout_button_display_handler->init();
 		}
 	}

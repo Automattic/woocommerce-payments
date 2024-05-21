@@ -891,30 +891,39 @@ class WC_Payments_Order_Service {
 
 	/**
 	 * Create the billing data array to send to Stripe when making a purchase, based on order's billing data.
+	 * It only returns the fields that are present in the billing section of the checkout.
 	 *
 	 * @param WC_Order $order The order that is being paid for.
 	 * @return array          The shipping data to send to Stripe.
 	 */
 	public function get_billing_data_from_order( WC_Order $order ): array {
-		return [
-			'name'    => implode(
-				' ',
-				array_filter(
-					[
-						$order->get_billing_first_name(),
-						$order->get_billing_last_name(),
-					]
-				)
-			),
-			'address' => [
-				'line1'       => $order->get_billing_address_1(),
-				'line2'       => $order->get_billing_address_2(),
-				'postal_code' => $order->get_billing_postcode(),
-				'city'        => $order->get_billing_city(),
-				'state'       => $order->get_billing_state(),
-				'country'     => $order->get_billing_country(),
-			],
+		$billing_fields       = array_keys( WC()->countries->get_address_fields( $order->get_billing_country() ) );
+		$address_field_to_key = [
+			'billing_city'      => 'city',
+			'billing_country'   => 'country',
+			'billing_address_1' => 'line1',
+			'billing_address_2' => 'line2',
+			'billing_postcode'  => 'postal_code',
+			'billing_state'     => 'state',
 		];
+		$field_to_key         = [
+			'billing_email' => 'email',
+			'billing_phone' => 'phone',
+		];
+		$billing_details      = [ 'address' => [] ];
+		foreach ( $billing_fields as $field ) {
+			if ( isset( $address_field_to_key[ $field ] ) ) {
+				$billing_details['address'][ $address_field_to_key[ $field ] ] = $order->{"get_{$field}"}();
+			} elseif ( isset( $field_to_key[ $field ] ) ) {
+				$billing_details[ $field_to_key[ $field ] ] = $order->{"get_{$field}"}();
+			}
+		}
+
+		if ( in_array( 'billing_first_name', $billing_fields, true ) && in_array( 'billing_last_name', $billing_fields, true ) ) {
+			$billing_details['name'] = trim( $order->get_formatted_billing_full_name() );
+		}
+
+		return $billing_details;
 	}
 
 	/**

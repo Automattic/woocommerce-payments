@@ -54,6 +54,13 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_session_service;
 
 	/**
+	 * Mock WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service|MockObject
+	 */
+	private $mock_order_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -64,7 +71,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_db_cache        = $this->createMock( Database_Cache::class );
 		$this->mock_session_service = $this->createMock( WC_Payments_Session_Service::class );
 
-		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_cache, $this->mock_session_service );
+		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_cache, $this->mock_session_service, WC_Payments::get_order_service() );
 	}
 
 	/**
@@ -487,12 +494,48 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 							'city'        => 'WooCity',
 							'country'     => Country_Code::UNITED_STATES,
 							'line1'       => 'WooAddress',
+							'line2'       => '',
 							'postal_code' => '12345',
 							'state'       => 'NY',
 						],
 						'email'   => 'admin@example.org',
 						'name'    => 'Jeroen Sormani',
 						'phone'   => '555-32123',
+					],
+				]
+			);
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->customer_service->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
+	}
+
+	public function test_update_payment_method_with_billing_details_from_checkout_fields() {
+		add_filter(
+			'woocommerce_billing_fields',
+			function ( $fields ) {
+				unset( $fields['billing_company'] );
+				unset( $fields['billing_country'] );
+				unset( $fields['billing_address_1'] );
+				unset( $fields['billing_address_2'] );
+				unset( $fields['billing_city'] );
+				unset( $fields['billing_state'] );
+				unset( $fields['billing_phone'] );
+				return $fields;
+			}
+		);
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_payment_method' )
+			->with(
+				'pm_mock',
+				[
+					'billing_details' => [
+						'address' => [
+							'postal_code' => '12345',
+						],
+						'email'   => 'admin@example.org',
+						'name'    => 'Jeroen Sormani',
 					],
 				]
 			);
