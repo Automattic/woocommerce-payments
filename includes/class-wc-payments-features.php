@@ -213,7 +213,9 @@ class WC_Payments_Features {
 
 		$is_account_rejected = WC_Payments::get_account_service()->is_account_rejected();
 
-		return is_array( $account ) && ( $account['platform_checkout_eligible'] && ! $is_account_rejected ?? false );
+		$is_account_under_review = WC_Payments::get_account_service()->is_account_under_review();
+
+		return is_array( $account ) && ( $account['platform_checkout_eligible'] && ! $is_account_rejected && ! $is_account_under_review ?? false );
 	}
 
 	/**
