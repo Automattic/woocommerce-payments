@@ -168,6 +168,9 @@ declare global {
 					woocommerce_default_country: string;
 				};
 			};
+			siteVisibilitySettings: {
+				woocommerce_share_key: string;
+			};
 		};
 		adminUrl: string;
 		countries: Record< string, string >;

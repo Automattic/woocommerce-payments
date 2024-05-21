@@ -47,6 +47,19 @@ const OnboardingStepper = () => {
 	);
 };
 
+const shareKey =
+	wcSettings?.admin?.siteVisibilitySettings?.woocommerce_share_key || '';
+const comingSoonShareKey = shareKey ? '/?woo-share=' + shareKey : '';
+const initialData = {
+	business_name: wcSettings?.siteTitle,
+	mcc: getMccFromIndustry(),
+	url:
+		location.hostname === 'localhost'
+			? 'https://wcpay.test'
+			: wcSettings?.homeUrl + comingSoonShareKey,
+	country: wcpaySettings?.connect?.country,
+};
+
 const OnboardingPage: React.FC = () => {
 	useEffect( () => {
 		const urlParams = new URLSearchParams( window.location.search );
@@ -66,21 +79,6 @@ const OnboardingPage: React.FC = () => {
 			document.body.classList.remove( 'wcpay-onboarding__body' );
 		};
 	}, [] );
-
-	const { shareKey } = useLaunchYourStoreSettings();
-	// const comingSoonShareKey = shareKey ? '/?woo-share=' + shareKey : '';
-	const comingSoonShareKey = '/does-this-even-work';
-	const initialData = {
-		business_name: wcSettings?.siteTitle,
-		mcc: getMccFromIndustry(),
-		url:
-			location.hostname === 'localhost'
-				? 'https://wcpay.test'
-				: wcSettings?.homeUrl + comingSoonShareKey,
-		country: wcpaySettings?.connect?.country,
-	};
-
-	console.log( 'url: ' + wcSettings?.homeUrl + comingSoonShareKey );
 
 	return (
 		<Page className="wcpay-onboarding-prototype">
