@@ -26,8 +26,7 @@ import { trackStepCompleted } from './tracking';
 import strings from './strings';
 
 export const OnboardingForm: React.FC = ( { children } ) => {
-	const { data, errors, touched, setTouched } = useOnboardingContext();
-	console.log( data );
+	const { errors, touched, setTouched } = useOnboardingContext();
 	const { currentStep, nextStep } = useStepperContext();
 
 	const handleContinue = () => {

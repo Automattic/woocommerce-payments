@@ -17,7 +17,6 @@ import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
-import { useLaunchYourStoreSettings } from 'wcpay/data';
 import './style.scss';
 
 const OnboardingStepper = () => {
@@ -49,14 +48,14 @@ const OnboardingStepper = () => {
 
 const shareKey =
 	wcSettings?.admin?.siteVisibilitySettings?.woocommerce_share_key || '';
-const comingSoonShareKey = shareKey ? '/?woo-share=' + shareKey : '';
+const shareKeyQueryParameter = shareKey ? '/?woo-share=' + shareKey : '';
 const initialData = {
 	business_name: wcSettings?.siteTitle,
 	mcc: getMccFromIndustry(),
 	url:
 		location.hostname === 'localhost'
 			? 'https://wcpay.test'
-			: wcSettings?.homeUrl + comingSoonShareKey,
+			: wcSettings?.homeUrl + shareKeyQueryParameter,
 	country: wcpaySettings?.connect?.country,
 };
 
