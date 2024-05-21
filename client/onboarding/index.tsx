@@ -46,16 +46,26 @@ const OnboardingStepper = () => {
 	);
 };
 
-const shareKey =
-	wcSettings?.admin?.siteVisibilitySettings?.woocommerce_share_key || '';
-const shareKeyQueryParameter = shareKey ? '/?woo-share=' + shareKey : '';
+const getComingSoonShareKey = () => {
+	const {
+		woocommerce_share_key: shareKey,
+		woocommerce_coming_soon: comingSoon,
+	} = wcSettings?.admin?.siteVisibilitySettings || {};
+
+	if ( comingSoon !== 'yes' ) {
+		return '';
+	}
+
+	return shareKey ? '/?woo-share=' + shareKey : '';
+};
+
 const initialData = {
 	business_name: wcSettings?.siteTitle,
 	mcc: getMccFromIndustry(),
 	url:
 		location.hostname === 'localhost'
 			? 'https://wcpay.test'
-			: wcSettings?.homeUrl + shareKeyQueryParameter,
+			: wcSettings?.homeUrl + getComingSoonShareKey(),
 	country: wcpaySettings?.connect?.country,
 };
 

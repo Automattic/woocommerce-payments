@@ -170,6 +170,7 @@ declare global {
 			};
 			siteVisibilitySettings: {
 				woocommerce_share_key: string;
+				woocommerce_coming_soon: string;
 			};
 		};
 		adminUrl: string;
