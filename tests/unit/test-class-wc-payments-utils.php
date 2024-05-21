@@ -604,4 +604,21 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		// Remove the transients.
 		$this->delete_appearance_theme_transients( $theme_transients );
 	}
+
+	public function test_is_store_api_request_with_store_api_request() {
+		$_SERVER['REQUEST_URI'] = '/index.php';
+		$_REQUEST['rest_route'] = '/wc/store/v1/checkout';
+
+		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
+
+		unset( $_REQUEST['rest_route'] );
+	}
+
+	public function test_is_store_api_request_with_another_request() {
+		$_SERVER['REQUEST_URI'] = '/index.php';
+
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+
+		unset( $_REQUEST['rest_route'] );
+	}
 }
