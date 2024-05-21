@@ -22,6 +22,8 @@ interface Props {
 const LoadingStep: React.FC< Props > = () => {
 	const { data } = useOnboardingContext();
 
+	console.log( data );
+
 	const { removeTrackListener } = useTrackAbandoned();
 
 	const isEligibleForPo = async () => {
