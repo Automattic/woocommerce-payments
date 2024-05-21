@@ -68,9 +68,7 @@ const OnboardingPage: React.FC = () => {
 	}, [] );
 
 	const { shareKey } = useLaunchYourStoreSettings();
-	const comingSoonShareKey = shareKey
-		? shareKey + '/?woo-share=' + shareKey
-		: '';
+	const comingSoonShareKey = shareKey ? '/?woo-share=' + shareKey : '';
 	const initialData = {
 		business_name: wcSettings?.siteTitle,
 		mcc: getMccFromIndustry(),
@@ -81,7 +79,7 @@ const OnboardingPage: React.FC = () => {
 		country: wcpaySettings?.connect?.country,
 	};
 
-	console.log( initialData );
+	console.log( 'url: ' + wcSettings?.homeUrl + comingSoonShareKey );
 
 	return (
 		<Page className="wcpay-onboarding-prototype">
