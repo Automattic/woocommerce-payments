@@ -94,6 +94,8 @@ describe( 'Klarna checkout', () => {
 
 		await uiUnblocked();
 
+		await page.waitFor( 3000 );
+
 		await page.waitForXPath( checkoutPaymentMethodSelector );
 		const [ paymentMethodLabel ] = await page.$x(
 			checkoutPaymentMethodSelector
@@ -104,8 +106,6 @@ describe( 'Klarna checkout', () => {
 		await paymentMethodLabel.click();
 
 		await uiUnblocked();
-
-		await page.screenshot( { path: 'screenshots/3.png' } );
 
 		await page.waitFor( 2000 );
 
