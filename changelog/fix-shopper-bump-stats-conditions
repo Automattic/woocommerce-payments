@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix a bug in Tracks where shopper events are not fired properly.
