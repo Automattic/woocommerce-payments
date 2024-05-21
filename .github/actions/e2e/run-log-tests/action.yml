@@ -25,12 +25,12 @@ runs:
         fi
 
     # Retry failed E2E tests
-    # - name: Re-try Failed E2E Files
-    #   if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
-    #   shell: bash
-    #   # Filter failed E2E files from the result JSON file, and re-run them.
-    #   run: |
-    #     cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e -- --NODE_ENV="$NODE_ENV"
+    - name: Re-try Failed E2E Files
+      if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
+      shell: bash
+      # Filter failed E2E files from the result JSON file, and re-run them.
+      run: |
+        cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e -- --NODE_ENV="$NODE_ENV"
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs
