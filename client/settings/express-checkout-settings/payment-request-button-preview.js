@@ -13,7 +13,7 @@ import {
 /**
  * Internal dependencies
  */
-import { shouldUseGooglePayBrand } from 'payment-request/utils';
+import { shouldUseGooglePayBrand } from 'utils/express-checkout';
 import InlineNotice from 'components/inline-notice';
 import { WoopayExpressCheckoutButton } from 'wcpay/checkout/woopay/express-button/woopay-express-checkout-button';
 import {
