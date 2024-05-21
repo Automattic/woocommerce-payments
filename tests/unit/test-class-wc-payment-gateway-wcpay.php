@@ -2562,29 +2562,27 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_for_order_rejects_with_order_id_mismatch() {
 		$order                = WC_Helper_Order::create_order();
-		$woopay_intent_id     = 'pi_mock';
-		$intent_meta_order_id = 'intent_mock';
-
-		$pi      = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
-		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
-
-		$payment_intent = WC_Helper_Intention::create_intention(
+		$intent_meta_order_id = 0;
+		$woopay_intent_id     = 'woopay_invalid_intent_id_mock';
+		$payment_intent       = WC_Helper_Intention::create_intention(
 			[
-				'status' => 'success',
+				'status'   => 'success',
+				'metadata' => [ 'order_id' => (string) $intent_meta_order_id ],
 			]
 		);
 
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->will( $this->returnValue( $payment_intent ) );
+		$_POST['platform-checkout-intent'] = $woopay_intent_id;
 
-		try {
-			$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
-		} catch ( Exception $e ) {
-			$this->assertEquals( 'Exception', get_class( $e ) );
-			$this->assertEquals( "We're not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: " . $intent_meta_order_id . ', order_id: ' . $order->get_id(), $e->getMessage() );
-			$this->assertEquals( 'WCPay\Exceptions\Order_ID_Mismatch_Exception', get_class( $e->getPrevious() ) );
-		}
+		$payment_information = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $woopay_intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->expectException( 'WCPay\Exceptions\Order_ID_Mismatch_Exception' );
+		$this->expectExceptionMessage( 'We&#039;re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: ' . $intent_meta_order_id . ', order_id: ' . $order->get_id() );
+		$this->card_gateway->process_payment_for_order( WC()->cart, $payment_information );
 	}
 
 	public function test_set_mandate_data_to_payment_intent_if_not_required() {
