@@ -1,4 +1,4 @@
-/* global wcpayConfig */
+/* global wcpayConfig, wcpayPaymentRequestParams */
 
 /**
  * Internal dependencies
