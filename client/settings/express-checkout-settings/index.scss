@@ -328,9 +328,11 @@
 			}
 		}
 
-		&[data-theme='light'],
-		&[data-theme='light-outline'] {
+		&[data-theme='light'] {
 			background: #2b2b2b;
+		}
+		&[data-theme='light-outline'] {
+			background: #f0f0f0;
 		}
 	}
 }
