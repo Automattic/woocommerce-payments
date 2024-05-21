@@ -4,13 +4,15 @@
 import React from 'react';
 import { CardHeader, Flex, FlexItem } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
+import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies
  */
-import { SelectField } from 'components/form/fields';
 import { useAllDepositsOverviews } from 'data';
 import { useSelectedCurrency } from 'overview/hooks';
+import CustomSelectControl from 'components/custom-select-control';
+import { getCurrency } from 'utils/currency';
 import { useCurrentWpUser } from './hooks';
 import './style.scss';
 
@@ -69,6 +71,30 @@ const getGreeting = ( name?: string, date: Date = new Date() ): string => {
 };
 
 /**
+ * Returns an select option object for a currency select control.
+ */
+const getCurrencyOption = (
+	currency: string
+): {
+	name: string;
+	key: string;
+} => {
+	const { code, symbol } = getCurrency( currency )?.getCurrencyConfig() || {};
+	if ( ! code || ! symbol ) {
+		return {
+			/** If no currency config is found, the currency code is used as the name, e.g. `EUR` */
+			name: currency.toUpperCase(),
+			key: currency,
+		};
+	}
+	return {
+		/** A rendered name of the currency with symbol, e.g. `EUR €`. */
+		name: `${ code } ${ decodeEntities( symbol || '' ) }`,
+		key: currency,
+	};
+};
+
+/**
  * A currency select control used in the welcome card header.
  */
 const CurrencySelect: React.FC< {
@@ -76,13 +102,10 @@ const CurrencySelect: React.FC< {
 } > = ( { currencies } ) => {
 	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
 
-	const currencyOptions = currencies.map( ( currency ) => ( {
-		name: currency.toUpperCase(),
-		key: currency,
-	} ) );
+	const currencyOptions = currencies.map( getCurrencyOption );
 
 	return (
-		<SelectField
+		<CustomSelectControl
 			label="Currency"
 			value={ currencyOptions.find(
 				( option ) => option.key === selectedCurrency
