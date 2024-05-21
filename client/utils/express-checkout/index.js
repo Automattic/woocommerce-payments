@@ -1,12 +1,12 @@
 /* global wcpayPaymentRequestParams, wcpayExpressCheckoutParams */
 
 /**
- * Retrieves payment request data from global variable.
+ * Retrieves express checkout config from global variable.
  *
  * @param {string} key The object property key.
  * @return {mixed} Value of the object prop or null.
  */
-export const getPaymentRequestData = ( key ) => {
+export const getExpressCheckoutConfig = ( key ) => {
 	if (
 		typeof wcpayExpressCheckoutParams === 'object' &&
 		wcpayExpressCheckoutParams.hasOwnProperty( key )
@@ -23,15 +23,32 @@ export const getPaymentRequestData = ( key ) => {
 };
 
 /**
+ * Get WC AJAX endpoint URL for express checkout endpoints.
+ *
+ * @param {string} endpoint Endpoint.
+ * @return {string} URL with interpolated endpoint.
+ */
+export const getExpressCheckoutAjaxURL = ( endpoint ) =>
+	getExpressCheckoutConfig( 'wc_ajax_url' )
+		.toString()
+		.replace( '%%endpoint%%', 'wcpay_' + endpoint );
+
+/**
+ * Retrieves payment request data from global variable.
+ *
+ * @param {string} key The object property key.
+ * @return {mixed} Value of the object prop or null.
+ */
+export const getPaymentRequestData = ( key ) => getExpressCheckoutConfig( key );
+
+/**
  * Get WC AJAX endpoint URL.
  *
  * @param {string} endpoint Endpoint.
  * @return {string} URL with interpolated endpoint.
  */
 export const getPaymentRequestAjaxURL = ( endpoint ) =>
-	getPaymentRequestData( 'wc_ajax_url' )
-		.toString()
-		.replace( '%%endpoint%%', 'wcpay_' + endpoint );
+	getExpressCheckoutAjaxURL( endpoint );
 
 /**
  * Construct WC AJAX endpoint URL.
