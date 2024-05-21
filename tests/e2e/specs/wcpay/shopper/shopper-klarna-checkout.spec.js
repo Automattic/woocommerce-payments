@@ -128,21 +128,21 @@ describe( 'Klarna checkout', () => {
 		};
 
 		console.log( '7' );
-		const klarnaIframe = await getNewKlarnaIframe();
+		let klarnaIframe = await getNewKlarnaIframe();
 
 		// await page.screenshot( { path: '5.png' } );
 
 		console.log( '8' );
 
-		// const frameNavigationHandler = async ( frame ) => {
-		// 	const newKlarnaIframe = await getNewKlarnaIframe();
-		// 	if ( frame === newKlarnaIframe ) {
-		// 		klarnaIframe = newKlarnaIframe;
-		// 	}
-		// };
+		const frameNavigationHandler = async ( frame ) => {
+			const newKlarnaIframe = await getNewKlarnaIframe();
+			if ( frame === newKlarnaIframe ) {
+				klarnaIframe = newKlarnaIframe;
+			}
+		};
 
 		// Add frame navigation event listener.
-		// page.on( 'framenavigated', frameNavigationHandler );
+		page.on( 'framenavigated', frameNavigationHandler );
 
 		console.log( '9' );
 
@@ -225,7 +225,7 @@ describe( 'Klarna checkout', () => {
 		// 	.then( ( button ) => button.click() );
 
 		// At this point, the event listener is not needed anymore.
-		// page.removeListener( 'framenavigated', frameNavigationHandler );
+		page.removeListener( 'framenavigated', frameNavigationHandler );
 
 		await page.waitFor( 4000 );
 		// Confirm payment.
