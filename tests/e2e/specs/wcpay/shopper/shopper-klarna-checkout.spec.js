@@ -77,6 +77,8 @@ describe( 'Klarna checkout', () => {
 	} );
 
 	it( `should successfully place an order with Klarna`, async () => {
+		// await page.screenshot( { path: '1.png' } );
+
 		await setupProductCheckout(
 			{
 				...config.get( 'addresses.customer.billing' ),
@@ -91,22 +93,27 @@ describe( 'Klarna checkout', () => {
 		);
 
 		await uiUnblocked();
-		console.log( '3' );
+
 		await page.waitForXPath( checkoutPaymentMethodSelector );
 		const [ paymentMethodLabel ] = await page.$x(
 			checkoutPaymentMethodSelector
 		);
 
-		console.log( '4' );
-		await page.waitFor( 4000 );
+		await uiUnblocked();
+
 		await paymentMethodLabel.click();
 
 		await uiUnblocked();
 
-		console.log( '5' );
+		// await page.screenshot( { path: '3.png' } );
 
 		await page.waitFor( 2000 );
+
+		// await page.screenshot( { path: '4.png' } );
+
 		await shopper.placeOrder();
+
+		// await page.screenshot( { path: '4.png' } );
 
 		console.log( '6' );
 		// Klarna is rendered in an iframe, so we need to get its reference.
@@ -121,34 +128,38 @@ describe( 'Klarna checkout', () => {
 		};
 
 		console.log( '7' );
-		let klarnaIframe = await getNewKlarnaIframe();
+		const klarnaIframe = await getNewKlarnaIframe();
+
+		// await page.screenshot( { path: '5.png' } );
 
 		console.log( '8' );
 
-		const frameNavigationHandler = async ( frame ) => {
-			const newKlarnaIframe = await getNewKlarnaIframe();
-			if ( frame === newKlarnaIframe ) {
-				klarnaIframe = newKlarnaIframe;
-			}
-		};
+		// const frameNavigationHandler = async ( frame ) => {
+		// 	const newKlarnaIframe = await getNewKlarnaIframe();
+		// 	if ( frame === newKlarnaIframe ) {
+		// 		klarnaIframe = newKlarnaIframe;
+		// 	}
+		// };
 
 		// Add frame navigation event listener.
 		// page.on( 'framenavigated', frameNavigationHandler );
 
 		console.log( '9' );
 
-		await page.waitFor( 2000 );
+		await page.waitFor( 4000 );
 
 		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
 		// this is the "confirm phone number" page - we just click "continue".
-		await klarnaIframe.waitForSelector( '#phone__root' );
-		(
-			await klarnaIframe.waitForSelector(
-				'#onContinue[data-testid="kaf-button"]'
-			)
-		 ).click();
+		await klarnaIframe.waitForSelector( '#phone' );
+		console.log( '9.1' );
+		await klarnaIframe
+			.waitForSelector( '#onContinue' )
+			.then( ( button ) => button.click() );
 
-		await page.waitFor( 2000 );
+		console.log( '9.2' );
+		// await page.screenshot( { path: '6.png' } );
+
+		await page.waitFor( 3000 );
 
 		console.log( '10' );
 		// this is where the OTP code is entered.
@@ -159,35 +170,37 @@ describe( 'Klarna checkout', () => {
 		);
 
 		await page.waitFor( 2000 );
+		// await page.screenshot( { path: '7.png' } );
 		console.log( '11' );
 
-		await klarnaIframe.waitForSelector( 'button[id="pay_now__label"]' );
+		// await klarnaIframe.waitForSelector( 'button[id="pay_now__label"]' );
 
 		console.log( '12' );
 
 		await page.waitFor( 2000 );
+		// await page.screenshot( { path: '8.png' } );
 
 		// Select Payment Plan - 4 weeks & click continue.
 		await klarnaIframe
-			.waitForSelector( 'button#pay_now__label' )
+			.waitForSelector( 'button[id*="pay_in_n"]' )
 			.then( ( button ) => button.click() );
 
-		await page.waitFor( 2000 );
+		// await page.waitFor( 2000 );
 
 		await klarnaIframe
 			.waitForSelector( 'button[data-testid="select-payment-category"' )
 			.then( ( button ) => button.click() );
 
-		// console.log( '13' );
-		// await page.waitFor( 2000 );
+		console.log( '13' );
+		await page.waitFor( 2000 );
 
-		// // Payment summary page. Click continue.
-		// await klarnaIframe
-		// 	.waitForSelector( 'button[data-testid="pick-plan"]' )
-		// 	.then( ( button ) => button.click() );
+		// Payment summary page. Click continue.
+		await klarnaIframe
+			.waitForSelector( 'button[data-testid="pick-plan"]' )
+			.then( ( button ) => button.click() );
 
 		// console.log( '14' );
-		// await page.waitFor( 2000 );
+		await page.waitFor( 2000 );
 
 		// const clickPaymentMethodButton = async () => {
 		// 	const childElement = document.querySelector(
@@ -212,13 +225,12 @@ describe( 'Klarna checkout', () => {
 		// 	.then( ( button ) => button.click() );
 
 		// At this point, the event listener is not needed anymore.
-		page.removeListener( 'framenavigated', frameNavigationHandler );
+		// page.removeListener( 'framenavigated', frameNavigationHandler );
 
+		await page.waitFor( 4000 );
 		// Confirm payment.
 		await klarnaIframe
-			.waitForSelector(
-				'button[data-testid="confirm-and-pay"]:not(:disabled)'
-			)
+			.waitForSelector( 'button#buy_button' )
 			.then( ( button ) => button.click() );
 
 		console.log( '15' );
