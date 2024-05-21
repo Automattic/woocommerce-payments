@@ -7,16 +7,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/common.sh"
 
 # Check if the --local flag is provided which means the tests should run against the development build
-LOCAL_FLAG=false
 ZIP_FILE=""
-
-for arg in "$@"; do
-  if [[ "$arg" == "--local" ]]; then
-    LOCAL_FLAG=true
-  fi
-done
-
-if [[ "$LOCAL_FLAG" == true ]]; then
+if echo "$@" | grep -q -- "--local"; then
   ZIP_FILE="$WCP_ROOT/woocommerce-payments.zip"
 
   # Check if the zip file exists
