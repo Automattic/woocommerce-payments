@@ -1301,7 +1301,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information->must_save_payment_method_to_store();
 		}
 
-		if ( $this->woopay_util->should_save_platform_customer() ) {
+		if ( $this->woopay_util->should_save_platform_customer( $order ) ) {
 			do_action( 'woocommerce_payments_save_user_in_woopay' );
 			$payment_information->must_save_payment_method_to_platform();
 		}
@@ -1634,7 +1634,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$save_user_in_woopay = false;
 
-				if ( $this->woopay_util->should_save_platform_customer() ) {
+				if ( $this->woopay_util->should_save_platform_customer( $order ) ) {
 					$save_user_in_woopay = true;
 					$metadata_from_order = apply_filters(
 						'wcpay_metadata_from_order',

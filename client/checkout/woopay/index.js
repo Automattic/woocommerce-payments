@@ -8,6 +8,8 @@ import ReactDOM from 'react-dom';
  * External dependencies
  */
 import CheckoutPageSaveUser from 'wcpay/components/woopay/save-user/checkout-page-save-user';
+import intlTelInput from 'intl-tel-input';
+import utils from 'iti/utils';
 
 const renderSaveUserSection = () => {
 	const saveUserSection = document.getElementsByClassName(
@@ -33,16 +35,34 @@ const renderSaveUserSection = () => {
 		checkoutPageSaveUserContainer.id = 'remember-me';
 
 		if ( paymentOptions ) {
-			// Render right after the payment options block, as a sibling element.
-			paymentOptions.parentNode.insertBefore(
-				checkoutPageSaveUserContainer,
-				paymentOptions.nextSibling
+			const inputWrapper = document.querySelector(
+				'.wc-block-components-text-input.wc-block-components-address-form__woocommerce-payments--woopay-phone-number'
+			);
+			inputWrapper.style.display = 'none';
+
+			const createAccountCheckbox = document.querySelector(
+				'#additional-information-woocommerce-payments--create-woopay-account'
+			);
+			createAccountCheckbox.onchange = function ( e ) {
+				if ( e.target.checked ) {
+					inputWrapper.style.display = 'block';
+				} else {
+					inputWrapper.style.display = 'none';
+				}
+			};
+
+			const input = document.querySelector(
+				'#additional-information-woocommerce-payments--woopay-phone-number'
 			);
 
-			ReactDOM.render(
-				<CheckoutPageSaveUser isBlocksCheckout={ true } />,
-				checkoutPageSaveUserContainer
-			);
+			intlTelInput( input, {
+				customPlaceholder: () => '',
+				separateDialCode: true,
+				hiddenInput: 'full',
+				utilsScript: utils,
+				dropdownContainer: document.body,
+				// ...phoneCountries,
+			} );
 		}
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );

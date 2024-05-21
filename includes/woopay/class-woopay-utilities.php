@@ -7,6 +7,8 @@
 
 namespace WCPay\WooPay;
 
+use Automattic\WooCommerce\Blocks\Domain\Services\CheckoutFields;
+use Automattic\WooCommerce\Blocks\Package;
 use WC_Payments_Features;
 use WC_Payments_Subscriptions_Utilities;
 use WooPay_Extension;
@@ -118,14 +120,17 @@ class WooPay_Utilities {
 	 *
 	 * @return boolean
 	 */
-	public function should_save_platform_customer() {
+	public function should_save_platform_customer( $order ) {
 		$session_data = [];
 
 		if ( isset( WC()->session ) && method_exists( WC()->session, 'has_session' ) && WC()->session->has_session() ) {
 			$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
 		}
 
-		return ( isset( $_POST['save_user_in_woopay'] ) && filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_woopay'] ) && filter_var( $session_data['save_user_in_woopay'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$checkout_fields = Package::container()->get( CheckoutFields::class );
+		$should_create_woopay_account = $checkout_fields->get_field_from_order( 'woocommerce-payments--create-woopay-account', $order, 'additional' );
+
+		return $should_create_woopay_account || ( isset( $_POST['save_user_in_woopay'] ) && filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_woopay'] ) && filter_var( $session_data['save_user_in_woopay'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
 
 	/**
@@ -167,8 +172,15 @@ class WooPay_Utilities {
 	 *
 	 * @return mixed|string
 	 */
-	public function get_woopay_phone() {
+	public function get_woopay_phone( $order ) {
 		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
+
+		$checkout_fields = Package::container()->get( CheckoutFields::class );
+		$phone =  $checkout_fields->get_field_from_order( 'woocommerce-payments--woopay-phone-number', $order, 'additional' );
+
+		if ( $phone ) {
+			return $phone;
+		}
 
 		if ( ! empty( $_POST['woopay_user_phone_field']['full'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return wc_clean( wp_unslash( $_POST['woopay_user_phone_field']['full'] ) ); // phpcs:ignore WordPress.Security.NonceVerification

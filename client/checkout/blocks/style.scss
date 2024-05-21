@@ -108,5 +108,13 @@ button.wcpay-stripelink-modal-trigger:hover {
 	}
 }
 
+#additional-information-fields {
+	.wc-block-components-address-form__woocommerce-payments--woopay-phone-number {
+		label {
+			left: 100px;
+		}
+	}
+}
+
 @import '../woopay/style';
 @import '../../components/loadable/style';

@@ -50,8 +50,9 @@
 		font-weight: 400;
 		gap: $gap;
 		transition: max-height 0.5s ease-in-out;
-		margin: 0 !important;
-		padding: 0 !important;
+		margin: 0;
+		margin-top: $gap-large;
+		padding-top: 2px;
 		overflow-y: hidden;
 		max-height: 21.875rem;
 
@@ -144,7 +145,6 @@
 // override intl-tel-input styles
 .iti {
 	width: 100%;
-	margin-top: $gap-large;
 
 	&--container {
 		margin-top: 0;

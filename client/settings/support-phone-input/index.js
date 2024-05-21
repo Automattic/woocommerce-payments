@@ -63,7 +63,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 				</Notice>
 			) }
 			<BaseControl
-				className="settings__account-business-support-phone-input no-top-margin"
+				className="settings__account-business-support-phone-input"
 				help={ __(
 					'This may be visible on receipts, invoices, and automated emails from your store.',
 					'woocommerce-payments'

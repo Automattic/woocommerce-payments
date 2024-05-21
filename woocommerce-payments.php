@@ -427,3 +427,36 @@ add_action(
 		}
 	}
 );
+
+
+add_action(
+	'woocommerce_blocks_loaded',
+	function () {
+		__experimental_woocommerce_blocks_register_checkout_field(
+			[
+				'id'       => 'woocommerce-payments--create-woopay-account',
+				'label'    => __( 'Securely save my information for 1-click checkout', 'woocommerce-payments' ),
+				'location' => 'additional',
+				'type'     => 'checkbox',
+			]
+		);
+	}
+);
+
+add_action(
+	'woocommerce_blocks_loaded',
+	function () {
+		__experimental_woocommerce_blocks_register_checkout_field(
+			[
+				'id'            => 'woocommerce-payments--woopay-phone-number',
+				'label'         => 'Mobile number',
+				'optionalLabel' => 'Mobile number',
+				'location'      => 'additional',
+				'attributes'    => [
+					'autocomplete' => 'phone',
+					'title'        => 'Mobile number',
+				],
+			],
+		);
+	}
+);
