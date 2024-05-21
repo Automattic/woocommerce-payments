@@ -15,7 +15,6 @@ const IncompatibilityNotice = ( { message, learnMoreLinkHref } ) => (
 		status="warning"
 		icon={ true }
 		isDismissible={ false }
-		className="express-checkout__notice"
 	>
 		{ message }
 		<br />
