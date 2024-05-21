@@ -68,7 +68,8 @@ const OnboardingPage: React.FC = () => {
 	}, [] );
 
 	const { shareKey } = useLaunchYourStoreSettings();
-	const comingSoonShareKey = shareKey ? '/?woo-share=' + shareKey : '';
+	// const comingSoonShareKey = shareKey ? '/?woo-share=' + shareKey : '';
+	const comingSoonShareKey = '/does-this-even-work';
 	const initialData = {
 		business_name: wcSettings?.siteTitle,
 		mcc: getMccFromIndustry(),
