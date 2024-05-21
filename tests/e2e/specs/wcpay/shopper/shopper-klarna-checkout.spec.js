@@ -14,8 +14,6 @@ const UPE_METHOD_CHECKBOXES = [
 	"//label[contains(text(), 'Klarna')]/preceding-sibling::span/input[@type='checkbox']",
 ];
 
-const checkoutPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), 'Klarna')]`;
-
 describe( 'Klarna checkout', () => {
 	beforeAll( async () => {
 		await merchant.login();
@@ -96,14 +94,16 @@ describe( 'Klarna checkout', () => {
 
 		await page.waitFor( 3000 );
 
-		await page.waitForXPath( checkoutPaymentMethodSelector );
-		const [ paymentMethodLabel ] = await page.$x(
-			checkoutPaymentMethodSelector
-		);
-
 		await uiUnblocked();
 
-		await paymentMethodLabel.click();
+		await page.evaluate( async () => {
+			const paymentMethodLabel = document.querySelector(
+				'label[for="payment_method_woocommerce_payments_klarna"]'
+			);
+			if ( paymentMethodLabel ) {
+				paymentMethodLabel.click();
+			}
+		} );
 
 		await uiUnblocked();
 
