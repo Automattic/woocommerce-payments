@@ -117,17 +117,6 @@ class PaymentProcessingService {
 
 		$client_secret = $intent->get_client_secret();
 
-		if ( $this->legacy_proxy->call_static( \WC_Payments_Features::class, 'is_client_secret_encryption_enabled' ) ) {
-			$client_secret = $this->legacy_proxy->call_function(
-				'openssl_encrypt',
-				$client_secret,
-				'aes-128-cbc',
-				substr( $intent->get_customer_id(), 5 ),
-				0,
-				str_repeat( 'WC', 8 )
-			);
-		}
-
 		return sprintf(
 			'#wcpay-confirm-%s:%s:%s:%s',
 			$intent instanceof WC_Payments_API_Setup_Intention ? 'si' : 'pi',
