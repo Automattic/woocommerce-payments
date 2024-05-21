@@ -28,7 +28,10 @@ const paymentRequestPaymentMethod = ( api ) => ( {
 			return false;
 		}
 
-		if ( wcpayConfig.isExpressCheckoutElementEnabled ) {
+		if (
+			typeof wcpayConfig !== 'undefined' &&
+			wcpayConfig.isExpressCheckoutElementEnabled
+		) {
 			return false;
 		}
 

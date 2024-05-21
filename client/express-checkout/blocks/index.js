@@ -16,7 +16,17 @@ const expressCheckoutElementPaymentMethod = ( api ) => ( {
 	supports: {
 		features: getConfig( 'features' ),
 	},
-	canMakePayment: () => wcpayConfig.isExpressCheckoutElementEnabled,
+	canMakePayment: () => {
+		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			return false;
+		}
+
+		if ( typeof wcpayConfig !== 'undefined' ) {
+			return wcpayConfig.isExpressCheckoutElementEnabled;
+		}
+
+		return false;
+	},
 } );
 
 export default expressCheckoutElementPaymentMethod;
