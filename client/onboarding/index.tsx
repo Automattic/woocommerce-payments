@@ -71,6 +71,9 @@ const OnboardingPage: React.FC = () => {
 	const comingSoonShareKey = shareKey
 		? shareKey + '/?woo-share=' + shareKey
 		: '';
+
+	console.log( 'shareKey: ' + shareKey );
+	console.log( 'comingSoonShareKey: ' + comingSoonShareKey );
 	const initialData = {
 		business_name: wcSettings?.siteTitle,
 		mcc: getMccFromIndustry(),
