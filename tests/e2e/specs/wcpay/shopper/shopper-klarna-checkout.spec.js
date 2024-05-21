@@ -77,7 +77,7 @@ describe( 'Klarna checkout', () => {
 	} );
 
 	it( `should successfully place an order with Klarna`, async () => {
-		// await page.screenshot( { path: '1.png' } );
+		await page.screenshot( { path: 'screenshots/1.png' } );
 
 		await setupProductCheckout(
 			{
@@ -105,15 +105,15 @@ describe( 'Klarna checkout', () => {
 
 		await uiUnblocked();
 
-		// await page.screenshot( { path: '3.png' } );
+		await page.screenshot( { path: 'screenshots/3.png' } );
 
 		await page.waitFor( 2000 );
 
-		// await page.screenshot( { path: '4.png' } );
+		await page.screenshot( { path: 'screenshots/4.png' } );
 
 		await shopper.placeOrder();
 
-		// await page.screenshot( { path: '4.png' } );
+		await page.screenshot( { path: 'screenshots/5.png' } );
 
 		console.log( '6' );
 		// Klarna is rendered in an iframe, so we need to get its reference.
@@ -130,7 +130,7 @@ describe( 'Klarna checkout', () => {
 		console.log( '7' );
 		let klarnaIframe = await getNewKlarnaIframe();
 
-		// await page.screenshot( { path: '5.png' } );
+		await page.screenshot( { path: 'screenshots/6.png' } );
 
 		console.log( '8' );
 
@@ -157,7 +157,7 @@ describe( 'Klarna checkout', () => {
 			.then( ( button ) => button.click() );
 
 		console.log( '9.2' );
-		// await page.screenshot( { path: '6.png' } );
+		// await page.screenshot( { path: 'screenshots/6.png' } );
 
 		await page.waitFor( 3000 );
 
@@ -170,7 +170,7 @@ describe( 'Klarna checkout', () => {
 		);
 
 		await page.waitFor( 2000 );
-		// await page.screenshot( { path: '7.png' } );
+		// await page.screenshot( { path: 'screenshots/7.png' } );
 		console.log( '11' );
 
 		// await klarnaIframe.waitForSelector( 'button[id="pay_now__label"]' );
@@ -178,7 +178,7 @@ describe( 'Klarna checkout', () => {
 		console.log( '12' );
 
 		await page.waitFor( 2000 );
-		// await page.screenshot( { path: '8.png' } );
+		// await page.screenshot( { path: 'screenshots/8.png' } );
 
 		// Select Payment Plan - 4 weeks & click continue.
 		await klarnaIframe
