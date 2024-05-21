@@ -508,7 +508,7 @@ export const useLaunchYourStoreSettings = () => {
 		);
 
 		return {
-			isLoading: hasFinishedResolution( 'getOption', [
+			isLoading: ! hasFinishedResolution( 'getOption', [
 				'woocommerce_share_key',
 			] ),
 			shareKey: getOption( 'woocommerce_share_key' ),

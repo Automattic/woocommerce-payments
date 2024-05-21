@@ -34,7 +34,6 @@ const OnboardingContext = createContext< ContextValue | null >( null );
 export const OnboardingContextProvider: React.FC< {
 	initialData?: OnboardingFields;
 } > = ( { children, initialData } ) => {
-	console.log( initialData );
 	return (
 		<OnboardingContext.Provider value={ useContextValue( initialData ) }>
 			{ children }
