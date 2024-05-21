@@ -67,13 +67,13 @@ const OnboardingPage: React.FC = () => {
 		};
 	}, [] );
 
-	const { shareKey } = useLaunchYourStoreSettings();
+	const {
+		shareKey,
+		isLoading: shareKeyIsLoading,
+	} = useLaunchYourStoreSettings();
 	const comingSoonShareKey = shareKey
 		? shareKey + '/?woo-share=' + shareKey
 		: '';
-
-	console.log( 'shareKey: ' + shareKey );
-	console.log( 'comingSoonShareKey: ' + comingSoonShareKey );
 	const initialData = {
 		business_name: wcSettings?.siteTitle,
 		mcc: getMccFromIndustry(),
@@ -83,6 +83,10 @@ const OnboardingPage: React.FC = () => {
 				: wcSettings?.homeUrl + comingSoonShareKey,
 		country: wcpaySettings?.connect?.country,
 	};
+
+	if ( shareKeyIsLoading ) {
+		return null;
+	}
 
 	return (
 		<Page className="wcpay-onboarding-prototype">
