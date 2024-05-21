@@ -17,6 +17,7 @@ import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
+import { useLaunchYourStoreSettings } from 'wcpay/data';
 import './style.scss';
 
 const OnboardingStepper = () => {
@@ -46,16 +47,6 @@ const OnboardingStepper = () => {
 	);
 };
 
-const initialData = {
-	business_name: wcSettings?.siteTitle,
-	mcc: getMccFromIndustry(),
-	url:
-		location.hostname === 'localhost'
-			? 'https://wcpay.test'
-			: wcSettings?.homeUrl,
-	country: wcpaySettings?.connect?.country,
-};
-
 const OnboardingPage: React.FC = () => {
 	useEffect( () => {
 		const urlParams = new URLSearchParams( window.location.search );
@@ -75,6 +66,20 @@ const OnboardingPage: React.FC = () => {
 			document.body.classList.remove( 'wcpay-onboarding__body' );
 		};
 	}, [] );
+
+	const { shareKey } = useLaunchYourStoreSettings();
+	const comingSoonShareKey = shareKey
+		? shareKey + '/?woo-share=' + shareKey
+		: '';
+	const initialData = {
+		business_name: wcSettings?.siteTitle,
+		mcc: getMccFromIndustry(),
+		url:
+			location.hostname === 'localhost'
+				? 'https://wcpay.test'
+				: wcSettings?.homeUrl + comingSoonShareKey,
+		country: wcpaySettings?.connect?.country,
+	};
 
 	return (
 		<Page className="wcpay-onboarding-prototype">

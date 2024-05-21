@@ -500,3 +500,23 @@ export const useStripeBillingMigration = () => {
 		];
 	}, [] );
 };
+
+export const useLaunchYourStoreSettings = () => {
+	const { shareKey, isLoading } = useSelect( ( select ) => {
+		const { hasFinishedResolution, getOption } = select(
+			'wc/admin/options'
+		);
+
+		return {
+			isLoading: hasFinishedResolution( 'getOption', [
+				'woocommerce_private_link',
+			] ),
+			shareKey: getOption( 'woocommerce_share_key' ),
+		};
+	} );
+
+	return {
+		shareKey,
+		isLoading,
+	};
+};
