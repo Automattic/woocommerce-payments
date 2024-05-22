@@ -151,10 +151,10 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		$is_admin_event = false;
+		$is_admin_event      = false;
 		$track_on_all_stores = true;
 
-		return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores);
+		return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores );
 	}
 
 	/**
@@ -197,7 +197,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @return bool
 	 */
-	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false) {
+	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false ) {
 
 		// Don't track if the gateway is not enabled.
 		$gateway = \WC_Payments::get_gateway();
@@ -266,7 +266,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @return bool|array|\WP_Error|\Jetpack_Tracks_Event
 	 */
-	public function tracks_record_event( $event_name, $properties = [], $is_admin_event = false, $track_on_all_stores = false) {
+	public function tracks_record_event( $event_name, $properties = [], $is_admin_event = false, $track_on_all_stores = false ) {
 
 		$user = wp_get_current_user();
 
@@ -469,7 +469,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return bool
 	 */
 	public function bump_stats( $group, $stat_name ) {
-		$is_admin_event = false;
+		$is_admin_event      = false;
 		$track_on_all_stores = true;
 
 		if ( ! $this->should_enable_tracking( $is_admin_event, $track_on_all_stores ) ) {

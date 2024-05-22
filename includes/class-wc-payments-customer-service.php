@@ -82,9 +82,10 @@ class WC_Payments_Customer_Service {
 	 * Class constructor
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
-	 * @param WC_Payments_Account         $account             WC_Payments_Account instance.
-	 * @param Database_Cache              $database_cache      Database_Cache instance.
-	 * @param WC_Payments_Session_Service $session_service     Session Service class instance.
+	 * @param WC_Payments_Account         $account WC_Payments_Account instance.
+	 * @param Database_Cache              $database_cache Database_Cache instance.
+	 * @param WC_Payments_Session_Service $session_service Session Service class instance.
+	 * @param WC_Payments_Order_Service   $order_service Order Service class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
