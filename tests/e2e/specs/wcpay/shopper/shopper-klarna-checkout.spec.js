@@ -141,7 +141,7 @@ describe( 'Klarna checkout', () => {
 
 		// Select Payment Plan - 4 weeks & click continue.
 		await klarnaIframe
-			.waitForSelector( 'button[id*="pay_in_n"]' )
+			.waitForSelector( 'button#pay_over_time__label' )
 			.then( ( button ) => button.click() );
 
 		await page.waitFor( 2000 );
