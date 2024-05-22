@@ -115,7 +115,8 @@ export const getUpdateBusinessDetailsTask = (
 				source: 'overview-page__update-business-details-task',
 			} );
 
-			// If the onboarding isn't complete, use the connectUrl instead as the accountLink doesn't handle redirecting back to the overview page.
+			// If the onboarding isn't complete use the connectUrl instead,
+			// as the accountLink doesn't handle redirecting back to the overview page.
 			if ( ! detailsSubmitted ) {
 				window.location.href = connectUrl;
 			} else {
