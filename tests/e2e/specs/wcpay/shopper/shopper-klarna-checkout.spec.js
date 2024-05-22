@@ -75,8 +75,6 @@ describe( 'Klarna checkout', () => {
 	} );
 
 	it( `should successfully place an order with Klarna`, async () => {
-		await page.screenshot( { path: 'screenshots/1.png' } );
-
 		await setupProductCheckout(
 			{
 				...config.get( 'addresses.customer.billing' ),
@@ -92,10 +90,6 @@ describe( 'Klarna checkout', () => {
 
 		await uiUnblocked();
 
-		await page.waitFor( 3000 );
-
-		await uiUnblocked();
-
 		await page.evaluate( async () => {
 			const paymentMethodLabel = document.querySelector(
 				'label[for="payment_method_woocommerce_payments_klarna"]'
@@ -105,17 +99,8 @@ describe( 'Klarna checkout', () => {
 			}
 		} );
 
-		await uiUnblocked();
-
-		await page.waitFor( 2000 );
-
-		await page.screenshot( { path: 'screenshots/4.png' } );
-
 		await shopper.placeOrder();
 
-		await page.screenshot( { path: 'screenshots/5.png' } );
-
-		console.log( '6' );
 		// Klarna is rendered in an iframe, so we need to get its reference.
 		// Sometimes the iframe is updated (or removed from the page),
 		// this function has been created so that we always get the most updated reference.
@@ -130,10 +115,6 @@ describe( 'Klarna checkout', () => {
 		console.log( '7' );
 		let klarnaIframe = await getNewKlarnaIframe();
 
-		await page.screenshot( { path: 'screenshots/6.png' } );
-
-		console.log( '8' );
-
 		const frameNavigationHandler = async ( frame ) => {
 			const newKlarnaIframe = await getNewKlarnaIframe();
 			if ( frame === newKlarnaIframe ) {
@@ -146,20 +127,16 @@ describe( 'Klarna checkout', () => {
 
 		console.log( '9' );
 
-		await page.waitFor( 4000 );
+		// await page.waitFor( 4000 );
 
 		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
 		// this is the "confirm phone number" page - we just click "continue".
 		await klarnaIframe.waitForSelector( '#phone' );
-		console.log( '9.1' );
 		await klarnaIframe
 			.waitForSelector( '#onContinue' )
 			.then( ( button ) => button.click() );
 
-		console.log( '9.2' );
-		// await page.screenshot( { path: 'screenshots/6.png' } );
-
-		await page.waitFor( 3000 );
+		// await page.waitFor( 3000 );
 
 		console.log( '10' );
 		// this is where the OTP code is entered.
@@ -169,15 +146,9 @@ describe( 'Klarna checkout', () => {
 			'123456'
 		);
 
-		await page.waitFor( 2000 );
-		// await page.screenshot( { path: 'screenshots/7.png' } );
-		console.log( '11' );
+		// await page.waitFor( 2000 );
 
-		// await klarnaIframe.waitForSelector( 'button[id="pay_now__label"]' );
-
-		console.log( '12' );
-
-		await page.waitFor( 2000 );
+		// await page.waitFor( 2000 );
 		// await page.screenshot( { path: 'screenshots/8.png' } );
 
 		// Select Payment Plan - 4 weeks & click continue.
@@ -192,7 +163,7 @@ describe( 'Klarna checkout', () => {
 			.then( ( button ) => button.click() );
 
 		console.log( '13' );
-		await page.waitFor( 2000 );
+		// await page.waitFor( 2000 );
 
 		// Payment summary page. Click continue.
 		await klarnaIframe
@@ -200,7 +171,7 @@ describe( 'Klarna checkout', () => {
 			.then( ( button ) => button.click() );
 
 		// console.log( '14' );
-		await page.waitFor( 2000 );
+		// await page.waitFor( 2000 );
 
 		// const clickPaymentMethodButton = async () => {
 		// 	const childElement = document.querySelector(
@@ -227,14 +198,14 @@ describe( 'Klarna checkout', () => {
 		// At this point, the event listener is not needed anymore.
 		page.removeListener( 'framenavigated', frameNavigationHandler );
 
-		await page.waitFor( 4000 );
+		// await page.waitFor( 4000 );
 		// Confirm payment.
 		await klarnaIframe
 			.waitForSelector( 'button#buy_button' )
 			.then( ( button ) => button.click() );
 
 		console.log( '15' );
-		await page.waitFor( 2000 );
+		// await page.waitFor( 2000 );
 
 		// Wait for the order confirmation page to load.
 		await page.waitForNavigation( {
@@ -242,7 +213,7 @@ describe( 'Klarna checkout', () => {
 		} );
 
 		console.log( '16' );
-		await page.waitFor( 2000 );
+		// await page.waitFor( 2000 );
 		await expect( page ).toMatch( 'Order received' );
 	} );
 } );
