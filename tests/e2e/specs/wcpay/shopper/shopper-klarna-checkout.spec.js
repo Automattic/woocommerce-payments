@@ -141,15 +141,12 @@ describe( 'Klarna checkout', () => {
 		console.log( '10' );
 		// this is where the OTP code is entered.
 		await klarnaIframe.waitForSelector( '#phoneOtp' );
-		await expect( klarnaIframe ).toFill(
-			'[data-testid="kaf-field"]',
-			'123456'
-		);
+		await expect( klarnaIframe ).toFill( 'input#otp_field', '123456' );
 
 		// await page.waitFor( 2000 );
 
 		// await page.waitFor( 2000 );
-		// await page.screenshot( { path: 'screenshots/8.png' } );
+		await page.screenshot( { path: 'screenshots/1.png' } );
 
 		// Select Payment Plan - 4 weeks & click continue.
 		await klarnaIframe
@@ -158,17 +155,23 @@ describe( 'Klarna checkout', () => {
 
 		// await page.waitFor( 2000 );
 
+		await page.screenshot( { path: 'screenshots/2.png' } );
+
 		await klarnaIframe
 			.waitForSelector( 'button[data-testid="select-payment-category"' )
 			.then( ( button ) => button.click() );
 
 		console.log( '13' );
+
+		await page.screenshot( { path: 'screenshots/3.png' } );
 		// await page.waitFor( 2000 );
 
 		// Payment summary page. Click continue.
 		await klarnaIframe
 			.waitForSelector( 'button[data-testid="pick-plan"]' )
 			.then( ( button ) => button.click() );
+
+		await page.screenshot( { path: 'screenshots/4.png' } );
 
 		// console.log( '14' );
 		// await page.waitFor( 2000 );
@@ -203,6 +206,8 @@ describe( 'Klarna checkout', () => {
 		await klarnaIframe
 			.waitForSelector( 'button#buy_button' )
 			.then( ( button ) => button.click() );
+
+		await page.screenshot( { path: 'screenshots/5.png' } );
 
 		console.log( '15' );
 		// await page.waitFor( 2000 );
