@@ -172,7 +172,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			userEmail = email;
 			urlParams.append( 'email', email );
 		}
-		urlParams.append( 'is_blocks', !! wcSettings.wcBlocksConfig );
+		urlParams.append( 'is_blocks', !! window.wcBlocksCheckoutData );
 		urlParams.append( 'is_express', 'true' );
 		urlParams.append( 'express_context', context );
 		urlParams.append( 'source_url', window.location.href );
