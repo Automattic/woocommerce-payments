@@ -60,42 +60,40 @@ const PaymentElements = ( { api, ...props } ) => {
 	] );
 
 	return (
-		<>
-			<LoadableBlock isLoading={ ! appearance } numLines={ 3 }>
-				<Elements
-					stripe={ stripe }
-					options={ {
-						mode: amount < 1 ? 'setup' : 'payment',
-						amount: amount,
-						currency: currency,
-						paymentMethodCreation: 'manual',
-						paymentMethodTypes: paymentMethodTypes,
-						appearance: appearance,
-						fonts: fontRules,
-					} }
-				>
-					{ paymentProcessorLoadErrorMessage?.error?.message && (
-						<div className="wc-block-components-notices">
-							<StoreNotice status="error" isDismissible={ false }>
-								<RawHTML>
-									{
-										paymentProcessorLoadErrorMessage.error
-											.message
-									}
-								</RawHTML>
-							</StoreNotice>
-						</div>
-					) }
-					<PaymentProcessor
-						api={ api }
-						errorMessage={ errorMessage }
-						fingerprint={ fingerprint }
-						onLoadError={ setPaymentProcessorLoadErrorMessage }
-						{ ...props }
-					/>
-				</Elements>
-			</LoadableBlock>
-		</>
+		<LoadableBlock isLoading={ ! appearance } numLines={ 3 }>
+			<Elements
+				stripe={ stripe }
+				options={ {
+					mode: amount < 1 ? 'setup' : 'payment',
+					amount: amount,
+					currency: currency,
+					paymentMethodCreation: 'manual',
+					paymentMethodTypes: paymentMethodTypes,
+					appearance: appearance,
+					fonts: fontRules,
+				} }
+			>
+				{ paymentProcessorLoadErrorMessage?.error?.message && (
+					<div className="wc-block-components-notices">
+						<StoreNotice status="error" isDismissible={ false }>
+							<RawHTML>
+								{
+									paymentProcessorLoadErrorMessage.error
+										.message
+								}
+							</RawHTML>
+						</StoreNotice>
+					</div>
+				) }
+				<PaymentProcessor
+					api={ api }
+					errorMessage={ errorMessage }
+					fingerprint={ fingerprint }
+					onLoadError={ setPaymentProcessorLoadErrorMessage }
+					{ ...props }
+				/>
+			</Elements>
+		</LoadableBlock>
 	);
 };
 
