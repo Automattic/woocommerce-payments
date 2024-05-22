@@ -34,25 +34,6 @@ class WooPay_Session {
 	const STORE_API_NAMESPACE_PATTERN = '@^wc/store(/v[\d]+)?$@';
 
 	/**
-	 * The Store API route patterns that should be handled by the WooPay session handler.
-	 */
-	const STORE_API_ROUTE_PATTERNS = [
-		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
-		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
-		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
-		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
-		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
-		// By adding it to this list, we're able to identify the user and load the correct session for this route.
-		'@^\/wc\/v3\/woopay\/session$@',
-	];
-
-	/**
 	 * Init the hooks.
 	 *
 	 * @return void
@@ -82,7 +63,7 @@ class WooPay_Session {
 		if (
 			$cart_token &&
 			self::is_request_from_woopay() &&
-			self::is_store_api_request() &&
+			\WC_Payments_Utils::is_store_api_request() &&
 			class_exists( JsonWebToken::class ) &&
 			JsonWebToken::validate( $cart_token, '@' . wp_salt() )
 		) {
@@ -100,7 +81,7 @@ class WooPay_Session {
 	 * @return \WP_User|null|int
 	 */
 	public static function determine_current_user_for_woopay( $user ) {
-		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
 			return $user;
 		}
 
@@ -179,7 +160,7 @@ class WooPay_Session {
 			return;
 		}
 
-		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
 			return;
 		}
 
@@ -272,7 +253,7 @@ class WooPay_Session {
 	 * @return false|int|mixed The advocate ID or false if the request is not from WooPay.
 	 */
 	public static function automatewoo_refer_a_friend_referral_from_parameter( $advocate_id ) {
-		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
 			return $advocate_id;
 		}
 
@@ -329,7 +310,7 @@ class WooPay_Session {
 	 * @return array The encrypted session request or an empty array if the server is not eligible for encryption.
 	 */
 	public static function get_frontend_init_session_request() {
-		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+		if ( ! extension_loaded( 'openssl' ) || ! function_exists( 'openssl_encrypt' ) ) {
 			return [];
 		}
 
@@ -622,7 +603,7 @@ class WooPay_Session {
 	 * @return array Array of minimum session data used by WooPay or false on failures.
 	 */
 	public static function get_woopay_minimum_session_data() {
-		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+		if ( ! extension_loaded( 'openssl' ) || ! function_exists( 'openssl_encrypt' ) ) {
 			return [];
 		}
 
@@ -652,30 +633,6 @@ class WooPay_Session {
 		$has_woopay_verified_email_address = isset( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] );
 
 		return $has_woopay_verified_email_address ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
-	}
-
-	/**
-	 * Returns true if the request that's currently being processed is a Store API request, false
-	 * otherwise.
-	 *
-	 * @return bool True if request is a Store API request, false otherwise.
-	 */
-	private static function is_store_api_request(): bool {
-		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.NonceVerification
-		} else {
-			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = rtrim( $url_parts['path'], '/' );
-			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
-		}
-
-		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
-			if ( 1 === preg_match( $pattern, $rest_route ) ) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**

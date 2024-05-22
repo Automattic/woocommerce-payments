@@ -34,6 +34,25 @@ class WC_Payments_Utils {
 	const FORCE_DISCONNECTED_FLAG_NAME = 'wcpaydev_force_disconnected';
 
 	/**
+	 * The Store API route patterns that should be handled by the WooPay session handler.
+	 */
+	const STORE_API_ROUTE_PATTERNS = [
+		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
+		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
+		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
+		// By adding it to this list, we're able to identify the user and load the correct session for this route.
+		'@^\/wc\/v3\/woopay\/session$@',
+	];
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -335,32 +354,6 @@ class WC_Payments_Utils {
 			}
 		}
 		return $terms;
-	}
-
-	/**
-	 * Extract the billing details from the WC order
-	 *
-	 * @param WC_Order $order Order to extract the billing details from.
-	 *
-	 * @return array
-	 */
-	public static function get_billing_details_from_order( $order ) {
-		$billing_details = [
-			'address' => [
-				'city'        => $order->get_billing_city(),
-				'country'     => $order->get_billing_country(),
-				'line1'       => $order->get_billing_address_1(),
-				'line2'       => $order->get_billing_address_2(),
-				'postal_code' => $order->get_billing_postcode(),
-				'state'       => $order->get_billing_state(),
-			],
-			'email'   => $order->get_billing_email(),
-			'name'    => trim( $order->get_formatted_billing_full_name() ),
-			'phone'   => $order->get_billing_phone(),
-		];
-
-		$billing_details['address'] = array_filter( $billing_details['address'] );
-		return array_filter( $billing_details );
 	}
 
 	/**
@@ -884,27 +877,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Encrypts client secret of intents created on Stripe.
-	 *
-	 * @param   string $stripe_account_id Stripe account ID.
-	 * @param   string $client_secret     Client secret string.
-	 *
-	 * @return  string                 Encrypted value.
-	 */
-	public static function encrypt_client_secret( string $stripe_account_id, string $client_secret ): string {
-		if ( \WC_Payments_Features::is_client_secret_encryption_enabled() ) {
-			return openssl_encrypt(
-				$client_secret,
-				'aes-128-cbc',
-				substr( $stripe_account_id, 5 ),
-				0,
-				str_repeat( 'WC', 8 )
-			);
-		}
-		return $client_secret;
-	}
-
-	/**
 	 * Checks if the HPOS order tables are being used.
 	 *
 	 * @return bool True if HPOS tables are enabled and being used.
@@ -1097,6 +1069,30 @@ class WC_Payments_Utils {
 	 */
 	public static function is_cart_block(): bool {
 		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+	}
+
+	/**
+	 * Returns true if the request that's currently being processed is a Store API request, false
+	 * otherwise.
+	 *
+	 * @return bool True if request is a Store API request, false otherwise.
+	 */
+	public static function is_store_api_request(): bool {
+		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
+		} else {
+			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$request_path = rtrim( $url_parts['path'], '/' );
+			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		}
+
+		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
+			if ( 1 === preg_match( $pattern, $rest_route ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

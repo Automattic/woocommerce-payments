@@ -1431,19 +1431,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 
-		// Update saved payment method async to include billing details, if missing.
-		if ( $payment_information->is_using_saved_payment_method() ) {
-			$this->action_scheduler_service->schedule_job(
-				time(),
-				self::UPDATE_SAVED_PAYMENT_METHOD,
-				[
-					'payment_method' => $payment_information->get_payment_method(),
-					'order_id'       => $order->get_id(),
-					'is_test_mode'   => WC_Payments::mode()->is_test(),
-				]
-			);
-		}
-
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
 
@@ -1461,6 +1448,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// We need to make sure the saved payment method is saved to the order so we can
 				// charge the payment method for a future payment.
 				$this->add_token_to_order( $order, $payment_information->get_payment_token() );
+				// If we are not hitting the API for the intent, we need to update the saved payment method ourselves.
+				$this->action_scheduler_service->schedule_job(
+					time(),
+					self::UPDATE_SAVED_PAYMENT_METHOD,
+					[
+						'payment_method' => $payment_information->get_payment_method(),
+						'order_id'       => $order->get_id(),
+						'is_test_mode'   => WC_Payments::mode()->is_test(),
+					]
+				);
 			}
 
 			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
@@ -1543,6 +1540,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 				$request->set_hook_args( $payment_information );
+				if ( $payment_information->is_using_saved_payment_method() ) {
+					$billing_details = $this->order_service->get_billing_data_from_order( $order );
+
+					$is_legacy_card_object = (bool) preg_match( '/^(card_|src_)/', $payment_information->get_payment_method() );
+
+					// Not updating billing details for legacy card objects because they have a different structure and are no longer supported.
+					if ( ! empty( $billing_details ) && ! $is_legacy_card_object ) {
+						$request->set_payment_method_update_data( [ 'billing_details' => $billing_details ] );
+					}
+				}
 				// Add specific payment method parameters to the request.
 				$this->modify_create_intent_parameters_when_processing_payment( $request, $payment_information, $order );
 
@@ -1735,7 +1742,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
+							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
 						// Include the payment method ID so the Blocks integration can save cards.
@@ -1775,7 +1782,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} else {
 			$payment_method_details = false;
-			$payment_method_type    = $intent->get_payment_method_type();
+			$payment_method_type    = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 		}
 
 		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
@@ -1960,7 +1967,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
+							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						);
 						wp_safe_redirect( $redirect_url );
@@ -1972,7 +1979,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
 			$is_order_id_mismatched_exception =
-				is_a( $e, Process_Payment_Exception::class )
+				$e instanceof Process_Payment_Exception
 				&& self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE === $e->get_error_code();
 
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
@@ -3430,11 +3437,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$payment_method_id = isset( $_POST['payment_method_id'] ) ? wc_clean( wp_unslash( $_POST['payment_method_id'] ) ) : '';
-			if ( 'null' === $payment_method_id ) {
-				$payment_method_id = '';
-			}
-
 			// Check that the intent saved in the order matches the intent used as part of the
 			// authentication process. The ID of the intent used is sent with
 			// the AJAX request. We are about to use the status of the intent saved in
@@ -3447,7 +3449,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$amount = $order->get_total();
+			$amount                 = $order->get_total();
+			$payment_method_details = false;
 
 			if ( $amount > 0 ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
@@ -3471,6 +3474,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge_id = '';
 			}
 
+			$payment_method_id = $intent->get_payment_method_id();
+
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 			}
@@ -3484,6 +3489,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					try {
 						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
 						$this->add_token_to_order( $order, $token );
+
+						if ( ! empty( $token ) ) {
+							$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
+							$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+						}
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
@@ -3747,10 +3757,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$setup_intent_output = [
 				'id'            => $setup_intent->get_id(),
 				'status'        => $setup_intent->get_status(),
-				'client_secret' => WC_Payments_Utils::encrypt_client_secret(
-					$this->account->get_stripe_account_id(),
-					$setup_intent->get_client_secret()
-				),
+				'client_secret' => $setup_intent->get_client_secret(),
 			];
 
 			wp_send_json_success( $setup_intent_output, 200 );
@@ -4278,6 +4285,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Get the payment method used with a setup intent.
+	 *
+	 * @param WC_Payments_API_Setup_Intention $intent The PaymentIntent object.
+	 * @param WC_Payment_Token                $token The payment token.
+	 * @return string|null The payment method type.
+	 */
+	private function get_payment_method_type_for_setup_intent( $intent, $token ) {
+		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+	}
+
+	/**
 	 * This function wraps WC_Payments::get_payment_method_map, useful for unit testing.
 	 *
 	 * @return array Array of UPE_Payment_Method instances.
@@ -4447,8 +4465,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$billing_data = $this->order_service->get_billing_data_from_order( $order );
-		if ( $check_if_usable( $billing_data['address'] ) ) {
-			$request->set_shipping( $billing_data );
+		// Afterpay fails if we send more parameters than expected in the shipping address.
+		// This ensures that we only send the name and address fields, as in get_shipping_data_from_order.
+		$shipping_data = [
+			'name'    => $billing_data['name'] ?? '',
+			'address' => $billing_data['address'] ?? [],
+		];
+		if ( $check_if_usable( $shipping_data['address'] ) ) {
+			$request->set_shipping( $shipping_data );
 			return;
 		}
 

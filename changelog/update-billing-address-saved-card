@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Updating saved payment method billing address before processing the payment

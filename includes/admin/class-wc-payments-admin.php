@@ -756,14 +756,20 @@ class WC_Payments_Admin {
 		$currency_data = [];
 
 		foreach ( $locale_info as $key => $value ) {
-			$currency_code         = $value['currency_code'] ?? '';
-			$currency_data[ $key ] = [
+			$currency_code             = $value['currency_code'] ?? '';
+			$default_locale_formatting = $value['locales']['default'] ?? [];
+			$currency_data[ $key ]     = [
 				'code'              => $currency_code,
 				'symbol'            => $value['short_symbol'] ?? $symbols[ $currency_code ] ?? '',
 				'symbolPosition'    => $value['currency_pos'] ?? '',
 				'thousandSeparator' => $value['thousand_sep'] ?? '',
 				'decimalSeparator'  => $value['decimal_sep'] ?? '',
 				'precision'         => $value['num_decimals'],
+				'defaultLocale'     => [
+					'symbolPosition'    => $default_locale_formatting['currency_pos'] ?? '',
+					'thousandSeparator' => $default_locale_formatting['thousand_sep'] ?? '',
+					'decimalSeparator'  => $default_locale_formatting['decimal_sep'] ?? '',
+				],
 			];
 		}
 
@@ -827,7 +833,6 @@ class WC_Payments_Admin {
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
 			'isMultiCurrencyEnabled'        => WC_Payments_Features::is_customer_multi_currency_enabled(),
-			'isClientEncryptionEligible'    => WC_Payments_Features::is_client_secret_encryption_eligible(),
 			'shouldUseExplicitPrice'        => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
 			'overviewTasksVisibility'       => [
 				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
