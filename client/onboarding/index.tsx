@@ -50,9 +50,10 @@ const getComingSoonShareKey = () => {
 	const {
 		woocommerce_share_key: shareKey,
 		woocommerce_coming_soon: comingSoon,
+		woocommerce_private_link: privateLink,
 	} = wcSettings?.admin?.siteVisibilitySettings || {};
 
-	if ( comingSoon !== 'yes' ) {
+	if ( comingSoon !== 'yes' || privateLink === 'no' ) {
 		return '';
 	}
 
