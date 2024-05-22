@@ -481,6 +481,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
 	 * Record that the order has been processed.
+	 *
+	 * @param int $order_id The ID of the order.
 	 */
 	public function checkout_order_processed( $order_id ) {
 

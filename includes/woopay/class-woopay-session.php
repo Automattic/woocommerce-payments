@@ -266,6 +266,10 @@ class WooPay_Session {
 	/**
 	 * Fix for AutomateWoo - Refer A Friend Add-on
 	 * plugin when using link referrals.
+	 *
+	 * @param int $advocate_id The advocate ID.
+	 *
+	 * @return false|int|mixed The advocate ID or false if the request is not from WooPay.
 	 */
 	public static function automatewoo_refer_a_friend_referral_from_parameter( $advocate_id ) {
 		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
@@ -346,17 +350,19 @@ class WooPay_Session {
 	 * If the request doesn't come from WooPay, this uses the same strategy in
 	 * `hydrate_from_api` on the Checkout Block to retrieve cart data.
 	 *
+	 * @param bool                 $is_pay_for_order Whether the request is for a pay-for-order session.
 	 * @param int|null             $order_id Pay-for-order order ID.
 	 * @param string|null          $key Pay-for-order key.
 	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
+	 *
 	 * @return array The cart data.
 	 */
 	private static function get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request ) {
 		if ( ! $woopay_request ) {
 			return ! $is_pay_for_order
 			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
-			: rest_preload_api_request( [], '/wc/store/v1/order/' . urlencode( $order_id ) . '?key=' . urlencode( $key ) . '&billing_email=' . urlencode( $billing_email ) )[ '/wc/store/v1/order/' . urlencode( $order_id ) . '?key=' . urlencode( $key ) . '&billing_email=' . urlencode( $billing_email ) ]['body'];
+			: rest_preload_api_request( [], '/wc/store/v1/order/' . rawurlencode( $order_id ) . '?key=' . rawurlencode( $key ) . '&billing_email=' . rawurlencode( $billing_email ) )[ '/wc/store/v1/order/' . rawurlencode( $order_id ) . '?key=' . rawurlencode( $key ) . '&billing_email=' . rawurlencode( $billing_email ) ]['body'];
 		}
 
 		$cart_request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
@@ -442,7 +448,7 @@ class WooPay_Session {
 			$order_id = $checkout_data['order_id'] ?? null;
 		}
 
-		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
+		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
@@ -655,8 +661,8 @@ class WooPay_Session {
 	 * @return bool True if request is a Store API request, false otherwise.
 	 */
 	private static function is_store_api_request(): bool {
-		if ( isset( $_REQUEST['rest_route'] ) ) {
-			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] );
+		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.NonceVerification
 		} else {
 			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 			$request_path = rtrim( $url_parts['path'], '/' );

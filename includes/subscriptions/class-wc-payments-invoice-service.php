@@ -352,8 +352,8 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Update a charge with the order id from invoice.
 	 *
-	 * @param array $invoice
-	 * @param int   $order_id
+	 * @param array $invoice Invoice details.
+	 * @param int   $order_id Order ID.
 	 *
 	 * @return void
 	 * @throws API_Exception

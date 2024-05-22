@@ -541,7 +541,7 @@ class WC_Payments_Customer_Service {
 				$firstname       = $user->user_firstname;
 				$lastname        = $user->user_lastname;
 				$user_email      = get_user_meta( $user->ID, 'billing_email', true );
-				$user_email      = $user_email ?: $user->user_email;
+				$user_email      = ! empty( $user_email ) ? $user_email : $user->user_email;
 				$billing_country = get_user_meta( $user->ID, 'billing_country', true );
 			}
 		}

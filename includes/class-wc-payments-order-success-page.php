@@ -82,7 +82,7 @@ class WC_Payments_Order_Success_Page {
 		if ( $payment_method->is_bnpl() ) {
 			$bnpl_output = $this->show_bnpl_payment_method_name( $gateway, $payment_method );
 
-			if ( $bnpl_output !== false ) {
+			if ( false !== $bnpl_output ) {
 				return $bnpl_output;
 			}
 		}
@@ -182,7 +182,7 @@ class WC_Payments_Order_Success_Page {
 	 * Formats the additional text to be displayed on the thank you page, with the side effect
 	 * as a workaround for an issue in Woo core 8.1.x and 8.2.x.
 	 *
-	 * @param string $additional_text
+	 * @param string $additional_text The additional text to be displayed.
 	 *
 	 * @return string Formatted text.
 	 */
