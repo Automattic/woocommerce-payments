@@ -153,7 +153,7 @@ describe( 'Klarna checkout', () => {
 			.waitForSelector( 'button[id*="pay_in_n"]' )
 			.then( ( button ) => button.click() );
 
-		// await page.waitFor( 2000 );
+		await page.waitFor( 2000 );
 
 		await page.screenshot( { path: 'screenshots/2.png' } );
 
@@ -164,7 +164,7 @@ describe( 'Klarna checkout', () => {
 		console.log( '13' );
 
 		await page.screenshot( { path: 'screenshots/3.png' } );
-		// await page.waitFor( 2000 );
+		await page.waitFor( 2000 );
 
 		// Payment summary page. Click continue.
 		await klarnaIframe
@@ -190,7 +190,7 @@ describe( 'Klarna checkout', () => {
 		// // Click payment method button.
 		// await klarnaIframe.evaluate( clickPaymentMethodButton );
 
-		// await page.waitFor( 2000 );
+		await page.waitFor( 2000 );
 
 		// await klarnaIframe
 		// 	.waitForSelector(
@@ -201,7 +201,7 @@ describe( 'Klarna checkout', () => {
 		// At this point, the event listener is not needed anymore.
 		page.removeListener( 'framenavigated', frameNavigationHandler );
 
-		// await page.waitFor( 4000 );
+		await page.waitFor( 2000 );
 		// Confirm payment.
 		await klarnaIframe
 			.waitForSelector( 'button#buy_button' )
