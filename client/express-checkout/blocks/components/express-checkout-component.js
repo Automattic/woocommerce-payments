@@ -5,27 +5,10 @@
  */
 import React, { useState } from 'react';
 import {
-	Elements,
 	ExpressCheckoutElement,
 	useElements,
 	useStripe,
 } from '@stripe/react-stripe-js';
-
-export const ExpressCheckoutContainer = ( props ) => {
-	const { stripe } = props;
-
-	const options = {
-		mode: 'payment',
-		amount: 1099,
-		currency: 'usd',
-	};
-
-	return (
-		<Elements stripe={ stripe } options={ options }>
-			<ExpressCheckout />
-		</Elements>
-	);
-};
 
 /**
  * ExpressCheckout express payment method component.
@@ -34,12 +17,17 @@ export const ExpressCheckoutContainer = ( props ) => {
  *
  * @return {ReactNode} Stripe Elements component.
  */
-export const ExpressCheckout = ( props ) => {
-	const stripe = useStripe();
+const ExpressCheckoutComponent = ( props ) => {
 	const elements = useElements();
+	const stripe = useStripe();
 	const [ visibility, setVisibility ] = useState( 'hidden' );
 
 	const buttonOptions = {
+		paymentMethods: {
+			applePay: 'always',
+			googlePay: 'always',
+			link: 'auto',
+		},
 		buttonType: {
 			googlePay: wcpayExpressCheckoutParams.button.type,
 			applePay: wcpayExpressCheckoutParams.button.type,
@@ -82,3 +70,5 @@ export const ExpressCheckout = ( props ) => {
 		/>
 	);
 };
+
+export default ExpressCheckoutComponent;

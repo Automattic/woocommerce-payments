@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from '../../checkout/constants';
-import { ExpressCheckoutContainer } from './express-checkout';
+import ExpressCheckoutContainer from './components/express-checkout-container';
 import { getConfig } from '../../utils/checkout';
 import ApplePayPreview from './apple-pay-preview';
 
