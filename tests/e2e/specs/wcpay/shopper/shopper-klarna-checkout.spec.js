@@ -116,16 +116,19 @@ describe( 'Klarna checkout', () => {
 		let klarnaIframe = await getNewKlarnaIframe();
 
 		const frameNavigationHandler = async ( frame ) => {
-			const newKlarnaIframe = await getNewKlarnaIframe();
-			if ( frame === newKlarnaIframe ) {
-				klarnaIframe = newKlarnaIframe;
+			if ( frame.url().includes( 'klarna.com' ) ) {
+				const newKlarnaIframe = await getNewKlarnaIframe();
+
+				if ( frame === newKlarnaIframe ) {
+					klarnaIframe = newKlarnaIframe;
+				}
 			}
 		};
 
 		// Add frame navigation event listener.
 		page.on( 'framenavigated', frameNavigationHandler );
 
-		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
+		// Waiting for the redirect & the Klarna iframe to load within the Stripe test page.
 		// this is the "confirm phone number" page - we just click "continue".
 		await klarnaIframe.waitForSelector( '#phone' );
 		await klarnaIframe
