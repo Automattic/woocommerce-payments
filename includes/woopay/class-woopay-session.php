@@ -380,7 +380,7 @@ class WooPay_Session {
 	/**
 	 * Retrieves the user email from the current session.
 	 *
-	 * @param WP_User $user The user object.
+	 * @param \WP_User $user The user object.
 	 * @return string The user email.
 	 */
 	private static function get_user_email( $user ) {
