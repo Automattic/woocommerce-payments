@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix ECE error in the blocks checkout when PRBs are disabled.
