@@ -57,7 +57,7 @@ const getComingSoonShareKey = () => {
 		return '';
 	}
 
-	return shareKey ? '/?woo-share=' + shareKey : '';
+	return shareKey ? '?woo-share=' + shareKey : '';
 };
 
 const initialData = {
