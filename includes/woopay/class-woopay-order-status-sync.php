@@ -45,7 +45,7 @@ class WooPay_Order_Status_Sync {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 
 		$this->payments_api_client = $payments_api_client;
-		$this->account			   = $account;
+		$this->account             = $account;
 
 		add_filter( 'woocommerce_webhook_topic_hooks', [ __CLASS__, 'add_topics' ], 20, 2 );
 		add_filter( 'woocommerce_webhook_payload', [ __CLASS__, 'create_payload' ], 10, 4 );
@@ -143,12 +143,12 @@ class WooPay_Order_Status_Sync {
 	/**
 	 * Setup payload for the webhook delivery.
 	 *
-	 * @param array   $payload     Data to be sent out by the webhook.
-	 * @param string  $resource    Type/name of the resource.
-	 * @param integer $resource_id ID of the resource.
-	 * @param integer $id          ID of the webhook.
+	 * @param array   $payload       Data to be sent out by the webhook.
+	 * @param string  $resource_name Type/name of the resource.
+	 * @param integer $resource_id   ID of the resource.
+	 * @param integer $id            ID of the webhook.
 	 */
-	public static function create_payload( $payload, $resource, $resource_id, $id ) {
+	public static function create_payload( $payload, $resource_name, $resource_id, $id ) {
 		$webhook = wc_get_webhook( $id );
 		if ( 0 !== strpos( $webhook->get_delivery_url(), WooPay_Utilities::get_woopay_rest_url( 'merchant-notification' ) ) ) {
 			// This is not a WooPay webhook, so we don't need to modify the payload.
@@ -211,6 +211,5 @@ class WooPay_Order_Status_Sync {
 			$webhook    = new \WC_Webhook( $webhook_id );
 			$webhook->delete();
 		}
-
 	}
 }

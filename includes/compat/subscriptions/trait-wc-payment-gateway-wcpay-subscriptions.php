@@ -264,7 +264,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		$js_config                     = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-		$js_config['intentSecret']     = WC_Payments_Utils::encrypt_client_secret( $intent->get_stripe_account_id(), $intent->get_client_secret() );
+		$js_config['intentSecret']     = $intent->get_client_secret();
 		$js_config['updateOrderNonce'] = wp_create_nonce( 'wcpay_update_order_status_nonce' );
 		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', $js_config );
 		wp_enqueue_script( 'WCPAY_CHECKOUT' );
@@ -971,7 +971,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			$order->add_order_note( $note );
 		}
-
 	}
 
 	/**

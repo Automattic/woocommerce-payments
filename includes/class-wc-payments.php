@@ -423,10 +423,13 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-intent-authentication-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
+		include_once __DIR__ . '/exceptions/class-invalid-phone-number-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-webhook-data-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
+		include_once __DIR__ . '/exceptions/class-fraud-prevention-enabled-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
+		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-country-code.php';
 		include_once __DIR__ . '/constants/class-currency-code.php';
@@ -965,6 +968,13 @@ class WC_Payments {
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
+		// Ensures we are not initializing our REST during `rest_preload_api_request`.
+		// When constructors signature changes, in manual update scenarios we were run into fatals.
+		// Those fatals are not critical, but it causes hickups in release process as catches unnecessary attention.
+		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
+			return;
+		}
+
 		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
 
