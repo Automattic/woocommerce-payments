@@ -30,7 +30,7 @@ class WooPayUserConnect extends WoopayConnect {
 	/**
 	 * Retrieves the email of the logged in user.
 	 *
-	 * @return {Promise<string>} Resolves to the user's email if they're logged in, and an empty string otherwise.
+	 * @return {Promise<string>} Resolves to the user's email if they're logged in, or an empty string otherwise.
 	 */
 	async getUserEmail() {
 		return await this.sendMessageAndListenWith(
