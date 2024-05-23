@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Pass previous exception with exception

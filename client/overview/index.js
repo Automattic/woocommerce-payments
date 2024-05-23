@@ -66,7 +66,7 @@ const OverviewSandboxModeNotice = ( { ctaAction = () => {} } ) => {
 					/* translators: %1$s: WooPayments */
 					__(
 						// eslint-disable-next-line max-len
-						'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real transactions, {{switchToLiveLink}}set up a live %1$s account{{/switchToLiveLink}}.{{learnMoreIcon/}}',
+						'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real transactions, {{switchToLiveLink}}set up a live %1$s account.{{/switchToLiveLink}} {{learnMoreIcon/}}',
 						'woocommerce-payments'
 					),
 					'WooPayments'
@@ -80,7 +80,7 @@ const OverviewSandboxModeNotice = ( { ctaAction = () => {} } ) => {
 								'Learn more about sandbox mode',
 								'woocommerce-payments'
 							) }
-							maxWidth={ '315px' }
+							maxWidth={ '250px' }
 							content={
 								<>
 									{ interpolateComponents( {
@@ -88,13 +88,12 @@ const OverviewSandboxModeNotice = ( { ctaAction = () => {} } ) => {
 											/* translators: %1$s: WooPayments */
 											__(
 												// eslint-disable-next-line max-len
-												'In sandbox mode, personal/business verifications and checkout payments are simulated. Find out what works best for you by {{strong}}testing all the %1$s options and flows.{{/strong}} {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+												'Sandbox mode gives you access to all %1$s features while checkout transactions are simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 												'woocommerce-payments'
 											),
 											'WooPayments'
 										),
 										components: {
-											strong: <strong />,
 											learnMoreLink: (
 												// eslint-disable-next-line jsx-a11y/anchor-has-content
 												<Link
