@@ -476,7 +476,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		// If WooCommerce Deposits is active, we need to get the correct price for the product.
-		if ( class_exists( 'WC_Deposits_Product_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
+		if ( class_exists( 'WC_Deposits_Product_Manager' ) && class_exists( 'WC_Deposits_Plans_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
 			if ( is_null( $is_deposit ) ) {
 				/**
 				 * If is_deposit is null, we use the default deposit type for the product.
