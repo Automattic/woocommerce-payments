@@ -11,11 +11,7 @@ import './style.scss';
 import InlineNotice from 'wcpay/components/inline-notice';
 
 const IncompatibilityNotice = ( { message, learnMoreLinkHref } ) => (
-	<InlineNotice
-		status="warning"
-		icon={ true }
-		isDismissible={ false }
-	>
+	<InlineNotice status="warning" icon={ true } isDismissible={ false }>
 		{ message }
 		<br />
 		{ interpolateComponents( {
