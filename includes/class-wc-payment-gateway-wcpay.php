@@ -1411,7 +1411,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception
-	 * @throws Exception
+	 * @throws Exception When amount too small.
 	 * @throws Invalid_Address_Exception
 	 * @throws Order_Not_Found_Exception
 	 * @throws Order_ID_Mismatch_Exception When the payment intent could not be authenticated.
