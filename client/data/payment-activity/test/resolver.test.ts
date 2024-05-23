@@ -13,6 +13,7 @@ import { updatePaymentActivity } from '../actions';
 import { getPaymentActivityData } from '../resolvers';
 
 const query = {
+	currency: 'usd',
 	date_start: '2020-04-29T04:00:00',
 	date_end: '2020-04-29T03:59:59',
 	timezone: '+2:30',
