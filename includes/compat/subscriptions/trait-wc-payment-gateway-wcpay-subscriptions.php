@@ -106,7 +106,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	/**
 	 * Used to temporary keep the state of the order_pay value on the Pay for order page with the SCA authorization flow.
 	 * For more details, see remove_order_pay_var and restore_order_pay_var hooks.
-	 * 
+	 *
 	 * @var string|int
 	 */
 	private $order_pay_var;

@@ -206,7 +206,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 			$this->is_affiliate_for_woocommerce_enabled()
 		) {
 			$affiliate_id = (int) wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
-			
+
 			if ( class_exists( '\AFWC_API' ) ) {
 				// phpcs:ignore
 				/**
