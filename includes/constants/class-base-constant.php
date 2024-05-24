@@ -98,8 +98,8 @@ abstract class Base_Constant implements \JsonSerializable {
 	 */
 	public static function __callStatic( $name, $arguments ) {
 		if ( ! isset( static::$object_cache[ $name ] ) ) {
-			// @phpstan-ignore-next-line
 			// The below line which uses new static( $name ) is essential to this method which creates instances of constants by their name.
+			// @phpstan-ignore-next-line.
 			static::$object_cache[ $name ] = new static( $name );
 		}
 		return static::$object_cache[ $name ];
