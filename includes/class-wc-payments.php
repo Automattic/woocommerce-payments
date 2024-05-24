@@ -1434,7 +1434,7 @@ class WC_Payments {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
-			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_norway_notice' );
+			add_filter( 'admin_notices', [ __CLASS__, 'wcpay_show_old_woocommerce_for_norway_notice' ] );
 		}
 
 		add_filter( 'admin_notices', [ __CLASS__, 'wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic' ] );
