@@ -171,7 +171,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 			];
 		}
 
-		if ( $this->is_affiliate_for_woocommerce_enabled() ) {
+		if ( $this->is_affiliate_for_woocommerce_enabled() && function_exists( 'afwc_get_referrer_id' ) ) {
 			/**
 			 * @psalm-suppress UndefinedFunction
 			 */
@@ -204,13 +204,15 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 			$this->is_affiliate_for_woocommerce_enabled()
 		) {
 			$affiliate_id = (int) wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
-
-			// phpcs:ignore
-			/**
-			 * @psalm-suppress UndefinedClass
-			 */
-			$affiliate_api = \AFWC_API::get_instance();
-			$affiliate_api->track_conversion( $order_id, $affiliate_id, '', [ 'is_affiliate_eligible' => true ] );
+			
+			if ( class_exists( '\AFWC_API' ) ) {
+				// phpcs:ignore
+				/**
+				 * @psalm-suppress UndefinedClass
+				 */
+				$affiliate_api = \AFWC_API::get_instance();
+				$affiliate_api->track_conversion( $order_id, $affiliate_id, '', [ 'is_affiliate_eligible' => true ] );
+			}
 		}
 	}
 
@@ -270,7 +272,10 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	 * @return string|null
 	 */
 	private function get_automate_woo_advocate_id_from_cookie() {
-		$advocate_from_key_cookie = \AutomateWoo\Referrals\Referral_Manager::get_advocate_key_from_cookie();
-		return $advocate_from_key_cookie ? $advocate_from_key_cookie->get_advocate_id() : null;
+		if ( class_exists( '\AutomateWoo\Referrals\Referral_Manager' ) ) {
+			$advocate_from_key_cookie = \AutomateWoo\Referrals\Referral_Manager::get_advocate_key_from_cookie();
+			return $advocate_from_key_cookie ? $advocate_from_key_cookie->get_advocate_id() : null;
+		}
+		return null;
 	}
 }
