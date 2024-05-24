@@ -971,7 +971,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			$order->add_order_note( $note );
 		}
-
 	}
 
 	/**
