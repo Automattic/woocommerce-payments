@@ -9,17 +9,19 @@ import { Elements } from '@stripe/react-stripe-js';
 import ExpressCheckoutComponent from './express-checkout-component';
 
 const ExpressCheckoutContainer = ( props ) => {
-	const { stripe } = props;
+	const { stripe, billing } = props;
+
+	console.log( billing );
 
 	const options = {
 		mode: 'payment',
-		amount: 1099,
-		currency: 'usd',
+		amount: billing.cartTotal.value,
+		currency: billing.currency.code.toLowerCase(),
 	};
 
 	return (
 		<Elements stripe={ stripe } options={ options }>
-			<ExpressCheckoutComponent />
+			<ExpressCheckoutComponent { ...props } />
 		</Elements>
 	);
 };
