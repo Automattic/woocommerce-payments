@@ -1119,7 +1119,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		throw new Exception( __( 'The payment process could not be completed.', 'woocommerce-payments' ), 0, new New_Process_Payment_Exception() );
+		throw new Exception(
+			__( 'The payment process could not be completed.', 'woocommerce-payments' ),
+			0,
+			new New_Process_Payment_Exception(
+				__( 'The payment process could not be completed.', 'woocommerce-payments' ),
+				'new_process_payment'
+			)
+		);
 	}
 
 	/**
