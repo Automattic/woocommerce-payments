@@ -121,7 +121,6 @@ abstract class AbstractPaymentState {
 		return $state;
 	}
 
-
 	/**
 	 * Throws an exception, indicating that a given method is not available.
 	 *
