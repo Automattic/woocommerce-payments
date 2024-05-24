@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add share key query param when sending data to Stripe KYC
