@@ -45,6 +45,13 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	/**
 	 * Express Checkout Helper instance.
 	 *
+	 * @var WC_Payments_Express_Checkout_Ajax_Handler
+	 */
+	private $express_checkout_ajax_handler;
+
+	/**
+	 * Express Checkout Helper instance.
+	 *
 	 * @var WC_Payments_Express_Checkout_Button_Helper
 	 */
 	private $express_checkout_helper;
@@ -56,19 +63,21 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @param WC_Payments_Payment_Request_Button_Handler  $payment_request_button_handler Payment request button handler.
 	 * @param WC_Payments_WooPay_Button_Handler           $platform_checkout_button_handler Platform checkout button handler.
 	 * @param WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler Express Checkout Element button handler.
-	 * @param WC_Payments_Express_Checkout_Button_Helper  $express_checkout_helper Express checkout helper.
+	 * @param WC_Payments_Express_Checkout_Ajax_Handler  $express_checkout_ajax_handler Express checkout ajax handlers.
 	 */
 	public function __construct(
 		WC_Payment_Gateway_WCPay $gateway,
 		WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler,
 		WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler,
 		WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler,
+		WC_Payments_Express_Checkout_Ajax_Handler $express_checkout_ajax_handler,
 		WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper
 	) {
 		$this->gateway                          = $gateway;
 		$this->payment_request_button_handler   = $payment_request_button_handler;
 		$this->platform_checkout_button_handler = $platform_checkout_button_handler;
 		$this->express_checkout_button_handler  = $express_checkout_button_handler;
+		$this->express_checkout_ajax_handler    = $express_checkout_ajax_handler;
 		$this->express_checkout_helper          = $express_checkout_helper;
 	}
 
@@ -86,8 +95,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$is_payment_request_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
 
 		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
-			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_helper, 'ajax_add_to_cart' ] );
-			add_action( 'wc_ajax_wcpay_empty_cart', [ $this->express_checkout_helper, 'ajax_empty_cart' ] );
+			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_ajax_handler, 'ajax_add_to_cart' ] );
+			add_action( 'wc_ajax_wcpay_empty_cart', [ $this->express_checkout_ajax_handler, 'ajax_empty_cart' ] );
 
 			add_action( 'woocommerce_after_add_to_cart_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );
