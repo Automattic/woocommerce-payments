@@ -27,6 +27,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 */
 	public function init() {
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
+		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
 	}
 
 	/**
@@ -53,6 +54,34 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		WC()->checkout()->process_checkout();
 
 		die( 0 );
+	}
+
+	/**
+	 * Get shipping options.
+	 *
+	 * @see WC_Cart::get_shipping_packages().
+	 * @see WC_Shipping::calculate_shipping().
+	 * @see WC_Shipping::get_packages().
+	 */
+	public function ajax_get_shipping_options() {
+		check_ajax_referer( 'wcpay-payment-request-shipping', 'security' );
+
+		$shipping_address          = filter_input_array(
+			INPUT_POST,
+			[
+				'country'   => FILTER_SANITIZE_SPECIAL_CHARS,
+				'state'     => FILTER_SANITIZE_SPECIAL_CHARS,
+				'postcode'  => FILTER_SANITIZE_SPECIAL_CHARS,
+				'city'      => FILTER_SANITIZE_SPECIAL_CHARS,
+				'address_1' => FILTER_SANITIZE_SPECIAL_CHARS,
+				'address_2' => FILTER_SANITIZE_SPECIAL_CHARS,
+			]
+		);
+		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
+		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
+
+		$data = $this->express_checkout_button_helper->get_shipping_options( $shipping_address, $should_show_itemized_view );
+		wp_send_json( $data );
 	}
 
 	/**

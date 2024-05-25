@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 
@@ -485,6 +486,120 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Gets shipping options available for specified shipping address
+	 *
+	 * @param array   $shipping_address Shipping address.
+	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
+	 *
+	 * @return array Shipping options data.
+	 *
+	 * phpcs:ignore Squiz.Commenting.FunctionCommentThrowTag
+	 */
+	public function get_shipping_options( $shipping_address, $itemized_display_items = false ) {
+		try {
+			// Set the shipping options.
+			$data = [];
+
+			// Remember current shipping method before resetting.
+			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
+			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
+
+			$packages = WC()->shipping->get_packages();
+
+			if ( ! empty( $packages ) && WC()->customer->has_calculated_shipping() ) {
+				foreach ( $packages as $package_key => $package ) {
+					if ( empty( $package['rates'] ) ) {
+						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
+					}
+
+					foreach ( $package['rates'] as $key => $rate ) {
+						$data['shipping_options'][] = [
+							'id'     => $rate->id,
+							'label'  => $rate->label,
+							'detail' => '',
+							'amount' => WC_Payments_Utils::prepare_amount( $rate->cost, get_woocommerce_currency() ),
+						];
+					}
+				}
+			} else {
+				throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
+			}
+
+			// The first shipping option is automatically applied on the client.
+			// Keep chosen shipping method by sorting shipping options if the method still available for new address.
+			// Fallback to the first available shipping method.
+			if ( isset( $data['shipping_options'][0] ) ) {
+				if ( isset( $chosen_shipping_methods[0] ) ) {
+					$chosen_method_id         = $chosen_shipping_methods[0];
+					$compare_shipping_options = function ( $a, $b ) use ( $chosen_method_id ) {
+						if ( $a['id'] === $chosen_method_id ) {
+							return -1;
+						}
+
+						if ( $b['id'] === $chosen_method_id ) {
+							return 1;
+						}
+
+						return 0;
+					};
+					usort( $data['shipping_options'], $compare_shipping_options );
+				}
+
+				$first_shipping_method_id = $data['shipping_options'][0]['id'];
+				$this->update_shipping_method( [ $first_shipping_method_id ] );
+			}
+
+			WC()->cart->calculate_totals();
+
+			$this->maybe_restore_recurring_chosen_shipping_methods( $chosen_shipping_methods );
+
+			$data          += $this->build_display_items( $itemized_display_items );
+			$data['result'] = 'success';
+		} catch ( Exception $e ) {
+			$data          += $this->build_display_items( $itemized_display_items );
+			$data['result'] = 'invalid_shipping_address';
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Restores the shipping methods previously chosen for each recurring cart after shipping was reset and recalculated
+	 * during the Payment Request get_shipping_options flow.
+	 *
+	 * When the cart contains multiple subscriptions with different billing periods, customers are able to select different shipping
+	 * methods for each subscription, however, this is not supported when purchasing with Apple Pay and Google Pay as it's
+	 * only concerned about handling the initial purchase.
+	 *
+	 * In order to avoid Woo Subscriptions's `WC_Subscriptions_Cart::validate_recurring_shipping_methods` throwing an error, we need to restore
+	 * the previously chosen shipping methods for each recurring cart.
+	 *
+	 * This function needs to be called after `WC()->cart->calculate_totals()` is run, otherwise `WC()->cart->recurring_carts` won't exist yet.
+	 *
+	 * @param array $previous_chosen_methods The previously chosen shipping methods.
+	 */
+	private function maybe_restore_recurring_chosen_shipping_methods( $previous_chosen_methods = [] ) {
+		if ( empty( WC()->cart->recurring_carts ) || ! method_exists( 'WC_Subscriptions_Cart', 'get_recurring_shipping_package_key' ) ) {
+			return;
+		}
+
+		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
+			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_index => $recurring_cart_package ) {
+				$package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $recurring_cart_package_index );
+
+				// If the recurring cart package key is found in the previous chosen methods, but not in the current chosen methods, restore it.
+				if ( isset( $previous_chosen_methods[ $package_key ] ) && ! isset( $chosen_shipping_methods[ $package_key ] ) ) {
+					$chosen_shipping_methods[ $package_key ] = $previous_chosen_methods[ $package_key ];
+				}
+			}
+		}
+
+		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
+	}
+
+	/**
 	 * Gets the product data for the currently viewed page.
 	 *
 	 * @return mixed Returns false if not on a product page, the product information otherwise.
@@ -860,6 +975,30 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Normalizes postal code in case of redacted data from Apple Pay.
+	 *
+	 * @param string $postcode Postal code.
+	 * @param string $country Country.
+	 */
+	public function get_normalized_postal_code( $postcode, $country ) {
+		/**
+		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first 4 and 3 characters respectively
+		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
+		 * the postal code and not calculate shipping zones correctly.
+		 */
+		if ( Country_Code::UNITED_KINGDOM === $country ) {
+			// Replaces a redacted string with something like N1C0000.
+			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '0' );
+		}
+		if ( Country_Code::CANADA === $country ) {
+			// Replaces a redacted string with something like H3B000.
+			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );
+		}
+
+		return $postcode;
+	}
+
+	/**
 	 * Sanitize string for comparison.
 	 *
 	 * @param string $string String to be sanitized.
@@ -868,5 +1007,84 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function sanitize_string( $string ) {
 		return trim( wc_strtolower( remove_accents( $string ) ) );
+	}
+
+	/**
+	 * Updates shipping method in WC session
+	 *
+	 * @param array $shipping_methods Array of selected shipping methods ids.
+	 */
+	public function update_shipping_method( $shipping_methods ) {
+		$chosen_shipping_methods = (array) WC()->session->get( 'chosen_shipping_methods' );
+
+		if ( is_array( $shipping_methods ) ) {
+			foreach ( $shipping_methods as $i => $value ) {
+				$chosen_shipping_methods[ $i ] = wc_clean( $value );
+			}
+		}
+
+		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
+	}
+
+	/**
+	 * Calculate and set shipping method.
+	 *
+	 * @param array $address Shipping address.
+	 */
+	protected function calculate_shipping( $address = [] ) {
+		$country   = $address['country'];
+		$state     = $address['state'];
+		$postcode  = $address['postcode'];
+		$city      = $address['city'];
+		$address_1 = $address['address_1'];
+		$address_2 = $address['address_2'];
+
+		// Normalizes state to calculate shipping zones.
+		$state = $this->get_normalized_state( $state, $country );
+
+		// Normalizes postal code in case of redacted data from Apple Pay.
+		$postcode = $this->get_normalized_postal_code( $postcode, $country );
+
+		WC()->shipping->reset_shipping();
+
+		if ( $postcode && WC_Validation::is_postcode( $postcode, $country ) ) {
+			$postcode = wc_format_postcode( $postcode, $country );
+		}
+
+		if ( $country ) {
+			WC()->customer->set_location( $country, $state, $postcode, $city );
+			WC()->customer->set_shipping_location( $country, $state, $postcode, $city );
+		} else {
+			WC()->customer->set_billing_address_to_base();
+			WC()->customer->set_shipping_address_to_base();
+		}
+
+		WC()->customer->set_calculated_shipping( true );
+		WC()->customer->save();
+
+		$packages = [];
+
+		$packages[0]['contents']                 = WC()->cart->get_cart();
+		$packages[0]['contents_cost']            = 0;
+		$packages[0]['applied_coupons']          = WC()->cart->applied_coupons;
+		$packages[0]['user']['ID']               = get_current_user_id();
+		$packages[0]['destination']['country']   = $country;
+		$packages[0]['destination']['state']     = $state;
+		$packages[0]['destination']['postcode']  = $postcode;
+		$packages[0]['destination']['city']      = $city;
+		$packages[0]['destination']['address']   = $address_1;
+		$packages[0]['destination']['address_2'] = $address_2;
+
+		foreach ( WC()->cart->get_cart() as $item ) {
+			if ( $item['data']->needs_shipping() ) {
+				if ( isset( $item['line_total'] ) ) {
+					$packages[0]['contents_cost'] += $item['line_total'];
+				}
+			}
+		}
+
+		$packages = apply_filters( 'woocommerce_cart_shipping_packages', $packages );
+
+		WC()->shipping->calculate_shipping( $packages );
 	}
 }
