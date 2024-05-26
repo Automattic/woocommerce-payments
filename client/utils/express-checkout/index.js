@@ -76,3 +76,15 @@ export const shouldUseGooglePayBrand = () => {
 	const isBrave = isChrome && window.navigator.brave;
 	return isChrome && ! isBrave;
 };
+
+/**
+ * Get error messages from WooCommerce notice from server response.
+ *
+ * @param {string} notice Error notice.
+ * @return {string} Error messages.
+ */
+export const getErrorMessageFromNotice = ( notice ) => {
+	const div = document.createElement( 'div' );
+	div.innerHTML = notice.trim();
+	return div.firstChild ? div.firstChild.textContent : '';
+};

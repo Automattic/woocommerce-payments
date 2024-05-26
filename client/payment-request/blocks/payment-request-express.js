@@ -97,7 +97,7 @@ const PaymentRequestExpressComponent = ( {
 			onClick={ onPaymentRequestButtonClick }
 			options={ {
 				style: paymentRequestButtonStyle,
-				paymentRequest,
+				paymentRequest,  
 			} }
 		/>
 	);

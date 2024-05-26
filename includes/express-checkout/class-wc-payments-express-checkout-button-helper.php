@@ -514,10 +514,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 					foreach ( $package['rates'] as $key => $rate ) {
 						$data['shipping_options'][] = [
-							'id'     => $rate->id,
-							'label'  => $rate->label,
-							'detail' => '',
-							'amount' => WC_Payments_Utils::prepare_amount( $rate->cost, get_woocommerce_currency() ),
+							'id'     	   => $rate->id,
+							'displayName'  => $rate->label,
+							'amount' 	   => WC_Payments_Utils::prepare_amount( $rate->cost, get_woocommerce_currency() ),
 						];
 					}
 				}

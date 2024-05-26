@@ -1,13 +1,9 @@
-
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import {
-	ExpressCheckoutElement,
-	useElements,
-	useStripe,
-} from '@stripe/react-stripe-js';
+import React, { useCallback } from 'react';
+import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
+import { shippingAddressChangeHandler } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
 
 /**
@@ -27,16 +23,23 @@ const ExpressCheckoutComponent = ( {
 	onPaymentRequestAvailable,
 } ) => {
 	const { buttonOptions, onButtonClick, onConfirm } = useExpressCheckout( {
+		api,
 		billing,
+		shippingData,
 		onClick,
 		setExpressPaymentError,
 	} );
+
+	const onShippingAddressChange = ( event ) => {
+		shippingAddressChangeHandler( api, event );
+	};
 
 	return (
 		<ExpressCheckoutElement
 			options={ buttonOptions }
 			onClick={ onButtonClick }
 			onConfirm={ onConfirm }
+			onShippingAddressChange={ onShippingAddressChange }
 		/>
 	);
 };

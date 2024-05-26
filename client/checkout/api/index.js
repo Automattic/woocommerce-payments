@@ -8,6 +8,8 @@ import {
 	getPaymentRequestData,
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
+	getExpressCheckoutAjaxURL,
+	getExpressCheckoutConfig,
 } from 'utils/express-checkout';
 import { decryptClientSecret } from '../utils/encryption';
 
@@ -494,6 +496,37 @@ export default class WCPayAPI {
 	paymentRequestCreateOrder( paymentData ) {
 		return this.request( getPaymentRequestAjaxURL( 'create_order' ), {
 			_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
+			...paymentData,
+		} );
+	}
+
+	/**
+	 * Submits shipping address to get available shipping options
+	 * from Express Checkout ECE payment method.
+	 *
+	 * @param {Object} shippingAddress Shipping details.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	expressCheckoutECECalculateShippingOptions( shippingAddress ) {
+		return this.request(
+			getExpressCheckoutAjaxURL( 'get_shipping_options' ),
+			{
+				security: getPaymentRequestData( 'nonce' )?.shipping,
+				is_product_page: getPaymentRequestData( 'is_product_page' ),
+				...shippingAddress,
+			}
+		);
+	}
+
+	/**
+	 * Creates order based on Express Checkout ECE payment method.
+	 *
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	expressCheckoutECECreateOrder( paymentData ) {
+		return this.request( getExpressCheckoutAjaxURL( 'create_order' ), {
+			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.checkout,
 			...paymentData,
 		} );
 	}
