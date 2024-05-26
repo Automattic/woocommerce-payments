@@ -9,8 +9,6 @@ export const shippingAddressChangeHandler = async ( api, event ) => {
 	const response = await api.paymentRequestCalculateShippingOptions(
 		normalizeShippingAddress( event.shippingAddress )
 	);
-	console.log( response );
-
 	event.resolve( {
 		shippingRates: response.shipping_options,
 	} );
@@ -18,13 +16,15 @@ export const shippingAddressChangeHandler = async ( api, event ) => {
 
 const paymentResponseHandler = async (
 	api,
-	response,
+	createOrderResponse,
 	completePayment,
 	abortPayment,
 	event
 ) => {
+
+	console.log('paymentResponseHandler');
 	return;
-	if ( response.result !== 'success' ) {
+	if ( createOrderResponse.result !== 'success' ) {
 		return abortPayment(
 			event,
 			getErrorMessageFromNotice( response.messages )
@@ -32,7 +32,7 @@ const paymentResponseHandler = async (
 	}
 
 	try {
-		const confirmationRequest = api.confirmIntent( response.redirect );
+		const confirmationRequest = api.confirmIntent( createOrderResponse.redirect );
 		// We need to call `complete` outside of `completePayment` to close the dialog for 3DS.
 		event.complete( 'success' );
 
@@ -55,18 +55,17 @@ export const onConfirmHandler = async (
 	abortPayment,
 	event
 ) => {
-	console.log( api );
-	console.log( event );
+	console.log( 'onConfirmHandler', event );
 	// Kick off checkout processing step.
-	const response = await api.expressCheckoutECECreateOrder(
+	const createOrderResponse = await api.expressCheckoutECECreateOrder(
 		normalizeOrderData( event )
 	);
 
-	console.log( response );
+	console.log( 'createOrderResponse', createOrderResponse );
 
 	paymentResponseHandler(
 		api,
-		response,
+		createOrderResponse,
 		completePayment,
 		abortPayment,
 		event

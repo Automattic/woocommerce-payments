@@ -60,6 +60,8 @@ export const useExpressCheckout = ( {
 				lineItems: normalizeLineItems( billing?.cartTotalItems ),
 				emailRequired: true,
 				shippingAddressRequired: shippingData?.needsShipping,
+				phoneNumberRequired:
+					wcpayExpressCheckoutParams?.checkout?.needs_payer_phone,
 				shippingRates: shippingData?.shippingRates[ 0 ].shipping_rates.map(
 					( r ) => {
 						return {
