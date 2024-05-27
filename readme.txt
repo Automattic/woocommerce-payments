@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 7.7.0 - 2024-05-29 =
+= 7.7.0-test-3 - unreleased =
 * Add - Add share key query param when sending data to Stripe KYC.
 * Add - Add the WooPay Direct Checkout flow to the blocks mini cart widget.
 * Add - feat: add multi-currency support to Store API.
