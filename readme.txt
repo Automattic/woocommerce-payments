@@ -95,26 +95,26 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 7.7.0 - 2024-05-29 =
-* Add - Add share key query param when sending data to Stripe KYC
+* Add - Add share key query param when sending data to Stripe KYC.
 * Add - Add the WooPay Direct Checkout flow to the blocks mini cart widget.
-* Add - feat: add multi-currency support to Store API
-* Add - feat: error message on 1M+ amount
+* Add - feat: add multi-currency support to Store API.
+* Add - feat: error message on 1M+ amount.
 * Add - feat: tokenized cart PRBs on PDPs via feature flag.
 * Add - Render ECE buttons behind a feature flag.
 * Fix - Charm pricing and rounding options corrected for all currencies that aren't presented with decimal points.
-* Fix - fix: remove WooPay checkout pages scripts from non-checkout pages
-* Fix - fix: settings notices consistency
-* Fix - fix: Store API tokenized cart nonce verification
+* Fix - fix: remove WooPay checkout pages scripts from non-checkout pages.
+* Fix - fix: settings notices consistency.
+* Fix - fix: Store API tokenized cart nonce verification.
 * Fix - Fix a bug in Tracks where shopper events are not fired properly.
 * Fix - Fix ECE error in the blocks checkout when PRBs are disabled.
 * Fix - Fix Payment block render error while editing the block checkout page.
 * Fix - Fix shortcode orders when using WooPay Direct Checkout.
-* Fix - Improve visibility of WooPay button on light and outline button themes
-* Fix - Updating saved payment method billing address before processing the payment
+* Fix - Improve visibility of WooPay button on light and outline button themes.
+* Fix - Updating saved payment method billing address before processing the payment.
 * Update - Do not auto-redirect to WooPay on page load.
-* Update - Pass previous exception with exception
-* Update - Removed deprecated deposit_status key from account status
-* Update - Remove public key encryption setting from WooPayments settings
+* Update - Pass previous exception with exception.
+* Update - Removed deprecated deposit_status key from account status.
+* Update - Remove public key encryption setting from WooPayments settings.
 * Update - Update XPF currency formatting.
 * Dev - Add command to run QIT PHPStan tests.
 * Dev - Add local release package support for PHPStan.
