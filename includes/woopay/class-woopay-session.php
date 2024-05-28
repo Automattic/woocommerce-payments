@@ -385,6 +385,10 @@ class WooPay_Session {
 	 */
 	private static function get_user_email( $user ) {
 		if ( ! empty( $_POST['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			if ( is_array( $_POST['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+				 // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+				return sanitize_email( wp_unslash( WooPay_Utilities::decrypt_signed_data( $_POST['email'] ) ) ) ?? '';
+			}
 			return sanitize_email( wp_unslash( $_POST['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		}
 
