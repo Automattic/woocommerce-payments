@@ -64,7 +64,7 @@ jQuery( ( $ ) => {
 
 	// We need to refresh payment request data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
-		doAction( 'wcpay.payment-request.update-button-data' );
+		wooPaymentsPaymentRequest.init();
 	} );
 
 	// We need to refresh payment request data when total is updated.

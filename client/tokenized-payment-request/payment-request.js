@@ -139,7 +139,10 @@ export default class WooPaymentsPaymentRequest {
 			} );
 		paymentRequestButtonUi.showButton( paymentRequestButton );
 
-		this.attachPaymentRequestButtonEventListeners();
+		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
+			this.attachPaymentRequestButtonEventListeners();
+		}
+
 		removeAction(
 			'wcpay.payment-request.update-button-data',
 			'automattic/wcpay/payment-request'
