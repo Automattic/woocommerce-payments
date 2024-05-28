@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: Store API tokenized cart nonce verification
