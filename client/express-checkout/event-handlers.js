@@ -21,24 +21,24 @@ const paymentResponseHandler = async (
 	abortPayment,
 	event
 ) => {
-
-	console.log('paymentResponseHandler');
-	return;
+	console.log( 'paymentResponseHandler' );
 	if ( createOrderResponse.result !== 'success' ) {
 		return abortPayment(
 			event,
-			getErrorMessageFromNotice( response.messages )
+			getErrorMessageFromNotice( createOrderResponse.messages )
 		);
 	}
 
 	try {
-		const confirmationRequest = api.confirmIntent( createOrderResponse.redirect );
+		const confirmationRequest = api.confirmIntent(
+			createOrderResponse.redirect
+		);
 		// We need to call `complete` outside of `completePayment` to close the dialog for 3DS.
-		event.complete( 'success' );
+		// event.complete( 'success' );
 
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
-			completePayment( response.redirect );
+			completePayment( createOrderResponse.redirect );
 		} else {
 			const redirectUrl = await confirmationRequest;
 
@@ -51,14 +51,26 @@ const paymentResponseHandler = async (
 
 export const onConfirmHandler = async (
 	api,
+	stripe,
+	elements,
 	completePayment,
 	abortPayment,
 	event
 ) => {
 	console.log( 'onConfirmHandler', event );
+
+	const { paymentMethod, error } = await stripe.createPaymentMethod( {
+		elements,
+	} );
+
+	if (error) {
+		abortPayment( event, error.message );
+		return;
+	}
+
 	// Kick off checkout processing step.
 	const createOrderResponse = await api.expressCheckoutECECreateOrder(
-		normalizeOrderData( event )
+		normalizeOrderData( event, paymentMethod.id )
 	);
 
 	console.log( 'createOrderResponse', createOrderResponse );

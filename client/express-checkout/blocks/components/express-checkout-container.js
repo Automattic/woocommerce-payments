@@ -18,6 +18,7 @@ const ExpressCheckoutContainer = ( props ) => {
 		mode: 'payment',
 		amount: billing.cartTotal.value,
 		currency: billing.currency.code.toLowerCase(),
+		paymentMethodCreation: 'manual',
 	};
 
 	return (

@@ -77,34 +77,22 @@ export const useExpressCheckout = ( {
 		},
 		[
 			onClick,
-			setExpressPaymentError,
 			billing.cartTotalItems,
 			shippingData.needsShipping,
+			shippingData.shippingRates,
 		]
 	);
 
 	const onConfirm = async ( event ) => {
 		console.log( 'Confirmed' );
-		onConfirmHandler( api, completePayment, abortPayment, event );
-
-		event.resolve();
-
-		// Uncaught (in promise) IntegrationError:
-		// You must pass in a clientSecret when calling stripe.confirmPayment().
-
-		const { error } = stripe.confirmPayment( {
+		onConfirmHandler(
+			api,
+			stripe,
 			elements,
-			confirmParams: {
-				return_url: 'https://example.com/order/123/complete',
-			},
-		} );
-
-		if ( error ) {
-			// This point is reached only if there's an immediate error when confirming the payment.
-			// Show the error to your customer(for example, payment details incomplete).
-		} else {
-			// Your customer will be redirected to your `return_url`.
-		}
+			completePayment,
+			abortPayment,
+			event
+		);
 	};
 
 	return {

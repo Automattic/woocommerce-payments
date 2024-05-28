@@ -23,10 +23,11 @@ export const normalizeLineItems = ( displayItems ) => {
  * Normalize order data from Stripe's object to the expected format for WC.
  *
  * @param {Object} event Stripe's event object.
+ * @param {Object} paymentMethodId Stripe's payment method id.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
-export const normalizeOrderData = ( event ) => {
+export const normalizeOrderData = ( event, paymentMethodId ) => {
 	const name = event?.billingDetails?.name;
 	const email = event?.billingDetails?.email ?? '';
 	const phone = event?.billingDetails?.phone ?? '';
@@ -64,7 +65,7 @@ export const normalizeOrderData = ( event ) => {
 		payment_method: 'woocommerce_payments',
 		ship_to_different_address: 1,
 		terms: 1,
-		'wcpay-payment-method': event?.paymentMethod?.id,
+		'wcpay-payment-method': paymentMethodId,
 		express_payment_type: event?.expressPaymentType,
 		'wcpay-fraud-prevention-token': fraudPreventionTokenValue,
 	};
