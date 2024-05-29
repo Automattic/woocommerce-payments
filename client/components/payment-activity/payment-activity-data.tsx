@@ -13,23 +13,9 @@ import interpolateComponents from '@automattic/interpolate-components';
 import InlineNotice from '../inline-notice';
 import PaymentDataTile from './payment-data-tile';
 import { ClickTooltip } from '../tooltip';
-import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
-import type { DateRange } from './types';
+import type { PaymentActivityData } from 'wcpay/data/payment-activity/types';
 import './style.scss';
-
-/**
- * This will be replaces in the future with a dynamic date range picker.
- */
-const getDateRange = (): DateRange => {
-	return {
-		// Subtract 6 days from the current date. 7 days including the current day.
-		date_start: moment()
-			.subtract( 6, 'd' )
-			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
-		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
-	};
-};
 
 const searchTermsForViewReportLink = {
 	totalPaymentVolume: [
@@ -44,7 +30,7 @@ const searchTermsForViewReportLink = {
 		'card_reader_fee',
 	],
 
-	charge: [ 'charge', 'payment' ],
+	charge: [ 'charge', 'payment', 'adjustment' ],
 
 	refunds: [
 		'refund',
@@ -52,6 +38,8 @@ const searchTermsForViewReportLink = {
 		'payment_refund',
 		'payment_failure_refund',
 	],
+
+	dispute: [ 'dispute', 'dispute_reversal' ],
 };
 
 const getSearchParams = ( searchTerms: string[] ) => {
@@ -64,11 +52,15 @@ const getSearchParams = ( searchTerms: string[] ) => {
 	);
 };
 
-const PaymentActivityData: React.FC = () => {
-	const { paymentActivityData, isLoading } = usePaymentActivityData(
-		getDateRange()
-	);
+interface Props {
+	paymentActivityData?: PaymentActivityData;
+	isLoading?: boolean;
+}
 
+const PaymentActivityDataComponent: React.FC< Props > = ( {
+	paymentActivityData,
+	isLoading,
+} ) => {
 	const totalPaymentVolume = paymentActivityData?.total_payment_volume ?? 0;
 	const charges = paymentActivityData?.charges ?? 0;
 	const fees = paymentActivityData?.fees ?? 0;
@@ -121,11 +113,11 @@ const PaymentActivityData: React.FC = () => {
 					path: '/payments/transactions',
 					filter: 'advanced',
 					'date_between[0]': moment(
-						getDateRange().date_start
+						paymentActivityData?.date_start
 					).format( 'YYYY-MM-DD' ),
-					'date_between[1]': moment( getDateRange().date_end ).format(
-						'YYYY-MM-DD'
-					),
+					'date_between[1]': moment(
+						paymentActivityData?.date_end
+					).format( 'YYYY-MM-DD' ),
 					...getSearchParams(
 						searchTermsForViewReportLink.totalPaymentVolume
 					),
@@ -163,10 +155,10 @@ const PaymentActivityData: React.FC = () => {
 						path: '/payments/transactions',
 						filter: 'advanced',
 						'date_between[0]': moment(
-							getDateRange().date_start
+							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
-							getDateRange().date_end
+							paymentActivityData?.date_end
 						).format( 'YYYY-MM-DD' ),
 						...getSearchParams(
 							searchTermsForViewReportLink.charge
@@ -185,10 +177,10 @@ const PaymentActivityData: React.FC = () => {
 						path: '/payments/transactions',
 						filter: 'advanced',
 						'date_between[0]': moment(
-							getDateRange().date_start
+							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
-							getDateRange().date_end
+							paymentActivityData?.date_end
 						).format( 'YYYY-MM-DD' ),
 						...getSearchParams(
 							searchTermsForViewReportLink.refunds
@@ -204,15 +196,17 @@ const PaymentActivityData: React.FC = () => {
 					amount={ disputes }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
-						path: '/payments/disputes',
+						path: '/payments/transactions',
 						filter: 'advanced',
 						'date_between[0]': moment(
-							getDateRange().date_start
+							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
-							getDateRange().date_end
+							paymentActivityData?.date_end
 						).format( 'YYYY-MM-DD' ),
-						status_is: 'needs_response',
+						...getSearchParams(
+							searchTermsForViewReportLink.dispute
+						),
 					} ) }
 					tracksSource="disputes"
 					isLoading={ isLoading }
@@ -248,4 +242,4 @@ const PaymentActivityData: React.FC = () => {
 	);
 };
 
-export default PaymentActivityData;
+export default PaymentActivityDataComponent;

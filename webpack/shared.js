@@ -20,7 +20,10 @@ module.exports = {
 				'./client/checkout/woopay/direct-checkout/index.js',
 			cart: './client/cart/index.js',
 			checkout: './client/checkout/classic/event-handlers.js',
+			'express-checkout': './client/express-checkout/index.js',
 			'payment-request': './client/payment-request/index.js',
+			'tokenized-payment-request':
+				'./client/tokenized-payment-request/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',
 			'payment-gateways': './client/payment-gateways/index.js',

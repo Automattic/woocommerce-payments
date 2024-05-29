@@ -36,6 +36,10 @@ class WooPay_Save_User {
 	 * Load scripts and styles for checkout page.
 	 */
 	public function register_checkout_page_scripts() {
+		if ( ! is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {
+			return;
+		}
+
 		// Don't enqueue checkout page scripts when WCPay isn't available.
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {

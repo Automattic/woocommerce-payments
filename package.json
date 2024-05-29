@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "7.6.0",
+  "version": "7.7.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -45,7 +45,9 @@
     "test:php-coverage": "./bin/check-test-coverage.sh",
     "test:php-coverage-src": "./bin/check-test-coverage.sh src",
     "test:php-watch": "npm run test:php -- -w",
-    "test:qit": "npm run build:release && ./tests/qit/security.sh",
+    "test:qit-security": "npm run build:release && ./tests/qit/security.sh",
+    "test:qit-phpstan": "npm run build:release && ./tests/qit/phpstan.sh",
+    "test:qit-phpstan-local": "npm run build:release && ./tests/qit/phpstan.sh --local",
     "watch": "webpack --watch",
     "hmr": "webpack server",
     "start": "npm run watch",
@@ -80,7 +82,6 @@
     "@woocommerce/explat": "2.3.0",
     "@woocommerce/number": "2.4.0",
     "canvas-confetti": "1.9.2",
-    "crypto-js": "4.1.1",
     "debug": "4.1.1",
     "intl-tel-input": "17.0.15",
     "lodash": "4.17.21"
