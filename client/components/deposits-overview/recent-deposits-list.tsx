@@ -24,39 +24,11 @@ import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { getDetailsURL } from 'wcpay/components/details-link';
 
-interface DepositRowProps {
-	deposit: CachedDeposit;
-}
-
 interface RecentDepositsProps {
 	deposits: CachedDeposit[];
 }
 
 const tableClass = 'wcpay-deposits-overview__table';
-
-/**
- * Renders a recent deposits table row.
- */
-const DepositTableRow: React.FC< DepositRowProps > = ( {
-	deposit,
-} ): JSX.Element => {
-	return (
-		<Flex className={ `${ tableClass }__row` }>
-			<FlexItem className={ `${ tableClass }__cell` }>
-				<Icon icon={ calendar } size={ 17 } />
-				<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
-					{ getDepositDate( deposit ) }
-				</Link>
-			</FlexItem>
-			<FlexItem className={ `${ tableClass }__cell` }>
-				<DepositStatusChip status={ deposit.status } />
-			</FlexItem>
-			<FlexItem className={ `${ tableClass }__cell` }>
-				{ formatCurrency( deposit.amount, deposit.currency ) }
-			</FlexItem>
-		</Flex>
-	);
-};
 
 /**
  * Renders the Recent Deposit list component.
@@ -65,14 +37,27 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
  */
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	deposits,
-} ): JSX.Element => {
+} ) => {
 	if ( deposits.length === 0 ) {
 		return <></>;
 	}
 
 	const depositRows = deposits.map( ( deposit ) => (
 		<Fragment key={ deposit.id }>
-			<DepositTableRow deposit={ deposit } />
+			<Flex className={ `${ tableClass }__row` }>
+				<FlexItem className={ `${ tableClass }__cell` }>
+					<Icon icon={ calendar } size={ 17 } />
+					<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
+						{ getDepositDate( deposit ) }
+					</Link>
+				</FlexItem>
+				<FlexItem className={ `${ tableClass }__cell` }>
+					<DepositStatusChip status={ deposit.status } />
+				</FlexItem>
+				<FlexItem className={ `${ tableClass }__cell` }>
+					{ formatCurrency( deposit.amount, deposit.currency ) }
+				</FlexItem>
+			</Flex>
 		</Fragment>
 	) );
 
