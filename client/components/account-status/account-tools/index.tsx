@@ -56,7 +56,6 @@ export const AccountTools: React.FC< Props > = ( props: Props ) => {
 								)
 							}
 							href={ accountLink }
-							target={ '_blank' }
 						>
 							{ strings.finish }
 						</Button>
