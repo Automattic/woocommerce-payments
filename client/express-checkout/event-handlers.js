@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { normalizeOrderData, normalizeShippingAddress } from './utils';
-import { getErrorMessageFromNotice } from 'express-checkout/utils';
+import { getErrorMessageFromNotice } from 'utils/express-checkout';
 
 export const shippingAddressChangeHandler = async ( api, event ) => {
 	console.log( 'shippingAddressChangeHandler', event );
@@ -61,9 +61,11 @@ export const onConfirmHandler = async (
 
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
 		elements,
-	} );
+	});
+	
+	console.log( paymentMethod );
 
-	if (error) {
+	if ( error ) {
 		abortPayment( event, error.message );
 		return;
 	}
