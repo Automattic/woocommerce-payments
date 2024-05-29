@@ -1063,6 +1063,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$factors[] = Factor::PAYMENT_REQUEST();
 		}
 
+		if ( defined( 'WCPAY_EXPRESS_CHECKOUT_CHECKOUT' ) && WCPAY_EXPRESS_CHECKOUT_CHECKOUT ) {
+			$factors[] = Factor::EXPRESS_CHECKOUT_ELEMENT();
+		}
+
 		$router = wcpay_get_container()->get( Router::class );
 		return $router->should_use_new_payment_process( $factors );
 	}
@@ -1787,7 +1791,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type    = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 		}
 
-		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $_POST['payment_request_type'] ) || empty( $_POST['express_payment_type' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 		}
 
