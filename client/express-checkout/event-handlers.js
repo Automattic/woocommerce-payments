@@ -5,7 +5,7 @@ import { normalizeOrderData, normalizeShippingAddress } from './utils';
 import { getErrorMessageFromNotice } from 'utils/express-checkout';
 
 export const shippingAddressChangeHandler = async ( api, event ) => {
-	const response = await api.paymentRequestCalculateShippingOptions(
+	const response = await api.expressCheckoutECECalculateShippingOptions(
 		normalizeShippingAddress( event.shippingAddress )
 	);
 	event.resolve( {

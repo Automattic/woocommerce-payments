@@ -419,8 +419,8 @@ export default class WCPayAPI {
 		return this.request(
 			getExpressCheckoutAjaxURL( 'get_shipping_options' ),
 			{
-				security: getPaymentRequestData( 'nonce' )?.shipping,
-				is_product_page: getPaymentRequestData( 'is_product_page' ),
+				security: getExpressCheckoutConfig( 'nonce' )?.shipping,
+				is_product_page: getExpressCheckoutConfig( 'is_product_page' ),
 				...shippingAddress,
 			}
 		);
