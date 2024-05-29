@@ -11,6 +11,7 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 import { useInitialization } from './use-initialization';
 import { recordUserEvent } from 'tracks';
 import { useEffect, useState } from 'react';
+import { getPaymentRequestData } from '../utils/utils';
 
 /**
  * PaymentRequestExpressComponent
@@ -44,13 +45,18 @@ const PaymentRequestExpressComponent = ( {
 		onClose,
 	} );
 
-	// const { type, theme, height } = getPaymentRequestData( 'button' );
-	const { label, darkMode, height } = buttonAttributes;
+	let { type, theme, height } = getPaymentRequestData( 'button' );
+
+	// If we are on the checkout block, we receive button attributes which overwrite the extension specific settings
+	if ( buttonAttributes !== undefined ) {
+		height = buttonAttributes.height || height;
+		theme = buttonAttributes?.darkMode ? 'light' : 'dark';
+	}
 
 	const paymentRequestButtonStyle = {
 		paymentRequestButton: {
-			type: label,
-			theme: darkMode ? 'light' : 'dark',
+			type,
+			theme,
 			height,
 		},
 	};
