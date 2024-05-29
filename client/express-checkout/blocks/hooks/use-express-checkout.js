@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useState, useEffect } from '@wordpress/element';
+import { useCallback, useState } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
 import { normalizeLineItems } from 'wcpay/express-checkout/utils';
 import { onConfirmHandler } from 'wcpay/express-checkout/event-handlers';
@@ -33,7 +33,7 @@ export const useExpressCheckout = ( {
 		},
 	};
 
-	const cancelHandler = () => {
+	const onCancel = () => {
 		setIsFinished( false );
 		onClose();
 	};
@@ -43,8 +43,8 @@ export const useExpressCheckout = ( {
 		window.location = redirectUrl;
 	};
 
-	const abortPayment = ( paymentMethod, message ) => {
-		paymentMethod.complete( 'fail' );
+	const abortPayment = ( onConfirmEvent, message ) => {
+		onConfirmEvent.paymentFailed( 'fail' );
 		setIsFinished( true );
 		setExpressPaymentError( message );
 	};
@@ -62,7 +62,7 @@ export const useExpressCheckout = ( {
 				shippingAddressRequired: shippingData?.needsShipping,
 				phoneNumberRequired:
 					wcpayExpressCheckoutParams?.checkout?.needs_payer_phone,
-				shippingRates: shippingData?.shippingRates[ 0 ].shipping_rates.map(
+				shippingRates: shippingData?.shippingRates[ 0 ]?.shipping_rates?.map(
 					( r ) => {
 						return {
 							id: r.rate_id,
@@ -99,5 +99,6 @@ export const useExpressCheckout = ( {
 		buttonOptions,
 		onButtonClick,
 		onConfirm,
+		onCancel,
 	};
 };

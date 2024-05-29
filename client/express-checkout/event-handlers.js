@@ -14,41 +14,6 @@ export const shippingAddressChangeHandler = async ( api, event ) => {
 	} );
 };
 
-const paymentResponseHandler = async (
-	api,
-	createOrderResponse,
-	completePayment,
-	abortPayment,
-	event
-) => {
-	console.log( 'paymentResponseHandler' );
-	if ( createOrderResponse.result !== 'success' ) {
-		return abortPayment(
-			event,
-			getErrorMessageFromNotice( createOrderResponse.messages )
-		);
-	}
-
-	try {
-		const confirmationRequest = api.confirmIntent(
-			createOrderResponse.redirect
-		);
-		// We need to call `complete` outside of `completePayment` to close the dialog for 3DS.
-		// event.complete( 'success' );
-
-		// `true` means there is no intent to confirm.
-		if ( confirmationRequest === true ) {
-			completePayment( createOrderResponse.redirect );
-		} else {
-			const redirectUrl = await confirmationRequest;
-
-			completePayment( redirectUrl );
-		}
-	} catch ( error ) {
-		abortPayment( event, error.message );
-	}
-};
-
 export const onConfirmHandler = async (
 	api,
 	stripe,
@@ -61,8 +26,8 @@ export const onConfirmHandler = async (
 
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
 		elements,
-	});
-	
+	} );
+
 	console.log( paymentMethod );
 
 	if ( error ) {
@@ -77,11 +42,32 @@ export const onConfirmHandler = async (
 
 	console.log( 'createOrderResponse', createOrderResponse );
 
-	paymentResponseHandler(
-		api,
-		createOrderResponse,
-		completePayment,
-		abortPayment,
-		event
-	);
+	if ( createOrderResponse.result !== 'success' ) {
+		return abortPayment(
+			event,
+			getErrorMessageFromNotice( createOrderResponse.messages )
+		);
+	}
+
+	try {
+		const confirmationRequest = api.confirmIntent(
+			createOrderResponse.redirect
+		);
+
+		console.log( 'confirmationRequest', confirmationRequest );
+
+		// We need to call `complete` outside of `completePayment` to close the dialog for 3DS.
+		// event.complete( 'success' );
+
+		// `true` means there is no intent to confirm.
+		if ( confirmationRequest === true ) {
+			completePayment( createOrderResponse.redirect );
+		} else {
+			const redirectUrl = await confirmationRequest;
+
+			completePayment( redirectUrl );
+		}
+	} catch ( e ) {
+		abortPayment( event, error.message );
+	}
 };

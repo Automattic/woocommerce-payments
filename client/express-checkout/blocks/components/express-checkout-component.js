@@ -20,13 +20,18 @@ const ExpressCheckoutComponent = ( {
 	setExpressPaymentError,
 	onClick,
 	onClose,
-	onPaymentRequestAvailable,
 } ) => {
-	const { buttonOptions, onButtonClick, onConfirm } = useExpressCheckout( {
+	const {
+		buttonOptions,
+		onButtonClick,
+		onConfirm,
+		onCancel,
+	} = useExpressCheckout( {
 		api,
 		billing,
 		shippingData,
 		onClick,
+		onClose,
 		setExpressPaymentError,
 	} );
 
@@ -39,6 +44,7 @@ const ExpressCheckoutComponent = ( {
 			options={ buttonOptions }
 			onClick={ onButtonClick }
 			onConfirm={ onConfirm }
+			onCancel={ onCancel }
 			onShippingAddressChange={ onShippingAddressChange }
 		/>
 	);
