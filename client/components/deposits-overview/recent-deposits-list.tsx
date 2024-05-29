@@ -39,7 +39,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	deposits,
 } ) => {
 	if ( deposits.length === 0 ) {
-		return <></>;
+		return null;
 	}
 
 	const depositRows = deposits.map( ( deposit ) => (
