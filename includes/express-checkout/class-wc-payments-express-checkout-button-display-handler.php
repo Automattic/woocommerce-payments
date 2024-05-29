@@ -63,7 +63,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @param WC_Payments_Payment_Request_Button_Handler  $payment_request_button_handler Payment request button handler.
 	 * @param WC_Payments_WooPay_Button_Handler           $platform_checkout_button_handler Platform checkout button handler.
 	 * @param WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler Express Checkout Element button handler.
-	 * @param WC_Payments_Express_Checkout_Ajax_Handler  $express_checkout_ajax_handler Express checkout ajax handlers.
+	 * @param WC_Payments_Express_Checkout_Ajax_Handler   $express_checkout_ajax_handler Express checkout ajax handlers.
+	 * @param WC_Payments_Express_Checkout_Button_Helper  $express_checkout_helper Express checkout button helper.
 	 */
 	public function __construct(
 		WC_Payment_Gateway_WCPay $gateway,

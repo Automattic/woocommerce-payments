@@ -1791,7 +1791,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type    = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 		}
 
-		if ( empty( $_POST['payment_request_type'] ) || empty( $_POST['express_payment_type' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $_POST['payment_request_type'] ) || empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 		}
 

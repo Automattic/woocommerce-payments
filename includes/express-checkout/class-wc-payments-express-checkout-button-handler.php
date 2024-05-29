@@ -53,11 +53,12 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @param WC_Payments_Account                        $account Account information.
 	 * @param WC_Payment_Gateway_WCPay                   $gateway WCPay gateway.
 	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper Express checkout helper.
+	 * @param WC_Payments_Express_Checkout_Ajax_Handler  $express_checkout_ajax_handler Express checkout ajax handler.
 	 */
 	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper, WC_Payments_Express_Checkout_Ajax_Handler $express_checkout_ajax_handler ) {
-		$this->account                 = $account;
-		$this->gateway                 = $gateway;
-		$this->express_checkout_helper = $express_checkout_helper;
+		$this->account                       = $account;
+		$this->gateway                       = $gateway;
+		$this->express_checkout_helper       = $express_checkout_helper;
 		$this->express_checkout_ajax_handler = $express_checkout_ajax_handler;
 	}
 
@@ -188,5 +189,4 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		<div id="wcpay-express-checkout-element"></div>
 		<?php
 	}
-
 }

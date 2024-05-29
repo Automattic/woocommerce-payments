@@ -1628,10 +1628,10 @@ class WC_Payments {
 	 */
 	public static function maybe_display_express_checkout_buttons() {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
-			$payment_request_button_handler          = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), self::get_express_checkout_helper() );
-			$woopay_button_handler                   = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, self::get_express_checkout_helper() );
+			$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), self::get_express_checkout_helper() );
+			$woopay_button_handler          = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, self::get_express_checkout_helper() );
 
-			$express_checkout_ajax_handler = new WC_Payments_Express_Checkout_Ajax_Handler( self::get_express_checkout_helper() );
+			$express_checkout_ajax_handler           = new WC_Payments_Express_Checkout_Ajax_Handler( self::get_express_checkout_helper() );
 			$express_checkout_element_button_handler = new WC_Payments_Express_Checkout_Button_Handler( self::$account, self::get_gateway(), self::get_express_checkout_helper(), $express_checkout_ajax_handler );
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, $express_checkout_element_button_handler, $express_checkout_ajax_handler, self::get_express_checkout_helper() );
 			$express_checkout_button_display_handler->init();

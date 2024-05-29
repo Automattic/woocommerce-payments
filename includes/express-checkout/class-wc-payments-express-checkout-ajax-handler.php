@@ -13,13 +13,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC_Payments_Express_Checkout_Ajax_Handler class.
  */
 class WC_Payments_Express_Checkout_Ajax_Handler {
-
+	/**
+	 * WC_Payments_Express_Checkout_Button_Helper instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Helper
+	 */
 	private $express_checkout_button_helper;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_button_helper Express checkout button helper.
+	 */
 	public function __construct( WC_Payments_Express_Checkout_Button_Helper $express_checkout_button_helper ) {
 		$this->express_checkout_button_helper = $express_checkout_button_helper;
 	}
-	
+
 	/**
 	 * Initialize hooks.
 	 *
@@ -183,5 +192,4 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		wp_send_json( [ 'result' => 'success' ] );
 	}
-
 }
