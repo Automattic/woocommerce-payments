@@ -57,7 +57,7 @@ const PaymentRequestExpressComponent = ( {
 		paymentRequestButton: {
 			type,
 			theme,
-			height,
+			height: `${ height }px`,
 		},
 	};
 
