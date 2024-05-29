@@ -3,7 +3,7 @@
  * This sniff prohibits the use of add_action and add_filter in __construct.
  */
 
-namespace WCPay\CodingStandards\Sniffs;
+namespace WCPay\Sniffs\Hooks;
 
 use PHP_CodeSniffer\Sniffs\Sniff;
 use PHP_CodeSniffer\Files\File;
@@ -60,7 +60,7 @@ class DisallowHooksInConstructorSniff implements Sniff {
 				$phpcsFile->addError(
 					"Usage of $currentTokenContent in __construct() is not allowed",
 					$i,
-					'WCPay.CodingStandards.DisallowHooksInConstructor',
+					'Found',
 					[ $token['content'] ]
 				);
 			}

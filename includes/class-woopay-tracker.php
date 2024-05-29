@@ -127,13 +127,13 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	/**
 	 * Generic method to track user events on WooPay enabled stores.
 	 *
-	 * @param string  $event name of the event.
-	 * @param array   $data array of event properties.
+	 * @param string $event name of the event.
+	 * @param array  $data array of event properties.
 	 */
 	public function maybe_record_event( $event, $data = [] ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
-			$event  = self::$user_prefix . '_' . $event;
+			$event = self::$user_prefix . '_' . $event;
 		}
 
 		return $this->tracks_record_event( $event, $data );
@@ -151,10 +151,10 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		$is_admin_event = false;
+		$is_admin_event      = false;
 		$track_on_all_stores = true;
 
-		return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores);
+		return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores );
 	}
 
 	/**
@@ -197,7 +197,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @return bool
 	 */
-	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false) {
+	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false ) {
 
 		// Don't track if the gateway is not enabled.
 		$gateway = \WC_Payments::get_gateway();
@@ -266,7 +266,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @return bool|array|\WP_Error|\Jetpack_Tracks_Event
 	 */
-	public function tracks_record_event( $event_name, $properties = [], $is_admin_event = false, $track_on_all_stores = false) {
+	public function tracks_record_event( $event_name, $properties = [], $is_admin_event = false, $track_on_all_stores = false ) {
 
 		$user = wp_get_current_user();
 
@@ -307,7 +307,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$identity = $this->tracks_get_identity();
 		$site_url = get_option( 'siteurl' );
 
-		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ): '';
+		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '';
 		$properties['blog_url']  = $site_url;
 		$properties['blog_id']   = \Jetpack_Options::get_option( 'id' );
 		$properties['user_lang'] = $user->get( 'WPLANG' );
@@ -317,7 +317,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$properties['wcpay_version'] = WCPAY_VERSION_NUMBER;
 
 		// Add client's user agent to the event properties.
-		if ( !empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
+		if ( ! empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
 			$properties['_via_ua'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
 		}
 
@@ -352,7 +352,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return array $identity
 	 */
 	public function tracks_get_identity() {
-		$user_id  = get_current_user_id();
+		$user_id = get_current_user_id();
 
 		// Meta is set, and user is still connected.  Use WPCOM ID.
 		$wpcom_id = get_user_meta( $user_id, 'jetpack_tracks_wpcom_id', true );
@@ -469,7 +469,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return bool
 	 */
 	public function bump_stats( $group, $stat_name ) {
-		$is_admin_event = false;
+		$is_admin_event      = false;
 		$track_on_all_stores = true;
 
 		if ( ! $this->should_enable_tracking( $is_admin_event, $track_on_all_stores ) ) {
@@ -501,17 +501,19 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 	/**
 	 * Record that the order has been processed.
+	 *
+	 * @param int $order_id The ID of the order.
 	 */
 	public function checkout_order_processed( $order_id ) {
 
 		$payment_gateway = wc_get_payment_gateway_by_order( $order_id );
-		$properties = [ 'payment_title' => 'other' ];
+		$properties      = [ 'payment_title' => 'other' ];
 
 		// If the order was placed using WooCommerce Payments, record the payment title using Tracks.
-		if (strpos( $payment_gateway->id, 'woocommerce_payments') === 0 ) {
-			$order = wc_get_order( $order_id );
+		if ( strpos( $payment_gateway->id, 'woocommerce_payments' ) === 0 ) {
+			$order         = wc_get_order( $order_id );
 			$payment_title = $order->get_payment_method_title();
-			$properties = [ 'payment_title' => $payment_title ];
+			$properties    = [ 'payment_title' => $payment_title ];
 
 			$is_woopay_order = ( isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'] );
 
@@ -519,7 +521,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			if ( ! $is_woopay_order ) {
 				$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties );
 			}
-		// If the order was placed using a different payment gateway, just increment a counter.
+			// If the order was placed using a different payment gateway, just increment a counter.
 		} else {
 			$this->bump_stats( 'wcpay_order_completed_gateway', 'other' );
 		}
@@ -543,7 +545,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @param int $order_id The ID of the order.
 	 * @return void
 	 */
-	public function thank_you_page_view($order_id) {
+	public function thank_you_page_view( $order_id ) {
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order || 'woocommerce_payments' !== $order->get_payment_method() ) {
