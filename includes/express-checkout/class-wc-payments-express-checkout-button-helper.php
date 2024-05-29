@@ -586,6 +586,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
 			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_index => $recurring_cart_package ) {
+				// phpcs:ignore
+				/**
+				 * @psalm-suppress UndefinedClass
+				 */
 				$package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $recurring_cart_package_index );
 
 				// If the recurring cart package key is found in the previous chosen methods, but not in the current chosen methods, restore it.
