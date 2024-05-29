@@ -181,7 +181,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * @return int
 	 */
-	private function get_quantity() {
+	public function get_quantity() {
 		// Payment Request Button sends the quantity as qty. WooPay sends it as quantity.
 		if ( isset( $_POST['quantity'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return absint( $_POST['quantity'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
