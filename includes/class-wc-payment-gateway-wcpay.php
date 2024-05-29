@@ -18,7 +18,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception, Fraud_Prevention_Enabled_Exception, Invalid_Phone_Number_Exception, Rate_Limiter_Enabled_Exception, Order_ID_Mismatch_Exception, Order_Not_Found_Exception };
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception, Fraud_Prevention_Enabled_Exception, Invalid_Phone_Number_Exception, Rate_Limiter_Enabled_Exception, Order_ID_Mismatch_Exception, Order_Not_Found_Exception, New_Process_Payment_Exception };
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
