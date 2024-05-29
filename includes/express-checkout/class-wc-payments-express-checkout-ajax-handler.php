@@ -121,7 +121,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			return;
 		}
 
-		$quantity = $this->get_quantity();
+		$quantity = $this->express_checkout_button_helper->get_quantity();
 
 		$product_type = $product->get_type();
 
@@ -159,11 +159,11 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		WC()->cart->calculate_totals();
 
 		if ( 'booking' === $product_type ) {
-			$booking_id = $this->get_booking_id_from_cart();
+			$booking_id = $this->express_checkout_button_helper->get_booking_id_from_cart();
 		}
 
 		$data           = [];
-		$data          += $this->build_display_items();
+		$data          += $this->express_checkout_button_helper->build_display_items();
 		$data['result'] = 'success';
 
 		if ( ! empty( $booking_id ) ) {
