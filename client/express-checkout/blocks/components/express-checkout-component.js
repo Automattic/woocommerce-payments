@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import React, { useCallback } from 'react';
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
 import { shippingAddressChangeHandler } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';

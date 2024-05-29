@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useState } from '@wordpress/element';
+import { useCallback } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
 import { normalizeLineItems } from 'wcpay/express-checkout/utils';
 import { onConfirmHandler } from 'wcpay/express-checkout/event-handlers';
@@ -19,8 +19,6 @@ export const useExpressCheckout = ( {
 	const stripe = useStripe();
 	const elements = useElements();
 
-	const [ isFinished, setIsFinished ] = useState( false );
-
 	const buttonOptions = {
 		paymentMethods: {
 			applePay: 'always',
@@ -34,28 +32,20 @@ export const useExpressCheckout = ( {
 	};
 
 	const onCancel = () => {
-		setIsFinished( false );
 		onClose();
 	};
 
 	const completePayment = ( redirectUrl ) => {
-		setIsFinished( true );
 		window.location = redirectUrl;
 	};
 
 	const abortPayment = ( onConfirmEvent, message ) => {
 		onConfirmEvent.paymentFailed( 'fail' );
-		setIsFinished( true );
 		setExpressPaymentError( message );
 	};
 
-	// When the button is clicked, update the data and show it.
 	const onButtonClick = useCallback(
 		( event ) => {
-			setIsFinished( false );
-
-			console.log( shippingData?.shippingRates );
-
 			const options = {
 				lineItems: normalizeLineItems( billing?.cartTotalItems ),
 				emailRequired: true,
@@ -84,7 +74,6 @@ export const useExpressCheckout = ( {
 	);
 
 	const onConfirm = async ( event ) => {
-		console.log( 'Confirmed' );
 		onConfirmHandler(
 			api,
 			stripe,

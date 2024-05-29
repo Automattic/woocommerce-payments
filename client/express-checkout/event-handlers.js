@@ -5,7 +5,6 @@ import { normalizeOrderData, normalizeShippingAddress } from './utils';
 import { getErrorMessageFromNotice } from 'utils/express-checkout';
 
 export const shippingAddressChangeHandler = async ( api, event ) => {
-	console.log( 'shippingAddressChangeHandler', event );
 	const response = await api.paymentRequestCalculateShippingOptions(
 		normalizeShippingAddress( event.shippingAddress )
 	);
@@ -22,13 +21,9 @@ export const onConfirmHandler = async (
 	abortPayment,
 	event
 ) => {
-	console.log( 'onConfirmHandler', event );
-
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
 		elements,
 	} );
-
-	console.log( paymentMethod );
 
 	if ( error ) {
 		abortPayment( event, error.message );
@@ -39,8 +34,6 @@ export const onConfirmHandler = async (
 	const createOrderResponse = await api.expressCheckoutECECreateOrder(
 		normalizeOrderData( event, paymentMethod.id )
 	);
-
-	console.log( 'createOrderResponse', createOrderResponse );
 
 	if ( createOrderResponse.result !== 'success' ) {
 		return abortPayment(
@@ -53,11 +46,6 @@ export const onConfirmHandler = async (
 		const confirmationRequest = api.confirmIntent(
 			createOrderResponse.redirect
 		);
-
-		console.log( 'confirmationRequest', confirmationRequest );
-
-		// We need to call `complete` outside of `completePayment` to close the dialog for 3DS.
-		// event.complete( 'success' );
 
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
