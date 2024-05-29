@@ -102,6 +102,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - feat: tokenized cart PRBs on PDPs via feature flag.
 * Add - Render ECE buttons behind a feature flag.
 * Fix - Charm pricing and rounding options corrected for all currencies that aren't presented with decimal points.
+* Fix - Fix "Pay for order" infinite loading when submitting form without payment details.
 * Fix - fix: remove WooPay checkout pages scripts from non-checkout pages.
 * Fix - fix: settings notices consistency.
 * Fix - fix: Store API tokenized cart nonce verification.
