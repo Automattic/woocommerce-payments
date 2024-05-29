@@ -36,8 +36,6 @@ const tableClass = 'wcpay-deposits-overview__table';
 
 /**
  * Renders a recent deposits table row.
- *
- * @return {JSX.Element} Deposit table row.
  */
 const DepositTableRow: React.FC< DepositRowProps > = ( {
 	deposit,
@@ -61,12 +59,9 @@ const DepositTableRow: React.FC< DepositRowProps > = ( {
 };
 
 /**
- * Renders the Recent Deposit details component.
+ * Renders the Recent Deposit list component.
  *
  * This component includes the recent deposit heading, table and notice.
- *
- * @param {RecentDepositsProps} props Recent Deposit props.
- * @return {JSX.Element} Rendered element with Next Deposit details.
  */
 const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	deposits,
@@ -83,7 +78,6 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 
 	return (
 		<>
-			{ /* Next Deposit Table */ }
 			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>
