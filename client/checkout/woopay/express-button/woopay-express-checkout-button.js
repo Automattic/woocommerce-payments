@@ -355,7 +355,7 @@ export const WoopayExpressCheckoutButton = ( {
 			data-type={ buttonType }
 			data-theme={ theme }
 			data-width-type={ buttonWidthType }
-			style={ { height: `${ buttonHeight }` } }
+			style={ { height: `${ buttonHeight }px` } }
 			disabled={ isLoading }
 		>
 			{ isLoading ? (
