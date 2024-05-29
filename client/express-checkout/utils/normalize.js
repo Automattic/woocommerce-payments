@@ -66,6 +66,7 @@ export const normalizeOrderData = ( event, paymentMethodId ) => {
 		ship_to_different_address: 1,
 		terms: 1,
 		'wcpay-payment-method': paymentMethodId,
+		payment_request_type: event?.expressPaymentType,
 		express_payment_type: event?.expressPaymentType,
 		'wcpay-fraud-prevention-token': fraudPreventionTokenValue,
 	};
