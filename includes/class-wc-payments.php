@@ -570,7 +570,9 @@ class WC_Payments {
 		// To avoid register the same hooks twice.
 		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
 
-		self::maybe_register_woopay_hooks();
+		// Defer registering the WooPay hooks. Later on, $wp_rewrite is used and causes a fatal error on the WooPayment Dev Tools,
+		// given that $wp_rewrite is defined right after the `plugins_loaded` action is fired. See #8857.
+		add_action( 'setup_theme', [ __CLASS__, 'maybe_register_woopay_hooks' ] );
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 		self::$apple_pay_registration->init_hooks();
@@ -1501,7 +1503,8 @@ class WC_Payments {
 	}
 
 	/**
-	 * Registers woopay hooks if the woopay feature flag is enabled and the merchant is not suspended or rejected.
+	 * Registers woopay hooks if the woopay feature flag is enabled.
+	 * Removes WooPay webhooks if the merchant is not eligible.
 	 *
 	 * @return void
 	 */
