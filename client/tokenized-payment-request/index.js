@@ -62,7 +62,7 @@ jQuery( ( $ ) => {
 
 	wooPaymentsPaymentRequest.init();
 
-	// We need to refresh payment request data when total is updated.
+	// When the cart is updated, the PRB is removed from the page and needs to be re-initialized.
 	$( document.body ).on( 'updated_cart_totals', () => {
 		wooPaymentsPaymentRequest.init();
 	} );
