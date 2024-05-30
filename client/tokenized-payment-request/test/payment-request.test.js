@@ -98,7 +98,10 @@ describe( 'WooPaymentsPaymentRequest', () => {
 	} );
 
 	it( 'should initialize the Stripe payment request, fire initial tracking, and attach event listeners', async () => {
-		apiFetch.mockResolvedValue( {
+		const headers = new Headers();
+		headers.append( 'Nonce', 'nonce-value' );
+
+		const responseData = {
 			needs_shipping: false,
 			totals: {
 				currency_code: 'USD',
@@ -107,6 +110,11 @@ describe( 'WooPaymentsPaymentRequest', () => {
 				total_shipping: '5',
 			},
 			items: [ { name: 'Shirt', quantity: 1, prices: { price: '15' } } ],
+		};
+
+		apiFetch.mockResolvedValue( {
+			headers: headers,
+			json: () => Promise.resolve( responseData ),
 		} );
 		const paymentRequestAvailabilityCallback = jest.fn();
 		addAction(
