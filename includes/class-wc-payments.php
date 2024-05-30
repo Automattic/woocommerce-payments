@@ -569,7 +569,7 @@ class WC_Payments {
 		// To avoid register the same hooks twice.
 		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
 
-		// Defer registering the WooPay hooks. Later on, $wp_rewrite is used and causes a fatal error on the WooPayment Dev Tools,
+		// Defer registering the WooPay hooks. Later on, $wp_rewrite is used and causes a fatal error every time the account cache is refreshed,
 		// given that $wp_rewrite is defined right after the `plugins_loaded` action is fired. See #8857.
 		add_action( 'setup_theme', [ __CLASS__, 'maybe_register_woopay_hooks' ] );
 
