@@ -1509,12 +1509,10 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function maybe_register_woopay_hooks() {
-		$is_woopay_eligible      = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
-		$is_woopay_enabled       = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
-		$is_account_rejected     = self::get_account_service()->is_account_rejected();
-		$is_account_under_review = self::get_account_service()->is_account_under_review();
+		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
+		$is_woopay_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
 
-		if ( $is_woopay_eligible && $is_woopay_enabled && ! $is_account_rejected && ! $is_account_under_review ) {
+		if ( $is_woopay_eligible && $is_woopay_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_woopay', [ WooPay_Session::class, 'ajax_init_woopay' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_session', [ WooPay_Session::class, 'ajax_get_woopay_session' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
@@ -1556,9 +1554,7 @@ class WC_Payments {
 			}
 
 			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
-		}
-
-		if ( $is_account_rejected || $is_account_under_review ) {
+		} else {
 			WooPay_Order_Status_Sync::remove_webhook();
 		}
 	}
