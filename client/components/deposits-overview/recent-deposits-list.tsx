@@ -43,22 +43,20 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	}
 
 	const depositRows = deposits.map( ( deposit ) => (
-		<Fragment key={ deposit.id }>
-			<Flex className={ `${ tableClass }__row` }>
-				<FlexItem className={ `${ tableClass }__cell` }>
-					<Icon icon={ calendar } size={ 17 } />
-					<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
-						{ getDepositDate( deposit ) }
-					</Link>
-				</FlexItem>
-				<FlexItem className={ `${ tableClass }__cell` }>
-					<DepositStatusChip status={ deposit.status } />
-				</FlexItem>
-				<FlexItem className={ `${ tableClass }__cell` }>
-					{ formatCurrency( deposit.amount, deposit.currency ) }
-				</FlexItem>
-			</Flex>
-		</Fragment>
+		<Flex className={ `${ tableClass }__row` } key={ deposit.id }>
+			<FlexItem className={ `${ tableClass }__cell` }>
+				<Icon icon={ calendar } size={ 17 } />
+				<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
+					{ getDepositDate( deposit ) }
+				</Link>
+			</FlexItem>
+			<FlexItem className={ `${ tableClass }__cell` }>
+				<DepositStatusChip status={ deposit.status } />
+			</FlexItem>
+			<FlexItem className={ `${ tableClass }__cell` }>
+				{ formatCurrency( deposit.amount, deposit.currency ) }
+			</FlexItem>
+		</Flex>
 	) );
 
 	return (
