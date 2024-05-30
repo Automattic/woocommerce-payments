@@ -189,7 +189,6 @@ exports[`AccountStatus renders normal status 1`] = `
             <a
               class="components-button is-secondary"
               href="?source=account-tools__finish-setup-button"
-              target="_blank"
             >
               Finish setup
             </a>
