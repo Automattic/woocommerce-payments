@@ -19,7 +19,12 @@ import {
 import '../checkout/express-checkout-buttons.scss';
 import { recordUserEvent } from 'tracks';
 
-import { getPaymentRequest, displayLoginConfirmation } from './utils';
+import {
+	getPaymentRequest,
+	getPaymentRequestData,
+	displayLoginConfirmation,
+} from './utils';
+import { getUPEConfig } from 'wcpay/utils/checkout';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -212,6 +217,21 @@ jQuery( ( $ ) => {
 			} );
 
 			return api.paymentRequestAddToCart( data );
+		},
+
+		startExpressCheckoutRequest: ( options ) => {
+			const elementOptions = {
+				mode: 'payment',
+				amount: options.total,
+				currency: getPaymentRequestData( 'checkout' )?.currency_code,
+			};
+			const elements = api.getStripe().elements( elementOptions );
+			const button = elements.create( 'expressCheckout' );
+			button.mount( '#wcpay-payment-request-button' );
+
+			button.on( 'click', ( event ) => {
+				event.resolve( {} );
+			} );
 		},
 
 		/**
@@ -639,12 +659,21 @@ jQuery( ( $ ) => {
 				// If this is the cart or checkout page, we need to request the
 				// cart details for the payment request.
 				api.paymentRequestGetCartDetails().then( ( cart ) => {
-					wcpayPaymentRequest.startPaymentRequest( {
-						stripe: api.getStripe(),
-						total: cart.total.amount,
-						requestShipping: cart.needs_shipping,
-						displayItems: cart.displayItems,
-					} );
+					if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+						wcpayPaymentRequest.startExpressCheckoutRequest( {
+							stripe: api.getStripe(),
+							total: cart.total.amount,
+							requestShipping: cart.needs_shipping,
+							displayItems: cart.displayItems,
+						} );
+					} else {
+						wcpayPaymentRequest.startPaymentRequest( {
+							stripe: api.getStripe(),
+							total: cart.total.amount,
+							requestShipping: cart.needs_shipping,
+							displayItems: cart.displayItems,
+						} );
+					}
 				} );
 			}
 
