@@ -457,6 +457,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -499,6 +501,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -537,6 +541,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -572,6 +578,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -605,6 +613,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, addPaymentMethodForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
