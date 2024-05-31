@@ -319,6 +319,8 @@ class WooPay_Utilities {
 			return null;
 		}
 
+		$decrypted_data = json_decode( $decrypted_data, true );
+
 		return $decrypted_data;
 	}
 

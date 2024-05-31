@@ -385,15 +385,20 @@ class WooPay_Session {
 	 */
 	private static function get_user_email( $user ) {
 		if ( ! empty( $_POST['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			if ( is_array( $_POST['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-				 // phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-				return sanitize_email( wp_unslash( WooPay_Utilities::decrypt_signed_data( $_POST['email'] ) ) );
-			}
 			return sanitize_email( wp_unslash( $_POST['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		}
 
 		if ( ! empty( $_GET['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return sanitize_email( wp_unslash( $_GET['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		}
+
+		if ( ! empty( $_POST['encrypted_data'] ) && is_array( $_POST['encrypted_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$decrypted_data = WooPay_Utilities::decrypt_signed_data( $_POST['encrypted_data'] );
+
+			if ( ! empty( $decrypted_data['user_email'] ) ) {
+				return sanitize_email( wp_unslash( $decrypted_data['user_email'] ) );
+			}
 		}
 
 		// As a last resort, we try to get the email from the customer logged in the store.

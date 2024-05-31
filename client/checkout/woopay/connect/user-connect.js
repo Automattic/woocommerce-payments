@@ -11,7 +11,7 @@ class WooPayUserConnect extends WoopayConnect {
 		this.listeners = {
 			...this.listeners,
 			getIsUserLoggedInCallback: () => {},
-			getUserEmailCallback: () => {},
+			getEncryptedDataCallback: () => {},
 		};
 	}
 
@@ -28,14 +28,14 @@ class WooPayUserConnect extends WoopayConnect {
 	}
 
 	/**
-	 * Retrieves the email of the logged in user.
+	 * Retrieves encrypted data from WooPay.
 	 *
-	 * @return {Promise<string>} Resolves to the user's email if they're logged in, or an empty string otherwise.
+	 * @return {Promise<Object>} Resolves to an object with encrypted data.
 	 */
-	async getUserEmail() {
+	async getEncryptedData() {
 		return await this.sendMessageAndListenWith(
-			{ action: 'getUserEmail' },
-			'getUserEmailCallback'
+			{ action: 'getEncryptedData' },
+			'getEncryptedDataCallback'
 		);
 	}
 
@@ -51,8 +51,8 @@ class WooPayUserConnect extends WoopayConnect {
 			case 'get_is_user_logged_in_success':
 				this.listeners.getIsUserLoggedInCallback( data.value );
 				break;
-			case 'get_user_email_success':
-				this.listeners.getUserEmailCallback( data.value );
+			case 'get_encrypted_data_success':
+				this.listeners.getEncryptedDataCallback( data.value );
 				break;
 		}
 	}

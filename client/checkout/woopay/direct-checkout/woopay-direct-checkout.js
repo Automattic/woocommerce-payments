@@ -86,12 +86,12 @@ class WooPayDirectCheckout {
 	}
 
 	/**
-	 * Retrieves the email of the logged in user.
+	 * Retrieves encrypted data from WooPay.
 	 *
-	 * @return {Promise<string>} Resolves to the user's email if they're logged in, and an empty string otherwise.
+	 * @return {Promise<Object>} Resolves to an object with encrypted data.
 	 */
-	static async getUserEmail() {
-		return this.getUserConnect().getUserEmail();
+	static async getEncryptedData() {
+		return this.getUserConnect().getEncryptedData();
 	}
 
 	/**
@@ -372,12 +372,12 @@ class WooPayDirectCheckout {
 	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay session response.
 	 */
 	static async getEncryptedSessionData() {
-		const email = await this.getUserEmail();
+		const encryptedData = await this.getEncryptedData();
 		return request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-				...( email && { email } ),
+				...( encryptedData && { encrypted_data: encryptedData } ),
 			}
 		);
 	}
