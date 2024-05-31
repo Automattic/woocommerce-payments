@@ -295,26 +295,25 @@ class WooPay_Utilities {
 	 * @return mixed The decoded data.
 	 */
 	public static function decrypt_signed_data( $data ) {
-		$blog_token = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
+		$store_blog_token = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
 
-		// Decode the data.
-		$decoded_data_request = array_map( 'base64_decode', $data );
-		$passphrase           = ( defined( 'WOOPAY_BLOG_ID' ) && WOOPAY_BLOG_ID === \Jetpack_Options::get_option( 'id' ) ) ? $blog_token : 'dev_mode';
-
-		if ( empty( $passphrase ) ) {
+		if ( empty( $store_blog_token ) ) {
 			return null;
 		}
 
+		// Decode the data.
+		$decoded_data_request = array_map( 'base64_decode', $data );
+
 		// Verify the HMAC hash before decryption to ensure data integrity.
-		$computed_hash = hash_hmac( 'sha256', $decoded_data_request['data'], $passphrase );
+		$computed_hash = hash_hmac( 'sha256', $decoded_data_request['data'], $store_blog_token );
 
 		// If the hashes don't match, the message may have been tampered with.
 		if ( ! hash_equals( $computed_hash, $decoded_data_request['hash'] ) ) {
 			return null;
 		}
 
-		// Decipher the data data using the passphrase and the IV.
-		$decrypted_data = openssl_decrypt( $decoded_data_request['data'], 'aes-256-cbc', $passphrase, OPENSSL_RAW_DATA, $decoded_data_request['iv'] );
+		// Decipher the data using the blog token and the IV.
+		$decrypted_data = openssl_decrypt( $decoded_data_request['data'], 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $decoded_data_request['iv'] );
 
 		if ( false === $decrypted_data ) {
 			return null;
