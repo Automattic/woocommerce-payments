@@ -7,48 +7,28 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { Notice } from '@wordpress/components';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
-import './style.scss';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const IncompatibilityNotice = ( { message, learnMoreLinkHref } ) => (
-	<Notice
-		status="warning"
-		isDismissible={ false }
-		className="express-checkout__notice express-checkout__incompatibility-warning"
-	>
-		<span>
-			<NoticeOutlineIcon
-				style={ {
-					color: '#F0B849',
-					fill: 'currentColor',
-					marginBottom: '-5px',
-					marginRight: '10px',
-				} }
-				size={ 20 }
-			/>
-		</span>
-		<span>
-			{ message }
-			<br />
-			{ interpolateComponents( {
-				mixedString: __(
-					'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
-					'woocommerce-payments'
+	<InlineNotice status="warning" icon={ true } isDismissible={ false }>
+		{ message }{ ' ' }
+		{ interpolateComponents( {
+			mixedString: __(
+				'{{learnMoreLink}}Learn More{{/learnMoreLink}}',
+				'woocommerce-payments'
+			),
+			components: {
+				learnMoreLink: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						target="_blank"
+						rel="noreferrer"
+						href={ learnMoreLinkHref }
+					/>
 				),
-				components: {
-					learnMoreLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noreferrer"
-							href={ learnMoreLinkHref }
-						/>
-					),
-				},
-			} ) }
-		</span>
-	</Notice>
+			},
+		} ) }
+	</InlineNotice>
 );
 
 export const WooPayIncompatibilityNotice = () => (
@@ -64,7 +44,7 @@ export const WooPayIncompatibilityNotice = () => (
 export const ExpressCheckoutIncompatibilityNotice = () => (
 	<IncompatibilityNotice
 		message={ __(
-			'One or more of your extensions alters checkout fields. This might cause issues with this payment method.',
+			'Your custom checkout fields may not be compatible with these payment methods.',
 			'woocommerce-payments'
 		) }
 		// eslint-disable-next-line max-len

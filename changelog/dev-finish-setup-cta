@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fixes some cases where redirects to the onboarding will open in a new tab.

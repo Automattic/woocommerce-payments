@@ -1,5 +1,0 @@
-Significance: patch
-Type: update
-Comment: Moved data fetching for Payment Activity widget to the parent's component so it can be used by the to-be-implemented filters.
-
-
