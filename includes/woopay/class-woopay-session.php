@@ -402,7 +402,7 @@ class WooPay_Session {
 		}
 
 		// As a last resort, we try to get the email from the customer logged in the store.
-		if ( $user->ID > 0 ) {
+		if ( $user->exists() ) {
 			return $user->user_email;
 		}
 
