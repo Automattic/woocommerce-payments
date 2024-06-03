@@ -346,6 +346,7 @@ export const WoopayExpressCheckoutButton = ( {
 			data-width-type={ buttonWidthType }
 			style={ { height: `${ height }px` } }
 			disabled={ isLoading }
+			type="button"
 		>
 			{ isLoading ? (
 				<span className="wc-block-components-spinner" />

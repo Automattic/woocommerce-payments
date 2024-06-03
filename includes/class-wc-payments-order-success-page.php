@@ -42,7 +42,7 @@ class WC_Payments_Order_Success_Page {
 	 * Hooked into `woocommerce_order_get_payment_method_title` to change the payment method title on the
 	 * order received page for WooPay and BNPL orders.
 	 *
-	 * @param string $payment_method_title Original payment method title.
+	 * @param string            $payment_method_title Original payment method title.
 	 * @param WC_Abstract_Order $abstract_order Successful received order being shown.
 	 * @return string
 	 */
@@ -82,7 +82,7 @@ class WC_Payments_Order_Success_Page {
 		if ( $payment_method->is_bnpl() ) {
 			$bnpl_output = $this->show_bnpl_payment_method_name( $gateway, $payment_method );
 
-			if ( $bnpl_output !== false ) {
+			if ( false !== $bnpl_output ) {
 				return $bnpl_output;
 			}
 		}
@@ -117,7 +117,7 @@ class WC_Payments_Order_Success_Page {
 	/**
 	 * Add the BNPL logo to the payment method name on the order received page.
 	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway the gateway being shown.
+	 * @param WC_Payment_Gateway_WCPay                 $gateway the gateway being shown.
 	 * @param WCPay\Payment_Methods\UPE_Payment_Method $payment_method the payment method being shown.
 	 *
 	 * @return string|false
@@ -182,7 +182,7 @@ class WC_Payments_Order_Success_Page {
 	 * Formats the additional text to be displayed on the thank you page, with the side effect
 	 * as a workaround for an issue in Woo core 8.1.x and 8.2.x.
 	 *
-	 * @param string $additional_text
+	 * @param string $additional_text The additional text to be displayed.
 	 *
 	 * @return string Formatted text.
 	 */
@@ -196,7 +196,7 @@ class WC_Payments_Order_Success_Page {
 		 * @see https://github.com/woocommerce/woocommerce/pull/39758 Introduce the issue since 8.1.0.
 		 * @see https://github.com/woocommerce/woocommerce/pull/40353 Fix the issue since 8.3.0.
 		 */
-		if( version_compare( WC_VERSION, '8.0', '>' )
+		if ( version_compare( WC_VERSION, '8.0', '>' )
 			&& version_compare( WC_VERSION, '8.3', '<' )
 		) {
 			echo "
