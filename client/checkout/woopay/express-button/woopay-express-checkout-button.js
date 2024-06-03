@@ -59,7 +59,7 @@ export const WoopayExpressCheckoutButton = ( {
 	);
 
 	// If we are on the checkout block, we receive button attributes which overwrite the extension specific settings
-	if ( buttonAttributes !== undefined ) {
+	if ( typeof buttonAttributes !== 'undefined' ) {
 		buttonHeight = buttonAttributes.height || buttonHeight;
 		theme = buttonAttributes?.darkMode ? 'light' : 'dark';
 	}
