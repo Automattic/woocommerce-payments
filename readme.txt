@@ -94,6 +94,14 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.8.0-test-1 - unreleased =
+* Fix - fix: Store API tokenized cart payment method title
+* Fix - Fixes some cases where redirects to the onboarding will open in a new tab.
+* Fix - Make it so that the WooPay button is not triggered on Checkout pages when the "Enter" key is pressed on a keyboard.
+* Update - chore: update incompatibility notice wrapping
+* Dev - Add New_Process_Payment_Exception
+* Dev - Add Order_ID_Mismatch_Exception
+
 = 7.7.0 - 2024-05-29 =
 * Add - Add share key query param when sending data to Stripe KYC.
 * Add - Add the WooPay Direct Checkout flow to the blocks mini cart widget.
