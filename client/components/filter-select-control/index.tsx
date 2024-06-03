@@ -25,6 +25,7 @@ import './style.scss';
 export interface Item {
 	key: string;
 	name?: string;
+	hint?: string;
 	className?: string;
 	style?: React.CSSProperties;
 }
@@ -107,6 +108,7 @@ function FilterSelectControl< ItemType extends Item >( {
 		onSelectedItemChange,
 		selectedItem: value || ( {} as ItemType ),
 		stateReducer,
+		defaultIsOpen: true,
 	} );
 
 	const itemString = itemToString( selectedItem );
@@ -203,12 +205,19 @@ function FilterSelectControl< ItemType extends Item >( {
 								style: item.style,
 							} ) }
 						>
+							<Icon
+								icon={ check }
+								className="wcpay-filter components-custom-select-control__item-icon"
+								visibility={
+									item === selectedItem ? 'visible' : 'hidden'
+								}
+							/>
+
 							{ children ? children( item ) : item.name }
-							{ item === selectedItem && (
-								<Icon
-									icon={ check }
-									className="wcpay-filter components-custom-select-control__item-icon"
-								/>
+							{ item.hint && (
+								<span className="wcpay-filter components-custom-select-control__item-hint">
+									{ item.hint }
+								</span>
 							) }
 						</li>
 					) ) }
