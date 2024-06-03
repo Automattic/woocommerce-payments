@@ -7,7 +7,7 @@ We currently only use the security tests from the [QIT toolkit](https://qit.woo.
 - To get the actual values for local config, refer to this [secret store](https://mc.a8c.com/secret-store/?secret_id=11043) link.
 - Once configured, the first time you run the `npm` command, it should create a local auth file which will be used for subsequent runs.
 
-- Currently, two types of tests are available through the `npm` command: Security Tests and PHPStan tests. PHPStan tests can also be run against the local development build.
+- Currently, two types of tests are available through the `npm` command: Security and PHPStan tests. PHPStan tests can also be run against the local development build.
 - For running, use one of the following commands based on your requirements:
    ```
    npm run test:qit-security
