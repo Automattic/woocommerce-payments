@@ -2,8 +2,8 @@
  * This is a copy of the CustomSelectControl component, found here:
  * https://github.com/WordPress/gutenberg/tree/7aa042605ff42bb437e650c39132c0aa8eb4ef95/packages/components/src/custom-select-control
  *
- * It has been modified to support using a custom component as option, and placeholder. A functionality
- * that was not possible within the current implementation of CustomSelectControl.
+ * It has been forked from the existing WooPayments copy of this component (client/components/custom-select-control)
+ * to match the new filter select input design.
  */
 
 /**
