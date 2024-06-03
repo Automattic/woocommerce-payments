@@ -125,7 +125,7 @@ function FilterSelectControl< ItemType extends Item >( {
 	}
 
 	const menuProps = getMenuProps( {
-		className: 'wcpay-components-filter-select-control__menu',
+		className: 'wcpay-filter components-custom-select-control__menu',
 		'aria-hidden': ! isOpen,
 	} );
 
@@ -146,7 +146,7 @@ function FilterSelectControl< ItemType extends Item >( {
 	return (
 		<div
 			className={ classNames(
-				'wcpay-components-filter-select-control',
+				'wcpay-filter components-custom-select-control',
 				className
 			) }
 		>
@@ -157,7 +157,7 @@ function FilterSelectControl< ItemType extends Item >( {
 					'aria-labelledby': undefined,
 					'aria-describedby': getDescribedBy(),
 					className: classNames(
-						'wcpay-components-filter-select-control__button',
+						'wcpay-filter components-custom-select-control__button',
 						{ placeholder: ! itemString }
 					),
 					name,
@@ -168,18 +168,18 @@ function FilterSelectControl< ItemType extends Item >( {
 					<label
 						{ ...getLabelProps( {
 							className:
-								'wcpay-components-filter-select-control__label',
+								'wcpay-filter components-custom-select-control__label',
 						} ) }
 					>
 						{ label }
 					</label>
 				}
-				<span className="wcpay-components-filter-select-control__button-value">
+				<span className="wcpay-filter components-custom-select-control__button-value">
 					{ itemString || placeholder }
 				</span>
 				<Icon
 					icon={ chevronDown }
-					className="wcpay-components-filter-select-control__button-icon"
+					className="wcpay-filter components-custom-select-control__button-icon"
 				/>
 			</Button>
 			{ /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */ }
@@ -194,7 +194,7 @@ function FilterSelectControl< ItemType extends Item >( {
 								key: item.key,
 								className: classNames(
 									item.className,
-									'wcpay-components-filter-select-control__item',
+									'wcpay-filter components-custom-select-control__item',
 									{
 										'is-highlighted':
 											index === highlightedIndex,
@@ -207,7 +207,7 @@ function FilterSelectControl< ItemType extends Item >( {
 							{ item === selectedItem && (
 								<Icon
 									icon={ check }
-									className="wcpay-components-filter-select-control__item-icon"
+									className="wcpay-filter components-custom-select-control__item-icon"
 								/>
 							) }
 						</li>

@@ -1,8 +1,8 @@
-.wcpay-components-filter-select-control {
+.wcpay-filter.components-custom-select-control {
 	font-size: 13px;
 	color: $gray-900;
 
-	.wcpay-components-filter-select-control__label {
+	.wcpay-filter.components-custom-select-control__label {
 		display: inline-block;
 		margin-bottom: 0;
 		color: $wp-gray-40;
@@ -13,7 +13,7 @@
 		}
 	}
 
-	.wcpay-components-filter-select-control__item {
+	.wcpay-filter.components-custom-select-control__item {
 		padding: $gap-small;
 		margin: 0;
 		line-height: initial;
@@ -25,7 +25,7 @@
 		}
 	}
 
-	button.wcpay-components-filter-select-control__button {
+	button.wcpay-filter.components-custom-select-control__button {
 		width: 100%;
 		background-color: #fff;
 		margin: 0 1px;
@@ -44,7 +44,7 @@
 			color: $gray-50;
 		}
 
-		.wcpay-components-filter-select-control__button-value {
+		.wcpay-filter.components-custom-select-control__button-value {
 			text-overflow: ellipsis;
 			white-space: nowrap;
 			overflow-x: hidden;
@@ -57,10 +57,10 @@
 		}
 
 		&[aria-expanded='true'] {
-			.wcpay-components-filter-select-control__button-value {
+			.wcpay-filter.components-custom-select-control__button-value {
 				visibility: hidden;
 			}
-			.components-filter-select-control__label::after {
+			.components-custom-select-control__label::after {
 				visibility: hidden;
 			}
 		}
@@ -70,13 +70,13 @@
 		}
 	}
 
-	.wcpay-components-filter-select-control__menu {
+	.wcpay-filter.components-custom-select-control__menu {
 		margin: -1px 1px;
 		border-color: $gray-300;
 		max-height: 300px;
 	}
 
-	.wcpay-components-filter-select-control__item-icon {
+	.wcpay-filter.components-custom-select-control__item-icon {
 		order: -1;
 		margin-right: 0.2em;
 	}
