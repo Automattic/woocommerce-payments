@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -63,8 +68,8 @@ async function initializeAppearance( api ) {
  *
  * @param {Object} $form The jQuery object for the form.
  */
-export function blockUI( $form ) {
-	$form.addClass( 'processing' ).block( {
+export async function blockUI( $form ) {
+	await $form.addClass( 'processing' ).block( {
 		message: null,
 		overlayCSS: {
 			background: '#fff',
@@ -515,18 +520,24 @@ export const processPayment = (
 		return;
 	}
 
-	const { elements, isPaymentInformationComplete } = gatewayUPEComponents[
-		paymentMethodType
-	];
-	if ( ! isPaymentInformationComplete ) {
-		showErrorCheckout( 'Your payment information is incomplete.' );
-		return false;
-	}
-
-	blockUI( $form );
-
 	( async () => {
 		try {
+			await blockUI( $form );
+
+			const {
+				elements,
+				isPaymentInformationComplete,
+			} = gatewayUPEComponents[ paymentMethodType ];
+
+			if ( ! isPaymentInformationComplete ) {
+				throw new Error(
+					__(
+						'Your payment information is incomplete.',
+						'woocommerce-payments'
+					)
+				);
+			}
+
 			await validateElements( elements );
 			const paymentMethodObject = await createStripePaymentMethod(
 				api,
