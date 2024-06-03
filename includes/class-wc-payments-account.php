@@ -1235,9 +1235,13 @@ class WC_Payments_Account {
 	/**
 	 * Payments task page url
 	 *
+	 * @deprecated 7.8.0
+	 *
 	 * @return string payments task page url
 	 */
 	public static function get_payments_task_page_url() {
+		wc_deprecated_function( __FUNCTION__, '7.8.0' );
+
 		return add_query_arg(
 			[
 				'page'   => 'wc-admin',
