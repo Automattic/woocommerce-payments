@@ -181,6 +181,23 @@ jQuery( ( $ ) => {
 		 * @param {Object} options ECE options.
 		 */
 		startExpressCheckoutElement: ( options ) => {
+			const shippingRates = options.displayItems
+				.filter( ( i ) => i.label === 'Shipping' )
+				.map( ( i ) => ( {
+					id: `rate-${ i.label }`,
+					amount: i.amount,
+					displayName: i.label,
+				} ) );
+
+			// This is a bit of a hack, but we need some way to get the shipping information before rendering the button, and
+			// since we don't have any address information at this point it seems best to rely on what came with the cart response.
+			// Relying on what's provided in the cart response seems safest since it should always include a valid shipping
+			// rate if one is required and available.
+			// If no shipping rate is found we can't render the button so we just exit.
+			if ( ! shippingRates ) {
+				return;
+			}
+
 			const elements = api.getStripe().elements( {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
@@ -204,16 +221,7 @@ jQuery( ( $ ) => {
 					} ) ),
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,
-					// FIXME: This is a total hack, we need some way to get the shipping information before rendering the button.
-					//        Possible to just send an empty address maybe? Just make up a free shipping thing since the shipping
-					//        address change event is sent as soon as the payment sheet pops up?
-					shippingRates: options.displayItems
-						.filter( ( i ) => i.label === 'Shipping' )
-						.map( ( i ) => ( {
-							id: `rate-${ i.label }`,
-							amount: i.amount,
-							displayName: i.label,
-						} ) ),
+					shippingRates,
 				};
 				event.resolve( clickOptions );
 			} );
