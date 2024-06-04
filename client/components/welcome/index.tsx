@@ -80,16 +80,24 @@ const getCurrencyOption = (
 	key: string;
 } => {
 	const { code, symbol } = getCurrency( currency )?.getCurrencyConfig() || {};
-	if ( ! code || ! symbol ) {
+	const currencySymbolDecoded = decodeEntities( symbol || '' );
+
+	if (
+		// Show just the currency the currency code is used as the name, e.g. 'EUR'
+		// if no currency config is found,
+		! code ||
+		! symbol ||
+		// or if the symbol is identical to the currency code, e.g. 'CHF CHF'.
+		currencySymbolDecoded === code
+	) {
 		return {
-			/** If no currency config is found, the currency code is used as the name, e.g. `EUR` */
 			name: currency.toUpperCase(),
 			key: currency,
 		};
 	}
 	return {
-		/** A rendered name of the currency with symbol, e.g. `EUR €`. */
-		name: `${ code } ${ decodeEntities( symbol || '' ) }`,
+		// A rendered name of the currency with symbol, e.g. `EUR €`.
+		name: `${ code } ${ currencySymbolDecoded }`,
 		key: currency,
 	};
 };
