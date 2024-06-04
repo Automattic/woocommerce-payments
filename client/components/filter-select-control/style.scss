@@ -21,6 +21,7 @@
 		grid-template-columns: auto auto auto;
 		justify-content: start;
 		white-space: nowrap;
+		border-radius: 2px;
 
 		&.is-highlighted {
 			background: $gray-0;
@@ -89,5 +90,6 @@
 		margin: -1px 1px;
 		border-color: $gray-300;
 		max-height: 300px;
+		padding: $grid-unit-10 $grid-unit-15;
 	}
 }
