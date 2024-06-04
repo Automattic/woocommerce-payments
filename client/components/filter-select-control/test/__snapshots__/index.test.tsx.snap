@@ -1,0 +1,250 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FilterSelectControl renders options 1`] = `
+<div>
+  <div
+    class="wcpay-components-filter-select-control onboarding-select-control"
+  >
+    <button
+      aria-describedby="Currently selected: EUR €"
+      aria-expanded="true"
+      aria-haspopup="listbox"
+      aria-label="Currency"
+      class="components-button wcpay-components-filter-select-control__button"
+      id="downshift-0-toggle-button"
+      type="button"
+    >
+      <label
+        class="wcpay-components-filter-select-control__label"
+        for="downshift-0-toggle-button"
+        id="downshift-0-label"
+      >
+        Currency
+      </label>
+      <span
+        class="wcpay-components-filter-select-control__button-value"
+      >
+        EUR €
+      </span>
+      <svg
+        aria-hidden="true"
+        class="wcpay-components-filter-select-control__button-icon"
+        focusable="false"
+        height="24"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+        />
+      </svg>
+    </button>
+    <ul
+      aria-activedescendant="downshift-0-item-0"
+      aria-hidden="false"
+      aria-labelledby="downshift-0-label"
+      class="wcpay-components-filter-select-control__menu"
+      id="downshift-0-menu"
+      role="listbox"
+      tabindex="-1"
+    >
+      <li
+        aria-selected="true"
+        class="wcpay-components-filter-select-control__item is-highlighted"
+        id="downshift-0-item-0"
+        role="option"
+      >
+        EUR €
+        <svg
+          aria-hidden="true"
+          class="wcpay-components-filter-select-control__item-icon"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+          />
+        </svg>
+      </li>
+      <li
+        aria-selected="false"
+        class="wcpay-components-filter-select-control__item"
+        id="downshift-0-item-1"
+        role="option"
+      >
+        JPY ¥
+      </li>
+      <li
+        aria-selected="false"
+        class="wcpay-components-filter-select-control__item"
+        id="downshift-0-item-2"
+        role="option"
+      >
+        GBP £
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`FilterSelectControl renders options with custom children 1`] = `
+<div>
+  <div
+    class="wcpay-components-filter-select-control onboarding-select-control"
+  >
+    <button
+      aria-describedby="Currently selected: EUR €"
+      aria-expanded="true"
+      aria-haspopup="listbox"
+      aria-label="Currency"
+      class="components-button wcpay-components-filter-select-control__button"
+      id="downshift-2-toggle-button"
+      type="button"
+    >
+      <label
+        class="wcpay-components-filter-select-control__label"
+        for="downshift-2-toggle-button"
+        id="downshift-2-label"
+      >
+        Currency
+      </label>
+      <span
+        class="wcpay-components-filter-select-control__button-value"
+      >
+        EUR €
+      </span>
+      <svg
+        aria-hidden="true"
+        class="wcpay-components-filter-select-control__button-icon"
+        focusable="false"
+        height="24"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+        />
+      </svg>
+    </button>
+    <ul
+      aria-activedescendant="downshift-2-item-0"
+      aria-hidden="false"
+      aria-labelledby="downshift-2-label"
+      class="wcpay-components-filter-select-control__menu"
+      id="downshift-2-menu"
+      role="listbox"
+      tabindex="-1"
+    >
+      <li
+        aria-selected="true"
+        class="wcpay-components-filter-select-control__item is-highlighted"
+        id="downshift-2-item-0"
+        role="option"
+      >
+        <span>
+          💶
+        </span>
+        <span>
+          EUR €
+        </span>
+        <svg
+          aria-hidden="true"
+          class="wcpay-components-filter-select-control__item-icon"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+          />
+        </svg>
+      </li>
+      <li
+        aria-selected="false"
+        class="wcpay-components-filter-select-control__item"
+        id="downshift-2-item-1"
+        role="option"
+      >
+        <span>
+          💴
+        </span>
+        <span>
+          JPY ¥
+        </span>
+      </li>
+      <li
+        aria-selected="false"
+        class="wcpay-components-filter-select-control__item"
+        id="downshift-2-item-2"
+        role="option"
+      >
+        <span>
+          💷
+        </span>
+        <span>
+          GBP £
+        </span>
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`FilterSelectControl renders with placeholder 1`] = `
+<div>
+  <div
+    class="wcpay-components-filter-select-control onboarding-select-control"
+  >
+    <button
+      aria-describedby="No selection"
+      aria-expanded="false"
+      aria-haspopup="listbox"
+      aria-label="Currency"
+      class="components-button wcpay-components-filter-select-control__button placeholder"
+      id="downshift-4-toggle-button"
+      type="button"
+    >
+      <label
+        class="wcpay-components-filter-select-control__label"
+        for="downshift-4-toggle-button"
+        id="downshift-4-label"
+      >
+        Currency
+      </label>
+      <span
+        class="wcpay-components-filter-select-control__button-value"
+      >
+        Currency
+      </span>
+      <svg
+        aria-hidden="true"
+        class="wcpay-components-filter-select-control__button-icon"
+        focusable="false"
+        height="24"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+        />
+      </svg>
+    </button>
+    <ul
+      aria-hidden="true"
+      aria-labelledby="downshift-4-label"
+      class="wcpay-components-filter-select-control__menu"
+      id="downshift-4-menu"
+      role="listbox"
+      tabindex="-1"
+    />
+  </div>
+</div>
+`;
