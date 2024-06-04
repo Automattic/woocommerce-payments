@@ -35,9 +35,18 @@ const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
+	const yesterdayEndOfDay = moment()
+		.clone()
+		.subtract( 1, 'd' )
+		.set( { hour: 23, minute: 59, second: 59, millisecond: 0 } );
+
+	const todayEndOfDay = moment()
+		.clone()
+		.set( { hour: 23, minute: 59, second: 59, millisecond: 0 } );
+
 	const [ dateRangeState, setDateRangeState ] = useState( {
 		start: moment().clone().subtract( 7, 'd' ),
-		end: moment().clone().subtract( 1, 'd' ),
+		end: yesterdayEndOfDay,
 	} as DateRange );
 	const [ dateRangePresetState, setDateRangePresetState ] = useState(
 		'last_7_days'
@@ -91,12 +100,7 @@ const PaymentActivity: React.FC = () => {
 				start = now
 					.clone()
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
-				end = now.clone().set( {
-					hour: 23,
-					minute: 59,
-					second: 59,
-					millisecond: 0,
-				} );
+				end = yesterdayEndOfDay;
 				break;
 			}
 			case 'last_7_days': {
@@ -105,12 +109,7 @@ const PaymentActivity: React.FC = () => {
 					.clone()
 					.subtract( 7, 'd' )
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
-				end = now.clone().set( {
-					hour: 23,
-					minute: 59,
-					second: 59,
-					millisecond: 0,
-				} );
+				end = yesterdayEndOfDay;
 				break;
 			}
 			case 'last_4_weeks': {
@@ -119,12 +118,7 @@ const PaymentActivity: React.FC = () => {
 					.clone()
 					.subtract( 4, 'w' )
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
-				end = now.clone().set( {
-					hour: 23,
-					minute: 59,
-					second: 59,
-					millisecond: 0,
-				} );
+				end = yesterdayEndOfDay;
 				break;
 			}
 			case 'last_3_months': {
@@ -133,12 +127,7 @@ const PaymentActivity: React.FC = () => {
 					.clone()
 					.subtract( 3, 'm' )
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
-				end = now.clone().set( {
-					hour: 23,
-					minute: 59,
-					second: 59,
-					millisecond: 0,
-				} );
+				end = yesterdayEndOfDay;
 				break;
 			}
 			case 'last_12_months': {
@@ -147,12 +136,7 @@ const PaymentActivity: React.FC = () => {
 					.clone()
 					.subtract( 12, 'm' )
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
-				end = now.clone().set( {
-					hour: 23,
-					minute: 59,
-					second: 59,
-					millisecond: 0,
-				} );
+				end = yesterdayEndOfDay;
 				break;
 			}
 			case 'month_to_date': {
@@ -164,12 +148,7 @@ const PaymentActivity: React.FC = () => {
 					second: 0,
 					millisecond: 0,
 				} );
-				end = now.clone().set( {
-					hour: 23,
-					minute: 59,
-					second: 59,
-					millisecond: 0,
-				} );
+				end = todayEndOfDay;
 				break;
 			}
 			case 'quarter_to_date': {
@@ -182,12 +161,7 @@ const PaymentActivity: React.FC = () => {
 					second: 0,
 					millisecond: 0,
 				} );
-				end = now.clone().set( {
-					hour: 23,
-					minute: 59,
-					second: 59,
-					millisecond: 0,
-				} );
+				end = todayEndOfDay;
 				break;
 			}
 			case 'year_to_date': {
@@ -200,12 +174,7 @@ const PaymentActivity: React.FC = () => {
 					second: 0,
 					millisecond: 0,
 				} );
-				end = now.clone().set( {
-					hour: 23,
-					minute: 59,
-					second: 59,
-					millisecond: 0,
-				} );
+				end = todayEndOfDay;
 				break;
 			}
 			case 'all_time':
