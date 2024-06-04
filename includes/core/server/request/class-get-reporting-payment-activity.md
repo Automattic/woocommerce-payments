@@ -32,10 +32,9 @@ $request = Get_Reporting_Payment_Activity::create();
 $request->set_date_start( $date_start );
 $request->set_date_end( $date_end );
 $request->set_timezone( $timezone );
-$request->set_currency( $random_variable );
+$request->set_currency( $currency );
 $request->send();
 ```
 
 ## Exceptions
-
 - `Invalid_Request_Parameter_Exception` - Thrown when the provided date or timezone is not in expected format.
