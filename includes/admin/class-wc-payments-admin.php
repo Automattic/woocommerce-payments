@@ -923,7 +923,7 @@ class WC_Payments_Admin {
 	 */
 	private function get_plugins_page_js_settings(): array {
 		$plugins_page_settings = [
-			'isExitSurveyModalDimissed' => get_option( 'wcpay_exit_survey_dismissed', false ),
+			'exitSurveyLastShown' => get_option( 'wcpay_exit_survey_last_shown', null ),
 		];
 
 		return apply_filters( 'wcpay_plugins_page_js_settings', $plugins_page_settings );

@@ -14,9 +14,8 @@ import PluginDisableSurvey from './deactivation-survey';
 const PluginsPage = () => {
 	const { updateOptions } = useDispatch( OPTIONS_STORE_NAME );
 	const [ modalOpen, setModalOpen ] = useState( false );
-	const [ isModalDismissed, setIsModalDismissed ] = useState(
-		window.wcpayPluginsSettings?.isExitSurveyModalDimissed ?? false
-	);
+	const surveyModalTimestamp =
+		window.wcpayPluginsSettings?.exitSurveyLastShown ?? null;
 
 	const deactivationLink = document.querySelector(
 		'#deactivate-woocommerce-payments, #deactivate-woocommerce-payments-dev'
@@ -38,18 +37,34 @@ const PluginsPage = () => {
 
 	const closeModal = async () => {
 		setModalOpen( false );
-		setIsModalDismissed( true );
+
+		const currentDate = new Date();
 
 		// Update modal dismissed option.
 		await updateOptions( {
-			wcpay_exit_survey_dismissed: true,
+			wcpay_exit_survey_last_shown: currentDate,
 		} );
 
-		window.wcpayPluginsSettings.isExitSurveyModalDimissed = true;
+		window.wcpayPluginsSettings.exitSurveyLastShown = currentDate;
 
 		// Deactivate plugin
 		deactivatePlugin();
 	};
+
+	const isModalDismissed = useCallback( () => {
+		if ( surveyModalTimestamp ) {
+			const date1 = new Date( surveyModalTimestamp );
+			const date2 = new Date();
+			const diffTime = Math.abs( date2 - date1 );
+			const diffDays = Math.ceil( diffTime / ( 1000 * 60 * 60 * 24 ) );
+
+			if ( diffDays < 7 ) {
+				return true;
+			}
+		}
+
+		return false;
+	}, [ surveyModalTimestamp ] );
 
 	const handleLinkClick = useCallback(
 		( e ) => {
@@ -61,7 +76,7 @@ const PluginsPage = () => {
 
 	useEffect( () => {
 		// If the survey is dismissed skip event listeners.
-		if ( isModalDismissed ) {
+		if ( isModalDismissed() ) {
 			return null;
 		}
 
@@ -80,7 +95,7 @@ const PluginsPage = () => {
 
 	return (
 		<>
-			{ ! isModalDismissed && modalOpen && (
+			{ ! isModalDismissed() && modalOpen && (
 				<PluginDisableSurvey onRequestClose={ closeModal } />
 			) }
 		</>
