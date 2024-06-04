@@ -108,7 +108,6 @@ function FilterSelectControl< ItemType extends Item >( {
 		onSelectedItemChange,
 		selectedItem: value || ( {} as ItemType ),
 		stateReducer,
-		defaultIsOpen: true,
 	} );
 
 	const itemString = itemToString( selectedItem );
