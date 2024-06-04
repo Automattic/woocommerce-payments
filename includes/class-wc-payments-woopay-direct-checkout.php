@@ -77,7 +77,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 		// Enqueue the WCPay common config script only if it hasn't been enqueued yet.
 		// This may happen when Direct Checkout is being enqueued on pages that are not the cart page,
 		// such as the home and shop pages.
-		if ( did_filter( 'wcpay_payment_fields_js_config' ) === 0 ) {
+		if ( function_exists( 'did_filter' ) && did_filter( 'wcpay_payment_fields_js_config' ) === 0 ) {
 			try {
 				// is_test() throws if the class 'Mode' has not been initialized.
 				$is_test_mode = WC_Payments::mode()->is_test();
