@@ -11,7 +11,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  */
 import { useAllDepositsOverviews } from 'data';
 import { useSelectedCurrency } from 'overview/hooks';
-import CustomSelectControl from 'components/custom-select-control';
+import FilterSelectControl from 'components/filter-select-control';
 import { getCurrency } from 'utils/currency';
 import { useCurrentWpUser } from './hooks';
 import './style.scss';
@@ -105,7 +105,7 @@ const CurrencySelect: React.FC< {
 	const currencyOptions = currencies.map( getCurrencyOption );
 
 	return (
-		<CustomSelectControl
+		<FilterSelectControl
 			label="Currency"
 			value={ currencyOptions.find(
 				( option ) => option.key === selectedCurrency
