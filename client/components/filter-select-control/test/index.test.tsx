@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, RenderResult, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
@@ -15,10 +15,11 @@ import FilterSelectControl from '..';
 interface Item {
 	key: string;
 	name: string;
-	icon: string;
+	icon?: string;
+	hint?: string;
 }
 
-const options = [
+const options: Item[] = [
 	{
 		key: 'EUR',
 		name: 'EUR €',
@@ -28,61 +29,76 @@ const options = [
 		key: 'JPY',
 		name: 'JPY ¥',
 		icon: '💴',
+		hint: 'Japanese Yen',
 	},
 	{
-		key: 'GBP £',
+		key: 'GBP',
 		name: 'GBP £',
 		icon: '💷',
+		hint: 'British Pound',
 	},
 ];
 
-function renderFilterSelectControl(
-	placeholder?: string,
-	children?: ( item: Item ) => JSX.Element
-): RenderResult {
-	return render(
-		<FilterSelectControl
-			className="onboarding-select-control"
-			label="Currency"
-			value={ placeholder ? undefined : options[ 0 ] }
-			placeholder={ placeholder }
-			options={ options }
-			children={ children }
-		/>
-	);
-}
-
 describe( 'FilterSelectControl', () => {
 	test( 'renders options', () => {
-		const { container } = renderFilterSelectControl();
-
-		user.click( screen.getByRole( 'button' ) );
-
-		expect( container ).toMatchSnapshot();
-	} );
-} );
-
-describe( 'FilterSelectControl', () => {
-	test( 'renders options with custom children', () => {
-		const { container } = renderFilterSelectControl(
-			undefined,
-			( item ) => (
-				<>
-					<span>{ item.icon }</span>
-					<span>{ item.name }</span>
-				</>
-			)
+		const { container, getByText } = render(
+			<FilterSelectControl
+				className="onboarding-select-control"
+				label="Currency"
+				value={ options[ 0 ] }
+				options={ options }
+			/>
 		);
 
 		user.click( screen.getByRole( 'button' ) );
 
+		// Option names should be visible.
+		getByText( 'JPY ¥' );
+		// Hints should be visible.
+		getByText( 'British Pound' );
+
 		expect( container ).toMatchSnapshot();
 	} );
-} );
 
-describe( 'FilterSelectControl', () => {
+	test( 'renders options with custom children', () => {
+		const { container, getByText } = render(
+			<FilterSelectControl
+				className="onboarding-select-control"
+				label="Currency"
+				value={ undefined }
+				placeholder={ 'Currency' }
+				options={ options }
+				children={ ( item ) => (
+					<>
+						<span>{ item.icon }</span>
+						<span>{ item.name }</span>
+					</>
+				) }
+			/>
+		);
+
+		user.click( screen.getByRole( 'button' ) );
+
+		// Option icons should be visible.
+		getByText( '💴' );
+
+		user.click( screen.getByRole( 'button' ) );
+
+		expect( container ).toMatchSnapshot();
+	} );
+
 	test( 'renders with placeholder', () => {
-		const { container } = renderFilterSelectControl( 'Currency' );
+		const { container } = render(
+			<FilterSelectControl
+				className="onboarding-select-control"
+				label="Currency"
+				value={ undefined }
+				placeholder={ 'Currency' }
+				options={ options }
+			/>
+		);
+
+		user.click( screen.getByRole( 'button' ) );
 
 		expect( container ).toMatchSnapshot();
 	} );
