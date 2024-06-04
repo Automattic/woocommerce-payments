@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CardHeader, Flex, FlexItem } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
@@ -103,14 +103,32 @@ const getCurrencyOption = (
 };
 
 /**
- * A currency select input.
+ * Renders a currency select input used for the Payments Overview page.
+ * Should only be rendered if there are multiple deposit currencies available.
+ * The selected currency is stored in the URL query parameter 'selected_currency'.
  */
 const CurrencySelect: React.FC< {
 	currencies: string[];
 } > = ( { currencies } ) => {
+	const currencyOptions = currencies.map( getCurrencyOption );
+
 	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
 
-	const currencyOptions = currencies.map( getCurrencyOption );
+	useEffect( () => {
+		// The selected currency is invalid if:
+		// * no currency is explicitly selected via URL query, or
+		// * no currency is found for the provided query parameter.
+		const isSelectedCurrencyValid =
+			! selectedCurrency ||
+			! currencyOptions.find(
+				( option ) => option.key === selectedCurrency
+			);
+		// Select the store's default currency if the selected currency is invalid.
+
+		if ( isSelectedCurrencyValid && currencyOptions.length > 0 ) {
+			setSelectedCurrency( currencyOptions[ 0 ].key );
+		}
+	}, [ currencyOptions, selectedCurrency, setSelectedCurrency ] );
 
 	return (
 		<FilterSelectControl
