@@ -37,4 +37,5 @@ $request->send();
 ```
 
 ## Exceptions
+
 - `Invalid_Request_Parameter_Exception` - Thrown when the provided date or timezone is not in expected format.
