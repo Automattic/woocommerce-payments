@@ -104,6 +104,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	private static $has_attached_integration_hooks = false;
 
 	/**
+	 * Used to temporary keep the state of the order_pay value on the Pay for order page with the SCA authorization flow.
+	 * For more details, see remove_order_pay_var and restore_order_pay_var hooks.
+	 *
+	 * @var string|int
+	 */
+	private $order_pay_var;
+
+	/**
 	 * Initialize subscription support and hooks.
 	 */
 	public function maybe_init_subscriptions() {
@@ -941,7 +949,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( 1 < count( $subscriptions ) ) {
 			$result['card']['mandate_options']['amount_type'] = 'maximum';
 			$result['card']['mandate_options']['interval']    = 'sporadic';
-			unset( $result['card']['mandate_options']['interval_count'] );
+			if ( isset( $result['card']['mandate_options']['interval_count'] ) ) {
+				unset( $result['card']['mandate_options']['interval_count'] );
+			}
 		}
 
 		return $result;

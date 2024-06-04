@@ -27,6 +27,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
+use WCPay\Internal\Payment\State\PaymentErrorState;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\PaymentProcessingService;
@@ -3659,6 +3660,34 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			],
 			$result
 		);
+	}
+
+	public function test_new_process_payment_throw_exception() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
+		$mock_service = $this->createMock( PaymentProcessingService::class );
+		$mock_router  = $this->createMock( Router::class );
+		$order        = WC_Helper_Order::create_order();
+		$mock_state   = $this->createMock( PaymentErrorState::class );
+
+		wcpay_get_test_container()->replace( PaymentProcessingService::class, $mock_service );
+		wcpay_get_test_container()->replace( Router::class, $mock_router );
+
+		$mock_router->expects( $this->once() )
+			->method( 'should_use_new_payment_process' )
+			->willReturn( true );
+
+		// Assert: The new service is called.
+		$mock_service->expects( $this->once() )
+			->method( 'process_payment' )
+			->with( $order->get_id() )
+			->willReturn( $mock_state );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'The payment process could not be completed.' );
+
+		$this->card_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {

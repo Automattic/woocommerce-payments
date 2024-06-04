@@ -429,6 +429,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-prevention-enabled-exception.php';
+		include_once __DIR__ . '/exceptions/class-new-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-id-mismatch-exception.php';
 		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
@@ -1436,35 +1437,35 @@ class WC_Payments {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
-			/**
-			 * Shows an alert notice for Norwegian merchants on WooCommerce 7.4 and below
-			 */
-			function wcpay_show_old_woocommerce_for_norway_notice() {
-				?>
-				<div class="notice wcpay-notice notice-error">
-					<p>
-					<?php
-					echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						sprintf(
-							/* translators: %1$s: WooCommerce, %2$s: WooPayments, a1: documentation URL */
-							__( 'The %1$s version you have installed is not compatible with %2$s for a Norwegian business. Please update %1$s to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
-							'WooCommerce',
-							'WooPayments'
-						),
-						[
-							'a1' => '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">',
-						]
-					)
-					?>
-					</p>
-				</div>
-				<?php
-			}
-
-			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_norway_notice' );
+			add_filter( 'admin_notices', [ __CLASS__, 'wcpay_show_old_woocommerce_for_norway_notice' ] );
 		}
 
 		add_filter( 'admin_notices', [ __CLASS__, 'wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic' ] );
+	}
+
+	/**
+	 * Shows an alert notice for Norwegian merchants on WooCommerce 7.4 and below
+	 */
+	public static function wcpay_show_old_woocommerce_for_norway_notice() {
+		?>
+		<div class="notice wcpay-notice notice-error">
+			<p>
+			<?php
+			echo WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				sprintf(
+					/* translators: %1$s: WooCommerce, %2$s: WooPayments, a1: documentation URL */
+					__( 'The %1$s version you have installed is not compatible with %2$s for a Norwegian business. Please update %1$s to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
+					'WooCommerce',
+					'WooPayments'
+				),
+				[
+					'a1' => '<a href="' . esc_url( admin_url( 'plugins.php' ) ) . '">',
+				]
+			)
+			?>
+			</p>
+		</div>
+		<?php
 	}
 
 	/**
