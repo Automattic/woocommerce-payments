@@ -95,7 +95,7 @@ const getCurrencyOption = (
 };
 
 /**
- * A currency select control used in the welcome card header.
+ * A currency select input.
  */
 const CurrencySelect: React.FC< {
 	currencies: string[];
@@ -120,7 +120,7 @@ const CurrencySelect: React.FC< {
 };
 
 /**
- * Renders a welcome card header with a greeting and a currency select control if supported.
+ * Renders a welcome card header with a greeting and a currency select input if supported.
  */
 const Welcome: React.FC = () => {
 	const { user } = useCurrentWpUser();
