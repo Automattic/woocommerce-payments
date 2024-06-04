@@ -17,7 +17,6 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-
 import EmptyStateAsset from 'assets/images/payment-activity-empty-state.svg?asset';
 import PaymentActivityData from './payment-activity-data';
 import DateRange from './date-range';
@@ -36,7 +35,10 @@ const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
-	const [ dateRangeState, setDateRangeState ] = useState( {} as DateRange );
+	const [ dateRangeState, setDateRangeState ] = useState( {
+		start: moment().clone().subtract( 7, 'd' ),
+		end: moment().clone().subtract( 1, 'd' ),
+	} as DateRange );
 	const [ dateRangePresetState, setDateRangePresetState ] = useState(
 		'last_7_days'
 	);
@@ -228,8 +230,20 @@ const PaymentActivity: React.FC = () => {
 								options={ dateRangePresets }
 							/>
 							<DateRange
-								start={ dateRangeState.start }
-								end={ dateRangeState.end }
+								start={
+									dateRangeState.start
+										? dateRangeState.start.format(
+												'YYYY-MM-DD'
+										  )
+										: ''
+								}
+								end={
+									dateRangeState.end
+										? dateRangeState.end.format(
+												'YYYY-MM-DD'
+										  )
+										: ''
+								}
 							/>
 						</Flex>
 					</>

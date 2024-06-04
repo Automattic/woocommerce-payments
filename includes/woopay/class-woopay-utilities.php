@@ -121,7 +121,7 @@ class WooPay_Utilities {
 	public function should_save_platform_customer() {
 		$session_data = [];
 
-		if ( isset( WC()->session ) && WC()->session->has_session() ) {
+		if ( isset( WC()->session ) && method_exists( WC()->session, 'has_session' ) && WC()->session->has_session() ) {
 			$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
 		}
 

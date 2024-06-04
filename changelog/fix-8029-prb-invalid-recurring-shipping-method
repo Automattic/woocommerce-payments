@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Resolves "Invalid recurring shipping method" errors when purchasing multiple subscriptions with Apple Pay and Google Pay.

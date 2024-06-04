@@ -2,7 +2,6 @@
  * External dependencies
  */
 import * as React from 'react';
-import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -11,8 +10,8 @@ import moment from 'moment';
 import './style.scss';
 
 interface Props {
-	start: moment.Moment | undefined;
-	end: moment.Moment | undefined;
+	start: string;
+	end: string;
 }
 
 const DateRange: React.FC< Props > = ( { start, end } ) => {

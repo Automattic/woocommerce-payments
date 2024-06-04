@@ -27,12 +27,13 @@ exports[`PaymentActivity component should render 1`] = `
         >
           <div
             class="wcpay-payment-data-highlights__item"
-            id="wcpay-payment-activity-data__total-payment-volume"
           >
             <p
               class="wcpay-payment-data-highlights__item__label"
             >
-              <span>
+              <span
+                id="wcpay-payment-activity-data__total-payment-volume"
+              >
                 Total payment volume
               </span>
               <button
@@ -71,11 +72,11 @@ exports[`PaymentActivity component should render 1`] = `
                 aria-labelledby="wcpay-payment-activity-data__total-payment-volume"
                 class="wcpay-payment-data-highlights__item__wrapper__amount"
               >
-                $1,234.56
+                €1.234,56
               </p>
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&date_between%5B0%5D=2024-04-01&date_between%5B1%5D=2024-04-08&filter=advanced"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=charge&search%5B1%5D=payment&search%5B2%5D=payment_failure_refund&search%5B3%5D=payment_refund&search%5B4%5D=refund&search%5B5%5D=refund_failure&search%5B6%5D=dispute&search%5B7%5D=dispute_reversal&search%5B8%5D=card_reader_fee"
               >
                 View report
               </a>
@@ -86,12 +87,13 @@ exports[`PaymentActivity component should render 1`] = `
           >
             <div
               class="wcpay-payment-data-highlights__item"
-              id="wcpay-payment-data-highlights__charges"
             >
               <p
                 class="wcpay-payment-data-highlights__item__label"
               >
-                <span>
+                <span
+                  id="wcpay-payment-data-highlights__charges"
+                >
                   Charges
                 </span>
                 <button
@@ -130,11 +132,11 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__charges"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $98.76
+                  €98,76
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=charge"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=charge&search%5B1%5D=payment&search%5B2%5D=adjustment"
                 >
                   View report
                 </a>
@@ -142,12 +144,13 @@ exports[`PaymentActivity component should render 1`] = `
             </div>
             <div
               class="wcpay-payment-data-highlights__item"
-              id="wcpay-payment-data-highlights__refunds"
             >
               <p
                 class="wcpay-payment-data-highlights__item__label"
               >
-                <span>
+                <span
+                  id="wcpay-payment-data-highlights__refunds"
+                >
                   Refunds
                 </span>
               </p>
@@ -158,11 +161,11 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__refunds"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $44.44
+                  €44,44
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&type_is=refund&date_between%5B0%5D=2024-04-01&date_between%5B1%5D=2024-04-08"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=refund&search%5B1%5D=refund_failure&search%5B2%5D=payment_refund&search%5B3%5D=payment_failure_refund"
                 >
                   View report
                 </a>
@@ -170,12 +173,13 @@ exports[`PaymentActivity component should render 1`] = `
             </div>
             <div
               class="wcpay-payment-data-highlights__item"
-              id="wcpay-payment-data-highlights__disputes"
             >
               <p
                 class="wcpay-payment-data-highlights__item__label"
               >
-                <span>
+                <span
+                  id="wcpay-payment-data-highlights__disputes"
+                >
                   Disputes
                 </span>
               </p>
@@ -186,11 +190,11 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__disputes"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $55.55
+                  €55,55
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes&filter=advanced&date_between%5B0%5D=2024-04-01&date_between%5B1%5D=2024-04-08&status_is=needs_response"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=dispute&search%5B1%5D=dispute_reversal"
                 >
                   View report
                 </a>
@@ -198,12 +202,13 @@ exports[`PaymentActivity component should render 1`] = `
             </div>
             <div
               class="wcpay-payment-data-highlights__item"
-              id="wcpay-payment-data-highlights__fees"
             >
               <p
                 class="wcpay-payment-data-highlights__item__label"
               >
-                <span>
+                <span
+                  id="wcpay-payment-data-highlights__fees"
+                >
                   Fees
                 </span>
                 <button
@@ -242,7 +247,7 @@ exports[`PaymentActivity component should render 1`] = `
                   aria-labelledby="wcpay-payment-data-highlights__fees"
                   class="wcpay-payment-data-highlights__item__wrapper__amount"
                 >
-                  $12.34
+                  €12,34
                 </p>
               </div>
             </div>
@@ -260,7 +265,7 @@ exports[`PaymentActivity component should render 1`] = `
           <div
             class="survey_container"
           >
-            Are those metrics helpful?
+            Are these metrics helpful?
             <div
               class="survey_container__emoticons"
             >

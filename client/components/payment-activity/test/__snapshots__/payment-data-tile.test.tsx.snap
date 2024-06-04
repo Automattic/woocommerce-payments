@@ -4,12 +4,13 @@ exports[`PaymentDataTile renders correctly 1`] = `
 <div>
   <div
     class="wcpay-payment-data-highlights__item"
-    id="total-payment"
   >
     <p
       class="wcpay-payment-data-highlights__item__label"
     >
-      <span>
+      <span
+        id="total-payment"
+      >
         Total payment volume
       </span>
     </p>

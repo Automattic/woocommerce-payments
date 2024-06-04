@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -34,6 +39,7 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
 		upeElement: null,
+		isPaymentInformationComplete: false,
 	};
 }
 
@@ -62,8 +68,8 @@ async function initializeAppearance( api ) {
  *
  * @param {Object} $form The jQuery object for the form.
  */
-export function blockUI( $form ) {
-	$form.addClass( 'processing' ).block( {
+export async function blockUI( $form ) {
+	await $form.addClass( 'processing' ).block( {
 		message: null,
 		overlayCSS: {
 			background: '#fff',
@@ -400,6 +406,27 @@ export async function mountStripePaymentElement( api, domElement ) {
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
 		( await createStripePaymentElement( api, paymentMethodType ) );
 	upeElement.mount( domElement );
+	upeElement.on( 'change', ( e ) => {
+		gatewayUPEComponents[ paymentMethodType ].isPaymentInformationComplete =
+			e.complete;
+	} );
+	upeElement.on( 'loaderror', ( e ) => {
+		// unset any styling to ensure the WC error message wrapper can take more width.
+		domElement.style.padding = '0';
+		// creating a new element to be added to the DOM, so that the message can be displayed.
+		const messageWrapper = document.createElement( 'div' );
+		messageWrapper.classList.add( 'woocommerce-error' );
+		messageWrapper.innerHTML = e.error.message;
+		messageWrapper.style.margin = '0';
+		domElement.appendChild( messageWrapper );
+		// hiding any "save payment method" checkboxes.
+		const savePaymentMethodWrapper = domElement
+			.closest( '.payment_box' )
+			?.querySelector( '.woocommerce-SavedPaymentMethods-saveNew' );
+		if ( savePaymentMethodWrapper ) {
+			savePaymentMethodWrapper.style.display = 'none';
+		}
+	} );
 }
 
 export async function mountStripePaymentMethodMessagingElement(
@@ -493,12 +520,24 @@ export const processPayment = (
 		return;
 	}
 
-	blockUI( $form );
-
-	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
-
 	( async () => {
 		try {
+			await blockUI( $form );
+
+			const {
+				elements,
+				isPaymentInformationComplete,
+			} = gatewayUPEComponents[ paymentMethodType ];
+
+			if ( ! isPaymentInformationComplete ) {
+				throw new Error(
+					__(
+						'Your payment information is incomplete.',
+						'woocommerce-payments'
+					)
+				);
+			}
+
 			await validateElements( elements );
 			const paymentMethodObject = await createStripePaymentMethod(
 				api,

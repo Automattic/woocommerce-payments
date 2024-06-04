@@ -1,4 +1,7 @@
-export interface DateRange {
-	date_start: string; // Start date
-	date_end: string; // End date
+/* eslint-disable wpcalypso/import-docblock */
+import { Moment } from 'moment';
+
+export interface DateRangeProps {
+	start: Moment | undefined; // Start date
+	end: Moment | undefined; // End date
 }

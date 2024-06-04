@@ -18,7 +18,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception};
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception, Fraud_Prevention_Enabled_Exception, Invalid_Phone_Number_Exception, Rate_Limiter_Enabled_Exception, Order_ID_Mismatch_Exception, Order_Not_Found_Exception, New_Process_Payment_Exception };
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -126,6 +126,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_product_page_appearance_theme';
 	const UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_classic_cart_appearance_theme';
 	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT   = 'wcpay_upe_bnpl_cart_block_appearance_theme';
+
+	/**
+	 * The locations of appearance transients.
+	 */
+	const APPEARANCE_THEME_TRANSIENTS = [
+		'checkout'     => [
+			'blocks'  => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
+			'classic' => self::UPE_APPEARANCE_THEME_TRANSIENT,
+		],
+		'product_page' => [
+			'blocks'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+			'classic' => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+		],
+		'cart'         => [
+			'blocks'  => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
+			'classic' => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
+		],
+	];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -1045,6 +1063,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$factors[] = Factor::PAYMENT_REQUEST();
 		}
 
+		if ( defined( 'WCPAY_EXPRESS_CHECKOUT_CHECKOUT' ) && WCPAY_EXPRESS_CHECKOUT_CHECKOUT ) {
+			$factors[] = Factor::EXPRESS_CHECKOUT_ELEMENT();
+		}
+
 		$router = wcpay_get_container()->get( Router::class );
 		return $router->should_use_new_payment_process( $factors );
 	}
@@ -1054,8 +1076,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * and if the answer is yes, uses it and returns the result.
 	 *
 	 * @param WC_Order $order Order that needs payment.
-	 * @return array|null     Array if processed, null if the new process is not supported.
-	 * @throws Exception      If the payment process could not be completed.
+	 * @return array|null Array  if processed, null if the new process is not supported.
+	 * @throws Exception Error processing the payment.
 	 */
 	public function new_process_payment( WC_Order $order ) {
 		$manual_capture = $this->get_capture_type() === Payment_Capture_Type::MANUAL();
@@ -1101,7 +1123,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		throw new Exception( __( 'The payment process could not be completed.', 'woocommerce-payments' ) );
+		throw new Exception(
+			__( 'The payment process could not be completed.', 'woocommerce-payments' ),
+			0,
+			new New_Process_Payment_Exception(
+				__( 'The payment process could not be completed.', 'woocommerce-payments' ),
+				'new_process_payment'
+			)
+		);
 	}
 
 	/**
@@ -1110,7 +1139,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
-	 * @throws Process_Payment_Exception Error processing the payment.
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
@@ -1123,7 +1151,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
-				throw new Process_Payment_Exception(
+				throw new Invalid_Phone_Number_Exception(
 					__( 'Invalid phone number.', 'woocommerce-payments' ),
 					'invalid_phone_number'
 				);
@@ -1133,7 +1161,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
-					throw new Process_Payment_Exception(
+					throw new Fraud_Prevention_Enabled_Exception(
 						__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
 						'fraud_prevention_enabled'
 					);
@@ -1141,7 +1169,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
-				throw new Process_Payment_Exception(
+				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
 				);
@@ -1263,7 +1291,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
-			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) );
+			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ), 0, $e );
 		}
 	}
 
@@ -1392,9 +1420,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WCPay\Payment_Information $payment_information Payment info.
 	 * @param bool                      $scheduled_subscription_payment Used to determinate is scheduled subscription payment to add more fields into API request.
 	 *
-	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception
-	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
+	 * @throws Exception When amount too small.
+	 * @throws Invalid_Address_Exception
+	 * @throws Order_Not_Found_Exception
+	 * @throws Order_ID_Mismatch_Exception When the payment intent could not be authenticated.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception When request class filter filed to extend request class because of incompatibility.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception When immutable parameter gets changed in request class.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception When you send incorrect request value via setters.
@@ -1413,19 +1444,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 
-		// Update saved payment method async to include billing details, if missing.
-		if ( $payment_information->is_using_saved_payment_method() ) {
-			$this->action_scheduler_service->schedule_job(
-				time(),
-				self::UPDATE_SAVED_PAYMENT_METHOD,
-				[
-					'payment_method' => $payment_information->get_payment_method(),
-					'order_id'       => $order->get_id(),
-					'is_test_mode'   => WC_Payments::mode()->is_test(),
-				]
-			);
-		}
-
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
 
@@ -1443,6 +1461,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// We need to make sure the saved payment method is saved to the order so we can
 				// charge the payment method for a future payment.
 				$this->add_token_to_order( $order, $payment_information->get_payment_token() );
+				// If we are not hitting the API for the intent, we need to update the saved payment method ourselves.
+				$this->action_scheduler_service->schedule_job(
+					time(),
+					self::UPDATE_SAVED_PAYMENT_METHOD,
+					[
+						'payment_method' => $payment_information->get_payment_method(),
+						'order_id'       => $order->get_id(),
+						'is_test_mode'   => WC_Payments::mode()->is_test(),
+					]
+				);
 			}
 
 			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
@@ -1500,7 +1528,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 				if ( $intent_meta_order_id !== $order_id ) {
-					throw new Intent_Authentication_Exception(
+					throw new Order_ID_Mismatch_Exception(
 						sprintf(
 							/* translators: %s: metadata. We do not need to translate WooPayMeta */
 							esc_html( __( 'We\'re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: %1$s, order_id: %2$s', 'woocommerce-payments' ) ),
@@ -1525,6 +1553,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_payment_methods( $payment_methods );
 				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 				$request->set_hook_args( $payment_information );
+				if ( $payment_information->is_using_saved_payment_method() ) {
+					$billing_details = $this->order_service->get_billing_data_from_order( $order );
+
+					$is_legacy_card_object = (bool) preg_match( '/^(card_|src_)/', $payment_information->get_payment_method() );
+
+					// Not updating billing details for legacy card objects because they have a different structure and are no longer supported.
+					if ( ! empty( $billing_details ) && ! $is_legacy_card_object ) {
+						$request->set_payment_method_update_data( [ 'billing_details' => $billing_details ] );
+					}
+				}
 				// Add specific payment method parameters to the request.
 				$this->modify_create_intent_parameters_when_processing_payment( $request, $payment_information, $order );
 
@@ -1601,7 +1639,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 
 				if ( $intent_meta_order_id !== $order_id ) {
-					throw new Intent_Authentication_Exception(
+					throw new Order_ID_Mismatch_Exception(
 						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
 						'order_id_mismatch'
 					);
@@ -1717,7 +1755,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
+							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
 						// Include the payment method ID so the Blocks integration can save cards.
@@ -1757,10 +1795,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} else {
 			$payment_method_details = false;
-			$payment_method_type    = $intent->get_payment_method_type();
+			$payment_method_type    = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 		}
 
-		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $_POST['payment_request_type'] ) || empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 		}
 
@@ -1942,7 +1980,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
+							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						);
 						wp_safe_redirect( $redirect_url );
@@ -1954,7 +1992,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
 			$is_order_id_mismatched_exception =
-				is_a( $e, Process_Payment_Exception::class )
+				$e instanceof Process_Payment_Exception
 				&& self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE === $e->get_error_code();
 
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
@@ -3412,11 +3450,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$payment_method_id = isset( $_POST['payment_method_id'] ) ? wc_clean( wp_unslash( $_POST['payment_method_id'] ) ) : '';
-			if ( 'null' === $payment_method_id ) {
-				$payment_method_id = '';
-			}
-
 			// Check that the intent saved in the order matches the intent used as part of the
 			// authentication process. The ID of the intent used is sent with
 			// the AJAX request. We are about to use the status of the intent saved in
@@ -3429,7 +3462,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$amount = $order->get_total();
+			$amount                 = $order->get_total();
+			$payment_method_details = false;
 
 			if ( $amount > 0 ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
@@ -3453,6 +3487,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge_id = '';
 			}
 
+			$payment_method_id = $intent->get_payment_method_id();
+
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 			}
@@ -3466,6 +3502,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					try {
 						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
 						$this->add_token_to_order( $order, $token );
+
+						if ( ! empty( $token ) ) {
+							$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
+							$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+						}
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
@@ -3729,10 +3770,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$setup_intent_output = [
 				'id'            => $setup_intent->get_id(),
 				'status'        => $setup_intent->get_status(),
-				'client_secret' => WC_Payments_Utils::encrypt_client_secret(
-					$this->account->get_stripe_account_id(),
-					$setup_intent->get_client_secret()
-				),
+				'client_secret' => $setup_intent->get_client_secret(),
 			];
 
 			wp_send_json_success( $setup_intent_output, 200 );
@@ -4260,6 +4298,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Get the payment method used with a setup intent.
+	 *
+	 * @param WC_Payments_API_Setup_Intention $intent The PaymentIntent object.
+	 * @param WC_Payment_Token                $token The payment token.
+	 * @return string|null The payment method type.
+	 */
+	private function get_payment_method_type_for_setup_intent( $intent, $token ) {
+		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+	}
+
+	/**
 	 * This function wraps WC_Payments::get_payment_method_map, useful for unit testing.
 	 *
 	 * @return array Array of UPE_Payment_Method instances.
@@ -4429,8 +4478,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$billing_data = $this->order_service->get_billing_data_from_order( $order );
-		if ( $check_if_usable( $billing_data['address'] ) ) {
-			$request->set_shipping( $billing_data );
+		// Afterpay fails if we send more parameters than expected in the shipping address.
+		// This ensures that we only send the name and address fields, as in get_shipping_data_from_order.
+		$shipping_data = [
+			'name'    => $billing_data['name'] ?? '',
+			'address' => $billing_data['address'] ?? [],
+		];
+		if ( $check_if_usable( $shipping_data['address'] ) ) {
+			$request->set_shipping( $shipping_data );
 			return;
 		}
 
@@ -4446,6 +4501,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
 	 * @param Payment_Information          $payment_information   The payment information object.
 	 * @param WC_Order                     $order                 The order object.
+	 * @throws Invalid_Address_Exception
 	 *
 	 * @return void
 	 */

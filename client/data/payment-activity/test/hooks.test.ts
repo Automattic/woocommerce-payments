@@ -13,6 +13,7 @@ jest.mock( '@wordpress/data' );
 describe( 'usePaymentActivityData', () => {
 	test( 'should return the correct payment activity data and loading state', () => {
 		const mockPaymentActivityData = {
+			currency: 'jpy',
 			total_payment_volume: 2500,
 			charges: 3000,
 			fees: 300,
@@ -35,6 +36,7 @@ describe( 'usePaymentActivityData', () => {
 		const result = usePaymentActivityData( {
 			date_start: '2021-01-01',
 			date_end: '2021-01-31',
+			timezone: 'UTC',
 		} );
 
 		expect( result ).toEqual( {
