@@ -102,6 +102,9 @@ export default class PaymentRequestCartApi {
 
 		this.cartRequestHeaders = {
 			Nonce: response.headers.get( 'Nonce' ),
+			// this header will be overwritten by a filter in the backend to overcome nonce overwrites in this middleware:
+			// https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce-blocks/assets/js/middleware/store-api-nonce.js
+			'X-WooPayments-Store-Api-Nonce': response.headers.get( 'Nonce' ),
 			'Cart-Token': response.headers.get( 'Cart-Token' ),
 			'X-WooPayments-Express-Payment-Request-Nonce': response.headers.get(
 				'X-WooPayments-Express-Payment-Request-Nonce'

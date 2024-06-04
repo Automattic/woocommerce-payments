@@ -274,6 +274,28 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		return $method->get_rate_id();
 	}
 
+	public function test_tokenized_cart_nonce_overwrite_when_header_not_present() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Store-Api-Nonce', null );
+		$request->set_header( 'Nonce', 'original-nonce-value' );
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$this->pr->tokenized_cart_store_api_nonce_overwrite( null, null, $request );
+
+		$this->assertSame( 'original-nonce-value', $request->get_header( 'Nonce' ) );
+	}
+
+	public function test_tokenized_cart_nonce_overwrite_when_header_is_present() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Store-Api-Nonce', 'new-nonce-value' );
+		$request->set_header( 'Nonce', 'original-nonce-value' );
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$this->pr->tokenized_cart_store_api_nonce_overwrite( null, null, $request );
+
+		$this->assertSame( 'new-nonce-value', $request->get_header( 'Nonce' ) );
+	}
+
 	public function test_tokenized_cart_address_avoid_normalization_when_missing_header() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WooPayments-Express-Payment-Request', null );

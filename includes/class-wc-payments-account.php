@@ -1675,7 +1675,7 @@ class WC_Payments_Account {
 	 *
 	 * @return void
 	 */
-	public function update_cached_account_data( $property, $data ) {
+	public function update_account_data( $property, $data ) {
 		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
 
 		$account_data[ $property ] = is_array( $data ) ? array_merge( $account_data[ $property ] ?? [], $data ) : $data;
@@ -1690,16 +1690,6 @@ class WC_Payments_Account {
 	 */
 	public function refresh_account_data() {
 		return $this->get_cached_account_data( true );
-	}
-
-	/**
-	 * Updates the account data.
-	 *
-	 * @param string $property Property to update.
-	 * @param mixed  $data     Data to update.
-	 */
-	public function update_account_data( $property, $data ) {
-		return $this->update_cached_account_data( $property, $data );
 	}
 
 	/**
