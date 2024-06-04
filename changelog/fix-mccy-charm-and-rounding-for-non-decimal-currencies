@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Charm pricing and rounding options corrected for all currencies that aren't presented with decimal points.
