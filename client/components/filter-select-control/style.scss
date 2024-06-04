@@ -44,13 +44,14 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: 6px 8px;
-		border: 1px solid $gray-600;
+		border: 1px solid $gray-200;
 		font-size: 13px;
 
 		&:hover,
 		&:focus {
 			color: initial;
 			background-color: $gray-0;
+			box-shadow: none;
 		}
 
 		&.placeholder {
