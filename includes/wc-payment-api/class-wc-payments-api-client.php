@@ -738,7 +738,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_timeline( $id ) {
-		if ( ! preg_match( '/(ch|pi)_[A-Za-z0-9]+/', $id ) ) {
+		if ( ! preg_match( '/(ch|pi|py)_[A-Za-z0-9]+/', $id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1217,7 +1217,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception
 	 */
 	public function get_charge( string $charge_id ) {
-		if ( ! preg_match( '/(ch|pi)_[A-Za-z0-9]+/', $charge_id ) ) {
+		if ( ! preg_match( '/(ch|pi|py)_[A-Za-z0-9]+/', $charge_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
