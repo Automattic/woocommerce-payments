@@ -1,9 +1,9 @@
 /**
- * This is a copy of the CustomSelectControl component, found here:
+ * This is a copy of Gutenberg's CustomSelectControl component, found here:
  * https://github.com/WordPress/gutenberg/tree/7aa042605ff42bb437e650c39132c0aa8eb4ef95/packages/components/src/custom-select-control
  *
  * It has been forked from the existing WooPayments copy of this component (client/components/custom-select-control)
- * to match the new filter select input design.
+ * to match this specific select input design with an inline label and option hints.
  */
 
 /**
@@ -23,30 +23,49 @@ import { useSelect, UseSelectState } from 'downshift';
 import './style.scss';
 
 export interface Item {
+	/** The unique key for the item. */
 	key: string;
+	/** The display name of the item. */
 	name?: string;
+	/** Descriptive hint for the item, displayed to the right of the name. */
 	hint?: string;
+	/** Additional class name to apply to the item. */
 	className?: string;
+	/** Additional inline styles to apply to the item. */
 	style?: React.CSSProperties;
 }
 
 export interface Props< ItemType > {
+	/** The name attribute for the select input. */
 	name?: string;
+	/** Additional class name to apply to the select control. */
 	className?: string;
+	/** The label for the select control. */
 	label: string;
+	/** The ID of an element that describes the select control. */
 	describedBy?: string;
+	/** A list of options/items for the select control. */
 	options: ItemType[];
+	/** The currently selected option/item. */
 	value?: ItemType | null;
+	/** A placeholder to display when no item is selected. */
 	placeholder?: string;
+	/** Callback function to run when the selected item changes. */
 	onChange?: ( changes: Partial< UseSelectState< ItemType > > ) => void;
+	/** A function to render the children of the item. Takes an item as an argument, must return a JSX element. */
 	children?: ( item: ItemType ) => JSX.Element;
 }
 
+/**
+ * Converts a select option/item object to a string.
+ */
 const itemToString = ( item: { name?: string } | null ) => item?.name || '';
-// This is needed so that in Windows, where
-// the menu does not necessarily open on
-// key up/down, you can still switch between
-// options with the menu closed.
+
+/**
+ * State reducer for the select component.
+ * This is needed so that in Windows, where the menu does not necessarily open on
+ * key up/down, you can still switch between options with the menu closed.
+ */
 const stateReducer = (
 	{ selectedItem }: any,
 	{ type, changes, props: { items } }: any
@@ -82,6 +101,10 @@ const stateReducer = (
 	}
 };
 
+/**
+ * FilterSelectControl component.
+ * A select control with a list of options, inline label, and option hints.
+ */
 function FilterSelectControl< ItemType extends Item >( {
 	name,
 	className,
