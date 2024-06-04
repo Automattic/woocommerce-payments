@@ -54,11 +54,6 @@ const mockWcPaySettings = {
 	},
 };
 
-jest.mock( '../utils', () => ( {
-	getTimeOfDayString: jest.fn(),
-	getCurrencyTabTitle: jest.fn(),
-} ) );
-
 jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 	useInstantDeposit: jest.fn(),
