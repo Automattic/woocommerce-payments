@@ -211,7 +211,6 @@ function FilterSelectControl< ItemType extends Item >( {
 									item === selectedItem ? 'visible' : 'hidden'
 								}
 							/>
-
 							{ children ? children( item ) : item.name }
 							{ item.hint && (
 								<span className="wcpay-filter components-custom-select-control__item-hint">

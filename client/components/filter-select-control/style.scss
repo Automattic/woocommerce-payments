@@ -47,8 +47,10 @@
 		border: 1px solid $gray-600;
 		font-size: 13px;
 
-		&:hover {
+		&:hover,
+		&:focus {
 			color: initial;
+			background-color: $gray-0;
 		}
 
 		&.placeholder {
