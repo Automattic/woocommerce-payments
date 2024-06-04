@@ -125,8 +125,10 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
 				$price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 			}
-			$price = \WC_Product_Addons_Helper::get_product_addon_price_for_display( $price, $cart_item['data'] );
-			$name .= ' (' . wc_price( $price ) . ')';
+			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
+				$price = \WC_Product_Addons_Helper::get_product_addon_price_for_display( $price, $cart_item['data'] );
+				$name .= ' (' . wc_price( $price ) . ')';
+			}
 		} else {
 			// Get the percentage cost in the currency in use, and set the meta data on the product that the value was converted.
 			$_product = wc_get_product( $cart_item['product_id'] );
@@ -245,12 +247,14 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				// Convert all others.
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 			}
-			$price          = html_entity_decode(
-				wp_strip_all_tags( wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $values['data'] ) ) ),
-				ENT_QUOTES,
-				get_bloginfo( 'charset' )
-			);
-			$addon['name'] .= ' (' . $price . ')';
+			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
+				$price          = html_entity_decode(
+					wp_strip_all_tags( wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $values['data'] ) ) ),
+					ENT_QUOTES,
+					get_bloginfo( 'charset' )
+				);
+				$addon['name'] .= ' (' . $price . ')';
+			}
 		}
 
 		if ( 'custom_price' === $addon['field_type'] ) {

@@ -154,8 +154,11 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
-registerExpressPaymentMethod( expressCheckoutElementPaymentMethod( api ) );
+if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+	registerExpressPaymentMethod( expressCheckoutElementPaymentMethod( api ) );
+} else {
+	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+}
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();
