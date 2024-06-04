@@ -9,7 +9,6 @@ import { Flex } from '@wordpress/components';
  */
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
-import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 import {
 	TotalBalanceTooltip,
@@ -35,7 +34,6 @@ const AccountBalances: React.FC = () => {
 		// While the data is loading, we show a loading state for the balances.
 		const loadingData = {
 			name: 'loading',
-			title: getCurrencyTabTitle( wcpaySettings.accountDefaultCurrency ),
 			currencyCode: wcpaySettings.accountDefaultCurrency,
 			availableFunds: 0,
 			pendingFunds: 0,
@@ -67,7 +65,6 @@ const AccountBalances: React.FC = () => {
 	const depositCurrencyOverviews = currencies.map(
 		( overview: AccountOverview.Overview ) => ( {
 			name: overview.currency,
-			title: getCurrencyTabTitle( overview.currency ),
 			currencyCode: overview.currency,
 			availableFunds: overview.available?.amount ?? 0,
 			pendingFunds: overview.pending?.amount ?? 0,
