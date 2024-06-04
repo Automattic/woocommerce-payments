@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Not user-facing: disable flaky playwright e2e test 'payment gateways disable confirmation'
+
+
