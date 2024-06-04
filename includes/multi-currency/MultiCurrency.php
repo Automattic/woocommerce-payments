@@ -244,7 +244,7 @@ class MultiCurrency {
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
-		if ( $is_frontend_request ) {
+		if ( $is_frontend_request || \WC_Payments_Utils::is_store_api_request() ) {
 			// Make sure that this runs after the main init function.
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
@@ -325,6 +325,13 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init_rest_api() {
+		// Ensures we are not initializing our REST during `rest_preload_api_request`.
+		// When constructors signature changes, in manual update scenarios we were run into fatals.
+		// Those fatals are not critical, but it causes hickups in release process as catches unnecessary attention.
+		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
+			return;
+		}
+
 		$api_controller = new RestController( \WC_Payments::create_api_client() );
 		$api_controller->register_routes();
 	}
@@ -805,11 +812,17 @@ class MultiCurrency {
 		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
 
+		if ( null === $currency ) {
+			return;
+		}
+
 		// We discard the cache for the front-end.
 		$this->frontend_currencies->selected_currency_changed();
 
-		if ( null === $currency ) {
-			return;
+		// initializing the session (useful for Store API),
+		// so that the selected currency (set as query string parameter) can be correctly set.
+		if ( ! isset( WC()->session ) ) {
+			WC()->initialize_session();
 		}
 
 		if ( 0 === $user_id && WC()->session ) {
@@ -964,7 +977,9 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function recalculate_cart() {
-		WC()->cart->calculate_totals();
+		if ( WC()->cart ) {
+			WC()->cart->calculate_totals();
+		}
 	}
 
 	/**

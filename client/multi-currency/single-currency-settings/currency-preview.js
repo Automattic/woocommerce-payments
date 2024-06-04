@@ -36,16 +36,11 @@ const CurrencyPreview = ( {
 							? charmed
 							: charmed * 100,
 						targetCurrency.code,
-						storeCurrency.code
+						null,
+						true
 				  );
 		},
-		[
-			charmValue,
-			currencyRate,
-			roundingValue,
-			targetCurrency,
-			storeCurrency,
-		]
+		[ charmValue, currencyRate, roundingValue, targetCurrency ]
 	);
 
 	useEffect( () => {

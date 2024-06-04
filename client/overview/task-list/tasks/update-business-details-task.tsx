@@ -27,6 +27,7 @@ export const getUpdateBusinessDetailsTask = (
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
+	const connectUrl = wcpaySettings.connectUrl;
 	const accountLinkWithSource = addQueryArgs( accountLink, {
 		source: 'overview-page__update-business-details-task',
 	} );
@@ -113,7 +114,14 @@ export const getUpdateBusinessDetailsTask = (
 			recordEvent( 'wcpay_account_details_link_clicked', {
 				source: 'overview-page__update-business-details-task',
 			} );
-			window.open( accountLinkWithSource, '_blank' );
+
+			// If the onboarding isn't complete use the connectUrl instead,
+			// as the accountLink doesn't handle redirecting back to the overview page.
+			if ( ! detailsSubmitted ) {
+				window.location.href = connectUrl;
+			} else {
+				window.open( accountLinkWithSource, '_blank' );
+			}
 		}
 	};
 

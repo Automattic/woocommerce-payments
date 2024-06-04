@@ -34,25 +34,6 @@ class WooPay_Session {
 	const STORE_API_NAMESPACE_PATTERN = '@^wc/store(/v[\d]+)?$@';
 
 	/**
-	 * The Store API route patterns that should be handled by the WooPay session handler.
-	 */
-	const STORE_API_ROUTE_PATTERNS = [
-		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
-		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
-		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
-		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
-		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
-		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
-		// By adding it to this list, we're able to identify the user and load the correct session for this route.
-		'@^\/wc\/v3\/woopay\/session$@',
-	];
-
-	/**
 	 * Init the hooks.
 	 *
 	 * @return void
@@ -82,7 +63,7 @@ class WooPay_Session {
 		if (
 			$cart_token &&
 			self::is_request_from_woopay() &&
-			self::is_store_api_request() &&
+			\WC_Payments_Utils::is_store_api_request() &&
 			class_exists( JsonWebToken::class ) &&
 			JsonWebToken::validate( $cart_token, '@' . wp_salt() )
 		) {
@@ -100,7 +81,7 @@ class WooPay_Session {
 	 * @return \WP_User|null|int
 	 */
 	public static function determine_current_user_for_woopay( $user ) {
-		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
 			return $user;
 		}
 
@@ -151,7 +132,7 @@ class WooPay_Session {
 		// If the email is verified on WooPay, matches session email (set during the redirection),
 		// and the store has an adapted extension installed,
 		// return the user to get extension data without authentication.
-		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
+		if ( ( is_countable( $enabled_adapted_extensions ) ? count( $enabled_adapted_extensions ) : 0 ) > 0 && null !== $woopay_verified_email_address && ! empty( $customer['email'] ) ) {
 			$user = get_user_by( 'email', $woopay_verified_email_address );
 
 			if ( $woopay_verified_email_address === $customer['email'] && $user ) {
@@ -179,7 +160,7 @@ class WooPay_Session {
 			return;
 		}
 
-		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
 			return;
 		}
 
@@ -194,7 +175,7 @@ class WooPay_Session {
 
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) === 0 ) {
+		if ( ( is_countable( $enabled_adapted_extensions ) ? count( $enabled_adapted_extensions ) : 0 ) === 0 ) {
 			return;
 		}
 
@@ -266,9 +247,13 @@ class WooPay_Session {
 	/**
 	 * Fix for AutomateWoo - Refer A Friend Add-on
 	 * plugin when using link referrals.
+	 *
+	 * @param int $advocate_id The advocate ID.
+	 *
+	 * @return false|int|mixed The advocate ID or false if the request is not from WooPay.
 	 */
 	public static function automatewoo_refer_a_friend_referral_from_parameter( $advocate_id ) {
-		if ( ! self::is_request_from_woopay() || ! self::is_store_api_request() ) {
+		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
 			return $advocate_id;
 		}
 
@@ -325,7 +310,7 @@ class WooPay_Session {
 	 * @return array The encrypted session request or an empty array if the server is not eligible for encryption.
 	 */
 	public static function get_frontend_init_session_request() {
-		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+		if ( ! extension_loaded( 'openssl' ) || ! function_exists( 'openssl_encrypt' ) ) {
 			return [];
 		}
 
@@ -346,21 +331,23 @@ class WooPay_Session {
 	 * If the request doesn't come from WooPay, this uses the same strategy in
 	 * `hydrate_from_api` on the Checkout Block to retrieve cart data.
 	 *
-	 * @param int|null $order_id Pay-for-order order ID.
-	 * @param string|null $key Pay-for-order key.
-	 * @param string|null $billing_email Pay-for-order billing email.
+	 * @param bool                 $is_pay_for_order Whether the request is for a pay-for-order session.
+	 * @param int|null             $order_id Pay-for-order order ID.
+	 * @param string|null          $key Pay-for-order key.
+	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
+	 *
 	 * @return array The cart data.
 	 */
 	private static function get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request ) {
 		if ( ! $woopay_request ) {
 			return ! $is_pay_for_order
 			? rest_preload_api_request( [], '/wc/store/v1/cart' )['/wc/store/v1/cart']['body']
-			: rest_preload_api_request( [], "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) )[ "/wc/store/v1/order/" . urlencode( $order_id ) . "?key=" . urlencode( $key ) . "&billing_email=" . urlencode( $billing_email ) ]['body'];
+			: rest_preload_api_request( [], '/wc/store/v1/order/' . rawurlencode( $order_id ) . '?key=' . rawurlencode( $key ) . '&billing_email=' . rawurlencode( $billing_email ) )[ '/wc/store/v1/order/' . rawurlencode( $order_id ) . '?key=' . rawurlencode( $key ) . '&billing_email=' . rawurlencode( $billing_email ) ]['body'];
 		}
 
 		$cart_request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
-		$cart_request->set_header( 'Cart-Token', $woopay_request->get_header('cart_token') );
+		$cart_request->set_header( 'Cart-Token', $woopay_request->get_header( 'cart_token' ) );
 		return rest_do_request( $cart_request )->get_data();
 	}
 
@@ -378,10 +365,10 @@ class WooPay_Session {
 
 		if ( ! $woopay_request ) {
 			$preloaded_checkout_data = rest_preload_api_request( [], '/wc/store/v1/checkout' );
-			$checkout_data = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
+			$checkout_data           = isset( $preloaded_checkout_data['/wc/store/v1/checkout'] ) ? $preloaded_checkout_data['/wc/store/v1/checkout']['body'] : '';
 		} else {
 			$checkout_request = new WP_REST_Request( 'GET', '/wc/store/v1/checkout' );
-			$checkout_request->set_header( 'Cart-Token', $woopay_request->get_header('cart_token') );
+			$checkout_request->set_header( 'Cart-Token', $woopay_request->get_header( 'cart_token' ) );
 			$checkout_data = rest_do_request( $checkout_request )->get_data();
 		}
 
@@ -393,9 +380,9 @@ class WooPay_Session {
 	/**
 	 * Returns the initial session request data.
 	 *
-	 * @param int|null $order_id Pay-for-order order ID.
-	 * @param string|null $key Pay-for-order key.
-	 * @param string|null $billing_email Pay-for-order billing email.
+	 * @param int|null             $order_id Pay-for-order order ID.
+	 * @param string|null          $key Pay-for-order key.
+	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
 	 * @return array The initial session request data without email and user_session.
 	 */
@@ -435,14 +422,14 @@ class WooPay_Session {
 		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
 		$blocks_data_extractor = new Blocks_Data_Extractor();
 
-		$cart_data = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
+		$cart_data     = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
 		$checkout_data = self::get_checkout_data( $woopay_request );
 
 		if ( $woopay_request ) {
 			$order_id = $checkout_data['order_id'] ?? null;
 		}
 
-		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
+		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
@@ -483,8 +470,8 @@ class WooPay_Session {
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity(),
 		];
 
-		$woopay_adapted_extensions  = new WooPay_Adapted_Extensions();
-		$request['extension_data']     = $woopay_adapted_extensions->get_extension_data();
+		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
+		$request['extension_data'] = $woopay_adapted_extensions->get_extension_data();
 
 		if ( ! empty( $email ) ) {
 			// Save email in session to skip TYP verify email and check if
@@ -573,7 +560,7 @@ class WooPay_Session {
 			);
 		}
 
-		$blog_id = Jetpack_Options::get_option('id');
+		$blog_id = Jetpack_Options::get_option( 'id' );
 		if ( empty( $blog_id ) ) {
 			wp_send_json_error(
 				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
@@ -599,7 +586,7 @@ class WooPay_Session {
 			);
 		}
 
-		$blog_id = Jetpack_Options::get_option('id');
+		$blog_id = Jetpack_Options::get_option( 'id' );
 		if ( empty( $blog_id ) ) {
 			wp_send_json_error(
 				__( 'Could not determine the blog ID.', 'woocommerce-payments' ),
@@ -616,7 +603,7 @@ class WooPay_Session {
 	 * @return array Array of minimum session data used by WooPay or false on failures.
 	 */
 	public static function get_woopay_minimum_session_data() {
-		if ( ! WC_Payments_Features::is_client_secret_encryption_eligible() ) {
+		if ( ! extension_loaded( 'openssl' ) || ! function_exists( 'openssl_encrypt' ) ) {
 			return [];
 		}
 
@@ -646,30 +633,6 @@ class WooPay_Session {
 		$has_woopay_verified_email_address = isset( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] );
 
 		return $has_woopay_verified_email_address ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
-	}
-
-	/**
-	 * Returns true if the request that's currently being processed is a Store API request, false
-	 * otherwise.
-	 *
-	 * @return bool True if request is a Store API request, false otherwise.
-	 */
-	private static function is_store_api_request(): bool {
-		if ( isset( $_REQUEST['rest_route'] ) ) {
-			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] );
-		} else {
-			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = rtrim( $url_parts['path'], '/' );
-			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
-		}
-
-		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
-			if ( 1 === preg_match( $pattern, $rest_route ) ) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
@@ -758,7 +721,7 @@ class WooPay_Session {
 	private static function get_formatted_custom_message() {
 		$custom_message = WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' );
 
-		$terms_value = wc_terms_and_conditions_page_id() ?
+		$terms_value          = wc_terms_and_conditions_page_id() ?
 			'<a href="' . get_permalink( wc_terms_and_conditions_page_id() ) . '">' . __( 'Terms of Service', 'woocommerce-payments' ) . '</a>' :
 			__( 'Terms of Service', 'woocommerce-payments' );
 		$privacy_policy_value = wc_privacy_policy_page_id() ?

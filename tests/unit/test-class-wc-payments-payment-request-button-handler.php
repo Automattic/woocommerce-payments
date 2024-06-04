@@ -274,6 +274,126 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		return $method->get_rate_id();
 	}
 
+	public function test_tokenized_cart_nonce_overwrite_when_header_not_present() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Store-Api-Nonce', null );
+		$request->set_header( 'Nonce', 'original-nonce-value' );
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$this->pr->tokenized_cart_store_api_nonce_overwrite( null, null, $request );
+
+		$this->assertSame( 'original-nonce-value', $request->get_header( 'Nonce' ) );
+	}
+
+	public function test_tokenized_cart_nonce_overwrite_when_header_is_present() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Store-Api-Nonce', 'new-nonce-value' );
+		$request->set_header( 'Nonce', 'original-nonce-value' );
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$this->pr->tokenized_cart_store_api_nonce_overwrite( null, null, $request );
+
+		$this->assertSame( 'new-nonce-value', $request->get_header( 'Nonce' ) );
+	}
+
+	public function test_tokenized_cart_address_avoid_normalization_when_missing_header() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Express-Payment-Request', null );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'US',
+				'state'   => 'California',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+
+		$this->assertSame( 'California', $shipping_address['state'] );
+	}
+
+	public function test_tokenized_cart_address_avoid_normalization_when_wrong_nonce() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', 'invalid-nonce' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'US',
+				'state'   => 'California',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+
+		$this->assertSame( 'California', $shipping_address['state'] );
+	}
+
+	public function test_tokenized_cart_address_state_normalization() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'US',
+				'state'   => 'California',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country' => 'CA',
+				'state'   => 'Colombie-Britannique',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'CA', $shipping_address['state'] );
+		$this->assertSame( 'BC', $billing_address['state'] );
+	}
+
+	public function test_tokenized_cart_address_postcode_normalization() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => 'CA',
+				'postcode' => 'H3B',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => 'US',
+				'postcode' => '90210',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		// this should be modified.
+		$this->assertSame( 'H3B000', $shipping_address['postcode'] );
+		// this shouldn't be modified.
+		$this->assertSame( '90210', $billing_address['postcode'] );
+	}
 
 	public function test_get_shipping_options_returns_shipping_options() {
 		$data = $this->pr->get_shipping_options( self::SHIPPING_ADDRESS );
