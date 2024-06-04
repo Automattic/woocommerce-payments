@@ -37,6 +37,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	public function init() {
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
+		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
+		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
 	}
 
 	/**
@@ -90,6 +92,57 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
 		$data = $this->express_checkout_button_helper->get_shipping_options( $shipping_address, $should_show_itemized_view );
+		wp_send_json( $data );
+	}
+
+	/**
+	 * Get cart details.
+	 */
+	public function ajax_get_cart_details() {
+		check_ajax_referer( 'wcpay-get-cart-details', 'security' );
+
+		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			define( 'WOOCOMMERCE_CHECKOUT', true );
+		}
+
+		WC()->cart->calculate_totals();
+
+		wp_send_json(
+			array_merge(
+				$this->express_checkout_button_helper->build_display_items(),
+				[
+					'needs_shipping' => WC()->cart->needs_shipping(),
+				]
+			)
+		);
+	}
+
+	/**
+	 * Update shipping method.
+	 */
+	public function ajax_update_shipping_method() {
+		check_ajax_referer( 'wcpay-update-shipping-method', 'security' );
+
+		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		$shipping_methods = filter_input( INPUT_POST, 'shipping_method', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+		$this->express_checkout_button_helper->update_shipping_method( $shipping_methods );
+
+		WC()->cart->calculate_totals();
+
+		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
+		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
+
+		$data           = [];
+		$data          += $this->express_checkout_button_helper->build_display_items( $should_show_itemized_view );
+		$data['result'] = 'success';
+
 		wp_send_json( $data );
 	}
 

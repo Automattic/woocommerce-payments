@@ -5,6 +5,10 @@
  */
 import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
+import {
+	getExpressCheckoutData,
+	normalizeShippingAddress,
+} from './utils/index';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -185,39 +189,68 @@ jQuery( ( $ ) => {
 
 			const eceButton = wcpayECE.createButton( elements, {
 				buttonType: {
-					googlePay: wcpayExpressCheckoutParams.button.type,
-					applePay: wcpayExpressCheckoutParams.button.type,
+					googlePay: getExpressCheckoutData( 'button' ).type,
+					applePay: getExpressCheckoutData( 'button' ).type,
 				},
 			} );
 
 			wcpayECE.showButton( eceButton );
 
-			wcpayECE.attachButtonEventListeners( eceButton );
-
 			eceButton.on( 'click', function ( event ) {
 				const clickOptions = {
-					business: {
-						name: 'Mikes Bikes',
-					},
-					lineItems: [
-						{ name: 'Bike', amount: 200 },
-						{ name: 'Helmet', amount: 300 },
-					],
-					shippingAddressRequired: true,
-					shippingRates: [
-						{
-							id: '1',
-							amount: 500,
-							displayName: 'Standard Shipping',
-						},
-						{
-							id: '2',
-							amount: 1000,
-							displayName: 'Expedited Shipping',
-						},
-					],
+					lineItems: options.displayItems.map( ( i ) => ( {
+						...i,
+						name: i.label,
+					} ) ),
+					emailRequired: true,
+					shippingAddressRequired: options.requestShipping,
+					// FIXME: This is a total hack, we need some way to get the shipping information before rendering the button.
+					//        Possible to just send an empty address maybe? Just make up a free shipping thing since the shipping
+					//        address change event is sent as soon as the payment sheet pops up?
+					shippingRates: options.displayItems
+						.filter( ( i ) => i.label === 'Shipping' )
+						.map( ( i ) => ( {
+							id: `rate-${ i.label }`,
+							amount: i.amount,
+							displayName: i.label,
+						} ) ),
 				};
 				event.resolve( clickOptions );
+			} );
+
+			// FIXME: This handler is copied from ./event-handlers.js. We should re-use the same function here.
+			eceButton.on( 'shippingaddresschange', async ( event ) => {
+				const response = await api.expressCheckoutECECalculateShippingOptions(
+					normalizeShippingAddress( event.address )
+				);
+
+				if ( response.result === 'success' ) {
+					elements.update( { amount: response.total.amount } );
+					event.resolve( {
+						shippingRates: response.shipping_options,
+					} );
+				} else if ( response.result === 'fail' ) {
+					event.reject();
+				}
+			} );
+
+			// FIXME: This handler is copied from ./event-handlers.js. We should re-use the same function here.
+			eceButton.on( 'shippingratechange', async ( event ) => {
+				const response = await api.paymentRequestUpdateShippingDetails(
+					event.shippingRate
+				);
+
+				if ( response.result === 'success' ) {
+					elements.update( { amount: response.total.amount } );
+					event.resolve( {
+						lineItems: response.displayItems.map( ( i ) => ( {
+							...i,
+							name: i.label,
+						} ) ),
+					} );
+				} else if ( response.result === 'fail' ) {
+					event.reject();
+				}
 			} );
 
 			eceButton.on( 'cancel', () => {
@@ -338,7 +371,8 @@ jQuery( ( $ ) => {
 				wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: wcpayExpressCheckoutParams.product.total.amount,
-					currency: 'usd',
+					currency: getExpressCheckoutData( 'checkout' )
+						?.currency_code,
 					requestShipping:
 						wcpayExpressCheckoutParams.product.needs_shipping,
 					displayItems:
@@ -350,8 +384,9 @@ jQuery( ( $ ) => {
 				api.paymentRequestGetCartDetails().then( ( cart ) => {
 					wcpayECE.startExpressCheckoutElement( {
 						mode: 'payment',
-						total: 1000,
-						currency: 'usd',
+						total: cart.total.amount,
+						currency: getExpressCheckoutData( 'checkout' )
+							?.currency_code,
 						requestShipping: cart.needs_shipping,
 						displayItems: cart.displayItems,
 					} );
