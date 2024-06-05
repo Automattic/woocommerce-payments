@@ -229,6 +229,7 @@ jQuery( function ( $ ) {
 
 	function restrictPaymentMethodToLocation( upeElement ) {
 		if ( isPaymentMethodRestrictedToLocation( upeElement ) ) {
+			const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
 			togglePaymentMethodForCountry( upeElement );
 
 			// this event only applies to the checkout form, but not "place order" or "add payment method" pages.

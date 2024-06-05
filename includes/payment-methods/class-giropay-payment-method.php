@@ -30,7 +30,7 @@ class Giropay_Payment_Method extends UPE_Payment_Method {
 		$this->is_reusable = false;
 		$this->currencies  = [ Currency_Code::EURO ];
 		$this->icon_url    = plugins_url( 'assets/images/payment-methods/giropay.svg', WCPAY_PLUGIN_FILE );
-		$this->countries   = [ Country_Code::GERMANY ];
+		$this->countries   = [ Country_Code::GERMANY, Country_Code::BELGIUM ];
 	}
 
 	/**
