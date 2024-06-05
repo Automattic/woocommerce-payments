@@ -8,6 +8,8 @@ import '../checkout/express-checkout-buttons.scss';
 import {
 	getExpressCheckoutData,
 	normalizeShippingAddress,
+	normalizeOrderData,
+	getErrorMessageFromNotice,
 } from './utils/index';
 
 jQuery( ( $ ) => {
@@ -83,7 +85,9 @@ jQuery( ( $ ) => {
 		 * @param {string}          message Error message to display.
 		 */
 		abortPayment: ( payment, message ) => {
-			payment.complete( 'fail' );
+			// FIXME: I don't think this is required anymore. At least there is no mention of this in
+			//        the Stripe docs for the ECE.
+			// payment.complete( 'fail' );
 
 			$( '.woocommerce-error' ).remove();
 
@@ -202,6 +206,7 @@ jQuery( ( $ ) => {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
 				currency: options?.currency,
+				paymentMethodCreation: 'manual',
 			} );
 
 			const eceButton = wcpayECE.createButton( elements, {
@@ -221,6 +226,7 @@ jQuery( ( $ ) => {
 					} ) ),
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,
+					phoneNumberRequired: options.requestPhone,
 					shippingRates,
 				};
 				event.resolve( clickOptions );
@@ -258,6 +264,61 @@ jQuery( ( $ ) => {
 					} );
 				} else if ( response.result === 'fail' ) {
 					event.reject();
+				}
+			} );
+
+			eceButton.on( 'confirm', async ( event ) => {
+				const { error: submitError } = await elements.submit();
+
+				if ( submitError ) {
+					return;
+				}
+
+				const {
+					paymentMethod,
+					error,
+				} = await api.getStripe().createPaymentMethod( {
+					elements,
+				} );
+
+				if ( error ) {
+					wcpayECE.abortPayment(
+						event,
+						getErrorMessageFromNotice( error.messages )
+					);
+					return;
+				}
+
+				// Kick off checkout processing step.
+				const createOrderResponse = await api.expressCheckoutECECreateOrder(
+					normalizeOrderData( event, paymentMethod.id )
+				);
+
+				if ( createOrderResponse.result !== 'success' ) {
+					wcpayECE.abortPayment(
+						event,
+						getErrorMessageFromNotice(
+							createOrderResponse.messages
+						)
+					);
+					return;
+				}
+
+				try {
+					const confirmationRequest = api.confirmIntent(
+						createOrderResponse.redirect
+					);
+
+					// `true` means there is no intent to confirm.
+					if ( confirmationRequest === true ) {
+						window.location = createOrderResponse.redirect;
+					} else {
+						const redirectUrl = await confirmationRequest;
+
+						window.location = redirectUrl;
+					}
+				} catch ( e ) {
+					wcpayECE.abortPayment( event, e.message );
 				}
 			} );
 
@@ -383,6 +444,9 @@ jQuery( ( $ ) => {
 						?.currency_code,
 					requestShipping:
 						wcpayExpressCheckoutParams.product.needs_shipping,
+					requestPhone:
+						getExpressCheckoutData( 'checkout' )
+							?.needs_payer_phone ?? false,
 					displayItems:
 						wcpayExpressCheckoutParams.product.displayItems,
 				} );
@@ -396,6 +460,9 @@ jQuery( ( $ ) => {
 						currency: getExpressCheckoutData( 'checkout' )
 							?.currency_code,
 						requestShipping: cart.needs_shipping,
+						requestPhone:
+							getExpressCheckoutData( 'checkout' )
+								?.needs_payer_phone ?? false,
 						displayItems: cart.displayItems,
 					} );
 				} );
