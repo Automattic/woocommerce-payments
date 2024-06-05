@@ -28,7 +28,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<charge_id>\w+)',
+			'/' . $this->rest_base . '/(?P<charge_id>ch_[A-Za-z0-9]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_charge' ],
