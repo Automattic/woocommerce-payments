@@ -49,6 +49,8 @@ const getFraudPreventionToken = () => {
 	return window.wcpayFraudPreventionToken ?? '';
 };
 
+const noop = () => null;
+
 const PaymentProcessor = ( {
 	api,
 	activePaymentMethod,
@@ -60,7 +62,7 @@ const PaymentProcessor = ( {
 	errorMessage,
 	shouldSavePayment,
 	fingerprint,
-	onLoadError,
+	onLoadError = noop,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
