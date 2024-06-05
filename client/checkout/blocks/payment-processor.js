@@ -49,8 +49,6 @@ const getFraudPreventionToken = () => {
 	return window.wcpayFraudPreventionToken ?? '';
 };
 
-const noop = () => null;
-
 const PaymentProcessor = ( {
 	api,
 	activePaymentMethod,
@@ -62,11 +60,11 @@ const PaymentProcessor = ( {
 	errorMessage,
 	shouldSavePayment,
 	fingerprint,
-	onLoadError = noop,
+	onLoadError,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
-	const isPaymentInformationCompleteRef = useRef( false );
+	const hasLoadErrorRef = useRef( false );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
@@ -140,11 +138,11 @@ const PaymentProcessor = ( {
 						return;
 					}
 
-					if ( ! isPaymentInformationCompleteRef.current ) {
+					if ( hasLoadErrorRef.current ) {
 						return {
 							type: 'error',
 							message: __(
-								'Your payment information is incomplete.',
+								'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.',
 								'woocommerce-payments'
 							),
 						};
@@ -237,8 +235,9 @@ const PaymentProcessor = ( {
 		shouldSavePayment
 	);
 
-	const setPaymentInformationCompletionStatus = ( event ) => {
-		isPaymentInformationCompleteRef.current = event.complete;
+	const setHasLoadError = ( event ) => {
+		hasLoadErrorRef.current = true;
+		onLoadError( event );
 	};
 
 	return (
@@ -256,8 +255,7 @@ const PaymentProcessor = ( {
 					shouldSavePayment,
 					paymentMethodsConfig
 				) }
-				onLoadError={ onLoadError }
-				onChange={ setPaymentInformationCompletionStatus }
+				onLoadError={ setHasLoadError }
 				className="wcpay-payment-element"
 			/>
 		</>
