@@ -105,7 +105,6 @@ describe( 'Klarna checkout', () => {
 		await page.waitForSelector( '#phone' );
 
 		await page.waitFor( 2000 );
-		console.log( '1' );
 
 		await page
 			.waitForSelector( '#onContinue' )
@@ -117,7 +116,6 @@ describe( 'Klarna checkout', () => {
 		await page.waitForSelector( '#phoneOtp' );
 
 		await page.waitFor( 2000 );
-		console.log( '2' );
 
 		await expect( page ).toFill( 'input#otp_field', '123456' );
 
@@ -127,14 +125,12 @@ describe( 'Klarna checkout', () => {
 			.then( ( button ) => button.click() );
 
 		await page.waitFor( 2000 );
-		console.log( '3' );
 
 		await page
 			.waitForSelector( 'button[data-testid="select-payment-category"' )
 			.then( ( button ) => button.click() );
 
 		await page.waitFor( 2000 );
-		console.log( '4' );
 
 		// Payment summary page. Click continue.
 		await page
@@ -142,16 +138,11 @@ describe( 'Klarna checkout', () => {
 			.then( ( button ) => button.click() );
 
 		await page.waitFor( 2000 );
-		console.log( '5' );
-
-		await page.waitFor( 2000 );
 
 		// Confirm payment.
 		await page
 			.waitForSelector( 'button#buy_button' )
 			.then( ( button ) => button.click() );
-
-		console.log( '6' );
 
 		// Wait for the order confirmation page to load.
 		await page.waitForNavigation( {
