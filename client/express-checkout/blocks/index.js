@@ -1,5 +1,3 @@
-/* global wcpayConfig, wcpayExpressCheckoutParams */
-
 /**
  * Internal dependencies
  */
@@ -26,11 +24,7 @@ const expressCheckoutElementPaymentMethod = ( api ) => ( {
 			return false;
 		}
 
-		if ( typeof wcpayConfig !== 'undefined' ) {
-			return wcpayConfig.isExpressCheckoutElementEnabled;
-		}
-
-		return false;
+		return true;
 	},
 } );
 
