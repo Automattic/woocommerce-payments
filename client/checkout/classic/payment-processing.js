@@ -39,7 +39,7 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
 		upeElement: null,
-		isPaymentInformationComplete: false,
+		hasLoadError: false,
 	};
 }
 
@@ -406,11 +406,9 @@ export async function mountStripePaymentElement( api, domElement ) {
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
 		( await createStripePaymentElement( api, paymentMethodType ) );
 	upeElement.mount( domElement );
-	upeElement.on( 'change', ( e ) => {
-		gatewayUPEComponents[ paymentMethodType ].isPaymentInformationComplete =
-			e.complete;
-	} );
 	upeElement.on( 'loaderror', ( e ) => {
+		// setting the flag to true to prevent the form from being submitted.
+		gatewayUPEComponents[ paymentMethodType ].hasLoadError = true;
 		// unset any styling to ensure the WC error message wrapper can take more width.
 		domElement.style.padding = '0';
 		// creating a new element to be added to the DOM, so that the message can be displayed.
@@ -524,15 +522,14 @@ export const processPayment = (
 		try {
 			await blockUI( $form );
 
-			const {
-				elements,
-				isPaymentInformationComplete,
-			} = gatewayUPEComponents[ paymentMethodType ];
+			const { elements, hasLoadError } = gatewayUPEComponents[
+				paymentMethodType
+			];
 
-			if ( ! isPaymentInformationComplete ) {
+			if ( hasLoadError ) {
 				throw new Error(
 					__(
-						'Your payment information is incomplete.',
+						'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.',
 						'woocommerce-payments'
 					)
 				);
