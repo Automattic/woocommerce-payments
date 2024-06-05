@@ -168,6 +168,16 @@ class WC_Payments_Express_Checkout_Button_Handler {
 
 		wp_set_script_translations( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'woocommerce-payments' );
 
+		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
+
+		wp_add_inline_script(
+			'WCPAY_EXPRESS_CHECKOUT_ECE',
+			"
+			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+			",
+			'before'
+		);
+
 		wp_enqueue_script( 'WCPAY_EXPRESS_CHECKOUT_ECE' );
 
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
