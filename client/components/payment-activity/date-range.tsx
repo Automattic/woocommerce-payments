@@ -17,7 +17,7 @@ interface Props {
 const DateRange: React.FC< Props > = ( { start, end } ) => {
 	return (
 		<>
-			{ start }-{ end }
+			{ start } - { end }
 		</>
 	);
 };

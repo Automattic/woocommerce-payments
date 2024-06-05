@@ -121,12 +121,11 @@ const PaymentActivity: React.FC = () => {
 	];
 	const dateRangePresetOnChangeHandler = ( newDateRangePreset: string ) => {
 		let start, end;
-
+		const now = moment();
 		setDateRangePresetState( newDateRangePreset );
 
 		switch ( newDateRangePreset ) {
 			case 'today': {
-				const now = moment();
 				start = now
 					.clone()
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
@@ -134,7 +133,6 @@ const PaymentActivity: React.FC = () => {
 				break;
 			}
 			case 'last_7_days': {
-				const now = moment();
 				start = now
 					.clone()
 					.subtract( 7, 'd' )
@@ -143,7 +141,6 @@ const PaymentActivity: React.FC = () => {
 				break;
 			}
 			case 'last_4_weeks': {
-				const now = moment();
 				start = now
 					.clone()
 					.subtract( 4, 'w' )
@@ -152,7 +149,6 @@ const PaymentActivity: React.FC = () => {
 				break;
 			}
 			case 'last_3_months': {
-				const now = moment();
 				start = now
 					.clone()
 					.subtract( 3, 'm' )
@@ -161,7 +157,6 @@ const PaymentActivity: React.FC = () => {
 				break;
 			}
 			case 'last_12_months': {
-				const now = moment();
 				start = now
 					.clone()
 					.subtract( 12, 'm' )
@@ -170,7 +165,6 @@ const PaymentActivity: React.FC = () => {
 				break;
 			}
 			case 'month_to_date': {
-				const now = moment();
 				start = now.clone().set( {
 					date: 1,
 					hour: 0,
@@ -182,7 +176,6 @@ const PaymentActivity: React.FC = () => {
 				break;
 			}
 			case 'quarter_to_date': {
-				const now = moment();
 				start = now.clone().set( {
 					month: Math.floor( now.month() / 3 ) * 3,
 					date: 1,
@@ -195,7 +188,6 @@ const PaymentActivity: React.FC = () => {
 				break;
 			}
 			case 'year_to_date': {
-				const now = moment();
 				start = now.clone().set( {
 					month: 0,
 					date: 1,
@@ -251,14 +243,14 @@ const PaymentActivity: React.FC = () => {
 								start={
 									dateRangeState.start
 										? dateRangeState.start.format(
-												'YYYY-MM-DD'
+												'MMMM D'
 										  )
 										: ''
 								}
 								end={
 									dateRangeState.end
 										? dateRangeState.end.format(
-												'YYYY-MM-DD'
+												'MMMM D, YYYY'
 										  )
 										: ''
 								}
