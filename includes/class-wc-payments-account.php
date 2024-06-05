@@ -1235,9 +1235,13 @@ class WC_Payments_Account {
 	/**
 	 * Payments task page url
 	 *
+	 * @deprecated 7.8.0
+	 *
 	 * @return string payments task page url
 	 */
 	public static function get_payments_task_page_url() {
+		wc_deprecated_function( __FUNCTION__, '7.8.0' );
+
 		return add_query_arg(
 			[
 				'page'   => 'wc-admin',
@@ -1396,11 +1400,9 @@ class WC_Payments_Account {
 			);
 		}
 
-		// If connection originated on the WCADMIN payment task page, return there.
-		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
+		// Custom return URL for the connect page based on the source.
+		// Default goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		switch ( $wcpay_connect_from ) {
-			case 'WCADMIN_PAYMENT_TASK':
-				return static::get_payments_task_page_url();
 			case 'WC_SUBSCRIPTIONS_TABLE':
 				return admin_url( add_query_arg( [ 'post_type' => 'shop_subscription' ], 'edit.php' ) );
 			default:
