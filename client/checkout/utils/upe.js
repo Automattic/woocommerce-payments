@@ -327,6 +327,7 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		upeContainer.style.display = 'block';
 	} else {
 		upeContainer.style.display = 'none';
+		// if the toggled off payment method was selected, we need to fall back to credit card
 		if ( paymentMethodType === selectedPaymentMethod ) {
 			document
 				.querySelector( '#payment_method_woocommerce_payments' )
