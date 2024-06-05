@@ -41,6 +41,7 @@ module.exports = {
 				'./client/subscription-product-onboarding/toast.js',
 			'product-details': './client/product-details/index.js',
 			'cart-block': './client/cart/blocks/index.js',
+			'plugins-page': './client/plugins-page/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
