@@ -11,11 +11,119 @@ exports[`PaymentActivity component should render 1`] = `
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__header components-card-header wcpay-payment-activity__card__header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
-        Your payment activity
+        <h1>
+          Your payment activity
+        </h1>
+        <div
+          class="components-flex wcpay-payment-activity-filters css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+          >
+            <div
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            >
+              <div
+                class="components-flex components-select-control em5sgkm7 css-c0mqng-View-Flex-sx-Base-sx-Items-ItemsColumn-Root-rootLabelPositionStyles em57xhy0"
+                data-wp-c16t="true"
+                data-wp-component="Flex"
+              >
+                <div
+                  class="components-flex-item em5sgkm3 css-1fmchc6-View-Item-sx-Base-LabelWrapper em57xhy0"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexItem"
+                />
+                <div
+                  class="components-input-control__container css-1sy20aj-Container-containerDisabledStyles-containerMarginStyles-containerWidthStyles em5sgkm6"
+                >
+                  <select
+                    class="components-select-control__input css-t4qksx-Select-fontSizeStyles-sizeStyles e1mv6sxx1"
+                    id="inspector-select-control-0"
+                  >
+                    <option
+                      value="today"
+                    >
+                      Today
+                    </option>
+                    <option
+                      value="last_7_days"
+                    >
+                      Last 7 days
+                    </option>
+                    <option
+                      value="last_4_weeks"
+                    >
+                      Last 4 weeks
+                    </option>
+                    <option
+                      value="last_3_months"
+                    >
+                      Last 3 months
+                    </option>
+                    <option
+                      value="last_12_months"
+                    >
+                      Last 12 months
+                    </option>
+                    <option
+                      value="month_to_date"
+                    >
+                      Month to date
+                    </option>
+                    <option
+                      value="quarter_to_date"
+                    >
+                      Quarter to date
+                    </option>
+                    <option
+                      value="year_to_date"
+                    >
+                      Year to date
+                    </option>
+                    <option
+                      value="all_time"
+                    >
+                      All time
+                    </option>
+                  </select>
+                  <span
+                    class="components-input-control__suffix css-oobb1x-Suffix em5sgkm0"
+                  >
+                    <div
+                      class="css-1einvap-DownArrowWrapper e1mv6sxx0"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                    </div>
+                  </span>
+                  <div
+                    aria-hidden="true"
+                    class="components-input-control__backdrop css-1gb9p1j-BackdropUI-backdropFocusedStyles em5sgkm2"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          April 1
+           - 
+          April 7, 2024
+        </div>
       </div>
       <div
         class="components-card__body components-card-body wcpay-payment-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"

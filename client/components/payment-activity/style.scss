@@ -15,6 +15,24 @@
 
 .wcpay-payment-activity {
 	&__card {
+		&__header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 5px;
+
+			h1 {
+				flex-basis: 100%;
+				font-size: 20px;
+			}
+
+			.components-flex {
+				justify-content: flex-end;
+				font-size: 13px;
+				gap: 5px;
+			}
+		}
+
 		&__body {
 			padding: 0 !important;
 			&__empty-state-wrapper {

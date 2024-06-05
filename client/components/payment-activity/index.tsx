@@ -31,9 +31,6 @@ interface DateRangeProps {
 	end: moment.Moment | undefined;
 }
 
-const { lifetimeTPV } = wcpaySettings;
-const hasAtLeastOnePayment = lifetimeTPV > 0;
-
 const PaymentActivityEmptyState: React.FC = () => (
 	<Card>
 		<CardHeader>
@@ -66,6 +63,8 @@ const PaymentActivityEmptyState: React.FC = () => (
 const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
+
+	//const hasAtLeastOnePayment = wcpaySettings.lifetimeTPV > 0;
 
 	const yesterdayEndOfDay = moment()
 		.clone()
@@ -205,7 +204,11 @@ const PaymentActivity: React.FC = () => {
 				break;
 			}
 			case 'all_time':
-				// TODO
+				start = moment(
+					wcpaySettings.accountStatus.created,
+					'YYYY-MM-DD HH:mm:ss'
+				);
+				end = todayEndOfDay;
 				break;
 		}
 
@@ -233,10 +236,12 @@ const PaymentActivity: React.FC = () => {
 
 	return (
 		<Card>
-			<CardHeader>
-				{ __( 'Your payment activity', 'woocommerce-payments' ) }
+			<CardHeader className="wcpay-payment-activity__card__header">
+				<h1>
+					{ __( 'Your payment activity', 'woocommerce-payments' ) }
+				</h1>
 
-				{ hasAtLeastOnePayment && (
+				{ wcpaySettings.lifetimeTPV > 0 && (
 					<>
 						<Flex className="wcpay-payment-activity-filters">
 							<SelectControl
@@ -281,7 +286,8 @@ const PaymentActivity: React.FC = () => {
 };
 
 const PaymentActivityWrapper: React.FC = () => {
-	if ( ! hasAtLeastOnePayment ) {
+	//const hasAtLeastOnePayment = wcpaySettings.lifetimeTPV > 0;
+	if ( wcpaySettings.lifetimeTPV <= 0 ) {
 		return <PaymentActivityEmptyState />;
 	}
 

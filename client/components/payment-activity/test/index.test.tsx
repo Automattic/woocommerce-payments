@@ -8,7 +8,7 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import { usePaymentActivityData } from 'wcpay/data';
-import PaymentActivity from '..';
+import PaymentActivityWrapper from '..';
 
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
@@ -123,7 +123,7 @@ describe( 'PaymentActivity component', () => {
 
 	it( 'should render', () => {
 		const { container, getByText, getByLabelText } = render(
-			<PaymentActivity />
+			<PaymentActivityWrapper />
 		);
 
 		// Check survey is rendered.
@@ -139,7 +139,7 @@ describe( 'PaymentActivity component', () => {
 	it( 'should render an empty state', () => {
 		global.wcpaySettings.lifetimeTPV = 0;
 
-		const { container, getByText } = render( <PaymentActivity /> );
+		const { container, getByText } = render( <PaymentActivityWrapper /> );
 
 		expect( getByText( 'No payments…yet!' ) ).toBeInTheDocument();
 		expect( container ).toMatchSnapshot();
@@ -148,7 +148,7 @@ describe( 'PaymentActivity component', () => {
 	it( 'should not render survey if survey is already submitted', () => {
 		global.wcpaySettings.isOverviewSurveySubmitted = true;
 
-		const { queryByText } = render( <PaymentActivity /> );
+		const { queryByText } = render( <PaymentActivityWrapper /> );
 
 		expect(
 			queryByText( 'Are these metrics helpful?' )
