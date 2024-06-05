@@ -64,8 +64,6 @@ const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
-	//const hasAtLeastOnePayment = wcpaySettings.lifetimeTPV > 0;
-
 	const yesterdayEndOfDay = moment()
 		.clone()
 		.subtract( 1, 'd' )
@@ -133,7 +131,7 @@ const PaymentActivity: React.FC = () => {
 				start = now
 					.clone()
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
-				end = yesterdayEndOfDay;
+				end = todayEndOfDay;
 				break;
 			}
 			case 'last_7_days': {
@@ -240,34 +238,17 @@ const PaymentActivity: React.FC = () => {
 				<h1>
 					{ __( 'Your payment activity', 'woocommerce-payments' ) }
 				</h1>
-
-				{ wcpaySettings.lifetimeTPV > 0 && (
-					<>
-						<Flex className="wcpay-payment-activity-filters">
-							<SelectControl
-								value={ dateRangePresetState }
-								onChange={ dateRangePresetOnChangeHandler }
-								options={ dateRangePresets }
-							/>
-							<DateRange
-								start={
-									dateRangeState.start
-										? dateRangeState.start.format(
-												'MMMM D'
-										  )
-										: ''
-								}
-								end={
-									dateRangeState.end
-										? dateRangeState.end.format(
-												'MMMM D, YYYY'
-										  )
-										: ''
-								}
-							/>
-						</Flex>
-					</>
-				) }
+				<Flex className="wcpay-payment-activity-filters">
+					<SelectControl
+						value={ dateRangePresetState }
+						onChange={ dateRangePresetOnChangeHandler }
+						options={ dateRangePresets }
+					/>
+					<DateRange
+						start={ dateRangeState.start }
+						end={ dateRangeState.end }
+					/>
+				</Flex>
 			</CardHeader>
 			<CardBody className="wcpay-payment-activity__card__body">
 				<PaymentActivityDataComponent
@@ -286,7 +267,6 @@ const PaymentActivity: React.FC = () => {
 };
 
 const PaymentActivityWrapper: React.FC = () => {
-	//const hasAtLeastOnePayment = wcpaySettings.lifetimeTPV > 0;
 	if ( wcpaySettings.lifetimeTPV <= 0 ) {
 		return <PaymentActivityEmptyState />;
 	}
