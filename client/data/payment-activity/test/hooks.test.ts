@@ -34,6 +34,7 @@ describe( 'usePaymentActivityData', () => {
 		);
 
 		const result = usePaymentActivityData( {
+			currency: 'jpy',
 			date_start: '2021-01-01',
 			date_end: '2021-01-31',
 			timezone: 'UTC',
