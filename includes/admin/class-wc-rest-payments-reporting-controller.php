@@ -48,6 +48,7 @@ class WC_REST_Payments_Reporting_Controller extends WC_Payments_REST_Controller 
 		$wcpay_request->set_date_start( $request->get_param( 'date_start' ) );
 		$wcpay_request->set_date_end( $request->get_param( 'date_end' ) );
 		$wcpay_request->set_timezone( $request->get_param( 'timezone' ) );
+		$wcpay_request->set_currency( $request->get_param( 'currency' ) );
 		return $wcpay_request->handle_rest_request();
 	}
 }
