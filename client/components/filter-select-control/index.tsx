@@ -22,7 +22,7 @@ import { useSelect, UseSelectState } from 'downshift';
  */
 import './style.scss';
 
-export interface Item {
+export interface SelectItem {
 	/** The unique key for the item. */
 	key: string;
 	/** The display name of the item. */
@@ -35,7 +35,7 @@ export interface Item {
 	style?: React.CSSProperties;
 }
 
-export interface ControlProps< ItemType > {
+export interface ControlProps< SelectItemType > {
 	/** The name attribute for the select input. */
 	name?: string;
 	/** Additional class name to apply to the select control. */
@@ -45,15 +45,15 @@ export interface ControlProps< ItemType > {
 	/** The ID of an element that describes the select control. */
 	describedBy?: string;
 	/** A list of options/items for the select control. */
-	options: ItemType[];
+	options: SelectItemType[];
 	/** The currently selected option/item. */
-	value?: ItemType | null;
+	value?: SelectItemType | null;
 	/** A placeholder to display when no item is selected. */
 	placeholder?: string;
 	/** Callback function to run when the selected item changes. */
-	onChange?: ( changes: Partial< UseSelectState< ItemType > > ) => void;
+	onChange?: ( changes: Partial< UseSelectState< SelectItemType > > ) => void;
 	/** A function to render the children of the item. Takes an item as an argument, must return a JSX element. */
-	children?: ( item: ItemType ) => JSX.Element;
+	children?: ( item: SelectItemType ) => JSX.Element;
 }
 
 /**
@@ -105,7 +105,7 @@ const stateReducer = (
  * FilterSelectControl component.
  * A select control with a list of options, inline label, and option hints.
  */
-function FilterSelectControl< ItemType extends Item >( {
+function FilterSelectControl< ItemType extends SelectItem >( {
 	name,
 	className,
 	label,
