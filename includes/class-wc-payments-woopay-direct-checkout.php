@@ -78,30 +78,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 		// This may happen when Direct Checkout is being enqueued on pages that are not the cart page,
 		// such as the home and shop pages.
 		if ( function_exists( 'did_filter' ) && did_filter( 'wcpay_payment_fields_js_config' ) === 0 ) {
-			try {
-				// is_test() throws if the class 'Mode' has not been initialized.
-				$is_test_mode = WC_Payments::mode()->is_test();
-			} catch ( Exception $e ) {
-				// Default to false if the class 'Mode' has not been initialized.
-				$is_test_mode = false;
-			}
-
-			wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
-			wp_localize_script(
-				'WCPAY_WOOPAY_COMMON_CONFIG',
-				'wcpayConfig',
-				[
-					'woopayHost'                    => WooPay_Utilities::get_woopay_url(),
-					'testMode'                      => $is_test_mode,
-					'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-					'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
-					'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
-					'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
-					'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
-					'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
-				]
-			);
-			wp_enqueue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
+			WC_Payments::enqueue_woopay_common_config_script();
 		}
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_DIRECT_CHECKOUT', 'dist/woopay-direct-checkout' );
