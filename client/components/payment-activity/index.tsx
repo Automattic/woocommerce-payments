@@ -137,7 +137,7 @@ const PaymentActivity: React.FC = () => {
 			case 'last_7_days': {
 				start = now
 					.clone()
-					.subtract( 7, 'd' )
+					.subtract( 7, 'days' )
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
 				end = yesterdayEndOfDay;
 				break;
@@ -145,7 +145,7 @@ const PaymentActivity: React.FC = () => {
 			case 'last_4_weeks': {
 				start = now
 					.clone()
-					.subtract( 4, 'w' )
+					.subtract( 4, 'weeks' )
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
 				end = yesterdayEndOfDay;
 				break;
@@ -153,7 +153,7 @@ const PaymentActivity: React.FC = () => {
 			case 'last_3_months': {
 				start = now
 					.clone()
-					.subtract( 3, 'm' )
+					.subtract( 3, 'months' )
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
 				end = yesterdayEndOfDay;
 				break;
@@ -161,7 +161,7 @@ const PaymentActivity: React.FC = () => {
 			case 'last_12_months': {
 				start = now
 					.clone()
-					.subtract( 12, 'm' )
+					.subtract( 12, 'months' )
 					.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } );
 				end = yesterdayEndOfDay;
 				break;
