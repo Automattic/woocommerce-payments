@@ -307,12 +307,11 @@ export const isPaymentMethodRestrictedToLocation = ( upeElement ) => {
  * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  **/
 export const togglePaymentMethodForCountry = ( upeElement ) => {
-	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
-	console.log('selected payment method is: ' + selectedPaymentMethod);
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
+	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
 
 	/* global wcpayCustomerData */
 	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
@@ -328,34 +327,10 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		upeContainer.style.display = 'block';
 	} else {
 		upeContainer.style.display = 'none';
-		if ( selectedPaymentMethod === paymentMethodType ) {
-			// de-select the payment method which now disappears from the checkout page
-			const hiddenPaymentMethod = document.querySelector(
-				'#payment_method_woocommerce_payments_' + paymentMethodType
-			);
-			// fallback to credit card
-			const cardContainer = document.querySelector('#payment_method_woocommerce_payments' );
-			cardContainer.setAttribute('checked', 'checked');
-
-			hiddenPaymentMethod.removeAttribute('checked');
-			
-			const liElement = document.querySelector('.payment_method_woocommerce_payments');
-			const paymentBoxElement = liElement.querySelector('.payment_box');
-
-			paymentBoxElement.style.display = 'block';
-
-			const clickEvent = new Event('click');
-			cardContainer.dispatchEvent(clickEvent);
-
-			dispatchChangeEventFor( cardContainer );
-			const radio = document.querySelector(
-				'li.wc_payment_method input.input-radio:checked, li.woocommerce-PaymentMethod input.input-radio:checked'
-			);
-			// dispatchChangeEventFor( hiddenPaymentMethod );
-
-			// const event = new Event( 'change', { bubbles: true } );
-			// cardContainer.dispatchEvent( event );
-			// liElement.dispatchEvent( event );
-		};
+		if ( paymentMethodType === selectedPaymentMethod ) {
+			document
+				.querySelector( '#payment_method_woocommerce_payments' )
+				.click();
+		}
 	}
 };
