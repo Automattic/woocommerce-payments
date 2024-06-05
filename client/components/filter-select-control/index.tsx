@@ -35,7 +35,7 @@ export interface Item {
 	style?: React.CSSProperties;
 }
 
-export interface Props< ItemType > {
+export interface ControlProps< ItemType > {
 	/** The name attribute for the select input. */
 	name?: string;
 	/** Additional class name to apply to the select control. */
@@ -115,7 +115,7 @@ function FilterSelectControl< ItemType extends Item >( {
 	value,
 	placeholder,
 	children,
-}: Props< ItemType > ): JSX.Element {
+}: ControlProps< ItemType > ): JSX.Element {
 	const {
 		getLabelProps,
 		getToggleButtonProps,
