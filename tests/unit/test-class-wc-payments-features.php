@@ -18,6 +18,13 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	 */
 	protected $mock_cache;
 
+	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_wcpay_account;
+
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
 		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
 		'_wcpay_feature_documents'               => 'documents',
@@ -29,6 +36,17 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
+
+		// Mock the WCPay Account class to make sure the account is not restricted by default.
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_wcpay_account
+			->method( 'is_account_rejected' )
+			->willReturn( false );
+		$this->mock_wcpay_account
+			->method( 'is_account_under_review' )
+			->willReturn( false );
+
+		WC_Payments::set_account_service( $this->mock_wcpay_account );
 	}
 
 	public function tear_down() {
@@ -88,6 +106,32 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_woopay_eligible_returns_false() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
+		$this->assertFalse( WC_Payments_Features::is_woopay_eligible() );
+	}
+
+	public function test_is_woopay_eligible_when_account_is_suspended_returns_false() {
+		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$mock_wcpay_account
+			->method( 'is_account_under_review' )
+			->willReturn( true );
+
+		WC_Payments::set_account_service( $mock_wcpay_account );
+
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+
+		$this->assertFalse( WC_Payments_Features::is_woopay_eligible() );
+	}
+
+	public function test_is_woopay_eligible_when_account_is_rejected_returns_false() {
+		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$mock_wcpay_account
+			->method( 'is_account_rejected' )
+			->willReturn( true );
+
+		WC_Payments::set_account_service( $mock_wcpay_account );
+
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+
 		$this->assertFalse( WC_Payments_Features::is_woopay_eligible() );
 	}
 
