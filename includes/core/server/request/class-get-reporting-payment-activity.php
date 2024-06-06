@@ -20,6 +20,7 @@ class Get_Reporting_Payment_Activity extends Request {
 		'date_start',
 		'date_end',
 		'timezone',
+		'currency',
 	];
 
 	/**
@@ -96,5 +97,18 @@ class Get_Reporting_Payment_Activity extends Request {
 			);
 		}
 		$this->set_param( 'timezone', $timezone );
+	}
+
+	/**
+	 * Sets the currency arg for the request.
+	 *
+	 * @param string $currency A deposit currency code e.g. USD. (TODO lower or uppercase?).
+	 * @return void
+	 *
+	 * @throws Invalid_Request_Parameter_Exception Exception if the arg is not in valid format.
+	 */
+	public function set_currency( string $currency ) {
+		// Do we need validation here?
+		$this->set_param( 'currency', $currency );
 	}
 }

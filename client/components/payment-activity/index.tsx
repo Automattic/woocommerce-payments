@@ -214,6 +214,9 @@ const PaymentActivity: React.FC = () => {
 	};
 
 	const { paymentActivityData, isLoading } = usePaymentActivityData( {
+		// In future this will be bound to currency picker via useSelectedCurrency().
+		// Can hard-code other store settings to test.
+		currency: wcpaySettings.accountDefaultCurrency,
 		date_start: dateRangeState.start
 			? dateRangeState.start.format( 'YYYY-MM-DDTHH:mm:ss' )
 			: '',

@@ -29,20 +29,12 @@ jest.mock( '@stripe/react-stripe-js', () => ( {
 	useStripe: jest.fn(),
 } ) );
 
-const MockPaymentElement = ( { onChange } ) => {
-	useEffect( () => {
-		onChange( { complete: true } );
-	}, [ onChange ] );
-
-	return null;
-};
-
 describe( 'PaymentProcessor', () => {
 	let mockApi;
 	let mockCreatePaymentMethod;
 	beforeEach( () => {
 		global.wcpay_upe_config = { paymentMethodsConfig: {} };
-		PaymentElement.mockImplementation( MockPaymentElement );
+		PaymentElement.mockImplementation( () => null );
 		mockCreatePaymentMethod = jest
 			.fn()
 			.mockResolvedValue( { paymentMethod: {} } );
@@ -97,8 +89,14 @@ describe( 'PaymentProcessor', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should return an error when the payment information is incomplete', async () => {
-		PaymentElement.mockImplementation( () => null );
+	it( 'should return an error if the payment method could not be loaded', async () => {
+		PaymentElement.mockImplementation( ( { onLoadError } ) => {
+			useEffect( () => {
+				onLoadError();
+			}, [ onLoadError ] );
+
+			return null;
+		} );
 		let onPaymentSetupCallback;
 		render(
 			<PaymentProcessor
@@ -113,12 +111,14 @@ describe( 'PaymentProcessor', () => {
 				fingerprint=""
 				shouldSavePayment={ false }
 				upeMethods={ { card: 'woocommerce_payments' } }
+				onLoadError={ jest.fn() }
 			/>
 		);
 
 		expect( await onPaymentSetupCallback() ).toEqual( {
 			type: 'error',
-			message: 'Your payment information is incomplete.',
+			message:
+				'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.',
 		} );
 		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
 	} );
