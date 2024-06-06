@@ -13,10 +13,19 @@ import { __ } from '@wordpress/i18n';
 export const transformCartDataForDisplayItems = ( cartData ) => {
 	const displayItems = cartData.items.map( ( item ) => ( {
 		amount: parseInt( item.prices.price, 10 ),
-		// TODO: should we also add variation attributes to the description?
-		label: [ item.name, item.quantity > 1 && ` (x${ item.quantity })` ]
+		label: [
+			item.name,
+			item.quantity > 1 && `(x${ item.quantity })`,
+			item.variation &&
+				item.variation
+					.map(
+						( variation ) =>
+							`${ variation.attribute }: ${ variation.value }`
+					)
+					.join( ', ' ),
+		]
 			.filter( Boolean )
-			.join( '' ),
+			.join( ' ' ),
 	} ) );
 
 	const taxAmount = parseInt( cartData.totals.total_tax || '0', 10 );
