@@ -19,9 +19,11 @@ const ExpressCheckoutContainer = ( props ) => {
 	};
 
 	return (
-		<Elements stripe={ stripe } options={ options }>
-			<ExpressCheckoutComponent { ...props } />
-		</Elements>
+		<div style={ { minHeight: '50px' } }>
+			<Elements stripe={ stripe } options={ options }>
+				<ExpressCheckoutComponent { ...props } />
+			</Elements>
+		</div>
 	);
 };
 
