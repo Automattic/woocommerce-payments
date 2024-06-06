@@ -54,15 +54,15 @@ const useSelectedCurrencyWithDefault = ( depositCurrencies: string[] ) => {
 		// The selected currency is invalid if:
 		// * no currency is explicitly selected via URL query, or
 		// * no currency is found for the provided query parameter.
-		const isSelectedCurrencyInvalid =
-			! selectedCurrency ||
-			! depositCurrencies.find(
+		const isSelectedCurrencyValid =
+			selectedCurrency &&
+			depositCurrencies.find(
 				( currency ) =>
 					currency.toLowerCase() === selectedCurrency.toLowerCase()
 			);
 
 		// Select the store's default currency if the selected currency is invalid.
-		if ( isSelectedCurrencyInvalid && depositCurrencies.length > 0 ) {
+		if ( ! isSelectedCurrencyValid && depositCurrencies.length > 0 ) {
 			setSelectedCurrency( depositCurrencies[ 0 ].toLowerCase() );
 		}
 	}, [ depositCurrencies, selectedCurrency, setSelectedCurrency ] );
