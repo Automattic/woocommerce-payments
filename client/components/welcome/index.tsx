@@ -1,19 +1,16 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React from 'react';
 import { CardHeader, Flex, FlexItem } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies
  */
 import { useAllDepositsOverviews } from 'data';
-import { useSelectedCurrency } from 'overview/hooks';
-import FilterSelectControl from 'components/filter-select-control';
-import { getCurrency } from 'utils/currency';
 import { useCurrentWpUser } from './hooks';
+import { CurrencySelect } from './currency-select';
 import './style.scss';
 
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
@@ -68,93 +65,6 @@ const getGreeting = ( name?: string, date: Date = new Date() ): string => {
 	}
 	greeting += ' 👋';
 	return greeting;
-};
-
-/**
- * Returns an select option object for a currency select control.
- */
-const getCurrencyOption = (
-	currency: string
-): {
-	name: string;
-	key: string;
-} => {
-	const { code, symbol } = getCurrency( currency )?.getCurrencyConfig() || {};
-	const currencySymbolDecoded = decodeEntities( symbol || '' );
-
-	if (
-		// Show just the currency the currency code is used as the name, e.g. 'EUR'
-		// if no currency config is found,
-		! code ||
-		! symbol ||
-		// or if the symbol is identical to the currency code, e.g. 'CHF CHF'.
-		currencySymbolDecoded === code
-	) {
-		return {
-			name: currency.toUpperCase(),
-			key: currency,
-		};
-	}
-	return {
-		// A rendered name of the currency with symbol, e.g. `EUR €`.
-		name: `${ code } ${ currencySymbolDecoded }`,
-		key: currency,
-	};
-};
-
-/**
- * Custom hook to get the selected currency from the URL query parameter 'selected_currency'.
- * If no currency is selected, the store's default currency will be selected.
- */
-const useSelectedCurrencyWithDefault = ( currencies: string[] ) => {
-	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
-
-	useEffect( () => {
-		// The selected currency is invalid if:
-		// * no currency is explicitly selected via URL query, or
-		// * no currency is found for the provided query parameter.
-		const isSelectedCurrencyInvalid =
-			! selectedCurrency ||
-			! currencies.find(
-				( currency ) =>
-					currency.toLowerCase() === selectedCurrency.toLowerCase()
-			);
-
-		// Select the store's default currency if the selected currency is invalid.
-		if ( isSelectedCurrencyInvalid && currencies.length > 0 ) {
-			setSelectedCurrency( currencies[ 0 ].toLowerCase() );
-		}
-	}, [ currencies, selectedCurrency, setSelectedCurrency ] );
-
-	return { selectedCurrency, setSelectedCurrency };
-};
-
-/**
- * Renders a currency select input used for the Payments Overview page.
- * Should only be rendered if there are multiple deposit currencies available.
- */
-const CurrencySelect: React.FC< {
-	currencies: string[];
-} > = ( { currencies } ) => {
-	const currencyOptions = currencies.map( getCurrencyOption );
-	const {
-		selectedCurrency,
-		setSelectedCurrency,
-	} = useSelectedCurrencyWithDefault( currencies );
-
-	return (
-		<FilterSelectControl
-			label="Currency"
-			value={ currencyOptions.find(
-				( option ) => option.key === selectedCurrency
-			) }
-			options={ currencyOptions }
-			onChange={ ( { selectedItem } ) =>
-				// TODO: record tracks event.
-				selectedItem && setSelectedCurrency( selectedItem?.key )
-			}
-		/>
-	);
 };
 
 /**
