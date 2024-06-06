@@ -10,6 +10,7 @@ import { decodeEntities } from '@wordpress/html-entities';
 import { useSelectedCurrency } from 'overview/hooks';
 import { getCurrency } from 'utils/currency';
 import FilterSelectControl from 'components/filter-select-control';
+import { recordEvent } from 'tracks';
 
 /**
  * Returns an select option object for a currency select control.
@@ -91,10 +92,17 @@ export const CurrencySelect: React.FC< {
 				( option ) => option.key === selectedCurrency
 			) }
 			options={ currencyOptions }
-			onChange={ ( { selectedItem } ) =>
-				// TODO: record tracks event.
-				selectedItem && setSelectedCurrency( selectedItem?.key )
-			}
+			onChange={ ( { selectedItem } ) => {
+				if ( ! selectedItem ) {
+					return;
+				}
+
+				const currencyCode = selectedItem.key.toLowerCase();
+				setSelectedCurrency( currencyCode );
+				recordEvent( 'wcpay_overview_currency_select', {
+					selected_currency: currencyCode,
+				} );
+			} }
 		/>
 	);
 };
