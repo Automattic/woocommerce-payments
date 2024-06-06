@@ -14,11 +14,16 @@ import { PaymentActivityState, PaymentActivityQuery } from './types';
 export const usePaymentActivityData = (
 	query: PaymentActivityQuery
 ): PaymentActivityState =>
-	useSelect( ( select ) => {
-		const { getPaymentActivityData, isResolving } = select( STORE_NAME );
+	useSelect(
+		( select ) => {
+			const { getPaymentActivityData, isResolving } = select(
+				STORE_NAME
+			);
 
-		return {
-			paymentActivityData: getPaymentActivityData( query ),
-			isLoading: isResolving( 'getPaymentActivityData', [ query ] ),
-		};
-	}, [] );
+			return {
+				paymentActivityData: getPaymentActivityData( query ),
+				isLoading: isResolving( 'getPaymentActivityData', [ query ] ),
+			};
+		},
+		[ query.currency ]
+	);
