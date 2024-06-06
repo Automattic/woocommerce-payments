@@ -198,7 +198,7 @@ jQuery( ( $ ) => {
 			// Relying on what's provided in the cart response seems safest since it should always include a valid shipping
 			// rate if one is required and available.
 			// If no shipping rate is found we can't render the button so we just exit.
-			if ( ! shippingRates ) {
+			if ( options.requestShipping && ! shippingRates ) {
 				return;
 			}
 
