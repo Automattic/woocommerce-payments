@@ -103,32 +103,44 @@ const getCurrencyOption = (
 };
 
 /**
- * Renders a currency select input used for the Payments Overview page.
- * Should only be rendered if there are multiple deposit currencies available.
- * The selected currency is stored in the URL query parameter 'selected_currency'.
+ * Custom hook to get the selected currency from the URL query parameter 'selected_currency'.
+ * If no currency is selected, the store's default currency will be selected.
  */
-const CurrencySelect: React.FC< {
-	currencies: string[];
-} > = ( { currencies } ) => {
-	const currencyOptions = currencies.map( getCurrencyOption );
-
+const useSelectedCurrencyWithDefault = ( currencies: string[] ) => {
 	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
 
 	useEffect( () => {
 		// The selected currency is invalid if:
 		// * no currency is explicitly selected via URL query, or
 		// * no currency is found for the provided query parameter.
-		const isSelectedCurrencyValid =
+		const isSelectedCurrencyInvalid =
 			! selectedCurrency ||
-			! currencyOptions.find(
-				( option ) => option.key === selectedCurrency
+			! currencies.find(
+				( currency ) =>
+					currency.toLowerCase() === selectedCurrency.toLowerCase()
 			);
-		// Select the store's default currency if the selected currency is invalid.
 
-		if ( isSelectedCurrencyValid && currencyOptions.length > 0 ) {
-			setSelectedCurrency( currencyOptions[ 0 ].key );
+		// Select the store's default currency if the selected currency is invalid.
+		if ( isSelectedCurrencyInvalid && currencies.length > 0 ) {
+			setSelectedCurrency( currencies[ 0 ].toLowerCase() );
 		}
-	}, [ currencyOptions, selectedCurrency, setSelectedCurrency ] );
+	}, [ currencies, selectedCurrency, setSelectedCurrency ] );
+
+	return { selectedCurrency, setSelectedCurrency };
+};
+
+/**
+ * Renders a currency select input used for the Payments Overview page.
+ * Should only be rendered if there are multiple deposit currencies available.
+ */
+const CurrencySelect: React.FC< {
+	currencies: string[];
+} > = ( { currencies } ) => {
+	const currencyOptions = currencies.map( getCurrencyOption );
+	const {
+		selectedCurrency,
+		setSelectedCurrency,
+	} = useSelectedCurrencyWithDefault( currencies );
 
 	return (
 		<FilterSelectControl
