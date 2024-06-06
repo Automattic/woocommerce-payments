@@ -47,7 +47,7 @@ const getCurrencyOption = (
  * Custom hook to get the selected currency from the URL query parameter 'selected_currency'.
  * If no currency is selected, the store's default currency will be selected.
  */
-const useSelectedCurrencyWithDefault = ( currencies: string[] ) => {
+const useSelectedCurrencyWithDefault = ( depositCurrencies: string[] ) => {
 	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
 
 	useEffect( () => {
@@ -56,16 +56,16 @@ const useSelectedCurrencyWithDefault = ( currencies: string[] ) => {
 		// * no currency is found for the provided query parameter.
 		const isSelectedCurrencyInvalid =
 			! selectedCurrency ||
-			! currencies.find(
+			! depositCurrencies.find(
 				( currency ) =>
 					currency.toLowerCase() === selectedCurrency.toLowerCase()
 			);
 
 		// Select the store's default currency if the selected currency is invalid.
-		if ( isSelectedCurrencyInvalid && currencies.length > 0 ) {
-			setSelectedCurrency( currencies[ 0 ].toLowerCase() );
+		if ( isSelectedCurrencyInvalid && depositCurrencies.length > 0 ) {
+			setSelectedCurrency( depositCurrencies[ 0 ].toLowerCase() );
 		}
-	}, [ currencies, selectedCurrency, setSelectedCurrency ] );
+	}, [ depositCurrencies, selectedCurrency, setSelectedCurrency ] );
 
 	return { selectedCurrency, setSelectedCurrency };
 };
@@ -75,13 +75,14 @@ const useSelectedCurrencyWithDefault = ( currencies: string[] ) => {
  * Should only be rendered if there are multiple deposit currencies available.
  */
 export const CurrencySelect: React.FC< {
-	currencies: string[];
-} > = ( { currencies } ) => {
-	const currencyOptions = currencies.map( getCurrencyOption );
+	/** An array of available deposit currencies, e.g. ['usd', 'eur']. */
+	depositCurrencies: string[];
+} > = ( { depositCurrencies } ) => {
+	const currencyOptions = depositCurrencies.map( getCurrencyOption );
 	const {
 		selectedCurrency,
 		setSelectedCurrency,
-	} = useSelectedCurrencyWithDefault( currencies );
+	} = useSelectedCurrencyWithDefault( depositCurrencies );
 
 	return (
 		<FilterSelectControl

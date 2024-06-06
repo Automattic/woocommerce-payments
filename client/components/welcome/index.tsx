@@ -74,10 +74,10 @@ const Welcome: React.FC = () => {
 	const { user } = useCurrentWpUser();
 	const greeting = getGreeting( user?.first_name );
 	const { overviews } = useAllDepositsOverviews();
-	const currencies =
+	const depositCurrencies =
 		overviews?.currencies.map( ( currencyObj ) => currencyObj.currency ) ||
 		[];
-	const renderCurrencySelect = currencies.length > 1;
+	const renderCurrencySelect = depositCurrencies.length > 1;
 
 	return (
 		<CardHeader className="wcpay-welcome">
@@ -92,7 +92,9 @@ const Welcome: React.FC = () => {
 
 				{ renderCurrencySelect && (
 					<FlexItem>
-						<CurrencySelect currencies={ currencies } />
+						<CurrencySelect
+							depositCurrencies={ depositCurrencies }
+						/>
 					</FlexItem>
 				) }
 			</Flex>
