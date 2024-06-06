@@ -463,6 +463,9 @@ export const getAppearance = ( elementsLocation ) => {
 			'.TabIcon:hover': tabIconHoverRules,
 			'.TabIcon--selected': selectedTabIconRules,
 			'.Text': labelRules,
+			'.Icon': {
+				transition: 'none' // Add this line to disable transitions for the Icon class
+			},
 			'.Text--redirect': labelRules,
 		},
 	};

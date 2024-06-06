@@ -34,7 +34,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
 	} = useContext( DuplicatedPaymentMethodsContext );
-	const isDuplicate = duplicates.includes( id );
+	const isDuplicate = Object.keys(duplicates).includes(id);
 
 	return (
 		<li
@@ -182,6 +182,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }
+					gatewaysEnablingPaymentMethod={ duplicates[id] }
 					dismissedDuplicateNotices={ dismissedDuplicateNotices }
 					setDismissedDuplicateNotices={
 						setDismissedDuplicateNotices

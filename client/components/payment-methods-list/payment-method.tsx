@@ -151,7 +151,7 @@ const PaymentMethod = ( {
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
 	} = useContext( DuplicatedPaymentMethodsContext );
-	const isDuplicate = duplicates.includes( id );
+	const isDuplicate = Object.keys(duplicates).includes(id);
 
 	const needsOverlay =
 		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
@@ -368,6 +368,7 @@ const PaymentMethod = ( {
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }
+					gatewaysEnablingPaymentMethod={ duplicates[id] }
 					dismissedDuplicateNotices={ dismissedDuplicateNotices }
 					setDismissedDuplicateNotices={
 						setDismissedDuplicateNotices
