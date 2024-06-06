@@ -955,36 +955,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get the required verification information, needed for our KYC onboarding flow.
-	 *
-	 * @param string      $country_code The country code.
-	 * @param string      $type         The business type.
-	 * @param string|null $structure    The business structure (optional).
-	 *
-	 * @return array An array containing the required verification information.
-	 *
-	 * @throws API_Exception Exception thrown on request failure.
-	 */
-	public function get_onboarding_required_verification_information( string $country_code, string $type, $structure = null ) {
-		$params = [
-			'country' => $country_code,
-			'type'    => $type,
-		];
-
-		if ( ! is_null( $structure ) ) {
-			$params = array_merge( $params, [ 'structure' => $structure ] );
-		}
-
-		return $this->request(
-			$params,
-			self::ONBOARDING_API . '/required_verification_information',
-			self::GET,
-			true,
-			true
-		);
-	}
-
-	/**
 	 * Get a link's details from the server.
 	 *
 	 * @param array $args The arguments to be sent with the link request.
