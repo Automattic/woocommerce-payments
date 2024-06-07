@@ -54,14 +54,12 @@ function DuplicateNotice( {
 		updateOptions,
 	] );
 
-	if ( dismissedNotices[ paymentMethod ] ) {
-		const isDismissed =
-			dismissedNotices &&
-			gatewaysEnablingPaymentMethod.every( ( value ) =>
-				dismissedNotices[ paymentMethod ].includes( value )
-			);
+	if ( dismissedNotices?.[ paymentMethod ] ) {
+		const isNoticeDismissedForEveryGateway = gatewaysEnablingPaymentMethod.every(
+			( value ) => dismissedNotices[ paymentMethod ].includes( value )
+		);
 
-		if ( isDismissed ) {
+		if ( isNoticeDismissedForEveryGateway ) {
 			return null;
 		}
 	}
