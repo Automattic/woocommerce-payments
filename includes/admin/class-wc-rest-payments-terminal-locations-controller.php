@@ -38,7 +38,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<location_id>\w+)',
+			'/' . $this->rest_base . '/(?P<location_id>[A-Za-z0-9_\-]+)',
 			[
 				'methods'             => WP_REST_Server::DELETABLE,
 				'callback'            => [ $this, 'delete_location' ],
@@ -47,7 +47,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<location_id>\w+)',
+			'/' . $this->rest_base . '/(?P<location_id>[A-Za-z0-9_\-]+)',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'update_location' ],
@@ -66,7 +66,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<location_id>\w+)',
+			'/' . $this->rest_base . '/(?P<location_id>[A-Za-z0-9_\-]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_location' ],
