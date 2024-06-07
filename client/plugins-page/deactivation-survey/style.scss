@@ -1,0 +1,38 @@
+.woopayments-disable-survey {
+	@media ( min-width: 960px ) {
+		max-height: calc( 100% - 120px );
+	}
+
+	.components-modal__content {
+		padding: 0;
+		overflow: hidden;
+	}
+
+	&-iframe {
+		width: 100%;
+		height: 100%;
+
+		@media ( min-width: 600px ) {
+			width: 600px;
+			height: 650px;
+		}
+	}
+
+	&-logo {
+		height: 40px;
+	}
+}
+
+/**
+ * There is a bug with the Modal component that when the close X is hovered or focused, a tooltip
+ * appears outside of the view of the modal causing scrollbars. This is a work around to hide the
+ * tooltip until the bug is fixed.
+ * TODO: remove rule ones bug is closed
+ * https://github.com/WordPress/gutenberg/issues/15434
+ */
+.components-modal__content
+	.components-modal__header
+	.components-button
+	.components-tooltip {
+	display: none;
+}

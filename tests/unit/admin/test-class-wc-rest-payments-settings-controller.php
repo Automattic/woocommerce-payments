@@ -123,9 +123,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account                = $this->createMock( WC_Payments_Account::class );
 		$this->mock_db_cache                     = $this->createMock( Database_Cache::class );
 		$this->mock_session_service              = $this->createMock( WC_Payments_Session_Service::class );
-		$customer_service                        = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache, $this->mock_session_service );
-		$token_service                           = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$order_service                           = new WC_Payments_Order_Service( $this->mock_api_client );
+		$customer_service                        = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache, $this->mock_session_service, $order_service );
+		$token_service                           = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service                = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
 		$mock_rate_limiter                       = $this->createMock( Session_Rate_Limiter::class );
 		$mock_dpps                               = $this->createMock( Duplicate_Payment_Prevention_Service::class );
@@ -175,9 +175,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$order_service,
 			$mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service
 		);
-		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account, $this->mock_duplicates_detection_service );
+		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account );
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )

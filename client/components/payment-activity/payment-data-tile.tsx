@@ -4,14 +4,15 @@
 import * as React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
+import { recordEvent } from 'wcpay/tracks';
 
 /**
  * Internal dependencies
  */
-
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
 import './style.scss';
+
 interface PaymentDataTileProps {
 	/**
 	 * The id for the tile, can be used for CSS styling.
@@ -24,7 +25,7 @@ interface PaymentDataTileProps {
 	/**
 	 * The currency code for the amount displayed.
 	 */
-	currencyCode: string;
+	currencyCode?: string;
 	/**
 	 * For optionally passing a ClickTooltip component.
 	 */
@@ -41,6 +42,10 @@ interface PaymentDataTileProps {
 	 * Optional hover link to view report.
 	 */
 	reportLink?: string;
+	/**
+	 * The source of the event tracking.
+	 */
+	tracksSource?: string;
 }
 
 const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
@@ -51,11 +56,17 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 	amount = 0,
 	isLoading = false,
 	reportLink,
+	tracksSource,
 } ) => {
+	const handleReportLinkClick = () => {
+		recordEvent( 'wcpay_overview_payment_activity_click', {
+			source: tracksSource,
+		} );
+	};
 	return (
-		<div id={ id } className="wcpay-payment-data-highlights__item">
+		<div className="wcpay-payment-data-highlights__item">
 			<p className="wcpay-payment-data-highlights__item__label">
-				<span>{ label }</span>
+				<span id={ id }>{ label }</span>
 				{ ! isLoading && tooltip }
 			</p>
 			<div className="wcpay-payment-data-highlights__item__wrapper">
@@ -71,7 +82,7 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 					/>
 				</p>
 				{ reportLink && (
-					<Link href={ reportLink }>
+					<Link href={ reportLink } onClick={ handleReportLinkClick }>
 						{ __( 'View report', 'woocommerce_payments' ) }
 					</Link>
 				) }

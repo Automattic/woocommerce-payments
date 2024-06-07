@@ -8,7 +8,6 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
  * Internal dependencies
  */
 import AccountBalances from '..';
-import { getCurrencyTabTitle } from '../utils';
 import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
@@ -55,11 +54,6 @@ const mockWcPaySettings = {
 	},
 };
 
-jest.mock( '../utils', () => ( {
-	getTimeOfDayString: jest.fn(),
-	getCurrencyTabTitle: jest.fn(),
-} ) );
-
 jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 	useInstantDeposit: jest.fn(),
@@ -69,9 +63,6 @@ jest.mock( 'wcpay/overview/hooks', () => ( {
 	useSelectedCurrency: jest.fn(),
 } ) );
 
-const mockGetCurrencyTabTitle = getCurrencyTabTitle as jest.MockedFunction<
-	typeof getCurrencyTabTitle
->;
 const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
 	typeof useAllDepositsOverviews
 >;
@@ -154,14 +145,12 @@ describe( 'AccountBalances', () => {
 		global.wcpaySettings = mockWcPaySettings;
 	} );
 
-	test( 'renders the correct tab title and currency data', () => {
-		mockGetCurrencyTabTitle.mockReturnValue( 'USD Balance' );
+	test( 'renders USD currency correctly', () => {
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 0 ) ] );
 
 		// Use a query method returned by the render function: (you could also use `container` which will represent `document`)
 		const { getByText, getByLabelText } = render( <AccountBalances /> );
 
-		// Check the tab title is rendered correctly.
 		getByText( 'Total balance' );
 		getByText( 'Available funds' );
 
@@ -174,12 +163,10 @@ describe( 'AccountBalances', () => {
 	} );
 
 	test( 'renders JPY currency correctly', () => {
-		mockGetCurrencyTabTitle.mockReturnValue( 'JPY Balance' );
 		mockOverviews( [ createMockOverview( 'jpy', 12300, 4560, 0 ) ] );
 
 		const { getByText, getByLabelText } = render( <AccountBalances /> );
 
-		// Check the tab title is rendered correctly.
 		getByText( 'Total balance' );
 		getByText( 'Available funds' );
 
@@ -191,12 +178,7 @@ describe( 'AccountBalances', () => {
 		expect( availableAmount ).toHaveTextContent( '¥46' );
 	} );
 
-	test( 'renders with selected currency correctly', () => {
-		mockGetCurrencyTabTitle.mockImplementation(
-			( currencyCode: string ) => {
-				return `${ currencyCode.toUpperCase() } Balance`;
-			}
-		);
+	test( 'renders with selected currency correctly when multiple deposit currencies exist', () => {
 		mockOverviews( [
 			createMockOverview( 'eur', 7660, 2739, 0 ),
 			createMockOverview( 'usd', 84875, 47941, 0 ),
@@ -207,13 +189,7 @@ describe( 'AccountBalances', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 
-		const { getByLabelText, getByRole } = render( <AccountBalances /> );
-
-		// Check the active tab is rendered correctly.
-		getByRole( 'tab', {
-			selected: true,
-			name: /JPY Balance/,
-		} );
+		const { getByLabelText } = render( <AccountBalances /> );
 
 		const totalAmount = getByLabelText( 'Total balance' );
 		const availableAmount = getByLabelText( 'Available funds' );
@@ -223,12 +199,7 @@ describe( 'AccountBalances', () => {
 		expect( availableAmount ).toHaveTextContent( '¥90' );
 	} );
 
-	test( 'renders default tab with invalid selected currency', () => {
-		mockGetCurrencyTabTitle.mockImplementation(
-			( currencyCode: string ) => {
-				return `${ currencyCode.toUpperCase() } Balance`;
-			}
-		);
+	test( 'renders default currency when invalid selected currency', () => {
 		mockOverviews( [
 			createMockOverview( 'eur', 7660, 2739, 0 ),
 			createMockOverview( 'usd', 84875, 47941, 0 ),
@@ -240,13 +211,7 @@ describe( 'AccountBalances', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 
-		const { getByLabelText, getByRole } = render( <AccountBalances /> );
-
-		// Check the default active tab is rendered correctly.
-		getByRole( 'tab', {
-			selected: true,
-			name: /EUR Balance/,
-		} );
+		const { getByLabelText } = render( <AccountBalances /> );
 
 		const totalAmount = getByLabelText( 'Total balance' );
 		const availableAmount = getByLabelText( 'Available funds' );
@@ -254,62 +219,6 @@ describe( 'AccountBalances', () => {
 		// Check the total and available amounts are rendered correctly.
 		expect( totalAmount ).toHaveTextContent( '€103.99' );
 		expect( availableAmount ).toHaveTextContent( '€27.39' );
-	} );
-
-	test( 'renders multiple currency tabs', () => {
-		mockGetCurrencyTabTitle.mockImplementation(
-			( currencyCode: string ) => {
-				return `${ currencyCode.toUpperCase() } Balance`;
-			}
-		);
-		mockOverviews( [
-			createMockOverview( 'eur', 7660, 2739, 0 ),
-			createMockOverview( 'usd', 84875, 47941, 0 ),
-			createMockOverview( 'jpy', 2000, 9000, 0 ),
-		] );
-
-		const { getByLabelText } = render( <AccountBalances /> );
-
-		// Get all the tab elements to check the tab titles are rendered correctly and for testing tab switching.
-		const tabTitles = screen.getAllByRole( 'tab' );
-
-		expect( tabTitles[ 0 ] ).toHaveTextContent( 'EUR Balance' );
-		expect( tabTitles[ 1 ] ).toHaveTextContent( 'USD Balance' );
-		expect( tabTitles[ 2 ] ).toHaveTextContent( 'JPY Balance' );
-
-		// Check the first tab (EUR).
-		const eurTotalAmount = getByLabelText( 'Total balance' );
-		const eurAvailableAmount = getByLabelText( 'Available funds' );
-
-		// Check the total and available amounts are rendered correctly for the first tab.
-		expect( eurTotalAmount ).toHaveTextContent( '€103.99' );
-		expect( eurAvailableAmount ).toHaveTextContent( '€27.39' );
-
-		/**
-		 * Change the tab to the second tab (USD).
-		 */
-		fireEvent.click( tabTitles[ 1 ] );
-		expect( mockSetSelectedCurrency ).toHaveBeenCalledTimes( 1 );
-		expect( mockSetSelectedCurrency ).toHaveBeenCalledWith( 'usd' );
-		const usdTotalAmount = getByLabelText( 'Total balance' );
-		const usdAvailableAmount = getByLabelText( 'Available funds' );
-
-		// Check the total and available amounts are rendered correctly for the first tab.
-		expect( usdTotalAmount ).toHaveTextContent( '$1,328.16' );
-		expect( usdAvailableAmount ).toHaveTextContent( '$479.41' );
-
-		/**
-		 * Change the tab to the third tab (JPY).
-		 */
-		fireEvent.click( tabTitles[ 2 ] );
-		expect( mockSetSelectedCurrency ).toHaveBeenCalledTimes( 2 );
-		expect( mockSetSelectedCurrency ).toHaveBeenLastCalledWith( 'jpy' );
-		const jpyTotalAmount = getByLabelText( 'Total balance' );
-		const jpyAvailableAmount = getByLabelText( 'Available funds' );
-
-		// Check the total and available amounts are rendered correctly for the first tab.
-		expect( jpyTotalAmount ).toHaveTextContent( '¥110' );
-		expect( jpyAvailableAmount ).toHaveTextContent( '¥90' );
 	} );
 
 	test( 'renders the correct tooltip text for the available balance', () => {

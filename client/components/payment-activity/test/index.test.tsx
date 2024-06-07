@@ -38,11 +38,16 @@ const mockUsePaymentActivityData = usePaymentActivityData as jest.MockedFunction
 
 mockUsePaymentActivityData.mockReturnValue( {
 	paymentActivityData: {
+		currency: 'eur',
 		total_payment_volume: 123456,
 		charges: 9876,
 		fees: 1234,
 		disputes: 5555,
 		refunds: 4444,
+		date_start: '2024-01-01',
+		date_end: '2024-01-31',
+		timezone: 'UTC',
+		interval: 'daily',
 	},
 	isLoading: false,
 } );
@@ -83,10 +88,10 @@ describe( 'PaymentActivity component', () => {
 					},
 				},
 			},
-			accountDefaultCurrency: 'USD',
+			accountDefaultCurrency: 'eur',
 			zeroDecimalCurrencies: [],
 			connect: {
-				country: 'US',
+				country: 'DE',
 			},
 			currencyData: {
 				US: {
@@ -117,10 +122,16 @@ describe( 'PaymentActivity component', () => {
 	} );
 
 	it( 'should render', () => {
-		const { container, getByText } = render( <PaymentActivity /> );
+		const { container, getByText, getByLabelText } = render(
+			<PaymentActivity />
+		);
 
 		// Check survey is rendered.
-		getByText( 'Are those metrics helpful?' );
+		getByText( 'Are these metrics helpful?' );
+
+		// Check correct currency/value is displayed.
+		const tpvElement = getByLabelText( 'Total payment volume' );
+		expect( tpvElement ).toHaveTextContent( '€1.234,56' );
 
 		expect( container ).toMatchSnapshot();
 	} );
@@ -140,7 +151,7 @@ describe( 'PaymentActivity component', () => {
 		const { queryByText } = render( <PaymentActivity /> );
 
 		expect(
-			queryByText( 'Are those metrics helpful?' )
+			queryByText( 'Are these metrics helpful?' )
 		).not.toBeInTheDocument();
 	} );
 } );

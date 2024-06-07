@@ -36,6 +36,10 @@ class WooPay_Save_User {
 	 * Load scripts and styles for checkout page.
 	 */
 	public function register_checkout_page_scripts() {
+		if ( ! is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {
+			return;
+		}
+
 		// Don't enqueue checkout page scripts when WCPay isn't available.
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
@@ -63,7 +67,7 @@ class WooPay_Save_User {
 			'WCPAY_WOOPAY',
 			'woopayCheckout',
 			[
-				'PRE_CHECK_SAVE_MY_INFO' => $account_data['pre_check_save_my_info']
+				'PRE_CHECK_SAVE_MY_INFO' => isset( $account_data['pre_check_save_my_info'] ) ? $account_data['pre_check_save_my_info'] : false,
 			]
 		);
 

@@ -13,7 +13,7 @@ exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
       <div
         class="survey_container"
       >
-        Are those metrics helpful?
+        Are these metrics helpful?
         <div
           class="survey_container__emoticons"
         >
@@ -92,7 +92,7 @@ exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`
       <div
         class="survey_container"
       >
-        Are those metrics helpful?
+        Are these metrics helpful?
         <div
           class="survey_container__emoticons"
         >

@@ -19,6 +19,7 @@ import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
+import expressCheckoutElementPaymentMethod from '../../express-checkout/blocks';
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_BANCONTACT,
@@ -153,7 +154,11 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+	registerExpressPaymentMethod( expressCheckoutElementPaymentMethod( api ) );
+} else {
+	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+}
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();

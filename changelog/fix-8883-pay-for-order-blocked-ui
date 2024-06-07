@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix "Pay for order" infinite loading when submitting form without payment details.

@@ -35,7 +35,7 @@ jest.mock( '../../../data', () => ( {
 jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
 
-jest.mock( 'payment-request/utils', () => ( {
+jest.mock( 'utils/express-checkout', () => ( {
 	getPaymentRequestData: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',
@@ -264,7 +264,7 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect(
 			screen.queryByText(
-				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
+				'Your custom checkout fields may not be compatible with these payment methods.'
 			)
 		).toBeInTheDocument();
 	} );
@@ -276,7 +276,7 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect(
 			screen.queryByText(
-				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
+				'Your custom checkout fields may not be compatible with these payment methods.'
 			)
 		).not.toBeInTheDocument();
 	} );

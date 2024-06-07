@@ -121,7 +121,7 @@ class WooPay_Utilities {
 	public function should_save_platform_customer() {
 		$session_data = [];
 
-		if ( isset( WC()->session ) && WC()->session->has_session() ) {
+		if ( isset( WC()->session ) && method_exists( WC()->session, 'has_session' ) && WC()->session->has_session() ) {
 			$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
 		}
 
@@ -260,6 +260,10 @@ class WooPay_Utilities {
 	 */
 	public static function encrypt_and_sign_data( $data ) {
 		$store_blog_token = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
+
+		if ( empty( $store_blog_token ) ) {
+			return [];
+		}
 
 		$message = wp_json_encode( $data );
 
