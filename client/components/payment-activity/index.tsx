@@ -84,10 +84,7 @@ const PaymentActivity: React.FC = () => {
 		return <></>;
 	}
 
-	const handleDataFromDateRangePicker = ( myString: {
-		date_start: string;
-		date_end: string;
-	} ) => {
+	const handleDataFromDateRangePicker = ( myString: DateRange ) => {
 		// eslint-disable-next-line no-console
 		console.log( myString );
 	};

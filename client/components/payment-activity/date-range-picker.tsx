@@ -10,17 +10,11 @@ import { __ } from '@wordpress/i18n';
  */
 //import CustomSelectControl from '../custom-select-control';
 import InlineLabelSelect from '../inline-label-select';
+import { DateRange } from './types';
 
-type DateRangePickerProps = {
-	sendDateRangeToParent: ( dateRange: {
-		date_start: string;
-		date_end: string;
-	} ) => void;
-};
-
-export const DateRangePicker: React.FC< DateRangePickerProps > = ( {
-	sendDateRangeToParent,
-} ) => {
+export const DateRangePicker: React.FC< {
+	sendDateRangeToParent: ( dateRange: DateRange ) => void;
+} > = ( { sendDateRangeToParent } ) => {
 	const now = moment();
 	const yesterdayEndOfDay = moment()
 		.clone()
@@ -50,6 +44,45 @@ export const DateRangePicker: React.FC< DateRangePickerProps > = ( {
 				.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } ),
 			end: yesterdayEndOfDay,
 			displayKey: __( 'Last 7 days', 'woocommerce-payments' ),
+		},
+		last_4_weeks: {
+			start: now
+				.clone()
+				.subtract( 4, 'weeks' )
+				.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } ),
+			end: yesterdayEndOfDay,
+			displayKey: __( 'Last 4 weeks', 'woocommerce-payments' ),
+		},
+		last_3_months: {
+			start: now
+				.clone()
+				.subtract( 3, 'months' )
+				.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } ),
+			end: yesterdayEndOfDay,
+			displayKey: __( 'Last 3 months', 'woocommerce-payments' ),
+		},
+		last_12_months: {
+			start: now
+				.clone()
+				.subtract( 12, 'months' )
+				.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } ),
+			end: yesterdayEndOfDay,
+			displayKey: __( 'Last 12 months', 'woocommerce-payments' ),
+		},
+		month_to_date: {
+			start: now.clone().startOf( 'month' ),
+			end: todayEndOfDay,
+			displayKey: __( 'Month to date', 'woocommerce-payments' ),
+		},
+		quarter_to_date: {
+			start: now.clone().startOf( 'quarter' ),
+			end: todayEndOfDay,
+			displayKey: __( 'Quarter to date', 'woocommerce-payments' ),
+		},
+		year_to_date: {
+			start: now.clone().startOf( 'year' ),
+			end: todayEndOfDay,
+			displayKey: __( 'Year to date', 'woocommerce-payments' ),
 		},
 	};
 	const options = Object.keys( timeOptions ).map( ( optionKey ) => {
