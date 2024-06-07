@@ -5,6 +5,12 @@
  */
 import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
+import {
+	onConfirmHandler,
+	shippingAddressChangeHandler,
+	shippingRateChangeHandler,
+} from './event-handlers';
+import { normalizeShippinRate } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -73,14 +79,11 @@ jQuery( ( $ ) => {
 		},
 
 		/**
-		 * Abort payment and display error messages.
+		 * Handles payment error.
 		 *
-		 * @param {PaymentResponse} payment Payment response instance.
-		 * @param {string}          message Error message to display.
+		 * @param {string} message Error message to display.
 		 */
-		abortPayment: ( payment, message ) => {
-			payment.complete( 'fail' );
-
+		abortPayment: ( message ) => {
 			$( '.woocommerce-error' ).remove();
 
 			const $container = $( '.woocommerce-notices-wrapper' ).first();
@@ -181,6 +184,7 @@ jQuery( ( $ ) => {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
 				currency: options?.currency,
+				paymentMethodCreation: 'manual',
 			} );
 
 			const eceButton = wcpayECE.createButton( elements, {
@@ -192,32 +196,50 @@ jQuery( ( $ ) => {
 
 			wcpayECE.showButton( eceButton );
 
-			wcpayECE.attachButtonEventListeners( eceButton );
+			eceButton.on( 'click', ( event ) => {
+				// TODO: handle cases where we need login confirmation.
 
-			eceButton.on( 'click', function ( event ) {
-				const clickOptions = {
-					business: {
-						name: 'Mikes Bikes',
-					},
-					lineItems: [
-						{ name: 'Bike', amount: 200 },
-						{ name: 'Helmet', amount: 300 },
-					],
-					shippingAddressRequired: true,
-					shippingRates: [
-						{
-							id: '1',
-							amount: 500,
-							displayName: 'Standard Shipping',
-						},
-						{
-							id: '2',
-							amount: 1000,
-							displayName: 'Expedited Shipping',
-						},
-					],
+				// TODO: This is not ideal but should work and it's how it's implemented right now for PRBs.
+				wcpayECE.addToCart();
+
+				const opts = {
+					emailRequired: true,
+					phoneNumberRequired: true,
+					shippingAddressRequired: false,
 				};
-				event.resolve( clickOptions );
+
+				if ( wcpayExpressCheckoutParams.product.needs_shipping ) {
+					opts.shippingAddressRequired = true;
+
+					// Sets a "pending" shipping rate. Must be updated on the `shippingaddresschange` event.
+					opts.shippingRates = [
+						normalizeShippinRate(
+							wcpayExpressCheckoutParams.product.shippingOptions
+						),
+					];
+				}
+				event.resolve( opts );
+			} );
+
+			eceButton.on( 'shippingaddresschange', ( event ) => {
+				shippingAddressChangeHandler( api, event, elements );
+			} );
+
+			eceButton.on( 'shippingratechange', ( event ) => {
+				shippingRateChangeHandler( api, event, elements );
+			} );
+
+			eceButton.on( 'confirm', ( event ) => {
+				// TODO: Block UI
+
+				onConfirmHandler(
+					api,
+					api.getStripe(),
+					elements,
+					wcpayECE.completePayment,
+					wcpayECE.abortPayment,
+					event
+				);
 			} );
 
 			eceButton.on( 'cancel', () => {

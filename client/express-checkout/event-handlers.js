@@ -1,16 +1,52 @@
 /**
  * Internal dependencies
  */
-import { normalizeOrderData, normalizeShippingAddress } from './utils';
+import {
+	normalizeOrderData,
+	normalizeShippingAddress,
+	normalizeShippingRates,
+} from './utils';
 import { getErrorMessageFromNotice } from 'utils/express-checkout';
 
-export const shippingAddressChangeHandler = async ( api, event ) => {
+export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	const response = await api.expressCheckoutECECalculateShippingOptions(
-		normalizeShippingAddress( event.shippingAddress )
+		normalizeShippingAddress( event.address )
 	);
-	event.resolve( {
-		shippingRates: response.shipping_options,
-	} );
+
+	if ( response.result === 'success' ) {
+		elements.update( {
+			amount: response.total.amount,
+		} );
+
+		event.resolve( {
+			shippingRates: normalizeShippingRates( response.shipping_options ),
+		} );
+	}
+
+	if ( response.result === 'fail' ) {
+		event.reject();
+	}
+};
+
+export const shippingRateChangeHandler = async ( api, event, elements ) => {
+	const lightShippingRate = {
+		id: event.shippingRate.id,
+	};
+	const response = await api.paymentRequestUpdateShippingDetails(
+		lightShippingRate
+	);
+
+	if ( response.result === 'success' ) {
+		elements.update( {
+			amount: response.total.amount,
+		} );
+
+		event.resolve();
+	}
+
+	if ( response.result === 'fail' ) {
+		event.reject();
+	}
 };
 
 export const onConfirmHandler = async (
@@ -26,7 +62,7 @@ export const onConfirmHandler = async (
 	} );
 
 	if ( error ) {
-		abortPayment( event, error.message );
+		abortPayment( error.message );
 		return;
 	}
 
@@ -37,7 +73,6 @@ export const onConfirmHandler = async (
 
 	if ( createOrderResponse.result !== 'success' ) {
 		return abortPayment(
-			event,
 			getErrorMessageFromNotice( createOrderResponse.messages )
 		);
 	}
