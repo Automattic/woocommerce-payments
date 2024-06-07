@@ -11,6 +11,7 @@ use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
 use WCPay\WooPay\WooPay_Utilities;
+use Automattic\WooCommerce\Admin\Features\PaymentGatewaySuggestions;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -527,6 +528,8 @@ class WC_Payments_Admin {
 			'all'
 		);
 
+		$this->register_marketplace_recommendations_scripts();
+
 		WC_Payments::register_script_with_dependencies( 'WCPAY_TOS', 'dist/tos' );
 		wp_set_script_translations( 'WCPAY_TOS', 'woocommerce-payments' );
 
@@ -1008,6 +1011,30 @@ class WC_Payments_Admin {
 		}
 
 		return ! $agreement['is_current_version'];
+	}
+
+	/**
+	 * Registers the marketplace recommendations scripts.
+	 *
+	 * @return void
+	 */
+	private function register_marketplace_recommendations_scripts() {
+		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page']
+			|| empty( $url_params['path'] ) || '/payments/connect' !== $url_params['path'] ) {
+			return;
+		}
+
+		$suggestions = [
+			'paymentGatewaySuggestions' => PaymentGatewaySuggestions\Init::get_suggestions(),
+			'activePlugins'             => array_map( 'dirname', get_option( 'active_plugins' ) ),
+		];
+
+		wp_localize_script(
+			'WCPAY_DASH_APP',
+			'wcMarketplaceSuggestions',
+			$suggestions
+		);
 	}
 
 	/**

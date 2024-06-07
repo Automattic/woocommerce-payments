@@ -25,6 +25,7 @@ import BannerNotice from 'components/banner-notice';
 import PaymentMethods from './payment-methods';
 import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
+import ConnectUnsupportedAccountPage from './unsupported-country';
 import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
@@ -166,12 +167,10 @@ const ConnectAccountPage: React.FC = () => {
 				</Card>
 			) : (
 				<>
-					{ ! isCountrySupported && (
-						<BannerNotice status="error" isDismissible={ false }>
-							{ strings.nonSupportedCountry }
-						</BannerNotice>
-					) }
 					{ devMode && <SandboxModeNotice /> }
+					{ ! isCountrySupported && (
+						<ConnectUnsupportedAccountPage />
+					) }
 					<Card>
 						<div className="connect-account-page__heading">
 							<img src={ LogoImg } alt="logo" />

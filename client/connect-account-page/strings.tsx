@@ -268,25 +268,43 @@ export default {
 			'woocommerce-payments'
 		),
 	},
-	nonSupportedCountry: createInterpolateElement(
-		sprintf(
-			/* translators: %1$s: WooPayments */
-			__(
-				'<b>%1$s is not currently available in your location</b>. To be eligible for %1$s, your business address must be in one of the following <a>supported countries</a>.',
+	nonSupportedCountry: {
+		heading: __( 'Payment Options', 'woocommerce-payments' ),
+		title: __( 'WooPayments', 'woocommerce-payments' ),
+		description: __(
+			'The only payment solution fully integrated to Woo. Accept credit/debit cards and local payment options with no setup or monthly fees.',
+			'woocommerce-payments'
+		),
+		not_available: __( 'Not available', 'woocommerce-payments' ),
+		footer: __( 'Discover more payment options', 'woocommerce-payments' ),
+		notice: interpolateComponents( {
+			mixedString: __(
+				'WooPayments is the all-in-one payment solution for WooCommerce, but it’s {{learnMoreLink}}not yet available in your region{{/learnMoreLink}}. You can vote for support in your country on the {{learnMoreLink2}}WooPayments feature requests{{/learnMoreLink2}} page.',
 				'woocommerce-payments'
 			),
-			'WooPayments'
-		),
-		{
-			b: <b />,
-			a: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://woocommerce.com/document/woopayments/compatibility/countries/"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-		}
-	),
+			components: {
+				learnMoreLink: (
+					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href="https://woocommerce.com/document/woopayments/compatibility/countries/"
+						target="_blank"
+						rel="noreferrer"
+					/>
+				),
+				learnMoreLink2: (
+					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href="https://href.li/?https://woocommerce.com/feature-requests/woopayments/"
+						target="_blank"
+						rel="noreferrer"
+					/>
+				),
+			},
+		} ),
+	},
+	additionalPaymentMethods: {
+		install: __( 'Install', 'woocommerce-payments' ),
+	},
 };
