@@ -188,14 +188,36 @@ jQuery( ( $ ) => {
 		 * @param {Object} options ECE options.
 		 */
 		startExpressCheckoutElement: ( options ) => {
-			// FIXME: Get the shipping options for the product object via getExpressCheckoutData( 'product' ) when on the product page.
-			const shippingRates = options.displayItems
-				.filter( ( i ) => i.label === 'Shipping' )
-				.map( ( i ) => ( {
-					id: `rate-${ i.label }`,
-					amount: i.amount,
-					displayName: i.label,
-				} ) );
+			const getShippingRates = () => {
+				if ( ! options.requestShipping ) {
+					return [];
+				}
+
+				if ( getExpressCheckoutData( 'is_product_page' ) ) {
+					// Despite the name of the property, this seems to be just a single option that's not in an array.
+					const {
+						shippingOptions: shippingOption,
+					} = getExpressCheckoutData( 'product' );
+
+					return [
+						{
+							id: shippingOption.id,
+							amount: shippingOption.amount,
+							displayName: shippingOption.label,
+						},
+					];
+				}
+
+				return options.displayItems
+					.filter( ( i ) => i.label === 'Shipping' )
+					.map( ( i ) => ( {
+						id: `rate-${ i.label }`,
+						amount: i.amount,
+						displayName: i.label,
+					} ) );
+			};
+
+			const shippingRates = getShippingRates();
 
 			// This is a bit of a hack, but we need some way to get the shipping information before rendering the button, and
 			// since we don't have any address information at this point it seems best to rely on what came with the cart response.
@@ -226,8 +248,9 @@ jQuery( ( $ ) => {
 				// TODO: handle cases where we need login confirmation.
 
 				// TODO: This is not ideal but should work and it's how it's implemented right now for PRBs.
-				// TODO: Add an if-statement to check if we're on the product page.
-				// wcpayECE.addToCart();
+				if ( getExpressCheckoutData( 'is_product_page' ) ) {
+					wcpayECE.addToCart();
+				}
 
 				const clickOptions = {
 					lineItems: options.displayItems.map( ( i ) => ( {
