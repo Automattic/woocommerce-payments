@@ -305,7 +305,7 @@ class WooPay_Utilities {
 		$decoded_data_request = array_map( 'base64_decode', $data );
 
 		// Verify the HMAC hash before decryption to ensure data integrity.
-		$computed_hash = hash_hmac( 'sha256', $decoded_data_request['data'], $store_blog_token );
+		$computed_hash = hash_hmac( 'sha256', $decoded_data_request['iv'] . $decoded_data_request['data'], $store_blog_token );
 
 		// If the hashes don't match, the message may have been tampered with.
 		if ( ! hash_equals( $computed_hash, $decoded_data_request['hash'] ) ) {
