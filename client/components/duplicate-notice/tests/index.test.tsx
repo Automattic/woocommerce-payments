@@ -45,6 +45,30 @@ describe( 'DuplicateNotice', () => {
 		).not.toBeInTheDocument();
 	} );
 
+	test( 'renders correctly when the payment method is dismissed by some plugins but not all', () => {
+		const dismissedDuplicateNotices = {
+			bancontact: [ 'woocommerce_payments' ],
+		};
+
+		render(
+			<DuplicateNotice
+				paymentMethod="bancontact"
+				gatewaysEnablingPaymentMethod={ [
+					'woocommerce_payments',
+					'another_plugin',
+				] }
+				dismissedNotices={ dismissedDuplicateNotices }
+				setDismissedDuplicateNotices={ jest.fn() }
+			/>
+		);
+		expect(
+			screen.getByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).toBeInTheDocument();
+		cleanup();
+	} );
+
 	test( 'renders correctly when the payment method is not dismissed', () => {
 		render(
 			<DuplicateNotice
