@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import moment from 'moment';
 import { __ } from '@wordpress/i18n';
 
@@ -116,15 +116,24 @@ export const DateRangePicker: React.FC< {
 			hint: formatDateRange( option.start, option.end ),
 		};
 	} );
-	const selected = options[ 1 ];
-	const handleDateRangeSelectorChange = () => {
+
+	const [ selectedDateRangeOption, setSelectedDateRangeOption ] = useState(
+		options[ 1 ]
+	);
+
+	const handleDateRangeSelectorChange = ( dateRangeChange: any ) => {
+		const selectedItem = dateRangeChange.selectedItem;
+		setSelectedDateRangeOption( selectedItem );
+
 		const selectedDateRange = {
-			// Subtract 7 days from the current date.
-			date_start: moment()
-				.subtract( 7, 'd' )
-				.format( 'YYYY-MM-DD\\THH:mm:ss' ),
-			date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
+			date_start: timeOptions[ selectedItem.key ].start.format(
+				'YYYY-MM-DD\\THH:mm:ss'
+			),
+			date_end: timeOptions[ selectedItem.key ].end.format(
+				'YYYY-MM-DD\\THH:mm:ss'
+			),
 		};
+
 		sendDateRangeToParent( selectedDateRange );
 	};
 
@@ -132,7 +141,7 @@ export const DateRangePicker: React.FC< {
 		<InlineLabelSelect
 			label="Select an option"
 			options={ options }
-			value={ selected }
+			value={ selectedDateRangeOption }
 			placeholder="Select an option..."
 			onChange={ handleDateRangeSelectorChange }
 		/>

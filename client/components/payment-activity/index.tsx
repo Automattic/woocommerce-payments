@@ -91,7 +91,7 @@ const PaymentActivity: React.FC = () => {
 
 	return (
 		<Card>
-			<CardHeader>
+			<CardHeader className="wcpay-payment-activity__card__header">
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
 				<DateRangePicker
 					sendDateRangeToParent={ handleDataFromDateRangePicker }

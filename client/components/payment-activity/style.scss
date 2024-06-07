@@ -23,6 +23,19 @@
 				padding: 16px 0 19px;
 			}
 		}
+
+		&__header {
+			.wcpay-filter.components-custom-select-control {
+				.wcpay-filter.components-custom-select-control__menu {
+					max-height: fit-content;
+				}
+			}
+
+			@include breakpoint( '<660px' ) {
+				flex-direction: column !important;
+				gap: 16px;
+			}
+		}
 	}
 }
 
