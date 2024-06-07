@@ -84,11 +84,21 @@ const PaymentActivity: React.FC = () => {
 		return <></>;
 	}
 
+	const handleDataFromDateRangePicker = ( myString: {
+		date_start: string;
+		date_end: string;
+	} ) => {
+		// eslint-disable-next-line no-console
+		console.log( myString );
+	};
+
 	return (
 		<Card>
 			<CardHeader>
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
-				<DateRangePicker />
+				<DateRangePicker
+					sendDateRangeToParent={ handleDataFromDateRangePicker }
+				/>
 			</CardHeader>
 			<CardBody className="wcpay-payment-activity__card__body">
 				<PaymentActivityDataComponent
