@@ -2,10 +2,11 @@
  * External dependencies
  */
 import { createContext } from 'react';
+import { DismissedNotices } from '../../components/duplicate-notice';
 
 const DuplicatedPaymentMethodsContext = createContext( {
-	duplicates: {} as { [ key: string ]: string[] },
-	dismissedDuplicateNotices: {} as { [ key: string ]: string[] },
+	duplicates: {} as DismissedNotices,
+	dismissedDuplicateNotices: {} as DismissedNotices,
 	setDismissedDuplicateNotices: () => null,
 } );
 

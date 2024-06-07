@@ -8,13 +8,12 @@ import { __ } from '@wordpress/i18n';
 import { getAdminUrl } from 'wcpay/utils';
 import { useDispatch } from '@wordpress/data';
 
+export type DismissedNotices = { [ key: string ]: string[] };
 interface DuplicateNoticeProps {
 	paymentMethod: string;
 	gatewaysEnablingPaymentMethod: string[];
-	dismissedNotices: { [ key: string ]: string[] };
-	setDismissedDuplicateNotices: ( notices: {
-		[ key: string ]: string[];
-	} ) => null;
+	dismissedNotices: DismissedNotices;
+	setDismissedDuplicateNotices: ( notices: DismissedNotices ) => null;
 }
 
 function DuplicateNotice( {
@@ -26,26 +25,24 @@ function DuplicateNotice( {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	const handleDismiss = useCallback( () => {
-		const updatedDismissedNotices = { ...dismissedNotices };
-		if ( updatedDismissedNotices[ paymentMethod ] ) {
+		const updatedNotices = { ...dismissedNotices };
+		if ( updatedNotices[ paymentMethod ] ) {
 			// If there are existing dismissed notices for the payment method, append to the current array.
-			updatedDismissedNotices[ paymentMethod ] = [
+			updatedNotices[ paymentMethod ] = [
 				...new Set( [
-					...updatedDismissedNotices[ paymentMethod ],
+					...updatedNotices[ paymentMethod ],
 					...gatewaysEnablingPaymentMethod,
 				] ),
 			];
 		} else {
-			updatedDismissedNotices[
-				paymentMethod
-			] = gatewaysEnablingPaymentMethod;
+			updatedNotices[ paymentMethod ] = gatewaysEnablingPaymentMethod;
 		}
 
-		setDismissedDuplicateNotices( updatedDismissedNotices );
+		setDismissedDuplicateNotices( updatedNotices );
 		updateOptions( {
-			wcpay_duplicate_payment_method_notices_dismissed: updatedDismissedNotices,
+			wcpay_duplicate_payment_method_notices_dismissed: updatedNotices,
 		} );
-		wcpaySettings.dismissedDuplicateNotices = updatedDismissedNotices;
+		wcpaySettings.dismissedDuplicateNotices = updatedNotices;
 	}, [
 		paymentMethod,
 		gatewaysEnablingPaymentMethod,

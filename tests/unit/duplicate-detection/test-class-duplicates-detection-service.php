@@ -13,7 +13,7 @@ use WCPay\Payment_Methods\Klarna_Payment_Method;
 /**
  * WCPay\Duplicates_Detection_Service_Test unit tests.
  */
-class Timur_Test extends WCPAY_UnitTestCase {
+class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test.
