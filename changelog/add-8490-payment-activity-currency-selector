@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Behind a feature flag. Payment Activity Card updates according to currency selection.
+
+
