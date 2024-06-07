@@ -85,9 +85,7 @@ jQuery( ( $ ) => {
 		 * @param {string}          message Error message to display.
 		 */
 		abortPayment: ( payment, message ) => {
-			// FIXME: I don't think this is required anymore. At least there is no mention of this in
-			//        the Stripe docs for the ECE.
-			// payment.complete( 'fail' );
+			payment.paymentFailed();
 
 			$( '.woocommerce-error' ).remove();
 
