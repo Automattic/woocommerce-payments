@@ -247,7 +247,6 @@ jQuery( ( $ ) => {
 			eceButton.on( 'click', function ( event ) {
 				// TODO: handle cases where we need login confirmation.
 
-				// TODO: This is not ideal but should work and it's how it's implemented right now for PRBs.
 				if ( getExpressCheckoutData( 'is_product_page' ) ) {
 					wcpayECE.addToCart();
 				}
@@ -403,11 +402,11 @@ jQuery( ( $ ) => {
 			} else if ( wcpayExpressCheckoutParams.is_product_page ) {
 				wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
-					total: wcpayExpressCheckoutParams.product.total.amount,
-					currency: getExpressCheckoutData( 'checkout' )
-						?.currency_code,
+					total: getExpressCheckoutData( 'product' )?.total.amount,
+					currency: getExpressCheckoutData( 'product' )?.currency,
 					requestShipping:
-						wcpayExpressCheckoutParams.product.needs_shipping,
+						getExpressCheckoutData( 'product' )?.needs_shipping ??
+						false,
 					requestPhone:
 						getExpressCheckoutData( 'checkout' )
 							?.needs_payer_phone ?? false,
