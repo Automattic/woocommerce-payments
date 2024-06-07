@@ -8,12 +8,14 @@ import { __ } from '@wordpress/i18n';
 import { getAdminUrl } from 'wcpay/utils';
 import { useDispatch } from '@wordpress/data';
 
-export type DismissedNotices = { [ key: string ]: string[] };
+export type PaymentMethodToPluginsMap = { [ key: string ]: string[] };
 interface DuplicateNoticeProps {
 	paymentMethod: string;
 	gatewaysEnablingPaymentMethod: string[];
-	dismissedNotices: DismissedNotices;
-	setDismissedDuplicateNotices: ( notices: DismissedNotices ) => null;
+	dismissedNotices: PaymentMethodToPluginsMap;
+	setDismissedDuplicateNotices: (
+		notices: PaymentMethodToPluginsMap
+	) => null;
 }
 
 function DuplicateNotice( {
