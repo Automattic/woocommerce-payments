@@ -85,14 +85,34 @@ export const DateRangePicker: React.FC< {
 			displayKey: __( 'Year to date', 'woocommerce-payments' ),
 		},
 	};
+
+	const formatDateRange = (
+		start: moment.Moment,
+		end: moment.Moment
+	): string => {
+		// Today - show only today's date.
+		if ( start.isSame( end, 'day' ) ) {
+			return start.format( 'MMMM D, YYYY' );
+		}
+
+		// Different years - show year for both start and end
+		if ( ! start.isSame( end, 'year' ) ) {
+			return `${ start.format( 'MMMM D, YYYY' ) } - ${ end.format(
+				'MMMM D, YYYY'
+			) }`;
+		}
+
+		return `${ start.format( 'MMMM D' ) } - ${ end.format(
+			'MMMM D, YYYY'
+		) }`;
+	};
+
 	const options = Object.keys( timeOptions ).map( ( optionKey ) => {
 		const option = timeOptions[ optionKey ];
 		return {
 			key: optionKey,
 			name: option.displayKey,
-			hint: `${ option.start.format(
-				'MMMM D, YYYY'
-			) } - ${ option.end.format( 'MMMM D, YYYY' ) }`, //replace with function formatHint,
+			hint: formatDateRange( option.start, option.end ), //replace with function formatHint,
 		};
 	} );
 	const selected = options[ 1 ];
