@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { normalizeOrderData, normalizeShippingAddress } from './utils';
+import {
+	normalizeOrderData,
+	normalizeShippingAddress,
+	normalizeLineItems,
+} from './utils';
 import { getErrorMessageFromNotice } from 'utils/express-checkout';
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
@@ -15,6 +19,7 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 		} );
 		event.resolve( {
 			shippingRates: response.shipping_options,
+			lineItems: normalizeLineItems( response.displayItems ),
 		} );
 	} else {
 		event.reject();

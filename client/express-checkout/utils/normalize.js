@@ -8,15 +8,14 @@
  */
 export const normalizeLineItems = ( displayItems ) => {
 	return displayItems
-		.filter( ( displayItem ) => {
-			return !! displayItem.value;
-		} )
-		.map( ( displayItem ) => {
-			return {
-				amount: displayItem.value,
+		.filter( ( displayItem ) => !! displayItem.amount )
+		.map( ( displayItem ) =>
+			// The amount prop is already present on the item.
+			( {
+				...displayItem,
 				name: displayItem.label,
-			};
-		} );
+			} )
+		);
 };
 
 /**
