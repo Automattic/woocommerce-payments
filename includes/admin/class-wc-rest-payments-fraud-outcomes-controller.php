@@ -25,7 +25,7 @@ class WC_REST_Payments_Fraud_Outcomes_Controller extends WC_Payments_REST_Contro
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<id>\w+)/latest',
+			'/' . $this->rest_base . '/(?P<id>[A-Za-z0-9_\-]+)/latest',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_latest_fraud_outcome' ],

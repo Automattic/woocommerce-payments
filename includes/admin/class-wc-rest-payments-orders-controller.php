@@ -68,7 +68,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/capture_terminal_payment',
+			$this->rest_base . '/(?P<order_id>[A-Za-z0-9_\-]+)/capture_terminal_payment',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'capture_terminal_payment' ],
@@ -82,7 +82,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/capture_authorization',
+			$this->rest_base . '/(?P<order_id>[A-Za-z0-9_\-]+)/capture_authorization',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'capture_authorization' ],
@@ -96,7 +96,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/cancel_authorization',
+			$this->rest_base . '/(?P<order_id>[A-Za-z0-9_\-]+)/cancel_authorization',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'cancel_authorization' ],
@@ -110,7 +110,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/create_terminal_intent',
+			$this->rest_base . '/(?P<order_id>[A-Za-z0-9_\-]+)/create_terminal_intent',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'create_terminal_intent' ],
