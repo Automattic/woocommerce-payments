@@ -22,8 +22,9 @@ test.describe(
 					'/wp-admin/admin.php?page=wc-admin&path=/payments/overview'
 				);
 				await page.waitForLoadState( 'domcontentloaded' );
-				const logo = page.getByAltText( 'WooPayments logo' );
-				await expect( logo ).toBeVisible();
+				await expect(
+					page.getByRole( 'heading', { name: 'Overview' } )
+				).toBeVisible();
 			} );
 		} );
 

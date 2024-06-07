@@ -570,9 +570,7 @@ class WC_Payments {
 		// To avoid register the same hooks twice.
 		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
 
-		// Defer registering the WooPay hooks. Later on, $wp_rewrite is used and causes a fatal error every time the account cache is refreshed,
-		// given that $wp_rewrite is defined right after the `plugins_loaded` action is fired. See #8857.
-		add_action( 'setup_theme', [ __CLASS__, 'maybe_register_woopay_hooks' ] );
+		self::maybe_register_woopay_hooks();
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 		self::$apple_pay_registration->init_hooks();
@@ -1504,7 +1502,6 @@ class WC_Payments {
 
 	/**
 	 * Registers woopay hooks if the woopay feature flag is enabled.
-	 * Removes WooPay webhooks if the merchant is not eligible.
 	 *
 	 * @return void
 	 */
@@ -1554,8 +1551,6 @@ class WC_Payments {
 			}
 
 			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
-		} else {
-			WooPay_Order_Status_Sync::remove_webhook();
 		}
 	}
 
@@ -1574,41 +1569,52 @@ class WC_Payments {
 	}
 
 	/**
-	 * Enqueues the common config script if the express checkout button is disabled on the cart page.
+	 * Validates whether the common config script should be enqueued and enqueues it.
+	 *
+	 * If the express checkout button is disabled on the cart page, the common config
+	 * script needs to be enqueued to ensure `wcpayConfig` is available on the cart page.
+	 *
+	 * @return void
+	 */
+	public static function validate_and_enqueue_woopay_common_config_script() {
+		$is_express_button_disabled_on_cart = self::get_express_checkout_helper()->is_cart()
+			&& ! self::get_express_checkout_helper()->is_available_at( 'cart', WC_Payments_WooPay_Button_Handler::BUTTON_LOCATIONS );
+
+		if ( $is_express_button_disabled_on_cart ) {
+			self::enqueue_woopay_common_config_script();
+		}
+	}
+
+	/**
+	 * Enqueues the common config script.
 	 *
 	 * @return void
 	 */
 	public static function enqueue_woopay_common_config_script() {
-		$is_express_button_disabled_on_cart = self::get_express_checkout_helper()->is_cart()
-			&& ! self::get_express_checkout_helper()->is_available_at( 'cart', WC_Payments_WooPay_Button_Handler::BUTTON_LOCATIONS );
-		// If the express checkout button is disabled on the cart page, the common config
-		// script needs to be enqueued to ensure wcpayConfig is available on the cart page.
-		if ( $is_express_button_disabled_on_cart ) {
-			try {
-				// is_test() throws if the class 'Mode' has not been initialized.
-				$is_test_mode = self::mode()->is_test();
-			} catch ( Exception $e ) {
-				// Default to false if the class 'Mode' has not been initialized.
-				$is_test_mode = false;
-			}
-
-			wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
-			wp_localize_script(
-				'WCPAY_WOOPAY_COMMON_CONFIG',
-				'wcpayConfig',
-				[
-					'woopayHost'                    => WooPay_Utilities::get_woopay_url(),
-					'testMode'                      => $is_test_mode,
-					'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-					'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
-					'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
-					'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
-					'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
-					'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
-				]
-			);
-			wp_enqueue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
+		try {
+			// is_test() throws if the class 'Mode' has not been initialized.
+			$is_test_mode = self::mode()->is_test();
+		} catch ( Exception $e ) {
+			// Default to false if the class 'Mode' has not been initialized.
+			$is_test_mode = false;
 		}
+
+		wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_localize_script(
+			'WCPAY_WOOPAY_COMMON_CONFIG',
+			'wcpayConfig',
+			[
+				'woopayHost'                    => WooPay_Utilities::get_woopay_url(),
+				'testMode'                      => $is_test_mode,
+				'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+				'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
+				'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
+				'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
+				'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
+				'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
+			]
+		);
+		wp_enqueue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
 	}
 
 	/**
@@ -1624,7 +1630,7 @@ class WC_Payments {
 			return;
 		}
 
-		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_woopay_common_config_script' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'validate_and_enqueue_woopay_common_config_script' ] );
 	}
 
 	/**
