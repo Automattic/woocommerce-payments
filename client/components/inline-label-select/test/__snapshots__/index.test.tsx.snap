@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FilterSelectControl renders options 1`] = `
+exports[`InlineLabelSelect renders options 1`] = `
 <div>
   <div
     class="wcpay-filter components-custom-select-control onboarding-select-control"
@@ -130,7 +130,7 @@ exports[`FilterSelectControl renders options 1`] = `
 </div>
 `;
 
-exports[`FilterSelectControl renders options with custom children 1`] = `
+exports[`InlineLabelSelect renders options with custom children 1`] = `
 <div>
   <div
     class="wcpay-filter components-custom-select-control onboarding-select-control"
@@ -182,7 +182,7 @@ exports[`FilterSelectControl renders options with custom children 1`] = `
 </div>
 `;
 
-exports[`FilterSelectControl renders with placeholder 1`] = `
+exports[`InlineLabelSelect renders with placeholder 1`] = `
 <div>
   <div
     class="wcpay-filter components-custom-select-control onboarding-select-control"

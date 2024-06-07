@@ -10,7 +10,7 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import FilterSelectControl from '..';
+import InlineLabelSelect from '..';
 
 interface Item {
 	key: string;
@@ -39,10 +39,10 @@ const options: Item[] = [
 	},
 ];
 
-describe( 'FilterSelectControl', () => {
+describe( 'InlineLabelSelect', () => {
 	test( 'renders options', () => {
 		const { container, getByText } = render(
-			<FilterSelectControl
+			<InlineLabelSelect
 				className="onboarding-select-control"
 				label="Currency"
 				value={ options[ 0 ] }
@@ -62,7 +62,7 @@ describe( 'FilterSelectControl', () => {
 
 	test( 'renders options with custom children', () => {
 		const { container, getByText } = render(
-			<FilterSelectControl
+			<InlineLabelSelect
 				className="onboarding-select-control"
 				label="Currency"
 				value={ undefined }
@@ -89,7 +89,7 @@ describe( 'FilterSelectControl', () => {
 
 	test( 'renders with placeholder', () => {
 		const { container } = render(
-			<FilterSelectControl
+			<InlineLabelSelect
 				className="onboarding-select-control"
 				label="Currency"
 				value={ undefined }

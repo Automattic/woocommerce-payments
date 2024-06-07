@@ -102,10 +102,10 @@ const stateReducer = (
 };
 
 /**
- * FilterSelectControl component.
+ * InlineLabelSelect component.
  * A select control with a list of options, inline label, and option hints.
  */
-function FilterSelectControl< ItemType extends SelectItem >( {
+function InlineLabelSelect< ItemType extends SelectItem >( {
 	name,
 	className,
 	label,
@@ -247,4 +247,4 @@ function FilterSelectControl< ItemType extends SelectItem >( {
 	);
 }
 
-export default FilterSelectControl;
+export default InlineLabelSelect;
