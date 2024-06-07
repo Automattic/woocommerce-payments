@@ -243,7 +243,7 @@ jQuery( ( $ ) => {
 					event.resolve( {
 						shippingRates: response.shipping_options,
 					} );
-				} else if ( response.result === 'fail' ) {
+				} else {
 					event.reject();
 				}
 			} );
@@ -262,7 +262,7 @@ jQuery( ( $ ) => {
 							name: i.label,
 						} ) ),
 					} );
-				} else if ( response.result === 'fail' ) {
+				} else {
 					event.reject();
 				}
 			} );
