@@ -16,6 +16,7 @@ import PaymentActivityDataComponent from './payment-activity-data';
 import Survey from './survey';
 import { WcPayOverviewSurveyContextProvider } from './survey/context';
 import { usePaymentActivityData } from 'wcpay/data';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import type { DateRange } from './types';
 import './style.scss';
 
@@ -65,7 +66,10 @@ const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
+	const { selectedCurrency } = useSelectedCurrency();
+
 	const { paymentActivityData, isLoading } = usePaymentActivityData( {
+		currency: selectedCurrency ?? wcpaySettings.accountDefaultCurrency,
 		...getDateRange(),
 		timezone: moment( new Date() ).format( 'Z' ),
 	} );

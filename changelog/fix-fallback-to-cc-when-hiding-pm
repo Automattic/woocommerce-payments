@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fall back to credit card as default payment method when a payment method is toggled off.

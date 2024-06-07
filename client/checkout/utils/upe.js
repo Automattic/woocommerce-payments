@@ -311,6 +311,7 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
+	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
 
 	/* global wcpayCustomerData */
 	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
@@ -326,5 +327,11 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		upeContainer.style.display = 'block';
 	} else {
 		upeContainer.style.display = 'none';
+		// if the toggled off payment method was selected, we need to fall back to credit card
+		if ( paymentMethodType === selectedPaymentMethod ) {
+			document
+				.querySelector( '#payment_method_woocommerce_payments' )
+				.click();
+		}
 	}
 };
