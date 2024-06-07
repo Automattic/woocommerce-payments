@@ -43,9 +43,9 @@ interface PaymentDataTileProps {
 	 */
 	reportLink?: string;
 	/**
-	 * The source of the event tracking.
+	 * Name for the data tile, added to tracks events as `source` prop.
 	 */
-	tracksSource?: string;
+	tracksSource: string;
 }
 
 const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
