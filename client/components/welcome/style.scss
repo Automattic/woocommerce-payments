@@ -12,6 +12,9 @@
 
 @media screen and ( max-width: $break-mobile ) {
 	.components-flex.wcpay-welcome__flex {
-		flex-direction: column-reverse;
+		flex-direction: column;
+	}
+	.wcpay-welcome__flex__greeting {
+		margin-bottom: 24px;
 	}
 }
