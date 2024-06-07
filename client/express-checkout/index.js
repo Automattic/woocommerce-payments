@@ -86,6 +86,7 @@ jQuery( ( $ ) => {
 		 */
 		abortPayment: ( payment, message ) => {
 			payment.paymentFailed();
+			wcpayECE.unblock();
 
 			$( '.woocommerce-error' ).remove();
 
@@ -125,6 +126,10 @@ jQuery( ( $ ) => {
 					opacity: 0.6,
 				},
 			} );
+		},
+
+		unblock: () => {
+			$.unblockUI();
 		},
 
 		/**
@@ -227,6 +232,7 @@ jQuery( ( $ ) => {
 					phoneNumberRequired: options.requestPhone,
 					shippingRates,
 				};
+				wcpayECE.block();
 				event.resolve( clickOptions );
 			} );
 
@@ -321,6 +327,7 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'cancel', () => {
+				wcpayECE.unblock();
 				wcpayECE.paymentAborted = true;
 			} );
 		},
