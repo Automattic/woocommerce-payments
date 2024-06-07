@@ -8,6 +8,7 @@ import '../checkout/express-checkout-buttons.scss';
 import { getExpressCheckoutData } from './utils/index';
 import {
 	shippingAddressChangeHandler,
+	shippingRateChangeHandler,
 	onConfirmHandler,
 } from './event-handlers';
 
@@ -239,24 +240,9 @@ jQuery( ( $ ) => {
 				shippingAddressChangeHandler( api, event, elements )
 			);
 
-			// FIXME: This handler is copied from ./event-handlers.js. We should re-use the same function here.
-			eceButton.on( 'shippingratechange', async ( event ) => {
-				const response = await api.paymentRequestUpdateShippingDetails(
-					event.shippingRate
-				);
-
-				if ( response.result === 'success' ) {
-					elements.update( { amount: response.total.amount } );
-					event.resolve( {
-						lineItems: response.displayItems.map( ( i ) => ( {
-							...i,
-							name: i.label,
-						} ) ),
-					} );
-				} else {
-					event.reject();
-				}
-			} );
+			eceButton.on( 'shippingratechange', async ( event ) =>
+				shippingRateChangeHandler( api, event, elements )
+			);
 
 			eceButton.on( 'confirm', async ( event ) =>
 				onConfirmHandler(

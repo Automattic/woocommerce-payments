@@ -26,6 +26,21 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	}
 };
 
+export const shippingRateChangeHandler = async ( api, event, elements ) => {
+	const response = await api.paymentRequestUpdateShippingDetails(
+		event.shippingRate
+	);
+
+	if ( response.result === 'success' ) {
+		elements.update( { amount: response.total.amount } );
+		event.resolve( {
+			lineItems: normalizeLineItems( response.displayItems ),
+		} );
+	} else {
+		event.reject();
+	}
+};
+
 export const onConfirmHandler = async (
 	api,
 	stripe,
