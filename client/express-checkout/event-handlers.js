@@ -29,13 +29,17 @@ export const onConfirmHandler = async (
 	abortPayment,
 	event
 ) => {
+	const { error: submitError } = await elements.submit();
+	if ( submitError ) {
+		abortPayment( event, submitError.message );
+	}
+
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
 		elements,
 	} );
 
 	if ( error ) {
-		abortPayment( event, error.message );
-		return;
+		return abortPayment( event, error.message );
 	}
 
 	// Kick off checkout processing step.
@@ -64,6 +68,6 @@ export const onConfirmHandler = async (
 			completePayment( redirectUrl );
 		}
 	} catch ( e ) {
-		abortPayment( event, error.message );
+		return abortPayment( event, error.message );
 	}
 };

@@ -5,12 +5,11 @@
  */
 import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
+import { getExpressCheckoutData } from './utils/index';
 import {
-	getExpressCheckoutData,
-	normalizeOrderData,
-	getErrorMessageFromNotice,
-} from './utils/index';
-import { shippingAddressChangeHandler } from './event-handlers';
+	shippingAddressChangeHandler,
+	onConfirmHandler,
+} from './event-handlers';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -259,60 +258,16 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			eceButton.on( 'confirm', async ( event ) => {
-				const { error: submitError } = await elements.submit();
-
-				if ( submitError ) {
-					return;
-				}
-
-				const {
-					paymentMethod,
-					error,
-				} = await api.getStripe().createPaymentMethod( {
+			eceButton.on( 'confirm', async ( event ) =>
+				onConfirmHandler(
+					api,
+					api.getStripe(),
 					elements,
-				} );
-
-				if ( error ) {
-					wcpayECE.abortPayment(
-						event,
-						getErrorMessageFromNotice( error.messages )
-					);
-					return;
-				}
-
-				// Kick off checkout processing step.
-				const createOrderResponse = await api.expressCheckoutECECreateOrder(
-					normalizeOrderData( event, paymentMethod.id )
-				);
-
-				if ( createOrderResponse.result !== 'success' ) {
-					wcpayECE.abortPayment(
-						event,
-						getErrorMessageFromNotice(
-							createOrderResponse.messages
-						)
-					);
-					return;
-				}
-
-				try {
-					const confirmationRequest = api.confirmIntent(
-						createOrderResponse.redirect
-					);
-
-					// `true` means there is no intent to confirm.
-					if ( confirmationRequest === true ) {
-						window.location = createOrderResponse.redirect;
-					} else {
-						const redirectUrl = await confirmationRequest;
-
-						window.location = redirectUrl;
-					}
-				} catch ( e ) {
-					wcpayECE.abortPayment( event, e.message );
-				}
-			} );
+					( redirectUrl ) => ( window.location = redirectUrl ),
+					wcpayECE.abortPayment,
+					event
+				)
+			);
 
 			eceButton.on( 'cancel', () => {
 				wcpayECE.unblock();
