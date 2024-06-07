@@ -60,9 +60,6 @@ class Duplicates_Detection_Service {
 				->keep_duplicates_only();
 
 			// Return payment method IDs list so that front-end can successfully compare with its own list.
-			$this->gateways_qualified_by_duplicates_detector['card'][] = 'timur';
-			$this->gateways_qualified_by_duplicates_detector['card'][] = 'karimov';
-			$this->gateways_qualified_by_duplicates_detector['card'][] = 'oleg';
 			return $this->gateways_qualified_by_duplicates_detector;
 		} catch ( \Exception $e ) {
 			Logger::warning( 'Duplicates detection service failed silently with the following error: ' . $e->getMessage() );
