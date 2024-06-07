@@ -4,7 +4,7 @@
 import {
 	normalizeOrderData,
 	normalizeShippingAddress,
-	normalizeShippingRates,
+	normalizeLineItems,
 } from './utils';
 import { getErrorMessageFromNotice } from 'utils/express-checkout';
 
@@ -17,34 +17,26 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 		elements.update( {
 			amount: response.total.amount,
 		} );
-
 		event.resolve( {
-			shippingRates: normalizeShippingRates( response.shipping_options ),
+			shippingRates: response.shipping_options,
+			lineItems: normalizeLineItems( response.displayItems ),
 		} );
-	}
-
-	if ( response.result === 'fail' ) {
+	} else {
 		event.reject();
 	}
 };
 
 export const shippingRateChangeHandler = async ( api, event, elements ) => {
-	const lightShippingRate = {
-		id: event.shippingRate.id,
-	};
 	const response = await api.paymentRequestUpdateShippingDetails(
-		lightShippingRate
+		event.shippingRate
 	);
 
 	if ( response.result === 'success' ) {
-		elements.update( {
-			amount: response.total.amount,
+		elements.update( { amount: response.total.amount } );
+		event.resolve( {
+			lineItems: normalizeLineItems( response.displayItems ),
 		} );
-
-		event.resolve();
-	}
-
-	if ( response.result === 'fail' ) {
+	} else {
 		event.reject();
 	}
 };
@@ -57,13 +49,17 @@ export const onConfirmHandler = async (
 	abortPayment,
 	event
 ) => {
+	const { error: submitError } = await elements.submit();
+	if ( submitError ) {
+		abortPayment( event, submitError.message );
+	}
+
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
 		elements,
 	} );
 
 	if ( error ) {
-		abortPayment( error.message );
-		return;
+		return abortPayment( event, error.message );
 	}
 
 	// Kick off checkout processing step.
@@ -91,6 +87,6 @@ export const onConfirmHandler = async (
 			completePayment( redirectUrl );
 		}
 	} catch ( e ) {
-		abortPayment( event, error.message );
+		return abortPayment( event, error.message );
 	}
 };

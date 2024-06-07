@@ -5,12 +5,12 @@
  */
 import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
+import { getExpressCheckoutData } from './utils/index';
 import {
 	onConfirmHandler,
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
-import { normalizeShippinRate } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -79,11 +79,15 @@ jQuery( ( $ ) => {
 		},
 
 		/**
-		 * Handles payment error.
+		 * Abort the payment and display error messages.
 		 *
+		 * @param {PaymentResponse} payment Payment response instance.
 		 * @param {string} message Error message to display.
 		 */
-		abortPayment: ( message ) => {
+		abortPayment: ( payment, message ) => {
+			payment.paymentFailed();
+			wcpayECE.unblock();
+
 			$( '.woocommerce-error' ).remove();
 
 			const $container = $( '.woocommerce-notices-wrapper' ).first();
@@ -122,6 +126,10 @@ jQuery( ( $ ) => {
 					opacity: 0.6,
 				},
 			} );
+		},
+
+		unblock: () => {
+			$.unblockUI();
 		},
 
 		/**
@@ -180,6 +188,24 @@ jQuery( ( $ ) => {
 		 * @param {Object} options ECE options.
 		 */
 		startExpressCheckoutElement: ( options ) => {
+			// FIXME: Get the shipping options for the product object via getExpressCheckoutData( 'product' ) when on the product page.
+			const shippingRates = options.displayItems
+				.filter( ( i ) => i.label === 'Shipping' )
+				.map( ( i ) => ( {
+					id: `rate-${ i.label }`,
+					amount: i.amount,
+					displayName: i.label,
+				} ) );
+
+			// This is a bit of a hack, but we need some way to get the shipping information before rendering the button, and
+			// since we don't have any address information at this point it seems best to rely on what came with the cart response.
+			// Relying on what's provided in the cart response seems safest since it should always include a valid shipping
+			// rate if one is required and available.
+			// If no shipping rate is found we can't render the button so we just exit.
+			if ( options.requestShipping && ! shippingRates ) {
+				return;
+			}
+
 			const elements = api.getStripe().elements( {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
@@ -189,49 +215,43 @@ jQuery( ( $ ) => {
 
 			const eceButton = wcpayECE.createButton( elements, {
 				buttonType: {
-					googlePay: wcpayExpressCheckoutParams.button.type,
-					applePay: wcpayExpressCheckoutParams.button.type,
+					googlePay: getExpressCheckoutData( 'button' ).type,
+					applePay: getExpressCheckoutData( 'button' ).type,
 				},
 			} );
 
 			wcpayECE.showButton( eceButton );
 
-			eceButton.on( 'click', ( event ) => {
+			eceButton.on( 'click', function ( event ) {
 				// TODO: handle cases where we need login confirmation.
 
 				// TODO: This is not ideal but should work and it's how it's implemented right now for PRBs.
-				wcpayECE.addToCart();
+				// TODO: Add an if-statement to check if we're on the product page.
+				// wcpayECE.addToCart();
 
-				const opts = {
+				const clickOptions = {
+					lineItems: options.displayItems.map( ( i ) => ( {
+						...i,
+						name: i.label,
+					} ) ),
 					emailRequired: true,
-					phoneNumberRequired: true,
-					shippingAddressRequired: false,
+					shippingAddressRequired: options.requestShipping,
+					phoneNumberRequired: options.requestPhone,
+					shippingRates,
 				};
-
-				if ( wcpayExpressCheckoutParams.product.needs_shipping ) {
-					opts.shippingAddressRequired = true;
-
-					// Sets a "pending" shipping rate. Must be updated on the `shippingaddresschange` event.
-					opts.shippingRates = [
-						normalizeShippinRate(
-							wcpayExpressCheckoutParams.product.shippingOptions
-						),
-					];
-				}
-				event.resolve( opts );
+				wcpayECE.block();
+				event.resolve( clickOptions );
 			} );
 
-			eceButton.on( 'shippingaddresschange', ( event ) => {
-				shippingAddressChangeHandler( api, event, elements );
-			} );
+			eceButton.on( 'shippingaddresschange', ( event ) =>
+				shippingAddressChangeHandler( api, event, elements )
+			);
 
-			eceButton.on( 'shippingratechange', ( event ) => {
-				shippingRateChangeHandler( api, event, elements );
-			} );
+			eceButton.on( 'shippingratechange', async ( event ) =>
+				shippingRateChangeHandler( api, event, elements )
+			);
 
-			eceButton.on( 'confirm', ( event ) => {
-				// TODO: Block UI
-
+			eceButton.on( 'confirm', async ( event ) =>
 				onConfirmHandler(
 					api,
 					api.getStripe(),
@@ -239,10 +259,11 @@ jQuery( ( $ ) => {
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
 					event
-				);
-			} );
+				)
+			);
 
 			eceButton.on( 'cancel', () => {
+				wcpayECE.unblock();
 				wcpayECE.paymentAborted = true;
 			} );
 		},
@@ -360,9 +381,13 @@ jQuery( ( $ ) => {
 				wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: wcpayExpressCheckoutParams.product.total.amount,
-					currency: 'usd',
+					currency: getExpressCheckoutData( 'checkout' )
+						?.currency_code,
 					requestShipping:
 						wcpayExpressCheckoutParams.product.needs_shipping,
+					requestPhone:
+						getExpressCheckoutData( 'checkout' )
+							?.needs_payer_phone ?? false,
 					displayItems:
 						wcpayExpressCheckoutParams.product.displayItems,
 				} );
@@ -372,9 +397,13 @@ jQuery( ( $ ) => {
 				api.paymentRequestGetCartDetails().then( ( cart ) => {
 					wcpayECE.startExpressCheckoutElement( {
 						mode: 'payment',
-						total: 1000,
-						currency: 'usd',
+						total: cart.total.amount,
+						currency: getExpressCheckoutData( 'checkout' )
+							?.currency_code,
 						requestShipping: cart.needs_shipping,
+						requestPhone:
+							getExpressCheckoutData( 'checkout' )
+								?.needs_payer_phone ?? false,
 						displayItems: cart.displayItems,
 					} );
 				} );

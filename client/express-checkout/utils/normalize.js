@@ -8,15 +8,14 @@
  */
 export const normalizeLineItems = ( displayItems ) => {
 	return displayItems
-		.filter( ( displayItem ) => {
-			return !! displayItem.value;
-		} )
-		.map( ( displayItem ) => {
-			return {
-				amount: displayItem.value,
+		.filter( ( displayItem ) => !! displayItem.amount )
+		.map( ( displayItem ) =>
+			// The amount prop is already present on the item.
+			( {
+				...displayItem,
 				name: displayItem.label,
-			};
-		} );
+			} )
+		);
 };
 
 /**
@@ -102,30 +101,4 @@ export const normalizeShippingAddress = ( shippingAddress ) => {
 		country: shippingAddress?.country ?? '',
 		postcode: shippingAddress?.postal_code ?? '',
 	};
-};
-
-/**
- * Normalize Shipping Option used on PRBs to ECE format.
- *
- * @param {Object} option Shipping Option with PRB format.
- *
- * @return {Object} Shipping option with ECE format.
- */
-export const normalizeShippinRate = ( option ) => {
-	return {
-		id: option.id,
-		amount: option.amount,
-		displayName: option.label,
-	};
-};
-
-/**
- * Normalizes array of PRB Shipping Options objects to Shipping Rates with ECE format.
- *
- * @param {Array} options Array of Shipping Options with format to be used with PRB.
- *
- * @return {Array} Array of Shipping Rates formatted to be used with ECE.
- */
-export const normalizeShippingRates = ( options ) => {
-	return options.map( normalizeShippinRate );
 };
