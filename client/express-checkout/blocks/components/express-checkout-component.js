@@ -25,6 +25,7 @@ const ExpressCheckoutComponent = ( {
 		onButtonClick,
 		onConfirm,
 		onCancel,
+		elements,
 	} = useExpressCheckout( {
 		api,
 		billing,
@@ -35,7 +36,7 @@ const ExpressCheckoutComponent = ( {
 	} );
 
 	const onShippingAddressChange = ( event ) => {
-		shippingAddressChangeHandler( api, event );
+		shippingAddressChangeHandler( api, event, elements );
 	};
 
 	return (

@@ -4,13 +4,21 @@
 import { normalizeOrderData, normalizeShippingAddress } from './utils';
 import { getErrorMessageFromNotice } from 'utils/express-checkout';
 
-export const shippingAddressChangeHandler = async ( api, event ) => {
+export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	const response = await api.expressCheckoutECECalculateShippingOptions(
-		normalizeShippingAddress( event.shippingAddress )
+		normalizeShippingAddress( event.address )
 	);
-	event.resolve( {
-		shippingRates: response.shipping_options,
-	} );
+
+	if ( response.result === 'success' ) {
+		elements.update( {
+			amount: response.total.amount,
+		} );
+		event.resolve( {
+			shippingRates: response.shipping_options,
+		} );
+	} else {
+		event.reject();
+	}
 };
 
 export const onConfirmHandler = async (

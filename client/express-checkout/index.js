@@ -7,10 +7,10 @@ import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
 import {
 	getExpressCheckoutData,
-	normalizeShippingAddress,
 	normalizeOrderData,
 	getErrorMessageFromNotice,
 } from './utils/index';
+import { shippingAddressChangeHandler } from './event-handlers';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -236,21 +236,9 @@ jQuery( ( $ ) => {
 				event.resolve( clickOptions );
 			} );
 
-			// FIXME: This handler is copied from ./event-handlers.js. We should re-use the same function here.
-			eceButton.on( 'shippingaddresschange', async ( event ) => {
-				const response = await api.expressCheckoutECECalculateShippingOptions(
-					normalizeShippingAddress( event.address )
-				);
-
-				if ( response.result === 'success' ) {
-					elements.update( { amount: response.total.amount } );
-					event.resolve( {
-						shippingRates: response.shipping_options,
-					} );
-				} else {
-					event.reject();
-				}
-			} );
+			eceButton.on( 'shippingaddresschange', ( event ) =>
+				shippingAddressChangeHandler( api, event, elements )
+			);
 
 			// FIXME: This handler is copied from ./event-handlers.js. We should re-use the same function here.
 			eceButton.on( 'shippingratechange', async ( event ) => {
