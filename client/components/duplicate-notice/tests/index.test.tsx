@@ -27,9 +27,7 @@ describe( 'DuplicateNotice', () => {
 	} );
 
 	test( 'does not render when the payment method is dismissed', () => {
-		const dismissedDuplicateNotices = [
-			{ bancontact: [ 'woocommerce_payments' ] },
-		];
+		const dismissedDuplicateNotices = [ 'woocommerce_payments' ];
 		render(
 			<DuplicateNotice
 				paymentMethod="bancontact"
@@ -81,15 +79,13 @@ describe( 'DuplicateNotice', () => {
 		}
 
 		// Check if local state update function and Redux action dispatcher are called correctly
-		expect( props.setDismissedDuplicateNotices ).toHaveBeenCalledWith( [
-			{
+		expect( props.setDismissedDuplicateNotices ).toHaveBeenCalledWith( {
+			[ paymentMethod ]: [ 'woocommerce_payments' ],
+		} );
+		expect( mockDispatch ).toHaveBeenCalledWith( {
+			wcpay_duplicate_payment_method_notices_dismissed: {
 				[ paymentMethod ]: [ 'woocommerce_payments' ],
 			},
-		] );
-		expect( mockDispatch ).toHaveBeenCalledWith( {
-			wcpay_duplicate_payment_method_notices_dismissed: [
-				{ [ paymentMethod ]: [ 'woocommerce_payments' ] },
-			],
 		} );
 	} );
 

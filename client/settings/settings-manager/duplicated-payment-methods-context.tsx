@@ -3,13 +3,9 @@
  */
 import { createContext } from 'react';
 
-interface DismissedDuplicateNotice {
-    [key: string]: string[];
-}
-
 const DuplicatedPaymentMethodsContext = createContext( {
-	duplicates: {} as { [key: string]: string[] },
-	dismissedDuplicateNotices: {} as DismissedDuplicateNotice[],
+	duplicates: {} as { [ key: string ]: string[] },
+	dismissedDuplicateNotices: {} as { [ key: string ]: string[] },
 	setDismissedDuplicateNotices: () => null,
 } );
 

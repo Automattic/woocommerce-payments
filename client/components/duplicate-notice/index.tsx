@@ -8,17 +8,13 @@ import { __ } from '@wordpress/i18n';
 import { getAdminUrl } from 'wcpay/utils';
 import { useDispatch } from '@wordpress/data';
 
-interface DismissedDuplicateNotice {
-	[ key: string ]: string[];
-}
-
 interface DuplicateNoticeProps {
 	paymentMethod: string;
 	gatewaysEnablingPaymentMethod: string[];
-	dismissedDuplicateNotices: DismissedDuplicateNotice[];
-	setDismissedDuplicateNotices: (
-		notices: ( string | { [ key: string ]: string[] } )[]
-	) => null;
+	dismissedDuplicateNotices: string[];
+	setDismissedDuplicateNotices: ( notices: {
+		[ key: string ]: string[];
+	} ) => null;
 }
 
 function DuplicateNotice( {
@@ -30,37 +26,30 @@ function DuplicateNotice( {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	const handleDismiss = useCallback( () => {
-		// Check if the payment method already exists in dismissedDuplicateNotices
-		const existingIndex = dismissedDuplicateNotices.findIndex(
-			( notice ) => Object.keys( notice )[ 0 ] === paymentMethod
-		);
-
-		if ( existingIndex !== -1 ) {
-			// If it exists, update the existing entry
-			const updatedNotices = [ ...dismissedDuplicateNotices ];
-			updatedNotices[ existingIndex ][ paymentMethod ] = [
+		let updatedNotices = dismissedDuplicateNotices;
+		if ( updatedNotices ) {
+			// If there are existing dismissedDuplicateNotices for the payment method, append to the current array.
+			updatedNotices = [
 				...new Set( [
-					...updatedNotices[ existingIndex ][ paymentMethod ],
+					...updatedNotices,
 					...gatewaysEnablingPaymentMethod,
 				] ),
 			];
-			setDismissedDuplicateNotices( updatedNotices );
-			updateOptions( {
-				wcpay_duplicate_payment_method_notices_dismissed: updatedNotices,
-			} );
-			wcpaySettings.dismissedDuplicateNotices = updatedNotices;
 		} else {
-			// If it doesn't exist, add a new entry
-			const updatedNotices = [
-				...dismissedDuplicateNotices,
-				{ [ paymentMethod ]: gatewaysEnablingPaymentMethod },
-			];
-			setDismissedDuplicateNotices( updatedNotices );
-			updateOptions( {
-				wcpay_duplicate_payment_method_notices_dismissed: updatedNotices,
-			} );
-			wcpaySettings.dismissedDuplicateNotices = updatedNotices;
+			updatedNotices = gatewaysEnablingPaymentMethod;
 		}
+
+		setDismissedDuplicateNotices( {
+			[ paymentMethod ]: updatedNotices,
+		} );
+		updateOptions( {
+			wcpay_duplicate_payment_method_notices_dismissed: {
+				[ paymentMethod ]: updatedNotices,
+			},
+		} );
+		wcpaySettings.dismissedDuplicateNotices = {
+			[ paymentMethod ]: updatedNotices,
+		};
 	}, [
 		paymentMethod,
 		gatewaysEnablingPaymentMethod,
@@ -69,26 +58,14 @@ function DuplicateNotice( {
 		updateOptions,
 	] );
 
-	if (
-		dismissedDuplicateNotices.some( ( obj ) =>
-			Object.keys( obj ).includes( paymentMethod )
-		)
-	) {
-		const duplicateNotice = dismissedDuplicateNotices.find( ( obj ) =>
-			Object.keys( obj ).includes( paymentMethod )
-		);
-
-		const isEqual =
-			duplicateNotice &&
-			duplicateNotice[ paymentMethod ] &&
-			duplicateNotice[ paymentMethod ].length ===
-				gatewaysEnablingPaymentMethod.length &&
-			duplicateNotice[ paymentMethod ].every(
-				( value, index ) =>
-					value === gatewaysEnablingPaymentMethod[ index ]
+	if ( dismissedDuplicateNotices?.length > 0 ) {
+		const isDismissed =
+			dismissedDuplicateNotices &&
+			gatewaysEnablingPaymentMethod.every( ( value ) =>
+				dismissedDuplicateNotices.includes( value )
 			);
 
-		if ( isEqual ) {
+		if ( isDismissed ) {
 			return null;
 		}
 	}
