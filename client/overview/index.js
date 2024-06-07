@@ -250,7 +250,9 @@ const OverviewPage = () => {
 					) }
 
 					<Card>
-						<AccountBalances />
+						<ErrorBoundary>
+							<AccountBalances />
+						</ErrorBoundary>
 					</Card>
 
 					{
