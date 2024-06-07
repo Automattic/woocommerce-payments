@@ -22,11 +22,11 @@
     "require": {
         "php": ">=7.2",
         "ext-json": "*",
-        "automattic/jetpack-connection": "2.7.5",
+        "automattic/jetpack-connection": "2.8.2",
         "automattic/jetpack-config": "1.15.2",
         "automattic/jetpack-autoloader": "2.11.18",
-        "automattic/jetpack-identity-crisis": "0.18.5",
-        "automattic/jetpack-sync": "2.15.0",
+        "automattic/jetpack-identity-crisis": "0.19.0",
+        "automattic/jetpack-sync": "2.16.3",
         "woocommerce/subscriptions-core": "6.7.1"
     },
     "require-dev": {

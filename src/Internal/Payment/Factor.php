@@ -101,6 +101,12 @@ class Factor extends Base_Constant {
 	const PAYMENT_REQUEST = 'PAYMENT_REQUEST';
 
 	/**
+	 * ECE buttons (Google Pay and Apple Pay)
+	 * Type: Entry point
+	 */
+	const EXPRESS_CHECKOUT_ELEMENT = 'EXPRESS_CHECKOUT_ELEMENT';
+
+	/**
 	 * Returns all possible factors.
 	 *
 	 * @psalm-suppress MissingThrowsDocblock
@@ -121,6 +127,7 @@ class Factor extends Base_Constant {
 			static::IPP_CAPTURE(),
 			static::STRIPE_LINK(),
 			static::PAYMENT_REQUEST(),
+			static::EXPRESS_CHECKOUT_ELEMENT(),
 		];
 	}
 }

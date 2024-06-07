@@ -269,7 +269,7 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * @return bool
 	 */
-	public static function is_wcpay_subscription( WC_Subscription $subscription ) : bool {
+	public static function is_wcpay_subscription( WC_Subscription $subscription ): bool {
 		return ! WC_Payments_Subscriptions::is_duplicate_site() && WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
 	}
 
@@ -284,7 +284,7 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * @return array Structured invoice item array.
 	 */
-	public static function format_item_price_data( string $currency, string $wcpay_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ) : array {
+	public static function format_item_price_data( string $currency, string $wcpay_product_id, float $unit_amount, string $interval = '', int $interval_count = 0 ): array {
 		$data = [
 			'currency'            => $currency,
 			'product'             => $wcpay_product_id,
@@ -314,7 +314,7 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * @return array WCPay discount item data.
 	 */
-	public static function get_discount_item_data_for_subscription( WC_Subscription $subscription ) : array {
+	public static function get_discount_item_data_for_subscription( WC_Subscription $subscription ): array {
 		$data = [];
 
 		foreach ( $subscription->get_items( 'coupon' ) as $item ) {
@@ -399,7 +399,7 @@ class WC_Payments_Subscription_Service {
 			$this->set_wcpay_subscription_item_ids( $subscription, $response['items']['data'] );
 
 			if ( isset( $response['discounts'] ) ) {
-				static::set_wcpay_discount_ids($subscription, $response['discounts']);
+				static::set_wcpay_discount_ids( $subscription, $response['discounts'] );
 			}
 
 			if ( ! empty( $response['latest_invoice'] ) ) {
@@ -490,7 +490,7 @@ class WC_Payments_Subscription_Service {
 		// Check if the subscription is a WCPay subscription before proceeding.
 		// In stores that have WC Subscriptions active, or previously had WC S,
 		// this method may be called with regular tokenised subscriptions.
-		if ( ! static::is_wcpay_subscription($subscription) ) {
+		if ( ! static::is_wcpay_subscription( $subscription ) ) {
 			return;
 		}
 
@@ -523,7 +523,7 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function suspend_subscription( WC_Subscription $subscription ) {
 		// Check if the subscription is a WCPay subscription before proceeding.
-		if ( ! static::is_wcpay_subscription($subscription) ) {
+		if ( ! static::is_wcpay_subscription( $subscription ) ) {
 			Logger::log(
 				sprintf(
 					'Aborting WC_Payments_Subscription_Service::suspend_subscription; subscription is a tokenised (non WCPay) subscription. WC ID: %d.',
@@ -579,7 +579,7 @@ class WC_Payments_Subscription_Service {
 		$subscription = wcs_get_subscription( $subscription_id );
 
 		if ( $subscription && self::is_wcpay_subscription( $subscription ) ) {
-			$wcpay_subscription_id   = static::get_wcpay_subscription_id($subscription);
+			$wcpay_subscription_id   = static::get_wcpay_subscription_id( $subscription );
 			$wcpay_payment_method_id = $token->get_token();
 
 			if ( $wcpay_subscription_id && $wcpay_payment_method_id ) {
@@ -793,14 +793,14 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * @return array WCPay recurring item data.
 	 */
-	public function get_recurring_item_data_for_subscription( WC_Subscription $subscription ) : array {
+	public function get_recurring_item_data_for_subscription( WC_Subscription $subscription ): array {
 		$data = [];
 
 		foreach ( $subscription->get_items() as $item ) {
 			$data[] = [
 				'metadata'   => $this->get_item_metadata( $item ),
 				'quantity'   => $item->get_quantity(),
-				'price_data' => static::format_item_price_data($subscription->get_currency(), $this->product_service->get_wcpay_product_id( $item->get_product() ), $item->get_subtotal() / $item->get_quantity(), $subscription->get_billing_period(), $subscription->get_billing_interval()),
+				'price_data' => static::format_item_price_data( $subscription->get_currency(), $this->product_service->get_wcpay_product_id( $item->get_product() ), $item->get_subtotal() / $item->get_quantity(), $subscription->get_billing_period(), $subscription->get_billing_interval() ),
 			];
 		}
 
@@ -858,7 +858,7 @@ class WC_Payments_Subscription_Service {
 	 *
 	 * @return array WCPay one time item data.
 	 */
-	private function get_one_time_item_data_for_subscription( WC_Subscription $subscription ) : array {
+	private function get_one_time_item_data_for_subscription( WC_Subscription $subscription ): array {
 		$data     = [];
 		$currency = $subscription->get_currency();
 
@@ -900,7 +900,7 @@ class WC_Payments_Subscription_Service {
 	 * @return array|null Updated wcpay subscription or null if there was an error.
 	 */
 	private function update_subscription( WC_Subscription $subscription, array $data ) {
-		$wcpay_subscription_id = static::get_wcpay_subscription_id($subscription);
+		$wcpay_subscription_id = static::get_wcpay_subscription_id( $subscription );
 		$response              = null;
 
 		if ( ! $wcpay_subscription_id ) {
@@ -1094,6 +1094,6 @@ class WC_Payments_Subscription_Service {
 			]
 		);
 
-		return (is_countable($active_wcpay_subscriptions) ? count( $active_wcpay_subscriptions ) : 0) > 0;
+		return ( is_countable( $active_wcpay_subscriptions ) ? count( $active_wcpay_subscriptions ) : 0 ) > 0;
 	}
 }

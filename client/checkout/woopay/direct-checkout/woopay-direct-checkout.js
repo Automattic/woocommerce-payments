@@ -3,7 +3,7 @@
  */
 import { getConfig } from 'wcpay/utils/checkout';
 import request from 'wcpay/checkout/utils/request';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
 
@@ -21,6 +21,8 @@ class WooPayDirectCheckout {
 			'.wp-block-woocommerce-proceed-to-checkout-block',
 		BLOCKS_MINI_CART_PROCEED_BUTTON:
 			'a.wp-block-woocommerce-mini-cart-checkout-button-block',
+		CLASSIC_MINI_CART_PROCEED_BUTTON:
+			'.widget_shopping_cart a.button.checkout',
 	};
 
 	/**
@@ -212,6 +214,9 @@ class WooPayDirectCheckout {
 		);
 		addElementBySelector(
 			this.redirectElements.BLOCKS_CART_PROCEED_BUTTON
+		);
+		addElementBySelector(
+			this.redirectElements.CLASSIC_MINI_CART_PROCEED_BUTTON
 		);
 
 		return elements;

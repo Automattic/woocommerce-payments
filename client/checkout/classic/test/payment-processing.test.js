@@ -76,14 +76,6 @@ const mockCreateFunction = jest.fn( () => ( {
 		eventHandlersFromElementsCreate[ event ].push( handler );
 	},
 } ) );
-const callAllCreateHandlersWith = ( event, ...args ) => {
-	eventHandlersFromElementsCreate[ event ]?.forEach( ( handler ) => {
-		handler.apply( null, args );
-	} );
-};
-const markAllPaymentElementsAsComplete = () => {
-	callAllCreateHandlersWith( 'change', { complete: true } );
-};
 
 const mockSubmit = jest.fn( () => ( {
 	then: jest.fn(),
@@ -396,7 +388,6 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
-		markAllPaymentElementsAsComplete();
 
 		const mockJqueryForm = {
 			submit: jest.fn(),
@@ -443,7 +434,6 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
-		markAllPaymentElementsAsComplete();
 
 		const checkoutForm = {
 			submit: jest.fn(),
@@ -457,6 +447,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -485,7 +477,6 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
-		markAllPaymentElementsAsComplete();
 
 		const checkoutForm = {
 			submit: jest.fn(),
@@ -499,6 +490,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -523,7 +516,6 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
-		markAllPaymentElementsAsComplete();
 
 		const checkoutForm = {
 			submit: jest.fn(),
@@ -537,6 +529,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -558,7 +552,6 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
-		markAllPaymentElementsAsComplete();
 
 		const checkoutForm = {
 			submit: jest.fn(),
@@ -572,6 +565,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -591,7 +586,6 @@ describe( 'Payment processing', () => {
 		mockDomElement.dataset.paymentMethodType = 'card';
 
 		await mountStripePaymentElement( apiMock, mockDomElement );
-		markAllPaymentElementsAsComplete();
 
 		const addPaymentMethodForm = {
 			submit: jest.fn(),
@@ -605,6 +599,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, addPaymentMethodForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
