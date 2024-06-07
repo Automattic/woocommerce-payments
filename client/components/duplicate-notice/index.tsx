@@ -7,17 +7,18 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
 import { getAdminUrl } from 'wcpay/utils';
 import { useDispatch } from '@wordpress/data';
-import { debug } from 'console';
 
 interface DismissedDuplicateNotice {
-    [key: string]: string[];
+	[ key: string ]: string[];
 }
 
 interface DuplicateNoticeProps {
 	paymentMethod: string;
 	gatewaysEnablingPaymentMethod: string[];
 	dismissedDuplicateNotices: DismissedDuplicateNotice[];
-	setDismissedDuplicateNotices: (notices: (string | { [key: string]: string[] })[]) => null,
+	setDismissedDuplicateNotices: (
+		notices: ( string | { [ key: string ]: string[] } )[]
+	) => null;
 }
 
 function DuplicateNotice( {
@@ -28,56 +29,69 @@ function DuplicateNotice( {
 }: DuplicateNoticeProps ): JSX.Element | null {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
-	const handleDismiss = useCallback(() => {
+	const handleDismiss = useCallback( () => {
 		// Check if the payment method already exists in dismissedDuplicateNotices
-		const existingIndex = dismissedDuplicateNotices.findIndex(notice => Object.keys(notice)[0] === paymentMethod);
-	
-		if (existingIndex !== -1) {
+		const existingIndex = dismissedDuplicateNotices.findIndex(
+			( notice ) => Object.keys( notice )[ 0 ] === paymentMethod
+		);
+
+		if ( existingIndex !== -1 ) {
 			// If it exists, update the existing entry
-			const updatedNotices = [...dismissedDuplicateNotices];
-			updatedNotices[existingIndex][paymentMethod] = [
-				...new Set([
-					...updatedNotices[existingIndex][paymentMethod],
-					...gatewaysEnablingPaymentMethod
-				])
+			const updatedNotices = [ ...dismissedDuplicateNotices ];
+			updatedNotices[ existingIndex ][ paymentMethod ] = [
+				...new Set( [
+					...updatedNotices[ existingIndex ][ paymentMethod ],
+					...gatewaysEnablingPaymentMethod,
+				] ),
 			];
-			setDismissedDuplicateNotices(updatedNotices);
-			updateOptions({
+			setDismissedDuplicateNotices( updatedNotices );
+			updateOptions( {
 				wcpay_duplicate_payment_method_notices_dismissed: updatedNotices,
-			});
+			} );
 			wcpaySettings.dismissedDuplicateNotices = updatedNotices;
 		} else {
 			// If it doesn't exist, add a new entry
 			const updatedNotices = [
 				...dismissedDuplicateNotices,
-				{ [paymentMethod]: gatewaysEnablingPaymentMethod }
+				{ [ paymentMethod ]: gatewaysEnablingPaymentMethod },
 			];
-			setDismissedDuplicateNotices(updatedNotices);
-			updateOptions({
+			setDismissedDuplicateNotices( updatedNotices );
+			updateOptions( {
 				wcpay_duplicate_payment_method_notices_dismissed: updatedNotices,
-			});
+			} );
 			wcpaySettings.dismissedDuplicateNotices = updatedNotices;
 		}
 	}, [
 		paymentMethod,
+		gatewaysEnablingPaymentMethod,
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
 		updateOptions,
-	]);
-	
+	] );
 
-	if (dismissedDuplicateNotices.some(obj => Object.keys(obj).includes(paymentMethod))) {
-		const duplicateNotice = dismissedDuplicateNotices.find(obj => Object.keys(obj).includes(paymentMethod));
-		
-		const isEqual = duplicateNotice && duplicateNotice[paymentMethod] && 
-			duplicateNotice[paymentMethod].length === gatewaysEnablingPaymentMethod.length &&
-			duplicateNotice[paymentMethod].every((value, index) => value === gatewaysEnablingPaymentMethod[index]);
+	if (
+		dismissedDuplicateNotices.some( ( obj ) =>
+			Object.keys( obj ).includes( paymentMethod )
+		)
+	) {
+		const duplicateNotice = dismissedDuplicateNotices.find( ( obj ) =>
+			Object.keys( obj ).includes( paymentMethod )
+		);
+
+		const isEqual =
+			duplicateNotice &&
+			duplicateNotice[ paymentMethod ] &&
+			duplicateNotice[ paymentMethod ].length ===
+				gatewaysEnablingPaymentMethod.length &&
+			duplicateNotice[ paymentMethod ].every(
+				( value, index ) =>
+					value === gatewaysEnablingPaymentMethod[ index ]
+			);
 
 		if ( isEqual ) {
 			return null;
 		}
 	}
-
 
 	return (
 		<InlineNotice
