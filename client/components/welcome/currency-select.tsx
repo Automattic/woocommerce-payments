@@ -9,7 +9,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  */
 import { useSelectedCurrency } from 'overview/hooks';
 import { getCurrency } from 'utils/currency';
-import FilterSelectControl from 'components/filter-select-control';
+import InlineLabelSelect from '../inline-label-select';
 import { recordEvent } from 'tracks';
 
 /**
@@ -86,7 +86,7 @@ export const CurrencySelect: React.FC< {
 	} = useSelectedCurrencyWithDefault( depositCurrencies );
 
 	return (
-		<FilterSelectControl
+		<InlineLabelSelect
 			label="Currency"
 			value={ currencyOptions.find(
 				( option ) => option.key === selectedCurrency
