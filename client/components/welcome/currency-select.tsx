@@ -99,7 +99,7 @@ export const CurrencySelect: React.FC< {
 
 				const currencyCode = selectedItem.key.toLowerCase();
 				setSelectedCurrency( currencyCode );
-				recordEvent( 'wcpay_overview_currency_select', {
+				recordEvent( 'wcpay_overview_currency_select_change', {
 					selected_currency: currencyCode,
 				} );
 			} }
