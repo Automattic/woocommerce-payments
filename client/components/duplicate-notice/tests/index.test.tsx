@@ -27,12 +27,14 @@ describe( 'DuplicateNotice', () => {
 	} );
 
 	test( 'does not render when the payment method is dismissed', () => {
-		const dismissedDuplicateNotices = [ 'woocommerce_payments' ];
+		const dismissedDuplicateNotices = {
+			bancontact: [ 'woocommerce_payments' ],
+		};
 		render(
 			<DuplicateNotice
 				paymentMethod="bancontact"
 				gatewaysEnablingPaymentMethod={ [ 'woocommerce_payments' ] }
-				dismissedDuplicateNotices={ dismissedDuplicateNotices }
+				dismissedNotices={ dismissedDuplicateNotices }
 				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
@@ -48,7 +50,7 @@ describe( 'DuplicateNotice', () => {
 			<DuplicateNotice
 				paymentMethod="card"
 				gatewaysEnablingPaymentMethod={ [ 'woocommerce_payments' ] }
-				dismissedDuplicateNotices={ [] }
+				dismissedNotices={ {} }
 				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
@@ -65,7 +67,7 @@ describe( 'DuplicateNotice', () => {
 		const props = {
 			paymentMethod: paymentMethod,
 			gatewaysEnablingPaymentMethod: [ 'woocommerce_payments' ],
-			dismissedDuplicateNotices: [],
+			dismissedNotices: {},
 			setDismissedDuplicateNotices: jest.fn(),
 		};
 		const { container } = render( <DuplicateNotice { ...props } /> );
@@ -95,7 +97,7 @@ describe( 'DuplicateNotice', () => {
 				{ ...{
 					paymentMethod: 'ideal',
 					gatewaysEnablingPaymentMethod: [],
-					dismissedDuplicateNotices: [],
+					dismissedNotices: {},
 					setDismissedDuplicateNotices: jest.fn(),
 				} }
 			/>

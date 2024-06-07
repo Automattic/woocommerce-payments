@@ -183,9 +183,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 				<DuplicateNotice
 					paymentMethod={ id }
 					gatewaysEnablingPaymentMethod={ duplicates[ id ] }
-					dismissedDuplicateNotices={
-						dismissedDuplicateNotices[ id ]
-					}
+					dismissedNotices={ dismissedDuplicateNotices }
 					setDismissedDuplicateNotices={
 						setDismissedDuplicateNotices
 					}

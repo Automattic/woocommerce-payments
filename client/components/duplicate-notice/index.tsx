@@ -11,7 +11,7 @@ import { useDispatch } from '@wordpress/data';
 interface DuplicateNoticeProps {
 	paymentMethod: string;
 	gatewaysEnablingPaymentMethod: string[];
-	dismissedDuplicateNotices: string[];
+	dismissedNotices: { [ key: string ]: string[] };
 	setDismissedDuplicateNotices: ( notices: {
 		[ key: string ]: string[];
 	} ) => null;
@@ -20,49 +20,45 @@ interface DuplicateNoticeProps {
 function DuplicateNotice( {
 	paymentMethod,
 	gatewaysEnablingPaymentMethod,
-	dismissedDuplicateNotices,
+	dismissedNotices,
 	setDismissedDuplicateNotices,
 }: DuplicateNoticeProps ): JSX.Element | null {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	const handleDismiss = useCallback( () => {
-		let updatedNotices = dismissedDuplicateNotices;
-		if ( updatedNotices ) {
-			// If there are existing dismissedDuplicateNotices for the payment method, append to the current array.
-			updatedNotices = [
+		const updatedDismissedNotices = { ...dismissedNotices };
+		if ( updatedDismissedNotices[ paymentMethod ] ) {
+			// If there are existing dismissed notices for the payment method, append to the current array.
+			updatedDismissedNotices[ paymentMethod ] = [
 				...new Set( [
-					...updatedNotices,
+					...updatedDismissedNotices[ paymentMethod ],
 					...gatewaysEnablingPaymentMethod,
 				] ),
 			];
 		} else {
-			updatedNotices = gatewaysEnablingPaymentMethod;
+			updatedDismissedNotices[
+				paymentMethod
+			] = gatewaysEnablingPaymentMethod;
 		}
 
-		setDismissedDuplicateNotices( {
-			[ paymentMethod ]: updatedNotices,
-		} );
+		setDismissedDuplicateNotices( updatedDismissedNotices );
 		updateOptions( {
-			wcpay_duplicate_payment_method_notices_dismissed: {
-				[ paymentMethod ]: updatedNotices,
-			},
+			wcpay_duplicate_payment_method_notices_dismissed: updatedDismissedNotices,
 		} );
-		wcpaySettings.dismissedDuplicateNotices = {
-			[ paymentMethod ]: updatedNotices,
-		};
+		wcpaySettings.dismissedDuplicateNotices = updatedDismissedNotices;
 	}, [
 		paymentMethod,
 		gatewaysEnablingPaymentMethod,
-		dismissedDuplicateNotices,
+		dismissedNotices,
 		setDismissedDuplicateNotices,
 		updateOptions,
 	] );
 
-	if ( dismissedDuplicateNotices?.length > 0 ) {
+	if ( dismissedNotices[ paymentMethod ] ) {
 		const isDismissed =
-			dismissedDuplicateNotices &&
+			dismissedNotices &&
 			gatewaysEnablingPaymentMethod.every( ( value ) =>
-				dismissedDuplicateNotices.includes( value )
+				dismissedNotices[ paymentMethod ].includes( value )
 			);
 
 		if ( isDismissed ) {

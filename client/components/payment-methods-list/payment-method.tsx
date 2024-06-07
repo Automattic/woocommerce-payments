@@ -369,9 +369,7 @@ const PaymentMethod = ( {
 				<DuplicateNotice
 					paymentMethod={ id }
 					gatewaysEnablingPaymentMethod={ duplicates[ id ] }
-					dismissedDuplicateNotices={
-						dismissedDuplicateNotices[ id ]
-					}
+					dismissedNotices={ dismissedDuplicateNotices }
 					setDismissedDuplicateNotices={
 						setDismissedDuplicateNotices
 					}
