@@ -13,6 +13,7 @@ import moment from 'moment';
 
 import EmptyStateAsset from 'assets/images/payment-activity-empty-state.svg?asset';
 import PaymentActivityDataComponent from './payment-activity-data';
+import { DateRangePicker } from './date-range-picker';
 import Survey from './survey';
 import { WcPayOverviewSurveyContextProvider } from './survey/context';
 import { usePaymentActivityData } from 'wcpay/data';
@@ -87,7 +88,7 @@ const PaymentActivity: React.FC = () => {
 		<Card>
 			<CardHeader>
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
-				{ /* Filters go here */ }
+				<DateRangePicker />
 			</CardHeader>
 			<CardBody className="wcpay-payment-activity__card__body">
 				<PaymentActivityDataComponent
