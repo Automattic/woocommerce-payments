@@ -102,6 +102,7 @@ export const DateRangePicker: React.FC< {
 			) }`;
 		}
 
+		// Same year - show year only for end date.
 		return `${ start.format( 'MMMM D' ) } - ${ end.format(
 			'MMMM D, YYYY'
 		) }`;
@@ -112,11 +113,10 @@ export const DateRangePicker: React.FC< {
 		return {
 			key: optionKey,
 			name: option.displayKey,
-			hint: formatDateRange( option.start, option.end ), //replace with function formatHint,
+			hint: formatDateRange( option.start, option.end ),
 		};
 	} );
 	const selected = options[ 1 ];
-
 	const handleDateRangeSelectorChange = () => {
 		const selectedDateRange = {
 			// Subtract 7 days from the current date.
