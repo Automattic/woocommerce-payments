@@ -676,6 +676,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
 			// Avoid increasing coupon usage count during preflight check.
 			remove_all_actions( 'woocommerce_order_status_pending' );
+
+			// Avoid creating new accounts during preflight check.
+			remove_all_filters( 'woocommerce_checkout_registration_enabled' );
+			remove_all_filters( 'woocommerce_checkout_registration_required' );
 		}
 
 		return $response;
