@@ -6,7 +6,6 @@
  */
 
 use WCPay\Duplicate_Payment_Prevention_Service;
-use Automattic\WooCommerce\Internal\Utilities\Users;
 
 /**
  * Class handling order success page.
