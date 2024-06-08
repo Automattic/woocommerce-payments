@@ -100,7 +100,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<transaction_id>\w+)',
+			'/' . $this->rest_base . '/(?P<transaction_id>[A-Za-z0-9_\-]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_transaction' ],

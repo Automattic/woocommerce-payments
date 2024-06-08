@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add validation for path variables.
