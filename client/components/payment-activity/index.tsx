@@ -2,6 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -68,11 +69,25 @@ const PaymentActivity: React.FC = () => {
 
 	const { selectedCurrency } = useSelectedCurrency();
 
+	const [ dateRange, setDateRange ] = useState( getDateRange() );
+
 	const { paymentActivityData, isLoading } = usePaymentActivityData( {
 		currency: selectedCurrency ?? wcpaySettings.accountDefaultCurrency,
-		...getDateRange(),
+		...dateRange,
 		timezone: moment( new Date() ).format( 'Z' ),
 	} );
+
+	useEffect( () => {
+		const timeId = setTimeout( () => {
+			setDateRange( {
+				date_start: moment()
+					.subtract( 2, 'months' )
+					.format( 'YYYY-MM-DD\\THH:mm:ss' ),
+				date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
+			} );
+		}, 5000 );
+		return () => clearTimeout( timeId );
+	}, [] );
 
 	// When not loading and data is undefined, do not show widget.
 	// This should only happen in 2 occasions:
