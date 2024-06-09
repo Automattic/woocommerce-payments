@@ -30,10 +30,14 @@ export const normalizeLineItems = ( displayItems ) => {
 export const normalizeOrderData = ( event, paymentMethodId ) => {
 	const name = event?.billingDetails?.name;
 	const email = event?.billingDetails?.email ?? '';
-	const phone = event?.billingDetails?.phone ?? '';
 	const billing = event?.billingDetails?.address ?? {};
 	const shipping = event?.shippingAddress ?? {};
 	const fraudPreventionTokenValue = window.wcpayFraudPreventionToken ?? '';
+
+	const phone =
+		event?.billingDetails?.phone ??
+		event?.payerPhone?.replace( '/[() -]/g', '' ) ??
+		'';
 
 	return {
 		billing_first_name:
@@ -41,8 +45,7 @@ export const normalizeOrderData = ( event, paymentMethodId ) => {
 		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) || '-',
 		billing_company: billing?.organization ?? '',
 		billing_email: email ?? event?.payerEmail ?? '',
-		billing_phone:
-			phone ?? event?.payerPhone?.replace( '/[() -]/g', '' ) ?? '',
+		billing_phone: phone,
 		billing_country: billing?.country ?? '',
 		billing_address_1: billing?.line1 ?? '',
 		billing_address_2: billing?.line2 ?? '',
@@ -54,6 +57,7 @@ export const normalizeOrderData = ( event, paymentMethodId ) => {
 		shipping_last_name:
 			shipping?.name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
 		shipping_company: shipping?.organization ?? '',
+		shipping_phone: phone,
 		shipping_country: shipping?.address?.country ?? '',
 		shipping_address_1: shipping?.address?.line1 ?? '',
 		shipping_address_2: shipping?.address?.line2 ?? '',

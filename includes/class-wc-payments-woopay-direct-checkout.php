@@ -6,6 +6,9 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\WooPay\WooPay_Session;
+use WCPay\WooPay\WooPay_Utilities;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -71,6 +74,13 @@ class WC_Payments_WooPay_Direct_Checkout {
 			return;
 		}
 
+		// Enqueue the WCPay common config script only if it hasn't been enqueued yet.
+		// This may happen when Direct Checkout is being enqueued on pages that are not the cart page,
+		// such as the home and shop pages.
+		if ( function_exists( 'did_filter' ) && did_filter( 'wcpay_payment_fields_js_config' ) === 0 ) {
+			WC_Payments::enqueue_woopay_common_config_script();
+		}
+
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_DIRECT_CHECKOUT', 'dist/woopay-direct-checkout' );
 
 		$direct_checkout_settings = [
@@ -94,11 +104,14 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 * - The current page is the cart page.
 	 * - The current page has a cart block.
 	 * - The current page has the blocks mini cart widget, i.e 'woocommerce_blocks_cart_enqueue_data' has been fired.
+	 * - The current page has the cart fragments script enqueued. which is enqueued by the shortcode mini cart widget.
 	 *
 	 * @return bool True if the scripts should be enqueued, false otherwise.
 	 */
 	private function should_enqueue_scripts(): bool {
-		return $this->is_cart_page() || did_action( 'woocommerce_blocks_cart_enqueue_data' ) > 0;
+		return $this->is_cart_page()
+			|| did_action( 'woocommerce_blocks_cart_enqueue_data' ) > 0
+			|| ( wp_script_is( 'wc-cart-fragments', 'enqueued' ) && ! $this->is_checkout_page() );
 	}
 
 	/**
@@ -108,6 +121,15 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 */
 	private function is_cart_page(): bool {
 		return is_cart() || has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Check if the current page is the checkout page.
+	 *
+	 * @return bool True if the current page is the checkout page, false otherwise.
+	 */
+	private function is_checkout_page(): bool {
+		return is_checkout() || has_block( 'woocommerce/checkout' );
 	}
 
 	/**
