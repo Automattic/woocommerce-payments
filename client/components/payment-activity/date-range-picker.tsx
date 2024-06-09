@@ -124,7 +124,7 @@ export const DateRangePicker: React.FC< {
 		};
 	} );
 
-	const [ selectedDateRangeOption, setSelectedDateRangeOption ] = useState( {
+	const [ dateRangeOption, setDateRangeOption ] = useState( {
 		key: 'last_7_days',
 		name: __( 'Last 7 days', 'woocommerce-payments' ),
 		hint: formatDateRange(
@@ -135,7 +135,7 @@ export const DateRangePicker: React.FC< {
 
 	const handleDateRangeSelectorChange = ( dateRangeChange: any ) => {
 		const selectedItem = dateRangeChange.selectedItem;
-		setSelectedDateRangeOption( selectedItem );
+		setDateRangeOption( selectedItem );
 
 		const selectedDateRange = {
 			date_start: timeOptions[ selectedItem.key ].start.format(
@@ -153,7 +153,7 @@ export const DateRangePicker: React.FC< {
 		<InlineLabelSelect
 			label="Select an option"
 			options={ options }
-			value={ selectedDateRangeOption }
+			value={ dateRangeOption }
 			placeholder="Select an option..."
 			onChange={ handleDateRangeSelectorChange }
 		/>
