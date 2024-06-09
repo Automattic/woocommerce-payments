@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { useState } from 'react';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -13,26 +13,12 @@ import moment from 'moment';
 
 import EmptyStateAsset from 'assets/images/payment-activity-empty-state.svg?asset';
 import PaymentActivityDataComponent from './payment-activity-data';
-import { DateRangePicker } from './date-range-picker';
+import { defaultDateRange, DateRangePicker } from './date-range-picker';
 import Survey from './survey';
 import { WcPayOverviewSurveyContextProvider } from './survey/context';
 import { usePaymentActivityData } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
-import type { DateRange } from './types';
 import './style.scss';
-
-/**
- * This will be replaces in the future with a dynamic date range picker.
- */
-const getDateRange = (): DateRange => {
-	return {
-		// Subtract 7 days from the current date.
-		date_start: moment()
-			.subtract( 7, 'd' )
-			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
-		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
-	};
-};
 
 const PaymentActivityEmptyState: React.FC = () => (
 	<Card>
@@ -69,9 +55,15 @@ const PaymentActivity: React.FC = () => {
 
 	const { selectedCurrency } = useSelectedCurrency();
 
+	const [ dateRange, setDateRange ] = useState( {
+		date_start: defaultDateRange.date_start,
+		date_end: defaultDateRange.date_end,
+	} );
+
 	const { paymentActivityData, isLoading } = usePaymentActivityData( {
 		currency: selectedCurrency ?? wcpaySettings.accountDefaultCurrency,
-		...getDateRange(),
+		date_start: dateRange.date_start,
+		date_end: dateRange.date_end,
 		timezone: moment( new Date() ).format( 'Z' ),
 	} );
 
@@ -84,17 +76,14 @@ const PaymentActivity: React.FC = () => {
 		return <></>;
 	}
 
-	const handleDataFromDateRangePicker = ( myString: DateRange ) => {
-		// eslint-disable-next-line no-console
-		console.log( myString );
-	};
-
 	return (
 		<Card>
 			<CardHeader className="wcpay-payment-activity__card__header">
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
 				<DateRangePicker
-					sendDateRangeToParent={ handleDataFromDateRangePicker }
+					onDateRangeChange={ ( newDateRange ) => {
+						setDateRange( newDateRange );
+					} }
 				/>
 			</CardHeader>
 			<CardBody className="wcpay-payment-activity__card__body">

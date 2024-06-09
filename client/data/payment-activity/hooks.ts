@@ -25,5 +25,5 @@ export const usePaymentActivityData = (
 				isLoading: isResolving( 'getPaymentActivityData', [ query ] ),
 			};
 		},
-		[ query.currency ]
+		[ query.currency, query.date_start, query.date_end ]
 	);
