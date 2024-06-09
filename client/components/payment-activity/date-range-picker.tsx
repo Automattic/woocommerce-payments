@@ -37,6 +37,7 @@ export const DateRangePicker: React.FC< {
 			end: todayEndOfDay,
 			displayKey: __( 'Today', 'woocommerce-payments' ),
 		},
+
 		last_7_days: {
 			start: now
 				.clone()
@@ -45,6 +46,7 @@ export const DateRangePicker: React.FC< {
 			end: yesterdayEndOfDay,
 			displayKey: __( 'Last 7 days', 'woocommerce-payments' ),
 		},
+
 		last_4_weeks: {
 			start: now
 				.clone()
@@ -53,6 +55,7 @@ export const DateRangePicker: React.FC< {
 			end: yesterdayEndOfDay,
 			displayKey: __( 'Last 4 weeks', 'woocommerce-payments' ),
 		},
+
 		last_3_months: {
 			start: now
 				.clone()
@@ -61,6 +64,7 @@ export const DateRangePicker: React.FC< {
 			end: yesterdayEndOfDay,
 			displayKey: __( 'Last 3 months', 'woocommerce-payments' ),
 		},
+
 		last_12_months: {
 			start: now
 				.clone()
@@ -69,16 +73,19 @@ export const DateRangePicker: React.FC< {
 			end: yesterdayEndOfDay,
 			displayKey: __( 'Last 12 months', 'woocommerce-payments' ),
 		},
+
 		month_to_date: {
 			start: now.clone().startOf( 'month' ),
 			end: todayEndOfDay,
 			displayKey: __( 'Month to date', 'woocommerce-payments' ),
 		},
+
 		quarter_to_date: {
 			start: now.clone().startOf( 'quarter' ),
 			end: todayEndOfDay,
 			displayKey: __( 'Quarter to date', 'woocommerce-payments' ),
 		},
+
 		year_to_date: {
 			start: now.clone().startOf( 'year' ),
 			end: todayEndOfDay,
@@ -117,9 +124,14 @@ export const DateRangePicker: React.FC< {
 		};
 	} );
 
-	const [ selectedDateRangeOption, setSelectedDateRangeOption ] = useState(
-		options[ 1 ]
-	);
+	const [ selectedDateRangeOption, setSelectedDateRangeOption ] = useState( {
+		key: 'last_7_days',
+		name: __( 'Last 7 days', 'woocommerce-payments' ),
+		hint: formatDateRange(
+			timeOptions.last_7_days.start,
+			timeOptions.last_7_days.end
+		),
+	} );
 
 	const handleDateRangeSelectorChange = ( dateRangeChange: any ) => {
 		const selectedItem = dateRangeChange.selectedItem;
