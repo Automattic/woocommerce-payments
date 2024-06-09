@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { useState } from 'react';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -23,8 +23,9 @@ import './style.scss';
 
 /**
  * This will be replaces in the future with a dynamic date range picker.
+ * Commenting this off for now. We can totally remove this later.
  */
-const getDateRange = (): DateRange => {
+/* const getDateRange = (): DateRange => {
 	return {
 		// Subtract 7 days from the current date.
 		date_start: moment()
@@ -32,7 +33,7 @@ const getDateRange = (): DateRange => {
 			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
 		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
 	};
-};
+}; */
 
 const PaymentActivityEmptyState: React.FC = () => (
 	<Card>
@@ -69,9 +70,20 @@ const PaymentActivity: React.FC = () => {
 
 	const { selectedCurrency } = useSelectedCurrency();
 
+	const [ dateRange, setDateRange ] = useState( {
+		date_start: moment()
+			.subtract( 7, 'd' )
+			.set( { hour: 0, minute: 0, second: 0, millisecond: 0 } )
+			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
+		date_end: moment()
+			.subtract( 1, 'd' )
+			.set( { hour: 23, minute: 59, second: 59, millisecond: 0 } )
+			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
+	} );
+
 	const { paymentActivityData, isLoading } = usePaymentActivityData( {
 		currency: selectedCurrency ?? wcpaySettings.accountDefaultCurrency,
-		...getDateRange(),
+		...dateRange,
 		timezone: moment( new Date() ).format( 'Z' ),
 	} );
 
@@ -84,9 +96,10 @@ const PaymentActivity: React.FC = () => {
 		return <></>;
 	}
 
-	const handleDataFromDateRangePicker = ( myString: DateRange ) => {
-		// eslint-disable-next-line no-console
-		console.log( myString );
+	const handleDataFromDateRangePicker = ( newDateRange: DateRange ) => {
+		// eslint-disable-next-line no-console -- We need to log the date range for debugging purposes. This needs to be removed before merging.
+		console.log( newDateRange );
+		setDateRange( newDateRange );
 	};
 
 	return (
