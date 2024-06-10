@@ -94,6 +94,34 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.8.0-test-2 - unreleased =
+* Add - Add a feedback survey modal upon deactivation.
+* Add - Add new select component to be used for reporting filters, e.g. Payments overview currency select
+* Add - Add payment processing using ECE in the Blocks checkout and cart pages.
+* Add - Add the WooPay Direct Checkout flow to the classic mini cart widget.
+* Add - Add woocommerce-return-previous-exceptions filter
+* Add - Fix ECE not working without WooPay.
+* Add - Reset notifications about duplicate enabled payment methods when new plugins are enabling them.
+* Fix - Fall back to credit card as default payment method when a payment method is toggled off.
+* Fix - fix: itemized totals & pending amount on tokenized cart
+* Fix - fix: Store API tokenized cart payment method title
+* Fix - Fixes some cases where redirects to the onboarding will open in a new tab.
+* Fix - Fix input-specific credit card errors.
+* Fix - Make it so that the WooPay button is not triggered on Checkout pages when the "Enter" key is pressed on a keyboard.
+* Update - chore: update incompatibility notice wrapping
+* Update - Declare compatibility with the Cart and Checkout blocks.
+* Update - Improve the transition from the WCPay KYC to the WC Admin Payments Task
+* Update - Update the Payments Overview screen with a new currency selection UI for stores with multiple deposit currencies
+* Dev - Add New_Process_Payment_Exception
+* Dev - Add Order_ID_Mismatch_Exception
+* Dev - Add sh support in pre-push husky script.
+* Dev - Add validation for path variables.
+* Dev - Bump WooCommerce Tested To version to 8.9.2
+* Dev - chore: EPMs to always send shipping phone
+* Dev - Clean up and refactor some old code which is no longer in use.
+* Dev - Fix PHPStan warnings.
+* Dev - Remove redundant wrapper around method invocation.
+
 = 7.7.0 - 2024-05-29 =
 * Add - Add share key query param when sending data to Stripe KYC.
 * Add - Add the WooPay Direct Checkout flow to the blocks mini cart widget.
