@@ -80,6 +80,14 @@ const timeOptions: {
 		end: todayEndOfDay,
 		displayKey: __( 'Year to date', 'woocommerce-payments' ),
 	},
+	all_time: {
+		start: moment(
+			wcpaySettings.accountStatus.created,
+			'YYYY-MM-DD\\THH:mm:ss'
+		),
+		end: todayEndOfDay,
+		displayKey: __( 'All time', 'woocommerce-payments' ),
+	},
 };
 
 const formatDateRange = (
