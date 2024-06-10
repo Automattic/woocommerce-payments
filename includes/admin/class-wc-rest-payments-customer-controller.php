@@ -49,7 +49,7 @@ class WC_REST_Payments_Customer_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<customer_id>\w+)/payment_methods',
+			'/' . $this->rest_base . '/(?P<customer_id>[A-Za-z0-9_\-]+)/payment_methods',
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
