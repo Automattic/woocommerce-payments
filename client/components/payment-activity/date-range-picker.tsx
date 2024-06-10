@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import moment from 'moment';
 import { __ } from '@wordpress/i18n';
 
