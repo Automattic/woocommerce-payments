@@ -58,6 +58,7 @@ const PaymentActivity: React.FC = () => {
 	const [ dateRange, setDateRange ] = useState( {
 		date_start: defaultDateRange.date_start,
 		date_end: defaultDateRange.date_end,
+		key: defaultDateRange.key,
 	} );
 
 	const { paymentActivityData, isLoading } = usePaymentActivityData( {
@@ -81,6 +82,7 @@ const PaymentActivity: React.FC = () => {
 			<CardHeader className="wcpay-payment-activity__card__header">
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
 				<DateRangePicker
+					selectedKey={ dateRange.key }
 					onDateRangeChange={ ( newDateRange ) => {
 						setDateRange( newDateRange );
 					} }

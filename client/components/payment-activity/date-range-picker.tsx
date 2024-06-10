@@ -112,27 +112,24 @@ const options = Object.keys( timeOptions ).map( ( optionKey ) => {
 } );
 
 export const defaultDateRange = {
+	key: 'last_7_days',
 	date_start: timeOptions.last_7_days.start.format( 'YYYY-MM-DD\\THH:mm:ss' ),
 	date_end: timeOptions.last_7_days.end.format( 'YYYY-MM-DD\\THH:mm:ss' ),
 };
 
 export const DateRangePicker: React.FC< {
 	onDateRangeChange: ( dateRange: DateRange ) => void;
-} > = ( { onDateRangeChange } ) => {
-	const [ selectedOption, setSelectedOption ] = useState(
-		options.find( ( option ) => option.key === 'last_7_days' )
-	);
-
+	selectedKey: string;
+} > = ( { onDateRangeChange, selectedKey } ) => {
 	return (
 		<InlineLabelSelect
 			label="Select an option"
 			options={ options }
-			value={ selectedOption }
+			value={ options.find( ( option ) => option.key === selectedKey ) }
 			placeholder="Select an option..."
 			onChange={ ( changes ) => {
 				const selectedItem = changes.selectedItem;
 				if ( selectedItem ) {
-					setSelectedOption( selectedItem );
 					onDateRangeChange( {
 						date_start: timeOptions[
 							selectedItem.key
@@ -140,6 +137,7 @@ export const DateRangePicker: React.FC< {
 						date_end: timeOptions[ selectedItem.key ].end.format(
 							'YYYY-MM-DD\\THH:mm:ss'
 						),
+						key: selectedItem.key,
 					} );
 				}
 			} }
