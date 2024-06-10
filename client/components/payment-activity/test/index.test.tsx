@@ -64,6 +64,7 @@ declare const global: {
 					[ currencyCode: string ]: number;
 				};
 			};
+			created: string;
 		};
 		accountDefaultCurrency: string;
 		zeroDecimalCurrencies: string[];
@@ -87,6 +88,7 @@ describe( 'PaymentActivity component', () => {
 						usd: 500,
 					},
 				},
+				created: '2022-01-01 00:00:00',
 			},
 			accountDefaultCurrency: 'eur',
 			zeroDecimalCurrencies: [],

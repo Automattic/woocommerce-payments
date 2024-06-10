@@ -17,6 +17,9 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		accountStatus: {
+			created: string;
+		};
 	};
 };
 
@@ -36,6 +39,9 @@ describe( 'PaymentDataTile', () => {
 				decimalSeparator: '.',
 				precision: 2,
 			},
+		},
+		accountStatus: {
+			created: '2022-01-01 00:00:00',
 		},
 	};
 
