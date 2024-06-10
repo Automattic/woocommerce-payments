@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: Changes behind feature flag. Adds an `All time` option to the date preset dropdown in the payment activity widget.
+
+
