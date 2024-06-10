@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import moment from 'moment';
+import { recordEvent } from 'wcpay/tracks';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -130,14 +131,22 @@ export const DateRangePicker: React.FC< {
 			onChange={ ( changes ) => {
 				const selectedItem = changes.selectedItem;
 				if ( selectedItem ) {
+					const start = timeOptions[ selectedItem.key ].start.format(
+						'YYYY-MM-DD\\THH:mm:ss'
+					);
+					const end = timeOptions[ selectedItem.key ].end.format(
+						'YYYY-MM-DD\\THH:mm:ss'
+					);
+					const { key } = selectedItem;
+					recordEvent( 'wcpay_overview_date_range_change', {
+						start_date: start,
+						end_date: end,
+						key: key,
+					} );
 					onDateRangeChange( {
-						date_start: timeOptions[
-							selectedItem.key
-						].start.format( 'YYYY-MM-DD\\THH:mm:ss' ),
-						date_end: timeOptions[ selectedItem.key ].end.format(
-							'YYYY-MM-DD\\THH:mm:ss'
-						),
-						key: selectedItem.key,
+						date_start: start,
+						date_end: end,
+						key: key,
 					} );
 				}
 			} }
