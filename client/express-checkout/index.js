@@ -5,7 +5,7 @@
  */
 import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
-import { getExpressCheckoutData } from './utils/index';
+import { getExpressCheckoutData, normalizeLineItems } from './utils/index';
 import {
 	onConfirmHandler,
 	shippingAddressChangeHandler,
@@ -252,10 +252,7 @@ jQuery( ( $ ) => {
 				}
 
 				const clickOptions = {
-					lineItems: options.displayItems.map( ( i ) => ( {
-						...i,
-						name: i.label,
-					} ) ),
+					lineItems: normalizeLineItems( options.displayItems ),
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,
 					phoneNumberRequired: options.requestPhone,

@@ -7,15 +7,13 @@
  * @return {Array} An array of PaymentItems
  */
 export const normalizeLineItems = ( displayItems ) => {
-	return displayItems
-		.filter( ( displayItem ) => !! displayItem.amount )
-		.map( ( displayItem ) =>
-			// The amount prop is already present on the item.
-			( {
-				...displayItem,
-				name: displayItem.label,
-			} )
-		);
+	return displayItems.map( ( displayItem ) =>
+		// The amount prop is already present on the item.
+		( {
+			...displayItem,
+			name: displayItem.label,
+		} )
+	);
 };
 
 /**
