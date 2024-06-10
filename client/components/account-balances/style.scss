@@ -1,7 +1,3 @@
-.wcpay-account-balances__balances {
-	border-top: 1px solid $gray-200;
-}
-
 .wcpay-account-balances__balances > * + * {
 	border-left: 1px solid $gray-200;
 }
@@ -21,7 +17,7 @@
 	&__amount {
 		font-weight: 500;
 		font-size: 20px;
-		line-height: 0px;
+		margin: 0;
 		color: $gray-900;
 	}
 }
@@ -29,6 +25,7 @@
 .wcpay-account-balances__balances__item__title {
 	display: flex;
 	align-items: center;
+	margin-top: 0;
 }
 
 .wcpay-account-balances__instant-deposit {

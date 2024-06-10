@@ -1289,6 +1289,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
+			// This allows WC to check if WP_DEBUG mode is enabled before returning previous Exception and expose Exception class name to frontend.
+			add_filter( 'woocommerce_return_previous_exceptions', '__return_true' );
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
 			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ), 0, $e );
@@ -2593,15 +2595,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Gets account default currency.
-	 *
-	 * @return string Currency code.
-	 */
-	public function get_account_default_currency(): string {
-		return $this->account->get_account_default_currency();
-	}
-
-	/**
 	 * Gets connected account business name.
 	 *
 	 * @param string $default_value Value to return when not connected or failed to fetch business name.
@@ -2790,7 +2783,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$merchant_country
 				)
 			);
-			return $this->get_account_default_currency();
+			return $this->account->get_account_default_currency();
 		}
 
 		return $country_locale_data['currency_code'];

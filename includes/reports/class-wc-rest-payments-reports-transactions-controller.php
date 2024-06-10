@@ -39,7 +39,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<id>\w+)',
+			'/' . $this->rest_base . '/(?P<id>[A-Za-z0-9_\-]+)',
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
