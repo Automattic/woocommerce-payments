@@ -8,12 +8,15 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
-import { PaymentActivityState, PaymentActivityQuery } from './types';
+import { PaymentActivityData, PaymentActivityQuery } from './types';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const usePaymentActivityData = (
 	query: PaymentActivityQuery
-): PaymentActivityState =>
+): {
+	paymentActivityData: PaymentActivityData | undefined;
+	isLoading: boolean;
+} =>
 	useSelect(
 		( select ) => {
 			const { getPaymentActivityData, isResolving } = select(

@@ -24,12 +24,12 @@ export interface PaymentActivityData {
 }
 
 export interface PaymentActivityState {
-	paymentActivityData?: PaymentActivityData;
-	isLoading?: boolean;
+	[ key: string ]: PaymentActivityData;
 }
 
 export interface PaymentActivityAction {
 	type: string;
+	query?: PaymentActivityQuery;
 	data: PaymentActivityData;
 }
 

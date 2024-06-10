@@ -3,7 +3,7 @@
  */
 import receivePaymentActivity from '../reducer';
 import types from '../action-types';
-import { PaymentActivityData } from '../types';
+import { PaymentActivityData, PaymentActivityAction } from '../types';
 
 describe( 'receivePaymentActivity', () => {
 	const mockPaymentActivityData: PaymentActivityData = {
@@ -21,9 +21,15 @@ describe( 'receivePaymentActivity', () => {
 
 	test( 'should set payment activity data correctly', () => {
 		const initialState = {};
-		const action = {
+		const action: PaymentActivityAction = {
 			type: types.SET_PAYMENT_ACTIVITY_DATA,
 			data: mockPaymentActivityData,
+			query: {
+				currency: 'jpy',
+				date_start: '2024-01-01',
+				date_end: '2024-01-31',
+				timezone: 'UTC',
+			},
 		};
 
 		const newState = receivePaymentActivity( initialState, action );
