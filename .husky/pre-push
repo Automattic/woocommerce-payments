@@ -7,10 +7,10 @@ if [ -t 1 ] && [ -t 2 ]; then
     exec < /dev/tty
 fi
 
-PROTECTED_BRANCH="develop trunk"
+PROTECTED_BRANCH_LIST="develop trunk"
 CURRENT_BRANCH=$(git branch --show-current)
 
-if echo "$PROTECTED_BRANCH" | grep -q -w "$CURRENT_BRANCH"; then
+if echo "$PROTECTED_BRANCH_LIST" | grep -q -w "$CURRENT_BRANCH"; then
     read -p "$CURRENT_BRANCH is a protected branch. Are you sure you want to push? (y/n): " confirmation
     if [ "$confirmation" != "y" ]; then
         echo "Push aborted"
