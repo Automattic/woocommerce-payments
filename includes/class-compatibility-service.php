@@ -76,10 +76,10 @@ class Compatibility_Service {
 	private function get_compatibility_data(): array {
 		$active_plugins        = get_option( 'active_plugins', [] );
 		$post_types_count      = $this->get_post_types_count();
-		$wc_permalinks         = get_option( 'woocommerce_permalinks' );
-		$wc_shop_permalink     = get_permalink( wc_get_page_id( 'shop' ) );
-		$wc_cart_permalink     = get_permalink( wc_get_page_id( 'cart' ) );
-		$wc_checkout_permalink = get_permalink( wc_get_page_id( 'checkout' ) );
+		$wc_permalinks         = get_option( 'woocommerce_permalinks', [] );
+		$wc_shop_permalink     = get_permalink( wc_get_page_id( 'shop' ) ) ? get_permalink( wc_get_page_id( 'shop' ) ) : 'Not set';
+		$wc_cart_permalink     = get_permalink( wc_get_page_id( 'cart' ) ) ? get_permalink( wc_get_page_id( 'cart' ) ) : 'Not set';
+		$wc_checkout_permalink = get_permalink( wc_get_page_id( 'checkout' ) ) ? get_permalink( wc_get_page_id( 'cart' ) ) : 'Not set';
 
 		return [
 			'woopayments_version'    => WCPAY_VERSION_NUMBER,
