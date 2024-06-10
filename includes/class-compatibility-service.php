@@ -79,7 +79,7 @@ class Compatibility_Service {
 		$wc_permalinks         = get_option( 'woocommerce_permalinks', [] );
 		$wc_shop_permalink     = get_permalink( wc_get_page_id( 'shop' ) ) ? get_permalink( wc_get_page_id( 'shop' ) ) : 'Not set';
 		$wc_cart_permalink     = get_permalink( wc_get_page_id( 'cart' ) ) ? get_permalink( wc_get_page_id( 'cart' ) ) : 'Not set';
-		$wc_checkout_permalink = get_permalink( wc_get_page_id( 'checkout' ) ) ? get_permalink( wc_get_page_id( 'cart' ) ) : 'Not set';
+		$wc_checkout_permalink = get_permalink( wc_get_page_id( 'checkout' ) ) ? get_permalink( wc_get_page_id( 'checkout' ) ) : 'Not set';
 
 		return [
 			'woopayments_version'    => WCPAY_VERSION_NUMBER,
