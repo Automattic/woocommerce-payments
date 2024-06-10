@@ -93,6 +93,7 @@ describe( 'Overview page', () => {
 					isComplete: false,
 					isEnabled: false,
 				},
+				created: '2022-01-01 00:00:00',
 			},
 			accountFees: {
 				base: {
