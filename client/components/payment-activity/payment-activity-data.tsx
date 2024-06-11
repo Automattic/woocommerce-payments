@@ -28,6 +28,7 @@ const searchTermsForViewReportLink = {
 		'dispute',
 		'dispute_reversal',
 		'card_reader_fee',
+		'adjustment',
 	],
 
 	charge: [ 'charge', 'payment', 'adjustment' ],
