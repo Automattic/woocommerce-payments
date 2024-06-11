@@ -114,7 +114,8 @@ const PaymentActivity: React.FC = () => {
 					label="Select an option"
 					options={ options }
 					value={ options.find(
-						( option ) => option.key === selectedDateRange.key
+						( option ) =>
+							option.key === selectedDateRange.preset_name
 					) }
 					placeholder="Select an option..."
 					onChange={ ( changes ) => {
@@ -128,16 +129,16 @@ const PaymentActivity: React.FC = () => {
 							const end = dateRangePresets[ selectedItem.key ].end
 								.clone()
 								.format( 'YYYY-MM-DD\\THH:mm:ss' );
-							const { key } = selectedItem;
+							const { key: presetName } = selectedItem;
 							recordEvent( 'wcpay_overview_date_range_change', {
 								start_date: start,
 								end_date: end,
-								key: key,
+								preset_name: presetName,
 							} );
 							setSelectedDateRange( {
 								date_start: start,
 								date_end: end,
-								key,
+								preset_name: presetName,
 							} );
 						}
 					} }

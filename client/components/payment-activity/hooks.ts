@@ -8,7 +8,7 @@ import moment from 'moment';
 interface DateRange {
 	date_start: string;
 	date_end: string;
-	key: string;
+	preset_name: string;
 }
 
 export const usePaymentActivityDateRangePresets = (): {
@@ -103,7 +103,7 @@ export const usePaymentActivityDateRangePresets = (): {
 	};
 
 	const defaultDateRange = {
-		key: 'last_7_days',
+		preset_name: 'last_7_days',
 		date_start: dateRangePresets.last_7_days.start.format(
 			'YYYY-MM-DD\\THH:mm:ss'
 		),
@@ -113,9 +113,9 @@ export const usePaymentActivityDateRangePresets = (): {
 	};
 
 	const [ selectedDateRange, setSelectedDateRange ] = useState( {
+		preset_name: defaultDateRange.preset_name,
 		date_start: defaultDateRange.date_start,
 		date_end: defaultDateRange.date_end,
-		key: defaultDateRange.key,
 	} );
 
 	return {
