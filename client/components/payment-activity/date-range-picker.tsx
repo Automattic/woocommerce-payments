@@ -137,16 +137,19 @@ export const DateRangePicker: React.FC< {
 					const end = timeOptions[ selectedItem.key ].end.format(
 						'YYYY-MM-DD\\THH:mm:ss'
 					);
-					const { key } = selectedItem;
-					recordEvent( 'wcpay_overview_date_range_change', {
-						start_date: start,
-						end_date: end,
-						key: key,
-					} );
+					const { key: presetName } = selectedItem;
+					recordEvent(
+						'wcpay_overview_payment_activity_period_change',
+						{
+							start_date: start,
+							end_date: end,
+							preset_name: presetName,
+						}
+					);
 					onDateRangeChange( {
 						date_start: start,
 						date_end: end,
-						key: key,
+						key: presetName,
 					} );
 				}
 			} }
