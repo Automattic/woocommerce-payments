@@ -28,8 +28,6 @@ interface RecentDepositsProps {
 	deposits: CachedDeposit[];
 }
 
-const tableClass = 'wcpay-deposits-overview__table';
-
 /**
  * Renders the Recent Deposit list component.
  *
@@ -41,6 +39,8 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 	if ( deposits.length === 0 ) {
 		return null;
 	}
+
+	const tableClass = 'wcpay-deposits-overview__table';
 
 	const depositRows = deposits.map( ( deposit ) => (
 		<Flex className={ `${ tableClass }__row` } key={ deposit.id }>
