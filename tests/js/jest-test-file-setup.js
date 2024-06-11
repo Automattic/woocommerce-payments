@@ -109,6 +109,9 @@ global.wcpaySettings = {
 	accountLoans: {
 		loans: [ 'flxln_123456|active' ],
 	},
+	accountStatus: {
+		created: '2022-01-01 00:00:00',
+	},
 };
 
 // const config = require( '../../config/development.json' );
