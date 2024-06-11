@@ -6,9 +6,12 @@ import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 
 interface DateRange {
-	date_start: string;
-	date_end: string;
+	/** The name of the date range preset. e.g. last_7_days */
 	preset_name: string;
+	/** The date range start datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
+	date_start: string;
+	/** The date range end datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
+	date_end: string;
 }
 
 export const usePaymentActivityDateRangePresets = (): {

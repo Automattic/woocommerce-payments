@@ -133,8 +133,6 @@ const PaymentActivity: React.FC = () => {
 							recordEvent(
 								'wcpay_overview_payment_activity_period_change',
 								{
-									start_date: start,
-									end_date: end,
 									preset_name: presetName,
 								}
 							);
