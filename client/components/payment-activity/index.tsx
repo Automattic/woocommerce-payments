@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -12,12 +12,14 @@ import moment from 'moment';
  */
 
 import EmptyStateAsset from 'assets/images/payment-activity-empty-state.svg?asset';
+import InlineLabelSelect from '../inline-label-select';
 import PaymentActivityDataComponent from './payment-activity-data';
-import { defaultDateRange, DateRangePicker } from './date-range-picker';
 import Survey from './survey';
-import { WcPayOverviewSurveyContextProvider } from './survey/context';
+import { recordEvent } from 'wcpay/tracks';
 import { usePaymentActivityData } from 'wcpay/data';
+import { usePaymentActivityDateRangePresets } from './hooks';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
+import { WcPayOverviewSurveyContextProvider } from './survey/context';
 import './style.scss';
 
 const PaymentActivityEmptyState: React.FC = () => (
@@ -49,22 +51,40 @@ const PaymentActivityEmptyState: React.FC = () => (
 	</Card>
 );
 
+const formatDateRange = (
+	start: moment.Moment,
+	end: moment.Moment
+): string => {
+	// Today - show only today's date.
+	if ( start.isSame( end, 'day' ) ) {
+		return start.format( 'MMMM D, YYYY' );
+	}
+
+	// Different years - show year for both start and end
+	if ( ! start.isSame( end, 'year' ) ) {
+		return `${ start.format( 'MMMM D, YYYY' ) } - ${ end.format(
+			'MMMM D, YYYY'
+		) }`;
+	}
+
+	// Same year - show year only for end date.
+	return `${ start.format( 'MMMM D' ) } - ${ end.format( 'MMMM D, YYYY' ) }`;
+};
+
 const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
 	const { selectedCurrency } = useSelectedCurrency();
-
-	const [ dateRange, setDateRange ] = useState( {
-		date_start: defaultDateRange.date_start,
-		date_end: defaultDateRange.date_end,
-		key: defaultDateRange.key,
-	} );
-
+	const {
+		selectedDateRange,
+		setSelectedDateRange,
+		dateRangePresets,
+	} = usePaymentActivityDateRangePresets();
 	const { paymentActivityData, isLoading } = usePaymentActivityData( {
 		currency: selectedCurrency ?? wcpaySettings.accountDefaultCurrency,
-		date_start: dateRange.date_start,
-		date_end: dateRange.date_end,
+		date_start: selectedDateRange.date_start,
+		date_end: selectedDateRange.date_end,
 		timezone: moment( new Date() ).format( 'Z' ),
 	} );
 
@@ -77,14 +97,49 @@ const PaymentActivity: React.FC = () => {
 		return <></>;
 	}
 
+	const options = Object.keys( dateRangePresets ).map( ( presetName ) => {
+		const preset = dateRangePresets[ presetName ];
+		return {
+			key: presetName,
+			name: preset.displayKey,
+			hint: formatDateRange( preset.start, preset.end ),
+		};
+	} );
+
 	return (
 		<Card>
 			<CardHeader className="wcpay-payment-activity__card__header">
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
-				<DateRangePicker
-					selectedKey={ dateRange.key }
-					onDateRangeChange={ ( newDateRange ) => {
-						setDateRange( newDateRange );
+				<InlineLabelSelect
+					label="Select an option"
+					options={ options }
+					value={ options.find(
+						( option ) => option.key === selectedDateRange.key
+					) }
+					placeholder="Select an option..."
+					onChange={ ( changes ) => {
+						const selectedItem = changes.selectedItem;
+						if ( selectedItem ) {
+							const start = dateRangePresets[
+								selectedItem.key
+							].start
+								.clone()
+								.format( 'YYYY-MM-DD\\THH:mm:ss' );
+							const end = dateRangePresets[ selectedItem.key ].end
+								.clone()
+								.format( 'YYYY-MM-DD\\THH:mm:ss' );
+							const { key } = selectedItem;
+							recordEvent( 'wcpay_overview_date_range_change', {
+								start_date: start,
+								end_date: end,
+								key: key,
+							} );
+							setSelectedDateRange( {
+								date_start: start,
+								date_end: end,
+								key,
+							} );
+						}
 					} }
 				/>
 			</CardHeader>
