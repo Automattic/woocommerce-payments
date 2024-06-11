@@ -11,21 +11,11 @@ import { Card, CardBody, Button } from '@wordpress/components';
  * Internal dependencies
  */
 import strings from '../strings';
-import { Apm } from '../types';
+import { Apm, suggestedApmInterface } from '../types';
 
-const getRecommendeddApms = () => {
-	const { paymentGatewaySuggestions = [], activePlugins = [] } =
-		wcMarketplaceSuggestions || {};
-
-	return paymentGatewaySuggestions
-		.filter( ( apm: Apm ) => apm.plugins && apm.plugins.length > 0 )
-		.filter(
-			( apm: Apm ) =>
-				! Object.values( activePlugins ).includes( apm.plugins[ 0 ] )
-		);
-};
-
-const ApmList: React.FC = () => {
+const SuggestedApms = ( {
+	suggestedApms,
+}: suggestedApmInterface ): JSX.Element => {
 	const { installAndActivatePlugins } = useDispatch( 'wc/admin/plugins' );
 
 	const handleInstall = async ( apm: Apm ) => {
@@ -44,7 +34,7 @@ const ApmList: React.FC = () => {
 		}
 	};
 
-	const apmsList = getRecommendeddApms().map( ( apm: Apm ) => ( {
+	const apmsList = suggestedApms.map( ( apm: Apm ) => ( {
 		key: apm.id,
 		title: apm.title,
 		content: apm.content,
@@ -70,4 +60,4 @@ const ApmList: React.FC = () => {
 	);
 };
 
-export default ApmList;
+export default SuggestedApms;

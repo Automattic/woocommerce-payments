@@ -14,13 +14,13 @@ import {
 /**
  * Internal dependencies
  */
-import RecommendedApms from './list';
+import SuggestedApms from './list';
 import RegionPicker from '../region-picker';
 import strings from '../strings';
 import TipBox from 'components/tip-box';
 import Chip from 'components/chip';
 import WooPaymentsIcon from 'assets/images/payment-methods/woopayments.svg?asset';
-import { RegionPickerInterface } from '../types';
+import { UnsupportedAccountPage } from '../types';
 
 const Image = () => <img src={ WooPaymentsIcon } alt="" />;
 
@@ -62,7 +62,8 @@ const WooPaymentsDetails = () => (
 const ConnectUnsupportedAccountPage = ( {
 	country,
 	setStoreCountry,
-}: RegionPickerInterface ): JSX.Element => {
+	suggestedApms,
+}: UnsupportedAccountPage ): JSX.Element => {
 	return (
 		<Card className="connect-account-page__unsupported-country">
 			<div className="connect-account-page__unsupported-country--heading">
@@ -72,7 +73,7 @@ const ConnectUnsupportedAccountPage = ( {
 					setStoreCountry={ setStoreCountry }
 				/>
 			</div>
-			<RecommendedApms />
+			<SuggestedApms suggestedApms={ suggestedApms } />
 			<WooPaymentsDetails />
 		</Card>
 	);
