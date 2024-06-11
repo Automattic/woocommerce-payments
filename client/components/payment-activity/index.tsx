@@ -130,11 +130,14 @@ const PaymentActivity: React.FC = () => {
 								.clone()
 								.format( 'YYYY-MM-DD\\THH:mm:ss' );
 							const { key: presetName } = selectedItem;
-							recordEvent( 'wcpay_overview_date_range_change', {
-								start_date: start,
-								end_date: end,
-								preset_name: presetName,
-							} );
+							recordEvent(
+								'wcpay_overview_payment_activity_period_change',
+								{
+									start_date: start,
+									end_date: end,
+									preset_name: presetName,
+								}
+							);
 							setSelectedDateRange( {
 								date_start: start,
 								date_end: end,
