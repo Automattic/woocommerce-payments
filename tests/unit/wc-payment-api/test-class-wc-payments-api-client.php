@@ -347,25 +347,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->get_onboarding_business_types();
 	}
 
-	/**
-	 * Test getting onboarding required verification information.
-	 *
-	 * @throws API_Exception
-	 */
-	public function test_get_onboarding_required_verification_information() {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/required_verification_information?test_mode=0&country=country&type=type' ),
-				null,
-				true,
-				true // get_onboarding_required_verification_information should use user token auth.
-			);
-
-		$this->payments_api_client->get_onboarding_required_verification_information( 'country', 'type' );
-	}
-
 	public function test_get_link() {
 		$this->mock_http_client
 			->expects( $this->once() )
