@@ -96,36 +96,6 @@ const ConnectAccountPage: React.FC = () => {
 		}
 	};
 
-	const handleLocationCheck = () => {
-		// Reset the 'Set up' button state if merchant decided to stop
-		const handleModalDeclined = () => {
-			setSubmitted( false );
-		};
-		// Redirect the merchant if merchant decided to continue
-		const handleModalConfirmed = () => {
-			window.location.href = connectUrl;
-		};
-
-		// Populate translated list of supported countries we want to render in the modal window.
-		const countries = Object.values( availableCountries )
-			.sort()
-			.map( ( countryName ) => {
-				return { title: countryName };
-			} );
-
-		const container = document.createElement( 'div' );
-		container.id = 'wcpay-onboarding-location-check-container';
-		render(
-			<OnboardingLocationCheckModal
-				countries={ countries }
-				onDeclined={ handleModalDeclined }
-				onConfirmed={ handleModalConfirmed }
-			/>,
-			container
-		);
-		document.body.appendChild( container );
-	};
-
 	const getSuggestedApms = (): Apm[] => {
 		const {
 			paymentGatewaySuggestions = [],
@@ -174,12 +144,11 @@ const ConnectAccountPage: React.FC = () => {
 			}
 		}
 
-		// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
-		if ( ! isCountrySupported ) {
-			return handleLocationCheck();
-		}
+		const url = addQueryArgs( connectUrl, {
+			country: storeCountry,
+		} );
 
-		window.location.href = connectUrl;
+		window.location.href = url;
 	};
 
 	const handleEnableSandboxMode = async () => {

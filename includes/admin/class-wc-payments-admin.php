@@ -837,10 +837,20 @@ class WC_Payments_Admin {
 		}
 
 		$connect_url       = WC_Payments_Account::get_connect_url();
+		$connect_country   = WC()->countries->get_base_country();
 		$connect_incentive = $this->incentives_service->get_cached_connect_incentive();
 		// If we have an incentive ID, attach it to the connect URL.
 		if ( ! empty( $connect_incentive['id'] ) ) {
 			$connect_url = add_query_arg( [ 'promo' => sanitize_text_field( $connect_incentive['id'] ) ], $connect_url );
+		}
+
+		if ( isset( $_GET['connect-country'] ) ) {
+			// In case `onboarding_country` is a supported country, use it for connect.
+			$supported_countries = WC_Payments_Utils::supported_countries();
+			$onboarding_country  = isset( $_GET['connect-country'] ) ? sanitize_text_field( wp_unslash( $_GET['connect-country'] ) ) : '';
+			if ( array_key_exists( $onboarding_country, $supported_countries ) ) {
+				$connect_country = $onboarding_country;
+			}
 		}
 
 		// Get the site logo URL, if available.
@@ -851,7 +861,7 @@ class WC_Payments_Admin {
 			'version'                       => WCPAY_VERSION_NUMBER,
 			'connectUrl'                    => $connect_url,
 			'connect'                       => [
-				'country'            => WC()->countries->get_base_country(),
+				'country'            => $connect_country,
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 				'availableStates'    => WC()->countries->get_states(),
 			],

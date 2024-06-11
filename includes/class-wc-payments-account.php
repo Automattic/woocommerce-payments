@@ -2038,8 +2038,21 @@ class WC_Payments_Account {
 		// Track the Jetpack connection start.
 		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
 
+		// Default query args.
+		$query_args = [
+			'source' => $source,
+		];
+
+		$supported_countries = WC_Payments_Utils::supported_countries();
+		$onboarding_country  = isset( $_GET['country'] ) ? sanitize_text_field( wp_unslash( $_GET['country'] ) ) : '';
+
+		// In case `onboarding_country` is a supported country, add it to the query args.
+		if ( array_key_exists( $onboarding_country, $supported_countries ) ) {
+			$query_args['connect-country'] = $onboarding_country;
+		}
+
 		$onboarding_url = add_query_arg(
-			[ 'source' => $source ],
+			$query_args,
 			admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' )
 		);
 
