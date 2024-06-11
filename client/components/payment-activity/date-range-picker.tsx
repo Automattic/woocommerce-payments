@@ -10,7 +10,15 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import InlineLabelSelect from '../inline-label-select';
-import { DateRange } from './types';
+
+interface DateRangeProps {
+	/** The name of the date range preset - e.g. last_7_days */
+	key: string;
+	/** The date range start datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
+	date_start: string;
+	/** The date range end datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
+	date_end: string;
+}
 
 const now = moment();
 const yesterdayEndOfDay = moment()
@@ -119,7 +127,7 @@ export const defaultDateRange = {
 };
 
 export const DateRangePicker: React.FC< {
-	onDateRangeChange: ( dateRange: DateRange ) => void;
+	onDateRangeChange: ( dateRange: DateRangeProps ) => void;
 	selectedKey: string;
 } > = ( { onDateRangeChange, selectedKey } ) => {
 	return (
