@@ -27,4 +27,5 @@ export interface Apm {
 	image_72x72: string;
 	content: string;
 	plugins: Array< string >;
+	recommendation_priority: number;
 }

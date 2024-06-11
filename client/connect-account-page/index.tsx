@@ -29,7 +29,6 @@ import PaymentMethods from './payment-methods';
 import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
 import ConnectUnsupportedAccountPage from './unsupported-country';
-import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
@@ -96,20 +95,15 @@ const ConnectAccountPage: React.FC = () => {
 		}
 	};
 
+	const comparePaymentGatewaysByPriority = ( a: Apm, b: Apm ) =>
+		a.recommendation_priority - b.recommendation_priority;
+
 	const getSuggestedApms = (): Apm[] => {
-		const {
-			paymentGatewaySuggestions = [],
-			activePlugins = [],
-		} = suggestedApms;
+		const { paymentGatewaySuggestions = [] } = suggestedApms;
 
 		return paymentGatewaySuggestions
 			.filter( ( apm: Apm ) => apm.plugins && apm.plugins.length > 0 )
-			.filter(
-				( apm: Apm ) =>
-					! Object.values( activePlugins ).includes(
-						apm.plugins[ 0 ]
-					)
-			);
+			.sort( comparePaymentGatewaysByPriority );
 	};
 
 	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
