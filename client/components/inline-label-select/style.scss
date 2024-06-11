@@ -38,6 +38,11 @@
 		color: $gray-700;
 	}
 
+	.wcpay-filter.components-custom-select-control__list {
+		overflow: auto;
+		padding: $grid-unit-10 $grid-unit-15;
+	}
+
 	button.wcpay-filter.components-custom-select-control__button {
 		width: 100%;
 		background-color: #fff;
@@ -90,6 +95,40 @@
 		margin: -1px 1px;
 		border-color: $gray-300;
 		max-height: 300px;
-		padding: $grid-unit-10 $grid-unit-15;
+		display: flex;
+		flex-direction: column;
+		overflow-x: hidden;
+	}
+
+	.wcpay-filter.components-custom-select-control__menu[aria-hidden='true'] {
+		border: none;
+	}
+
+	&__search {
+		min-width: 150px;
+		margin: $gap-small;
+		position: relative;
+
+		&--input {
+			height: 40px;
+			line-height: 1;
+			min-height: 40px;
+			min-width: 100%;
+			border: none;
+			background-color: $gray-0;
+			padding-right: 40px;
+			position: relative;
+
+			&:focus {
+				background-color: $white;
+			}
+		}
+
+		&--input-suffix {
+			position: absolute;
+			right: 10px;
+			top: 8px;
+			background: transparent;
+		}
 	}
 }
