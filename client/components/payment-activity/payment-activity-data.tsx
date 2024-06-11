@@ -113,6 +113,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
 					filter: 'advanced',
+					store_currency_is: currency,
 					'date_between[0]': moment(
 						paymentActivityData?.date_start
 					).format( 'YYYY-MM-DD' ),
@@ -155,6 +156,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
@@ -177,6 +179,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
@@ -199,6 +202,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
