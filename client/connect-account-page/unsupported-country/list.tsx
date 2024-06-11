@@ -11,14 +11,7 @@ import { Card, CardBody, Button } from '@wordpress/components';
  * Internal dependencies
  */
 import strings from '../strings';
-
-export interface Apm {
-	id: string;
-	title: string;
-	image_72x72: string;
-	content: string;
-	plugins: Array< string >;
-}
+import { Apm } from '../types';
 
 const getRecommendeddApms = () => {
 	const { paymentGatewaySuggestions = [], activePlugins = [] } =

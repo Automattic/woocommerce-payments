@@ -307,4 +307,7 @@ export default {
 	additionalPaymentMethods: {
 		install: __( 'Install', 'woocommerce-payments' ),
 	},
+	regionPicker: {
+		label: __( 'Business location', 'woocommerce-payments' ),
+	},
 };

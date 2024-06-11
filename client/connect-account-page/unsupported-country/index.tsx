@@ -15,10 +15,12 @@ import {
  * Internal dependencies
  */
 import RecommendedApms from './list';
+import RegionPicker from '../region-picker';
 import strings from '../strings';
 import TipBox from 'components/tip-box';
 import Chip from 'components/chip';
 import WooPaymentsIcon from 'assets/images/payment-methods/woopayments.svg?asset';
+import { RegionPickerInterface } from '../types';
 
 const Image = () => <img src={ WooPaymentsIcon } alt="" />;
 
@@ -57,10 +59,19 @@ const WooPaymentsDetails = () => (
 	</Card>
 );
 
-const ConnectUnsupportedAccountPage: React.FC = () => {
+const ConnectUnsupportedAccountPage = ( {
+	country,
+	setStoreCountry,
+}: RegionPickerInterface ): JSX.Element => {
 	return (
 		<Card className="connect-account-page__unsupported-country">
-			<h2>{ strings.nonSupportedCountry.heading }</h2>
+			<div className="connect-account-page__unsupported-country--heading">
+				<h2>{ strings.nonSupportedCountry.heading }</h2>
+				<RegionPicker
+					country={ country }
+					setStoreCountry={ setStoreCountry }
+				/>
+			</div>
 			<RecommendedApms />
 			<WooPaymentsDetails />
 		</Card>
