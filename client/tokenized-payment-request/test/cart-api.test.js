@@ -23,6 +23,7 @@ describe( 'PaymentRequestCartApi', () => {
 	} );
 
 	it( 'should allow to create an anonymous cart for a specific class instance, without affecting other instances', async () => {
+		global.wcpayPaymentRequestParams.button_context = 'product';
 		const headers = new Headers();
 		headers.append(
 			'X-WooPayments-Express-Payment-Request-Nonce',
@@ -51,12 +52,9 @@ describe( 'PaymentRequestCartApi', () => {
 		apiFetch.mockClear();
 		apiFetch.mockResolvedValue( {} );
 
-		await api.updateCustomer(
-			{
-				billing_address: { first_name: 'First' },
-			},
-			'product'
-		);
+		await api.updateCustomer( {
+			billing_address: { first_name: 'First' },
+		} );
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'POST',
@@ -78,12 +76,9 @@ describe( 'PaymentRequestCartApi', () => {
 		);
 
 		apiFetch.mockClear();
-		await anotherApi.updateCustomer(
-			{
-				billing_address: { last_name: 'Last' },
-			},
-			'product'
-		);
+		await anotherApi.updateCustomer( {
+			billing_address: { last_name: 'Last' },
+		} );
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'POST',
@@ -105,21 +100,19 @@ describe( 'PaymentRequestCartApi', () => {
 	} );
 
 	it( 'should call `/cart/update-customer` with the global headers if the cart is not anonymous', async () => {
+		global.wcpayPaymentRequestParams.button_context = 'cart';
 		const api = new PaymentRequestCartApi();
 
-		await api.updateCustomer(
-			{
-				billing_address: { last_name: 'Last' },
-			},
-			'cart'
-		);
+		await api.updateCustomer( {
+			billing_address: { last_name: 'Last' },
+		} );
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'POST',
 				path: expect.stringContaining(
 					'/wc/store/v1/cart/update-customer'
 				),
-				credentials: 'same-origin',
+				credentials: undefined,
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
 					'X-WooPayments-Express-Payment-Request': true,
