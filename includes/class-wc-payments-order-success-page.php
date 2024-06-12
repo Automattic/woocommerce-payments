@@ -16,6 +16,7 @@ class WC_Payments_Order_Success_Page {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_filter( 'woocommerce_order_received_verify_known_shoppers', [ $this, 'determine_woopay_order_received_verify_known_shoppers' ], 11 );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
 		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'unregister_payment_method_override' ] );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );
@@ -226,5 +227,34 @@ class WC_Payments_Order_Success_Page {
 			WC_Payments::get_file_version( 'assets/css/success.css' ),
 			'all',
 		);
+	}
+
+	/**
+	 * Make sure we show the TYP page for orders paid with WooPay
+	 * that create new user accounts, code mainly copied from
+	 * WooCommerce WC_Shortcode_Checkout::order_received and
+	 * WC_Shortcode_Checkout::guest_should_verify_email.
+	 *
+	 * @param bool $value The current value for this filter.
+	 */
+	public function determine_woopay_order_received_verify_known_shoppers( $value ) {
+		global $wp;
+
+		$order_id  = $wp->query_vars['order-received'];
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) );
+		$order     = wc_get_order( $order_id );
+
+		if ( ( ! $order instanceof WC_Order ) || ! $order->get_meta( 'is_woopay' ) || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+			return $value;
+		}
+
+		$verification_grace_period = (int) apply_filters( 'woocommerce_order_email_verification_grace_period', 10 * MINUTE_IN_SECONDS, $order );
+		$date_created              = $order->get_date_created();
+
+		// We do not need to verify the email address if we are within the grace period immediately following order creation.
+		$is_within_grace_period = is_a( $date_created, \WC_DateTime::class, true )
+			&& time() - $date_created->getTimestamp() <= $verification_grace_period;
+
+		return ! $is_within_grace_period;
 	}
 }

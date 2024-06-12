@@ -28,6 +28,7 @@ const searchTermsForViewReportLink = {
 		'dispute',
 		'dispute_reversal',
 		'card_reader_fee',
+		'adjustment',
 	],
 
 	charge: [ 'charge', 'payment', 'adjustment' ],
@@ -113,6 +114,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
 					filter: 'advanced',
+					store_currency_is: currency,
 					'date_between[0]': moment(
 						paymentActivityData?.date_start
 					).format( 'YYYY-MM-DD' ),
@@ -155,6 +157,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
@@ -177,6 +180,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
@@ -199,6 +203,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
