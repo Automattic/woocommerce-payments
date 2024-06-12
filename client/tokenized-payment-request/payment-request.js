@@ -216,10 +216,12 @@ export default class WooPaymentsPaymentRequest {
 						);
 					} else {
 						window.alert(
-							__(
-								'Please select your product options before proceeding.',
-								'woocommerce-payments'
-							)
+							window?.wc_add_to_cart_variation_params
+								?.i18n_make_a_selection_text ||
+								__(
+									'Please select some product options before adding this product to your cart.',
+									'woocommerce-payments'
+								)
 						);
 					}
 					return;
