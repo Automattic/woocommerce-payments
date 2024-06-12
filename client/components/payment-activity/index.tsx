@@ -111,7 +111,7 @@ const PaymentActivity: React.FC = () => {
 			<CardHeader className="wcpay-payment-activity__card__header">
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
 				<InlineLabelSelect
-					label="Select an option"
+					label="Period"
 					options={ options }
 					value={ options.find(
 						( option ) =>
