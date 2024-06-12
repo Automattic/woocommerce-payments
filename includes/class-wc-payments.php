@@ -570,21 +570,24 @@ class WC_Payments {
 		// To avoid register the same hooks twice.
 		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
 
-		// Defer registering the WooPay hooks. Later on, $wp_rewrite is used and causes a fatal error every time the account cache is refreshed,
-		// given that $wp_rewrite is defined right after the `plugins_loaded` action is fired. See #8857.
-		add_action( 'setup_theme', [ __CLASS__, 'maybe_register_woopay_hooks' ] );
-
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 		self::$apple_pay_registration->init_hooks();
 
 		$express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
 		self::set_express_checkout_helper( $express_checkout_helper );
 
-		self::maybe_display_express_checkout_buttons();
-
-		self::maybe_init_woopay_direct_checkout();
-
-		self::maybe_enqueue_woopay_common_config_script( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
+		// Delay registering hooks that could end up in a fatal error due to expired account cache.
+		// The `woocommerce_payments_account_refreshed` action will result in a fatal error if it's fired before the `$wp_rewrite` is defined.
+		// See #8942 for more details.
+		add_action(
+			'setup_theme',
+			function () {
+				self::maybe_register_woopay_hooks();
+				self::maybe_display_express_checkout_buttons();
+				self::maybe_init_woopay_direct_checkout();
+				self::maybe_enqueue_woopay_common_config_script( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
+			}
+		);
 
 		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
 		$enabled_bnpl_payment_methods = array_intersect(
