@@ -159,10 +159,6 @@ describe( 'UPE checkout utils', () => {
 						bancontact: { countries: [ 'BE' ] },
 					};
 				}
-
-				if ( argument === 'gatewayId' ) {
-					return 'woocommerce_payments';
-				}
 			} );
 		} );
 
