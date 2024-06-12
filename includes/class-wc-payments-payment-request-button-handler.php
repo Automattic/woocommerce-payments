@@ -110,7 +110,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
 
 		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
-			add_action( 'woocommerce_store_api_checkout_update_order_from_request', [ $this, 'tokenized_cart_set_payment_method_type' ], 10, 2 );
+			add_action(
+				'woocommerce_store_api_checkout_update_order_from_request',
+				[
+					$this,
+					'tokenized_cart_set_payment_method_type',
+				],
+				10,
+				2
+			);
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_nonce_overwrite' ], 10, 3 );
 			add_filter(
@@ -209,16 +217,27 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// This route is used to get shipping rates.
 		// GooglePay/ApplePay might provide us with "trimmed" zip codes.
 		// If that's the case, let's temporarily allow to skip the zip code validation, in order to get some shipping rates.
-		if ( $request->get_route() === '/wc/store/v1/cart/update-customer' ) {
+		$is_update_customer_route = $request->get_route() === '/wc/store/v1/cart/update-customer';
+		if ( $is_update_customer_route ) {
 			add_filter( 'woocommerce_validate_postcode', [ $this, 'maybe_skip_postcode_validation' ], 10, 3 );
 		}
 
 		$request_data = $request->get_json_params();
 		if ( isset( $request_data['shipping_address'] ) ) {
-			$request->set_param( 'shipping_address', $this->transform_prb_address_data( $request_data['shipping_address'] ) );
+			$request->set_param( 'shipping_address', $this->transform_prb_address_state_data( $request_data['shipping_address'] ) );
+			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+			// we need to modify the zip code to ensure that shipping zone identification still works.
+			if ( $is_update_customer_route ) {
+				$request->set_param( 'shipping_address', $this->transform_prb_address_postcode_data( $request_data['shipping_address'] ) );
+			}
 		}
 		if ( isset( $request_data['billing_address'] ) ) {
-			$request->set_param( 'billing_address', $this->transform_prb_address_data( $request_data['billing_address'] ) );
+			$request->set_param( 'billing_address', $this->transform_prb_address_state_data( $request_data['billing_address'] ) );
+			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+			// we need to modify the zip code to ensure that shipping zone identification still works.
+			if ( $is_update_customer_route ) {
+				$request->set_param( 'billing_address', $this->transform_prb_address_postcode_data( $request_data['billing_address'] ) );
+			}
 		}
 
 		return $response;
@@ -260,7 +279,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// We padded the string with `0` in the `get_normalized_postal_code` method.
 		// It's a flimsy check, but better than nothing.
 		// Plus, this check is only made for the scenarios outlined in the `tokenized_cart_store_api_address_normalization` method.
-		if ( substr( $postcode, -1 ) === '0' ) {
+		if ( substr( $postcode, - 1 ) === '0' ) {
 			return true;
 		}
 
@@ -268,13 +287,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Transform a GooglePay/ApplePay address data fields into values that are valid for WooCommerce.
+	 * Transform a GooglePay/ApplePay state address data fields into values that are valid for WooCommerce.
 	 *
 	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
 	 *
 	 * @return array
 	 */
-	private function transform_prb_address_data( $address ) {
+	private function transform_prb_address_state_data( $address ) {
 		$country = $address['country'] ?? '';
 		if ( empty( $country ) ) {
 			return $address;
@@ -284,6 +303,22 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$state = $address['state'] ?? '';
 		if ( ! empty( $state ) ) {
 			$address['state'] = $this->get_normalized_state( $state, $country );
+		}
+
+		return $address;
+	}
+
+	/**
+	 * Transform a GooglePay/ApplePay postcode address data fields into values that are valid for WooCommerce.
+	 *
+	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 *
+	 * @return array
+	 */
+	private function transform_prb_address_postcode_data( $address ) {
+		$country = $address['country'] ?? '';
+		if ( empty( $country ) ) {
+			return $address;
 		}
 
 		// Normalizes postal code in case of redacted data from Apple Pay or Google Pay.
@@ -395,6 +430,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @param object $product WC_Product_* object.
 	 * @param bool   $is_deposit Whether customer is paying a deposit.
 	 * @param int    $deposit_plan_id The ID of the deposit plan.
+	 *
 	 * @return mixed Total price.
 	 *
 	 * @throws Invalid_Price_Exception Whenever a product has no price.
@@ -441,7 +477,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( ! is_numeric( $base_price ) || ! is_numeric( $sign_up_fee ) ) {
 			$error_message = sprintf(
-				// Translators: %d is the numeric ID of the product without a price.
+			// Translators: %d is the numeric ID of the product without a price.
 				__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
 				(int) $product->get_id()
 			);
@@ -492,6 +528,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$price = $this->get_product_price( $product );
 		} catch ( Invalid_Price_Exception $e ) {
 			Logger::log( $e->getMessage() );
+
 			return false;
 		}
 
@@ -572,7 +609,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( $order->get_shipping_total() ) {
 			$shipping_label = sprintf(
-				// Translators: %s is the name of the shipping method.
+			// Translators: %s is the name of the shipping method.
 				__( 'Shipping (%s)', 'woocommerce-payments' ),
 				$order->get_shipping_method()
 			);
@@ -619,7 +656,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Filters the gateway title to reflect Payment Request type
 	 *
 	 * @param string $title Gateway title.
-	 * @param string $id    Gateway ID.
+	 * @param string $id Gateway ID.
 	 */
 	public function filter_gateway_title( $title, $id ) {
 		if ( 'woocommerce_payments' !== $id || ! is_admin() ) {
@@ -1169,7 +1206,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 					$chosen_method_id         = $chosen_shipping_methods[0];
 					$compare_shipping_options = function ( $a, $b ) use ( $chosen_method_id ) {
 						if ( $a['id'] === $chosen_method_id ) {
-							return -1;
+							return - 1;
 						}
 
 						if ( $b['id'] === $chosen_method_id ) {
@@ -1440,6 +1477,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function is_normalized_state( $state, $country ) {
 		$wc_states = WC()->countries->get_states( $country );
+
 		return is_array( $wc_states ) && array_key_exists( $state, $wc_states );
 	}
 
@@ -1563,7 +1601,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! $is_supported ) {
 			wc_add_notice(
 				sprintf(
-					/* translators: %s: country. */
+				/* translators: %s: country. */
 					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
 					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
 				),
