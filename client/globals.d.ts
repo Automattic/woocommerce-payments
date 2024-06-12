@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
+import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 
 declare global {
 	const wcpaySettings: {
@@ -90,7 +91,7 @@ declare global {
 			isEligibilityModalDismissed: boolean;
 		};
 		enabledPaymentMethods: string[];
-		dismissedDuplicateNotices: string[];
+		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;

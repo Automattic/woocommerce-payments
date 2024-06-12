@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Payment method title for PRBs not displaying correctly because of ECE code.

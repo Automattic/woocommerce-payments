@@ -676,6 +676,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
 			// Avoid increasing coupon usage count during preflight check.
 			remove_all_actions( 'woocommerce_order_status_pending' );
+
+			// Avoid creating new accounts during preflight check.
+			remove_all_filters( 'woocommerce_checkout_registration_required' );
 		}
 
 		return $response;
@@ -1289,6 +1292,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
+			// This allows WC to check if WP_DEBUG mode is enabled before returning previous Exception and expose Exception class name to frontend.
+			add_filter( 'woocommerce_return_previous_exceptions', '__return_true' );
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
 			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ), 0, $e );
@@ -1798,7 +1803,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type    = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 		}
 
-		if ( empty( $_POST['payment_request_type'] ) || empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $_POST['payment_request_type'] ) && empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 		}
 
