@@ -23,7 +23,7 @@ exports[`PaymentActivity component should render 1`] = `
             aria-describedby="Currently selected: Last 7 days"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-label="Select an option"
+            aria-label="Period"
             class="components-button wcpay-filter components-custom-select-control__button"
             id="downshift-0-toggle-button"
             type="button"
@@ -33,7 +33,7 @@ exports[`PaymentActivity component should render 1`] = `
               for="downshift-0-toggle-button"
               id="downshift-0-label"
             >
-              Select an option
+              Period
             </label>
             <span
               class="wcpay-filter components-custom-select-control__button-value"
