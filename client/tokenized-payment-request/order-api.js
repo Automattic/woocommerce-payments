@@ -18,7 +18,7 @@ export default class PaymentRequestOrderApi {
 	 * @param {string} key The order key, used to verify the order ID.
 	 * @param {string?} billingEmail The billing email address, used for guest orders.
 	 */
-	constructor( orderId, key, billingEmail = '' ) {
+	constructor( { orderId, key, billingEmail = '' } ) {
 		this.orderId = orderId;
 		this.key = key;
 		this.billingEmail = billingEmail;

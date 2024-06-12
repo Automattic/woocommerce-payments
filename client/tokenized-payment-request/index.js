@@ -56,11 +56,11 @@ jQuery( ( $ ) => {
 	);
 	let paymentRequestCartApi = new PaymentRequestCartApi();
 	if ( getPaymentRequestData( 'button_context' ) === 'pay_for_order' ) {
-		paymentRequestCartApi = new PaymentRequestOrderApi(
-			getUPEConfig( 'order_id' ),
-			getUPEConfig( 'key' ),
-			getUPEConfig( 'billing_email' )
-		);
+		paymentRequestCartApi = new PaymentRequestOrderApi( {
+			orderId: getUPEConfig( 'order_id' ),
+			key: getUPEConfig( 'key' ),
+			billingEmail: getUPEConfig( 'billing_email' ),
+		} );
 	}
 
 	const wooPaymentsPaymentRequest = new WooPaymentsPaymentRequest( {
