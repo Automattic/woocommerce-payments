@@ -13,7 +13,7 @@ use Automattic\WooCommerce\Utilities\PluginUtil;
 use stdClass;
 use WCPay\Container;
 use WCPay\Core\Mode;
-use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\DependencyManagement\ExtendedContainer;
 use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
 use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
@@ -120,6 +120,14 @@ class ContainerTest extends WCPAY_UnitTestCase {
 	public function test_container_loads_service() {
 		$service = $this->sut->get( ExampleService::class );
 		$this->assertInstanceOf( ExampleService::class, $service );
+	}
+
+	/**
+	 * Checks if the container throws the right exception on `get` calls.
+	 */
+	public function test_get_throws_container_exception() {
+		$this->expectException( ContainerException::class );
+		$this->sut->get( 'Class_Name_That_Does_Not_Exist' );
 	}
 
 	/**

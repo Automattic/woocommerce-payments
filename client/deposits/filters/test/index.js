@@ -172,19 +172,6 @@ describe( 'Deposits filters', () => {
 
 			expect( getQuery().status_is ).toEqual( 'failed' );
 		} );
-
-		test( 'should filter by estimated', () => {
-			user.selectOptions( ruleSelector, 'is' );
-
-			// need to include $ in name, otherwise "Select a deposit status filter" is also matched.
-			user.selectOptions(
-				screen.getByRole( 'combobox', { name: /deposit status$/i } ),
-				'estimated'
-			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
-
-			expect( getQuery().status_is ).toEqual( 'estimated' );
-		} );
 	} );
 
 	function addAdvancedFilter( filter ) {

@@ -32,7 +32,14 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 */
 	public function __construct( $connection_manager ) {
 		$this->connection_manager = $connection_manager;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 	}
 
@@ -42,7 +49,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @param array  $args             - The arguments to passed to Jetpack.
 	 * @param string $body             - The body passed on to the HTTP request.
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
-	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
+	 * @param bool   $use_user_token   - If true, the request will be signed with the Jetpack connection owner user token rather than blog token. Defaults to false.
 	 *
 	 * @return array HTTP response on success.
 	 * @throws API_Exception - If not connected or request failed.
@@ -128,7 +135,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @return bool true if Jetpack connection has access token.
 	 */
 	public function is_connected() {
-		return $this->connection_manager->is_plugin_enabled() && $this->connection_manager->is_active();
+		return $this->connection_manager->is_connected() && $this->connection_manager->has_connected_owner();
 	}
 
 
@@ -177,9 +184,6 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 	 * @throws API_Exception - Exception thrown on failure.
 	 */
 	public function start_connection( $redirect ) {
-		// Mark the plugin as enabled in case it had been soft-disconnected.
-		$this->connection_manager->enable_plugin();
-
 		// Register the site to wp.com.
 		if ( ! $this->connection_manager->is_connected() ) {
 			$result = $this->connection_manager->try_registration();

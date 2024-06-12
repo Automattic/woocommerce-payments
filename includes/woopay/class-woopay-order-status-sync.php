@@ -7,6 +7,7 @@
 
 namespace WCPay\WooPay;
 
+use WC_Payments_Account;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 
@@ -22,6 +23,13 @@ class WooPay_Order_Status_Sync {
 	const WCPAY_WEBHOOK_WOOPAY_ORDER_STATUS_CHANGED = 'wcpay_webhook_platform_checkout_order_status_changed';
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -32,10 +40,12 @@ class WooPay_Order_Status_Sync {
 	 * Setup webhook for the WooPay Order Status Sync.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_Account    $account - WooCommerce Payments account.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 
 		$this->payments_api_client = $payments_api_client;
+		$this->account             = $account;
 
 		add_filter( 'woocommerce_webhook_topic_hooks', [ __CLASS__, 'add_topics' ], 20, 2 );
 		add_filter( 'woocommerce_webhook_payload', [ __CLASS__, 'create_payload' ], 10, 4 );
@@ -60,6 +70,10 @@ class WooPay_Order_Status_Sync {
 	 */
 	public function maybe_create_woopay_order_webhook() {
 		if ( ! current_user_can( 'manage_woocommerce' ) || self::is_webhook_created() ) {
+			return;
+		}
+
+		if ( ! $this->account->is_stripe_connected() || $this->account->is_account_under_review() || $this->account->is_account_rejected() ) {
 			return;
 		}
 
@@ -100,7 +114,7 @@ class WooPay_Order_Status_Sync {
 	 */
 	private function register_webhook() {
 		$webhook = new \WC_Webhook();
-		$webhook->set_name( $this->get_webhook_name() );
+		$webhook->set_name( self::get_webhook_name() );
 		$webhook->set_user_id( get_current_user_id() );
 		$webhook->set_topic( 'order.status_changed' );
 		$webhook->set_secret( wp_generate_password( 50, false ) );
@@ -129,12 +143,12 @@ class WooPay_Order_Status_Sync {
 	/**
 	 * Setup payload for the webhook delivery.
 	 *
-	 * @param array   $payload     Data to be sent out by the webhook.
-	 * @param string  $resource    Type/name of the resource.
-	 * @param integer $resource_id ID of the resource.
-	 * @param integer $id          ID of the webhook.
+	 * @param array   $payload       Data to be sent out by the webhook.
+	 * @param string  $resource_name Type/name of the resource.
+	 * @param integer $resource_id   ID of the resource.
+	 * @param integer $id            ID of the webhook.
 	 */
-	public static function create_payload( $payload, $resource, $resource_id, $id ) {
+	public static function create_payload( $payload, $resource_name, $resource_id, $id ) {
 		$webhook = wc_get_webhook( $id );
 		if ( 0 !== strpos( $webhook->get_delivery_url(), WooPay_Utilities::get_woopay_rest_url( 'merchant-notification' ) ) ) {
 			// This is not a WooPay webhook, so we don't need to modify the payload.
@@ -197,6 +211,5 @@ class WooPay_Order_Status_Sync {
 			$webhook    = new \WC_Webhook( $webhook_id );
 			$webhook->delete();
 		}
-
 	}
 }

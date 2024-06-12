@@ -13,20 +13,26 @@ import { getAdminUrl } from 'wcpay/utils';
 import { ChargeBillingDetails } from 'wcpay/types/charges';
 
 const CustomerLink = ( props: {
-	customer: null | ChargeBillingDetails;
+	billing_details: null | ChargeBillingDetails;
+	order_details: null | OrderDetails;
 } ): JSX.Element => {
-	const customer = props.customer;
-	if ( customer && customer.name ) {
-		const searchTerm = customer.email
-			? `${ customer.name } (${ customer.email })`
-			: customer.name;
+	// Depending on the transaction chanel, charge billing details might be missing, and we have to rely on order for those.
+	const name =
+		props.billing_details?.name ||
+		props.order_details?.customer_name ||
+		null;
+	if ( name ) {
+		const email =
+			props.billing_details?.email ||
+			props.order_details?.customer_email ||
+			null;
 		const url = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/transactions',
-			search: [ searchTerm ],
+			search: [ email ? `${ name } (${ email })` : name ],
 		} );
 
-		return <Link href={ url }>{ customer.name }</Link>;
+		return <Link href={ url }>{ name }</Link>;
 	}
 
 	return <>&ndash;</>;

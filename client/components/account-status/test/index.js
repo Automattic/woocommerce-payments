@@ -121,6 +121,11 @@ describe( 'StatusChip', () => {
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
+	test( 'renders under review status', () => {
+		const { container: statusChip } = renderStatusChip( 'under_review' );
+		expect( statusChip ).toMatchSnapshot();
+	} );
+
 	test( 'renders pending verification status', () => {
 		const { container: statusChip } = renderStatusChip(
 			'pending_verification'
@@ -128,7 +133,7 @@ describe( 'StatusChip', () => {
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
-	test( 'renders pending verification status for po', () => {
+	test( 'renders pending verification status for progressive onboarding', () => {
 		const { container: statusChip } = renderStatusChip(
 			'pending_verification',
 			true,

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
+
 /**
  * WCPay\MultiCurrency\FrontendPrices unit tests.
  */
@@ -31,15 +33,24 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	private $frontend_prices;
 
 	/**
+	 * WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_compatibility  = $this->createMock( WCPay\MultiCurrency\Compatibility::class );
-		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->mock_compatibility   = $this->createMock( WCPay\MultiCurrency\Compatibility::class );
+		$this->mock_multi_currency  = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->localization_service = new WC_Payments_Localization_Service();
 
 		$this->frontend_prices = new WCPay\MultiCurrency\FrontendPrices( $this->mock_multi_currency, $this->mock_compatibility );
+		$this->frontend_prices->init_hooks();
 	}
 
 	public function tear_down() {
@@ -189,7 +200,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'wc_tax_enabled', '__return_true' );
 		add_filter(
 			'woocommerce_find_rates',
-			function() {
+			function () {
 				return [
 					1 =>
 					[
@@ -205,7 +216,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		);
 
 		WC()->session->init();
-		WC()->customer->set_location( 'US', 'CA' );
+		WC()->customer->set_location( Country_Code::UNITED_STATES, 'CA' );
 
 		$shipping_method             = new \WC_Shipping_Flat_Rate();
 		$shipping_method->tax_status = 'taxable';
@@ -233,7 +244,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'wc_tax_enabled', '__return_true' );
 		add_filter(
 			'woocommerce_find_rates',
-			function() {
+			function () {
 				return [
 					1 =>
 						[
@@ -249,7 +260,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		);
 
 		WC()->session->init();
-		WC()->customer->set_location( 'US', 'CA' );
+		WC()->customer->set_location( Country_Code::UNITED_STATES, 'CA' );
 
 		$shipping_method             = new \WC_Shipping_Flat_Rate();
 		$shipping_method->tax_status = 'taxable';
@@ -326,7 +337,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_add_order_meta_skips_default_currency() {
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( 'USD' ) );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
 
 		$order = wc_create_order();
 		$order->set_currency( 'USD' );
@@ -341,7 +352,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_add_order_meta() {
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( 'USD' ) );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
 		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 0.71 );
 
 		$order = wc_create_order();

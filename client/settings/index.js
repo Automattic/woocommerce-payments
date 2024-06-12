@@ -42,7 +42,6 @@ if ( expressCheckoutSettingsContainer ) {
 			<ErrorBoundary>
 				<ExpressCheckoutSettings methodId={ methodId } />
 			</ErrorBoundary>
-			,
 		</WCPaySettingsContext.Provider>,
 		expressCheckoutSettingsContainer
 	);

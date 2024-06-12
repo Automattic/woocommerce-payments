@@ -11,26 +11,14 @@ import Wizard from '../wizard/wrapper';
 import WizardTask from '../wizard/task';
 import WizardTaskList from '../wizard/task-list';
 import SetupCompleteTask from './setup-complete-task';
-import useIsUpeEnabled from '../../settings/wcpay-upe-toggle/hook';
 import AddPaymentMethodsTask from './add-payment-methods-task';
 import './index.scss';
 
 const UpePreviewMethodsSelector = () => {
-	const [ isUpeEnabled ] = useIsUpeEnabled();
-
 	return (
 		<Card className="upe-preview-methods-selector">
 			<CardBody>
-				<Wizard
-					defaultActiveTask={
-						isUpeEnabled
-							? 'add-payment-methods'
-							: 'enable-upe-preview'
-					}
-					defaultCompletedTasks={ {
-						'enable-upe-preview': isUpeEnabled,
-					} }
-				>
+				<Wizard defaultActiveTask="add-payment-methods">
 					<WizardTaskList>
 						<WizardTask id="add-payment-methods">
 							<AddPaymentMethodsTask />

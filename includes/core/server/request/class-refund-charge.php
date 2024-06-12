@@ -19,11 +19,19 @@ class Refund_Charge extends Request {
 
 	const DEFAULT_PARAMS = [
 		'amount' => null,
+		'reason' => null,
 	];
 
 	const IMMUTABLE_PARAMS = [ 'charge' ];
 
 	const REQUIRED_PARAMS = [ 'charge' ];
+
+	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_refund_charge_request';
 
 	/**
 	 * Sets the charge ID, which will be used in the request URL.
@@ -50,6 +58,32 @@ class Refund_Charge extends Request {
 	public function set_amount( int $amount ) {
 		$this->validate_is_larger_than( $amount, 0 );
 		$this->set_param( 'amount', $amount );
+	}
+
+	/**
+	 * Sets the reason for the refund.
+	 *
+	 * @param string|null $reason The reason for the refund.
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_reason( ?string $reason ) {
+		$this->set_param( 'reason', $reason );
+	}
+
+	/**
+	 * Sets the refund source describing where it was initiated from.
+	 *
+	 * @param string $source The reason for the refund.
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_source( string $source ) {
+		$this->set_param(
+			'metadata',
+			array_merge(
+				$this->get_params()['metadata'] ?? [],
+				[ 'refund_source' => $source ]
+			)
+		);
 	}
 
 	/**

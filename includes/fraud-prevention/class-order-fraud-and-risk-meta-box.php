@@ -30,9 +30,16 @@ class Order_Fraud_And_Risk_Meta_Box {
 	 * @param WC_Payments_Order_Service $order_service The order service.
 	 */
 	public function __construct( WC_Payments_Order_Service $order_service ) {
-		add_action( 'add_meta_boxes', [ $this, 'maybe_add_meta_box' ] );
-
 		$this->order_service = $order_service;
+	}
+
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		add_action( 'add_meta_boxes', [ $this, 'maybe_add_meta_box' ] );
 	}
 
 	/**

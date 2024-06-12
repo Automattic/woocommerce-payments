@@ -2,7 +2,13 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import {
+	act,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -120,6 +126,8 @@ describe( 'AddPaymentMethodsTask', () => {
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		useAccountDomesticCurrency.mockReturnValue( 'usd' );
 		global.wcpaySettings = {
+			isMultiCurrencyEnabled: true,
+			storeCurrency: 'USD',
 			accountEmail: 'admin@example.com',
 		};
 	} );
@@ -441,6 +449,56 @@ describe( 'AddPaymentMethodsTask', () => {
 			)
 		).toBeInTheDocument();
 
+		jest.useRealTimers();
+	} );
+
+	it( "should render the setup tooltip correctly when multi currency is disabled and store currency doesn't support the LPM", () => {
+		global.wcpaySettings.isMultiCurrencyEnabled = false;
+		global.wcpaySettings.storeCurrency = 'USD';
+		const setCompletedMock = jest.fn();
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ], jest.fn() ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			bancontact_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
+
+		const { container } = render(
+			<SettingsContextProvider>
+				<WizardTaskContext.Provider
+					value={ { setCompleted: setCompletedMock, isActive: true } }
+				>
+					<AddPaymentMethodsTask />
+				</WizardTaskContext.Provider>
+			</SettingsContextProvider>
+		);
+
+		expect(
+			screen.queryByLabelText( 'Bancontact' )
+		).not.toBeInTheDocument();
+
+		const svgIcon = container.querySelectorAll(
+			'.gridicons-notice-outline'
+		)[ 0 ];
+
+		expect( svgIcon ).toBeInTheDocument();
+
+		jest.useFakeTimers();
+
+		act( () => {
+			fireEvent.mouseOver( svgIcon, {
+				view: window,
+				bubbles: true,
+				cancelable: true,
+			} );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText( /Bancontact requires the EUR currency\./ )
+		).toBeInTheDocument();
 		jest.useRealTimers();
 	} );
 } );

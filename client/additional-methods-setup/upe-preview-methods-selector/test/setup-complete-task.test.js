@@ -20,12 +20,6 @@ jest.mock( '../../../data', () => ( {
 
 describe( 'SetupComplete', () => {
 	beforeEach( () => {
-		window.wcpaySettings = {
-			additionalMethodsSetup: {
-				isUpeEnabled: false,
-			},
-		};
-
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[
 				'card',
@@ -39,30 +33,6 @@ describe( 'SetupComplete', () => {
 			],
 			() => null,
 		] );
-	} );
-
-	it( 'sets isUpeEnabled if isActive', () => {
-		render(
-			<WizardTaskContext.Provider value={ { isActive: true } }>
-				<SetupComplete />
-			</WizardTaskContext.Provider>
-		);
-
-		expect(
-			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled
-		).toBeTruthy();
-	} );
-
-	it( 'does not set isUpeEnabled if not isActive', () => {
-		render(
-			<WizardTaskContext.Provider value={ { isActive: false } }>
-				<SetupComplete />
-			</WizardTaskContext.Provider>
-		);
-
-		expect(
-			window.wcpaySettings.additionalMethodsSetup.isUpeEnabled
-		).toBeFalsy();
 	} );
 
 	it( 'renders setup complete messaging when context value is undefined', () => {

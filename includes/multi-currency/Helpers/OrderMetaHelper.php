@@ -39,7 +39,18 @@ class OrderMetaHelper {
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
-		$this->add_actions();
+	}
+
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		add_action( 'add_meta_boxes', [ $this, 'maybe_add_meta_box' ], 10, 2 );
+		add_action( 'save_post', [ $this, 'maybe_update_exchange_rate' ] );
+		add_action( 'admin_notices', [ $this, 'maybe_output_errors' ] );
+		add_filter( 'get_edit_post_link', [ $this, 'maybe_update_edit_post_link' ] );
 	}
 
 	/**
@@ -314,27 +325,20 @@ class OrderMetaHelper {
 	/**
 	 * Appends our parameter to the edit post link if needed.
 	 *
-	 * @param string $url The current edit post link.
+	 * @param string|null $url The current edit post link.
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function maybe_update_edit_post_link( $url ): string {
+	public function maybe_update_edit_post_link( $url ): ?string {
+		if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+			return null;
+		}
+
 		if ( $this->is_feature_enabled() ) {
 			$url .= '&wcpay_mc_meta_helper=1';
 		}
-		return $url;
-	}
 
-	/**
-	 * Adds our actions and hooks.
-	 *
-	 * @return void
-	 */
-	private function add_actions() {
-		add_action( 'add_meta_boxes', [ $this, 'maybe_add_meta_box' ], 10, 2 );
-		add_action( 'save_post', [ $this, 'maybe_update_exchange_rate' ] );
-		add_action( 'admin_notices', [ $this, 'maybe_output_errors' ] );
-		add_filter( 'get_edit_post_link', [ $this, 'maybe_update_edit_post_link' ] );
+		return $url;
 	}
 
 	/**

@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CapabilityRequestNotice should match the snapshot - Render UNREQUESTED CapabilityNotice 1`] = `
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-info-notice woopayments-request-jcb components-notice is-info is-dismissible"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Enable JCB for your customers, the only international payment brand based in Japan.
+          <div
+            class="components-flex wcpay-inline-notice__content__actions css-azptjn-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
+          >
+            <button
+              class="components-button wcpay-inline-notice__action"
+              type="button"
+            >
+              Enable JCB
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+    <button
+      aria-label="Dismiss this notice"
+      class="components-button components-notice__dismiss has-icon"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        height="24"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
+`;

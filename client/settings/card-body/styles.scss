@@ -37,9 +37,16 @@
 		}
 	}
 
+	// overriding the core styles to ensure that the select element can be clickable along its width.
+	.wp-core-ui & select {
+		max-width: none;
+	}
+
 	// spacing in the "Express checkouts" settings page
 	.components-radio-control__option {
-		margin-bottom: 18px;
+		margin-bottom: 10px;
+		align-items: center;
+		display: flex;
 	}
 
 	.components-base-control__help {

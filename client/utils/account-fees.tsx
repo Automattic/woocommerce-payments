@@ -74,24 +74,31 @@ const getStripeFeeSectionUrl = ( country: string ): string => {
 	);
 };
 
-const getFeeDescriptionString = ( fee: BaseFee ): string => {
+const getFeeDescriptionString = (
+	fee: BaseFee,
+	discountBasedMultiplier = 1
+): string => {
 	if ( fee.fixed_rate && fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%% + %2$s',
-			formatFee( fee.percentage_rate ),
-			formatCurrency( fee.fixed_rate, fee.currency )
+			formatFee( fee.percentage_rate * discountBasedMultiplier ),
+			formatCurrency(
+				fee.fixed_rate * discountBasedMultiplier,
+				fee.currency
+			)
 		);
 	} else if ( fee.fixed_rate ) {
 		return sprintf(
-			'%2$s',
-			formatFee( fee.percentage_rate ),
-			formatCurrency( fee.fixed_rate, fee.currency )
+			'%1$s',
+			formatCurrency(
+				fee.fixed_rate * discountBasedMultiplier,
+				fee.currency
+			)
 		);
 	} else if ( fee.percentage_rate ) {
 		return sprintf(
 			'%1$f%%',
-			formatFee( fee.percentage_rate ),
-			formatCurrency( fee.fixed_rate, fee.currency )
+			formatFee( fee.percentage_rate * discountBasedMultiplier )
 		);
 	}
 	return '';
@@ -109,20 +116,21 @@ export const formatMethodFeesTooltip = (
 	accountFees: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
-	const currentBaseFee = getCurrentBaseFee( accountFees );
-	// If the current fee doesn't have a fixed or percentage rate, use the base fee's rate. Eg. when there is a promotional discount fee applied. Use this to calculate the total fee too.
-	const currentFeeWithBaseFallBack = currentBaseFee.percentage_rate
-		? currentBaseFee
-		: accountFees.base;
 
+	const discountAdjustedFeeRate: number =
+		accountFees.discount.length && accountFees.discount[ 0 ].discount
+			? 1 - accountFees.discount[ 0 ].discount
+			: 1;
+
+	// Per https://woo.com/es/terms-conditions/woopayments-promotion-2023/ we exclude FX fees from discounts.
 	const total = {
 		percentage_rate:
-			currentFeeWithBaseFallBack.percentage_rate +
-			accountFees.additional.percentage_rate +
+			accountFees.base.percentage_rate * discountAdjustedFeeRate +
+			accountFees.additional.percentage_rate * discountAdjustedFeeRate +
 			accountFees.fx.percentage_rate,
 		fixed_rate:
-			currentFeeWithBaseFallBack.fixed_rate +
-			accountFees.additional.fixed_rate +
+			accountFees.base.fixed_rate * discountAdjustedFeeRate +
+			accountFees.additional.fixed_rate * discountAdjustedFeeRate +
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
 	};
@@ -136,14 +144,20 @@ export const formatMethodFeesTooltip = (
 			<div>
 				<div>Base fee</div>
 				<div>
-					{ getFeeDescriptionString( currentFeeWithBaseFallBack ) }
+					{ getFeeDescriptionString(
+						accountFees.base,
+						discountAdjustedFeeRate
+					) }
 				</div>
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>
 					<div>International payment method fee</div>
 					<div>
-						{ getFeeDescriptionString( accountFees.additional ) }
+						{ getFeeDescriptionString(
+							accountFees.additional,
+							discountAdjustedFeeRate
+						) }
 					</div>
 				</div>
 			) : (
@@ -237,14 +251,7 @@ export const formatAccountFeesDescription = (
 	accountFees: FeeStructure,
 	customFormats = {}
 ): string | JSX.Element => {
-	const defaultFee = {
-		fixed_rate: 0,
-		percentage_rate: 0,
-		currency: 'USD',
-	};
 	const baseFee = accountFees.base;
-	const additionalFee = accountFees.additional ?? defaultFee;
-	const fxFee = accountFees.fx ?? defaultFee;
 	const currentBaseFee = getCurrentBaseFee( accountFees );
 
 	// Default formats will be used if no matching field was passed in the `formats` parameter.
@@ -253,25 +260,13 @@ export const formatAccountFeesDescription = (
 		fee: __( '%1$f%% + %2$s per transaction', 'woocommerce-payments' ),
 		/* translators: %f percentage discount to apply */
 		discount: __( '(%f%% discount)', 'woocommerce-payments' ),
-		tc_link: __(
-			' — see <tclink>Terms and Conditions</tclink>',
-			'woocommerce-payments'
-		),
 		displayBaseFeeIfDifferent: true,
 		...customFormats,
 	};
 
-	// Some payment methods doesn't have base percentage rate. In this case, the lowest rate will be shown as a start value
-	let displayFeePercentageRate = baseFee.percentage_rate;
-	if ( displayFeePercentageRate <= 0 ) {
-		displayFeePercentageRate =
-			additionalFee.percentage_rate < fxFee.percentage_rate
-				? additionalFee.percentage_rate
-				: fxFee.percentage_rate;
-	}
 	const feeDescription = sprintf(
 		formats.fee,
-		formatFee( displayFeePercentageRate ),
+		formatFee( baseFee.percentage_rate ),
 		formatCurrency( baseFee.fixed_rate, baseFee.currency )
 	);
 	const isFormattingWithDiscount =
@@ -318,19 +313,6 @@ export const formatAccountFeesDescription = (
 		const conversionMap: Record< string, any > = {
 			s: <s />,
 		};
-
-		if ( discountFee.tc_url && 0 < formats.tc_link.length ) {
-			currentBaseFeeDescription += ' ' + formats.tc_link;
-
-			conversionMap.tclink = (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href={ discountFee.tc_url }
-					target="_blank"
-					rel="noreferrer"
-				/>
-			);
-		}
 
 		return createInterpolateElement(
 			currentBaseFeeDescription,
@@ -395,6 +377,8 @@ export const getTransactionsPaymentMethodName = (
 			return __( 'Affirm transactions', 'woocommerce-payments' );
 		case 'afterpay_clearpay':
 			return __( 'Afterpay transactions', 'woocommerce-payments' );
+		case 'klarna':
+			return __( 'Klarna transactions', 'woocommerce-payments' );
 		default:
 			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}

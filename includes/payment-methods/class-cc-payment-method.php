@@ -33,11 +33,11 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns payment method title
 	 *
-	 * @param array|bool $payment_details Optional payment details from charge object.
-	 *
+	 * @param string|null $account_country Account country.
+	 * @param array|false $payment_details Payment details.
 	 * @return string
 	 */
-	public function get_title( $payment_details = false ) {
+	public function get_title( string $account_country = null, $payment_details = false ) {
 		if ( ! $payment_details ) {
 			return $this->title;
 		}
@@ -50,12 +50,14 @@ class CC_Payment_Method extends UPE_Payment_Method {
 			'unknown' => __( 'unknown', 'woocommerce-payments' ),
 		];
 
-		$card_network = $details['network'] ?? $details['networks']['available'][0];
+		$card_network = $details['display_brand'] ?? $details['network'] ?? $details['networks']['preferred'] ?? $details['networks']['available'][0];
+		// Networks like `cartes_bancaires` may use underscores, so we replace them with spaces.
+		$card_network = str_replace( '_', ' ', $card_network );
 
 		$payment_method_title = sprintf(
 			// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
 			__( '%1$s %2$s card', 'woocommerce-payments' ),
-			ucfirst( $card_network ),
+			ucwords( $card_network ),
 			$funding_types[ $details['funding'] ]
 		);
 
@@ -70,5 +72,4 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	public function get_testing_instructions() {
 		return __( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' );
 	}
-
 }

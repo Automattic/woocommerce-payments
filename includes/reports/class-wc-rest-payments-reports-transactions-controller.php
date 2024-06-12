@@ -39,7 +39,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<id>\w+)',
+			'/' . $this->rest_base . '/(?P<id>[A-Za-z0-9_\-]+)',
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
@@ -70,7 +70,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		];
 		$wcpay_request->set_filters( $filters );
 
-		$response = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
@@ -81,7 +81,6 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		}
 
 		return rest_ensure_response( $data );
-
 	}
 
 	/**
@@ -96,7 +95,7 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 		$wcpay_request->set_sort_by( 'date' ); // Default sort.
 		$wcpay_request->set_page_size( 1 ); // Set page size to limit to only one record.
 
-		$response = $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
@@ -385,5 +384,4 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 
 		return $this->add_additional_fields_schema( $schema );
 	}
-
 }

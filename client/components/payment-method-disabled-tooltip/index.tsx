@@ -26,6 +26,7 @@ export const getDocumentationUrlForDisabledPaymentMethod = (
 	switch ( paymentMethodId ) {
 		case PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY:
 		case PAYMENT_METHOD_IDS.AFFIRM:
+		case PAYMENT_METHOD_IDS.KLARNA:
 			url = DocumentationUrlForDisabledPaymentMethod.BNPLS;
 			break;
 		default:

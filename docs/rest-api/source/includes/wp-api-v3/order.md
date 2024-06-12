@@ -161,6 +161,60 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_author
 	}
 }
 ```
+## Cancel an authorization
+
+_@since v5.7.0_
+
+Cancel the authorization of an existing uncaptured payment intent.
+
+### POST params
+
+-   payment_intent_id: string
+
+### Error codes
+
+-   `wcpay_missing_order` - Order not found
+-   `wcpay_refunded_order_uncapturable` - Payment cannot be canceled
+-   `wcpay_payment_uncapturable` - The payment cannot be canceled if intent status is not one of 'processing', 'requires_capture', or 'succeeded'
+-   `wcpay_intent_order_mismatch` - Payment cannot be canceled because the order id does not match with payment intent id
+-   `wcpay_cancel_error` - Unknown error
+
+### HTTP request
+
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">POST</i>
+    <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/cancel_authorization</h6>
+  </div>
+</div>
+
+```shell
+curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/cancel_authorization \
+  -u consumer_key:consumer_secret \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}'
+```
+
+> JSON response example:
+
+```json
+{
+	"status": "canceled",
+	"id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}
+```
+
+```json
+{
+	"code": "wcpay_missing_order",
+	"message": "Order not found",
+	"data": {
+		"status": 409
+	}
+}
+```
 
 ## Create customer
 

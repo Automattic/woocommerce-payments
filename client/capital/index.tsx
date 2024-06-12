@@ -12,7 +12,7 @@ import { dateI18n } from '@wordpress/date';
  * Internal dependencies.
  */
 import Page from 'components/page';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 import ErrorBoundary from 'components/error-boundary';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import { formatExplicitCurrency, isZeroDecimalCurrency } from 'utils/currency';
@@ -21,7 +21,6 @@ import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
-
 import './style.scss';
 
 const columns = [
@@ -205,7 +204,8 @@ const CapitalPage = (): JSX.Element => {
 
 	return (
 		<Page>
-			<TestModeNotice topic={ topics.loans } />
+			<TestModeNotice currentPage="loans" />
+
 			{ wcpaySettings.accountLoans.has_active_loan && (
 				<ErrorBoundary>
 					<ActiveLoanSummary />
@@ -218,6 +218,7 @@ const CapitalPage = (): JSX.Element => {
 				totalRows={ loans.length }
 				headers={ columns }
 				rows={ getRowsData( loans ) }
+				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
 				showMenu={ false }
 			/>

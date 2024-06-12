@@ -1,6 +1,6 @@
 # `Refund_Charge` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 
@@ -17,8 +17,6 @@ The `WCPay\Core\Server\Request\Refund_Charge` class is used to construct the req
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_refund_charge_request`
 - Arguments: None
 
@@ -28,5 +26,5 @@ When using this request, provide the following filter and arguments:
 $request = Refund_Charge::create( );
 $request->set_charge( 'ch_xxxxx' );
 $request->set_amount( 100 ); // It is not required. You can also skip this setter.
-$request->send( 'wcpay_refund_charge_request' );
+$request->send();
 ```

@@ -1,5 +1,635 @@
 *** WooPayments Changelog ***
 
+= 7.7.0 - 2024-05-29 =
+* Add - Add share key query param when sending data to Stripe KYC.
+* Add - Add the WooPay Direct Checkout flow to the blocks mini cart widget.
+* Add - feat: add multi-currency support to Store API.
+* Add - feat: error message on 1M+ amount.
+* Add - feat: tokenized cart PRBs on PDPs via feature flag.
+* Add - Render ECE buttons behind a feature flag.
+* Fix - Charm pricing and rounding options corrected for all currencies that aren't presented with decimal points.
+* Fix - Fix "Pay for order" infinite loading when submitting form without payment details.
+* Fix - fix: remove WooPay checkout pages scripts from non-checkout pages.
+* Fix - fix: settings notices consistency.
+* Fix - fix: Store API tokenized cart nonce verification.
+* Fix - Fix a bug in Tracks where shopper events are not fired properly.
+* Fix - Fix ECE error in the blocks checkout when PRBs are disabled.
+* Fix - Fix Payment block render error while editing the block checkout page.
+* Fix - Fix shortcode orders when using WooPay Direct Checkout.
+* Fix - Improve visibility of WooPay button on light and outline button themes.
+* Fix - Updating saved payment method billing address before processing the payment.
+* Update - Do not auto-redirect to WooPay on page load.
+* Update - Pass previous exception with exception.
+* Update - Removed deprecated deposit_status key from account status.
+* Update - Remove public key encryption setting from WooPayments settings.
+* Update - Update XPF currency formatting.
+* Dev - Add command to run QIT PHPStan tests.
+* Dev - Add local release package support for PHPStan.
+* Dev - Bump tested up to version for WP to 6.5 and WC to 8.9.1.
+* Dev - Fix Klarna E2E tests.
+* Dev - Guarantee REST intialization on REST request context (avoiding rest_preload_api_request context).
+* Dev - Upgrade jetpack sync package version.
+
+= 7.6.0 - 2024-05-08 =
+* Add - Add additional data to Compatibility service
+* Add - Add User Satisfaction Survey for Payments Overview Widget
+* Add - Detect payment methods enabled by multiple payment gateways.
+* Add - Display BNPL payment method logos on the thank you page.
+* Add - Non user-facing changes. Behind feature flag. Add tooltip messages to tiles within Payment activity widget
+* Add - Not user-facing: hidden behind feature flag. Use Reporting API to fetch and populate data in the Payment Activity widget.
+* Add - Pre check save my info for eligible contries
+* Add - Support for starting auto-renewing subscriptions for In-Person Payments.
+* Fix - Add notice when no rules are enabled in advanced fraud settings
+* Fix - Adjust positioning of BNPL messaging on the classic cart page.
+* Fix - Avoid updating billing details for legacy card objects.
+* Fix - Ensure the WooPay preview in the admin dashboard matches the actual implementation.
+* Fix - fix: BNPL announcement link.
+* Fix - fix: Stripe terms warning at checkout when Link is enabled
+* Fix - Fix issue with transient check related to fraud protection settings.
+* Fix - Fix order notes entry and risk meta box content when a payment is blocked due to AVS checks while the corresponding advanced fraud rule is enabled.
+* Fix - Fix type error for fraud outcome API.
+* Fix - Fix WooPay tracks user ID for logged in users.
+* Fix - Hide Fraud info banner until first transaction happens
+* Fix - Improve merchant session request with preloaded data.
+* Fix - Improve signing of minimum WooPay session data.
+* Fix - Make sure an explicit currency code is present in the cart and checkout blocks when multi-currency is enabled
+* Fix - Prevent Stripe Link from triggering the checkout fields warning
+* Fix - Remove risk review request from the transactions page.
+* Fix - Resolves "Invalid recurring shipping method" errors when purchasing multiple subscriptions with Apple Pay and Google Pay.
+* Fix - Revert: Add Multi-Currency Support to Page Caching via Cookies.
+* Update - Add source param to onboarding and complete KYC links
+* Update - Add support of a third-party plugin with PRBs into duplicates detection mechanism.
+* Update - Remove feature flag for the pay-for-order flow
+* Dev - Add Playwright e2e test suite ready for incremental migration and visual regression testing
+* Dev - Avoid warnings about fatal error during plugin update due to problems with plugin initialization.
+* Dev - Remove legacy method from `WooPay_Utilities`.
+* Dev - Remove obsolete docker-compose key `version`
+* Dev - Upgraded jetpack sync package version.
+
+= 7.5.3 - 2024-04-22 =
+* Fix - Fix subscription renewals exceptions
+* Dev - Remove deprecated param from asset data registry interface.
+
+= 7.5.2 - 2024-04-22 =
+* Fix - Bugfix for failing subscription renewal payments.
+* Dev - Remove deprecated param from asset data registry interface.
+
+= 7.5.1 - 2024-04-18 =
+* Fix - Avoid updating billing details for legacy card objects.
+* Fix - fix: BNPL announcement link.
+
+= 7.5.0 - 2024-04-17 =
+* Add - Add a parent wrapper component for Payment Activity widget. This will be visible on the Payments Overview page
+* Add - Add a task on WooCommerce Home page to remind accounts operating in sandbox mode to set up live payments.
+* Add - Add BNPL messaging to cart page.
+* Add - Add BNPL terms to checkout payment methods.
+* Add - Added support to Cartes Bancaires
+* Add - Adding a tracking event for external redirects to finish setup and start receiving deposits.
+* Add - Add Multi-Currency Support to Page Caching via Cookies.
+* Add - Extend 'skip WooPay' flag to user session.
+* Add - feat: BNPL April announcement.
+* Add - Improve payment settings UX.
+* Add - Not user-facing: hidden behind feature flag. Add an empty state view for the Payments Activity widget. This is shown when the merchant is yet to have any transactions over WooPayments.
+* Add - Not user facing - Changes are behind a feature flag. Adds the basic UI scaffold for the Payments Activity widget.
+* Add - Prepopulate Vertical selection in the onboarding form based on Woo Core selection.
+* Fix - Add an instructive error message when customer tries to use 2 different currencies for Stripe Billing subscriptions.
+* Fix - Address PHPCS reports in checkout classes.
+* Fix - Adds a check to see if the session exists before calling get()
+* Fix - Change IP country rule after country settings are changed in WC settings page
+* Fix - Defensive check for cart block PMME which hasn't yet been deployed.
+* Fix - Don't register WooPay Order Webhook if account is rejected.
+* Fix - Don't register WooPay Order Webhook if account is under review.
+* Fix - Ensure "Proceed to checkout" button's loading spinner doesn't affect button spacing when Direct Checkout is enabled.
+* Fix - Ensure that the currency configurations are set correctly when multi-currency is enabled.
+* Fix - Ensure we avoid an infinite recursive call stack through 'wc_get_price_decimal_separator' filter.
+* Fix - fix: error message on 402 status code
+* Fix - Fix an incorrect warning about Puerto Rico being unsupported by WooPayments
+* Fix - Fix collision between WooPayments header and Woo Express survey banner.
+* Fix - Fix Decline button state for Accept loading on ToS modal
+* Fix - Fixed Afterpay logo size on settings page
+* Fix - Fixed billing address error for subscription without some billing details
+* Fix - Fixed optional billing field validation
+* Fix - Fix Fatal Error showing when connect to Jetpack on localhost
+* Fix - Fix JS error when clicking GPay button on blocks checkout with subscription (w/sign up fee) in cart.
+* Fix - Fix payment icons on connect page (Klarna, Afterpay)
+* Fix - Hide account tools finish setup button for accounts completed the KYC and change it's link to Stripe KYC instead of the Stripe Express.
+* Fix - Remove extra WooPay icon on connect page
+* Fix - Remove incorrect "UTC" label from the time column of Transactions page
+* Fix - Remove redundant message after the account is onboarded
+* Fix - Resolves "Invalid recurring shipping method" errors when purchasing multiple subscriptions with Apple Pay and Google Pay.
+* Fix - Sync discount brakedown with how server processes it
+* Update - Adding a tracking event for external redirects to update account details, more consistent behaviour for redirects.
+* Update - Cleanup unused payment confirmation code.
+* Update - Reduce the visual footprint of the sandbox mode notice.
+* Update - Remove @wordpress/data dependency in the email input iframe file
+* Update - Remove ToS acceptance copy from all entrypoints in MOX
+* Update - Remove unwanted css overrides on the Payment activity widget wrapper
+* Update - Replace deprecated filter.
+* Update - Update Discover and Diners logos
+* Update - Updated Link by Stripe logo
+* Update - Update links across the plugin from woo.com to woocommerce.com (previous platform HQ URL).
+* Update - Update MOX cancellation to consistently redirect back to the payment connect page.
+* Dev - Address update PHPCS error - a single one recommending escaping an exception message
+* Dev - Add TypeScript development guidelines
+* Dev - Add VariableAnalysis sniffs for better ergonomics around unused and undefined variables
+* Dev - Changes are not user facing, behind a feature flag. Refactor - tooltip component flattened in place, instead of calling it from a separate file.
+* Dev - Clear WP cache on writes inside Database_Cache
+* Dev - Escaping error logs and ignoring noticese where there are no issues.
+* Dev - Fix e2e tests for BNPL checkout
+* Dev - Fixed phpcs errors
+* Dev - Fixes to comply with updates to PHPCS linter.
+* Dev - Ignore alternative function WordPress PHPCS sniffs in the GH workflows and tests
+* Dev - Increase unit test coverage for WooPay direct checkout flow.
+* Dev - Payments Activity - add scaffolding for Total Payment Volume.
+* Dev - refactor: reduce wp-data dependency on shortcode checkout
+* Dev - Updated PHPCS and sniffs used for static analysis
+* Dev - Updates to remove deprecated function usage in the Jetpack Connection manager. Doesn't affect functionality.
+
+= 7.4.0 - 2024-03-27 =
+* Add - Add account reset for sandboxes
+* Add - Add a loading spinner to the "Proceed to Checkout" button in shortcode cart.
+* Add - Add data telemetry for the Proceed to Checkout button and the WooPay direct checkout.
+* Add - Added a notice about custom checkout fields conflicting with express checkouut
+* Add - Added a notice to inform the merchant when the payout bank account is in errored state
+* Add - Added a notice to the Deposits Listing screen when deposits are paused
+* Add - Add WooPay direct checkout flow behind a server-side feature flag.
+* Add - Add woopayMinimumSessionData in wcpayConfig when Express Checkout button's disabled o on car page.
+* Add - Customizing BNPL messaging with Appearance API
+* Add - Handle refunds triggered externally, outside WP Admin
+* Add - Preload WooPay session data for WooPay Direct Checkout flow.
+* Fix - Add empty validation when quering order by meta key and meta value
+* Fix - Add settings object for every gateway
+* Fix - Allow WooPay button preview on settings page
+* Fix - Apply the WooPay Direct Checkout flow only to the "Proceed to Checkout" button, in cthe classic cart.
+* Fix - Ensure card gateway is not running through the settings migration.
+* Fix - Ensure every gateway has individual settings object.
+* Fix - Ensure WooPay Direct Checkout continues to work as intended when WooPay Express Checkout is disabled on the cart page.
+* Fix - fix: "Add payment method" page initialization on missing UPE styles
+* Fix - fix: better error message when saved card and amount too large
+* Fix - Fixed a 1px gap on the right side of some payment method icons in transaction details.
+* Fix - Fixed Clearpay aria-label for UK sites
+* Fix - Fixes some instances where Stripe UPE styles add a black background to input fields.
+* Fix - Fix the cursor pointer when hovering over disabled checkboxes in Advanced Settings
+* Fix - Fix WooPay direct checkout eligibility checks.
+* Fix - Hide the option to refund in full from the transaction details menu when a transaction is partially refunded.
+* Fix - Inform hard blocked merchants they're under review
+* Fix - Load deposit overview only when deposit is present
+* Fix - Move test mode transactions notice to the top of the page.
+* Fix - Order completed and refunded emails are no longer sent when a dispute is closed.
+* Fix - Preventing stock quantity from being reduced twice.
+* Fix - Re-enable Direct-to-Checkout Feature Flag in WooPay OTP Iframe.
+* Fix - strtolower deprecation warning no longer appears on the Order Received and View Order pages when using PHP version 8.1+
+* Fix - Used client side navigation to improve the UX for "View Deposit History"
+* Fix - Uses WCPayAPI to initialise Stripe for BNPL payment element, includes necessary required parameters.
+* Update - Allow WooPay to request full session data from store.
+* Update - Clean up remaining unused code from a past experiment - `wcpay_empty_state_preview_mode`, done on Deposits list.
+* Update - Make the order note for `dispute funds withdrawn` event clearly mention that the dispute amount and fee would be deducted from the next deposit.
+* Update - Remove mention of test mode from general settings help text.
+* Update - Updated deposits API documentation to add default_external_accounts element
+* Update - Updates to reduce the amount of steps required during onboarding flow.
+* Update - Update the Payments Connect page design and logic
+* Update - Validate deposit id before sending a request to fetch deposit.
+* Dev - Bump WC tested up to version to 8.7.0 and set Requires Plugins header.
+* Dev - Ensure pre-push hook understands terminal & non-terminal environments
+* Dev - Fix a bug in Tracks where admin events were not recorded properly
+* Dev - Implement a feature flag for the Payment Overview widget.
+* Dev - Minor refactor to disputes utility function inInquiry to make it accept only dispute status as a param, instead of whole dispute object.
+* Dev - refactor: validator package bundle size improvements
+
+= 7.3.0 - 2024-03-06 =
+* Add - Added confirmation modals for order status changes with pending authorizations
+* Add - Add migration script to cover situations with Link and WooPay both enabled after plugin update.
+* Add - Add support for bookable products to payment request buttons on product pages.
+* Add - Alert user when they try to leave advanced fraud settings page with unsaved changes
+* Add - E2E tests for card testing prevention measures
+* Add - feat: add UPE appearance filter
+* Add - Handle timeouts in direct to WooPay checkout flow.
+* Fix - Add checks for cart and checkout blocks to enqueue_style call.
+* Fix - Added a small separator line between converted currency and the next line item.
+* Fix - Added support for WooCommerce Deposits when using Apple Pay and Google Pay
+* Fix - Adjustments to the wording of confirmation modals on the order and transaction details pages.
+* Fix - Do not open the email input iframe when there is no wcpay as payment method
+* Fix - Do not open the email input iframe without wcpay payment method
+* Fix - Ensure gateways accessibility for use cases which don't require the gateway to be enabled
+* Fix - Fees are now correctly applied to the Capture amount instead of the Authorize amount.
+* Fix - fix: add confirmation modal when disabling WooPayments from settings page
+* Fix - fix: ensure BNPL enablement is not adding unnecessary currencies
+* Fix - fix: list of payment methods in disable confirmation modal
+* Fix - fix: multi-currency confirmation modal ui
+* Fix - fix: onboarding currency messaging for BNPLs
+* Fix - fix: payment method checkbox loadable state
+* Fix - fix: remove Afterpay EUR currency
+* Fix - Fix a few untranslated phrases in the plugin
+* Fix - Fix currency search input field size and margins in Woo Express.
+* Fix - Fixed billing address line 2 not being updated for saved payment methods
+* Fix - Fixed positioning on buy-now-pay-later Stripe element on product page.
+* Fix - Fixes Stripe appearances API implementation to support dark themes and new elements, includes amends to checkout logos.
+* Fix - Fix fraud prevention token not showing up on site editor checkout page
+* Fix - Fix typo of transaction type "Loan dispersement" to "Loan disbursement" on transactions list page.
+* Fix - Make tk_ai cookie usage cache compatible
+* Fix - Only load `blocks-checkout.css` on single product, cart, and checkout pages.
+* Fix - Rename log file to woopayments
+* Fix - Show an informative tooltip instead of estimating the next deposit date (which can be inaccurate).
+* Fix - Updating saved payment method billing address before processing the payment
+* Update - Add deposit schedule help tooltip to deposits list screen so it's consistent with Payments Overview.
+* Update - chore: convert payment request CTA to select.
+* Update - chore: remove UPE feedback survey
+* Update - On Payments Overview page, show total balance (pending + available) instead of pending balance.
+* Update - Refactor WooPay First Party Auth and WooPay Direct Checkout to reuse similar functionality.
+* Update - Update status chip to WooCommerce pill for transaction status component.
+* Dev - Add Klarna e2e tests.
+* Dev - Bump WC tested up to version to 8.6.0.
+* Dev - chore: remove BNPL feature flag check
+* Dev - chore: remove unused brandTitles property from PMs
+* Dev - Dev: additional check when pushing to protected branches.
+* Dev - Fire `wcpay_disputes_row_action_click` for any click to dispute details (not just `Respond` button).
+* Dev - Remove unused `/deposits/overview` data-fetching code.
+* Dev - Removing unsupported `deposits/overview` REST API. `deposits/overview-all` should be used instead.
+* Dev - Reverts removed REST controller class to prevent error on update from older versions of the plugin.
+
+= 7.2.0 - 2024-02-14 =
+* Add - Add compatibility data to onboarding init payload.
+* Add - Add WooPay direct checkout flow behind a feature flag.
+* Add - Apply localization to CSV exports for transactions, deposits, and disputes sent via email.
+* Add - Displaying Clearpay instead of Afterpay for UK based stores
+* Add - Enhance WooPay session validation
+* Add - Filtering APMs by billing country
+* Add - Show a notice to the merchant when the available balance is below the minimum deposit amount.
+* Add - Show charge id on payments details page, so merchants can grab it to fill out the dispute evidence form when needed.
+* Add - Showing "started" event in transaction timeline
+* Add - Support Stripe Link payments with 3DS cards.
+* Fix - Adjust WordPress locale code to match the languages supported by the server.
+* Fix - Displaying the correct method name in Order Edit page for HPOS
+* Fix - Don't instantiate `Fraud_Prevention_Service` in checkout if processing an authorized WooPay request.
+* Fix - fix: help text alignment with Gutenberg plugin enabled
+* Fix - fix: pay-for-order compatibility with other gateways
+* Fix - Fixed a bug where the 'deposits paused while balance is negative' notice was erroneously shown after an instant deposit.
+* Fix - Fixes Pay for Order checkout using non-card payment methods.
+* Fix - Fix losing cart contents during the login at checkout.
+* Fix - Merge duplicated Payment Request and WooPay button functionality .
+* Fix - Prevent coupon usage increase in a WooPay preflight check.
+* Fix - Prevent WooPay webhook creation when account is suspended
+* Update - Add source to the onboarding flow page and track it
+* Update - Refactor the WooPay checkout flow UX
+* Update - Some minor update to tracking parameters to pass additional data like Woo store ID.
+* Update - Stop relying on Woo core for loading plugin translations.
+* Dev - Added ENUM class for currency codes
+* Dev - Bump WC tested up to version to 8.5.2.
+* Dev - chore: removed deprecated functions since 5.0.0
+* Dev - chore: remove unused checkout API methods
+* Dev - chore: remove unused gateway class methods
+* Dev - chore: remove unused isOrderPage return value from confirmIntent
+* Dev - chore: update colors on documentation pages
+* Dev - Comment: Bump qit-cli dependency to version 0.4.0.
+* Dev - E2E test - Merchant facing multi-currency on-boarding screen.
+* Dev - Fix for E2E shopper tests around 3DS and UPE settings
+* Dev - Refactoring the tracking logic
+* Dev - Refactor to how tracking events are defined for better readability.
+* Dev - Remove unnecessary tracks events for dispute accept success/error.
+* Dev - Update REST API documentation for deposits endpoints with changes to estimated and instant deposits
+* Dev - Update Tracks conditions
+
+= 7.1.0 - 2024-01-25 =
+* Add - Add active plugins array to compatibility data.
+* Add - Add post_types and their counts as an array to compatibility data.
+* Add - Add the active theme name of the blog to the compatibility service
+* Add - Expose the refund transaction ID in WooCommerce Order Refund API
+* Add - Select the proper payment element when using saved Stripe Link tokens or choosing to use Stripe Link for new email.
+* Add - Track filtering interactions on the Transactions page.
+* Fix - Allow subscription purchase via Payment Request when no shipping methods are present.
+* Fix - Allow zero-amount refunds for backwards compatibility with basic payment gateway and to allow re-stock of refunded orders.
+* Fix - Checking if wcpayPaymentRequestPayForOrderParams before using it in Pay for Order page
+* Fix - Checkout error when page URL is too long
+* Fix - Comment: Fix QIT security tests errors.
+* Fix - Fix incorrect test mode notice when left KYC early after going live from builder mode
+* Fix - Fix network error that occurs when viewing an test mode order with test mode disabled, and vice versa.
+* Fix - fix pay-for-order quirks and 3DS behavior
+* Fix - Fix Safe Mode message reversed host
+* Fix - Fix Stripe Link autofill on checkout.
+* Fix - Fix Stripe Link button alignment in the Checkout Block
+* Fix - Hide the transaction details refund menu for ineligble disputed transactions
+* Fix - Improve clarity & readability of disputed order notice (not all text bold).
+* Fix - Prevent possible fatal when using get_edit_post_link filter.
+* Fix - Re-render WooPay button when cart updates, when checkout updates.
+* Fix - Reinstate first deposit waiting period notice in payments overview (fix bug)
+* Fix - Remove unnecessary import statement which leads to a warning when first loaded
+* Fix - Resolved an error that would occur with WC 8.5.0 when editing a subscription customer from the admin dashboard.
+* Fix - Resolved an issue that caused ordering the Admin Subscriptions List Table to not work when HPOS is enabled.
+* Fix - Restock order items when performing full refund from transaction details page
+* Fix - Reverting to manual styling over native WordPress components to fix CSS defects on Analytics page
+* Fix - Send metadata in error message
+* Fix - Show the correct number of days in the new account waiting period notice.
+* Fix - Update WooPay tablet breakpoint.
+* Fix - Verify that order exists before offering "Partial refund" option on transaction details page.
+* Update - Changed the edit subscription product "Expire after" (Subscription length) so it more clearly describes when a subscription will automatically stop renewing.
+* Update - Pass currency parameter and not transaction_ids parameter when creating instant deposit.
+* Update - Store balance transaction ID in order metadata.
+* Update - Updated BNPL sorting in settings for consistency with onboarding.
+* Update - Update references to dev mode to use sandbox mode terminology.
+* Update - Updates to the styling of the onboarding mode selection page.
+* Update - Update style of notices within the deposits section of the settings screen.
+* Dev - Added enum class for country codes
+* Dev - Add new Tracks events to WooPay Save My Info checkbox
+* Dev - Allow test pipelines to pass by slightly adjusting HTML selectors
+* Dev - Merge UPE tests into the single and main gateway test file for unit and E2E tests.
+* Dev - Place order button Tracks
+* Dev - Track payment-request-button loads
+* Dev - Update jetpack dependencies for syncing.
+* Dev - Updates to account status logic to streamline it.
+* Dev - Update subscriptions-core to 6.7.1.
+
+= 7.0.0 - 2024-01-03 =
+* Add - Add Account Management tools with reset account functionality for partially onboarded accounts.
+* Add - Adding Compatibility Service to assist with flagging possible compatibility issues in the future.
+* Add - Add refund controls to transaction details view
+* Add - Add test mode notice in page order detail.
+* Add - Display a Confirmaton Modal on enabling Test Mode
+* Add - Introduce Customer currency, Deposit currency, Amount in Customer Currency and Deposit ID columns to the Transaction list UI and CSV export
+* Fix - Allow test phone number as Support Phone in Dev mode
+* Fix - Avoid using the removed deferred UPE flag
+* Fix - Ensure proper backfilling of subscription metadata (i.e. dates and cache) to the postmeta table when HPOS is enabled and compatibility mode (data syncing) is turned on.
+* Fix - Fetch and update the `_cancelled_email_sent` meta in a HPOS compatibile way.
+* Fix - fix: account currency hook return value
+* Fix - Fix account status error messages with links.
+* Fix - Fix country names with accents not showing correctly on international country fraud filter
+* Fix - Fix currency negative sign position on JS rendered amounts
+* Fix - Fixed a Level 3 error occurring during the capture of an authorization for amounts lower than the initial authorization amount.
+* Fix - Fixed Apple Pay Double Tax Calculation Issue
+* Fix - Fixed broken styles in authorization capture notifications
+* Fix - Fix incorrect amounts caused by zero-decimal currencies on Transactions, Deposits and Deposits CSV export
+* Fix - Fix missing customer data from transactions report
+* Fix - Fix missing order number in transaction reports CSV
+* Fix - Fix WooPay integration with AutomateWoo - Refer a Friend extension.
+* Fix - Improved error message for invalid payment method
+* Fix - Include discount fee in fees tooltip
+* Fix - Introduce WC_Payments_Express_Checkout_Button_Utils class.
+* Fix - Pass the pay-for-order params to get the pre-fetch session data
+* Fix - Prevents a PHP fatal error that occurs when the cart contains a renewal order item that no longer exists.
+* Fix - Resolved an issue that would cause undefined $current_page, $max_num_pages, and $paginate variable errors when viewing a page with the subscriptions-shortcode.
+* Fix - Revemoved pre-fretch session for button to prevent draft order creation
+* Fix - Update account balances on the Payments Overview screen when an instant deposit is requested
+* Fix - Update Qualitative Feedback note to have more efficient sql query.
+* Fix - When HPOS is enabled and data compatibility mode is turned on, make sure subscription date changes made to postmeta are synced to orders_meta table.
+* Fix - When using the checkout block to pay for renewal orders, ensure the order's cart hash is updated to make sure the existing order can be used.
+* Update - Actualized cards-related assets for settings and transactions pages.
+* Update - Cleanup the deprecated payment gateway processing - part II
+* Update - Cleanup the deprecated payment gateway processing - part III
+* Update - Confirmation when cancelling order with pending authorization. Automatic order changes submission if confirmed.
+* Update - Updates the anchor text for the fraud and risk tools documentation link on the Payments Settings page.
+* Update - Updates the behavior and display of the international IP address rule card if the rule is being affected by the WooCommerce core selling locations general option.
+* Dev - Add e2e tests for the currency switcher widget.
+* Dev - Added documentation for deposits REST API endpoints.
+* Dev - Bump WC tested up to version to 8.4.0.
+* Dev - Cleanup enqueueing of the scripts which were removed
+* Dev - Cleanup the deprecated payment gateway processing - part IV
+* Dev - Cleanup the deprecated payment gateway processing - part V
+* Dev - Cleanup the deprecated payment gateway processing - part VI
+* Dev - Comment: Fix declined 3DS card E2E test.
+* Dev - Deprecate the WC_Subscriptions_Synchroniser::add_to_recurring_cart_key(). Use WC_Subscriptions_Synchroniser::add_to_recurring_product_grouping_key() instead.
+* Dev - E2E test - Merchant facing: Multi-currency setup
+* Dev - Improve E2E checkout tests
+* Dev - Introduce a new wcs_get_subscription_grouping_key() function to generate a unique key for a subscription based on its billing schedule. This function uses the existing recurring cart key concept.
+* Dev - Remove "Set-up refund policy" Inbox note as superfluous.
+* Dev - remove unused factor flag for deferred UPE
+* Dev - Thank you page Tracks event
+* Dev - Updated subscriptions-core to version 6.6.0
+
+= 6.9.2 - 2023-12-14 =
+* Add - Notice is added when merchant has funds that are not yet available for deposit.
+* Add - Show a deposit schedule notice on the deposits list page to indicate that future deposits can be expected.
+* Fix - Show deposit schedule message when deposits are unrestricted
+* Fix - Transactions List - indicate when a transaction is expected to be included in a future deposit
+
+= 6.9.1 - 2023-12-07 =
+* Fix - Display Klarna & Afterpay on the checkout for UK based stores
+
+= 6.9.0 - 2023-12-06 =
+* Add - Added cleanup code after Payment Processing - RPP.
+* Add - Adds new option to track dismissal of PO eligibility modal.
+* Add - Display an error banner on the connect page when the WooCommerce country is not supported.
+* Add - Filter to disable WooPay checkout auto-redirect and email input hooks.
+* Add - Handle failed transaction rate limiter in RPP.
+* Add - Handle fraud prevention service in InitialState (project RPP).
+* Add - Handle mimium amount in InitialState (project RPP).
+* Add - Introduce filters for channel, customer country, and risk level on the transactions list page.
+* Add - Store the working mode of the gateway (RPP).
+* Fix - Add AutomateWoo - Refer A Friend Add-On support on WooPay.
+* Fix - Add date_between filter for Authorization Reporting API.
+* Fix - Add invalid product id error check.
+* Fix - Allow Gradual signup accounts to continue with the Gradual KYC after abandoning it.
+* Fix - Allow requests with item IDs to be extended without exceptions.
+* Fix - Check that the email is set in the post global.
+* Fix - Display notice when clicking the WooPay button if variable product selection is incomplete.
+* Fix - Do not show the WooPay button on the product page when WC Bookings require confirmation.
+* Fix - Enable deferred intent creation when initialization process encounters cache unavailability.
+* Fix - Ensure express payment methods (Google and Apple Pay) correctly reflect eligible shipping methods after closing and reattempting payment.
+* Fix - Fixes a redirect to show the new onboarding when coming from WC Core.
+* Fix - Fix saved card payments not working on block checkout while card testing prevention is active.
+* Fix - Pass the pay-for-order params to the first-party auth flow.
+* Fix - Prevent merchants to access onboarding again after starting it in new flow.
+* Fix - Remove unsupported EUR currency from Afterpay payment method.
+* Fix - Show Payments menu sub-items only for merchants that completed KYC.
+* Fix - Support 'variation' product type when re-adding items to a cart.
+* Fix - When rendering customer reference in transaction details, fallback to order data.
+* Fix - When rendering customer reference on transaction details page, handle case with name being not provided in the order.
+* Update - Change PRB default height for new installations.
+* Update - Cleanup the deprecated payment gateway processing - part I.
+* Update - Correct some links that now lead to better documentation.
+* Update - Enable the new onboarding flow as default for all users.
+* Update - Exclude estimated deposits from the deposits list screen.
+* Update - Improvements to the dev mode and test mode indicators.
+* Update - Remove estimated status option from the advanced filters on the deposits list screen.
+* Update - Replace the deposit overview transactions list with a "transaction history is unavailable for instant deposits" message.
+* Update - Update Payments Overview deposits UI to simplify how we communicate upcoming deposits.
+* Update - Update to the new onboarding builder flow to not prefill country/address to US.
+* Dev - Add client user-agent value to Tracks event props.
+* Dev - Add E2E tests for Affirm and Afterpay checkouts.
+* Dev - Add E2E tests for checking out with Giropay.
+* Dev - Added customer details management within the re-engineered payment process.
+* Dev - Adds WCPay options to Woo Core option allow list to avoid 403 responses from Options API when getting and updating options in non-prod env.
+* Dev - Bump WC tested up to version to 8.3.1.
+* Dev - Fix a bug in WooPay button update Tracks.
+* Dev - Introduce filter `wcpay_payment_request_is_cart_supported`.  Allow plugins to conditionally disable payment request buttons on cart and checkout pages containing products that do not support them.
+* Dev - Upgrade the csv-export JS package to the latest version.
+
+= 6.8.0 - 2023-11-16 =
+* Add - Added mechanism to track and log changes to the payment context (reengineering payment process)
+* Add - Add rejected payment method capability status
+* Add - Per-country amount limits for payment methods
+* Fix - Add Affiliate for WooCommerce support on WooPay.
+* Fix - Add WooCommerce Multi-Currency support on WooPay.
+* Fix - Allow customers using express payment methods (eg Apple Pay, Google Pay) to create an account automatically when purchasing subscription products if the store settings allow.
+* Fix - Display express payment buttons on checkout blocks pay-for-order page
+* Fix - Do not load WooPay button on external/affiliate product pages
+* Fix - Ensure shortcode renders for Privacy Policy & Terms of Service.
+* Fix - Fix builders being stuck after leaving KYC without finishing
+* Fix - Fix Multi-Currency formatting for totals on My Account > Subscriptions page.
+* Fix - Fix not allowed page when clicking Set up WooPayments from Core and account is already onboarded
+* Fix - Fix spelling of cancellation
+* Fix - Fix the amount conversion rate for blocked transactions on the transaction details page.
+* Fix - Fix total price for Google Pay on quantity change.
+* Fix - Fix transaction failure with UGX currency
+* Fix - Fix WooPay session handler's Store API route checks.
+* Fix - Handle checkout errors that appear during payment method creation request
+* Fix - Redact Stripe support contact prompt from error message when capturing amounts greater than authorized.
+* Fix - Remove references to In-Person Payments from Transaction settings when Cash on Delivery is disabled.
+* Fix - Show Google Pay/Apple Pay buttons in the Pay for Order page
+* Fix - Some array key info were not redacted in the logs
+* Fix - Update Fraud & Risk tools radio input background color to match the current theme.
+* Fix - Update plugin name to WooPayments
+* Fix - Updates to the account status logic to reflect status more accurately in some cases.
+* Update - Get WooPay 1st party auth flow to work on page load.
+* Update - Restructure the pay-for-order check
+* Update - Update links across the plugin from woocommerce.com to woo.com (new site URL).
+* Update - Update pay-for-order js config billing email to session email
+* Dev - Bump tested up to version for WP to 6.4
+* Dev - Fire a tracks event for disputed order notice view.
+* Dev - Introduce `wcpay_terminal_payment_completed_order_status` filter. Allows overriding the order status after a successful terminal payment.
+* Dev - Remove outdated wcpay_transactions_download tracking events.
+* Dev - Remove unused JS code
+* Dev - Use automatic capture as default flag in new payment process.
+
+= 6.7.1 - 2023-11-03 =
+* Fix - Replaced the concrete logging class with a logger interface
+
+= 6.7.0 - 2023-11-01 =
+* Add - Added an internal logger class, meant for use by classes within src.
+* Add - Added Authorizations reporting endpoint.
+* Add - Added documentation for reports API
+* Add - Added WooPay button locations setting
+* Add - Add IE, DK, FI, NO, and SE as supported countries to Klarna payment method
+* Add - Integrate Duplicate Payment Prevention Service to the new payment process (project RPP).
+* Add - Introduce tracking for fraud purposes prior to WooPayments onboarding.
+* Add - Use admin theme color and the correct WooCommerce colors across subscription interfaces.
+* Add - Validate order phone number in InitialState (RPP).
+* Fix - Add additional security checks in the plugin
+* Fix - Capital loans page broken on WooCommerce 8.2.0
+* Fix - Clear floats for payment request button wrapper.
+* Fix - Correct the display style for duplicate relevant notices in the thank-you page.
+* Fix - Ensure subscriptions have a date created that correctly accounts for the site's timezone. Fixes issues with subscriptions having a date created double the site's UTC offset.
+* Fix - Fix Afterpay checkout error when shipping information is missing
+* Fix - Fix Documents page loading on WooCommerce 8.2.0.
+* Fix - Fixed tooltip alignment for mobile view in payment settings
+* Fix - Fix Multi-Currency formatting on My Account > Orders page.
+* Fix - Fix order status inconsistency in HPOS mode on Order Edit screen.
+* Fix - Fix WooPay Same My Info adding unnecessary spacing to checkout
+* Fix - Format the display of created date for payment intent instead of timestamp.
+* Fix - Improve multi-currency compatibility with WooCommerce Deposits
+* Fix - Limit early WooPay session requests based on feature flag.
+* Fix - Prevent deleting wrong order in the duplicate payment prevention service
+* Fix - Prevent settings access to partially onboarded accounts
+* Fix - Prevent subscription from turning into manual renewal after deleting payment method.
+* Fix - Removed link to setup intent
+* Fix - Resolve an issue that would cause 3rd party plugin edit product fields with the show_if_variable-subscription class to be incorrectly hidden.
+* Fix - Set WooPay first party feature flag to off when incompatible extensions are active.
+* Fix - show/hide WooPay checkout page tooltip on click
+* Fix - Show loading state when accepting a dispute from the transaction details screen.
+* Fix - Update to properly show tooltip on Payments > Settings page when account is in PO state.
+* Fix - When HPOS is enabled, fix quick-editing the subscription statuses on the admin list table.
+* Update - Align deferred intent creation UPE checkout script with UPE inn terms of fonts appearance
+* Update - Enables deferred intent UPE for existing legacy card stores
+* Update - feat: add WooPay button SSR
+* Update - Unify payment method icon design
+* Update - Update Checkout appearance section to display WooPay checkout preview UI.
+* Dev - Added authentication required state
+* Dev - Add pay-for-order Tracks events
+* Dev - Add Shopper Tracks events
+* Dev - Bump WC and WP tested up to versions to 8.2.0 and 6.3
+* Dev - Fixed version check regex
+* Dev - PHP 8.1 compatibility
+* Dev - Remove redundant Tracks events in WooPay OTP flow
+* Dev - Restore skipped e2e merchant tests
+* Dev - Update subscriptions-core to 6.4.0.
+
+= 6.6.2 - 2023-10-20 =
+* Fix - Fix PSR container conflicts
+* Update - Deprecate Sofort for any merchants who have not enabled it. Warn existing merchants about future deprecation.
+
+= 6.6.1 - 2023-10-19 =
+* Fix - Fix Documents page loading on WooCommerce 8.2.0.
+* Fix - Stripe Link eligibility at checkout
+
+= 6.6.0 - 2023-10-11 =
+* Add - Add a notice on the Settings page to request JCB capability for Japanese customers.
+* Add - Add current user data to the onboarding init request payload. This data is used for fraud prevention.
+* Add - Added API endpoint to fetch customer's saved payment methods.
+* Add - Added docs for cancel_authorization endpoint
+* Add - Added documentation for create payment intent API endpoint.
+* Add - Added documentation for payment methods API endpoint
+* Add - Add functionality to enable WooPay first party auth behind feature flag.
+* Add - Add helper function/method for raw currency amount conversion.
+* Add - Add Klarna payment method
+* Add - Add loading state to WooPay button
+* Add - Add payment intent creation endpoint
+* Add - Add the feature flag check for pay-for-order flow
+* Add - Add WC blocks spinner to the WooPay checkout styles.
+* Add - Behind a feature flag: dispute message added to transactions screen for disputes not needing a response.
+* Add - Display dispute information, recommended resolution steps, and actions directly on the transaction details screen to help merchants with dispute resolution.
+* Add - Display server error messages on Settings save
+* Add - Expand the data points added to the WooCommerce SSR to include all the main WooPayments features.
+* Add - Handle server-side feature flag for new UPE type enablement.
+* Add - Introduce the "Subscription Relationship" column under the Orders list admin page when HPOS is enabled.
+* Add - Show survey for merchants that disable WooPay.
+* Fix - Add Mix and Match Products support on WooPay.
+* Fix - Add multi-currency enablement check in WooPay session handling.
+* Fix - Comment: Behind a feature flag: Update documentation links (new/changed docs content) when notifying merchant that a dispute needs response.
+* Fix - Disable automatic currency switching and switcher widgets on pay_for_order page.
+* Fix - Ensure renewal orders paid via the Block Checkout are correctly linked to their subscription.
+* Fix - Ensure the order needs processing transient is deleted when a subscription order (eg renewal) is created. Fixes issues with renewal orders going straight to a completed status.
+* Fix - fix: save platform checkout info on blocks
+* Fix - Fix Apple Pay and Google Pay if card payments are disabled.
+* Fix - Fix error when disabling WCPay with core disabled.
+* Fix - Fix init WooPay and empty cart error
+* Fix - Fix modal header alignment on safari browser
+* Fix - Fix onboarding section on MultiCurrency settings page.
+* Fix - Fix WooPay express checkout button with product bundles on product page.
+* Fix - Hide tooltip related to Storefront theme in Multi-Currency settings when Storefront is not the active theme
+* Fix - Improved product details script with enhanced price calculation, and fallbacks for potential undefined values.
+* Fix - Improve escaping around attributes.
+* Fix - Load multi-currency class on setup page.
+* Fix - Missing styles on the Edit Subscription page when HPOS is enabled.
+* Fix - Only request WooPay session data once on blocks pages.
+* Fix - Payment method section missing for Affirm and Afterpay on transaction details page
+* Fix - Prevent charging completed or processing orders with a new payment intent ID
+* Fix - Prevent WooPay-related implementation to modify non-WooPay-specific webhooks by changing their data.
+* Fix - Prevent WooPay multiple redirect requests.
+* Fix - Redirect back to the connect page when attempting to access the new onboarding flow without a server connection.
+* Fix - Redirect back to the pay-for-order page when it's pay-for-order order
+* Fix - Resolved an issue that caused paying for failed/pending parent orders that include Product Add-ons to not calculate the correct total.
+* Fix - Speed up capturing terminal and authorized payments.
+* Fix - Store the correct subscription start date in postmeta and ordermeta when HPOS and data syncing is being used.
+* Fix - Tracking conditions
+* Fix - Virtual variable products no longer require shipping details when checking out with Apple Pay and Google Pay
+* Fix - When HPOS is enabled, deleting a customer will now delete their subscriptions.
+* Fix - When HPOS is enabled, make the orders_by_type_query filter box work in the WooCommerce orders screen.
+* Fix - WooPay save my info phone number fallback for virtual products
+* Update - Adapt the PO congratulations card copy for pending account status.
+* Update - Allow deferred intent creation UPE to support SEPA payments.
+* Update - Enhance design of bnpl payment methods status in settings screen
+* Update - Increase GBP transaction limit for Afterpay
+* Update - Only display the WCPay Subscriptions setting to existing users as part of deprecating this feature.
+* Update - Set WooPay First Party Authentication feature flag to default on.
+* Update - Store customer currencies as an option to avoid expensive calculation.
+* Update - Updated Transaction Details summary with added fee breakdown tooltip for disputed transactions.
+* Update - Update links that pointed to the dispute details screen to point to the transaction details screen
+* Update - Update Name Your Price compatibility to use new Compatibility methods.
+* Update - Update the content of modals that are displayed when deactivating the WooPayments or Woo Subscriptions plugins when the store has active Stripe Billing subscriptions.
+* Update - Update URL used to communicate with WooPay from the iFrame in the merchant site.
+* Dev - Added missing API docs links for payment intents and payment methods API endpoints
+* Dev - Capitalize the JCB label on transactions details page.
+* Dev - e2e tests for progressive onboarding
+* Dev - Extracting payment metadata and level 3 data generation into services.
+* Dev - Migrate away from hooking into actions in certain classes
+* Dev - Move fraud related service hooks out of class constructors and into new init_hooks methods.
+* Dev - Move hooks out of MultiCurrency constructor into own init_hooks method.
+* Dev - Refactored request class send() method
+* Dev - Refactor to move hook initialisation out of constructors.
+* Dev - This work is part of a UI improvements to increase disputes response that is behind a feature flag. A changelog entry will be added to represent the work as a whole.
+* Dev - Update subscriptions-core to 6.3.0.
+
+= 6.5.1 - 2023-09-26 =
+* Fix - fix incorrect payment method title for non-WooPayments gateways
+
 = 6.5.0 - 2023-09-21 =
 * Add - Add a new task prompt to set up APMs after onboarding. Fixed an issue where a notice would show up in some unintended circumstances on the APM setup.
 * Add - Add an option on the Settings screen to enable merchants to migrate their Stripe Billing subscriptions to on-site billing.

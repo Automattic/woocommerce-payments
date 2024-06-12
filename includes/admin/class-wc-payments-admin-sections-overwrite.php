@@ -25,7 +25,14 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 */
 	public function __construct( WC_Payments_Account $account ) {
 		$this->account = $account;
+	}
 
+	/**
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_filter( 'woocommerce_get_sections_checkout', [ $this, 'add_checkout_sections' ] );
 	}
 
@@ -37,6 +44,7 @@ class WC_Payments_Admin_Sections_Overwrite {
 	 * @return array
 	 */
 	public function add_checkout_sections( array $default_sections ): array {
+		$sections_to_render                         = [];
 		$sections_to_render['woocommerce_payments'] = 'WooPayments';
 		$sections_to_render['']                     = __( 'All payment methods', 'woocommerce-payments' );
 

@@ -42,4 +42,16 @@ class HooksProxy {
 	public function add_action( $hook_name, $callback, $priority = 10, $accepted_args = 1 ) {
 		add_action( $hook_name, $callback, $priority, $accepted_args );
 	}
+
+	/**
+	 * Calls the callback functions that have been added to a filter hook.
+	 *
+	 * @param string $hook_name The name of the filter hook.
+	 * @param mixed  $value     The value to filter.
+	 * @param mixed  ...$args   Optional. Additional parameters to pass to the callback functions.
+	 * @return mixed The filtered value after all hooked functions are applied to it.
+	 */
+	public function apply_filters( $hook_name, $value, ...$args ) {
+		return apply_filters( $hook_name, $value, ...$args );
+	}
 }

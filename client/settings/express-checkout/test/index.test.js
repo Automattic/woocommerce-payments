@@ -12,10 +12,12 @@ import userEvent from '@testing-library/user-event';
 import ExpressCheckout from '..';
 import {
 	useEnabledPaymentMethodIds,
+	useExpressCheckoutShowIncompatibilityNotice,
 	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,
+	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
@@ -25,6 +27,8 @@ jest.mock( 'wcpay/data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn(),
+	useExpressCheckoutShowIncompatibilityNotice: jest.fn(),
+	useGetDuplicatedPaymentMethodIds: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -47,6 +51,8 @@ describe( 'ExpressCheckout', () => {
 		);
 
 		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
+
+		useGetDuplicatedPaymentMethodIds.mockReturnValue( [] );
 	} );
 
 	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
@@ -191,7 +197,7 @@ describe( 'ExpressCheckout', () => {
 		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
 	} );
 
-	it( 'should show incompatibility warning', async () => {
+	it( 'should show WooPay incompatibility warning', async () => {
 		const updateIsWooPayEnabledHandler = jest.fn();
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( false, updateIsWooPayEnabledHandler )
@@ -211,6 +217,26 @@ describe( 'ExpressCheckout', () => {
 		expect(
 			screen.queryByText(
 				'One or more of your extensions are incompatible with WooPay.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'should show Express Checkout incompatibility warning', async () => {
+		const context = { featureFlags: { woopay: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+
+		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( true );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'Your custom checkout fields may not be compatible with these payment methods.'
 			)
 		).toBeInTheDocument();
 	} );

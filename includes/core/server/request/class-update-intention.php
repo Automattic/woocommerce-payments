@@ -26,6 +26,13 @@ class Update_Intention extends Request {
 	];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_update_intention_request';
+
+	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
 	 * @param string $id Sets the intent ID, which will be used in the request URL.

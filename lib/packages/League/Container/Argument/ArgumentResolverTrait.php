@@ -7,7 +7,7 @@ namespace WCPay\Vendor\League\Container\Argument;
 use WCPay\Vendor\League\Container\DefinitionContainerInterface;
 use WCPay\Vendor\League\Container\Exception\{ContainerException, NotFoundException};
 use WCPay\Vendor\League\Container\ReflectionContainer;
-use Psr\Container\ContainerInterface;
+use WCPay\Vendor\Psr\Container\ContainerInterface;
 use ReflectionFunctionAbstract;
 use ReflectionNamedType;
 

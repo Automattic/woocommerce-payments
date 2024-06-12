@@ -8,6 +8,25 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Load customer multi-currency if feature is enabled or if it is the setup page.
+ */
+function wcpay_multi_currency_onboarding_check() {
+	$is_setup_page = false;
+
+	// Skip checking the HTTP referer if it is a cron job.
+	if ( ! defined( 'DOING_CRON' ) ) {
+		$http_referer  = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
+		$is_setup_page = 0 < strpos( $http_referer, 'multi-currency-setup' );
+	}
+
+	return $is_setup_page;
+}
+
+if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() && ! wcpay_multi_currency_onboarding_check() ) {
+	return;
+}
+
+/**
  * Returns the main instance of MultiCurrency.
  *
  * @return WCPay\MultiCurrency\MultiCurrency

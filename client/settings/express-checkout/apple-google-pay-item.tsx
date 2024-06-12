@@ -4,22 +4,37 @@
 import { __ } from '@wordpress/i18n';
 import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import React from 'react';
+import React, { useContext } from 'react';
 
 /**
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
-import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
-import GooglePay from 'assets/images/cards/google-pay.svg?asset';
-import { usePaymentRequestEnabledSettings } from 'wcpay/data';
+import {
+	usePaymentRequestEnabledSettings,
+	useExpressCheckoutShowIncompatibilityNotice,
+} from 'wcpay/data';
 import { PaymentRequestEnabledSettingsHook } from './interfaces';
+import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
+import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
+import DuplicateNotice from 'wcpay/components/duplicate-notice';
+import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
+	const id = 'apple_pay_google_pay';
+
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
 	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
+
+	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
+	const {
+		duplicates,
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
+	} = useContext( DuplicatedPaymentMethodsContext );
+	const isDuplicate = Object.keys( duplicates ).includes( id );
 
 	return (
 		<li
@@ -41,7 +56,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					<div>
 						<div className="express-checkout__subgroup">
 							<div className="express-checkout__icon">
-								<img src={ ApplePay } alt="Apple Pay" />
+								<ApplePayIcon />
 							</div>
 							<div className="express-checkout__label express-checkout__label-mobile">
 								{ __( 'Apple Pay', 'woocommerce-payments' ) }
@@ -96,7 +111,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 						</div>
 						<div className="express-checkout__subgroup">
 							<div className="express-checkout__icon">
-								<img src={ GooglePay } alt="Google Pay" />
+								<GooglePayIcon />
 							</div>
 							<div className="express-checkout__label express-checkout__label-mobile">
 								{ __( 'Google Pay', 'woocommerce-payments' ) }
@@ -161,6 +176,19 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
+			{ showIncompatibilityNotice && (
+				<ExpressCheckoutIncompatibilityNotice />
+			) }
+			{ isDuplicate && (
+				<DuplicateNotice
+					paymentMethod={ id }
+					gatewaysEnablingPaymentMethod={ duplicates[ id ] }
+					dismissedNotices={ dismissedDuplicateNotices }
+					setDismissedDuplicateNotices={
+						setDismissedDuplicateNotices
+					}
+				/>
+			) }
 		</li>
 	);
 };

@@ -6,7 +6,7 @@ exports[`Details link renders dispute details with ID 1`] = `
 <div>
   <a
     data-link-type="wc-admin"
-    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_mock"
+    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
   >
     <svg
       class="gridicon gridicons-info-outline needs-offset"

@@ -6,7 +6,7 @@
 import { apiFetch } from '@wordpress/data-controls';
 import { dispatch, select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal Dependencies
@@ -82,13 +82,10 @@ export function* submitEnabledCurrenciesUpdate( currencies ) {
 			__( 'Enabled currencies updated.', 'woocommerce-payments' )
 		);
 
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED,
-			{
-				added_currencies: addedCurrencies,
-				removed_currencies: removedCurrencies,
-			}
-		);
+		recordEvent( 'wcpay_multi_currency_enabled_currencies_updated', {
+			added_currencies: addedCurrencies,
+			removed_currencies: removedCurrencies,
+		} );
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error updating enabled currencies.', 'woocommerce-payments' )
@@ -118,7 +115,8 @@ export function* submitCurrencySettings( currencyCode, settings ) {
 
 export function* submitStoreSettingsUpdate(
 	isAutoSwitchEnabled,
-	isStorefrontSwitcherEnabled
+	isStorefrontSwitcherEnabled,
+	suppressNotices = false
 ) {
 	try {
 		const result = yield apiFetch( {
@@ -135,6 +133,8 @@ export function* submitStoreSettingsUpdate(
 		} );
 
 		yield updateStoreSettings( result );
+
+		if ( suppressNotices ) return;
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Store settings saved.', 'woocommerce-payments' )

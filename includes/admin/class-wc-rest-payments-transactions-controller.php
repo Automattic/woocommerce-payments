@@ -100,7 +100,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<transaction_id>\w+)',
+			'/' . $this->rest_base . '/(?P<transaction_id>[A-Za-z0-9_\-]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_transaction' ],
@@ -118,7 +118,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 
 		$wcpay_request = List_Transactions::from_rest_request( $request );
 
-		return $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**
@@ -173,9 +173,10 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	public function get_transactions_export( $request ) {
 		$user_email = $request->get_param( 'user_email' );
 		$deposit_id = $request->get_param( 'deposit_id' );
+		$locale     = $request->get_param( 'locale' );
 		$filters    = $this->get_transactions_filters( $request );
 
-		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id ] );
+		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id, $locale ] );
 	}
 
 	/**
@@ -237,6 +238,12 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'type_is_not'              => $request->get_param( 'type_is_not' ),
 				'source_device_is'         => $request->get_param( 'source_device_is' ),
 				'source_device_is_not'     => $request->get_param( 'source_device_is_not' ),
+				'channel_is'               => $request->get_param( 'channel_is' ),
+				'channel_is_not'           => $request->get_param( 'channel_is_not' ),
+				'customer_country_is'      => $request->get_param( 'customer_country_is' ),
+				'customer_country_is_not'  => $request->get_param( 'customer_country_is_not' ),
+				'risk_level_is'            => $request->get_param( 'risk_level_is' ),
+				'risk_level_is_not'        => $request->get_param( 'risk_level_is_not' ),
 				'store_currency_is'        => $request->get_param( 'store_currency_is' ),
 				'customer_currency_is'     => $request->get_param( 'customer_currency_is' ),
 				'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),

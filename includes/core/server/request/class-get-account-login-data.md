@@ -1,11 +1,11 @@
 # `Get_Account_Login_Data` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 
 The `WCPay\Core\Server\Request\Get_Account_Login_Data` class is used to construct the request for getting one-time dashboard login url.
-Note that this request sends the test_mode flag only when the site is in the dev mode.
+Note that this request sends the test_mode flag only when the site is in sandbox mode.
 
 ## Parameters
 
@@ -15,8 +15,6 @@ Note that this request sends the test_mode flag only when the site is in the dev
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wpcay_get_account_login_data`
 - Arguments: None.
 
@@ -25,5 +23,5 @@ When using this request, provide the following filter and arguments:
 ```php
 $request = Get_Account_Login_Data::create();
 $request->set_redirect_url( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
-$request->send( 'wpcay_get_account_login_data' );
+$request->send();
 ```

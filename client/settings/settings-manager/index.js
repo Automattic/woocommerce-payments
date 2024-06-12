@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
@@ -15,16 +15,21 @@ import PaymentMethods from '../../payment-methods';
 import ExpressCheckout from '../express-checkout';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
+import ReportingSettings from '../reporting-settings';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
-import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
-import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
-import { useDepositDelayDays, useSettings } from '../../data';
+import {
+	useDepositDelayDays,
+	useGetDuplicatedPaymentMethodIds,
+	useSettings,
+} from '../../data';
 import FraudProtection from '../fraud-protection';
+import { isDefaultSiteLanguage } from 'wcpay/utils';
+import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -65,7 +70,7 @@ const GeneralSettingsDescription = () => (
 			{ sprintf(
 				/* translators: %s: WooPayments */
 				__(
-					'Enable or disable %s on your store and turn on test mode to simulate transactions.',
+					'Enable or disable %s on your store.',
 					'woocommerce-payments'
 				),
 				'WooPayments'
@@ -126,10 +131,24 @@ const FraudProtectionDescription = () => {
 			</p>
 			<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/">
 				{ __(
-					'Learn more about risk filtering',
+					'Learn more about fraud protection',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
+		</>
+	);
+};
+
+const ReportingDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Reporting', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'Adjust your report exporting language preferences.',
+					'woocommerce-payments'
+				) }
+			</p>
 		</>
 	);
 };
@@ -152,13 +171,6 @@ const AdvancedDescription = () => {
 };
 
 const SettingsManager = () => {
-	const {
-		featureFlags: {
-			upeSettingsPreview: isUPESettingsPreviewEnabled,
-			upe: isUpeEnabled,
-			upeType,
-		},
-	} = useContext( WCPaySettingsContext );
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
@@ -193,6 +205,11 @@ const SettingsManager = () => {
 		}
 	}, [ isLoading ] );
 
+	const [
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
+	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
+
 	return (
 		<SettingsLayout>
 			<SettingsSection
@@ -205,48 +222,45 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ isUPESettingsPreviewEnabled && (
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: useGetDuplicatedPaymentMethodIds(),
+					dismissedDuplicateNotices: dismissedDuplicateNotices,
+					setDismissedDuplicateNotices: setDismissedDuplicateNotices,
+				} }
+			>
 				<SettingsSection
 					description={ PaymentMethodsDescription }
 					id="payment-methods"
 				>
 					<LoadableSettingsSection numLines={ 60 }>
 						<ErrorBoundary>
-							<WcPayUpeContextProvider
-								defaultIsUpeEnabled={ isUpeEnabled }
-								defaultUpeType={ upeType }
-							>
-								<PaymentMethods />
-							</WcPayUpeContextProvider>
+							<PaymentMethods />
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</SettingsSection>
-			) }
-			<SettingsSection
-				id="express-checkouts"
-				description={ ExpressCheckoutDescription }
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<ExpressCheckout />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
+				<SettingsSection
+					id="express-checkouts"
+					description={ ExpressCheckoutDescription }
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<ExpressCheckout />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			</DuplicatedPaymentMethodsContext.Provider>
 			<SettingsSection
 				description={ TransactionsDescription }
 				id="transactions"
 			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<WcPayUpeContextProvider
-							defaultIsUpeEnabled={ isUpeEnabled }
-						>
-							<Transactions
-								setTransactionInputsValid={
-									setTransactionInputsValid
-								}
-							/>
-						</WcPayUpeContextProvider>
+						<Transactions
+							setTransactionInputsValid={
+								setTransactionInputsValid
+							}
+						/>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
@@ -269,6 +283,18 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
+			{ ! isDefaultSiteLanguage() && (
+				<SettingsSection
+					description={ ReportingDescription }
+					id="fp-settings"
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<ReportingSettings />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			) }
 			<SettingsSection
 				description={ AdvancedDescription }
 				id="advanced-settings"

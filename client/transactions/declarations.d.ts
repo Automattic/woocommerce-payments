@@ -38,6 +38,7 @@ declare module '@woocommerce/components' {
 		path?: string;
 		query?: Query;
 		showDatePicker: boolean;
+		onAdvancedFilterAction?: ( args: string ) => void;
 		// some properties are omitted, as we are not currently using them
 	}
 
@@ -89,7 +90,7 @@ declare module '@woocommerce/components' {
 		className?: string;
 		title?: string;
 		isLoading?: boolean;
-		rowsPerPage?: number;
+		rowsPerPage: number;
 		totalRows?: number;
 		headers?: TableCardColumn[];
 		rows?: TableCardBodyColumn[][];
@@ -129,6 +130,12 @@ declare module '@woocommerce/navigation' {
 		type_is_not?: unknown;
 		source_device_is?: unknown;
 		source_device_is_not?: unknown;
+		channel_is?: string;
+		channel_is_not?: string;
+		customer_country_is?: string;
+		customer_country_is_not?: string;
+		risk_level_is?: string;
+		risk_level_is_not?: string;
 		customer_currency_is?: unknown;
 		customer_currency_is_not?: unknown;
 		store_currency_is?: string;

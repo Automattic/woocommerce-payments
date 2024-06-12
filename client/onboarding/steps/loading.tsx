@@ -9,7 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { useOnboardingContext } from '../context';
-import { POEligibleData, POEligibleResult } from '../types';
+import { PoEligibleData, PoEligibleResult } from '../types';
 import { fromDotNotation } from '../utils';
 import { trackRedirected, useTrackAbandoned } from '../tracking';
 import LoadBar from 'components/load-bar';
@@ -34,7 +34,7 @@ const LoadingStep: React.FC< Props > = () => {
 		) {
 			return false;
 		}
-		const eligibilityDetails: POEligibleData = {
+		const eligibilityDetails: PoEligibleData = {
 			business: {
 				country: data.country,
 				type: data.business_type,
@@ -45,7 +45,7 @@ const LoadingStep: React.FC< Props > = () => {
 				go_live_timeframe: data.go_live_timeframe,
 			},
 		};
-		const eligibleResult = await apiFetch< POEligibleResult >( {
+		const eligibleResult = await apiFetch< PoEligibleResult >( {
 			path: '/wc/v3/payments/onboarding/router/po_eligible',
 			method: 'POST',
 			data: eligibilityDetails,
@@ -67,6 +67,7 @@ const LoadingStep: React.FC< Props > = () => {
 		const resultUrl = addQueryArgs( connectUrl, {
 			self_assessment: fromDotNotation( data ),
 			progressive: isEligible,
+			source: 'onboarding-wizard',
 		} );
 
 		trackRedirected( isEligible );

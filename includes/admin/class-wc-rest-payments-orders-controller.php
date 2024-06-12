@@ -68,7 +68,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/capture_terminal_payment',
+			$this->rest_base . '/(?P<order_id>[A-Za-z0-9_\-]+)/capture_terminal_payment',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'capture_terminal_payment' ],
@@ -82,7 +82,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/capture_authorization',
+			$this->rest_base . '/(?P<order_id>[A-Za-z0-9_\-]+)/capture_authorization',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'capture_authorization' ],
@@ -96,7 +96,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/cancel_authorization',
+			$this->rest_base . '/(?P<order_id>[A-Za-z0-9_\-]+)/cancel_authorization',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'cancel_authorization' ],
@@ -110,7 +110,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/(?P<order_id>\w+)/create_terminal_intent',
+			$this->rest_base . '/(?P<order_id>[A-Za-z0-9_\-]+)/create_terminal_intent',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'create_terminal_intent' ],
@@ -172,7 +172,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be captured.
 			$request = Get_Intention::create( $intent_id );
-			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+			$request->set_hook_args( $order );
+			$intent = $request->send();
 
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
@@ -181,26 +182,14 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
-			if ( ! in_array( $intent->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
+			if ( ! $intent->is_authorized() ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
 			// Update the order: set the payment method and attach intent attributes.
 			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
-			$intent_id     = $intent->get_id();
-			$intent_status = $intent->get_status();
-			$charge        = $intent->get_charge();
-			$charge_id     = $charge ? $charge->get_id() : null;
-			$this->order_service->attach_intent_info_to_order(
-				$order,
-				$intent_id,
-				$intent_status,
-				$intent->get_payment_method_id(),
-				$intent->get_customer_id(),
-				$charge_id,
-				$intent->get_currency()
-			);
+			$this->order_service->attach_intent_info_to_order( $order, $intent );
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
@@ -212,7 +201,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				'id'     => $intent->get_id(),
 			];
 
-			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false );
+			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false, $intent_metadata );
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
@@ -228,6 +217,30 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
+
+			// Add payment method for future subscription payments.
+			$generated_card = $intent->get_charge()->get_payment_method_details()[ Payment_Method::CARD_PRESENT ]['generated_card'] ?? null;
+			// If we don't get a generated card, e.g. because a digital wallet was used, we can still return that the initial payment was successful.
+			// The subscription will not be activated and customers will need to provide a new payment method for renewals.
+			if ( $generated_card ) {
+				$has_subscriptions = function_exists( 'wcs_order_contains_subscription' ) &&
+										function_exists( 'wcs_get_subscriptions_for_order' ) &&
+										function_exists( 'wcs_is_manual_renewal_required' ) &&
+										wcs_order_contains_subscription( $order_id );
+				if ( $has_subscriptions ) {
+					$token = WC_Payments::get_token_service()->add_payment_method_to_user( $generated_card, $order->get_user() );
+					$this->gateway->add_token_to_order( $order, $token );
+					foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
+						$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+						// Where the setting doesn't force manual renewals, we should turn them off, because we have an auto-renewal token now.
+						if ( ! wcs_is_manual_renewal_required() ) {
+							$subscription->set_requires_manual_renewal( false );
+						}
+						$subscription->save();
+					}
+				}
+			}
+
 			// Actualize order status.
 			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'] );
 
@@ -272,7 +285,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be captured.
 			$request = Get_Intention::create( $intent_id );
-			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+			$request->set_hook_args( $order );
+			$intent = $request->send();
 
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
@@ -281,13 +295,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
-			if ( ! in_array( $intent->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
+			if ( ! $intent->is_authorized() ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
 			$this->add_fraud_outcome_manual_entry( $order, 'approve' );
 
-			$result = $this->gateway->capture_charge( $order, false );
+			$result = $this->gateway->capture_charge( $order, true, $intent_metadata );
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
 				return new WP_Error(
@@ -317,15 +331,14 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Returns customer id from order. Create or update customer if needed.
-	 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
-	 *
-	 * @deprecated 3.9.0
+	 * Use-cases:
+	 *  - It was used by older versions of our mobile apps to add the customer details to Payment Intents.
+	 *  - It is used by the apps to set customer details on Payment Intents for an order containing subscriptions. Required for capturing renewal payments off session.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_customer( $request ) {
-		wc_deprecated_function( __FUNCTION__, '3.9.0' );
 		try {
 			$order_id = $request['order_id'];
 
@@ -405,7 +418,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$wcpay_server_request->set_metadata( $metadata );
 			$wcpay_server_request->set_payment_method_types( $this->get_terminal_intent_payment_method( $request ) );
 			$wcpay_server_request->set_capture_method( 'manual' === $this->get_terminal_intent_capture_method( $request ) );
-			$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
+			$wcpay_server_request->set_hook_args( $order );
+			$intent = $wcpay_server_request->send();
 
 			return rest_ensure_response(
 				[
@@ -427,7 +441,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return array|null
 	 * @throws \Exception
 	 */
-	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ) :array {
+	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ): array {
 		$payment_methods = $request->get_param( 'payment_methods' );
 		if ( null === $payment_methods ) {
 			return $default_value;
@@ -455,7 +469,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return string|null
 	 * @throws \Exception
 	 */
-	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ) : string {
+	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ): string {
 		$capture_method = $request->get_param( 'capture_method' );
 		if ( null === $capture_method ) {
 			return $default_value;
@@ -497,13 +511,14 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be canceled.
 			$request = Get_Intention::create( $intent_id );
-			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+			$request->set_hook_args( $order );
+			$intent = $request->send();
 
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 			if ( $intent_meta_order_id !== $order->get_id() ) {
-				Logger::error( 'Payment cancelation rejected due to failed validation: order id on intent is incorrect or missing.' );
+				Logger::error( 'Payment cancellation rejected due to failed validation: order id on intent is incorrect or missing.' );
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be canceled', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 			if ( ! in_array( $intent->get_status(), [ Intent_Status::REQUIRES_CAPTURE ], true ) ) {

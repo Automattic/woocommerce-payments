@@ -9,6 +9,7 @@ namespace WCPay\Internal\DependencyManagement;
 
 use WCPay\Vendor\League\Container\Container;
 use WCPay\Vendor\League\Container\Definition\Definition;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 
 /**
  * Extends the League container to allow WCPay customizations.
@@ -40,9 +41,11 @@ class ExtendedContainer extends Container {
 		 */
 		if ( ! $this->has( $id ) ) {
 			throw new ContainerException(
-				sprintf(
-					'The ID you provided (%s) for replacement is not associated with anything inside the container or its delegates. Maybe try adding it instead?',
-					$id
+				esc_html(
+					sprintf(
+						'The ID you provided (%s) for replacement is not associated with anything inside the container or its delegates. Maybe try adding it instead?',
+						$id
+					)
 				)
 			);
 		}

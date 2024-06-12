@@ -103,14 +103,15 @@ const FileEvidence: React.FC< {
 };
 
 interface Props {
-	issuerEvidence: IssuerEvidence | null;
+	issuerEvidence: IssuerEvidence[] | null;
 }
 
 const IssuerEvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 	if (
-		! issuerEvidence ||
-		! issuerEvidence.file_evidence.length ||
-		! issuerEvidence.text_evidence
+		! issuerEvidence?.some(
+			( evidence ) =>
+				evidence.file_evidence.length || evidence.text_evidence
+		)
 	) {
 		return <></>;
 	}
@@ -122,20 +123,19 @@ const IssuerEvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 			initialOpen={ false }
 		>
 			<ul className="dispute-evidence__list">
-				{ issuerEvidence.text_evidence && (
-					<li className="dispute-evidence__list-item">
-						<TextEvidence
-							evidence={ issuerEvidence.text_evidence }
-						/>
+				{ issuerEvidence.map( ( evidence, i ) => (
+					<li
+						className="dispute-evidence__list-item"
+						key={ `evidence_${ i }` }
+					>
+						{ evidence.text_evidence && (
+							<TextEvidence evidence={ evidence.text_evidence } />
+						) }
+						{ evidence.file_evidence.map( ( fileId ) => (
+							<FileEvidence fileId={ fileId } key={ fileId } />
+						) ) }
 					</li>
-				) }
-				{ issuerEvidence.file_evidence.map(
-					( fileId: string, i: any ) => (
-						<li className="dispute-evidence__list-item" key={ i }>
-							<FileEvidence fileId={ fileId } />
-						</li>
-					)
-				) }
+				) ) }
 			</ul>
 		</PanelBody>
 	);

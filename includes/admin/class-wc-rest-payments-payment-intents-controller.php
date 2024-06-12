@@ -1,11 +1,16 @@
 <?php
 /**
- * Class WC_REST_Payments_Charges_Controller
+ * Class WC_REST_Payments_Payment_Intents_Controller
  *
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Exceptions\API_Exception;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Logger;
+use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Constants\Payment_Type;
+use WCPay\Internal\Service\Level3Service;
+use WCPay\Internal\Service\OrderService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,7 +32,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<payment_intent_id>\w+)',
+			'/' . $this->rest_base . '/(?P<payment_intent_id>(ch|pi|py)_[A-Za-z0-9]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_payment_intent' ],

@@ -95,17 +95,16 @@ class Factor extends Base_Constant {
 	const STRIPE_LINK = 'STRIPE_LINK';
 
 	/**
-	 * Deferred UPE requires very little extra code (for both card and LPMs), but thorough testing.
-	 * Will become a condition, once there is the one true gateway.
-	 * Type: Entry point
-	 */
-	const DEFERRED_INTENT_SPLIT_UPE = 'DEFERRED_INTENT_SPLIT_UPE';
-
-	/**
 	 * Payment request buttons (Google Pay and Apple Pay)
 	 * Type: Entry point
 	 */
 	const PAYMENT_REQUEST = 'PAYMENT_REQUEST';
+
+	/**
+	 * ECE buttons (Google Pay and Apple Pay)
+	 * Type: Entry point
+	 */
+	const EXPRESS_CHECKOUT_ELEMENT = 'EXPRESS_CHECKOUT_ELEMENT';
 
 	/**
 	 * Returns all possible factors.
@@ -127,8 +126,8 @@ class Factor extends Base_Constant {
 			static::WCPAY_SUBSCRIPTION_SIGNUP(),
 			static::IPP_CAPTURE(),
 			static::STRIPE_LINK(),
-			static::DEFERRED_INTENT_SPLIT_UPE(),
 			static::PAYMENT_REQUEST(),
+			static::EXPRESS_CHECKOUT_ELEMENT(),
 		];
 	}
 }

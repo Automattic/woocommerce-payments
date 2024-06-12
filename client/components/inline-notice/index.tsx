@@ -7,11 +7,13 @@ import classNames from 'classnames';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
+import { Action } from 'wcpay/types/notices';
 
 /**
  * Internal dependencies.
  */
 import './styles.scss';
+import ButtonVariant = Button.ButtonVariant;
 
 interface InlineNoticeProps extends Notice.Props {
 	/**
@@ -21,13 +23,22 @@ interface InlineNoticeProps extends Notice.Props {
 	 * @default undefined
 	 */
 	icon?: boolean | JSX.Element;
+
+	actions?: readonly Action[] | undefined;
+	/**
+	 * Allows more control over the button variant.
+	 * Accepted values are 'primary', 'secondary', 'tertiary', and 'link'.
+	 *
+	 * @default undefined
+	 */
+	buttonVariant?: ButtonVariant;
 }
 
 /**
  * Renders a banner notice.
  */
 function InlineNotice( props: InlineNoticeProps ): JSX.Element {
-	const { icon, actions, children, ...noticeProps } = props;
+	const { icon, actions, children, buttonVariant, ...noticeProps } = props;
 
 	// Add the default class name to the notice.
 	noticeProps.className = classNames(
@@ -72,6 +83,9 @@ function InlineNotice( props: InlineNoticeProps ): JSX.Element {
 				key={ index }
 				className={ actionClass }
 				onClick={ action.onClick }
+				isBusy={ action.isBusy ?? false }
+				disabled={ action.disabled ?? false }
+				variant={ buttonVariant }
 			>
 				{ action.label }
 			</Button>

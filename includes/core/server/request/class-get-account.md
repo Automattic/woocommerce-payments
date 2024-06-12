@@ -1,11 +1,11 @@
 # `Get_Account` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md).
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md).
 
 ## Description
 
 The `WCPay\Core\Server\Request\Get_Account` class is used to construct the request for retrieving account data.
-Note that this request sends the test_mode flag only when the site is in the dev mode.
+Note that this request sends the test_mode flag only when the site is in sandbox mode.
 
 ## Parameters
 
@@ -21,5 +21,5 @@ When using this request, provide the following filter:
 
 ```php
 $request = Get_Account::create();
-$request->send( 'wcpay_get_account' );
+$request->send();
 ```

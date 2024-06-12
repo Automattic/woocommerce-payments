@@ -112,7 +112,8 @@ add_filter( 'wcpay_my_request', function ( $request ) {
 
 $request = My_Request::create();
 $request->set_name( 'John' );
-$request->send( 'wcpay_my_request );
+$request->assign_hook( 'wcpay_my_request' );
+$request->send();
 ```
 
 ### Validators
@@ -151,8 +152,9 @@ Request classes can be extended as any other PHP class. Let's use the existing `
 
 ```php
 $request = Create_And_Confirm_Intention::create();
+$request->set_hook_args( $payment_information );
 // Call all necessary setters...
-$intent = $request->send( 'wcpay_create_intention_request', $payment_information );
+$intent = $request->send();
 ```
 
 ### 2. Extend the class

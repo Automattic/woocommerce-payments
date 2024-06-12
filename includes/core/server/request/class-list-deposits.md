@@ -1,6 +1,6 @@
 # `List_Deposits` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 
@@ -40,5 +40,5 @@ $request->set_sort_direction( $direction );
 $request->set_status_is( $status_is );
 $request->set_status_is_not( $status_is_not );
 $request->set_store_currency_is( $store_currency_is );
-$request->send( 'wcpay_list_deposits_request', $request );
+$request->send();
 ```

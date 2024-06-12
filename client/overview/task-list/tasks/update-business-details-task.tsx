@@ -4,6 +4,7 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { render } from '@wordpress/element';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -12,6 +13,7 @@ import type { TaskItemProps } from '../types';
 import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-details';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
+import { recordEvent } from 'wcpay/tracks';
 
 export const getUpdateBusinessDetailsTask = (
 	errorMessages: string[],
@@ -25,8 +27,12 @@ export const getUpdateBusinessDetailsTask = (
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
+	const connectUrl = wcpaySettings.connectUrl;
+	const accountLinkWithSource = addQueryArgs( accountLink, {
+		source: 'overview-page__update-business-details-task',
+	} );
 
-	let accountDetailsTaskDescription = '',
+	let accountDetailsTaskDescription: React.ReactElement | string = '',
 		errorMessageDescription,
 		accountDetailsUpdateByDescription;
 
@@ -45,9 +51,11 @@ export const getUpdateBusinessDetailsTask = (
 
 		if ( hasSingleError ) {
 			errorMessageDescription = errorMessages[ 0 ];
-			accountDetailsTaskDescription = errorMessageDescription.concat(
-				' ',
-				accountDetailsUpdateByDescription
+			accountDetailsTaskDescription = (
+				<>
+					{ errorMessageDescription }{ ' ' }
+					{ accountDetailsUpdateByDescription }
+				</>
 			);
 		} else {
 			accountDetailsTaskDescription = accountDetailsUpdateByDescription;
@@ -103,7 +111,17 @@ export const getUpdateBusinessDetailsTask = (
 		if ( hasMultipleErrors ) {
 			renderModal();
 		} else {
-			window.open( accountLink, '_blank' );
+			recordEvent( 'wcpay_account_details_link_clicked', {
+				source: 'overview-page__update-business-details-task',
+			} );
+
+			// If the onboarding isn't complete use the connectUrl instead,
+			// as the accountLink doesn't handle redirecting back to the overview page.
+			if ( ! detailsSubmitted ) {
+				window.location.href = connectUrl;
+			} else {
+				window.open( accountLinkWithSource, '_blank' );
+			}
 		}
 	};
 

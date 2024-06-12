@@ -35,8 +35,8 @@ class FactorTest extends WCPAY_UnitTestCase {
 			'WCPAY_SUBSCRIPTION_SIGNUP',
 			'IPP_CAPTURE',
 			'STRIPE_LINK',
-			'DEFERRED_INTENT_SPLIT_UPE',
 			'PAYMENT_REQUEST',
+			'EXPRESS_CHECKOUT_ELEMENT',
 		];
 
 		$result = Factor::get_all_factors();

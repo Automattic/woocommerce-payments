@@ -18,6 +18,7 @@ import {
 	updateDispute,
 	updateDisputes,
 	updateDisputesSummary,
+	updateErrorForDispute,
 } from './actions';
 
 const formatQueryFilters = ( query ) => ( {
@@ -33,6 +34,7 @@ const formatQueryFilters = ( query ) => ( {
 	search: query.search,
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
+	locale: query.locale,
 } );
 
 export function getDisputesCSV( query ) {
@@ -61,6 +63,7 @@ export function* getDispute( id ) {
 			'createErrorNotice',
 			__( 'Error retrieving dispute.', 'woocommerce-payments' )
 		);
+		yield updateErrorForDispute( id, undefined, e );
 	}
 }
 

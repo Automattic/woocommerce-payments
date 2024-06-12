@@ -10,6 +10,7 @@ import type { Query } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import type { DepositStatus } from 'wcpay/types/deposits';
 
 // TODO: refine this type with more detailed information.
 export interface Transaction {
@@ -25,13 +26,7 @@ export interface Transaction {
 	customer_country: string;
 	customer_currency: string;
 	deposit_id?: string;
-	deposit_status?:
-		| 'paid'
-		| 'pending'
-		| 'in_transit'
-		| 'canceled'
-		| 'failed'
-		| 'estimated';
+	deposit_status?: DepositStatus;
 	available_on: string;
 	currency: string;
 	transaction_id: string;
@@ -153,6 +148,12 @@ export const useTransactions = (
 		type_is_not: typeIsNot,
 		source_device_is: sourceDeviceIs,
 		source_device_is_not: sourceDeviceIsNot,
+		channel_is: channelIs,
+		channel_is_not: channelIsNot,
+		customer_country_is: customerCountryIs,
+		customer_country_is_not: customerCountryIsNot,
+		risk_level_is: riskLevelIs,
+		risk_level_is_not: riskLevelIsNot,
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
@@ -193,6 +194,12 @@ export const useTransactions = (
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
+				channelIs,
+				channelIsNot,
+				customerCountryIs,
+				customerCountryIsNot,
+				riskLevelIs,
+				riskLevelIsNot,
 				loanIdIs,
 				depositId,
 				search,
@@ -220,6 +227,12 @@ export const useTransactions = (
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
+			channelIs,
+			channelIsNot,
+			customerCountryIs,
+			customerCountryIsNot,
+			riskLevelIs,
+			riskLevelIsNot,
 			loanIdIs,
 			depositId,
 			JSON.stringify( search ),
@@ -239,6 +252,12 @@ export const useTransactionsSummary = (
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
+		channel_is: channelIs,
+		channel_is_not: channelIsNot,
+		customer_country_is: customerCountryIs,
+		customer_country_is_not: customerCountryIsNot,
+		risk_level_is: riskLevelIs,
+		risk_level_is_not: riskLevelIsNot,
 		loan_id_is: loanIdIs,
 		search,
 	}: Query,
@@ -262,6 +281,12 @@ export const useTransactionsSummary = (
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
+				channelIs,
+				channelIsNot,
+				customerCountryIs,
+				customerCountryIsNot,
+				riskLevelIs,
+				riskLevelIsNot,
 				loanIdIs,
 				depositId,
 				search,
@@ -284,6 +309,12 @@ export const useTransactionsSummary = (
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
+			channelIs,
+			channelIsNot,
+			customerCountryIs,
+			customerCountryIsNot,
+			riskLevelIs,
+			riskLevelIsNot,
 			loanIdIs,
 			depositId,
 			JSON.stringify( search ),

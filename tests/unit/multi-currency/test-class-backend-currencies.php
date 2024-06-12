@@ -43,6 +43,7 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WCPAY_UnitTestCase {
 		set_current_screen( 'edit-post' );
 
 		$this->backend_currencies = new BackendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
+		$this->backend_currencies->init_hooks();
 	}
 
 	public function tear_down() {
@@ -74,6 +75,7 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WCPAY_UnitTestCase {
 			->method( 'has_additional_currencies_enabled' )
 			->willReturn( true );
 		$this->backend_currencies = new BackendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
+		$this->backend_currencies->init_hooks();
 
 		$this->assertGreaterThan(
 			10,
@@ -89,6 +91,7 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WCPAY_UnitTestCase {
 
 		$this->tear_down();
 		$this->backend_currencies = new BackendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
+		$this->backend_currencies->init_hooks();
 
 		$this->assertFalse(
 			has_filter( $filter, [ $this->backend_currencies, $function_name ] ),

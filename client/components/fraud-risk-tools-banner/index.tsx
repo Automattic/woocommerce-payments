@@ -11,14 +11,14 @@ import { useDispatch } from '@wordpress/data';
  */
 import { BannerBody, NewPill, BannerActions } from './components';
 import './style.scss';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 
 interface BannerSettings {
 	dontShowAgain: boolean;
 }
 
 const FRTDiscoverabilityBanner: React.FC = () => {
-	const { frtDiscoverBannerSettings } = wcpaySettings;
+	const { frtDiscoverBannerSettings, lifetimeTPV } = wcpaySettings;
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ settings, setSettings ] = useState< BannerSettings >( () => {
 		try {
@@ -28,14 +28,14 @@ const FRTDiscoverabilityBanner: React.FC = () => {
 		}
 	} );
 
-	const showBanner = ! settings.dontShowAgain;
+	const showBanner = lifetimeTPV > 0 && ! settings.dontShowAgain;
 
 	const setDontShowAgain = () => {
 		setSettings( { dontShowAgain: true } );
 	};
 
 	useEffect( () => {
-		wcpayTracks.recordEvent( 'wcpay_fraud_protection_banner_rendered', {} );
+		recordEvent( 'wcpay_fraud_protection_banner_rendered' );
 
 		const stringifiedSettings = JSON.stringify( settings );
 

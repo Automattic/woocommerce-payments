@@ -15,6 +15,13 @@ use WC_Payments_API_Client;
  * Request class for updating account.
  */
 class Update_Account extends Request {
+
+	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_update_account_settings';
 	/**
 	 * Returns the request's API.
 	 *
@@ -51,7 +58,7 @@ class Update_Account extends Request {
 	public static function from_account_settings( array $account_settings ) {
 		if ( 0 === count( $account_settings ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				__( 'No account settings provided', 'woocommerce-payments' ),
+				esc_html__( 'No account settings provided', 'woocommerce-payments' ),
 				'wcpay_core_invalid_request_parameter_account_settings_empty'
 			);
 		}

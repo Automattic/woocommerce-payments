@@ -1,28 +1,4 @@
-#payment
-	.payment_methods
-	li
-	.payment_box.payment_method_woocommerce_payments
-	fieldset {
-	padding: 7px 7px;
-}
-
-#payment .payment_method_woocommerce_payments > fieldset > legend {
-	padding-top: 0;
-}
-
 #payment .payment_method_woocommerce_payments .testmode-info {
-	margin-bottom: 0.5em;
-}
-
-#payment .payment_method_woocommerce_payments .woocommerce-error {
-	margin: 1em 0 0;
-}
-
-#wcpay-card-element,
-#wcpay-sepa-element {
-	border: 1px solid #ddd;
-	padding: 5px 7px;
-	min-height: 29px;
 	margin-bottom: 0.5em;
 }
 
@@ -34,12 +10,6 @@
 	&.processing {
 		min-height: 70px;
 	}
-}
-
-.wcpay-card-mounted,
-.wcpay-upe-mounted,
-.wcpay-sepa-mounted {
-	background-color: #fff;
 }
 
 .wcpay-checkout-email-field {
@@ -56,4 +26,69 @@
 	background-color: none;
 	cursor: pointer;
 	border: none;
+}
+
+#payment .payment_methods {
+	li label img {
+		float: right;
+		border: 0;
+		padding: 0;
+		height: 24px !important;
+		max-height: 24px !important;
+	}
+}
+
+li.wc_payment_method:has( .input-radio:not( :checked )
+		+ label
+		.stripe-pmme-container ) {
+	display: grid;
+	grid-template-columns: min-content 1fr;
+	grid-template-rows: auto auto;
+	align-items: baseline;
+
+	.input-radio {
+		grid-row: 1;
+		grid-column: 1;
+	}
+
+	label {
+		grid-column: 2;
+		grid-row: 1;
+	}
+
+	img {
+		grid-row: 1 / span 2;
+		align-self: center;
+	}
+
+	.stripe-pmme-container {
+		width: 100%;
+		grid-column: 1;
+		grid-row-start: 2;
+		pointer-events: none;
+	}
+
+	.payment_box {
+		flex: 0 0 100%;
+		grid-row: 2;
+		grid-column: 1 / span 2;
+	}
+}
+
+li.wc_payment_method:has( .input-radio:checked
+		+ label
+		.stripe-pmme-container ) {
+	display: block;
+
+	.input-radio:checked {
+		+ label {
+			.stripe-pmme-container {
+				display: none;
+			}
+
+			img {
+				grid-column: 2;
+			}
+		}
+	}
 }

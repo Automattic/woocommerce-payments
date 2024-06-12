@@ -9,12 +9,6 @@
 			padding: 24px;
 			background: #fff;
 
-			.gridicons-notice-outline {
-				fill: #f0b849;
-				margin-bottom: -5px;
-				margin-right: 16px;
-			}
-
 			&__label-container {
 				display: flex;
 				flex-wrap: wrap;
@@ -76,11 +70,9 @@
 			}
 
 			&__icon {
-				border-radius: 2px;
 				flex: 0 0 63.69px;
 				height: 40px;
 				margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
-				box-shadow: 0 0 0 1px #ddd;
 
 				@include breakpoint( '>660px' ) {
 					display: flex;

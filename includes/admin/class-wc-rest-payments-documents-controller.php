@@ -62,7 +62,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 	 */
 	public function get_documents( $request ) {
 		$wcpay_request = List_Documents::from_rest_request( $request );
-		return $wcpay_request->handle_rest_request( 'wcpay_list_documents_request' );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**
@@ -83,6 +83,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_document( $request ) {
+		$response    = [];
 		$document_id = $request->get_param( 'document_id' );
 
 		try {

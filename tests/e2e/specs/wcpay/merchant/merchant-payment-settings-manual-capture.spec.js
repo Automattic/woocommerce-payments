@@ -12,6 +12,8 @@ const confirmationModalClass = '.wcpay-confirmation-modal';
 describe( 'As a merchant, I should be prompted a confirmation modal when I try to activate the manual capture', () => {
 	beforeAll( async () => {
 		await merchant.login();
+		await merchantWCP.openWCPSettings();
+		await merchantWCP.skipFraudProtectionTour();
 	} );
 
 	afterAll( async () => {
@@ -19,26 +21,20 @@ describe( 'As a merchant, I should be prompted a confirmation modal when I try t
 	} );
 
 	afterEach( async () => {
-		await merchantWCP.deactivateUpe();
+		await merchantWCP.unsetCheckboxByTestId( checkboxCaptureLaterOption );
 	} );
 
-	it( 'should show the confirmation dialog when enabling the manual capture while UPE is activated', async () => {
-		await merchantWCP.activateUpe();
-		await merchantWCP.openWCPSettings();
-		await merchantWCP.skipFraudProtectionTour();
+	it( 'should show the confirmation dialog when enabling the manual capture', async () => {
 		await merchantWCP.setCheckboxByTestId( checkboxCaptureLaterOption );
 		const confirmationModal = await expect( page ).toMatchElement(
 			confirmationModalClass
 		);
 		await expect( confirmationModal ).toMatch(
-			'Are you sure you want to enable manual capture of payments?'
+			'Payments must be captured within 7 days or the authorization will expire and money will be returned to the shopper'
 		);
 	} );
 
-	it( 'should not show the confirmation dialog when disabling the manual capture while UPE is activated', async () => {
-		await merchantWCP.activateUpe();
-		await merchantWCP.openWCPSettings();
-		await merchantWCP.skipFraudProtectionTour();
+	it( 'should not show the confirmation dialog when disabling the manual capture', async () => {
 		await merchantWCP.setCheckboxByTestId( checkboxCaptureLaterOption );
 		const confirmationModal = await expect( page ).toMatchElement(
 			confirmationModalClass
@@ -51,17 +47,7 @@ describe( 'As a merchant, I should be prompted a confirmation modal when I try t
 		await expect( page ).not.toMatchElement( '.wcpay-confirmation-modal' );
 	} );
 
-	it( 'should not show the confirmation dialog when enabling the manual capture while UPE is disabled', async () => {
-		await merchantWCP.openWCPSettings();
-		await merchantWCP.skipFraudProtectionTour();
-		await merchantWCP.setCheckboxByTestId( checkboxCaptureLaterOption );
-		await expect( page ).not.toMatchElement( '.wcpay-confirmation-modal' );
-	} );
-
-	it( 'should show the UPE methods disabled when manual capture is enabled', async () => {
-		await merchantWCP.activateUpe();
-		await merchantWCP.openWCPSettings();
-		await merchantWCP.skipFraudProtectionTour();
+	it( 'should show the non-card methods disabled when manual capture is enabled', async () => {
 		await merchantWCP.setCheckboxByTestId( checkboxCaptureLaterOption );
 		const confirmationModal = await expect( page ).toMatchElement(
 			confirmationModalClass

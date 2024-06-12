@@ -42,7 +42,14 @@ class CurrencySwitcherBlock {
 	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
 		$this->multi_currency = $multi_currency;
 		$this->compatibility  = $compatibility;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'init', [ $this, 'init_block_widget' ] );
 	}
 
@@ -142,6 +149,9 @@ class CurrencySwitcherBlock {
 		}
 
 		$widget_content .= '</select></div></form>';
+
+		// Silence XSS warning because we are manually constructing the content and escaping everything above.
+		// nosemgrep: audit.php.wp.security.xss.block-attr -- reason: we are manually constructing the content and escaping everything above.
 		return $widget_content;
 	}
 

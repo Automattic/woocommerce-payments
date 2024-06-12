@@ -12,7 +12,7 @@ use WCPay\Vendor\League\Container\Argument\{
 };
 use WCPay\Vendor\League\Container\ContainerAwareTrait;
 use WCPay\Vendor\League\Container\Exception\ContainerException;
-use Psr\Container\ContainerInterface;
+use WCPay\Vendor\Psr\Container\ContainerInterface;
 use ReflectionClass;
 
 class Definition implements ArgumentResolverInterface, DefinitionInterface

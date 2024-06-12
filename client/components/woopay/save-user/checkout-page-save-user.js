@@ -6,9 +6,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
-import { Icon, info } from '@wordpress/icons';
-import interpolateComponents from '@automattic/interpolate-components';
-import LockIconG from 'gridicons/dist/lock';
 
 /**
  * Internal dependencies
@@ -20,24 +17,17 @@ import Agreement from './agreement';
 import Container from './container';
 import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
-import WooPayIcon from 'assets/images/woopay.svg?asset';
-import wcpayTracks from 'tracks';
+import { recordUserEvent } from 'tracks';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
-	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
+	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
+		window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO || false
+	);
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
-	const [ isInfoFlyoutVisible, setIsInfoFlyoutVisible ] = useState( false );
-	const setInfoFlyoutVisible = useCallback(
-		() => setIsInfoFlyoutVisible( true ),
-		[]
-	);
-	const setInfoFlyoutNotVisible = useCallback(
-		() => setIsInfoFlyoutVisible( false ),
-		[]
-	);
+
 	const isRegisteredUser = useWooPayUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
@@ -76,7 +66,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				? {}
 				: {
 						save_user_in_woopay: isSaveDetailsChecked,
-						woopay_source_url: window.location.href,
+						woopay_source_url:
+							wcSettings?.storePages?.checkout?.permalink,
 						woopay_is_blocks: true,
 						woopay_viewport: `${ viewportWidth }x${ viewportHeight }`,
 						woopay_user_phone_field: {
@@ -94,6 +85,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		[ isSaveDetailsChecked, phoneNumber, viewportWidth, viewportHeight ]
 	);
 
+	const handleCountryDropdownClick = useCallback( () => {
+		recordUserEvent( 'checkout_woopay_save_my_info_country_click' );
+	}, [] );
+
 	const handleCheckboxClick = ( e ) => {
 		const isChecked = e.target.checked;
 		if ( isChecked ) {
@@ -106,13 +101,17 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		}
 		setIsSaveDetailsChecked( isChecked );
 
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_SAVE_MY_INFO_CLICK,
-			{
-				status: isChecked ? 'checked' : 'unchecked',
-			}
-		);
+		recordUserEvent( 'checkout_save_my_info_click', {
+			status: isChecked ? 'checked' : 'unchecked',
+		} );
 	};
+
+	useEffect( () => {
+		// Record Tracks event when the mobile number is entered.
+		if ( isPhoneValid ) {
+			recordUserEvent( 'checkout_woopay_save_my_info_mobile_enter' );
+		}
+	}, [ isPhoneValid ] );
 
 	useEffect( () => {
 		const formSubmitButton = isBlocksCheckout
@@ -211,66 +210,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								</svg>
 							) }
 							<span>
-								{ isBlocksCheckout
-									? __(
-											'Save my information for a faster and secure checkout',
-											'woocommerce-payments'
-									  )
-									: __(
-											'Save my information for a faster checkout',
-											'woocommerce-payments'
-									  ) }
+								{ __(
+									'Securely save my information for 1-click checkout',
+									'woocommerce-payments'
+								) }
 							</span>
 						</label>
-					</div>
-					<img
-						src={ WooPayIcon }
-						className="woopay-logo"
-						alt="WooPay"
-					/>
-					<Icon
-						icon={ info }
-						size={ 20 }
-						className={ `info-icon ${
-							isInfoFlyoutVisible ? 'focused' : ''
-						}` }
-						onMouseOver={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-					/>
-					<div
-						className="save-details-flyout"
-						onMouseOver={ setInfoFlyoutVisible }
-						onFocus={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-						onBlur={ setInfoFlyoutNotVisible }
-					>
-						<div>
-							<LockIconG size={ 16 } />
-						</div>
-						<span>
-							{ interpolateComponents( {
-								mixedString: __(
-									'We use {{woopayBold/}} to securely store your information in this WooCommerce store and others. ' +
-										"Next time at checkout, we'll send you a code by SMS to authenticate your purchase. {{learnMore/}}",
-									'woocommerce-payments'
-								),
-								components: {
-									woopayBold: <b>WooPay</b>,
-									learnMore: (
-										<a
-											target="_blank"
-											href="https://woocommerce.com/document/woopay-customer-documentation/"
-											rel="noopener noreferrer"
-										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
-										</a>
-									),
-								},
-							} ) }
-						</span>
 					</div>
 				</div>
 				{ isSaveDetailsChecked && (
@@ -281,7 +226,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						<input
 							type="hidden"
 							name="woopay_source_url"
-							value={ window.location.href }
+							value={
+								wcSettings?.storePages?.checkout?.permalink
+							}
 						/>
 						<input
 							type="hidden"
@@ -292,6 +239,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							value={ phoneNumber }
 							onValueChange={ setPhoneNumber }
 							onValidationChange={ onPhoneValidationChange }
+							onCountryDropdownClick={
+								handleCountryDropdownClick
+							}
 							inputProps={ {
 								name:
 									'woopay_user_phone_field[no-country-code]',

@@ -12,6 +12,7 @@ use WC_Payments_Subscriptions_Utilities;
 use WooPay_Extension;
 use WC_Geolocation;
 use WC_Payments;
+use Jetpack_Options;
 
 /**
  * WooPay
@@ -80,6 +81,27 @@ class WooPay_Utilities {
 	}
 
 	/**
+	 * Check conditions to determine if woopay first party auth is enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_woopay_first_party_auth_enabled() {
+		return WC_Payments_Features::is_woopay_first_party_auth_enabled() && $this->is_country_available( WC_Payments::get_gateway() ); // Feature flag.
+	}
+
+	/**
+	 * Determines if the WooPay email input hooks should be enabled.
+	 *
+	 * This function doesn't affect the appearance of the email input,
+	 * only whether or not the email exists check or auto-redirection should be enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_woopay_email_input_enabled() {
+		return apply_filters( 'wcpay_is_woopay_email_input_enabled', true );
+	}
+
+	/**
 	 * Generates a hash based on the store's blog token, merchant ID, and the time step window.
 	 *
 	 * @return string
@@ -97,7 +119,11 @@ class WooPay_Utilities {
 	 * @return boolean
 	 */
 	public function should_save_platform_customer() {
-		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
+		$session_data = [];
+
+		if ( isset( WC()->session ) && method_exists( WC()->session, 'has_session' ) && WC()->session->has_session() ) {
+			$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
+		}
 
 		return ( isset( $_POST['save_user_in_woopay'] ) && filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_woopay'] ) && filter_var( $session_data['save_user_in_woopay'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
@@ -227,18 +253,39 @@ class WooPay_Utilities {
 	}
 
 	/**
-	 * Returns true if an extension WooPay supports is installed .
+	 * Return an array with encrypted and signed data.
 	 *
-	 * @return bool
+	 * @param array $data The data to be encrypted and signed.
+	 * @return array The encrypted and signed data.
 	 */
-	public function has_adapted_extension_installed() {
-		foreach ( self::ADAPTED_EXTENSIONS as $supported_extension ) {
-			if ( in_array( $supported_extension, apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
-				return true;
-			}
+	public static function encrypt_and_sign_data( $data ) {
+		$store_blog_token = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
+
+		if ( empty( $store_blog_token ) ) {
+			return [];
 		}
 
-		return false;
+		$message = wp_json_encode( $data );
+
+		// Generate an initialization vector (IV) for encryption.
+		$iv = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'aes-256-cbc' ) );
+
+		// Encrypt the JSON session.
+		$session_encrypted = openssl_encrypt( $message, 'aes-256-cbc', $store_blog_token, OPENSSL_RAW_DATA, $iv );
+
+		// Create an HMAC hash for data integrity.
+		$hash = hash_hmac( 'sha256', $session_encrypted, $store_blog_token );
+
+		$data = [
+			'session' => $session_encrypted,
+			'iv'      => $iv,
+			'hash'    => $hash,
+		];
+
+		return [
+			'blog_id' => Jetpack_Options::get_option( 'id' ),
+			'data'    => array_map( 'base64_encode', $data ),
+		];
 	}
 
 	/**

@@ -10,6 +10,7 @@ export const upeMethods = [
 	'affirm',
 	'afterpay_clearpay',
 	'jcb',
+	'klarna',
 ];
 
 export const upeCapabilityStatuses = {
@@ -18,4 +19,5 @@ export const upeCapabilityStatuses = {
 	ACTIVE: 'active',
 	INACTIVE: 'inactive',
 	UNREQUESTED: 'unrequested',
+	REJECTED: 'rejected',
 };

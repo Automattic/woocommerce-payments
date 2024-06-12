@@ -121,9 +121,8 @@ exports[`Multi-Currency store settings store settings task renders correctly: sn
                   </label>
                 </div>
               </div>
-              <br />
               <div
-                class="wcpay-wizard-task__description-element is-muted-color"
+                class="multi-currency-settings-task__description"
               >
                 A currency switcher is also available in your widgets.
               </div>

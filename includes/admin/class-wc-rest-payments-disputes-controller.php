@@ -54,7 +54,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<dispute_id>\w+)',
+			'/' . $this->rest_base . '/(?P<dispute_id>(dp|dispute)_[A-Za-z0-9]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_dispute' ],
@@ -63,7 +63,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<dispute_id>\w+)',
+			'/' . $this->rest_base . '/(?P<dispute_id>(dp|dispute)_[A-Za-z0-9]+)',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'update_dispute' ],
@@ -72,7 +72,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<dispute_id>\w+)/close',
+			'/' . $this->rest_base . '/(?P<dispute_id>(dp|dispute)_[A-Za-z0-9]+)/close',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'close_dispute' ],
@@ -89,7 +89,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	public function get_disputes( WP_REST_Request $request ) {
 		$wcpay_request = List_Disputes::from_rest_request( $request );
 
-		return $wcpay_request->handle_rest_request( 'wcpay_list_disputes_request', $request );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**
@@ -148,9 +148,10 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_disputes_export( $request ) {
 		$user_email = $request->get_param( 'user_email' );
+		$locale     = $request->get_param( 'locale' );
 		$filters    = $this->get_disputes_filters( $request );
 
-		return $this->forward_request( 'get_disputes_export', [ $filters, $user_email ] );
+		return $this->forward_request( 'get_disputes_export', [ $filters, $user_email, $locale ] );
 	}
 
 	/**

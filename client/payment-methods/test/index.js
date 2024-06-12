@@ -4,8 +4,9 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
+import { select } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -19,11 +20,10 @@ import {
 	useManualCapture,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
+	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
-import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
-import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
 jest.mock( '@woocommerce/components', () => {
 	return {
@@ -43,12 +43,14 @@ jest.mock( '../../data', () => ( {
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
 	useAccountDomesticCurrency: jest.fn(),
+	useGetDuplicatedPaymentMethodIds: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest
 		.fn()
 		.mockReturnValue( { updateAvailablePaymentMethodIds: jest.fn() } ),
+	select: jest.fn(),
 } ) );
 
 describe( 'PaymentMethods', () => {
@@ -80,9 +82,18 @@ describe( 'PaymentMethods', () => {
 		} );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		global.wcpaySettings = {
+			isMultiCurrencyEnabled: true,
+			storeCurrency: 'USD',
 			accountEmail: 'admin@example.com',
+			capabilityRequestNotices: {},
 		};
 		useAccountDomesticCurrency.mockReturnValue( 'usd' );
+		select.mockImplementation( () => ( {
+			getSettings: jest.fn().mockReturnValue( {
+				account_country: 'US',
+			} ),
+		} ) );
+		useGetDuplicatedPaymentMethodIds.mockReturnValue( [] );
 	} );
 
 	test( 'payment methods are rendered correctly', () => {
@@ -90,11 +101,7 @@ describe( 'PaymentMethods', () => {
 			[ 'card', 'sepa_debit' ],
 		] );
 
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		const cc = screen.getByRole( 'checkbox', {
 			name: 'Credit / Debit card',
@@ -199,38 +206,9 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
-	} );
-
-	test( 'upe setup banner is rendered when UPE preview feature flag is enabled', () => {
-		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: true, upe: false },
-		};
-		const upeContext = {
-			isUpeEnabled: false,
-			setIsUpeEnabled: () => null,
-			status: 'resolved',
-		};
-
-		render(
-			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<WcPayUpeContext.Provider value={ upeContext }>
-					<PaymentMethods />
-				</WcPayUpeContext.Provider>
-			</WCPaySettingsContext.Provider>
-		);
-
-		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
-		);
-
-		expect( enableWooCommercePaymentText ).toBeInTheDocument();
 	} );
 
 	test( 'affirm afterpay pms renders correctly', () => {
@@ -248,13 +226,7 @@ describe( 'PaymentMethods', () => {
 			'sofort',
 		] );
 
-		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
-
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
 		const afterpay = screen.getByRole( 'checkbox', {
@@ -283,8 +255,6 @@ describe( 'PaymentMethods', () => {
 			[ 'card', 'affirm', 'afterpay_clearpay' ],
 		] );
 
-		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
-
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
@@ -301,11 +271,7 @@ describe( 'PaymentMethods', () => {
 		} );
 
 		const renderPaymentElements = () => {
-			render(
-				<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-					<PaymentMethods />
-				</WcPayUpeContextProvider>
-			);
+			render( <PaymentMethods /> );
 		};
 
 		renderPaymentElements();
@@ -321,167 +287,13 @@ describe( 'PaymentMethods', () => {
 		expect( afterpay ).toBeChecked();
 	} );
 
-	test( 'upe setup banner has Buy Now Pay Later methods asset for eligible merchants', () => {
-		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: true, upe: false },
-		};
-		const upeContext = {
-			isUpeEnabled: false,
-			setIsUpeEnabled: () => null,
-			status: 'resolved',
-		};
+	test( 'renders the payment methods component', () => {
+		render( <PaymentMethods /> );
 
-		global.wcpaySettings.isBnplAffirmAfterpayEnabled = true;
-
-		render(
-			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<WcPayUpeContext.Provider value={ upeContext }>
-					<PaymentMethods />
-				</WcPayUpeContext.Provider>
-			</WCPaySettingsContext.Provider>
-		);
-
-		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
-		);
-
-		expect( enableWooCommercePaymentText.parentElement ).not.toHaveClass(
-			'background-local-payment-methods'
-		);
-	} );
-
-	test( 'upe setup banner has only local methods in asset for non-BNPL-eligible merchants', () => {
-		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: true, upe: false },
-		};
-		const upeContext = {
-			isUpeEnabled: false,
-			setIsUpeEnabled: () => null,
-			status: 'resolved',
-		};
-
-		global.wcpaySettings.isBnplAffirmAfterpayEnabled = false;
-
-		render(
-			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<WcPayUpeContext.Provider value={ upeContext }>
-					<PaymentMethods />
-				</WcPayUpeContext.Provider>
-			</WCPaySettingsContext.Provider>
-		);
-
-		const enableWooCommercePaymentText = screen.getByText(
-			'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
-		);
-
-		expect( enableWooCommercePaymentText.parentElement ).toHaveClass(
-			'background-local-payment-methods'
-		);
-	} );
-
-	test.each( [
-		[ false, false ],
-		[ false, true ],
-		[ true, true ],
-	] )(
-		'express payments should not rendered when UPE preview = %s and UPE = %s',
-		( upeSettingsPreview, upe ) => {
-			const featureFlagContext = {
-				featureFlags: { upeSettingsPreview, upe },
-			};
-			const upeContext = {
-				isUpeEnabled: upe,
-				setIsUpeEnabled: () => null,
-				status: 'resolved',
-			};
-
-			render(
-				<WCPaySettingsContext.Provider value={ featureFlagContext }>
-					<WcPayUpeContext.Provider value={ upeContext }>
-						<PaymentMethods />
-					</WcPayUpeContext.Provider>
-				</WCPaySettingsContext.Provider>
-			);
-
-			const enableWooCommercePaymentText = screen.queryByText(
-				'Enable the new WooPayments checkout experience, which will become the default on November 1, 2023'
-			);
-
-			expect( enableWooCommercePaymentText ).toBeNull();
-		}
-	);
-
-	test( 'renders the feedback elements when UPE is enabled', () => {
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-		const disableUPEButton = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
-		} );
-
-		expect( disableUPEButton ).toBeInTheDocument();
+		expect( screen.queryByText( 'Payment methods' ) ).toBeInTheDocument();
 		expect(
 			screen.queryByText( 'Payment methods' ).parentElement
-		).toHaveTextContent( 'Payment methods Early access' );
-	} );
-
-	test( 'Does not render the feedback elements when UPE is disabled', () => {
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ false }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
-
-		const disableUPEButton = screen.queryByRole( 'button', {
-			name: 'Add feedback or disable',
-		} );
-
-		expect( disableUPEButton ).not.toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Payment methods' )
-		).not.toBeInTheDocument();
-	} );
-
-	test( 'clicking "Enable payment methods" in express payments enable UPE and redirects', async () => {
-		Object.defineProperty( window, 'location', {
-			value: {
-				href: 'example.com/',
-			},
-		} );
-
-		const setIsUpeEnabledMock = jest.fn().mockResolvedValue( true );
-		const featureFlagContext = {
-			featureFlags: { upeSettingsPreview: true, upe: false },
-		};
-
-		render(
-			<WCPaySettingsContext.Provider value={ featureFlagContext }>
-				<WcPayUpeContext.Provider
-					value={ {
-						setIsUpeEnabled: setIsUpeEnabledMock,
-						status: 'resolved',
-						isUpeEnabled: false,
-					} }
-				>
-					<PaymentMethods />
-				</WcPayUpeContext.Provider>
-			</WCPaySettingsContext.Provider>
-		);
-
-		const enableInYourStoreButton = screen.queryByRole( 'button', {
-			name: 'Enable payment methods',
-		} );
-
-		expect( enableInYourStoreButton ).toBeInTheDocument();
-
-		expect( setIsUpeEnabledMock ).not.toHaveBeenCalled();
-		await user.click( enableInYourStoreButton );
-		expect( setIsUpeEnabledMock ).toHaveBeenCalledWith( true );
-		expect( window.location.href ).toEqual(
-			'admin.php?page=wc-admin&path=%2Fpayments%2Fadditional-payment-methods'
-		);
+		).toHaveTextContent( 'Payment methods' );
 	} );
 
 	it( 'should render the activation modal when requirements exist for the payment method', () => {
@@ -494,11 +306,7 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Bancontact/ } )
@@ -540,11 +348,7 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render(
-			<WcPayUpeContextProvider defaultIsUpeEnabled={ true }>
-				<PaymentMethods />
-			</WcPayUpeContextProvider>
-		);
+		render( <PaymentMethods /> );
 
 		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
 
@@ -567,5 +371,96 @@ describe( 'PaymentMethods', () => {
 		).toBeInTheDocument();
 
 		jest.useRealTimers();
+	} );
+
+	it( "should render the setup tooltip correctly when multi currency is disabled and store currency doesn't support the LPM", () => {
+		global.wcpaySettings.isMultiCurrencyEnabled = false;
+		global.wcpaySettings.storeCurrency = 'TRY';
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'bancontact' ],
+			jest.fn(),
+		] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			bancontact_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+		} );
+
+		const { container } = render( <PaymentMethods /> );
+
+		// Checkbox shouldn't be rendered.
+		expect(
+			screen.queryByLabelText( 'Bancontact' )
+		).not.toBeInTheDocument();
+
+		const svgIcon = container.querySelectorAll(
+			'.gridicons-notice-outline'
+		)[ 0 ];
+
+		expect( svgIcon ).toBeInTheDocument();
+
+		jest.useFakeTimers();
+
+		act( () => {
+			fireEvent.mouseOver( svgIcon, {
+				view: window,
+				bubbles: true,
+				cancelable: true,
+			} );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText( /Bancontact requires the EUR currency\./ )
+		).toBeInTheDocument();
+		jest.useRealTimers();
+	} );
+
+	it( 'duplicate notices should not appear when dismissed', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
+
+		render(
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: [ 'card' ],
+					dismissedDuplicateNotices: [ 'card' ],
+					setDismissedDuplicateNotices: jest.fn(),
+				} }
+			>
+				<PaymentMethods />
+			</DuplicatedPaymentMethodsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'duplicate notice should appear when not dismissed', () => {
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
+
+		render(
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: { card: '' },
+					dismissedDuplicateNotices: {},
+					setDismissedDuplicateNotices: jest.fn(),
+				} }
+			>
+				<PaymentMethods />
+			</DuplicatedPaymentMethodsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).toBeInTheDocument();
 	} );
 } );

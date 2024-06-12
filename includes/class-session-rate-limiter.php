@@ -95,7 +95,7 @@ class Session_Rate_Limiter {
 
 		$registry = WC()->session->get( $this->key ) ?? [];
 
-		if ( count( $registry ) >= $this->threshold ) {
+		if ( ( is_countable( $registry ) ? count( $registry ) : 0 ) >= $this->threshold ) {
 			$start_time_limiter  = end( $registry );
 			$next_try_allowed_at = $start_time_limiter + $this->delay;
 			$is_limited          = time() <= $next_try_allowed_at;

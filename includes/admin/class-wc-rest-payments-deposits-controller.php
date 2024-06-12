@@ -46,15 +46,6 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/overview',
-			[
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_deposits_overview' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
-		register_rest_route(
-			$this->namespace,
 			'/' . $this->rest_base . '/download',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -64,7 +55,7 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<deposit_id>\w+)',
+			'/' . $this->rest_base . '/(?P<deposit_id>[A-Za-z0-9_\-]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_deposit' ],
@@ -101,7 +92,7 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	public function get_deposits( $request ) {
 		$wcpay_request = List_Deposits::from_rest_request( $request );
 
-		return $wcpay_request->handle_rest_request( 'wcpay_list_deposits_request' );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**
@@ -115,19 +106,12 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Retrieve overview of deposits to respond with via API.
-	 */
-	public function get_deposits_overview() {
-		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API . '/overview' );
-		return $request->handle_rest_request( 'wcpay_get_deposits_overview' );
-	}
-
-	/**
 	 * Retrieve an overview of all deposits from the API.
 	 */
 	public function get_all_deposits_overviews() {
 		$request = Request::get( WC_Payments_API_Client::DEPOSITS_API . '/overview-all' );
-		return $request->handle_rest_request( 'wcpay_get_all_deposits_overviews' );
+		$request->assign_hook( 'wcpay_get_all_deposits_overviews' );
+		return $request->handle_rest_request();
 	}
 
 	/**
@@ -138,7 +122,8 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	public function get_deposit( $request ) {
 		$deposit_id    = $request->get_param( 'deposit_id' );
 		$wcpay_request = Request::get( WC_Payments_API_Client::DEPOSITS_API, $deposit_id );
-		return $wcpay_request->handle_rest_request( 'wcpay_get_deposit' );
+		$wcpay_request->assign_hook( 'wcpay_get_deposit' );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**
@@ -148,9 +133,10 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_deposits_export( $request ) {
 		$user_email = $request->get_param( 'user_email' );
+		$locale     = $request->get_param( 'locale' );
 		$filters    = $this->get_deposits_filters( $request );
 
-		return $this->forward_request( 'get_deposits_export', [ $filters, $user_email ] );
+		return $this->forward_request( 'get_deposits_export', [ $filters, $user_email, $locale ] );
 	}
 
 	/**
@@ -182,6 +168,6 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function manual_deposit( $request ) {
 		$params = $request->get_params();
-		return $this->forward_request( 'manual_deposit', [ $params['type'], $params['transaction_ids'] ] );
+		return $this->forward_request( 'manual_deposit', [ $params['type'], $params['currency'] ] );
 	}
 }

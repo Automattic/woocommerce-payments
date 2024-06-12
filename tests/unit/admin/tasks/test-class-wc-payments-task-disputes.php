@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
 use WooCommerce\Payments\Tasks\WC_Payments_Task_Disputes;
 
 /**
@@ -45,7 +46,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+9 days' ) ),
@@ -72,7 +73,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+6 days' ) ),
@@ -87,7 +88,6 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		// "By <date> – <count> days left to respond"
 		$this->assertMatchesRegularExpression( '/By \w+ \d{1,2}, \d{4} – \d+ days left to respond/', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
-
 	}
 
 	public function test_disputes_task_with_single_dispute_within_24h() {
@@ -104,7 +104,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+23 hours' ) ),
@@ -119,7 +119,6 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		// "Respond today by <time> <AM|PM>"
 		$this->assertMatchesRegularExpression( '/Respond today by \d{1,2}:\d{2} \w{2}/', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
-
 	}
 
 	public function test_disputes_task_with_multiple_disputes_within_7days() {
@@ -136,7 +135,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+6 days' ) ),
@@ -153,7 +152,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'warning_needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+3 days' ) ),
@@ -183,7 +182,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+23 hours' ) ),
@@ -200,7 +199,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'warning_needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+23 hours' ) ),
@@ -217,7 +216,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'warning_needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+9 days' ) ),
@@ -247,7 +246,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+6 days' ) ),
@@ -264,7 +263,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 				'order_number'            => 14,
 				'customer_name'           => 'customer',
 				'customer_email'          => 'email@email.com',
-				'customer_country'        => 'US',
+				'customer_country'        => Country_Code::UNITED_STATES,
 				'status'                  => 'warning_needs_response',
 				'created'                 => gmdate( 'Y-m-d H:i:s', strtotime( '-14 days' ) ),
 				'due_by'                  => gmdate( 'Y-m-d H:i:s', strtotime( '+3 days' ) ),

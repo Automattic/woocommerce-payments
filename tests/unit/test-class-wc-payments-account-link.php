@@ -7,6 +7,7 @@
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * WC_Payments_Account unit tests for Server Links related methods.
@@ -22,14 +23,14 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_API_Client.
 	 *
-	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_API_Client|MockObject
 	 */
 	private $mock_api_client;
 
 	/**
 	 * Mock Database_Cache
 	 *
-	 * @var Database_Cache|PHPUnit_Framework_MockObject_MockObject
+	 * @var Database_Cache|MockObject
 	 */
 	private $mock_database_cache;
 
@@ -42,9 +43,16 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_Action_Scheduler_Service
 	 *
-	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Action_Scheduler_Service|MockObject
 	 */
 	private $mock_action_scheduler_service;
+
+	/**
+	 * Mock WC_Payments_Session_Service.
+	 *
+	 * @var WC_Payments_Session_Service|MockObject
+	 */
+	private $mock_session_service;
 
 	/**
 	 * Pre-test setup
@@ -60,17 +68,18 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 		add_filter( 'wp_doing_ajax', '__return_false' );
 		$_GET['wcpay-link-handler'] = '';
 
-		$this->mock_api_client = $this->createMock( 'WC_Payments_API_Client' );
-
-		$this->mock_database_cache = $this->createMock( Database_Cache::class );
-
+		$this->mock_api_client               = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
 
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
 			->getMock();
+
+		$this->wcpay_account->init_hooks();
 	}
 
 	public function tear_down() {

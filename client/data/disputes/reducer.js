@@ -15,7 +15,7 @@ const defaultState = { byId: {}, queries: {}, summary: {}, cached: {} };
 
 const receiveDisputes = (
 	state = defaultState,
-	{ type, query = {}, data = [] }
+	{ type, query = {}, data = [], id, error }
 ) => {
 	const index = getResourceId( query );
 
@@ -25,6 +25,12 @@ const receiveDisputes = (
 				...state,
 				byId: { ...state.byId, [ data.id ]: data },
 			};
+		case TYPES.SET_ERROR_FOR_DISPUTE:
+			state = {
+				...state,
+				byId: { ...state.byId, [ id ]: { error } },
+			};
+			break;
 		case TYPES.SET_DISPUTES:
 			return {
 				...state,

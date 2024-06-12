@@ -3,13 +3,15 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
-import wcpayTracks from 'tracks';
+import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
-import { buildAjaxURL } from '../../payment-request/utils';
+import { buildAjaxURL } from 'utils/express-checkout';
 import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
+	shouldSkipWooPay,
+	deleteSkipWooPayCookie,
 } from './utils';
 
 export const handleWooPayEmailInput = async (
@@ -20,7 +22,7 @@ export const handleWooPayEmailInput = async (
 	let timer;
 	const waitTime = 500;
 	const woopayEmailInput = await getTargetElement( field );
-	let hasCheckedLoginSession = false;
+	const tracksUserId = await getTracksIdentity();
 
 	// If we can't find the input, return.
 	if ( ! woopayEmailInput ) {
@@ -30,24 +32,6 @@ export const handleWooPayEmailInput = async (
 	const spinner = document.createElement( 'div' );
 	const parentDiv = woopayEmailInput.parentNode;
 	spinner.classList.add( 'wc-block-components-spinner' );
-
-	// Make the login session iframe wrapper.
-	const loginSessionIframeWrapper = document.createElement( 'div' );
-	loginSessionIframeWrapper.setAttribute( 'role', 'dialog' );
-	loginSessionIframeWrapper.setAttribute( 'aria-modal', 'true' );
-
-	// Make the login session iframe.
-	const loginSessionIframe = document.createElement( 'iframe' );
-	loginSessionIframe.title = __(
-		'WooPay Login Session',
-		'woocommerce-payments'
-	);
-	loginSessionIframe.classList.add( 'woopay-login-session-iframe' );
-
-	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
-	loginSessionIframe.classList.add( 'intrinsic-ignore' );
-
-	loginSessionIframeWrapper.insertBefore( loginSessionIframe, null );
 
 	// Make the otp iframe wrapper.
 	const iframeWrapper = document.createElement( 'div' );
@@ -73,11 +57,19 @@ export const handleWooPayEmailInput = async (
 
 	//Checks if customer has clicked the back button to prevent auto redirect
 	const searchParams = new URLSearchParams( window.location.search );
+	const isSkipWoopayCookieSet = shouldSkipWooPay();
 	const customerClickedBackButton =
 		( typeof performance !== 'undefined' &&
 			performance.getEntriesByType( 'navigation' )[ 0 ].type ===
 				'back_forward' ) ||
-		searchParams.get( 'skip_woopay' ) === 'true';
+		searchParams.get( 'skip_woopay' ) === 'true' ||
+		isSkipWoopayCookieSet; // We enforce and extend the skipping to the entire user session.
+
+	if ( customerClickedBackButton && ! isSkipWoopayCookieSet ) {
+		const now = new Date();
+		const followingDay = new Date( now.getTime() + 24 * 60 * 60 * 1000 ); // 24 hours later
+		document.cookie = `skip_woopay=1; path=/; expires=${ followingDay.toUTCString() }`;
+	}
 
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
@@ -116,7 +108,7 @@ export const handleWooPayEmailInput = async (
 		}
 
 		// If the window width is less than the breakpoint, reset the styles and return.
-		if ( fullScreenModalBreakpoint >= window.innerWidth ) {
+		if ( fullScreenModalBreakpoint > window.innerWidth ) {
 			iframe.style.left = '0';
 			iframe.style.right = '';
 			return;
@@ -186,22 +178,27 @@ export const handleWooPayEmailInput = async (
 		// Set the initial value.
 		iframeHeaderValue = true;
 
-		request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
-			{
-				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-			}
-		).then( ( response ) => {
-			if ( response?.data?.session ) {
-				iframe.contentWindow.postMessage(
-					{
-						action: 'setSessionData',
-						value: response,
-					},
-					getConfig( 'woopayHost' )
-				);
-			}
-		} );
+		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
+			request(
+				buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
+				{
+					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+					order_id: getConfig( 'order_id' ),
+					key: getConfig( 'key' ),
+					billing_email: getConfig( 'billing_email' ),
+				}
+			).then( ( response ) => {
+				if ( response?.data?.session ) {
+					iframe.contentWindow.postMessage(
+						{
+							action: 'setSessionData',
+							value: response,
+						},
+						getConfig( 'woopayHost' )
+					);
+				}
+			} );
+		}
 
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
@@ -210,11 +207,6 @@ export const handleWooPayEmailInput = async (
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_OTP_START,
-			[],
-			true
-		);
 	} );
 
 	// Add the iframe and iframe arrow to the wrapper.
@@ -263,15 +255,18 @@ export const handleWooPayEmailInput = async (
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 		urlParams.append( 'is_blocks', isBlocksCheckout ? 'true' : 'false' );
-		urlParams.append( 'source_url', window.location.href );
+		urlParams.append(
+			'source_url',
+			wcSettings?.storePages?.checkout?.permalink
+		);
 		urlParams.append(
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
 		);
-		urlParams.append(
-			'tracksUserIdentity',
-			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
-		);
+
+		if ( tracksUserId ) {
+			urlParams.append( 'tracksUserIdentity', tracksUserId );
+		}
 
 		iframe.src = `${ getConfig(
 			'woopayHost'
@@ -337,6 +332,8 @@ export const handleWooPayEmailInput = async (
 			parentDiv.removeChild( errorMessage );
 		}
 
+		recordUserEvent( 'checkout_email_address_woopay_check' );
+
 		request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_signature' ),
 			{
@@ -348,14 +345,21 @@ export const handleWooPayEmailInput = async (
 					return response.data;
 				}
 
-				throw new Error( 'Request for signature failed.' );
+				throw new Error(
+					__(
+						'Request for signature failed.',
+						'woocommerce-payments'
+					)
+				);
 			} )
 			.then( ( data ) => {
 				if ( data.signature ) {
 					return data.signature;
 				}
 
-				throw new Error( 'Signature not found.' );
+				throw new Error(
+					__( 'Signature not found.', 'woocommerce-payments' )
+				);
 			} )
 			.then( ( signature ) => {
 				const emailExistsQuery = new URLSearchParams();
@@ -397,11 +401,13 @@ export const handleWooPayEmailInput = async (
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
 				} else if ( data.code !== 'rest_invalid_param' ) {
-					wcpayTracks.recordUserEvent(
-						wcpayTracks.events.WOOPAY_OFFERED,
-						[],
-						true
-					);
+					recordUserEvent( 'checkout_woopay_save_my_info_offered' );
+
+					if ( window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO ) {
+						recordUserEvent( 'checkout_save_my_info_click', {
+							status: 'checked',
+						} );
+					}
 				}
 			} )
 			.catch( ( err ) => {
@@ -417,56 +423,7 @@ export const handleWooPayEmailInput = async (
 			} );
 	};
 
-	const closeLoginSessionIframe = () => {
-		loginSessionIframeWrapper.remove();
-		loginSessionIframe.classList.remove( 'open' );
-		woopayEmailInput.focus( {
-			preventScroll: true,
-		} );
-
-		// Check the initial value of the email input and trigger input validation.
-		if ( validateEmail( woopayEmailInput.value ) ) {
-			woopayLocateUser( woopayEmailInput.value );
-		}
-	};
-
-	const openLoginSessionIframe = ( email ) => {
-		const emailParam = new URLSearchParams();
-
-		if ( validateEmail( email ) ) {
-			parentDiv.insertBefore( spinner, woopayEmailInput );
-			emailParam.append( 'email', email );
-			emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
-		}
-
-		loginSessionIframe.src = `${ getConfig(
-			'woopayHost'
-		) }/login-session?${ emailParam.toString() }`;
-
-		// Insert the wrapper into the DOM.
-		parentDiv.insertBefore( loginSessionIframeWrapper, null );
-
-		// Focus the iframe.
-		loginSessionIframe.focus();
-
-		// fallback to close the login session iframe in case failed to receive event
-		// via postMessage.
-		setTimeout( () => {
-			if ( ! hasCheckedLoginSession ) {
-				closeLoginSessionIframe();
-			}
-		}, 15000 );
-	};
-
 	woopayEmailInput.addEventListener( 'input', ( e ) => {
-		if ( ! hasCheckedLoginSession && ! customerClickedBackButton ) {
-			if ( customerClickedBackButton ) {
-				openLoginSessionIframe( woopayEmailInput.value );
-			}
-
-			return;
-		}
-
 		const email = e.currentTarget.value;
 
 		clearTimeout( timer );
@@ -483,61 +440,10 @@ export const handleWooPayEmailInput = async (
 		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
 			return;
 		}
-
 		switch ( e.data.action ) {
-			case 'auto_redirect_to_platform_checkout':
-			case 'auto_redirect_to_woopay':
-				hasCheckedLoginSession = true;
-				api.initWooPay(
-					e.data.userEmail,
-					e.data.platformCheckoutUserSession
-				)
-					.then( ( response ) => {
-						if ( response.result === 'success' ) {
-							loginSessionIframeWrapper.classList.add(
-								'woopay-login-session-iframe-wrapper'
-							);
-							loginSessionIframe.classList.add( 'open' );
-							wcpayTracks.recordUserEvent(
-								wcpayTracks.events.WOOPAY_AUTO_REDIRECT
-							);
-							spinner.remove();
-							// Do nothing if the iframe has been closed.
-							if (
-								! document.querySelector(
-									'.woopay-login-session-iframe'
-								)
-							) {
-								return;
-							}
-							window.location = response.url;
-						} else {
-							closeLoginSessionIframe();
-						}
-					} )
-					.catch( ( err ) => {
-						// Only show the error if it's not an AbortError,
-						// it occurs when the fetch request is aborted because user
-						// clicked the Place Order button while loading.
-						if ( err.name !== 'AbortError' ) {
-							showErrorMessage();
-						}
-					} )
-					.finally( () => {
-						spinner.remove();
-					} );
-				break;
-			case 'close_auto_redirection_modal':
-				hasCheckedLoginSession = true;
-				closeLoginSessionIframe();
-				break;
 			case 'redirect_to_woopay_skip_session_init':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
-					[],
-					true
-				);
 				if ( e.data.redirectUrl ) {
+					deleteSkipWooPayCookie();
 					window.location = appendRedirectionParams(
 						e.data.redirectUrl
 					);
@@ -545,15 +451,18 @@ export const handleWooPayEmailInput = async (
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
-					[],
-					true
-				);
-				api.initWooPay(
+				const promise = api.initWooPay(
 					woopayEmailInput.value,
 					e.data.platformCheckoutUserSession
-				)
+				);
+
+				// The <Login> component on WooPay re-renders sending the `redirect_to_platform_checkout` message twice.
+				// `api.initWooPay` skips the request the second time and returns undefined.
+				if ( ! promise ) {
+					break;
+				}
+
+				promise
 					.then( ( response ) => {
 						// Do nothing if the iframe has been closed.
 						if (
@@ -562,6 +471,7 @@ export const handleWooPayEmailInput = async (
 							return;
 						}
 						if ( response.result === 'success' ) {
+							deleteSkipWooPayCookie();
 							window.location = response.url;
 						} else {
 							showErrorMessage();
@@ -574,11 +484,6 @@ export const handleWooPayEmailInput = async (
 					} );
 				break;
 			case 'otp_validation_failed':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_FAILED,
-					[],
-					true
-				);
 				break;
 			case 'close_modal':
 				closeIframe();
@@ -625,22 +530,13 @@ export const handleWooPayEmailInput = async (
 		}
 	} );
 
-	if ( ! customerClickedBackButton ) {
-		// Check if user already has a WooPay login session.
-		if ( ! hasCheckedLoginSession ) {
-			openLoginSessionIframe( woopayEmailInput.value );
-		}
-	} else {
+	if ( customerClickedBackButton ) {
 		// Dispatch an event declaring this user exists as returned via back button. Wait for the window to load.
 		setTimeout( () => {
 			dispatchUserExistEvent( true );
 		}, 2000 );
 
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_SKIPPED,
-			[],
-			true
-		);
+		recordUserEvent( 'woopay_skipped', {} );
 
 		searchParams.delete( 'skip_woopay' );
 

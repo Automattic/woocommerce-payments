@@ -26,6 +26,13 @@ class Capture_Intention extends Request {
 	];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_capture_intent_request';
+
+	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
 	 * @param string $id Sets the intent ID, which will be used in the request URL.
@@ -74,6 +81,15 @@ class Capture_Intention extends Request {
 		}
 
 		$this->set_param( 'level3', $this->fix_level3_data( $level3 ) );
+	}
+
+	/**
+	 * Setter for intent metadata.
+	 *
+	 * @param array $metadata Intent metadata that includes stuff like order details, card reader specifics, etc..
+	 */
+	public function set_metadata( array $metadata ): void {
+		$this->set_param( 'metadata', $metadata );
 	}
 
 	/**

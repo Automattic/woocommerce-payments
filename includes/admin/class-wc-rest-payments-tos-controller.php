@@ -142,7 +142,7 @@ class WC_REST_Payments_Tos_Controller extends WC_Payments_REST_Controller {
 		$request = Add_Account_Tos_Agreement::create();
 		$request->set_source( 'settings-popup' );
 		$request->set_user_name( $user_name );
-		$request->send( 'wcpay_add_account_tos_agreement' );
+		$request->send();
 
 		$this->account->refresh_account_data();
 	}

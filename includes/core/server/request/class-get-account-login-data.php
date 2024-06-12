@@ -22,6 +22,13 @@ class Get_Account_Login_Data extends Request {
 	];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wpcay_get_account_login_data';
+
+	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

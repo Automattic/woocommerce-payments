@@ -38,7 +38,14 @@ class FrontendPrices {
 	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
 		$this->multi_currency = $multi_currency;
 		$this->compatibility  = $compatibility;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Simple product price hooks.
 			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 99, 2 );

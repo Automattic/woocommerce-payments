@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CardNotice component should render a button when actions prop is provided 1`] = `
+<div>
+  <div
+    class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="CardFooter"
+  >
+    <div
+      class="card-notice__section"
+    >
+      <div
+        class="card-notice__text"
+      >
+        Notice text
+      </div>
+      <div
+        class="card-notice__button"
+      >
+        <button
+          class="components-button"
+          type="button"
+        >
+          Notice text
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CardNotice component should render child 1`] = `
+<div>
+  <div
+    class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+    data-wp-c16t="true"
+    data-wp-component="CardFooter"
+  >
+    <div
+      class="card-notice__section"
+    >
+      <div
+        class="card-notice__text"
+      >
+        Notice text
+      </div>
+      <div
+        class="card-notice__button"
+      />
+    </div>
+  </div>
+</div>
+`;

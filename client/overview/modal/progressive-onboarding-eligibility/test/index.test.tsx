@@ -10,38 +10,57 @@ import user from '@testing-library/user-event';
  */
 import ProgressiveOnboardingEligibilityModal from '../index';
 
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
+} ) );
+
 declare const global: {
 	wcpaySettings: {
 		connectUrl: string;
+		progressiveOnboarding?: {
+			isEligibilityModalDismissed: boolean;
+		};
 	};
 };
 
 describe( 'Progressive Onboarding Eligibility Modal', () => {
+	global.wcpaySettings = {
+		connectUrl: 'https://wcpay.test/connect',
+		progressiveOnboarding: {
+			isEligibilityModalDismissed: false,
+		},
+	};
+
 	it( 'modal is open by default', () => {
 		render( <ProgressiveOnboardingEligibilityModal /> );
 
 		const queryHeading = () =>
 			screen.queryByRole( 'heading', {
-				name:
-					'You’re eligible to start selling now and fast-track the setup process.',
+				name: 'You’re ready to sell.',
 			} );
 
 		expect( queryHeading() ).toBeInTheDocument();
 	} );
 
 	it( 'closes modal when enable button is clicked', () => {
+		global.wcpaySettings = {
+			connectUrl: 'https://wcpay.test/connect',
+			progressiveOnboarding: {
+				isEligibilityModalDismissed: false,
+			},
+		};
+
 		render( <ProgressiveOnboardingEligibilityModal /> );
 
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Enable payments only',
+				name: 'Start selling',
 			} )
 		);
 
 		expect(
 			screen.queryByRole( 'heading', {
-				name:
-					'You’re eligible to start selling now and fast-track the setup process.',
+				name: 'You’re ready to sell.',
 			} )
 		).not.toBeInTheDocument();
 	} );
@@ -49,6 +68,9 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 	it( 'calls `handleSetup` when setup button is clicked', () => {
 		global.wcpaySettings = {
 			connectUrl: 'https://wcpay.test/connect',
+			progressiveOnboarding: {
+				isEligibilityModalDismissed: false,
+			},
 		};
 
 		Object.defineProperty( window, 'location', {
@@ -61,7 +83,7 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Set up payments and deposits',
+				name: 'Start receiving deposits',
 			} )
 		);
 

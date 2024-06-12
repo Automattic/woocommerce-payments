@@ -420,10 +420,8 @@ describe( 'Multi-Currency enabled currencies list', () => {
 		).not.toBeInTheDocument();
 
 		expect(
-			screen.getByRole( 'button', {
-				name: /Add ([a-z0-9]+ )?currenc(y|ies)/i,
-			} )
-		).toBeDisabled();
+			screen.getByRole( 'button', { name: 'Continue' } )
+		).not.toBeDisabled();
 
 		// Reset mock currencies to original state.
 		useEnabledCurrencies.mockReturnValue( {

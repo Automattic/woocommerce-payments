@@ -37,6 +37,9 @@ describe( 'Saved cards ', () => {
 				await expect( page ).toMatch(
 					'Payment method successfully added'
 				);
+				await expect( page ).toMatch(
+					`${ card.expires.month }/${ card.expires.year }`
+				);
 			} );
 
 			it( 'should process a payment with the saved card', async () => {
@@ -51,7 +54,7 @@ describe( 'Saved cards ', () => {
 					await shopper.placeOrder();
 				} else {
 					await expect( page ).toClick( '#place_order' );
-					await confirmCardAuthentication( page, cardType );
+					await confirmCardAuthentication( page );
 					await page.waitForNavigation( {
 						waitUntil: 'networkidle0',
 					} );

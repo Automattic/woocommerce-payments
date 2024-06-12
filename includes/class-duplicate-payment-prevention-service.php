@@ -66,9 +66,6 @@ class Duplicate_Payment_Prevention_Service {
 	public function init( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Order_Service $order_service ) {
 		$this->gateway       = $gateway;
 		$this->order_service = $order_service;
-
-		// Priority 21 to run right after wc_clear_cart_after_payment.
-		add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 	}
 
 	/**
@@ -91,21 +88,27 @@ class Duplicate_Payment_Prevention_Service {
 		}
 
 		try {
-			$request       = Get_Intention::create( $intent_id );
-			$intent        = $request->send( 'wcpay_get_intention_request' );
+			$request = Get_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			/** @var \WC_Payments_API_Abstract_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$intent        = $request->send();
 			$intent_status = $intent->get_status();
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch attached payment intent: ' . $e );
 			return;
-		};
+		}
 
-		if ( ! in_array( $intent_status, WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
+		if ( ! $intent->is_authorized() ) {
 			return;
 		}
 
-		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
-		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-		if ( $intent_meta_order_id !== $order->get_id() ) {
+		$intent_meta_order_id_raw     = $intent->get_metadata()['order_id'] ?? '';
+		$intent_meta_order_id         = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+		$intent_meta_order_number_raw = $intent->get_metadata()['order_number'] ?? '';
+		$intent_meta_order_number     = is_numeric( $intent_meta_order_number_raw ) ? intval( $intent_meta_order_number_raw ) : 0;
+		$paid_on_woopay               = filter_var( $intent->get_metadata()['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN );
+		$is_woopay_order              = $order->get_id() === $intent_meta_order_number;
+		if ( ! ( $paid_on_woopay && $is_woopay_order ) && $intent_meta_order_id !== $order->get_id() ) {
 			return;
 		}
 
@@ -117,9 +120,8 @@ class Duplicate_Payment_Prevention_Service {
 		$return_url = $this->gateway->get_return_url( $order );
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
 		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
-			'result'                               => 'success',
-			'redirect'                             => $return_url,
-			'wcpay_upe_previous_successful_intent' => 'yes', // This flag is needed for UPE flow.
+			'result'   => 'success',
+			'redirect' => $return_url,
 		];
 	}
 
@@ -149,6 +151,17 @@ class Duplicate_Payment_Prevention_Service {
 			return;
 		}
 
+		if ( ! $current_order->has_status( wc_get_is_pending_statuses() ) ) {
+			return;
+		}
+
+		if ( $session_order->get_id() === $current_order->get_id() ) {
+			return;
+		}
+
+		if ( $session_order->get_customer_id() !== $current_order->get_customer_id() ) {
+			return;
+		}
 		$session_order->add_order_note(
 			sprintf(
 				/* translators: order ID integer number */
@@ -164,9 +177,8 @@ class Duplicate_Payment_Prevention_Service {
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_ORDER_PAID, 'yes', $return_url );
 
 		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
-			'result'                            => 'success',
-			'redirect'                          => $return_url,
-			'wcpay_upe_paid_for_previous_order' => 'yes', // This flag is needed for UPE flow.
+			'result'   => 'success',
+			'redirect' => $return_url,
 		];
 	}
 
@@ -210,19 +222,5 @@ class Duplicate_Payment_Prevention_Service {
 
 		$val = $session->get( self::SESSION_KEY_PROCESSING_ORDER );
 		return null === $val ? null : absint( $val );
-	}
-
-	/**
-	 * Action to remove the order ID when customers reach its order-received page.
-	 *
-	 * @return void
-	 */
-	public function clear_session_processing_order_after_landing_order_received_page() {
-		global $wp;
-
-		if ( is_order_received_page() && isset( $wp->query_vars['order-received'] ) ) {
-			$order_id = absint( $wp->query_vars['order-received'] );
-			$this->remove_session_processing_order( $order_id );
-		}
 	}
 }

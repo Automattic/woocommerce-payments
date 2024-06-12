@@ -1,6 +1,6 @@
 # `WooPay_Create_and_Confirm_Intention` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 
@@ -54,5 +54,6 @@ $request->set_payment_method( $payment_method_id );
 $request->set_payment_method_types( $payment_methods );
 $request->set_payment_methods( $payment_methods );
 $request->setup_future_usage();
-$request->send( 'wcpay_create_and_confirm_intent_request', $payment_information );
+$request->set_hook_args( $payment_information );
+$request->send();
 ```

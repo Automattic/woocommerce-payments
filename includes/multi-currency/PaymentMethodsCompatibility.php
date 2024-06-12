@@ -40,7 +40,14 @@ class PaymentMethodsCompatibility {
 	public function __construct( MultiCurrency $multi_currency, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->multi_currency = $multi_currency;
 		$this->gateway        = $gateway;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action(
 			'update_option_woocommerce_woocommerce_payments_settings',
 			[ $this, 'add_missing_currencies' ]
@@ -54,15 +61,11 @@ class PaymentMethodsCompatibility {
 	 * @return  array  The currencies keyed with the related payment method
 	 */
 	public function get_enabled_payment_method_currencies() {
-
-		if ( ! WC_Payments_Features::is_upe_enabled() ) {
-			return [];
-		}
-
 		$enabled_payment_method_ids       = $this->gateway->get_upe_enabled_payment_method_ids();
+		$account_currency                 = $this->gateway->get_account_domestic_currency();
 		$payment_methods_needing_currency = array_reduce(
 			$enabled_payment_method_ids,
-			function ( $result, $method ) {
+			function ( $result, $method ) use ( $account_currency ) {
 				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
 					return $result;
 				}
@@ -79,8 +82,8 @@ class PaymentMethodsCompatibility {
 				$payment_method_instance = new $class_name( null );
 
 				$result[ $method ] = [
-					'currencies' => $payment_method_instance->get_currencies(),
-					'title'      => $payment_method_instance->get_title(),
+					'currencies' => $payment_method_instance->has_domestic_transactions_restrictions() ? [ $account_currency ] : $payment_method_instance->get_currencies(),
+					'title'      => $payment_method_instance->get_title( $this->gateway->get_account_country() ),
 				];
 
 				return $result;

@@ -4,7 +4,7 @@
  */
 import React, { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { RadioControl, Notice } from '@wordpress/components';
+import { SelectControl, RadioControl, Notice } from '@wordpress/components';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useContext } from '@wordpress/element';
@@ -16,7 +16,7 @@ import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from '@automattic/interpolate-components';
-import { getPaymentRequestData } from '../../payment-request/utils';
+import { getPaymentRequestData } from 'utils/express-checkout';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import {
 	usePaymentRequestButtonType,
@@ -40,11 +40,11 @@ const buttonSizeOptions = [
 	{
 		label: makeButtonSizeText(
 			__(
-				'Default {{helpText}}(40 px){{/helpText}}',
+				'Small {{helpText}}(40 px){{/helpText}}',
 				'woocommerce-payments'
 			)
 		),
-		value: 'default',
+		value: 'small',
 	},
 	{
 		label: makeButtonSizeText(
@@ -186,10 +186,15 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 				</Notice>
 			) }
 			<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
-			<RadioControl
+			<SelectControl
 				className="payment-method-settings__cta-selection"
+				label={ __( 'Call to action', 'woocommerce-payments' ) }
+				help={ __(
+					'Select a button label that fits best wit the flow of purchase or payment experience on your store.',
+					'woocommerce-payments'
+				) }
 				hideLabelFromVision
-				selected={ buttonType }
+				value={ buttonType }
 				options={ buttonActionOptions }
 				onChange={ setButtonType }
 			/>

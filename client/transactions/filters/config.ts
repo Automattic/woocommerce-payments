@@ -7,7 +7,12 @@ import { getSetting } from '@woocommerce/settings';
 /**
  * Internal dependencies
  */
-import { displayType, sourceDevice } from 'transactions/strings';
+import {
+	displayType,
+	sourceDevice,
+	channel,
+	riskLevel,
+} from 'transactions/strings';
 
 interface TransactionsFilterEntryType {
 	label: string;
@@ -59,6 +64,24 @@ const transactionSourceDeviceOptions = Object.entries( sourceDevice ).map(
 	}
 );
 
+const transactionChannelOptions = Object.entries( channel ).map(
+	( [ type, label ] ) => {
+		return { label, value: type };
+	}
+);
+
+const transactionRiskLevelOptions = Object.entries( riskLevel ).map(
+	( [ type, label ] ) => {
+		return { label, value: type };
+	}
+);
+
+const transactionCustomerCounryOptions = Object.entries(
+	wcSettings.countries
+).map( ( [ type, label ] ) => {
+	return { label, value: type };
+} );
+
 export const getFilters = (
 	depositCurrencyOptions: TransactionsFilterEntryType[],
 	showDepositCurrencyFilter: boolean
@@ -81,6 +104,12 @@ export const getFilters = (
 				'date_between',
 				'source_device_is',
 				'source_device_is_not',
+				'channel_is',
+				'channel_is_not',
+				'customer_country_is',
+				'customer_country_is_not',
+				'risk_level_is',
+				'risk_level_is_not',
 			],
 			showFilters: () => showDepositCurrencyFilter,
 			filters: [
@@ -366,6 +395,154 @@ export const getAdvancedFilters = (
 				input: {
 					component: 'SelectControl',
 					options: transactionSourceDeviceOptions,
+				},
+			},
+			channel: {
+				labels: {
+					add: __( 'Channel', 'woocommerce-payments' ),
+					remove: __(
+						'Remove transaction channel filter',
+						'woocommerce-payments'
+					),
+					rule: __(
+						'Select a transaction channel filter match',
+						'woocommerce-payments'
+					),
+					/* translators: A sentence describing a Transaction Channel filter. */
+					title:
+						wooCommerceVersion < 7.8
+							? __(
+									'{{title}}Channel{{/title}} {{rule /}} {{filter /}}',
+									'woocommerce-payments'
+							  )
+							: __(
+									'<title>Channel</title> <rule /> <filter />',
+									'woocommerce-payments'
+							  ),
+					filter: __(
+						'Select a transaction channel',
+						'woocommerce-payments'
+					),
+				},
+				rules: [
+					{
+						value: 'is',
+						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction channel type. */
+						label: _x( 'Is', 'Channel', 'woocommerce-payments' ),
+					},
+					{
+						value: 'is_not',
+						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction channel type. */
+						label: _x(
+							'Is not',
+							'Channel',
+							'woocommerce-payments'
+						),
+					},
+				],
+				input: {
+					component: 'SelectControl',
+					options: transactionChannelOptions,
+				},
+			},
+			customer_country: {
+				labels: {
+					add: __( 'Customer Country', 'woocommerce-payments' ),
+					remove: __(
+						'Remove transaction customer country filter',
+						'woocommerce-payments'
+					),
+					rule: __(
+						'Select a transaction customer country filter match',
+						'woocommerce-payments'
+					),
+					/* translators: A sentence describing a Transaction customer country. */
+					title:
+						wooCommerceVersion < 7.8
+							? __(
+									'{{title}}Customer country{{/title}} {{rule /}} {{filter /}}',
+									'woocommerce-payments'
+							  )
+							: __(
+									'<title>Customer country</title> <rule /> <filter />',
+									'woocommerce-payments'
+							  ),
+					filter: __(
+						'Select a transaction customer country',
+						'woocommerce-payments'
+					),
+				},
+				rules: [
+					{
+						value: 'is',
+						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction customer country. */
+						label: _x(
+							'Is',
+							'Customer Country',
+							'woocommerce-payments'
+						),
+					},
+					{
+						value: 'is_not',
+						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction customer country. */
+						label: _x(
+							'Is not',
+							'Customer Country',
+							'woocommerce-payments'
+						),
+					},
+				],
+				input: {
+					component: 'SelectControl',
+					options: transactionCustomerCounryOptions,
+				},
+			},
+			risk_level: {
+				labels: {
+					add: __( 'Risk Level', 'woocommerce-payments' ),
+					remove: __(
+						'Remove transaction Risk Level filter',
+						'woocommerce-payments'
+					),
+					rule: __(
+						'Select a transaction Risk Level filter match',
+						'woocommerce-payments'
+					),
+					/* translators: A sentence describing a Transaction Risk Level filter. */
+					title:
+						wooCommerceVersion < 7.8
+							? __(
+									'{{title}}Risk Level{{/title}} {{rule /}} {{filter /}}',
+									'woocommerce-payments'
+							  )
+							: __(
+									'<title>Risk Level</title> <rule /> <filter />',
+									'woocommerce-payments'
+							  ),
+					filter: __(
+						'Select a transaction Risk Level',
+						'woocommerce-payments'
+					),
+				},
+				rules: [
+					{
+						value: 'is',
+						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction risk level. */
+						label: _x( 'Is', 'Risk Level', 'woocommerce-payments' ),
+					},
+					{
+						value: 'is_not',
+						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction risk level. */
+						label: _x(
+							'Is not',
+							'Risk Level',
+							'woocommerce-payments'
+						),
+					},
+				],
+				input: {
+					component: 'SelectControl',
+					options: transactionRiskLevelOptions,
 				},
 			},
 		},

@@ -11,7 +11,7 @@ use WCPAY_UnitTestCase;
 use WCPay\Core\Mode;
 use WCPay\Database_Cache;
 use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
-use WCPay\Internal\DependencyManagement\ContainerException;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 
 /**
  * Tests for the legacy container.
@@ -48,6 +48,7 @@ class LegacyContainerTest extends WCPAY_UnitTestCase {
 			[ \WC_Payments_Action_Scheduler_Service::class ],
 			[ \WC_Payments_Fraud_Service::class ],
 			[ \WC_Payments_Customer_Service::class ],
+			[ \WC_Payments_Order_Service::class ],
 		];
 	}
 

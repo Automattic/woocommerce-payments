@@ -15,16 +15,22 @@ import { merchantWCP } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 const chkboxCaptureLaterOption = 'capture-later-checkbox';
+const confirmationModalClass = '.wcpay-confirmation-modal';
 const customerBankStatement = 'store-name-bank-statement';
 let orderId;
 
-// TODO: Unskip once refund E2E tests failure are investigated.
-describe.skip( 'Order > Manual Capture', () => {
+describe( 'Order > Manual Capture', () => {
 	beforeAll( async () => {
 		// As the merchant, enable the "Issue an authorization on checkout, and capture later" option in the Payment Settings page
 		await merchant.login();
 		await merchantWCP.openWCPSettings();
 		await merchantWCP.setCheckboxByTestId( chkboxCaptureLaterOption );
+		const confirmationModal = await expect( page ).toMatchElement(
+			confirmationModalClass
+		);
+		await expect( confirmationModal ).toClick( 'button', {
+			text: 'Enable',
+		} );
 		await expect( page ).toFill(
 			`[data-testid="${ customerBankStatement }"]`,
 			'E2E Store'

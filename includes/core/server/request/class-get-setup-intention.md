@@ -1,6 +1,6 @@
 # `Get_Setup_Intention` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 
@@ -13,13 +13,11 @@ There are no additional parameters for this request.
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_get_setup_intent_request`
 
 ## Example:
 
 ```php
 $request = Get_Setup_Intention::create( $id );
-$request->send( 'wcpay_get_setup_intent_request' );
+$request->send();
 ```

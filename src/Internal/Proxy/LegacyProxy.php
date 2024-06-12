@@ -10,7 +10,7 @@ namespace WCPay\Internal\Proxy;
 /**
  * Legacy Proxy
  *
- * Used for accessing legacy code, incl. functions, static methods, and globals.
+ * Used for accessing legacy code (everything outside `src`), incl. functions, static methods, and globals.
  * Classes are handled through WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer.
  */
 class LegacyProxy {
@@ -63,7 +63,7 @@ class LegacyProxy {
 	 */
 	public function get_global( string $name ) {
 		if ( ! $this->has_global( $name ) ) {
-			throw new ProxyException( sprintf( 'The global "%s" is not set.', $name ) );
+			throw new ProxyException( esc_html( sprintf( 'The global "%s" is not set.', $name ) ) );
 		}
 
 		return $GLOBALS[ $name ];

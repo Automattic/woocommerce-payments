@@ -89,7 +89,6 @@ const getDepositTimelineItem = (
 				moment( event.deposit.arrival_date * 1000 ).toISOString()
 			)
 		);
-
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/deposits/details',
@@ -221,17 +220,25 @@ const isBaseFeeOnly = ( event ) => {
 };
 
 const formatNetString = ( event ) => {
+	const {
+		amount_captured: amountCaptured,
+		fee,
+		currency,
+		transaction_details: {
+			store_amount_captured: storeAmountCaptured,
+			store_fee: storeFee,
+			store_currency: storeCurrency,
+		},
+	} = event;
+
 	if ( ! isFXEvent( event ) ) {
-		return formatExplicitCurrency(
-			event.amount - event.fee,
-			event.currency
-		);
+		return formatExplicitCurrency( amountCaptured - fee, currency );
 	}
 
+	// We need to use the store amount and currency for the net amount calculation in the case of a FX event.
 	return formatExplicitCurrency(
-		event.transaction_details.store_amount -
-			event.transaction_details.store_fee,
-		event.transaction_details.store_currency
+		storeAmountCaptured - storeFee,
+		storeCurrency
 	);
 };
 
@@ -296,15 +303,20 @@ export const composeFXString = ( event ) => {
 		transaction_details: {
 			customer_currency: customerCurrency,
 			customer_amount: customerAmount,
+			customer_amount_captured: customerAmountCaptured,
 			store_currency: storeCurrency,
 			store_amount: storeAmount,
+			store_amount_captured: storeAmountCaptured,
 		},
 	} = event;
 	return formatFX(
-		{ currency: customerCurrency, amount: customerAmount },
+		{
+			currency: customerCurrency,
+			amount: customerAmountCaptured ?? customerAmount,
+		},
 		{
 			currency: storeCurrency,
-			amount: storeAmount,
+			amount: storeAmountCaptured ?? storeAmount,
 		}
 	);
 };
@@ -606,6 +618,13 @@ const mapEventToTimelineItems = ( event ) => {
 		);
 
 	switch ( type ) {
+		case 'started':
+			return [
+				getStatusChangeTimelineItem(
+					event,
+					__( 'Started', 'woocommerce-payments' )
+				),
+			];
 		case 'authorized':
 			return [
 				getStatusChangeTimelineItem(
@@ -682,7 +701,7 @@ const mapEventToTimelineItems = ( event ) => {
 							'A payment of %s was successfully charged.',
 							'woocommerce-payments'
 						),
-						event.amount,
+						event.amount_captured,
 						true
 					),
 					<CheckmarkIcon className="is-success" />,
@@ -782,12 +801,6 @@ const mapEventToTimelineItems = ( event ) => {
 				);
 			}
 
-			const disputeUrl = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/disputes/details',
-				id: event.dispute_id,
-			} );
-
 			let depositTimelineItem;
 			if ( event.amount === null ) {
 				depositTimelineItem = {
@@ -845,16 +858,7 @@ const mapEventToTimelineItems = ( event ) => {
 				getMainTimelineItem(
 					event,
 					reasonHeadline,
-					<CrossIcon className="is-error" />,
-					[
-						// eslint-disable-next-line react/jsx-key
-						<Link
-							href={ disputeUrl }
-							data-testid={ 'view-dispute-button' }
-						>
-							{ __( 'View dispute', 'woocommerce-payments' ) }
-						</Link>,
-					]
+					<CrossIcon className="is-error" />
 				),
 			];
 		case 'dispute_in_review':

@@ -7,12 +7,11 @@
 
 namespace WCPay\Core\Server\Request;
 
-use DateTime;
-use DateTimeZone;
 use WC_Payments_API_Client;
 use WC_Payments_DB;
 use WC_Payments_Utils;
 use WCPay\Core\Server\Response;
+use WCPay\Core\Server\Request\Request_Utils;
 use WP_REST_Request;
 
 /**
@@ -20,12 +19,20 @@ use WP_REST_Request;
  */
 class List_Transactions extends Paginated {
 
-	use Date_Parameters, Order_Info;
+	use Date_Parameters;
+	use Order_Info;
 
 	const DEFAULT_PARAMS = [
 		'sort'      => 'date',
 		'direction' => 'desc',
 	];
+
+	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_list_transactions_request';
 
 	/**
 	 * Set deposit id.
@@ -62,7 +69,7 @@ class List_Transactions extends Paginated {
 		if ( ! is_null( $date_between_filter ) ) {
 			$date_between_filter = array_map(
 				function ( $transaction_date ) use ( $user_timezone ) {
-					return List_Transactions::format_transaction_date_with_timestamp( $transaction_date, $user_timezone );
+					return Request_Utils::format_transaction_date_by_timezone( $transaction_date, $user_timezone );
 				},
 				$date_between_filter
 			);
@@ -70,13 +77,19 @@ class List_Transactions extends Paginated {
 
 		$filters = [
 			'match'                    => $request->get_param( 'match' ),
-			'date_before'              => self::format_transaction_date_with_timestamp( $request->get_param( 'date_before' ), $user_timezone ),
-			'date_after'               => self::format_transaction_date_with_timestamp( $request->get_param( 'date_after' ), $user_timezone ),
+			'date_before'              => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ),
+			'date_after'               => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ),
 			'date_between'             => $date_between_filter,
 			'type_is'                  => $request->get_param( 'type_is' ),
 			'type_is_not'              => $request->get_param( 'type_is_not' ),
 			'source_device_is'         => $request->get_param( 'source_device_is' ),
 			'source_device_is_not'     => $request->get_param( 'source_device_is_not' ),
+			'channel_is'               => $request->get_param( 'channel_is' ),
+			'channel_is_not'           => $request->get_param( 'channel_is_not' ),
+			'customer_country_is'      => $request->get_param( 'customer_country_is' ),
+			'customer_country_is_not'  => $request->get_param( 'customer_country_is_not' ),
+			'risk_level_is'            => $request->get_param( 'risk_level_is' ),
+			'risk_level_is_not'        => $request->get_param( 'risk_level_is_not' ),
 			'store_currency_is'        => $request->get_param( 'store_currency_is' ),
 			'customer_currency_is'     => $request->get_param( 'customer_currency_is' ),
 			'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),
@@ -202,6 +215,72 @@ class List_Transactions extends Paginated {
 	}
 
 	/**
+	 * Set Channel type is.
+	 *
+	 * @param string $channel_is Channel type is.
+	 *
+	 * @return void
+	 */
+	public function set_channel_is( string $channel_is ) {
+		$this->set_param( 'channel_is', $channel_is );
+	}
+
+	/**
+	 * Set Channel type is not.
+	 *
+	 * @param string $channel_is_not Channel type is not.
+	 *
+	 * @return void
+	 */
+	public function set_channel_is_not( string $channel_is_not ) {
+		$this->set_param( 'channel_is_not', $channel_is_not );
+	}
+
+	/**
+	 * Set Customer country is.
+	 *
+	 * @param string $customer_country_is Customer country is.
+	 *
+	 * @return void
+	 */
+	public function set_customer_country_is( string $customer_country_is ) {
+		$this->set_param( 'customer_country_is', $customer_country_is );
+	}
+
+	/**
+	 * Set Customer country is not.
+	 *
+	 * @param string $customer_country_is_not Customer country is not.
+	 *
+	 * @return void
+	 */
+	public function set_customer_country_is_not( string $customer_country_is_not ) {
+		$this->set_param( 'customer_country_is_not', $customer_country_is_not );
+	}
+
+	/**
+	 * Set Risk level is.
+	 *
+	 * @param string $risk_level_is Risk level is.
+	 *
+	 * @return void
+	 */
+	public function set_risk_level_is( string $risk_level_is ) {
+		$this->set_param( 'risk_level_is', $risk_level_is );
+	}
+
+	/**
+	 * Set Risk level is not.
+	 *
+	 * @param string $risk_level_is_not Risk level is not.
+	 *
+	 * @return void
+	 */
+	public function set_risk_level_is_not( string $risk_level_is_not ) {
+		$this->set_param( 'risk_level_is_not', $risk_level_is_not );
+	}
+
+	/**
 	 * Return formatted response.
 	 *
 	 * @param mixed $response Transactions from server.
@@ -230,36 +309,5 @@ class List_Transactions extends Paginated {
 		}
 
 		return new Response( $response );
-	}
-
-	/**
-	 * Formats the incoming transaction date as per the blog's timezone.
-	 *
-	 * @param string|null $transaction_date Transaction date to format.
-	 * @param string|null $user_timezone         User's timezone passed from client.
-	 *
-	 * @return string|null The formatted transaction date as per timezone.
-	 */
-	public static function format_transaction_date_with_timestamp( $transaction_date, $user_timezone ) {
-		if ( is_null( $transaction_date ) || is_null( $user_timezone ) ) {
-			return $transaction_date;
-		}
-
-		// Get blog timezone.
-		$blog_time = new DateTime( $transaction_date );
-		$blog_time->setTimezone( new DateTimeZone( wp_timezone_string() ) );
-
-		// Get local timezone.
-		$local_time = new DateTime( $transaction_date );
-		$local_time->setTimezone( new DateTimeZone( $user_timezone ) );
-
-		// Compute time difference in minutes.
-		$time_difference = ( strtotime( $local_time->format( 'Y-m-d H:i:s' ) ) - strtotime( $blog_time->format( 'Y-m-d H:i:s' ) ) ) / 60;
-
-		// Shift date by time difference.
-		$formatted_date = new DateTime( $transaction_date );
-		date_modify( $formatted_date, $time_difference . 'minutes' );
-
-		return $formatted_date->format( 'Y-m-d H:i:s' );
 	}
 }

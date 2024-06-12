@@ -2,18 +2,24 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
 import { getConfig } from 'utils/checkout';
 import request from 'wcpay/checkout/utils/request';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
 } from '../utils';
-import wcpayTracks from 'tracks';
+import { getTracksIdentity } from 'tracks';
 
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	const woopayEmailInput = await getTargetElement( emailSelector );
+	const tracksUserID = await getTracksIdentity();
 	let userEmail = '';
 
 	const parentDiv = document.body;
@@ -71,7 +77,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		}
 
 		// If the window width is less than the breakpoint, set iframe to full window
-		if ( fullScreenModalBreakpoint >= window.innerWidth ) {
+		if ( fullScreenModalBreakpoint > window.innerWidth ) {
 			iframe.style.left = '0';
 			iframe.style.right = '';
 			iframe.style.top = '0';
@@ -92,22 +98,27 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		// Set the initial value.
 		iframeHeaderValue = true;
 
-		request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
-			{
-				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-			}
-		).then( ( response ) => {
-			if ( response?.data?.session ) {
-				iframe.contentWindow.postMessage(
-					{
-						action: 'setSessionData',
-						value: response,
-					},
-					getConfig( 'woopayHost' )
-				);
-			}
-		} );
+		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
+			request(
+				buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
+				{
+					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+					order_id: getConfig( 'order_id' ),
+					key: getConfig( 'key' ),
+					billing_email: getConfig( 'billing_email' ),
+				}
+			).then( ( response ) => {
+				if ( response?.data?.session ) {
+					iframe.contentWindow.postMessage(
+						{
+							action: 'setSessionData',
+							value: response,
+						},
+						getConfig( 'woopayHost' )
+					);
+				}
+			} );
+		}
 
 		getWindowSize();
 		window.addEventListener( 'resize', getWindowSize );
@@ -116,61 +127,10 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		window.addEventListener( 'resize', setPopoverPosition );
 
 		iframe.classList.add( 'open' );
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.WOOPAY_OTP_START,
-			[],
-			true
-		);
 	} );
 
 	// Add the iframe to the wrapper.
 	iframeWrapper.insertBefore( iframe, null );
-
-	const showErrorMessage = () => {
-		// Set the notice text.
-		const errorMessage = __(
-			'WooPay is unavailable at this time. Sorry for the inconvenience.',
-			'woocommerce-payments'
-		);
-
-		// Handle Blocks Cart and Checkout notices.
-		if ( wcSettings.wcBlocksConfig && context !== 'product' ) {
-			// This handles adding the error notice to the cart page.
-			wp.data
-				.dispatch( 'core/notices' )
-				?.createNotice( 'error', errorMessage, {
-					context: `wc/${ context }`,
-				} );
-		} else {
-			// We're either on a shortcode cart/checkout or single product page.
-			fetch( getConfig( 'ajaxUrl' ), {
-				method: 'POST',
-				body: new URLSearchParams( {
-					action: 'woopay_express_checkout_button_show_error_notice',
-					_ajax_nonce: getConfig( 'woopayButtonNonce' ),
-					context,
-					message: errorMessage,
-				} ),
-			} )
-				.then( ( response ) => response.json() )
-				.then( ( response ) => {
-					if ( response.success ) {
-						// We need to manually add the notice to the page.
-						const noticesWrapper = document.querySelector(
-							'.woocommerce-notices-wrapper'
-						);
-						const wrapper = document.createElement( 'div' );
-						wrapper.innerHTML = response.data.notice;
-						noticesWrapper.insertBefore( wrapper, null );
-
-						noticesWrapper.scrollIntoView( {
-							behavior: 'smooth',
-							block: 'center',
-						} );
-					}
-				} );
-		}
-	};
 
 	const closeIframe = () => {
 		window.removeEventListener( 'resize', getWindowSize );
@@ -212,7 +172,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			userEmail = email;
 			urlParams.append( 'email', email );
 		}
-		urlParams.append( 'is_blocks', !! wcSettings.wcBlocksConfig );
+		urlParams.append( 'is_blocks', !! window.wcSettings?.wcBlocksConfig );
 		urlParams.append( 'is_express', 'true' );
 		urlParams.append( 'express_context', context );
 		urlParams.append( 'source_url', window.location.href );
@@ -220,10 +180,10 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			'viewport',
 			`${ viewportWidth }x${ viewportHeight }`
 		);
-		urlParams.append(
-			'tracksUserIdentity',
-			JSON.stringify( getConfig( 'tracksUserIdentity' ) )
-		);
+
+		if ( tracksUserID ) {
+			urlParams.append( 'tracksUserIdentity', tracksUserID );
+		}
 
 		iframe.src = `${ getConfig(
 			'woopayHost'
@@ -248,11 +208,6 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				userEmail = e.data.userEmail;
 				break;
 			case 'redirect_to_woopay_skip_session_init':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
-					[],
-					true
-				);
 				if ( e.data.redirectUrl ) {
 					window.location = appendRedirectionParams(
 						e.data.redirectUrl
@@ -261,11 +216,6 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 				break;
 			case 'redirect_to_platform_checkout':
 			case 'redirect_to_woopay':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_COMPLETE,
-					[],
-					true
-				);
 				api.initWooPay(
 					userEmail || e.data.userEmail,
 					e.data.platformCheckoutUserSession
@@ -279,17 +229,17 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 							response.url
 						);
 					} else {
-						showErrorMessage();
+						// Set the notice text.
+						const errorMessage = __(
+							'WooPay is unavailable at this time. Sorry for the inconvenience.',
+							'woocommerce-payments'
+						);
+						showErrorMessage( context, errorMessage );
 						closeIframe( false );
 					}
 				} );
 				break;
 			case 'otp_validation_failed':
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.WOOPAY_OTP_FAILED,
-					[],
-					true
-				);
 				break;
 			case 'close_modal':
 				closeIframe();

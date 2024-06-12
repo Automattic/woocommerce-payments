@@ -32,12 +32,9 @@ export const normalizeOrderData = ( paymentData ) => {
 		paymentData?.paymentMethod?.billing_details?.name ??
 		paymentData.payerName;
 	const email = paymentData?.paymentMethod?.billing_details?.email ?? '';
-	const phone = paymentData?.paymentMethod?.billing_details?.phone ?? '';
 	const billing = paymentData?.paymentMethod?.billing_details?.address ?? {};
 	const shipping = paymentData?.shippingAddress ?? {};
-	const fraudPreventionTokenInput = document.querySelector(
-		'input[name="wcpay-fraud-prevention-token"]'
-	);
+	const fraudPreventionTokenValue = window.wcpayFraudPreventionToken ?? '';
 
 	let paymentRequestType = 'payment_request_api';
 	if ( paymentData?.walletName === 'applePay' ) {
@@ -46,14 +43,17 @@ export const normalizeOrderData = ( paymentData ) => {
 		paymentRequestType = 'google_pay';
 	}
 
+	const phone =
+		paymentData?.paymentMethod?.billing_details?.phone ??
+		paymentData?.payerPhone?.replace( '/[() -]/g', '' ) ??
+		'';
 	return {
 		billing_first_name:
 			name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
 		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) || '-',
 		billing_company: billing?.organization ?? '',
 		billing_email: email ?? paymentData?.payerEmail ?? '',
-		billing_phone:
-			phone ?? paymentData?.payerPhone?.replace( '/[() -]/g', '' ) ?? '',
+		billing_phone: phone,
 		billing_country: billing?.country ?? '',
 		billing_address_1: billing?.line1 ?? '',
 		billing_address_2: billing?.line2 ?? '',
@@ -65,6 +65,7 @@ export const normalizeOrderData = ( paymentData ) => {
 		shipping_last_name:
 			shipping?.recipient?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
 		shipping_company: shipping?.organization ?? '',
+		shipping_phone: phone,
 		shipping_country: shipping?.country ?? '',
 		shipping_address_1: shipping?.addressLine?.[ 0 ] ?? '',
 		shipping_address_2: shipping?.addressLine?.[ 1 ] ?? '',
@@ -78,7 +79,7 @@ export const normalizeOrderData = ( paymentData ) => {
 		terms: 1,
 		'wcpay-payment-method': paymentData?.paymentMethod?.id,
 		payment_request_type: paymentRequestType,
-		'wcpay-fraud-prevention-token': fraudPreventionTokenInput?.value ?? '',
+		'wcpay-fraud-prevention-token': fraudPreventionTokenValue,
 	};
 };
 

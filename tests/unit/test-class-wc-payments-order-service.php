@@ -776,8 +776,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
-		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[0]->content );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[0]->content );
+		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[1]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
@@ -847,15 +847,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment was updated to show dispute created.
 	 */
 	public function test_mark_payment_dispute_created() {
-		// Arrange: Set the dispute_id and reason, and the order status.
-		$dispute_id   = 'dp_123';
+		// Arrange: Set the charge_id and reason, and the order status.
+		$charge_id    = 'ch_123';
 		$amount       = '$123.45';
 		$reason       = 'product_not_received';
 		$deadline     = 'June 7, 2023';
 		$order_status = Order_Status::ON_HOLD;
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was updated to on-hold status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -867,13 +867,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $amount, $notes[0]->content );
 		$this->assertStringContainsString( 'Product not received', $notes[0]->content );
 		$this->assertStringContainsString( $deadline, $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
 
 		// Assert: Check that order status change note was added.
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
 	}
@@ -882,17 +882,17 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests to make sure mark_payment_dispute_created exits if the order is invalid.
 	 */
 	public function test_mark_payment_dispute_created_exits_if_order_invalid() {
-		// Arrange: Set the dispute_id and reason, and the order status.
-		$dispute_id = 'dp_123';
-		$amount     = '$123.45';
-		$reason     = 'product_not_received';
-		$deadline   = 'June 7, 2023';
+		// Arrange: Set the charge_id and reason, and the order status.
+		$charge_id = 'ch_123';
+		$amount    = '$123.45';
+		$reason    = 'product_not_received';
+		$deadline  = 'June 7, 2023';
 
 		$order_status   = $this->order->get_status();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_created( 'fake_order', $dispute_id, $amount, $reason, $deadline );
+		$this->order_service->mark_payment_dispute_created( 'fake_order', $charge_id, $amount, $reason, $deadline );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -906,13 +906,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment was updated to show dispute closed with a win.
 	 */
 	public function test_mark_payment_dispute_closed_with_status_won() {
-		// Arrange: Set the dispute_id and status, and the order status.
-		$dispute_id   = 'dp_123';
+		// Arrange: Set the charge_id and status, and the order status.
+		$charge_id    = 'ch_123';
 		$status       = 'won';
 		$order_status = Order_Status::COMPLETED;
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
 
 		// Assert: Check that the order status was updated to completed status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -921,10 +921,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to Completed', $notes[1]->content );
 		$this->assertStringContainsString( 'Payment dispute has been closed with status won', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 2, $notes_2 );
 	}
@@ -933,14 +933,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests if the payment was updated to show dispute closed with a loss and a refund.
 	 */
 	public function test_mark_payment_dispute_closed_with_status_lost() {
-		// Arrange: Set the dispute_id, dispute status, the order status, and update the order status.
-		$dispute_id   = 'dp_123';
+		// Arrange: Set the charge_id, dispute status, the order status, and update the order status.
+		$charge_id    = 'ch_123';
 		$status       = 'lost';
 		$order_status = Order_Status::ON_HOLD;
 		$this->order->update_status( $order_status ); // When a dispute is created, the order status is changed to On Hold.
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
 
 		// Assert: Check that the order status was left in on-hold status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -949,7 +949,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'On hold to Refunded', $notes[1]->content );
 		$this->assertStringContainsString( 'Payment dispute has been closed with status lost', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Check for created refund, and the amount is correct.
 		$refunds = $this->order->get_refunds();
@@ -957,7 +957,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( '-' . $this->order->get_total(), $refunds[0]->get_total() );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( 3, $notes_2 );
 	}
@@ -966,14 +966,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests to make sure mark_payment_dispute_closed exits if the order is invalid.
 	 */
 	public function test_mark_payment_dispute_closed_exits_if_order_invalid() {
-		// Arrange: Set the dispute_id and reason, and the order status.
-		$dispute_id     = 'dp_123';
+		// Arrange: Set the charge_id and reason, and the order status.
+		$charge_id      = 'ch_123';
 		$status         = 'won';
 		$order_status   = $this->order->get_status();
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark payment dispute created.
-		$this->order_service->mark_payment_dispute_closed( 'fake_order', $dispute_id, $status );
+		$this->order_service->mark_payment_dispute_closed( 'fake_order', $charge_id, $status );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -1009,6 +1009,35 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Tests if the order status is set to processing by a filter
+	 */
+	public function test_mark_terminal_payment_order_completed_status() {
+		// Create the intent.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] );
+
+		// Filter the order status to processing.
+		add_filter(
+			'wcpay_terminal_payment_completed_order_status',
+			function () {
+				return Order_Status::PROCESSING;
+			}
+		);
+
+		// Attempt to mark the payment/order processing.
+		$this->order_service->mark_terminal_payment_completed( $this->order, $intent->get_id(), $intent->get_status() );
+
+		// Assert: Check that the order status was updated to processing status.
+		$this->assertTrue( $this->order->has_status( [ Order_Status::PROCESSING ] ) );
+
+		remove_filter(
+			'wcpay_terminal_payment_completed_order_status',
+			function () {
+				return Order_Status::PROCESSING;
+			}
+		);
 	}
 
 	/**
@@ -1122,8 +1151,14 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_set_wcpay_refund_id() {
 		$wcpay_refund_id = 'ri_mock';
-		$this->order_service->set_wcpay_refund_id_for_order( $this->order, $wcpay_refund_id );
+		$this->order_service->set_wcpay_refund_id_for_refund( $this->order, $wcpay_refund_id );
 		$this->assertEquals( $this->order->get_meta( '_wcpay_refund_id', true ), $wcpay_refund_id );
+	}
+
+	public function set_wcpay_refund_transaction_id_for_order() {
+		$wcpay_refund_transaction_id = 'txn_mock';
+		$this->order_service->set_wcpay_refund_transaction_id_for_order( $this->order, $wcpay_refund_transaction_id );
+		$this->assertSame( $this->order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ), $wcpay_refund_transaction_id );
 	}
 
 	public function test_get_wcpay_refund_id() {
@@ -1176,16 +1211,38 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $fraud_meta_box_type_from_service, $fraud_meta_box_type );
 	}
 
+	public function test_set_payment_transaction_id_for_order() {
+		$transaction_id = 'txn_mock';
+		$this->order_service->set_payment_transaction_id_for_order( $this->order, $transaction_id );
+		$this->assertSame( $this->order->get_meta( '_wcpay_payment_transaction_id', true ), $transaction_id );
+	}
+
 	public function test_attach_intent_info_to_order() {
-		$intent_id      = 'pi_mock';
-		$intent_status  = 'succeeded';
-		$payment_method = 'woocommerce_payments';
-		$customer_id    = 'cus_12345';
-		$charge_id      = 'ch_mock';
-		$currency       = 'USD';
-		$this->order_service->attach_intent_info_to_order( $this->order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+		$intent_id = 'pi_mock';
+		$intent    = WC_Helper_Intention::create_intention( [ 'id' => $intent_id ] );
+		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
 
 		$this->assertEquals( $intent_id, $this->order->get_meta( '_intent_id', true ) );
+	}
+
+	public function test_attach_intent_info_to_order_after_successful_payment() {
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock',
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
+
+		$another_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock_2',
+				'status' => Intent_Status::CANCELED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $another_intent );
+
+		$this->assertEquals( Intent_Status::SUCCEEDED, $this->order->get_meta( '_intention_status', true ) );
 	}
 
 	/**
@@ -1222,5 +1279,56 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'update_meta_data' );
 		$this->order_service->attach_transaction_fee_to_order( $mock_order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' ) );
+	}
+
+	public function test_add_note_and_metadata_for_refund_fully_refunded(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$refunded_amount               = 50;
+		$refund_id                     = 're_1J2a3B4c5D6e7F8g9H0';
+		$refund_reason                 = 'Test refund';
+		$refund_balance_transaction_id = 'txn_1J2a3B4c5D6e7F8g9H0';
+
+		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, $order->get_items() );
+
+		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
+
+		$order_note = wc_get_order_notes( [ 'order_id' => $order->get_id() ] )[0]->content;
+		$this->assertStringContainsString( $refunded_amount, $order_note, 'Order note does not contain expected refund amount' );
+		$this->assertStringContainsString( $refund_id, $order_note, 'Order note does not contain expected refund id' );
+		$this->assertStringContainsString( $refund_reason, $order_note, 'Order note does not contain expected refund reason' );
+
+		$this->assertSame( 'successful', $order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY, true ) );
+		$this->assertSame( $refund_id, $wc_refund->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY, true ) );
+		$this->assertSame( $refund_balance_transaction_id, $order->get_refunds()[0]->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	public function test_add_note_and_metadata_for_refund_partially_refunded(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$refunded_amount               = 10;
+		$refund_id                     = 're_1J2a3B4c5D6e7F8g9H0';
+		$refund_reason                 = 'Test refund';
+		$refund_balance_transaction_id = 'txn_1J2a3B4c5D6e7F8g9H0';
+		$wc_refund                     = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, $order->get_items() );
+
+		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
+
+		$this->assertSame( Order_Status::PENDING, $order->get_status() );
+
+		$order_note = wc_get_order_notes( [ 'order_id' => $order->get_id() ] )[0]->content;
+		$this->assertStringContainsString( $refunded_amount, $order_note, 'Order note does not contain expected refund amount' );
+		$this->assertStringContainsString( $refund_id, $order_note, 'Order note does not contain expected refund id' );
+		$this->assertStringContainsString( $refund_reason, $order_note, 'Order note does not contain expected refund reason' );
+
+		$this->assertSame( 'successful', $order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY, true ) );
+		$this->assertSame( $refund_id, $wc_refund->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY, true ) );
+		$this->assertSame( $refund_balance_transaction_id, $order->get_refunds()[0]->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
 	}
 }

@@ -83,4 +83,18 @@ class HooksProxyTest extends WCPAY_UnitTestCase {
 		$result = do_action( $hook_name, 1, 2, 3 );
 		$this->assertNull( $result ); // Non-null would be a filter.
 	}
+
+	public function test_apply_filters() {
+		$hook_name = 'proxy_test_filter';
+
+		$this->helper->expects( $this->once() )
+			->method( 'action' )
+			->with( 1, 2, 3 )
+			->willReturn( 4 );
+
+		$this->sut->add_filter( $hook_name, [ $this->helper, 'action' ], 11, 3 );
+
+		$result = $this->sut->apply_filters( $hook_name, 1, 2, 3 );
+		$this->assertEquals( 4, $result ); // Non-null would be a filter.
+	}
 }

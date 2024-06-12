@@ -1,6 +1,6 @@
 # `List_Authorizations` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 
@@ -32,5 +32,5 @@ $request->set_page( $page );
 $request->set_page_size( $page_size );
 $request->set_sort_by( $sort );
 $request->set_sort_direction( $direction );
-$request->send( 'wcpay_list_authorizations_request', $request );
+$request->send();
 ```

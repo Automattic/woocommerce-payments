@@ -30,6 +30,7 @@ export interface Item {
 }
 
 export interface ControlProps< ItemType > {
+	name?: string;
 	className?: string;
 	label: string;
 	describedBy?: string;
@@ -81,6 +82,7 @@ const stateReducer = (
 };
 
 function CustomSelectControl< ItemType extends Item >( {
+	name,
 	className,
 	label,
 	describedBy,
@@ -168,6 +170,7 @@ function CustomSelectControl< ItemType extends Item >( {
 						'components-custom-select-control__button',
 						{ placeholder: ! itemString }
 					),
+					name,
 				} ) }
 			>
 				<span className="components-custom-select-control__button-value">

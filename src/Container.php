@@ -7,11 +7,38 @@
 
 namespace WCPay;
 
-use Psr\Container\ContainerInterface;
+use WCPay\Vendor\Psr\Container\ContainerInterface;
+use WCPay\Vendor\League\Container\Exception\ContainerException;
 use WCPay\Internal\DependencyManagement\ExtendedContainer;
 use WCPay\Internal\DependencyManagement\ServiceProvider\PaymentsServiceProvider;
 use WCPay\Internal\DependencyManagement\DelegateContainer\LegacyContainer;
 use WCPay\Internal\DependencyManagement\DelegateContainer\WooContainer;
+use WCPay\Internal\DependencyManagement\ServiceProvider\GenericServiceProvider;
+use WCPay\Internal\DependencyManagement\ServiceProvider\ProxiesServiceProvider;
+
+// @codeCoverageIgnoreStart
+
+/**
+ * Hides errors during update from 6.6.0 or 6.6.1 to 6.6.2.
+ *
+ * This class would be loaded without the right dependencies (and autoloader)
+ * being loaded before it after the update is complete. When that happens,
+ * the ContainerInterface would still be in a different namespace, and would not exist here.
+ *
+ * Preventing the class from being loaded here does nothing but hide the error.
+ * All later requests will work properly.
+ */
+if (
+	! interface_exists( ContainerInterface::class )
+	&& isset( $_GET['action'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	&& 'upload-plugin' === $_GET['action'] // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	&& isset( $GLOBALS['pagenow'] )
+	&& 'update.php' === $GLOBALS['pagenow']
+) {
+	wp_die();
+}
+
+// @codeCoverageIgnoreEnd
 
 /**
  * WCPay Dependency Injection Container.
@@ -67,12 +94,21 @@ class Container implements ContainerInterface {
 	 * @template ID
 	 * @param class-string<ID> $id The ID of the class to retrieve.
 	 * @return ID
+	 * @throws ContainerException In case the ID could not be resolved or instantiated.
 	 *
 	 * Psalm expects $id to be a string, based on ContainerInterface.
 	 * @psalm-suppress MoreSpecificImplementedParamType
+	 *
+	 * PSR-11 containers declares to throw an un-throwable interface
+	 * (it does not extend Throwable), and Psalm does not accept it.
+	 * @psalm-suppress MissingThrowsDocblock
 	 */
 	public function get( $id ) {
-		return $this->container->get( $id );
+		try {
+			return $this->container->get( $id );
+		} catch ( \Throwable $e ) {
+			throw new ContainerException( $e->getMessage(), $e->getCode(), $e ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+		}
 	}
 
 	/**
@@ -89,6 +125,8 @@ class Container implements ContainerInterface {
 	 * Loads all available providers into the container.
 	 */
 	private function load_providers() {
+		$this->container->addServiceProvider( new GenericServiceProvider() );
 		$this->container->addServiceProvider( new PaymentsServiceProvider() );
+		$this->container->addServiceProvider( new ProxiesServiceProvider() );
 	}
 }

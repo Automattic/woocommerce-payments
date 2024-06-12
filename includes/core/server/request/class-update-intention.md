@@ -1,6 +1,6 @@
 # `Update_Intention` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 
@@ -24,8 +24,6 @@ When creating `Update_Intention` requests, the item ID must be provided to the `
 
 ## Filter
 
-When using this request, provide the following filter and arguments:
-
 - Name: `wcpay_update_intention_request`
 - Arguments: `WC_Order $order`
 
@@ -42,5 +40,6 @@ $request->set_payment_country( $payment_country );
 $request->set_payment_method_options( $payment_method_options );
 $request->set_payment_method_types( $payment_methods );
 $request->setup_future_usage();
-$request->send( 'wcpay_update_intention_request', $order );
+$request->set_hook_args( $order );
+$request->send();
 ```

@@ -4,26 +4,26 @@ const { mapValues } = require( 'lodash' );
 const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
-const WebpackRTLPlugin = require( 'webpack-rtl-plugin' );
+const WebpackRTLPlugin = require( './webpack-rtl-plugin' );
 
 module.exports = {
 	entry: mapValues(
 		{
 			index: './client/index.js',
+			'bnpl-announcement': './client/bnpl-announcement/index.js',
 			settings: './client/settings/index.js',
 			'blocks-checkout': './client/checkout/blocks/index.js',
-			'upe-blocks-checkout': './client/checkout/blocks/upe.js',
-			'upe-split-blocks-checkout':
-				'./client/checkout/blocks/upe-split.js',
 			woopay: './client/checkout/woopay/index.js',
 			'woopay-express-button':
 				'./client/checkout/woopay/express-button/index.js',
-			checkout: './client/checkout/classic/index.js',
-			upe_checkout: './client/checkout/classic/upe.js',
-			upe_split_checkout: './client/checkout/classic/upe-split.js',
-			upe_with_deferred_intent_creation_checkout:
-				'./client/checkout/classic/upe-deferred-intent-creation/event-handlers.js',
+			'woopay-direct-checkout':
+				'./client/checkout/woopay/direct-checkout/index.js',
+			cart: './client/cart/index.js',
+			checkout: './client/checkout/classic/event-handlers.js',
+			'express-checkout': './client/express-checkout/index.js',
 			'payment-request': './client/payment-request/index.js',
+			'tokenized-payment-request':
+				'./client/tokenized-payment-request/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',
 			'payment-gateways': './client/payment-gateways/index.js',
@@ -40,6 +40,8 @@ module.exports = {
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
 			'product-details': './client/product-details/index.js',
+			'cart-block': './client/cart/blocks/index.js',
+			'plugins-page': './client/plugins-page/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -132,7 +134,7 @@ module.exports = {
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WebpackRTLPlugin( {
-			filename: '[name]-rtl.[ext]',
+			filenameSuffix: '-rtl.css',
 		} ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,

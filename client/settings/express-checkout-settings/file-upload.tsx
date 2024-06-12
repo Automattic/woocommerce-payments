@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
@@ -36,6 +36,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 		label,
 		accept,
 		disabled,
+		help,
 		purpose,
 		fileID,
 		updateFileID,
@@ -73,12 +74,9 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 
 		setLoading( true );
 
-		wcpayTracks.recordEvent(
-			'wcpay_merchant_settings_file_upload_started',
-			{
-				type: key,
-			}
-		);
+		recordEvent( 'wcpay_merchant_settings_file_upload_started', {
+			type: key,
+		} );
 
 		const body = new FormData();
 		body.append( 'file', file );
@@ -99,14 +97,11 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 			setLoading( false );
 			setUploadError( false );
 
-			wcpayTracks.recordEvent(
-				'wcpay_merchant_settings_file_upload_success',
-				{
-					type: key,
-				}
-			);
+			recordEvent( 'wcpay_merchant_settings_file_upload_success', {
+				type: key,
+			} );
 		} catch ( { err } ) {
-			wcpayTracks.recordEvent( 'wcpay_merchant_settings_upload_failed', {
+			recordEvent( 'wcpay_merchant_settings_upload_failed', {
 				message: ( err as Error ).message,
 			} );
 
@@ -196,13 +191,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 				</div>
 			</div>
 
-			<BaseControl
-				id={ 'test' }
-				help={ __(
-					'Use a custom logo to WooPay if the one taken from your store doesn’t look right. For best results, upload a high-resolution horizontal image with white or transparent background.',
-					'woocommerce-payments'
-				) }
-			>
+			<BaseControl id={ 'test' } help={ help }>
 				{ ' ' }
 			</BaseControl>
 		</div>

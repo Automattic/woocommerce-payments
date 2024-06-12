@@ -12,6 +12,7 @@ use WCPay\Core\Server\Request\Update_Account;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * WC_Payments_Account unit tests.
@@ -31,23 +32,30 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_API_Client.
 	 *
-	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_API_Client|MockObject
 	 */
 	private $mock_api_client;
 
 	/**
 	 * Mock Database_Cache
 	 *
-	 * @var Database_Cache|PHPUnit_Framework_MockObject_MockObject
+	 * @var Database_Cache|MockObject
 	 */
 	private $mock_database_cache;
 
 	/**
 	 * Mock WC_Payments_Action_Scheduler_Service
 	 *
-	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Action_Scheduler_Service|MockObject
 	 */
 	private $mock_action_scheduler_service;
+
+	/**
+	 * Mock WC_Payments_Session_Service.
+	 *
+	 * @var WC_Payments_Session_Service|MockObject
+	 */
+	private $mock_session_service;
 
 	/**
 	 * Pre-test setup
@@ -68,8 +76,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service );
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service );
+		$this->wcpay_account->init_hooks();
 	}
 
 	public function tear_down() {
@@ -78,17 +88,23 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	/**
-	 * @param bool $can_manage_woocommerce
-	 *
-	 * @return Closure
-	 */
-	private function create_can_manage_woocommerce_cap_override( bool $can_manage_woocommerce ) {
-		return function ( $allcaps ) use ( $can_manage_woocommerce ) {
-			$allcaps['manage_woocommerce'] = $can_manage_woocommerce;
-
-			return $allcaps;
-		};
+	public function test_filters_registered_properly() {
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_handle_onboarding' ] ), 'maybe_handle_onboarding action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_onboarding' ] ), 'maybe_redirect_to_onboarding action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_wcpay_connect' ] ), 'maybe_redirect_to_wcpay_connect action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_capital_offer' ] ), 'maybe_redirect_to_capital_offer action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_server_link' ] ), 'maybe_redirect_to_server_link action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_settings_to_connect_or_overview' ] ), 'maybe_redirect_settings_to_connect_or_overview action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_onboarding_flow_to_overview' ] ), 'maybe_redirect_onboarding_flow_to_overview action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_onboarding_flow_to_connect' ] ), 'maybe_redirect_onboarding_flow_to_connect action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_activate_woopay' ] ), 'maybe_activate_woopay action does not exist.' );
+		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_instant_deposits_inbox_note' ] ), 'handle_instant_deposits_inbox_note action does not exist.' );
+		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_loan_approved_inbox_note' ] ), 'handle_loan_approved_inbox_note action does not exist.' );
+		$this->assertNotFalse( has_action( 'wcpay_instant_deposit_reminder', [ $this->wcpay_account, 'handle_instant_deposits_inbox_reminder' ] ), 'handle_instant_deposits_inbox_reminder action does not exist.' );
+		$this->assertNotFalse( has_filter( 'allowed_redirect_hosts', [ $this->wcpay_account, 'allowed_redirect_hosts' ] ), 'allowed_redirect_hooks filter does not exist.' );
+		$this->assertNotFalse( has_action( 'jetpack_site_registered', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_registered action does not exist.' );
+		$this->assertNotFalse( has_action( 'updated_option', [ $this->wcpay_account, 'possibly_update_wcpay_account_locale' ] ), 'updated_option action does not exist.' );
+		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->wcpay_account, 'clear_cache' ] ), 'woocommerce_woocommerce_payments_updated action does not exist.' );
 	}
 
 	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
@@ -303,7 +319,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
 			->getMock();
 
 		$mock_wcpay_account->expects( $this->once() )->method( 'redirect_to' );
@@ -346,6 +362,255 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
 	}
+
+	/**
+	 * @dataProvider data_maybe_redirect_onboarding_flow_to_overview
+	 */
+	public function test_maybe_redirect_onboarding_flow_to_overview( $expected_redirect_to_count, $stripe_account_connected, $get_params ) {
+		wp_set_current_user( 1 );
+		$_GET = $get_params;
+
+		if ( $stripe_account_connected ) {
+			$this->cache_account_details(
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+				]
+			);
+		}
+
+		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
+		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->setMethods( [ 'redirect_to' ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
+			->getMock();
+
+		$mock_wcpay_account->expects( $this->exactly( $expected_redirect_to_count ) )->method( 'redirect_to' );
+
+		$mock_wcpay_account->maybe_redirect_onboarding_flow_to_overview();
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_onboarding_flow_to_overview
+	 */
+	public function data_maybe_redirect_onboarding_flow_to_overview() {
+		return [
+			'no_get_params'           => [
+				0,
+				false,
+				[],
+			],
+			'missing_param'           => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_param'         => [
+				0,
+				false,
+				[
+					'page' => 'wc-settings',
+					'path' => '/payments/onboarding',
+				],
+			],
+			'account_fully_onboarded' => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/onboarding',
+				],
+			],
+			'happy_path'              => [
+				1,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/onboarding',
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider data_maybe_redirect_onboarding_flow_to_connect
+	 */
+	public function test_maybe_redirect_onboarding_flow_to_connect( $expected_times_redirect_called, $is_server_connected, $get_params ) {
+		wp_set_current_user( 1 );
+		$_GET = $get_params;
+
+		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( $is_server_connected );
+
+		// Mock WC_Payments_Account without redirect_to_onboarding_welcome_page to prevent headers already sent error.
+		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
+			->onlyMethods( [ 'redirect_to_onboarding_welcome_page' ] )
+			->getMock();
+
+		$this->wcpay_account
+			->expects( $this->exactly( $expected_times_redirect_called ) )
+			->method( 'redirect_to_onboarding_welcome_page' );
+
+		$this->wcpay_account->maybe_redirect_onboarding_flow_to_connect();
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_onboarding_flow_to_connect
+	 */
+	public function data_maybe_redirect_onboarding_flow_to_connect() {
+		return [
+			'no_get_params'        => [
+				0,
+				false,
+				[],
+			],
+			'empty_page_param'     => [
+				0,
+				false,
+				[
+					'path' => '/payments/onboarding',
+				],
+			],
+			'incorrect_page_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-settings',
+					'path' => '/payments/onboarding',
+				],
+			],
+			'empty_path_param'     => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_path_param' => [
+				0,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/does-not-exist',
+				],
+			],
+			'server_connected'     => [
+				0,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/onboarding',
+				],
+			],
+			'happy_path'           => [
+				1,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/onboarding',
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider data_maybe_redirect_settings_to_connect_or_overview
+	 */
+	public function test_maybe_redirect_settings_to_connect_or_overview( $expected_redirect_to_count, $details_submitted, $get_params, $no_account = false, $path = null ) {
+		wp_set_current_user( 1 );
+		$_GET = $get_params;
+
+		if ( ! $no_account ) {
+			$this->cache_account_details(
+				[
+					'account_id'        => 'acc_test',
+					'is_live'           => true,
+					'details_submitted' => $details_submitted,
+				]
+			);
+		}
+		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
+		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->setMethods( [ 'redirect_to' ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
+			->getMock();
+
+		$mock_wcpay_account->expects( $this->exactly( $expected_redirect_to_count ) )
+			->method( 'redirect_to' )
+			->with( "http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/$path" );
+
+		$mock_wcpay_account->maybe_redirect_settings_to_connect_or_overview();
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_settings_to_connect_or_overview
+	 */
+	public function data_maybe_redirect_settings_to_connect_or_overview() {
+		return [
+			'no_get_params'               => [
+				0,
+				false,
+				[],
+			],
+			'missing_param'               => [
+				0,
+				false,
+				[
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+			],
+			'incorrect_param'             => [
+				0,
+				false,
+				[
+					'page'    => 'wc-admin',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+			],
+			'no_account'                  => [
+				1,
+				false,
+				[
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+				true,
+				'connect',
+			],
+			'account_partially_onboarded' => [
+				1,
+				false,
+				[
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+				false,
+				'overview',
+			],
+			'account_fully_onboarded'     => [
+				0,
+				true,
+				[
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+			],
+		];
+	}
+
 
 	public function test_try_is_stripe_connected_returns_true_when_connected() {
 		$this->mock_empty_cache();
@@ -754,53 +1019,39 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->is_account_rejected() );
 	}
 
-	public function test_is_account_partially_onboarded_returns_true() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_test_',
-				'test_publishable_key'     => 'pk_live_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'status'                   => 'restricted',
-				'details_submitted'        => false,
-			]
-		);
-
-		$this->assertTrue( $this->wcpay_account->is_account_partially_onboarded() );
-
-	}
-
-	public function test_is_account_partially_onboarded_returns_false() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_test_',
-				'test_publishable_key'     => 'pk_live_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'status'                   => 'restricted',
-				'details_submitted'        => true,
-			]
-		);
-
-		$this->assertFalse( $this->wcpay_account->is_account_partially_onboarded() );
-
-	}
-
-	public function test_is_account_partially_onboarded_returns_false_when_stripe_not_connected() {
-		$this->mock_empty_cache();
-
-		$this->mock_wcpay_request( Get_Account::class )
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willThrowException(
-				new API_Exception( 'test', 'wcpay_account_not_found', 401 )
+	/**
+	 * Test the is_details_submitted method.
+	 *
+	 * @param bool $details_submitted Whether details_submitted is true for the account.
+	 *
+	 * @return void
+	 *
+	 * @dataProvider is_details_submitted_provider
+	 */
+	public function test_is_details_submitted( bool $details_submitted ): void {
+		$this->mock_database_cache->expects( $this->once() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+					'status'                   => 'restricted',
+					'details_submitted'        => $details_submitted,
+				]
 			);
 
-		$this->assertFalse( $this->wcpay_account->is_account_partially_onboarded() );
+		$this->assertEquals( $details_submitted, $this->wcpay_account->is_details_submitted() );
+	}
+
+	public function is_details_submitted_provider(): array {
+		return [
+			[ true ],
+			[ false ],
+		];
 	}
 
 	public function test_is_account_partially_onboarded_returns_false_if_account_not_connected() {
@@ -911,8 +1162,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->willThrowException(
 				new API_Exception( 'test', 'bad_request', 400 )
 			);
-		$error_msg = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
-		$this->assertEquals( 'test', $error_msg, 'Error message expected' );
+
+		$result = $this->wcpay_account->update_stripe_account( [ 'statement_descriptor' => 'WCPAY_DEV' ] );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
 	}
 
 	/**
@@ -1175,6 +1428,19 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
 	}
 
+	public function test_get_tracking_info() {
+		$expected = [
+			'hosting-provider' => 'test',
+		];
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->willReturn( $expected );
+
+		$this->assertSame( $expected, $this->wcpay_account->get_tracking_info() );
+	}
+
 	/**
 	 * Sets up the mocked cache to simulate that its empty and call the generator.
 	 */
@@ -1187,6 +1453,19 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					return $validator( $res ) ? $res : null;
 				}
 			);
+	}
+
+	/**
+	 * @param bool $can_manage_woocommerce
+	 *
+	 * @return Closure
+	 */
+	private function create_can_manage_woocommerce_cap_override( bool $can_manage_woocommerce ) {
+		return function ( $allcaps ) use ( $can_manage_woocommerce ) {
+			$allcaps['manage_woocommerce'] = $can_manage_woocommerce;
+
+			return $allcaps;
+		};
 	}
 
 	/**

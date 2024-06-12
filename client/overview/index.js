@@ -3,32 +3,39 @@
 /**
  * External dependencies
  */
-import React from 'react';
-import { Card, Notice } from '@wordpress/components';
+import React, { useState } from 'react';
+import { Button, Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
-import Page from 'components/page';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
-import AccountStatus from 'components/account-status';
-import Welcome from 'components/welcome';
 import AccountBalances from 'components/account-balances';
-import DepositsOverview from 'components/deposits-overview';
+import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
+import ConnectionSuccessNotice from './connection-sucess-notice';
+import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
+import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
+import JetpackIdcNotice from 'components/jetpack-idc-notice';
+import Page from 'components/page';
+import PaymentActivity from 'wcpay/components/payment-activity';
+import Welcome from 'components/welcome';
+import { TestModeNotice } from 'components/test-mode-notice';
+import InboxNotifications from './inbox-notifications';
+import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
+import SetupLivePaymentsModal from './modal/setup-live-payments';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
-import InboxNotifications from './inbox-notifications';
-import ConnectionSuccessNotice from './connection-sucess-notice';
-import SetupRealPayments from './setup-real-payments';
-import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
-import JetpackIdcNotice from 'components/jetpack-idc-notice';
-import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
-import { useDisputes, useSettings } from 'wcpay/data';
+import { useDisputes, useGetSettings, useSettings } from 'data';
 import './style.scss';
+import BannerNotice from 'wcpay/components/banner-notice';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
+import { recordEvent } from 'wcpay/tracks';
+import { ClickTooltip } from 'wcpay/components/tooltip';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -51,16 +58,92 @@ const OverviewPageError = () => {
 	);
 };
 
+const OverviewSandboxModeNotice = ( { ctaAction = () => {} } ) => {
+	return (
+		<BannerNotice status="warning" isDismissible={ false }>
+			{ interpolateComponents( {
+				mixedString: sprintf(
+					/* translators: %1$s: WooPayments */
+					__(
+						// eslint-disable-next-line max-len
+						'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real transactions, {{switchToLiveLink}}set up a live %1$s account.{{/switchToLiveLink}} {{learnMoreIcon/}}',
+						'woocommerce-payments'
+					),
+					'WooPayments'
+				),
+				components: {
+					strong: <strong />,
+					learnMoreIcon: (
+						<ClickTooltip
+							buttonIcon={ <HelpOutlineIcon /> }
+							buttonLabel={ __(
+								'Learn more about sandbox mode',
+								'woocommerce-payments'
+							) }
+							maxWidth={ '250px' }
+							content={
+								<>
+									{ interpolateComponents( {
+										mixedString: sprintf(
+											/* translators: %1$s: WooPayments */
+											__(
+												// eslint-disable-next-line max-len
+												'Sandbox mode gives you access to all %1$s features while checkout transactions are simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+												'woocommerce-payments'
+											),
+											'WooPayments'
+										),
+										components: {
+											learnMoreLink: (
+												// eslint-disable-next-line jsx-a11y/anchor-has-content
+												<Link
+													href={
+														// eslint-disable-next-line max-len
+														'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
+													}
+													target="_blank"
+													rel="noreferrer"
+													type="external"
+													onClick={ () =>
+														recordEvent(
+															'wcpay_overview_sandbox_mode_learn_more_clicked'
+														)
+													}
+												/>
+											),
+										},
+									} ) }
+								</>
+							}
+						/>
+					),
+					switchToLiveLink: (
+						<Button variant="link" onClick={ ctaAction } />
+					),
+				},
+			} ) }
+		</BannerNotice>
+	);
+};
+
 const OverviewPage = () => {
 	const {
 		accountStatus,
+		accountStatus: { progressiveOnboarding },
+		accountLoans: { has_active_loan: hasActiveLoan },
+		enabledPaymentMethods,
+		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		enabledPaymentMethods,
 	} = wcpaySettings;
 
-	const { isLoading: settingsIsLoading, settings } = useSettings();
+	const isDevMode = wcpaySettings.devMode;
+	const { isLoading: settingsIsLoading } = useSettings();
+	const [ livePaymentsModalVisible, setLivePaymentsModalVisible ] = useState(
+		false
+	);
+	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {
 		filter: 'awaiting_response',
@@ -79,6 +162,7 @@ const OverviewPage = () => {
 	const queryParams = getQuery();
 	const accountRejected =
 		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
+	const accountUnderReview = accountStatus.status === 'under_review';
 
 	const showConnectionSuccess =
 		queryParams[ 'wcpay-connection-success' ] === '1';
@@ -88,9 +172,10 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-server-link-error' ] === '1';
 	const showProgressiveOnboardingEligibilityModal =
 		showConnectionSuccess &&
-		accountStatus.progressiveOnboarding.isEnabled &&
-		! accountStatus.progressiveOnboarding.isComplete;
-	const showTaskList = ! accountRejected && tasks.length > 0;
+		progressiveOnboarding.isEnabled &&
+		! progressiveOnboarding.isComplete;
+	const showTaskList =
+		! accountRejected && ! accountUnderReview && tasks.length > 0;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -115,9 +200,7 @@ const OverviewPage = () => {
 	return (
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
-
 			<JetpackIdcNotice />
-
 			{ showLoanOfferError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(
@@ -126,7 +209,6 @@ const OverviewPage = () => {
 					) }
 				</Notice>
 			) }
-
 			{ showServerLinkError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(
@@ -135,75 +217,82 @@ const OverviewPage = () => {
 					) }
 				</Notice>
 			) }
-
-			<TestModeNotice topic={ topics.overview } />
-
+			{ isDevMode ? (
+				<OverviewSandboxModeNotice
+					ctaAction={ () => setLivePaymentsModalVisible( true ) }
+				/>
+			) : (
+				<TestModeNotice
+					currentPage="overview"
+					isDevMode={ isDevMode }
+					actions={ [] }
+				/>
+			) }
 			<ErrorBoundary>
 				<FRTDiscoverabilityBanner />
 			</ErrorBoundary>
-
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
-
-			{ ! accountRejected && (
+			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
-					<>
-						{ showTaskList ? (
-							<>
-								<Card>
-									<Welcome />
-									<ErrorBoundary>
-										<TaskList
-											tasks={ tasks }
-											overviewTasksVisibility={
-												overviewTasksVisibility
-											}
-										/>
-									</ErrorBoundary>
-								</Card>
-								<Card>
-									<AccountBalances />
-								</Card>
-							</>
-						) : (
-							<Card>
-								<Welcome />
-								<AccountBalances />
-							</Card>
-						) }
+					<Welcome />
 
-						<DepositsOverview />
-					</>
+					{ showTaskList && (
+						<Card>
+							<ErrorBoundary>
+								<TaskList
+									tasks={ tasks }
+									overviewTasksVisibility={
+										overviewTasksVisibility
+									}
+								/>
+							</ErrorBoundary>
+						</Card>
+					) }
+
+					<Card>
+						<ErrorBoundary>
+							<AccountBalances />
+						</ErrorBoundary>
+					</Card>
+
+					{
+						/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
+						isPaymentOverviewWidgetEnabled && (
+							<ErrorBoundary>
+								<PaymentActivity />
+							</ErrorBoundary>
+						)
+					}
+
+					<DepositsOverview />
 				</ErrorBoundary>
 			) }
-
-			{ wcpaySettings.onboardingTestMode && (
-				<ErrorBoundary>
-					<SetupRealPayments />
-				</ErrorBoundary>
-			) }
-
 			<ErrorBoundary>
 				<AccountStatus
-					accountStatus={ wcpaySettings.accountStatus }
+					accountStatus={ accountStatus }
 					accountFees={ activeAccountFees }
 				/>
 			</ErrorBoundary>
-
-			{ wcpaySettings.accountLoans.has_active_loan && (
+			{ hasActiveLoan && (
 				<ErrorBoundary>
 					<ActiveLoanSummary />
 				</ErrorBoundary>
 			) }
-
-			{ ! accountRejected && (
+			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<InboxNotifications />
 				</ErrorBoundary>
 			) }
-
 			{ showProgressiveOnboardingEligibilityModal && (
 				<ErrorBoundary>
 					<ProgressiveOnboardingEligibilityModal />
+				</ErrorBoundary>
+			) }
+			{ livePaymentsModalVisible && (
+				<ErrorBoundary>
+					<SetupLivePaymentsModal
+						onClose={ () => setLivePaymentsModalVisible( false ) }
+					/>
 				</ErrorBoundary>
 			) }
 		</Page>

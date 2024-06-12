@@ -60,11 +60,12 @@ interface Props {
 const PaymentsStatus: React.FC< Props > = ( props ) => {
 	const { paymentsEnabled, accountStatus } = props;
 
-	if ( 'pending_verification' === accountStatus ) {
-		return <PaymentsStatusPending iconSize={ props.iconSize } />;
+	if ( paymentsEnabled ) {
+		return <PaymentsStatusEnabled iconSize={ props.iconSize } />;
 	}
-	return paymentsEnabled ? (
-		<PaymentsStatusEnabled iconSize={ props.iconSize } />
+
+	return accountStatus === 'pending_verification' ? (
+		<PaymentsStatusPending iconSize={ props.iconSize } />
 	) : (
 		<PaymentsStatusDisabled iconSize={ props.iconSize } />
 	);

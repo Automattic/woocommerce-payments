@@ -24,6 +24,10 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'Scripts that have a dependency on',
 	'was preloaded using link preload but not used within a few seconds',
 	'No UI will be shown. CanMakePayment and hasEnrolledInstrument',
+	'Failed to load resource: the server responded with a status of 404 (Not Found)',
+	'Store "wc/payments" is already registered.',
+	'Preflight request for request with keepalive specified is currently not supported',
+	'ReactDOM.render is no longer supported in React 18',
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {

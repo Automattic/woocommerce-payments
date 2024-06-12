@@ -18,22 +18,24 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	useWooPayEnabledSettings,
+	useExpressCheckoutShowIncompatibilityNotice,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePaymentRequestLocations: jest.fn(),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
-	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
+	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	useWooPayEnabledSettings: jest.fn(),
+	useExpressCheckoutShowIncompatibilityNotice: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
 
-jest.mock( 'payment-request/utils', () => ( {
+jest.mock( 'utils/express-checkout', () => ( {
 	getPaymentRequestData: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',
@@ -137,17 +139,18 @@ describe( 'PaymentRequestSettings', () => {
 		).toBeInTheDocument();
 
 		// confirm radio button groups displayed
-		const [ ctaRadio, sizeRadio, themeRadio ] = screen.queryAllByRole(
-			'radio'
-		);
+		const [ sizeRadio, themeRadio ] = screen.queryAllByRole( 'radio' );
 
-		expect( ctaRadio ).toBeInTheDocument();
 		expect( sizeRadio ).toBeInTheDocument();
 		expect( themeRadio ).toBeInTheDocument();
 
 		// confirm default values
-		expect( screen.getByLabelText( 'Buy with' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Default (40 px)' ) ).toBeChecked();
+		expect(
+			screen.getByRole( 'combobox', {
+				name: 'Call to action',
+			} )
+		).toHaveValue( 'buy' );
+		expect( screen.getByLabelText( 'Small (40 px)' ) ).toBeChecked();
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
 
@@ -191,7 +194,7 @@ describe( 'PaymentRequestSettings', () => {
 			setButtonTypeMock,
 		] );
 		usePaymentRequestButtonSize.mockReturnValue( [
-			'default',
+			'small',
 			setButtonSizeMock,
 		] );
 		usePaymentRequestButtonTheme.mockReturnValue( [
@@ -208,8 +211,16 @@ describe( 'PaymentRequestSettings', () => {
 		userEvent.click( screen.getByLabelText( /Light/ ) );
 		expect( setButtonThemeMock ).toHaveBeenCalledWith( 'light' );
 
-		userEvent.click( screen.getByLabelText( 'Book with' ) );
-		expect( setButtonTypeMock ).toHaveBeenCalledWith( 'book' );
+		userEvent.selectOptions(
+			screen.getByRole( 'combobox', {
+				name: 'Call to action',
+			} ),
+			'book'
+		);
+		expect( setButtonTypeMock ).toHaveBeenCalledWith(
+			'book',
+			expect.anything()
+		);
 
 		userEvent.click( screen.getByLabelText( 'Large (56 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
@@ -244,5 +255,29 @@ describe( 'PaymentRequestSettings', () => {
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );
+	} );
+
+	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( true );
+
+		render( <PaymentRequestSettings section="enable" /> );
+
+		expect(
+			screen.queryByText(
+				'Your custom checkout fields may not be compatible with these payment methods.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( false );
+
+		render( <PaymentRequestSettings section="enable" /> );
+
+		expect(
+			screen.queryByText(
+				'Your custom checkout fields may not be compatible with these payment methods.'
+			)
+		).not.toBeInTheDocument();
 	} );
 } );

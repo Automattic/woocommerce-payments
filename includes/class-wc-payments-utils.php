@@ -10,6 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Exceptions\{ Amount_Too_Small_Exception, API_Exception, Connection_Exception };
+use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 
 /**
  * WC Payments Utils class
@@ -25,6 +27,30 @@ class WC_Payments_Utils {
 	 * Order meta data key that holds the currency of order's intent transaction.
 	 */
 	const ORDER_INTENT_CURRENCY_META_KEY = '_wcpay_intent_currency';
+
+	/**
+	 * Force disconnected flag name.
+	 */
+	const FORCE_DISCONNECTED_FLAG_NAME = 'wcpaydev_force_disconnected';
+
+	/**
+	 * The Store API route patterns that should be handled by the WooPay session handler.
+	 */
+	const STORE_API_ROUTE_PATTERNS = [
+		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
+		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
+		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
+		// By adding it to this list, we're able to identify the user and load the correct session for this route.
+		'@^\/wc\/v3\/woopay\/session$@',
+	];
 
 	/**
 	 * Mirrors JS's createInterpolateElement functionality.
@@ -116,7 +142,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return int The amount in cents.
 	 */
-	public static function prepare_amount( $amount, $currency = 'USD' ): int {
+	public static function prepare_amount( $amount, $currency = Currency_Code::UNITED_STATES_DOLLAR ): int {
 		$conversion_rate = 100;
 
 		if ( self::is_zero_decimal_currency( strtolower( $currency ) ) ) {
@@ -192,22 +218,21 @@ class WC_Payments_Utils {
 	 */
 	public static function zero_decimal_currencies(): array {
 		return [
-			'bif', // Burundian Franc.
-			'clp', // Chilean Peso.
-			'djf', // Djiboutian Franc.
-			'gnf', // Guinean Franc.
-			'jpy', // Japanese Yen.
-			'kmf', // Comorian Franc.
-			'krw', // South Korean Won.
-			'mga', // Malagasy Ariary.
-			'pyg', // Paraguayan Guaraní.
-			'rwf', // Rwandan Franc.
-			'ugx', // Ugandan Shilling.
-			'vnd', // Vietnamese Đồng.
-			'vuv', // Vanuatu Vatu.
-			'xaf', // Central African Cfa Franc.
-			'xof', // West African Cfa Franc.
-			'xpf', // Cfp Franc.
+			strtolower( Currency_Code::BURUNDIAN_FRANC ), // Burundian Franc.
+			strtolower( Currency_Code::CHILEAN_PESO ), // Chilean Peso.
+			strtolower( Currency_Code::DJIBOUTIAN_FRANC ), // Djiboutian Franc.
+			strtolower( Currency_Code::GUINEAN_FRANC ), // Guinean Franc.
+			strtolower( Currency_Code::JAPANESE_YEN ), // Japanese Yen.
+			strtolower( Currency_Code::COMORIAN_FRANC ), // Comorian Franc.
+			strtolower( Currency_Code::SOUTH_KOREAN_WON ), // South Korean Won.
+			strtolower( Currency_Code::MALAGASY_ARIARY ), // Malagasy Ariary.
+			strtolower( Currency_Code::PARAGUAYAN_GUARANI ), // Paraguayan Guaraní.
+			strtolower( Currency_Code::RWANDAN_FRANC ), // Rwandan Franc.
+			strtolower( Currency_Code::VIETNAMESE_DONG ), // Vietnamese Đồng.
+			strtolower( Currency_Code::VANUATU_VATU ), // Vanuatu Vatu.
+			strtolower( Currency_Code::CENTRAL_AFRICAN_CFA_FRANC ), // Central African CFA Franc.
+			strtolower( Currency_Code::WEST_AFRICAN_CFA_FRANC ), // West African CFA Franc.
+			strtolower( Currency_Code::CFP_FRANC ), // CFP Franc.
 		];
 	}
 
@@ -219,44 +244,45 @@ class WC_Payments_Utils {
 	 */
 	public static function supported_countries(): array {
 		return [
-			'AE' => __( 'United Arab Emirates', 'woocommerce-payments' ),
-			'AT' => __( 'Austria', 'woocommerce-payments' ),
-			'AU' => __( 'Australia', 'woocommerce-payments' ),
-			'BE' => __( 'Belgium', 'woocommerce-payments' ),
-			'BG' => __( 'Bulgaria', 'woocommerce-payments' ),
-			'CA' => __( 'Canada', 'woocommerce-payments' ),
-			'CH' => __( 'Switzerland', 'woocommerce-payments' ),
-			'CY' => __( 'Cyprus', 'woocommerce-payments' ),
-			'CZ' => __( 'Czech Republic', 'woocommerce-payments' ),
-			'DE' => __( 'Germany', 'woocommerce-payments' ),
-			'DK' => __( 'Denmark', 'woocommerce-payments' ),
-			'EE' => __( 'Estonia', 'woocommerce-payments' ),
-			'FI' => __( 'Finland', 'woocommerce-payments' ),
-			'ES' => __( 'Spain', 'woocommerce-payments' ),
-			'FR' => __( 'France', 'woocommerce-payments' ),
-			'HR' => __( 'Croatia', 'woocommerce-payments' ),
-			'JP' => __( 'Japan', 'woocommerce-payments' ),
-			'LU' => __( 'Luxembourg', 'woocommerce-payments' ),
-			'GB' => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
-			'GR' => __( 'Greece', 'woocommerce-payments' ),
-			'HK' => __( 'Hong Kong', 'woocommerce-payments' ),
-			'HU' => __( 'Hungary', 'woocommerce-payments' ),
-			'IE' => __( 'Ireland', 'woocommerce-payments' ),
-			'IT' => __( 'Italy', 'woocommerce-payments' ),
-			'LT' => __( 'Lithuania', 'woocommerce-payments' ),
-			'LV' => __( 'Latvia', 'woocommerce-payments' ),
-			'MT' => __( 'Malta', 'woocommerce-payments' ),
-			'NL' => __( 'Netherlands', 'woocommerce-payments' ),
-			'NO' => __( 'Norway', 'woocommerce-payments' ),
-			'NZ' => __( 'New Zealand', 'woocommerce-payments' ),
-			'PL' => __( 'Poland', 'woocommerce-payments' ),
-			'PT' => __( 'Portugal', 'woocommerce-payments' ),
-			'RO' => __( 'Romania', 'woocommerce-payments' ),
-			'SE' => __( 'Sweden', 'woocommerce-payments' ),
-			'SI' => __( 'Slovenia', 'woocommerce-payments' ),
-			'SK' => __( 'Slovakia', 'woocommerce-payments' ),
-			'SG' => __( 'Singapore', 'woocommerce-payments' ),
-			'US' => __( 'United States (US)', 'woocommerce-payments' ),
+			Country_Code::UNITED_ARAB_EMIRATES => __( 'United Arab Emirates', 'woocommerce-payments' ),
+			Country_Code::AUSTRIA              => __( 'Austria', 'woocommerce-payments' ),
+			Country_Code::AUSTRALIA            => __( 'Australia', 'woocommerce-payments' ),
+			Country_Code::BELGIUM              => __( 'Belgium', 'woocommerce-payments' ),
+			Country_Code::BULGARIA             => __( 'Bulgaria', 'woocommerce-payments' ),
+			Country_Code::CANADA               => __( 'Canada', 'woocommerce-payments' ),
+			Country_Code::SWITZERLAND          => __( 'Switzerland', 'woocommerce-payments' ),
+			Country_Code::CYPRUS               => __( 'Cyprus', 'woocommerce-payments' ),
+			Country_Code::CZECHIA              => __( 'Czech Republic', 'woocommerce-payments' ),
+			Country_Code::GERMANY              => __( 'Germany', 'woocommerce-payments' ),
+			Country_Code::DENMARK              => __( 'Denmark', 'woocommerce-payments' ),
+			Country_Code::ESTONIA              => __( 'Estonia', 'woocommerce-payments' ),
+			Country_Code::FINLAND              => __( 'Finland', 'woocommerce-payments' ),
+			Country_Code::SPAIN                => __( 'Spain', 'woocommerce-payments' ),
+			Country_Code::FRANCE               => __( 'France', 'woocommerce-payments' ),
+			Country_Code::CROATIA              => __( 'Croatia', 'woocommerce-payments' ),
+			Country_Code::JAPAN                => __( 'Japan', 'woocommerce-payments' ),
+			Country_Code::LUXEMBOURG           => __( 'Luxembourg', 'woocommerce-payments' ),
+			Country_Code::UNITED_KINGDOM       => __( 'United Kingdom (UK)', 'woocommerce-payments' ),
+			Country_Code::GREECE               => __( 'Greece', 'woocommerce-payments' ),
+			Country_Code::HONG_KONG            => __( 'Hong Kong', 'woocommerce-payments' ),
+			Country_Code::HUNGARY              => __( 'Hungary', 'woocommerce-payments' ),
+			Country_Code::IRELAND              => __( 'Ireland', 'woocommerce-payments' ),
+			Country_Code::ITALY                => __( 'Italy', 'woocommerce-payments' ),
+			Country_Code::LITHUANIA            => __( 'Lithuania', 'woocommerce-payments' ),
+			Country_Code::LATVIA               => __( 'Latvia', 'woocommerce-payments' ),
+			Country_Code::MALTA                => __( 'Malta', 'woocommerce-payments' ),
+			Country_Code::NETHERLANDS          => __( 'Netherlands', 'woocommerce-payments' ),
+			Country_Code::NORWAY               => __( 'Norway', 'woocommerce-payments' ),
+			Country_Code::NEW_ZEALAND          => __( 'New Zealand', 'woocommerce-payments' ),
+			Country_Code::POLAND               => __( 'Poland', 'woocommerce-payments' ),
+			Country_Code::PORTUGAL             => __( 'Portugal', 'woocommerce-payments' ),
+			Country_Code::ROMANIA              => __( 'Romania', 'woocommerce-payments' ),
+			Country_Code::SWEDEN               => __( 'Sweden', 'woocommerce-payments' ),
+			Country_Code::SLOVENIA             => __( 'Slovenia', 'woocommerce-payments' ),
+			Country_Code::SLOVAKIA             => __( 'Slovakia', 'woocommerce-payments' ),
+			Country_Code::SINGAPORE            => __( 'Singapore', 'woocommerce-payments' ),
+			Country_Code::UNITED_STATES        => __( 'United States (US)', 'woocommerce-payments' ),
+			Country_Code::PUERTO_RICO          => __( 'Puerto Rico', 'woocommerce-payments' ),
 		];
 	}
 
@@ -331,32 +357,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Extract the billing details from the WC order
-	 *
-	 * @param WC_Order $order Order to extract the billing details from.
-	 *
-	 * @return array
-	 */
-	public static function get_billing_details_from_order( $order ) {
-		$billing_details = [
-			'address' => [
-				'city'        => $order->get_billing_city(),
-				'country'     => $order->get_billing_country(),
-				'line1'       => $order->get_billing_address_1(),
-				'line2'       => $order->get_billing_address_2(),
-				'postal_code' => $order->get_billing_postcode(),
-				'state'       => $order->get_billing_state(),
-			],
-			'email'   => $order->get_billing_email(),
-			'name'    => trim( $order->get_formatted_billing_full_name() ),
-			'phone'   => $order->get_billing_phone(),
-		];
-
-		$billing_details['address'] = array_filter( $billing_details['address'] );
-		return array_filter( $billing_details );
-	}
-
-	/**
 	 * Redacts the provided array, removing the sensitive information, and limits its depth to LOG_MAX_RECURSION.
 	 *
 	 * @param object|array $array          The array to redact.
@@ -391,6 +391,27 @@ class WC_Payments_Utils {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Apply a callback on every value in an array, regardless of the number of array dimensions.
+	 *
+	 * @param array    $array The array to map.
+	 * @param callable $callback The callback to apply.
+	 * @return array The mapped array.
+	 */
+	public static function array_map_recursive( array $array, callable $callback ): array {
+		foreach ( $array as $key => $value ) {
+			if ( \is_array( $value ) ) {
+				$value = self::array_map_recursive( $value, $callback );
+			} else {
+				$value = $callback( $value, $key, $array );
+			}
+
+			$array[ $key ] = $value;
+		}
+
+		return $array;
 	}
 
 	/**
@@ -518,11 +539,12 @@ class WC_Payments_Utils {
 	 * Generally, only Stripe exceptions with type of `card_error` should be displayed.
 	 * Other API errors should be redacted (https://stripe.com/docs/api/errors#errors-message).
 	 *
-	 * @param Exception $e Exception to get the message from.
+	 * @param Exception $e                      Exception to get the message from.
+	 * @param boolean   $blocked_by_fraud_rules Whether the payment was blocked by the fraud rules. Defaults to false.
 	 *
 	 * @return string
 	 */
-	public static function get_filtered_error_message( Exception $e ) {
+	public static function get_filtered_error_message( Exception $e, bool $blocked_by_fraud_rules = false ) {
 		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
 
 		// These notices can be shown when placing an order or adding a new payment method, so we aim for
@@ -546,11 +568,13 @@ class WC_Payments_Utils {
 				),
 				wp_strip_all_tags( html_entity_decode( $price ) )
 			);
+		} elseif ( $e instanceof API_Exception && 'amount_too_large' === $e->get_error_code() ) {
+			$error_message = $e->getMessage();
 		} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
-		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() && ! $blocked_by_fraud_rules ) {
 			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
 		}
 
@@ -564,11 +588,20 @@ class WC_Payments_Utils {
 	 *
 	 * @return  int
 	 */
-	public static function get_filtered_error_status_code( Exception $e ) : int {
+	public static function get_filtered_error_status_code( Exception $e ): int {
+		$status_code = null;
 		if ( $e instanceof API_Exception ) {
-			return $e->get_http_code() ?? 400;
+			$status_code = $e->get_http_code();
 		}
-		return 400;
+
+		// Hosting companies might use the 402 status code to return a custom error page.
+		// When 402 is returned by Stripe, let's return 400 instead.
+		// The frontend doesn't make use of the status code.
+		if ( 402 === $status_code ) {
+			$status_code = 400;
+		}
+
+		return $status_code ?? 400;
 	}
 
 	/**
@@ -660,6 +693,10 @@ class WC_Payments_Utils {
 			return '';
 		}
 
+		if ( strpos( $primary_id, 'seti_' ) !== false ) {
+			return '';
+		}
+
 		return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			array_merge(
 				[
@@ -699,35 +736,25 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Helper function to check whether the user is either in the PO experiment, or has manually enabled PO via the dev tools.
+	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
 	 * @return boolean
 	 */
-	public static function should_use_progressive_onboarding_flow(): bool {
-		if ( self::is_in_progressive_onboarding_treatment_mode() || WC_Payments_Features::is_progressive_onboarding_enabled() ) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Check to see if the current user is in progressive onboarding experiment treatment mode.
-	 *
-	 * @return bool
-	 */
-	public static function is_in_progressive_onboarding_treatment_mode(): bool {
-		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+	public static function should_use_new_onboarding_flow(): bool {
+		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
 			return false;
 		}
 
-		$abtest = new \WCPay\Experimental_Abtest(
-			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
-			'woocommerce',
-			'yes' === get_option( 'woocommerce_allow_tracking' )
-		);
+		return true;
+	}
 
-		return 'treatment' === $abtest->get_variation( 'woocommerce_payments_onboarding_progressive_express_2023_v3' );
+	/**
+	 * Checks whether the Force disconnected option is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function force_disconnected_enabled(): bool {
+		return '1' === get_option( self::FORCE_DISCONNECTED_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -810,15 +837,7 @@ class WC_Payments_Utils {
 			)
 		);
 
-		if ( $amount >= 0 ) {
-			return $formatted;
-		}
-
-		// Handle the subtle display difference for the negative amount between PHP wc_price `-$0.74` vs JavaScript formatCurrency `$-0.74` for the same input.
-		// Remove the minus sign, and then move it right before the number.
-		$formatted = str_replace( '-', '', $formatted );
-
-		return preg_replace( '/([0-9,\.]+)/', '-$1', $formatted );
+		return $formatted;
 	}
 
 	/**
@@ -855,27 +874,6 @@ class WC_Payments_Utils {
 		}
 
 		return $formatted_amount;
-	}
-
-	/**
-	 * Encrypts client secret of intents created on Stripe.
-	 *
-	 * @param   string $stripe_account_id Stripe account ID.
-	 * @param   string $client_secret     Client secret string.
-	 *
-	 * @return  string                 Encrypted value.
-	 */
-	public static function encrypt_client_secret( string $stripe_account_id, string $client_secret ): string {
-		if ( \WC_Payments_Features::is_client_secret_encryption_enabled() ) {
-			return openssl_encrypt(
-				$client_secret,
-				'aes-128-cbc',
-				substr( $stripe_account_id, 5 ),
-				0,
-				str_repeat( 'WC', 8 )
-			);
-		}
-		return $client_secret;
 	}
 
 	/**
@@ -979,5 +977,174 @@ class WC_Payments_Utils {
 			self::register_style( $handle, $path, $deps, $version, $media, $has_rtl );
 		}
 		wp_enqueue_style( $handle );
+	}
+
+	/**
+	 * Returns language data: english name and native name
+	 *
+	 * @param string $language Language code.
+	 *
+	 * @return array
+	 */
+	public static function get_language_data( $language ) {
+		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+
+		$translations = wp_get_available_translations();
+
+		if ( isset( $translations[ $language ] ) ) {
+			return [
+				'code'         => self::convert_to_server_locale( $language ),
+				'english_name' => $translations[ $language ]['english_name'] ?? $language,
+				'native_name'  => $translations[ $language ]['native_name'] ?? $language,
+			];
+		}
+
+		return [
+			'code'         => 'en_US',
+			'english_name' => 'English (United States)',
+			'native_name'  => 'English (United States)',
+		];
+	}
+
+	/**
+	 * Converts a locale to the server supported languages.
+	 *
+	 * @param string $locale The locale to convert.
+	 *
+	 * @return string Closest locale supported ('en' if NONE)
+	 */
+	public static function convert_to_server_locale( string $locale ): string {
+		$supported = [
+			'ar',     // Arabic.
+			'de',     // German (Germany).
+			'es',     // Spanish (Spain).
+			'fr',     // French (France).
+			'he',     // Hebrew (Israel).
+			'id',     // Indonesian (Indonesia).
+			'it',     // Italian (Italy).
+			'ja',     // Japanese.
+			'ko',     // Korean.
+			'nl',     // Dutch (Netherlands).
+			'pt-br',  // Portuguese (Brazil).
+			'ru',     // Russian (Russia).
+			'sv',     // Swedish (Sweden).
+			'tr',     // Turkish (Turkey).
+			'zh-cn',  // Simplified, Singapore).
+			'zh-tw',  // Chinese Traditional (Taiwan).
+		];
+
+		// Replace '-' with '_' (used in WordPress).
+		$locale = str_replace( '_', '-', $locale );
+
+		if ( in_array( $locale, $supported, true ) ) {
+			return $locale;
+		}
+
+		// Remove the country code and try with that.
+		$base_locale = substr( $locale, 0, 2 );
+		if ( in_array( $base_locale, $supported, true ) ) {
+			return $base_locale;
+		}
+
+		// Return 'en_US' to match the default site language.
+		return 'en_US';
+	}
+
+	/**
+	 * Check if the current page is the cart page.
+	 *
+	 * @return bool True if the current page is the cart page, false otherwise.
+	 */
+	public static function is_cart_page(): bool {
+		return is_cart() || has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
+	 * in this case because it checks the page content for the block, which isn't present.
+	 *
+	 * @return bool
+	 *
+	 * @psalm-suppress UndefinedFunction
+	 */
+	public static function is_cart_block(): bool {
+		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+	}
+
+	/**
+	 * Returns true if the request that's currently being processed is a Store API request, false
+	 * otherwise.
+	 *
+	 * @return bool True if request is a Store API request, false otherwise.
+	 */
+	public static function is_store_api_request(): bool {
+		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
+		} else {
+			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$request_path = rtrim( $url_parts['path'], '/' );
+			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		}
+
+		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
+			if ( 1 === preg_match( $pattern, $rest_route ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Gets the current active theme transient for a given location
+	 * Falls back to 'stripe' if no transients are set.
+	 *
+	 * @param string $location The theme location.
+	 * @param string $context The theme location to fall back to if both transients are set.
+	 * @return string
+	 */
+	public static function get_active_upe_theme_transient_for_location( string $location = 'checkout', string $context = 'blocks' ) {
+		$themes       = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
+		$active_theme = false;
+
+		// If an invalid location is sent, we fallback to trying $themes[ 'checkout' ][ 'block' ].
+		if ( ! isset( $themes[ $location ] ) ) {
+			$active_theme = get_transient( $themes['checkout']['blocks'] );
+		} elseif ( ! isset( $themes[ $location ][ $context ] ) ) {
+			// If the location is valid but the context is invalid, we fallback to trying $themes[ $location ][ 'block' ].
+			$active_theme = get_transient( $themes[ $location ]['blocks'] );
+		} else {
+			$active_theme = get_transient( $themes[ $location ][ $context ] );
+		}
+
+		// If $active_theme is still false here, that means that $themes[ $location ][ $context ] is not set, so we try $themes[ $location ][ 'classic' ].
+		if ( ! $active_theme ) {
+			$active_theme = get_transient( $themes[ $location ][ 'blocks' === $context ? 'classic' : 'blocks' ] );
+		}
+
+		// If $active_theme is still false here, nothing at the location is set so we'll try all locations.
+		if ( ! $active_theme ) {
+			foreach ( $themes as $location_const => $contexts ) {
+				// We don't need to check the same location again.
+				if ( $location_const === $location ) {
+					continue;
+				}
+
+				foreach ( $contexts as $context => $transient ) {
+					$active_theme = get_transient( $transient );
+					if ( $active_theme ) {
+						break 2; // This will break both loops.
+					}
+				}
+			}
+		}
+
+		// If $active_theme is still false, we don't have any theme set in the transients, so we fallback to 'stripe'.
+		if ( $active_theme ) {
+			return $active_theme;
+		}
+
+		// Fallback to 'stripe' if no transients are set.
+		return 'stripe';
 	}
 }

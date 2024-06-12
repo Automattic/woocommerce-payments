@@ -65,16 +65,40 @@ class WC_Payments_Customer_Service {
 	private $database_cache;
 
 	/**
+	 * WC_Payments_Session_Service instance for working with session information
+	 *
+	 * @var WC_Payments_Session_Service
+	 */
+	private $session_service;
+
+	/**
+	 * WC_Payments_Order_Service instance
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
-	 * @param Database_Cache         $database_cache       Database_Cache instance.
+	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
+	 * @param WC_Payments_Account         $account WC_Payments_Account instance.
+	 * @param Database_Cache              $database_cache Database_Cache instance.
+	 * @param WC_Payments_Session_Service $session_service Session Service class instance.
+	 * @param WC_Payments_Order_Service   $order_service Order Service class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, Database_Cache $database_cache ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Account $account,
+		Database_Cache $database_cache,
+		WC_Payments_Session_Service $session_service,
+		WC_Payments_Order_Service $order_service
+	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
 		$this->database_cache      = $database_cache;
+		$this->session_service     = $session_service;
+		$this->order_service       = $order_service;
 
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
@@ -93,7 +117,7 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Get WCPay customer ID for the given WordPress user ID
 	 *
-	 * @param int $user_id The user ID to look for a customer ID with.
+	 * @param int|null $user_id The user ID to look for a customer ID with.
 	 *
 	 * @return string|null WCPay customer ID or null if not found.
 	 */
@@ -120,22 +144,21 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Create a customer and associate it with a WordPress user.
 	 *
-	 * @param WP_User $user          User to create a customer for.
-	 * @param array   $customer_data Customer data.
+	 * @param WP_User|null $user          User to create a customer for.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	public function create_customer_for_user( WP_User $user, array $customer_data ): string {
+	public function create_customer_for_user( ?WP_User $user, array $customer_data = [] ): string {
 		// Include the session ID for the user.
-		$fraud_config                = $this->account->get_fraud_services_config();
-		$customer_data['session_id'] = $fraud_config['sift']['session_id'] ?? null;
+		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
 
 		// Create a customer on the WCPay server.
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
 
-		if ( $user->ID > 0 ) {
+		if ( $user instanceof WP_User && $user->ID > 0 ) {
 			$this->update_user_customer_id( $user->ID, $customer_id );
 		}
 
@@ -148,17 +171,39 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
+	 * Manages customer details held on WCPay server for WordPress user associated with an order.
+	 *
+	 * @param int|null $user_id ID of the WP user to associate with the customer.
+	 * @param WC_Order $order   Woo Order.
+	 *
+	 * @return string           WooPayments customer ID.
+	 * @throws API_Exception    Throws when server API request fails.
+	 */
+	public function get_or_create_customer_id_from_order( ?int $user_id, WC_Order $order ): string {
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id   = $this->get_customer_id_by_user_id( $user_id );
+		$customer_data = self::map_customer_data( $order, new WC_Customer( $user_id ?? 0 ) );
+		$user          = null === $user_id ? null : get_user_by( 'id', $user_id );
+
+		if ( null !== $customer_id ) {
+			$this->update_customer_for_user( $customer_id, $user, $customer_data );
+			return $customer_id;
+		}
+		return $this->create_customer_for_user( $user, $customer_data );
+	}
+
+	/**
 	 * Update the customer details held on the WCPay server associated with the given WordPress user.
 	 *
-	 * @param string  $customer_id WCPay customer ID.
-	 * @param WP_User $user        WordPress user.
-	 * @param array   $customer_data Customer data.
+	 * @param string       $customer_id WCPay customer ID.
+	 * @param WP_User|null $user        WordPress user.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The updated customer's ID. Can be different to the ID parameter if the customer was re-created.
 	 *
 	 * @throws API_Exception Error updating the customer.
 	 */
-	public function update_customer_for_user( string $customer_id, WP_User $user, array $customer_data ): string {
+	public function update_customer_for_user( string $customer_id, ?WP_User $user, array $customer_data ): string {
 		try {
 			// Update the customer on the WCPay server.
 			$this->payments_api_client->update_customer(
@@ -248,7 +293,7 @@ class WC_Payments_Customer_Service {
 	 * @param WC_Order $order             Order to be used on the update.
 	 */
 	public function update_payment_method_with_billing_details_from_order( $payment_method_id, $order ) {
-		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
+		$billing_details = $this->order_service->get_billing_data_from_order( $order );
 
 		if ( ! empty( $billing_details ) ) {
 			$this->payments_api_client->update_payment_method(
@@ -349,15 +394,15 @@ class WC_Payments_Customer_Service {
 	/**
 	 * Recreates the customer for this user.
 	 *
-	 * @param WP_User $user          User to recreate a customer for.
-	 * @param array   $customer_data Customer data.
+	 * @param WP_User|null $user          User to recreate a customer for.
+	 * @param array        $customer_data Customer data.
 	 *
 	 * @return string The newly created customer's ID
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	private function recreate_customer( WP_User $user, array $customer_data ): string {
-		if ( $user->ID > 0 ) {
+	private function recreate_customer( ?WP_User $user, array $customer_data ): string {
+		if ( $user instanceof WP_User && $user->ID > 0 ) {
 			$result = delete_user_option( $user->ID, $this->get_customer_id_option() );
 			if ( ! $result ) {
 				// Log the error, but continue since we'll be trying to update this option in create_customer.
@@ -482,18 +527,20 @@ class WC_Payments_Customer_Service {
 		}
 
 		global $wp;
-		$user_email = '';
-		$firstname  = '';
-		$lastname   = '';
+		$user_email      = '';
+		$firstname       = '';
+		$lastname        = '';
+		$billing_country = '';
 
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order_id = absint( $wp->query_vars['order-pay'] );
 			$order    = wc_get_order( $order_id );
 
 			if ( is_a( $order, 'WC_Order' ) ) {
-				$firstname  = $order->get_billing_first_name();
-				$lastname   = $order->get_billing_last_name();
-				$user_email = $order->get_billing_email();
+				$firstname       = $order->get_billing_first_name();
+				$lastname        = $order->get_billing_last_name();
+				$user_email      = $order->get_billing_email();
+				$billing_country = $order->get_billing_country();
 			}
 		}
 
@@ -501,17 +548,18 @@ class WC_Payments_Customer_Service {
 			$user = wp_get_current_user();
 
 			if ( $user->ID ) {
-				$firstname  = $user->user_firstname;
-				$lastname   = $user->user_lastname;
-				$user_email = get_user_meta( $user->ID, 'billing_email', true );
-				$user_email = $user_email ? $user_email : $user->user_email;
+				$firstname       = $user->user_firstname;
+				$lastname        = $user->user_lastname;
+				$user_email      = get_user_meta( $user->ID, 'billing_email', true );
+				$user_email      = ! empty( $user_email ) ? $user_email : $user->user_email;
+				$billing_country = get_user_meta( $user->ID, 'billing_country', true );
 			}
 		}
-		$prepared_customer_data = [
-			'name'  => $firstname . ' ' . $lastname,
-			'email' => $user_email,
-		];
 
-		return $prepared_customer_data;
+		return [
+			'name'            => $firstname . ' ' . $lastname,
+			'email'           => $user_email,
+			'billing_country' => $billing_country,
+		];
 	}
 }
