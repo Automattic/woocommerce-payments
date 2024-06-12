@@ -14,6 +14,9 @@ interface DateRange {
 	date_end: string;
 }
 
+/**
+ * Hook to manage the selected date range and date range presets for the payment activity widget.
+ */
 export const usePaymentActivityDateRangePresets = (): {
 	selectedDateRange: DateRange;
 	setSelectedDateRange: ( dateRange: DateRange ) => void;
