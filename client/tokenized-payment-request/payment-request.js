@@ -243,8 +243,7 @@ export default class WooPaymentsPaymentRequest {
 				const cartData = await _self.paymentRequestCartApi.updateCustomer(
 					transformStripeShippingAddressForStoreApi(
 						event.shippingAddress
-					),
-					getPaymentRequestData( 'button_context' )
+					)
 				);
 
 				event.updateWith( {
@@ -272,8 +271,7 @@ export default class WooPaymentsPaymentRequest {
 		paymentRequest.on( 'shippingoptionchange', async ( event ) => {
 			try {
 				const cartData = await _self.paymentRequestCartApi.selectShippingRate(
-					{ package_id: 0, rate_id: event.shippingOption.id },
-					getPaymentRequestData( 'button_context' )
+					{ package_id: 0, rate_id: event.shippingOption.id }
 				);
 
 				event.updateWith( {
@@ -293,18 +291,15 @@ export default class WooPaymentsPaymentRequest {
 		paymentRequest.on( 'paymentmethod', async ( event ) => {
 			// TODO: this works for PDPs - need to handle checkout scenarios for pay-for-order, cart, checkout.
 			try {
-				const response = await _self.paymentRequestCartApi.placeOrder(
-					{
-						// adding extension data as a separate action,
-						// so that we make it harder for external plugins to modify or intercept checkout data.
-						...transformStripePaymentMethodForStoreApi( event ),
-						extensions: applyFilters(
-							'wcpay.payment-request.cart-place-order-extension-data',
-							{}
-						),
-					},
-					getPaymentRequestData( 'button_context' )
-				);
+				const response = await _self.paymentRequestCartApi.placeOrder( {
+					// adding extension data as a separate action,
+					// so that we make it harder for external plugins to modify or intercept checkout data.
+					...transformStripePaymentMethodForStoreApi( event ),
+					extensions: applyFilters(
+						'wcpay.payment-request.cart-place-order-extension-data',
+						{}
+					),
+				} );
 
 				const confirmationRequest = _self.wcpayApi.confirmIntent(
 					response.payment_result.redirect_url

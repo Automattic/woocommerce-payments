@@ -56,11 +56,14 @@ export default class PaymentRequestCartApi {
 	 * @param {string} context The context in which the request is being made.
 	 * @return {Promise} Result of the order creation request.
 	 */
-	async placeOrder( paymentData, context ) {
+	async placeOrder( paymentData ) {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/checkout',
-			credentials: context === 'product' ? 'omit' : 'same-origin',
+			credentials:
+				getPaymentRequestData( 'button_context' ) === 'product'
+					? 'omit'
+					: undefined,
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
 				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
@@ -131,11 +134,14 @@ export default class PaymentRequestCartApi {
 	 * @param {string} context The context in which the request is being made.
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */
-	async updateCustomer( customerData, context ) {
+	async updateCustomer( customerData ) {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/update-customer',
-			credentials: context === 'product' ? 'omit' : 'same-origin',
+			credentials:
+				getPaymentRequestData( 'button_context' ) === 'product'
+					? 'omit'
+					: undefined,
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
 				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
@@ -156,11 +162,14 @@ export default class PaymentRequestCartApi {
 	 * @param {string} context The context in which the request is being made.
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */
-	async selectShippingRate( shippingRate, context ) {
+	async selectShippingRate( shippingRate ) {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/select-shipping-rate',
-			credentials: context === 'product' ? 'omit' : 'same-origin',
+			credentials:
+				getPaymentRequestData( 'button_context' ) === 'product'
+					? 'omit'
+					: undefined,
 			data: shippingRate,
 		} );
 	}
