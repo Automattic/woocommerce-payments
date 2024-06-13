@@ -150,7 +150,8 @@ class WC_Payments_Checkout {
 			! WC()->cart->is_empty() &&
 			! WC()->cart->needs_payment() &&
 			is_checkout() &&
-			! has_block( 'woocommerce/checkout' )
+			! has_block( 'woocommerce/checkout' ) &&
+			! wp_script_is( 'wcpay-upe-checkout', 'enqueued' )
 		) {
 			WC_Payments::get_gateway()->tokenization_script();
 			$script_handle = 'wcpay-upe-checkout';
