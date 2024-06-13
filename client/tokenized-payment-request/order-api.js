@@ -56,7 +56,7 @@ export default class PaymentRequestOrderApi {
 
 	/**
 	 * Returns the customer's order object.
-	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/cart.md#get-cart
+	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/order.md
 	 *
 	 * @return {Promise} Cart response object.
 	 */
