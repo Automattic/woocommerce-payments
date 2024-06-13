@@ -8,6 +8,7 @@ import {
 	getStripeElementOptions,
 	blocksShowLinkButtonHandler,
 	getSelectedUPEGatewayPaymentMethod,
+	hasPaymentMethodCountryRestrictions,
 	isUsingSavedPaymentMethod,
 	dispatchChangeEventFor,
 	togglePaymentMethodForCountry,
@@ -126,6 +127,62 @@ describe( 'UPE checkout utils', () => {
 		} );
 	} );
 
+	describe( 'hasPaymentMethodCountryRestrictions', () => {
+		let container;
+
+		beforeAll( () => {
+			container = document.createElement( 'div' );
+			container.innerHTML = `
+				<ul class="wc_payment_methods payment_methods methods">
+					<li class="wc_payment_method payment_method_woocommerce_payments_card" data-payment-method-type="card">
+						<input id="payment_method_woocommerce_payments" type="radio" class="input-radio">
+					</li>
+					<li class="wc_payment_method payment_method_woocommerce_payments_bancontact" data-payment-method-type="bancontact">
+						<input id="payment_method_woocommerce_payments_bancontact" type="radio" class="input-radio">
+					</li>
+				</ul>
+			`;
+			document.body.appendChild( container );
+		} );
+
+		afterAll( () => {
+			document.body.removeChild( container );
+			container = null;
+		} );
+
+		beforeEach( () => {
+			jest.clearAllMocks();
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'paymentMethodsConfig' ) {
+					return {
+						card: { countries: [] },
+						bancontact: { countries: [ 'BE' ] },
+					};
+				}
+			} );
+		} );
+
+		it( 'should be true when the payment method is restricted to the location', () => {
+			const bancontactUpeElement = document.querySelector(
+				'.payment_method_woocommerce_payments_bancontact'
+			);
+
+			expect(
+				hasPaymentMethodCountryRestrictions( bancontactUpeElement )
+			).toBe( true );
+		} );
+
+		it( 'should be false when the payment method is not restricted to the location', () => {
+			const cardUpeElement = document.querySelector(
+				'.payment_method_woocommerce_payments_card'
+			);
+
+			expect(
+				hasPaymentMethodCountryRestrictions( cardUpeElement )
+			).toBe( false );
+		} );
+	} );
+
 	describe( 'togglePaymentMethodForCountry', () => {
 		let container;
 
@@ -171,7 +228,6 @@ describe( 'UPE checkout utils', () => {
 		} );
 
 		afterEach( () => {
-			// document.getElementById('billing_country').value = '';
 			window.wcpayCustomerData = null;
 		} );
 

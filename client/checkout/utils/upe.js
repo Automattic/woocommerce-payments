@@ -292,19 +292,21 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 };
 
 /**
- * Hides payment method if it has set specific countries in the PHP class.
+ * Returns true if the payment method has configured with any country restrictions.
  *
- * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  * @return {boolean} Whether the payment method is restricted to selected billing country.
  **/
-export const isPaymentMethodRestrictedToLocation = ( upeElement ) => {
+export const hasPaymentMethodCountryRestrictions = ( upeElement ) => {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
 	return !! paymentMethodsConfig[ paymentMethodType ].countries.length;
 };
 
 /**
- * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * Hides payment method if it has set specific countries in the PHP class.
+ *
+ * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  **/
 export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
