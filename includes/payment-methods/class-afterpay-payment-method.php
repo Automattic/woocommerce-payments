@@ -72,10 +72,10 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * Returns payment method title.
 	 *
 	 * @param string|null $account_country Country of merchants account.
-	 * @param array|false $payment_details Optional payment details from charge object.
+	 * @param array|false $_unused_payment_details Payment details from charge object. Not used by this class.
 	 * @return string|null
 	 */
-	public function get_title( string $account_country = null, $payment_details = false ) {
+	public function get_title( string $account_country = null, $_unused_payment_details = false ) {
 		if ( 'GB' === $account_country ) {
 			return __( 'Clearpay', 'woocommerce-payments' );
 		}
