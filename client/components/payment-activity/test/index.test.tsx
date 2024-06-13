@@ -2,7 +2,8 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -64,6 +65,7 @@ declare const global: {
 					[ currencyCode: string ]: number;
 				};
 			};
+			created: string;
 		};
 		accountDefaultCurrency: string;
 		zeroDecimalCurrencies: string[];
@@ -87,6 +89,7 @@ describe( 'PaymentActivity component', () => {
 						usd: 500,
 					},
 				},
+				created: '2022-01-01T00:00:00Z',
 			},
 			accountDefaultCurrency: 'eur',
 			zeroDecimalCurrencies: [],
@@ -162,5 +165,58 @@ describe( 'PaymentActivity component', () => {
 		expect(
 			queryByText( 'Are these metrics helpful?' )
 		).not.toBeInTheDocument();
+	} );
+
+	describe( 'Date selector renders correct ranges', () => {
+		/* const dataSet = [
+			{
+				rightNow: '2024-06-10T16:19:29',
+				preset: 'today',
+				start: '2024-06-12T00:00:00',
+				end: '2024-06-12T23:59:59',
+			},
+		]; */
+		it( 'should render the correct date ranges', () => {
+			Date.now = jest.fn( () =>
+				moment
+					.tz( new Date( '2024-06-10T16:19:29' ).getTime(), 'UTC' )
+					.valueOf()
+			);
+
+			const { container, getAllByRole } = render( <PaymentActivity /> );
+
+			const dateSelectorButton = getAllByRole( 'button' )[ 0 ];
+			fireEvent.click( dateSelectorButton );
+			const datePresetOptions = getAllByRole( 'option' );
+
+			expect( datePresetOptions ).toHaveLength( 9 );
+			expect( datePresetOptions[ 0 ] ).toHaveTextContent(
+				'TodayJune 10, 2024'
+			);
+			expect( datePresetOptions[ 1 ] ).toHaveTextContent(
+				'Last 7 daysJune 3 - June 9, 2024'
+			);
+			expect( datePresetOptions[ 2 ] ).toHaveTextContent(
+				'Last 4 weeksMay 13 - June 9, 2024'
+			);
+			expect( datePresetOptions[ 3 ] ).toHaveTextContent(
+				'Last 3 monthsMarch 10 - June 9, 2024'
+			);
+			expect( datePresetOptions[ 4 ] ).toHaveTextContent(
+				'Last 12 monthsJune 10, 2023 - June 9, 2024'
+			);
+			expect( datePresetOptions[ 5 ] ).toHaveTextContent(
+				'Month to dateJune 1 - June 10, 2024'
+			);
+			expect( datePresetOptions[ 6 ] ).toHaveTextContent(
+				'Quarter to dateApril 1 - June 10, 2024'
+			);
+			expect( datePresetOptions[ 7 ] ).toHaveTextContent(
+				'Year to dateJanuary 1 - June 10, 2024'
+			);
+			expect( datePresetOptions[ 8 ] ).toHaveTextContent( 'All time' );
+
+			Date.now = () => new Date().getTime();
+		} );
 	} );
 } );
