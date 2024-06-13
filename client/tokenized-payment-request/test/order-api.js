@@ -27,7 +27,7 @@ describe( 'PaymentRequestOrderApi', () => {
 			billingEmail: 'cheese@toast.com',
 		} );
 
-		await api.getOrder();
+		await api.getCart();
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'GET',

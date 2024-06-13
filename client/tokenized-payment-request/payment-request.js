@@ -384,10 +384,6 @@ export default class WooPaymentsPaymentRequest {
 	}
 
 	async getCartData() {
-		if ( getPaymentRequestData( 'button_context' ) === 'pay_for_order' ) {
-			return await this.paymentRequestCartApi.getOrder();
-		}
-
 		if ( getPaymentRequestData( 'button_context' ) !== 'product' ) {
 			return await this.paymentRequestCartApi.getCart();
 		}

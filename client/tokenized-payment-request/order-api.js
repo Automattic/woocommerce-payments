@@ -60,7 +60,7 @@ export default class PaymentRequestOrderApi {
 	 *
 	 * @return {Promise} Cart response object.
 	 */
-	async getOrder() {
+	async getCart() {
 		return await apiFetch( {
 			method: 'GET',
 			path: addQueryArgs( `/wc/store/v1/order/${ this.orderId }`, {
