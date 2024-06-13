@@ -143,7 +143,7 @@ export default class WooPaymentsPaymentRequest {
 			paymentRequestButton.on( 'click', () => {
 				trackPaymentRequestButtonClick( 'pay_for_order' );
 			} );
-		} else if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
+		} else {
 			this.attachPaymentRequestButtonEventListeners();
 			removeAction(
 				'wcpay.payment-request.update-button-data',
