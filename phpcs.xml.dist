@@ -40,7 +40,7 @@
 		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotValidated" />
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
-		<!-- <exclude name="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable" /> -->
+		<exclude name="VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable" />
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8437 is clsoed. -->
 		<exclude name="WooCommerce.Commenting.CommentHooks.MissingHookComment" />
