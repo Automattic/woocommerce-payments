@@ -10,6 +10,7 @@ import moment from 'moment';
  */
 import { usePaymentActivityData } from 'wcpay/data';
 import PaymentActivity from '..';
+import { after } from 'lodash';
 
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
@@ -168,6 +169,10 @@ describe( 'PaymentActivity component', () => {
 	} );
 
 	describe( 'Date selector renders correct ranges', () => {
+		afterEach( () => {
+			Date.now = () => new Date().getTime();
+		} );
+
 		const mockDateNowTo = ( date: string ) => {
 			Date.now = jest.fn( () =>
 				moment.tz( new Date( date ).getTime(), 'UTC' ).valueOf()
@@ -260,8 +265,6 @@ describe( 'PaymentActivity component', () => {
 				expect( datePresetOptions[ 8 ] ).toHaveTextContent(
 					`All time${ expected.allTime }`
 				);
-
-				Date.now = () => new Date().getTime();
 			}
 		);
 	} );
