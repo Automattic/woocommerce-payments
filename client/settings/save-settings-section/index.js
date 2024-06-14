@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button } from '@wordpress/components';
+import { WPButton } from 'hack-week-2024-components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -108,14 +108,13 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 
 	return (
 		<SettingsSection className="save-settings-section">
-			<Button
-				isPrimary
-				isBusy={ isSaving }
-				disabled={ isSaving || isLoading || disabled }
+			<WPButton
+				variant={ 'primary' }
 				onClick={ saveOnClick }
+				disabled={ isSaving || isLoading || disabled }
 			>
 				{ __( 'Save changes', 'woocommerce-payments' ) }
-			</Button>
+			</WPButton>
 			{ isWooPayDisableFeedbackOpen ? (
 				<WooPayDisableFeedback
 					onRequestClose={ () =>
