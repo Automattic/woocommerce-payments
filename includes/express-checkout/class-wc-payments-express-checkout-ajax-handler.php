@@ -139,8 +139,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
 		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
 
-		$data           = [];
-		$data          += $this->express_checkout_button_helper->build_display_items( $should_show_itemized_view );
+		$data           = $this->express_checkout_button_helper->build_display_items( $should_show_itemized_view );
 		$data['result'] = 'success';
 
 		wp_send_json( $data );
