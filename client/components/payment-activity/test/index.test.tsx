@@ -168,55 +168,95 @@ describe( 'PaymentActivity component', () => {
 	} );
 
 	describe( 'Date selector renders correct ranges', () => {
-		/* const dataSet = [
-			{
-				rightNow: '2024-06-10T16:19:29',
-				preset: 'today',
-				start: '2024-06-12T00:00:00',
-				end: '2024-06-12T23:59:59',
-			},
-		]; */
-		it( 'should render the correct date ranges', () => {
+		const mockDateNowTo = ( date: string ) => {
 			Date.now = jest.fn( () =>
-				moment
-					.tz( new Date( '2024-06-10T16:19:29' ).getTime(), 'UTC' )
-					.valueOf()
+				moment.tz( new Date( date ).getTime(), 'UTC' ).valueOf()
 			);
+		};
+		const dataSet = [
+			{
+				dateNow: '2024-06-10T16:19:29',
+				expected: {
+					today: 'June 10, 2024',
+					last7Days: 'June 3 - June 9, 2024',
+					last4Weeks: 'May 13 - June 9, 2024',
+					last3Months: 'March 10 - June 9, 2024',
+					last12Months: 'June 10, 2023 - June 9, 2024',
+					monthToDate: 'June 1 - June 10, 2024',
+					quarterToDate: 'April 1 - June 10, 2024',
+					yearToDate: 'January 1 - June 10, 2024',
+				},
+			},
+			{
+				dateNow: '2024-01-01T00:00:01',
+				expected: {
+					today: 'January 1, 2024',
+					last7Days: 'December 25 - December 31, 2023',
+					last4Weeks: 'December 4 - December 31, 2023',
+					last3Months: 'October 1 - December 31, 2023',
+					last12Months: 'January 1 - December 31, 2023',
+					monthToDate: 'January 1, 2024',
+					quarterToDate: 'January 1, 2024',
+					yearToDate: 'January 1, 2024',
+				},
+			},
+			{
+				dateNow: '2024-02-29T00:00:00',
+				expected: {
+					today: 'February 29, 2024',
+					last7Days: 'February 22 - February 28, 2024',
+					last4Weeks: 'February 1 - February 28, 2024',
+					last3Months: 'November 29, 2023 - February 28, 2024',
+					last12Months: 'February 28, 2023 - February 28, 2024',
+					monthToDate: 'February 1 - February 29, 2024',
+					quarterToDate: 'January 1 - February 29, 2024',
+					yearToDate: 'January 1 - February 29, 2024',
+				},
+			},
+		];
 
-			const { container, getAllByRole } = render( <PaymentActivity /> );
+		it.each( dataSet )(
+			'should render the correct date ranges',
+			( { dateNow, expected } ) => {
+				mockDateNowTo( dateNow );
 
-			const dateSelectorButton = getAllByRole( 'button' )[ 0 ];
-			fireEvent.click( dateSelectorButton );
-			const datePresetOptions = getAllByRole( 'option' );
+				const { getAllByRole } = render( <PaymentActivity /> );
 
-			expect( datePresetOptions ).toHaveLength( 9 );
-			expect( datePresetOptions[ 0 ] ).toHaveTextContent(
-				'TodayJune 10, 2024'
-			);
-			expect( datePresetOptions[ 1 ] ).toHaveTextContent(
-				'Last 7 daysJune 3 - June 9, 2024'
-			);
-			expect( datePresetOptions[ 2 ] ).toHaveTextContent(
-				'Last 4 weeksMay 13 - June 9, 2024'
-			);
-			expect( datePresetOptions[ 3 ] ).toHaveTextContent(
-				'Last 3 monthsMarch 10 - June 9, 2024'
-			);
-			expect( datePresetOptions[ 4 ] ).toHaveTextContent(
-				'Last 12 monthsJune 10, 2023 - June 9, 2024'
-			);
-			expect( datePresetOptions[ 5 ] ).toHaveTextContent(
-				'Month to dateJune 1 - June 10, 2024'
-			);
-			expect( datePresetOptions[ 6 ] ).toHaveTextContent(
-				'Quarter to dateApril 1 - June 10, 2024'
-			);
-			expect( datePresetOptions[ 7 ] ).toHaveTextContent(
-				'Year to dateJanuary 1 - June 10, 2024'
-			);
-			expect( datePresetOptions[ 8 ] ).toHaveTextContent( 'All time' );
+				const dateSelectorButton = getAllByRole( 'button' )[ 0 ];
+				fireEvent.click( dateSelectorButton );
+				const datePresetOptions = getAllByRole( 'option' );
 
-			Date.now = () => new Date().getTime();
-		} );
+				expect( datePresetOptions ).toHaveLength( 9 );
+				expect( datePresetOptions[ 0 ] ).toHaveTextContent(
+					`Today${ expected.today }`
+				);
+				expect( datePresetOptions[ 1 ] ).toHaveTextContent(
+					`Last 7 days${ expected.last7Days }`
+				);
+				expect( datePresetOptions[ 2 ] ).toHaveTextContent(
+					`Last 4 weeks${ expected.last4Weeks }`
+				);
+				expect( datePresetOptions[ 3 ] ).toHaveTextContent(
+					`Last 3 months${ expected.last3Months }`
+				);
+				expect( datePresetOptions[ 4 ] ).toHaveTextContent(
+					`Last 12 months${ expected.last12Months }`
+				);
+				expect( datePresetOptions[ 5 ] ).toHaveTextContent(
+					`Month to date${ expected.monthToDate }`
+				);
+				expect( datePresetOptions[ 6 ] ).toHaveTextContent(
+					`Quarter to date${ expected.quarterToDate }`
+				);
+				expect( datePresetOptions[ 7 ] ).toHaveTextContent(
+					`Year to date${ expected.yearToDate }`
+				);
+				expect( datePresetOptions[ 8 ] ).toHaveTextContent(
+					'All time'
+				);
+
+				Date.now = () => new Date().getTime();
+			}
+		);
 	} );
 } );
