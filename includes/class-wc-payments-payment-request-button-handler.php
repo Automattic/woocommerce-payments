@@ -1179,12 +1179,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$packages = WC()->shipping->get_packages();
 
 			if ( ! empty( $packages ) && WC()->customer->has_calculated_shipping() ) {
-				foreach ( $packages as $package_key => $package ) {
+				foreach ( $packages as $package ) {
 					if ( empty( $package['rates'] ) ) {
 						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
 					}
 
-					foreach ( $package['rates'] as $key => $rate ) {
+					foreach ( $package['rates'] as $rate ) {
 						$data['shipping_options'][] = [
 							'id'     => $rate->id,
 							'label'  => $rate->label,
