@@ -186,6 +186,7 @@ describe( 'PaymentActivity component', () => {
 					monthToDate: 'June 1 - June 10, 2024',
 					quarterToDate: 'April 1 - June 10, 2024',
 					yearToDate: 'January 1 - June 10, 2024',
+					allTime: 'January 1, 2022 - June 10, 2024',
 				},
 			},
 			{
@@ -200,6 +201,7 @@ describe( 'PaymentActivity component', () => {
 					monthToDate: 'January 1, 2024',
 					quarterToDate: 'January 1, 2024',
 					yearToDate: 'January 1, 2024',
+					allTime: 'January 1, 2022 - January 1, 2024',
 				},
 			},
 			{
@@ -214,6 +216,7 @@ describe( 'PaymentActivity component', () => {
 					monthToDate: 'February 1 - February 29, 2024',
 					quarterToDate: 'January 1 - February 29, 2024',
 					yearToDate: 'January 1 - February 29, 2024',
+					allTime: 'January 1, 2022 - February 29, 2024',
 				},
 			},
 		];
@@ -255,7 +258,7 @@ describe( 'PaymentActivity component', () => {
 					`Year to date${ expected.yearToDate }`
 				);
 				expect( datePresetOptions[ 8 ] ).toHaveTextContent(
-					'All time'
+					`All time${ expected.allTime }`
 				);
 
 				Date.now = () => new Date().getTime();
