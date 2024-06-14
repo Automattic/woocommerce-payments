@@ -130,6 +130,8 @@ abstract class UPE_Payment_Method {
 	 * @param array|false $payment_details Optional payment details from charge object.
 	 *
 	 * @return string
+	 *
+	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_title( string $account_country = null, $payment_details = false ) {
 		return $this->title;
@@ -260,6 +262,8 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @param string|null $account_country Optional account country.
 	 * @return string
+	 *
+	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_icon( string $account_country = null ) {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
