@@ -48,16 +48,13 @@ interface ExternalCharge {
 /**
  * Extracts and formats payment method details from a charge.
  *
- * @param {Charge} charge The charge object.
- * @return {PaymentMethodDetails}       A flat hash of all necessary values.
+ * @param {ExternalCharge} charge The charge object.
+ * @return {PaymentMethodDetails} A flat hash of all necessary values.
  */
 const formatPaymentMethodDetails = (
 	charge: ExternalCharge
 ): PaymentMethodDetails => {
-	const {
-		billing_details: billingDetails,
-		payment_method: id,
-	} = charge as ExternalCharge;
+	const { billing_details: billingDetails, payment_method: id } = charge;
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 
 	return {
