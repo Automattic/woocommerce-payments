@@ -14,16 +14,6 @@ import { Charge } from 'wcpay/types/charges';
 import { PaymentMethodDetails } from 'wcpay/payment-details/types';
 
 /**
- * Placeholder object for loading state
- */
-const paymentMethodPlaceholders: PaymentMethodDetails = {
-	id: 'id placeholder',
-	name: 'name placeholder',
-	email: 'email placeholder',
-	formattedAddress: 'address placeholder',
-};
-
-/**
  * Extracts and formats payment method details from a charge.
  *
  * @param {Charge} charge The charge object.
@@ -39,6 +29,16 @@ const formatPaymentMethodDetails = ( charge: Charge ): PaymentMethodDetails => {
 		email,
 		formattedAddress,
 	};
+};
+
+/**
+ * Placeholder object for loading state
+ */
+const paymentMethodPlaceholders: PaymentMethodDetails = {
+	id: 'id placeholder',
+	name: 'name placeholder',
+	email: 'email placeholder',
+	formattedAddress: 'address placeholder',
 };
 
 /**
