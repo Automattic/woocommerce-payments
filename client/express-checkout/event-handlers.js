@@ -51,7 +51,7 @@ export const onConfirmHandler = async (
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
-		abortPayment( event, submitError.message );
+		return abortPayment( event, submitError.message );
 	}
 
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
