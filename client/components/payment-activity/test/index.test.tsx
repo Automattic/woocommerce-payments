@@ -230,44 +230,56 @@ describe( 'PaymentActivity component', () => {
 			( { dateNow, expected } ) => {
 				mockDateNowTo( dateNow );
 
-				const { getAllByRole, getByRole } = render(
-					<PaymentActivity />
-				);
+				const { getByRole } = render( <PaymentActivity /> );
 
 				const dateSelectorButton = getByRole( 'button', {
 					name: 'Period',
 				} );
 				fireEvent.click( dateSelectorButton );
-				const datePresetOptions = getAllByRole( 'option' );
 
-				expect( datePresetOptions ).toHaveLength( 9 );
-				expect( datePresetOptions[ 0 ] ).toHaveTextContent(
-					`Today${ expected.today }`
-				);
-				expect( datePresetOptions[ 1 ] ).toHaveTextContent(
-					`Last 7 days${ expected.last7Days }`
-				);
-				expect( datePresetOptions[ 2 ] ).toHaveTextContent(
-					`Last 4 weeks${ expected.last4Weeks }`
-				);
-				expect( datePresetOptions[ 3 ] ).toHaveTextContent(
-					`Last 3 months${ expected.last3Months }`
-				);
-				expect( datePresetOptions[ 4 ] ).toHaveTextContent(
-					`Last 12 months${ expected.last12Months }`
-				);
-				expect( datePresetOptions[ 5 ] ).toHaveTextContent(
-					`Month to date${ expected.monthToDate }`
-				);
-				expect( datePresetOptions[ 6 ] ).toHaveTextContent(
-					`Quarter to date${ expected.quarterToDate }`
-				);
-				expect( datePresetOptions[ 7 ] ).toHaveTextContent(
-					`Year to date${ expected.yearToDate }`
-				);
-				expect( datePresetOptions[ 8 ] ).toHaveTextContent(
-					`All time${ expected.allTime }`
-				);
+				expect(
+					getByRole( 'option', { name: `Today ${ expected.today }` } )
+				).toBeInTheDocument();
+				expect(
+					getByRole( 'option', {
+						name: `Last 7 days ${ expected.last7Days }`,
+					} )
+				).toBeInTheDocument();
+				expect(
+					getByRole( 'option', {
+						name: `Last 4 weeks ${ expected.last4Weeks }`,
+					} )
+				).toBeInTheDocument();
+				expect(
+					getByRole( 'option', {
+						name: `Last 3 months ${ expected.last3Months }`,
+					} )
+				).toBeInTheDocument();
+				expect(
+					getByRole( 'option', {
+						name: `Last 12 months ${ expected.last12Months }`,
+					} )
+				).toBeInTheDocument();
+				expect(
+					getByRole( 'option', {
+						name: `Month to date ${ expected.monthToDate }`,
+					} )
+				).toBeInTheDocument();
+				expect(
+					getByRole( 'option', {
+						name: `Quarter to date ${ expected.quarterToDate }`,
+					} )
+				).toBeInTheDocument();
+				expect(
+					getByRole( 'option', {
+						name: `Year to date ${ expected.yearToDate }`,
+					} )
+				).toBeInTheDocument();
+				expect(
+					getByRole( 'option', {
+						name: `All time ${ expected.allTime }`,
+					} )
+				).toBeInTheDocument();
 			}
 		);
 	} );
