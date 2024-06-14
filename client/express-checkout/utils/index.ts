@@ -65,6 +65,12 @@ interface WCPayExpressCheckoutParams {
 	product: {
 		needs_shipping: boolean;
 		currency: string;
+		shippingOptions: {
+			id: string;
+			label: string;
+			detail: string;
+			amount: number;
+		};
 	};
 	stripe: {
 		accountId: string;
