@@ -104,6 +104,29 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 	}
 
 	/**
+	 * Returns payment method supported countries
+	 *
+	 * @return array
+	 */
+	public function get_countries() {
+		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
+
+		// Countries in the EEA can transact across all other EEA countries. This includes Switzerland and the UK who aren't strictly in the EU.
+		$eea_countries = array_merge(
+			WC_Payments_Utils::get_european_economic_area_countries(),
+			[ Country_Code::SWITZERLAND, Country_Code::UNITED_KINGDOM ]
+		);
+
+		// If the merchant is in the EEA, all EEA countries are supported.
+		if ( in_array( $account_country, $eea_countries, true ) ) {
+			return $eea_countries;
+		}
+
+		return parent::get_countries();
+	}
+
+	/**
 	 * Returns testing credentials to be printed at checkout in test mode.
 	 *
 	 * @return string
