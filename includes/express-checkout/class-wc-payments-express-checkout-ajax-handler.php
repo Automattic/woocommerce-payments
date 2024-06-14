@@ -206,7 +206,20 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		if ( in_array( $product_type, [ 'simple', 'variation', 'subscription', 'subscription_variation', 'booking', 'bundle', 'mix-and-match' ], true ) ) {
-			WC()->cart->add_to_cart( $product->get_id(), $quantity );
+			$allowed_item_data = [
+				// Teams for WooCommerce Memberships fields.
+				'team_name',
+				'team_owner_takes_seat',
+			];
+			$item_data         = [];
+
+			foreach ( $allowed_item_data as $item ) {
+				if ( isset( $_POST[ $item ] ) ) {
+					$item_data[ $item ] = wc_clean( wp_unslash( $_POST[ $item ] ) );
+				}
+			}
+
+			WC()->cart->add_to_cart( $product->get_id(), $quantity, 0, [], $item_data );
 		}
 
 		WC()->cart->calculate_totals();

@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Reset notifications about duplicate enabled payment methods when new plugins are enabling them.
