@@ -10,50 +10,26 @@ import React from 'react';
  * Internal dependencies.
  */
 import Detail from '../detail';
-
-interface PaymentMethodDetails {
-	id: string;
-	name: string;
-	email: string;
-	formattedAddress: string;
-}
-
-interface PaymentMethodPlaceholders {
-	id: string;
-	name: string;
-	email: string;
-	formattedAddress: string;
-}
+import { PaymentMethodDetails } from 'wcpay/payment-details/types';
+import { Charge } from 'wcpay/types/charges';
 
 /**
  * Placeholders to display while loading.
  */
-const paymentMethodPlaceholders: PaymentMethodPlaceholders = {
+const paymentMethodPlaceholders = {
 	id: 'id placeholder',
 	name: 'name placeholder',
 	email: 'email placeholder',
 	formattedAddress: 'address placeholder',
 };
 
-interface ExternalCharge {
-	billing_details: {
-		name: string;
-		email: string;
-		formatted_address: string;
-	};
-	payment_method: string;
-	payment_method_details?: any;
-}
-
 /**
  * Extracts and formats payment method details from a charge.
  *
- * @param {ExternalCharge} charge The charge object.
+ * @param {Charge} charge The charge object.
  * @return {PaymentMethodDetails} A flat hash of all necessary values.
  */
-const formatPaymentMethodDetails = (
-	charge: ExternalCharge
-): PaymentMethodDetails => {
+const formatPaymentMethodDetails = ( charge: Charge ): PaymentMethodDetails => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 
@@ -69,7 +45,7 @@ const formatPaymentMethodDetails = (
  * Props interface for AffirmDetails component
  */
 interface AffirmDetailsProps {
-	charge?: ExternalCharge;
+	charge?: Charge;
 	isLoading: boolean;
 }
 
@@ -77,7 +53,7 @@ const AffirmDetails: React.FC< AffirmDetailsProps > = ( {
 	charge,
 	isLoading,
 } ) => {
-	const details: PaymentMethodDetails | PaymentMethodPlaceholders =
+	const details: PaymentMethodDetails | typeof paymentMethodPlaceholders =
 		charge && charge.payment_method_details
 			? formatPaymentMethodDetails( charge )
 			: paymentMethodPlaceholders;
@@ -87,7 +63,7 @@ const AffirmDetails: React.FC< AffirmDetailsProps > = ( {
 		name,
 		email,
 		formattedAddress,
-	}: PaymentMethodDetails | PaymentMethodPlaceholders = details;
+	}: PaymentMethodDetails | typeof paymentMethodPlaceholders = details;
 
 	return (
 		<div className="payment-method-details">
