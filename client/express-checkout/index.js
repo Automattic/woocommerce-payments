@@ -1,4 +1,5 @@
 /* global jQuery, wcpayExpressCheckoutParams */
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -209,7 +210,10 @@ jQuery( ( $ ) => {
 				}
 
 				return options.displayItems
-					.filter( ( i ) => i.label === 'Shipping' )
+					.filter(
+						( i ) =>
+							i.label === __( 'Shipping', 'woocommerce-payments' )
+					)
 					.map( ( i ) => ( {
 						id: `rate-${ i.label }`,
 						amount: i.amount,
