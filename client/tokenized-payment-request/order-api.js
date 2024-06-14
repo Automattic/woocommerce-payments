@@ -11,6 +11,9 @@ export default class PaymentRequestOrderApi {
 	key;
 	billingEmail = '';
 
+	// needed to replay the cart data to the `placeOrder` endpoint when placing the order.
+	cachedCartData = {};
+
 	/**
 	 * Creates an instance of class to query for order data.
 	 *
@@ -48,8 +51,8 @@ export default class PaymentRequestOrderApi {
 				key: this.key,
 				billing_email: this.billingEmail,
 				// preventing billing and shipping address from being overwritten in the request to the store - we don't want to update them
-				billing_address: undefined,
-				shipping_address: undefined,
+				billing_address: this.cachedCartData.billing_address,
+				shipping_address: this.cachedCartData.shipping_address,
 			},
 		} );
 	}
@@ -61,12 +64,12 @@ export default class PaymentRequestOrderApi {
 	 * @return {Promise} Cart response object.
 	 */
 	async getCart() {
-		return await apiFetch( {
+		return ( this.cachedCartData = await apiFetch( {
 			method: 'GET',
 			path: addQueryArgs( `/wc/store/v1/order/${ this.orderId }`, {
 				key: this.key,
 				billing_email: this.billingEmail,
 			} ),
-		} );
+		} ) );
 	}
 }
