@@ -10,7 +10,6 @@ import moment from 'moment';
  */
 import { usePaymentActivityData } from 'wcpay/data';
 import PaymentActivity from '..';
-import { after } from 'lodash';
 
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
@@ -231,9 +230,13 @@ describe( 'PaymentActivity component', () => {
 			( { dateNow, expected } ) => {
 				mockDateNowTo( dateNow );
 
-				const { getAllByRole } = render( <PaymentActivity /> );
+				const { getAllByRole, getByRole } = render(
+					<PaymentActivity />
+				);
 
-				const dateSelectorButton = getAllByRole( 'button' )[ 0 ];
+				const dateSelectorButton = getByRole( 'button', {
+					name: 'Period',
+				} );
 				fireEvent.click( dateSelectorButton );
 				const datePresetOptions = getAllByRole( 'option' );
 
