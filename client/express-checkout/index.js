@@ -266,7 +266,7 @@ jQuery( ( $ ) => {
 				event.resolve( clickOptions );
 			} );
 
-			eceButton.on( 'shippingaddresschange', ( event ) =>
+			eceButton.on( 'shippingaddresschange', async ( event ) =>
 				shippingAddressChangeHandler( api, event, elements )
 			);
 
@@ -285,7 +285,7 @@ jQuery( ( $ ) => {
 				)
 			);
 
-			eceButton.on( 'cancel', () => {
+			eceButton.on( 'cancel', async () => {
 				wcpayECE.unblock();
 				wcpayECE.paymentAborted = true;
 			} );
