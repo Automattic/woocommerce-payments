@@ -1,5 +1,5 @@
 Significance: patch
 Type: dev
-Comment: Add test for date selector in PaymentActivity component
+Comment: Add tests for the date preset dropdown in the PaymentActivity component
 
 

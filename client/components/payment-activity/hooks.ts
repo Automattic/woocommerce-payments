@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 
-export interface DateRange {
+interface DateRange {
 	/** The name of the date range preset. e.g. last_7_days */
 	preset_name: string;
 	/** The date range start datetime used to calculate transaction data, e.g. 2024-04-29T16:19:29 */
