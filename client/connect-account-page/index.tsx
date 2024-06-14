@@ -144,7 +144,7 @@ const ConnectAccountPage: React.FC = () => {
 
 		const url = addQueryArgs( connectUrl, {
 			test_mode: true,
-			create_builder_account: true,
+			test_drive: true,
 		} );
 		window.location.href = url;
 	};
@@ -215,7 +215,7 @@ const ConnectAccountPage: React.FC = () => {
 					{ incentive && <Incentive { ...incentive } /> }
 					<Panel className="connect-account-page__sandbox-mode-panel">
 						<PanelBody
-							title={ strings.sandboxMode.title }
+							title={ strings.testDriveMode.title }
 							initialOpen={ false }
 						>
 							<InlineNotice
@@ -223,7 +223,7 @@ const ConnectAccountPage: React.FC = () => {
 								status="info"
 								isDismissible={ false }
 							>
-								{ strings.sandboxMode.description }
+								{ strings.testDriveMode.description }
 							</InlineNotice>
 							<Button
 								variant="secondary"
@@ -231,7 +231,7 @@ const ConnectAccountPage: React.FC = () => {
 								disabled={ isSandboxModeClicked }
 								onClick={ handleEnableSandboxMode }
 							>
-								{ strings.button.sandbox }
+								{ strings.button.testDrive }
 							</Button>
 						</PanelBody>
 					</Panel>

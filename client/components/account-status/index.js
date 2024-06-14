@@ -78,20 +78,22 @@ const AccountStatusDetails = ( props ) => {
 					}
 				/>
 			</FlexBlock>
-			<FlexItem className={ 'edit-details' }>
-				<Button
-					variant={ 'link' }
-					onClick={ () =>
-						recordEvent( 'wcpay_account_details_link_clicked', {
-							source: 'account-details',
-						} )
-					}
-					href={ accountLink }
-					target={ '_blank' }
-				>
-					{ __( 'Edit details', 'woocommerce-payments' ) }
-				</Button>
-			</FlexItem>
+			{ ! accountStatus.testDrive && (
+				<FlexItem className={ 'edit-details' }>
+					<Button
+						variant={ 'link' }
+						onClick={ () =>
+							recordEvent( 'wcpay_account_details_link_clicked', {
+								source: 'account-details',
+							} )
+						}
+						href={ accountLink }
+						target={ '_blank' }
+					>
+						{ __( 'Edit details', 'woocommerce-payments' ) }
+					</Button>
+				</FlexItem>
+			) }
 		</>
 	);
 

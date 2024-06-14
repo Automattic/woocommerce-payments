@@ -37,6 +37,21 @@ export const isInDevMode = ( fallback = false ) => {
 	return wcpaySettings.devMode === '1' || fallback;
 };
 
+/**
+ * Returns true if the current account is a test-drive account, false otherwise.
+ *
+ * @param {boolean} fallback Fallback in case the account test-drive status can't be found (for example if the wcpaySettings are undefined).
+ *
+ * @return {boolean} True if the current account is a test-drive account, false otherwise.
+ * 					 Fallback value if the test-drive status can't be found.
+ */
+export const isTestDriveAccount = ( fallback = false ) => {
+	if ( typeof wcpaySettings.accountStatus.testDrive === 'undefined' ) {
+		return fallback;
+	}
+	return wcpaySettings.accountStatus.testDrive || fallback;
+};
+
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
 
 /**

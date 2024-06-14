@@ -18,6 +18,7 @@ export default {
 			'woocommerce-payments'
 		),
 		sandbox: __( 'Enable sandbox mode', 'woocommerce-payments' ),
+		testDrive: __( 'Engage test-drive mode', 'woocommerce-payments' ),
 	},
 	heading: ( firstName?: string ): string =>
 		sprintf(
@@ -47,6 +48,20 @@ export default {
 			/* translators: %s: WooPayments */
 			__(
 				'This option will set up %s in sandbox mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
+		),
+	},
+	testDriveMode: {
+		title: __(
+			'I want to set up my store first and worry about live payments later.',
+			'woocommerce-payments'
+		),
+		description: sprintf(
+			/* translators: %1$s: WooPayments */
+			__(
+				'This option will set up %1$s in test-drive mode. Everything %1$s has to offer is at your disposal. When you’re ready to launch your store, switching to live payments is easy.',
 				'woocommerce-payments'
 			),
 			'WooPayments'
