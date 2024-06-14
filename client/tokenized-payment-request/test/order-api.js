@@ -72,4 +72,57 @@ describe( 'PaymentRequestOrderApi', () => {
 			} )
 		);
 	} );
+
+	it( 'places an order with the previous API request data', async () => {
+		const api = new PaymentRequestOrderApi( {
+			orderId: '1',
+			key: 'key_123',
+			billingEmail: 'cheese@toast.com',
+		} );
+
+		apiFetch.mockResolvedValueOnce( {
+			billing_address: {
+				first_name: 'Fake',
+				last_name: 'Test',
+			},
+			shipping_address: {
+				first_name: 'Test',
+				last_name: 'Fake',
+			},
+		} );
+		await api.getCart();
+
+		await api.placeOrder( {
+			billing_address: {
+				first_name: 'Fake',
+			},
+			shipping_address: {
+				first_name: 'Test',
+			},
+			anythingElse: 'passedThrough',
+		} );
+
+		expect( apiFetch ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				method: 'POST',
+				path: '/wc/store/v1/checkout/1',
+				headers: expect.objectContaining( {
+					Nonce: 'global_tokenized_order_nonce',
+				} ),
+				data: expect.objectContaining( {
+					key: 'key_123',
+					billing_email: 'cheese@toast.com',
+					billing_address: expect.objectContaining( {
+						first_name: 'Fake',
+						last_name: 'Test',
+					} ),
+					shipping_address: expect.objectContaining( {
+						first_name: 'Test',
+						last_name: 'Fake',
+					} ),
+					anythingElse: 'passedThrough',
+				} ),
+			} )
+		);
+	} );
 } );
