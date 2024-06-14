@@ -6,7 +6,7 @@ import {
 	normalizeShippingAddress,
 	normalizeLineItems,
 } from './utils';
-import { getErrorMessageFromNotice } from 'utils/express-checkout';
+import { getErrorMessageFromNotice } from './utils/index';
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	const response = await api.expressCheckoutECECalculateShippingOptions(
