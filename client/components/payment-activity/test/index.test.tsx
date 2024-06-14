@@ -175,6 +175,7 @@ describe( 'PaymentActivity component', () => {
 		};
 		const dataSet = [
 			{
+				// Ordinary case or Happy Path
 				dateNow: '2024-06-10T16:19:29',
 				expected: {
 					today: 'June 10, 2024',
@@ -188,6 +189,7 @@ describe( 'PaymentActivity component', () => {
 				},
 			},
 			{
+				// Start of the year
 				dateNow: '2024-01-01T00:00:01',
 				expected: {
 					today: 'January 1, 2024',
@@ -201,6 +203,7 @@ describe( 'PaymentActivity component', () => {
 				},
 			},
 			{
+				// Leap year
 				dateNow: '2024-02-29T00:00:00',
 				expected: {
 					today: 'February 29, 2024',
