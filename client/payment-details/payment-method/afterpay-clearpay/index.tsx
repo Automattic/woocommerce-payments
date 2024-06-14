@@ -75,7 +75,6 @@ const AfterpayClearpayDetails: React.FC< AfterpayClearpayDetailsProps > = ( {
 					{ !! id ? id : '–' }
 				</Detail>
 			</div>
-
 			<div className="payment-method-details__column">
 				<Detail
 					isLoading={ isLoading }
