@@ -191,7 +191,7 @@ describe( 'PaymentActivity component', () => {
 			},
 			{
 				// Start of the year
-				dateNow: '2024-01-01T00:00:01',
+				dateNow: '2024-01-01T00:00:00',
 				expected: {
 					today: 'January 1, 2024',
 					last7Days: 'December 25 - December 31, 2023',
