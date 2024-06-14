@@ -34,7 +34,7 @@ const formatPaymentMethodDetails = ( charge: Charge ): PaymentMethodDetails => {
 /**
  * Placeholders to display while loading.
  */
-const paymentMethodPlaceholders = {
+const paymentMethodPlaceholders: PaymentMethodDetails = {
 	id: 'id placeholder',
 	name: 'name placeholder',
 	email: 'email placeholder',
