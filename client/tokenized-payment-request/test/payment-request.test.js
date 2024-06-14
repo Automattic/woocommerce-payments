@@ -133,6 +133,7 @@ describe( 'WooPaymentsPaymentRequest', () => {
 		expect( trackPaymentRequestButtonLoad ).toHaveBeenCalledWith( 'cart' );
 
 		doAction( 'wcpay.payment-request.update-button-data' );
+
 		await waitForAction( 'wcpay.payment-request.update-button-data' );
 		expect( paymentRequestAvailabilityCallback ).toHaveBeenCalledTimes( 1 );
 
