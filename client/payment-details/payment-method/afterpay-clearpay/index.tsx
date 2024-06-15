@@ -53,17 +53,12 @@ const AfterpayClearpayDetails: React.FC< AfterpayClearpayDetailsProps > = ( {
 	charge,
 	isLoading,
 } ) => {
-	const details: PaymentMethodDetails | typeof paymentMethodPlaceholders =
+	const details: PaymentMethodDetails =
 		charge && charge.payment_method_details
 			? formatPaymentMethodDetails( charge )
 			: paymentMethodPlaceholders;
 
-	const {
-		id,
-		name,
-		email,
-		formattedAddress,
-	}: PaymentMethodDetails | typeof paymentMethodPlaceholders = details;
+	const { id, name, email, formattedAddress }: PaymentMethodDetails = details;
 
 	return (
 		<div className="payment-method-details">
