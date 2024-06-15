@@ -111,6 +111,7 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 			<WPButton
 				variant={ 'primary' }
 				onClick={ saveOnClick }
+				isBusy={ isSaving }
 				disabled={ isSaving || isLoading || disabled }
 			>
 				{ __( 'Save changes', 'woocommerce-payments' ) }
