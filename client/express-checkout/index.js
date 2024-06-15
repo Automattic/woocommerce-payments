@@ -47,11 +47,6 @@ jQuery( ( $ ) => {
 	 * Object to handle Stripe payment forms.
 	 */
 	const wcpayECE = {
-		/**
-		 * Whether the payment was aborted by the customer.
-		 */
-		paymentAborted: false,
-
 		getAttributes: function () {
 			const select = $( '.variations_form' ).find( '.variations select' );
 			const data = {};
@@ -287,7 +282,6 @@ jQuery( ( $ ) => {
 
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.unblock();
-				wcpayECE.paymentAborted = true;
 			} );
 		},
 
@@ -431,9 +425,6 @@ jQuery( ( $ ) => {
 					} );
 				} );
 			}
-
-			// After initializing a new element, we need to reset the paymentAborted flag.
-			wcpayECE.paymentAborted = false;
 		},
 	};
 
