@@ -183,7 +183,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_woopay_direct_checkout_enabled_returns_true() {
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
-		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '1' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
@@ -196,7 +195,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_woopay_direct_checkout_enabled_returns_false_when_flag_is_false() {
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
-		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '1' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '0' );
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
@@ -209,7 +207,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_woopay_direct_checkout_enabled_returns_false_when_woopay_eligible_is_false() {
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
-		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '1' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
@@ -220,7 +217,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 	}
 
-	public function test_is_woopay_direct_checkout_enabled_returns_false_when_first_party_auth_is_disabled() {
+	public function test_is_woopay_direct_checkout_enabled_returns_true_when_first_party_auth_is_disabled() {
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '0' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
@@ -230,7 +227,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 				'platform_direct_checkout_eligible' => true,
 			]
 		);
-		$this->assertFalse( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 	}
 
 	public function test_is_wcpay_frt_review_feature_active_returns_true() {

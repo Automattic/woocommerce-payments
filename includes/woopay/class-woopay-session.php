@@ -378,6 +378,38 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Retrieves the user email from the current session.
+	 *
+	 * @param \WP_User $user The user object.
+	 * @return string The user email.
+	 */
+	private static function get_user_email( $user ) {
+		if ( ! empty( $_POST['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return sanitize_email( wp_unslash( $_POST['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		}
+
+		if ( ! empty( $_GET['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return sanitize_email( wp_unslash( $_GET['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		}
+
+		if ( ! empty( $_POST['encrypted_data'] ) && is_array( $_POST['encrypted_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$decrypted_data = WooPay_Utilities::decrypt_signed_data( $_POST['encrypted_data'] );
+
+			if ( ! empty( $decrypted_data['user_email'] ) ) {
+				return sanitize_email( wp_unslash( $decrypted_data['user_email'] ) );
+			}
+		}
+
+		// As a last resort, we try to get the email from the customer logged in the store.
+		if ( $user->exists() ) {
+			return $user->user_email;
+		}
+
+		return '';
+	}
+
+	/**
 	 * Returns the initial session request data.
 	 *
 	 * @param int|null             $order_id Pay-for-order order ID.
@@ -424,12 +456,11 @@ class WooPay_Session {
 
 		$cart_data     = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
 		$checkout_data = self::get_checkout_data( $woopay_request );
+		$email         = self::get_user_email( $user );
 
 		if ( $woopay_request ) {
 			$order_id = $checkout_data['order_id'] ?? null;
 		}
-
-		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,

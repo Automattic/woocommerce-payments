@@ -139,93 +139,104 @@ export default class WooPaymentsPaymentRequest {
 			} );
 		paymentRequestButtonUi.showButton( paymentRequestButton );
 
-		this.attachPaymentRequestButtonEventListeners();
-		removeAction(
-			'wcpay.payment-request.update-button-data',
-			'automattic/wcpay/payment-request'
-		);
-		addAction(
-			'wcpay.payment-request.update-button-data',
-			'automattic/wcpay/payment-request',
-			async () => {
-				const newCartData = await _self.getCartData();
-				// checking if items needed shipping, before assigning new cart data.
-				const didItemsNeedShipping =
-					_self.initialProductData?.needs_shipping ||
-					_self.cachedCartData?.needs_shipping;
+		if ( getPaymentRequestData( 'button_context' ) === 'pay_for_order' ) {
+			paymentRequestButton.on( 'click', () => {
+				trackPaymentRequestButtonClick( 'pay_for_order' );
+			} );
+		} else {
+			this.attachPaymentRequestButtonEventListeners();
+			removeAction(
+				'wcpay.payment-request.update-button-data',
+				'automattic/wcpay/payment-request'
+			);
+			addAction(
+				'wcpay.payment-request.update-button-data',
+				'automattic/wcpay/payment-request',
+				async () => {
+					const newCartData = await _self.getCartData();
+					// checking if items needed shipping, before assigning new cart data.
+					const didItemsNeedShipping =
+						_self.initialProductData?.needs_shipping ||
+						_self.cachedCartData?.needs_shipping;
 
-				_self.cachedCartData = newCartData;
+					_self.cachedCartData = newCartData;
 
-				/**
-				 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
-				 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
-				 * consistent, we can simply update the payment request button with the new total and display items.
-				 */
-				if (
-					! _self.isPaymentAborted &&
-					didItemsNeedShipping === newCartData.needs_shipping
-				) {
-					paymentRequest.update( {
-						total: {
-							label: getPaymentRequestData( 'total_label' ),
-							amount: parseInt(
-								newCartData.totals.total_price,
-								10
+					/**
+					 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
+					 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
+					 * consistent, we can simply update the payment request button with the new total and display items.
+					 */
+					if (
+						! _self.isPaymentAborted &&
+						didItemsNeedShipping === newCartData.needs_shipping
+					) {
+						paymentRequest.update( {
+							total: {
+								label: getPaymentRequestData( 'total_label' ),
+								amount: parseInt(
+									newCartData.totals.total_price,
+									10
+								),
+							},
+							displayItems: transformCartDataForDisplayItems(
+								newCartData
 							),
-						},
-						displayItems: transformCartDataForDisplayItems(
-							newCartData
-						),
-					} );
-				} else {
-					_self.init().then( noop );
+						} );
+					} else {
+						_self.init().then( noop );
+					}
 				}
-			}
-		);
+			);
 
-		const $addToCartButton = jQuery( '.single_add_to_cart_button' );
+			const $addToCartButton = jQuery( '.single_add_to_cart_button' );
 
-		paymentRequestButton.on( 'click', ( event ) => {
-			trackPaymentRequestButtonClick( 'product' );
+			paymentRequestButton.on( 'click', ( event ) => {
+				trackPaymentRequestButtonClick( 'product' );
 
-			// If login is required for checkout, display redirect confirmation dialog.
-			if ( getPaymentRequestData( 'login_confirmation' ) ) {
-				event.preventDefault();
-				displayLoginConfirmationDialog( buttonBranding );
-				return;
-			}
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( getPaymentRequestData( 'login_confirmation' ) ) {
+					event.preventDefault();
+					displayLoginConfirmationDialog( buttonBranding );
+					return;
+				}
 
-			// First check if product can be added to cart.
-			if ( $addToCartButton.is( '.disabled' ) ) {
-				event.preventDefault(); // Prevent showing payment request modal.
-				if ( $addToCartButton.is( '.wc-variation-is-unavailable' ) ) {
-					window.alert(
-						window.wc_add_to_cart_variation_params
-							?.i18n_unavailable_text ||
+				// First check if product can be added to cart.
+				if ( $addToCartButton.is( '.disabled' ) ) {
+					event.preventDefault(); // Prevent showing payment request modal.
+					if (
+						$addToCartButton.is( '.wc-variation-is-unavailable' )
+					) {
+						window.alert(
+							window.wc_add_to_cart_variation_params
+								?.i18n_unavailable_text ||
+								__(
+									'Sorry, this product is unavailable. Please choose a different combination.',
+									'woocommerce-payments'
+								)
+						);
+					} else {
+						window.alert(
 							__(
-								'Sorry, this product is unavailable. Please choose a different combination.',
+								'Please select your product options before proceeding.',
 								'woocommerce-payments'
 							)
-					);
-				} else {
-					window.alert(
-						__(
-							'Please select your product options before proceeding.',
-							'woocommerce-payments'
-						)
-					);
+						);
+					}
+					return;
 				}
-				return;
-			}
 
-			_self.paymentRequestCartApi.addProductToCart();
-		} );
+				_self.paymentRequestCartApi.addProductToCart();
+			} );
+		}
 
 		paymentRequest.on( 'cancel', () => {
 			_self.isPaymentAborted = true;
-			// clearing the cart to avoid issues with products with low or limited availability
-			// being held hostage by customers cancelling the PRB.
-			_self.paymentRequestCartApi.emptyCart();
+
+			if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
+				// clearing the cart to avoid issues with products with low or limited availability
+				// being held hostage by customers cancelling the PRB.
+				_self.paymentRequestCartApi.emptyCart();
+			}
 		} );
 
 		paymentRequest.on( 'shippingaddresschange', async ( event ) => {
@@ -281,7 +292,7 @@ export default class WooPaymentsPaymentRequest {
 		} );
 
 		paymentRequest.on( 'paymentmethod', async ( event ) => {
-			// TODO: this works for PDPs - need to handle checkout scenarios for pay-for-order, cart, checkout.
+			// TODO: this works for PDPs - need to handle checkout scenarios for cart, checkout.
 			try {
 				const response = await _self.paymentRequestCartApi.placeOrder( {
 					// adding extension data as a separate action,
