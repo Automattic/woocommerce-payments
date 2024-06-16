@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 7.8.0 - 2024-06-19 =
+= 7.8.0-test-3 - unreleased =
 * Add - Add a feedback survey modal upon deactivation.
 * Add - Add new select component to be used for reporting filters, e.g. Payments overview currency select
 * Add - Add payment processing using ECE in the Blocks checkout and cart pages.
