@@ -16,7 +16,6 @@ import { formatCurrency } from 'wcpay/utils/currency';
 import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'wcpay/data';
 import type * as AccountOverview from 'wcpay/types/account-overview';
-import { format } from 'path/posix';
 
 const isButtonDisabled = ( instantBalance: AccountOverview.InstantBalance ) => {
 	let buttonDisabled = false;
