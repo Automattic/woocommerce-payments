@@ -5,16 +5,18 @@
  */
 import React from 'react';
 import { Button } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
+import { formatCurrency } from 'wcpay/utils/currency';
 import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'wcpay/data';
 import type * as AccountOverview from 'wcpay/types/account-overview';
+import { format } from 'path/posix';
 
 const isButtonDisabled = ( instantBalance: AccountOverview.InstantBalance ) => {
 	let buttonDisabled = false;
@@ -49,7 +51,13 @@ const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
 				disabled={ buttonDisabled }
 				onClick={ () => setModalOpen( true ) }
 			>
-				{ __( 'Deposit available funds', 'woocommerce-payments' ) }
+				{ sprintf(
+					__( 'Instantly deposit %s', 'woocommerce-payments' ),
+					formatCurrency(
+						instantBalance.amount,
+						instantBalance.currency
+					)
+				) }
 			</Button>
 			{ ( isModalOpen || inProgress ) && (
 				<InstantDepositModal
