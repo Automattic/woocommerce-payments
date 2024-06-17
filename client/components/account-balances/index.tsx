@@ -1,26 +1,28 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { useState } from 'react';
 import { Flex } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { useAllDepositsOverviews } from 'wcpay/data';
-import { useSelectedCurrency } from 'wcpay/overview/hooks';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 import BalanceBlock from './balance-block';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import InstantDepositButton from 'deposits/instant-deposits';
+import InlineNotice from '../inline-notice';
 import {
 	TotalBalanceTooltip,
 	AvailableBalanceTooltip,
 } from './balance-tooltip';
 import { fundLabelStrings } from './strings';
-import InstantDepositButton from 'deposits/instant-deposits';
-import InlineNotice from '../inline-notice';
 import { ClickTooltip } from '../tooltip';
-import type * as AccountOverview from 'wcpay/types/account-overview';
+import { formatCurrency } from 'wcpay/utils/currency';
+import { useAllDepositsOverviews } from 'wcpay/data';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import './style.scss';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Renders account balances for the selected currency.
@@ -28,6 +30,10 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
 const AccountBalances: React.FC = () => {
 	const { overviews, isLoading } = useAllDepositsOverviews();
 	const { selectedCurrency } = useSelectedCurrency();
+
+	const [ showInstantDepositNotice, setShowInstantDepositNotice ] = useState(
+		true
+	);
 
 	if ( ! isLoading && overviews.currencies.length === 0 ) {
 		return null;
@@ -114,11 +120,27 @@ const AccountBalances: React.FC = () => {
 						direction="column"
 						align="start"
 					>
-						<InlineNotice status="info" isDismissible={ true }>
-							{
-								'Instantly deposit $1000 and get funds in your bank account in 30 mins for a 1.5% fee.'
-							}
-						</InlineNotice>
+						{ showInstantDepositNotice && (
+							<InlineNotice
+								isDismissible={ true }
+								onRemove={ () =>
+									setShowInstantDepositNotice( false )
+								}
+							>
+								{ sprintf(
+									__(
+										'Instantly deposit %s and get funds in your bank account in 30 mins for a %s%% fee.',
+										'woocommerce-payments'
+									),
+									formatCurrency(
+										selectedOverview.instantBalance.amount,
+										selectedOverview.instantBalance.currency
+									),
+									selectedOverview.instantBalance
+										.fee_percentage
+								) }
+							</InlineNotice>
+						) }
 
 						<Flex justify="flex-start">
 							<InstantDepositButton
