@@ -4,6 +4,8 @@
 import React, { useState } from 'react';
 import { Flex } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -148,12 +150,40 @@ const AccountBalances: React.FC = () => {
 									selectedOverview.instantBalance
 								}
 							/>
-							<ClickTooltip
-								buttonIcon={ <HelpOutlineIcon /> }
-								content={
-									'With instant deposit you can receive requested funds in your bank account within 30 mins for a 1.5% fee. Learn more'
-								}
-							/>
+							{ ! showInstantDepositNotice && (
+								<ClickTooltip
+									buttonIcon={ <HelpOutlineIcon /> }
+									buttonLabel={ __(
+										'Learn more about instant deposit',
+										'woocommerce-payments'
+									) }
+									content={
+										/* 'With instant deposit you can receive requested funds in your bank account within 30 mins for a 1.5% fee. Learn more' */
+
+										interpolateComponents( {
+											mixedString: sprintf(
+												__(
+													'With {{strong}}instant deposit{{/strong}} you can receive requested funds in your bank account within 30 mins for a %s%% fee. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+													'woocommerce-payments'
+												),
+												selectedOverview.instantBalance
+													.fee_percentage
+											),
+											components: {
+												strong: <strong />,
+												learnMoreLink: (
+													<Link
+														href="https://woocommerce.com/payments/"
+														target="_blank"
+														rel="noreferrer"
+														type="external"
+													/>
+												),
+											},
+										} )
+									}
+								/>
+							) }
 						</Flex>
 					</Flex>
 				) }
