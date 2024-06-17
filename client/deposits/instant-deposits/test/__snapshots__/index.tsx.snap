@@ -6,7 +6,7 @@ exports[`Instant deposit button and modal button renders correctly with balance 
     class="components-button is-primary"
     type="button"
   >
-    Deposit available funds
+    Instantly deposit $123.45
   </button>
 </div>
 `;
@@ -18,7 +18,7 @@ exports[`Instant deposit button and modal button renders correctly with zero bal
     disabled=""
     type="button"
   >
-    Deposit available funds
+    Instantly deposit $0.00
   </button>
 </div>
 `;

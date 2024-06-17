@@ -302,7 +302,7 @@ describe( 'AccountBalances', () => {
 		render( <AccountBalances /> );
 
 		screen.getByRole( 'button', {
-			name: 'Deposit available funds',
+			name: 'Instantly deposit $300.00',
 		} );
 	} );
 
