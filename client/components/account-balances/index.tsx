@@ -16,8 +16,11 @@ import {
 } from './balance-tooltip';
 import { fundLabelStrings } from './strings';
 import InstantDepositButton from 'deposits/instant-deposits';
+import InlineNotice from '../inline-notice';
+import { ClickTooltip } from '../tooltip';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import './style.scss';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Renders account balances for the selected currency.
@@ -108,10 +111,28 @@ const AccountBalances: React.FC = () => {
 					<Flex
 						gap={ 0 }
 						className="wcpay-account-balances__instant-deposit"
+						direction="column"
+						align="start"
 					>
-						<InstantDepositButton
-							instantBalance={ selectedOverview.instantBalance }
-						/>
+						<InlineNotice status="info" isDismissible={ true }>
+							{
+								'Instantly deposit $1000 and get funds in your bank account in 30 mins for a 1.5% fee.'
+							}
+						</InlineNotice>
+
+						<Flex justify="flex-start">
+							<InstantDepositButton
+								instantBalance={
+									selectedOverview.instantBalance
+								}
+							/>
+							<ClickTooltip
+								buttonIcon={ <HelpOutlineIcon /> }
+								content={
+									'With instant deposit you can receive requested funds in your bank account within 30 mins for a 1.5% fee. Learn more'
+								}
+							/>
+						</Flex>
 					</Flex>
 				) }
 		</>
