@@ -582,6 +582,8 @@ class WC_Payments {
 		add_action(
 			'setup_theme',
 			function () {
+				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Status_Sync::class, 'remove_webhook' ] );
+
 				self::maybe_register_woopay_hooks();
 				self::maybe_display_express_checkout_buttons();
 				self::maybe_init_woopay_direct_checkout();
@@ -1557,8 +1559,6 @@ class WC_Payments {
 			}
 
 			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
-		} else {
-			WooPay_Order_Status_Sync::remove_webhook();
 		}
 	}
 
@@ -1616,6 +1616,7 @@ class WC_Payments {
 				'testMode'                      => $is_test_mode,
 				'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 				'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
+				'woopayMerchantId'              => Jetpack_Options::get_option( 'id' ),
 				'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
 				'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
 				'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
