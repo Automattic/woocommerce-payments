@@ -966,6 +966,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
 				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
 				'tokenized_cart_nonce'      => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
+				'tokenized_order_nonce'     => wp_create_nonce( 'wc_store_api' ),
 			],
 			'checkout'           => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
@@ -985,7 +986,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
-		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() && $this->express_checkout_helper->is_product() ) {
+		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() && ( $this->express_checkout_helper->is_product() || $this->express_checkout_helper->is_pay_for_order_page() ) ) {
 			WC_Payments::register_script_with_dependencies(
 				'WCPAY_PAYMENT_REQUEST',
 				'dist/tokenized-payment-request',
@@ -1179,12 +1180,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$packages = WC()->shipping->get_packages();
 
 			if ( ! empty( $packages ) && WC()->customer->has_calculated_shipping() ) {
-				foreach ( $packages as $package_key => $package ) {
+				foreach ( $packages as $package ) {
 					if ( empty( $package['rates'] ) ) {
 						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
 					}
 
-					foreach ( $package['rates'] as $key => $rate ) {
+					foreach ( $package['rates'] as $rate ) {
 						$data['shipping_options'][] = [
 							'id'     => $rate->id,
 							'label'  => $rate->label,
