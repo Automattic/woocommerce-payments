@@ -173,7 +173,7 @@ const AccountBalances: React.FC = () => {
 												strong: <strong />,
 												learnMoreLink: (
 													<Link
-														href="https://woocommerce.com/payments/"
+														href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/"
 														target="_blank"
 														rel="noreferrer"
 														type="external"
