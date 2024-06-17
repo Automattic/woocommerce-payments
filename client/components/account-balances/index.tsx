@@ -150,7 +150,7 @@ const AccountBalances: React.FC = () => {
 									selectedOverview.instantBalance
 								}
 							/>
-							{ ! showInstantDepositNotice && (
+							{ ! showInstantDepositNotice && ( // Show the tooltip only when the notice is dismissed.
 								<ClickTooltip
 									buttonIcon={ <HelpOutlineIcon /> }
 									buttonLabel={ __(
