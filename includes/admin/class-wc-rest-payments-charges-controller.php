@@ -28,7 +28,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<charge_id>\w+)',
+			'/' . $this->rest_base . '/(?P<charge_id>ch_[A-Za-z0-9]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_charge' ],
@@ -37,7 +37,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/order/(?P<order_id>\w+)',
+			'/' . $this->rest_base . '/order/(?P<order_id>[A-Za-z0-9_\-]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'generate_charge_from_order' ],
@@ -81,7 +81,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 
 		$currency        = $order->get_currency();
 		$amount          = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
+		$billing_details = WC_Payments::get_order_service()->get_billing_data_from_order( $order ); // TODO: Inject order_service after #7464 is fixed.
 		$date_created    = $order->get_date_created();
 		$intent_id       = $order->get_meta( '_intent_id' );
 		$intent_status   = $order->get_meta( '_intent_status' );
@@ -102,7 +102,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 			'currency'               => $currency,
 			'disputed'               => false,
 			'outcome'                => false,
-			'order'                  => WC_Payments::get_payments_api_client()->build_order_info( $order ),
+			'order'                  => $this->api_client->build_order_info( $order ),
 			'paid'                   => false,
 			'paydown'                => null,
 			'payment_intent'         => ! empty( $intent_id ) ? $intent_id : null,
@@ -119,7 +119,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 			'status'                 => ! empty( $intent_status ) ? $intent_status : $order->get_status(),
 		];
 
-		$charge = WC_Payments::get_payments_api_client()->add_formatted_address_to_charge_object( $charge );
+		$charge = $this->api_client->add_formatted_address_to_charge_object( $charge );
 
 		return rest_ensure_response( $charge );
 	}

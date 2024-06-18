@@ -581,6 +581,17 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/payment-gateways.css' ),
 			'all'
 		);
+
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PLUGINS_PAGE', 'dist/plugins-page', [ 'wp-api-request' ] );
+		wp_set_script_translations( 'WCPAY_PLUGINS_PAGE', 'woocommerce-payments' );
+
+		WC_Payments_Utils::register_style(
+			'WCPAY_PLUGINS_PAGE',
+			plugins_url( 'dist/plugins-page.css', WCPAY_PLUGIN_FILE ),
+			[ 'wp-components', 'wc-components' ],
+			WC_Payments::get_file_version( 'dist/plugins-page.css' ),
+			'all'
+		);
 	}
 
 	/**
@@ -669,6 +680,23 @@ class WC_Payments_Admin {
 		}
 
 		$screen = get_current_screen();
+
+		// Only enqueue the scripts on the plugins page.
+		if ( in_array( $screen->id, [ 'plugins' ], true ) ) {
+			// Localize before actually enqueuing to avoid unnecessary settings generation.
+			// Most importantly, the destructive error transient handling.
+			wp_localize_script(
+				'WCPAY_PLUGINS_PAGE',
+				'wcpayPluginsSettings',
+				$this->get_plugins_page_js_settings()
+			);
+
+			wp_enqueue_script( 'WCPAY_PLUGINS_PAGE' );
+			wp_enqueue_style( 'WCPAY_PLUGINS_PAGE' );
+
+			add_action( 'admin_footer', [ $this, 'load_plugins_page_wrapper' ] );
+		}
+
 		if ( in_array( $screen->id, [ 'shop_order', 'woocommerce_page_wc-orders' ], true ) ) {
 			$order = wc_get_order();
 
@@ -720,6 +748,22 @@ class WC_Payments_Admin {
 	}
 
 	/**
+	 * Outputs the wrapper for the plugin modal
+	 * Contents are loaded by React script
+	 *
+	 * @return void
+	 */
+	public function load_plugins_page_wrapper() {
+		wc_get_template(
+			'plugins-page/plugins-page-wrapper.php',
+			[],
+			'',
+			WCPAY_ABSPATH . 'templates/'
+		);
+	}
+
+
+	/**
 	 * Get the WCPay settings to be sent to JS.
 	 *
 	 * It used an internal cache to make sure it only generates the settings once per request.
@@ -756,14 +800,20 @@ class WC_Payments_Admin {
 		$currency_data = [];
 
 		foreach ( $locale_info as $key => $value ) {
-			$currency_code         = $value['currency_code'] ?? '';
-			$currency_data[ $key ] = [
+			$currency_code             = $value['currency_code'] ?? '';
+			$default_locale_formatting = $value['locales']['default'] ?? [];
+			$currency_data[ $key ]     = [
 				'code'              => $currency_code,
 				'symbol'            => $value['short_symbol'] ?? $symbols[ $currency_code ] ?? '',
 				'symbolPosition'    => $value['currency_pos'] ?? '',
 				'thousandSeparator' => $value['thousand_sep'] ?? '',
 				'decimalSeparator'  => $value['decimal_sep'] ?? '',
 				'precision'         => $value['num_decimals'],
+				'defaultLocale'     => [
+					'symbolPosition'    => $default_locale_formatting['currency_pos'] ?? '',
+					'thousandSeparator' => $default_locale_formatting['thousand_sep'] ?? '',
+					'decimalSeparator'  => $default_locale_formatting['decimal_sep'] ?? '',
+				],
 			];
 		}
 
@@ -789,6 +839,10 @@ class WC_Payments_Admin {
 		if ( ! empty( $connect_incentive['id'] ) ) {
 			$connect_url = add_query_arg( [ 'promo' => sanitize_text_field( $connect_incentive['id'] ) ], $connect_url );
 		}
+
+		// Get the site logo URL, if available.
+		$site_logo_id  = get_theme_mod( 'custom_logo' );
+		$site_logo_url = $site_logo_id ? ( wp_get_attachment_image_src( $site_logo_id, 'full' )[0] ?? '' ) : '';
 
 		$this->wcpay_js_settings = [
 			'version'                       => WCPAY_VERSION_NUMBER,
@@ -823,7 +877,6 @@ class WC_Payments_Admin {
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
 			'isMultiCurrencyEnabled'        => WC_Payments_Features::is_customer_multi_currency_enabled(),
-			'isClientEncryptionEligible'    => WC_Payments_Features::is_client_secret_encryption_eligible(),
 			'shouldUseExplicitPrice'        => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
 			'overviewTasksVisibility'       => [
 				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
@@ -833,6 +886,7 @@ class WC_Payments_Admin {
 			'currentUserEmail'              => $current_user_email,
 			'currencyData'                  => $currency_data,
 			'restUrl'                       => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
+			'siteLogoUrl'                   => $site_logo_url,
 			'isFRTReviewFeatureActive'      => WC_Payments_Features::is_frt_review_feature_active(),
 			'fraudProtection'               => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
@@ -852,12 +906,27 @@ class WC_Payments_Admin {
 			'reporting'                     => [
 				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
 			],
+			'dismissedDuplicateNotices'     => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
 			'locale'                        => WC_Payments_Utils::get_language_data( get_locale() ),
+			'isOverviewSurveySubmitted'     => get_option( 'wcpay_survey_payment_overview_submitted', false ),
 			'trackingInfo'                  => $this->account->get_tracking_info(),
-			'lifetimeTPV'                   => $this->account->get_lifetime_total_payments_volume(),
+			'lifetimeTPV'                   => $this->account->get_lifetime_total_payment_volume(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
+	}
+
+	/**
+	 * Get the WCPay plugins page settings to be sent to JS.
+	 *
+	 * @return array
+	 */
+	private function get_plugins_page_js_settings(): array {
+		$plugins_page_settings = [
+			'exitSurveyLastShown' => get_option( 'wcpay_exit_survey_last_shown', null ),
+		];
+
+		return apply_filters( 'wcpay_plugins_page_js_settings', $plugins_page_settings );
 	}
 
 	/**

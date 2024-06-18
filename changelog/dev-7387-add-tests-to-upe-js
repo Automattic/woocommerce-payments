@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Improve test coverage of upe.js and rename isPaymentMethodRestrictedToLocation to hasPaymentMethodCountryRestrictions

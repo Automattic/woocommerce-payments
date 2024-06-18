@@ -4,9 +4,9 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Card, Notice } from '@wordpress/components';
+import { Button, Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -20,17 +20,22 @@ import ErrorBoundary from 'components/error-boundary';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import Page from 'components/page';
-import PaymentsActivity from 'wcpay/components/payments-activity';
+import PaymentActivity from 'wcpay/components/payment-activity';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
 import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import SetupLivePaymentsModal from './modal/setup-live-payments';
-import strings from './strings';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import { useDisputes, useGetSettings, useSettings } from 'data';
 import './style.scss';
+import BannerNotice from 'wcpay/components/banner-notice';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
+import { recordEvent } from 'wcpay/tracks';
+import { ClickTooltip } from 'wcpay/components/tooltip';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -50,6 +55,74 @@ const OverviewPageError = () => {
 					'woocommerce-payments'
 				) }
 		</Notice>
+	);
+};
+
+const OverviewSandboxModeNotice = ( { ctaAction = () => {} } ) => {
+	return (
+		<BannerNotice status="warning" isDismissible={ false }>
+			{ interpolateComponents( {
+				mixedString: sprintf(
+					/* translators: %1$s: WooPayments */
+					__(
+						// eslint-disable-next-line max-len
+						'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real transactions, {{switchToLiveLink}}set up a live %1$s account.{{/switchToLiveLink}} {{learnMoreIcon/}}',
+						'woocommerce-payments'
+					),
+					'WooPayments'
+				),
+				components: {
+					strong: <strong />,
+					learnMoreIcon: (
+						<ClickTooltip
+							buttonIcon={ <HelpOutlineIcon /> }
+							buttonLabel={ __(
+								'Learn more about sandbox mode',
+								'woocommerce-payments'
+							) }
+							maxWidth={ '250px' }
+							content={
+								<>
+									{ interpolateComponents( {
+										mixedString: sprintf(
+											/* translators: %1$s: WooPayments */
+											__(
+												// eslint-disable-next-line max-len
+												'Sandbox mode gives you access to all %1$s features while checkout transactions are simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+												'woocommerce-payments'
+											),
+											'WooPayments'
+										),
+										components: {
+											learnMoreLink: (
+												// eslint-disable-next-line jsx-a11y/anchor-has-content
+												<Link
+													href={
+														// eslint-disable-next-line max-len
+														'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
+													}
+													target="_blank"
+													rel="noreferrer"
+													type="external"
+													onClick={ () =>
+														recordEvent(
+															'wcpay_overview_sandbox_mode_learn_more_clicked'
+														)
+													}
+												/>
+											),
+										},
+									} ) }
+								</>
+							}
+						/>
+					),
+					switchToLiveLink: (
+						<Button variant="link" onClick={ ctaAction } />
+					),
+				},
+			} ) }
+		</BannerNotice>
 	);
 };
 
@@ -144,67 +217,54 @@ const OverviewPage = () => {
 					) }
 				</Notice>
 			) }
-			<TestModeNotice
-				currentPage="overview"
-				isDevMode={ isDevMode }
-				actions={
-					isDevMode
-						? [
-								{
-									label: strings.notice.actions.setUpPayments,
-									onClick: () =>
-										setLivePaymentsModalVisible( true ),
-								},
-								{
-									label: strings.notice.actions.learnMore,
-									url:
-										'https://woo.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/',
-									urlTarget: '_blank',
-								},
-						  ]
-						: []
-				}
-			/>
+			{ isDevMode ? (
+				<OverviewSandboxModeNotice
+					ctaAction={ () => setLivePaymentsModalVisible( true ) }
+				/>
+			) : (
+				<TestModeNotice
+					currentPage="overview"
+					isDevMode={ isDevMode }
+					actions={ [] }
+				/>
+			) }
 			<ErrorBoundary>
 				<FRTDiscoverabilityBanner />
 			</ErrorBoundary>
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
-					<>
-						{ showTaskList ? (
-							<>
-								<Card>
-									<Welcome />
-									<ErrorBoundary>
-										<TaskList
-											tasks={ tasks }
-											overviewTasksVisibility={
-												overviewTasksVisibility
-											}
-										/>
-									</ErrorBoundary>
-								</Card>
-								<Card>
-									<AccountBalances />
-								</Card>
-							</>
-						) : (
-							<Card>
-								<Welcome />
-								<AccountBalances />
-							</Card>
-						) }
-						{
-							/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
-							isPaymentOverviewWidgetEnabled && (
-								<ErrorBoundary>
-									<PaymentsActivity />
-								</ErrorBoundary>
-							)
-						}
-						<DepositsOverview />
-					</>
+					<Welcome />
+
+					{ showTaskList && (
+						<Card>
+							<ErrorBoundary>
+								<TaskList
+									tasks={ tasks }
+									overviewTasksVisibility={
+										overviewTasksVisibility
+									}
+								/>
+							</ErrorBoundary>
+						</Card>
+					) }
+
+					<Card>
+						<ErrorBoundary>
+							<AccountBalances />
+						</ErrorBoundary>
+					</Card>
+
+					{
+						/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
+						isPaymentOverviewWidgetEnabled && (
+							<ErrorBoundary>
+								<PaymentActivity />
+							</ErrorBoundary>
+						)
+					}
+
+					<DepositsOverview />
 				</ErrorBoundary>
 			) }
 			<ErrorBoundary>
@@ -231,9 +291,7 @@ const OverviewPage = () => {
 			{ livePaymentsModalVisible && (
 				<ErrorBoundary>
 					<SetupLivePaymentsModal
-						closeModal={ () =>
-							setLivePaymentsModalVisible( false )
-						}
+						onClose={ () => setLivePaymentsModalVisible( false ) }
 					/>
 				</ErrorBoundary>
 			) }

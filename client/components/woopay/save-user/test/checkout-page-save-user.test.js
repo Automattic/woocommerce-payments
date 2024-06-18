@@ -39,7 +39,6 @@ jest.mock( 'tracks', () => ( {
 	events: {
 		WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
 		WOOPAY_OFFERED: 'checkout_woopay_save_my_info_offered',
-		WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
 		WOOPAY_SKIPPED: 'woopay_skipped',
 		WOOPAY_BUTTON_LOAD: 'woopay_button_load',
 		WOOPAY_BUTTON_CLICK: 'woopay_button_click',
@@ -99,12 +98,12 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).toBeInTheDocument();
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeChecked();
 	} );
@@ -115,7 +114,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -126,7 +125,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -139,7 +138,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -148,7 +147,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 
 		const label = screen.getByLabelText(
-			'Save my information for a faster checkout'
+			'Securely save my information for 1-click checkout'
 		);
 
 		expect( label ).not.toBeChecked();
@@ -169,7 +168,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		} );
 
 		const label = screen.getByLabelText(
-			'Save my information for a faster and secure checkout'
+			'Securely save my information for 1-click checkout'
 		);
 
 		expect( label ).not.toBeChecked();
@@ -194,7 +193,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		// click on the checkbox
 		userEvent.click(
 			screen.queryByLabelText(
-				'Save my information for a faster checkout'
+				'Securely save my information for 1-click checkout'
 			)
 		);
 
@@ -207,7 +206,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		} );
 
 		const label = screen.getByLabelText(
-			'Save my information for a faster and secure checkout'
+			'Securely save my information for 1-click checkout'
 		);
 
 		expect( label ).not.toBeChecked();
@@ -250,7 +249,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		} );
 
 		const saveMyInfoCheckbox = screen.getByLabelText(
-			'Save my information for a faster and secure checkout'
+			'Securely save my information for 1-click checkout'
 		);
 		// initial state
 		expect( saveMyInfoCheckbox ).not.toBeChecked();
@@ -303,7 +302,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		} );
 
 		const label = screen.getByLabelText(
-			'Save my information for a faster and secure checkout'
+			'Securely save my information for 1-click checkout'
 		);
 
 		expect( label ).not.toBeChecked();

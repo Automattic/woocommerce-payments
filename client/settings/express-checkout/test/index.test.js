@@ -17,6 +17,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,
+	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
@@ -27,6 +28,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn(),
 	useExpressCheckoutShowIncompatibilityNotice: jest.fn(),
+	useGetDuplicatedPaymentMethodIds: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -49,6 +51,8 @@ describe( 'ExpressCheckout', () => {
 		);
 
 		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
+
+		useGetDuplicatedPaymentMethodIds.mockReturnValue( [] );
 	} );
 
 	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
@@ -232,7 +236,7 @@ describe( 'ExpressCheckout', () => {
 
 		expect(
 			screen.queryByText(
-				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
+				'Your custom checkout fields may not be compatible with these payment methods.'
 			)
 		).toBeInTheDocument();
 	} );

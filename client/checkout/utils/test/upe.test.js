@@ -8,8 +8,10 @@ import {
 	getStripeElementOptions,
 	blocksShowLinkButtonHandler,
 	getSelectedUPEGatewayPaymentMethod,
+	hasPaymentMethodCountryRestrictions,
 	isUsingSavedPaymentMethod,
 	dispatchChangeEventFor,
+	togglePaymentMethodForCountry,
 } from '../upe';
 import { getPaymentMethodsConstants } from '../../constants';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -122,6 +124,155 @@ describe( 'UPE checkout utils', () => {
 			expect( getTerms( paymentMethods, 'never' ) ).toEqual(
 				terms.never
 			);
+		} );
+	} );
+
+	describe( 'hasPaymentMethodCountryRestrictions', () => {
+		let container;
+
+		beforeAll( () => {
+			container = document.createElement( 'div' );
+			container.innerHTML = `
+				<ul class="wc_payment_methods payment_methods methods">
+					<li class="wc_payment_method payment_method_woocommerce_payments_card" data-payment-method-type="card">
+						<input id="payment_method_woocommerce_payments" type="radio" class="input-radio">
+					</li>
+					<li class="wc_payment_method payment_method_woocommerce_payments_bancontact" data-payment-method-type="bancontact">
+						<input id="payment_method_woocommerce_payments_bancontact" type="radio" class="input-radio">
+					</li>
+				</ul>
+			`;
+			document.body.appendChild( container );
+		} );
+
+		afterAll( () => {
+			document.body.removeChild( container );
+			container = null;
+		} );
+
+		beforeEach( () => {
+			jest.clearAllMocks();
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'paymentMethodsConfig' ) {
+					return {
+						card: { countries: [] },
+						bancontact: { countries: [ 'BE' ] },
+					};
+				}
+			} );
+		} );
+
+		it( 'should be true when the payment method is restricted to the location', () => {
+			const bancontactUpeElement = document.querySelector(
+				'.payment_method_woocommerce_payments_bancontact'
+			);
+
+			expect(
+				hasPaymentMethodCountryRestrictions( bancontactUpeElement )
+			).toBe( true );
+		} );
+
+		it( 'should be false when the payment method is not restricted to the location', () => {
+			const cardUpeElement = document.querySelector(
+				'.payment_method_woocommerce_payments_card'
+			);
+
+			expect(
+				hasPaymentMethodCountryRestrictions( cardUpeElement )
+			).toBe( false );
+		} );
+	} );
+
+	describe( 'togglePaymentMethodForCountry', () => {
+		let container;
+
+		beforeAll( () => {
+			container = document.createElement( 'div' );
+			container.innerHTML = `
+				<select id="billing_country">
+					<option value="US">United States</option>
+					<option value="BE">Belgium</option>
+				</select>
+				<ul class="wc_payment_methods payment_methods methods">
+					<li class="wc_payment_method payment_method_woocommerce_payments_card" data-payment-method-type="card">
+						<input id="payment_method_woocommerce_payments" type="radio" class="input-radio">
+					</li>
+					<li class="wc_payment_method payment_method_woocommerce_payments_bancontact" data-payment-method-type="bancontact">
+						<input id="payment_method_woocommerce_payments_bancontact" type="radio" class="input-radio">
+					</li>
+				</ul>
+			`;
+			document.body.appendChild( container );
+		} );
+
+		afterAll( () => {
+			document.body.removeChild( container );
+			container = null;
+		} );
+
+		beforeEach( () => {
+			jest.clearAllMocks();
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'paymentMethodsConfig' ) {
+					return {
+						card: { countries: [ 'US' ] },
+						bancontact: { countries: [ 'BE' ] },
+					};
+				}
+
+				if ( argument === 'gatewayId' ) {
+					return 'woocommerce_payments';
+				}
+			} );
+			window.wcpayCustomerData = { billing_country: 'BE' };
+		} );
+
+		afterEach( () => {
+			window.wcpayCustomerData = null;
+		} );
+
+		it( 'should show payment method if country is supported', () => {
+			const upeElement = document.querySelector(
+				'.payment_method_woocommerce_payments_card'
+			);
+			document.getElementById( 'billing_country' ).value = 'US';
+
+			togglePaymentMethodForCountry( upeElement );
+
+			expect( upeElement.style.display ).toBe( 'block' );
+		} );
+
+		it( 'should hide payment method if country is not supported', () => {
+			const upeElement = document.querySelector(
+				'.payment_method_woocommerce_payments_card'
+			);
+			document.getElementById( 'billing_country' ).value = 'BE';
+
+			togglePaymentMethodForCountry( upeElement );
+
+			expect( upeElement.style.display ).toBe( 'none' );
+		} );
+
+		it( 'should fall back to card as the default payment method if the selected payment method is toggled off', () => {
+			const input = document.querySelector(
+				'#payment_method_woocommerce_payments_bancontact'
+			);
+			input.checked = true;
+
+			const upeElement = document.querySelector(
+				'.payment_method_woocommerce_payments_bancontact'
+			);
+			document.getElementById( 'billing_country' ).value = 'US';
+
+			const cardPaymentMethod = document.querySelector(
+				'#payment_method_woocommerce_payments'
+			);
+			jest.spyOn( cardPaymentMethod, 'click' );
+
+			togglePaymentMethodForCountry( upeElement );
+
+			expect( upeElement.style.display ).toBe( 'none' );
+			expect( cardPaymentMethod.click ).toHaveBeenCalled();
 		} );
 	} );
 

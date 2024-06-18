@@ -18,7 +18,7 @@ import {
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
-	useClientSecretEncryption,
+	useGetDuplicatedPaymentMethodIds,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
@@ -261,39 +261,6 @@ describe( 'Settings hooks tests', () => {
 		} );
 	} );
 
-	describe( 'useClientSecretEncryption()', () => {
-		test( 'returns and updates client secret encryption settings', () => {
-			const clientSecretEncryptionBeforeUpdate = false;
-			const clientSecretEncryptionAfterUpdate = true;
-
-			actions = {
-				updateIsClientSecretEncryptionEnabled: jest.fn(),
-			};
-
-			selectors = {
-				getIsClientSecretEncryptionEnabled: jest.fn(
-					() => clientSecretEncryptionBeforeUpdate
-				),
-			};
-
-			const [
-				isClientEncryptionEnabled,
-				updateIsClientSecretEncryptionEnabled,
-			] = useClientSecretEncryption();
-
-			updateIsClientSecretEncryptionEnabled(
-				clientSecretEncryptionAfterUpdate
-			);
-
-			expect( isClientEncryptionEnabled ).toEqual(
-				clientSecretEncryptionBeforeUpdate
-			);
-			expect(
-				actions.updateIsClientSecretEncryptionEnabled
-			).toHaveBeenCalledWith( clientSecretEncryptionAfterUpdate );
-		} );
-	} );
-
 	describe( 'useWooPayEnabledSettings()', () => {
 		test( 'returns woopay setting from selector', () => {
 			actions = {
@@ -369,6 +336,34 @@ describe( 'Settings hooks tests', () => {
 			expect( actions.updateWooPayStoreLogo ).toHaveBeenCalledWith(
 				messageAfterUpdate
 			);
+		} );
+	} );
+
+	describe( 'useGetDuplicatedPaymentMethodIds', () => {
+		beforeEach( () => {
+			useSelect.mockImplementation( ( selector ) =>
+				selector( ( name ) => {
+					if ( name === STORE_NAME ) {
+						return {
+							getDuplicatedPaymentMethodIds: jest.fn( () => [
+								'card',
+								'bancontact',
+							] ),
+						};
+					}
+					return {};
+				} )
+			);
+		} );
+
+		test( 'returns duplicated payment method IDs from selector', () => {
+			const duplicatedPaymentMethodIds = useGetDuplicatedPaymentMethodIds();
+			expect( duplicatedPaymentMethodIds ).toEqual( [
+				'card',
+				'bancontact',
+			] );
+
+			expect( useSelect ).toHaveBeenCalled();
 		} );
 	} );
 } );

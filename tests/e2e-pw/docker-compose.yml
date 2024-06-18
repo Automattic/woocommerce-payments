@@ -1,0 +1,12 @@
+services:
+  playwright:
+    # When updating the Playwright version in the image tag below, make sure to update the npm `@playwright/test` package.json version as well.
+    image: mcr.microsoft.com/playwright:v1.43.1-jammy
+    working_dir: /woopayments
+    volumes:
+      - $PWD:/woopayments
+    environment:
+      - "BASE_URL=http://host.docker.internal:8084"
+    ports:
+      - "8077:8077"
+    ipc: host

@@ -85,7 +85,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 		// Change the default WP saved post URL to correctly reflect the draft status and to add our saved-as-draft flag.
 		add_filter(
 			'redirect_post_location',
-			function() use ( $product ) {
+			function () use ( $product ) {
 				return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 					[
 						'message' => 10, // Post saved as draft message.

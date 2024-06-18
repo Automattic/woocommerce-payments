@@ -13,7 +13,9 @@ import { getPaymentMethodsConstants } from '../constants';
  */
 export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 	const reusablePaymentMethods = Object.keys( paymentMethodsConfig ).filter(
-		( method ) => paymentMethodsConfig[ method ].isReusable
+		( method ) =>
+			// Stripe link doesn't need the "terms" - adding this property causes a warning in the console.
+			method !== 'link' && paymentMethodsConfig[ method ].isReusable
 	);
 
 	return reusablePaymentMethods.reduce( ( obj, method ) => {
@@ -290,25 +292,28 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 };
 
 /**
- * Hides payment method if it has set specific countries in the PHP class.
+ * Returns true if the payment method has configured with any country restrictions.
  *
- * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  * @return {boolean} Whether the payment method is restricted to selected billing country.
  **/
-export const isPaymentMethodRestrictedToLocation = ( upeElement ) => {
+export const hasPaymentMethodCountryRestrictions = ( upeElement ) => {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
 	return !! paymentMethodsConfig[ paymentMethodType ].countries.length;
 };
 
 /**
- * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * Hides payment method if it has set specific countries in the PHP class.
+ *
+ * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  **/
 export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
+	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
 
 	/* global wcpayCustomerData */
 	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
@@ -324,5 +329,11 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		upeContainer.style.display = 'block';
 	} else {
 		upeContainer.style.display = 'none';
+		// if the toggled off payment method was selected, we need to fall back to credit card
+		if ( paymentMethodType === selectedPaymentMethod ) {
+			document
+				.querySelector( '#payment_method_woocommerce_payments' )
+				.click();
+		}
 	}
 };

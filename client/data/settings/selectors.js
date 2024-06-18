@@ -24,12 +24,12 @@ const getSupportAddressState = ( state ) => {
 	return getSettings( state ).account_business_support_address || EMPTY_OBJ;
 };
 
-export const getIsWCPayEnabled = ( state ) => {
-	return getSettings( state ).is_wcpay_enabled || false;
+export const getDuplicatedPaymentMethodIds = ( state ) => {
+	return getSettings( state ).duplicated_payment_method_ids || EMPTY_OBJ;
 };
 
-export const getIsClientSecretEncryptionEnabled = ( state ) => {
-	return getSettings( state ).is_client_secret_encryption_enabled || false;
+export const getIsWCPayEnabled = ( state ) => {
+	return getSettings( state ).is_wcpay_enabled || false;
 };
 
 export const getEnabledPaymentMethodIds = ( state ) => {

@@ -22,9 +22,14 @@ import Transactions from '../transactions';
 import Deposits from '../deposits';
 import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import { useDepositDelayDays, useSettings } from '../../data';
+import {
+	useDepositDelayDays,
+	useGetDuplicatedPaymentMethodIds,
+	useSettings,
+} from '../../data';
 import FraudProtection from '../fraud-protection';
 import { isDefaultSiteLanguage } from 'wcpay/utils';
+import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -52,7 +57,7 @@ const ExpressCheckoutDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woo.com/document/woopayments/settings-guide/#express-checkouts">
+		<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#express-checkouts">
 			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
@@ -83,7 +88,7 @@ const TransactionsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woo.com/document/woopayments/">
+		<ExternalLink href="https://woocommerce.com/document/woopayments/">
 			{ __( 'View our documentation', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
@@ -104,7 +109,7 @@ const DepositsDescription = () => {
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woo.com/document/woopayments/deposits/deposit-schedule/">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
@@ -124,7 +129,7 @@ const FraudProtectionDescription = () => {
 					'woocommerce-payments'
 				) }
 			</p>
-			<ExternalLink href="https://woo.com/document/woopayments/fraud-and-disputes/fraud-protection/">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/">
 				{ __(
 					'Learn more about fraud protection',
 					'woocommerce-payments'
@@ -158,7 +163,7 @@ const AdvancedDescription = () => {
 					'woocommerce-payments'
 				) }
 			</p>
-			<ExternalLink href="https://woo.com/document/woopayments/settings-guide/#advanced-settings">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#advanced-settings">
 				{ __( 'View our documentation', 'woocommerce-payments' ) }
 			</ExternalLink>
 		</>
@@ -200,6 +205,11 @@ const SettingsManager = () => {
 		}
 	}, [ isLoading ] );
 
+	const [
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
+	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
+
 	return (
 		<SettingsLayout>
 			<SettingsSection
@@ -212,26 +222,34 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection
-				description={ PaymentMethodsDescription }
-				id="payment-methods"
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: useGetDuplicatedPaymentMethodIds(),
+					dismissedDuplicateNotices: dismissedDuplicateNotices,
+					setDismissedDuplicateNotices: setDismissedDuplicateNotices,
+				} }
 			>
-				<LoadableSettingsSection numLines={ 60 }>
-					<ErrorBoundary>
-						<PaymentMethods />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SettingsSection
-				id="express-checkouts"
-				description={ ExpressCheckoutDescription }
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<ExpressCheckout />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
+				<SettingsSection
+					description={ PaymentMethodsDescription }
+					id="payment-methods"
+				>
+					<LoadableSettingsSection numLines={ 60 }>
+						<ErrorBoundary>
+							<PaymentMethods />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+				<SettingsSection
+					id="express-checkouts"
+					description={ ExpressCheckoutDescription }
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<ExpressCheckout />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			</DuplicatedPaymentMethodsContext.Provider>
 			<SettingsSection
 				description={ TransactionsDescription }
 				id="transactions"

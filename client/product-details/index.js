@@ -6,7 +6,7 @@
  */
 import { initializeBnplSiteMessaging } from './bnpl-site-messaging';
 import request from 'wcpay/checkout/utils/request';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 
 jQuery( async function ( $ ) {
 	/**
@@ -126,9 +126,19 @@ jQuery( async function ( $ ) {
 	} );
 
 	$( document.body ).on( 'updated_cart_totals', () => {
+		$( '#payment-method-message' ).before(
+			'<div class="pmme-loading"></div>'
+		);
+		$( '#payment-method-message' ).hide();
 		bnplGetCartTotal().then( ( response ) => {
 			window.wcpayStripeSiteMessaging.cartTotal = response.total;
-			initializeBnplSiteMessaging();
+			initializeBnplSiteMessaging().then( () => {
+				setTimeout( () => {
+					$( '.pmme-loading' ).remove();
+					$( '#payment-method-message' ).show();
+					$( '#payment-method-message' ).addClass( 'pmme-updated' );
+				}, 1000 );
+			} );
 		} );
 	} );
 

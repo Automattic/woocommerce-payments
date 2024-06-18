@@ -1,5 +1,150 @@
 *** WooPayments Changelog ***
 
+= 7.7.0 - 2024-05-29 =
+* Add - Add share key query param when sending data to Stripe KYC.
+* Add - Add the WooPay Direct Checkout flow to the blocks mini cart widget.
+* Add - feat: add multi-currency support to Store API.
+* Add - feat: error message on 1M+ amount.
+* Add - feat: tokenized cart PRBs on PDPs via feature flag.
+* Add - Render ECE buttons behind a feature flag.
+* Fix - Charm pricing and rounding options corrected for all currencies that aren't presented with decimal points.
+* Fix - Fix "Pay for order" infinite loading when submitting form without payment details.
+* Fix - fix: remove WooPay checkout pages scripts from non-checkout pages.
+* Fix - fix: settings notices consistency.
+* Fix - fix: Store API tokenized cart nonce verification.
+* Fix - Fix a bug in Tracks where shopper events are not fired properly.
+* Fix - Fix ECE error in the blocks checkout when PRBs are disabled.
+* Fix - Fix Payment block render error while editing the block checkout page.
+* Fix - Fix shortcode orders when using WooPay Direct Checkout.
+* Fix - Improve visibility of WooPay button on light and outline button themes.
+* Fix - Updating saved payment method billing address before processing the payment.
+* Update - Do not auto-redirect to WooPay on page load.
+* Update - Pass previous exception with exception.
+* Update - Removed deprecated deposit_status key from account status.
+* Update - Remove public key encryption setting from WooPayments settings.
+* Update - Update XPF currency formatting.
+* Dev - Add command to run QIT PHPStan tests.
+* Dev - Add local release package support for PHPStan.
+* Dev - Bump tested up to version for WP to 6.5 and WC to 8.9.1.
+* Dev - Fix Klarna E2E tests.
+* Dev - Guarantee REST intialization on REST request context (avoiding rest_preload_api_request context).
+* Dev - Upgrade jetpack sync package version.
+
+= 7.6.0 - 2024-05-08 =
+* Add - Add additional data to Compatibility service
+* Add - Add User Satisfaction Survey for Payments Overview Widget
+* Add - Detect payment methods enabled by multiple payment gateways.
+* Add - Display BNPL payment method logos on the thank you page.
+* Add - Non user-facing changes. Behind feature flag. Add tooltip messages to tiles within Payment activity widget
+* Add - Not user-facing: hidden behind feature flag. Use Reporting API to fetch and populate data in the Payment Activity widget.
+* Add - Pre check save my info for eligible contries
+* Add - Support for starting auto-renewing subscriptions for In-Person Payments.
+* Fix - Add notice when no rules are enabled in advanced fraud settings
+* Fix - Adjust positioning of BNPL messaging on the classic cart page.
+* Fix - Avoid updating billing details for legacy card objects.
+* Fix - Ensure the WooPay preview in the admin dashboard matches the actual implementation.
+* Fix - fix: BNPL announcement link.
+* Fix - fix: Stripe terms warning at checkout when Link is enabled
+* Fix - Fix issue with transient check related to fraud protection settings.
+* Fix - Fix order notes entry and risk meta box content when a payment is blocked due to AVS checks while the corresponding advanced fraud rule is enabled.
+* Fix - Fix type error for fraud outcome API.
+* Fix - Fix WooPay tracks user ID for logged in users.
+* Fix - Hide Fraud info banner until first transaction happens
+* Fix - Improve merchant session request with preloaded data.
+* Fix - Improve signing of minimum WooPay session data.
+* Fix - Make sure an explicit currency code is present in the cart and checkout blocks when multi-currency is enabled
+* Fix - Prevent Stripe Link from triggering the checkout fields warning
+* Fix - Remove risk review request from the transactions page.
+* Fix - Resolves "Invalid recurring shipping method" errors when purchasing multiple subscriptions with Apple Pay and Google Pay.
+* Fix - Revert: Add Multi-Currency Support to Page Caching via Cookies.
+* Update - Add source param to onboarding and complete KYC links
+* Update - Add support of a third-party plugin with PRBs into duplicates detection mechanism.
+* Update - Remove feature flag for the pay-for-order flow
+* Dev - Add Playwright e2e test suite ready for incremental migration and visual regression testing
+* Dev - Avoid warnings about fatal error during plugin update due to problems with plugin initialization.
+* Dev - Remove legacy method from `WooPay_Utilities`.
+* Dev - Remove obsolete docker-compose key `version`
+* Dev - Upgraded jetpack sync package version.
+
+= 7.5.3 - 2024-04-22 =
+* Fix - Fix subscription renewals exceptions
+* Dev - Remove deprecated param from asset data registry interface.
+
+= 7.5.2 - 2024-04-22 =
+* Fix - Bugfix for failing subscription renewal payments.
+* Dev - Remove deprecated param from asset data registry interface.
+
+= 7.5.1 - 2024-04-18 =
+* Fix - Avoid updating billing details for legacy card objects.
+* Fix - fix: BNPL announcement link.
+
+= 7.5.0 - 2024-04-17 =
+* Add - Add a parent wrapper component for Payment Activity widget. This will be visible on the Payments Overview page
+* Add - Add a task on WooCommerce Home page to remind accounts operating in sandbox mode to set up live payments.
+* Add - Add BNPL messaging to cart page.
+* Add - Add BNPL terms to checkout payment methods.
+* Add - Added support to Cartes Bancaires
+* Add - Adding a tracking event for external redirects to finish setup and start receiving deposits.
+* Add - Add Multi-Currency Support to Page Caching via Cookies.
+* Add - Extend 'skip WooPay' flag to user session.
+* Add - feat: BNPL April announcement.
+* Add - Improve payment settings UX.
+* Add - Not user-facing: hidden behind feature flag. Add an empty state view for the Payments Activity widget. This is shown when the merchant is yet to have any transactions over WooPayments.
+* Add - Not user facing - Changes are behind a feature flag. Adds the basic UI scaffold for the Payments Activity widget.
+* Add - Prepopulate Vertical selection in the onboarding form based on Woo Core selection.
+* Fix - Add an instructive error message when customer tries to use 2 different currencies for Stripe Billing subscriptions.
+* Fix - Address PHPCS reports in checkout classes.
+* Fix - Adds a check to see if the session exists before calling get()
+* Fix - Change IP country rule after country settings are changed in WC settings page
+* Fix - Defensive check for cart block PMME which hasn't yet been deployed.
+* Fix - Don't register WooPay Order Webhook if account is rejected.
+* Fix - Don't register WooPay Order Webhook if account is under review.
+* Fix - Ensure "Proceed to checkout" button's loading spinner doesn't affect button spacing when Direct Checkout is enabled.
+* Fix - Ensure that the currency configurations are set correctly when multi-currency is enabled.
+* Fix - Ensure we avoid an infinite recursive call stack through 'wc_get_price_decimal_separator' filter.
+* Fix - fix: error message on 402 status code
+* Fix - Fix an incorrect warning about Puerto Rico being unsupported by WooPayments
+* Fix - Fix collision between WooPayments header and Woo Express survey banner.
+* Fix - Fix Decline button state for Accept loading on ToS modal
+* Fix - Fixed Afterpay logo size on settings page
+* Fix - Fixed billing address error for subscription without some billing details
+* Fix - Fixed optional billing field validation
+* Fix - Fix Fatal Error showing when connect to Jetpack on localhost
+* Fix - Fix JS error when clicking GPay button on blocks checkout with subscription (w/sign up fee) in cart.
+* Fix - Fix payment icons on connect page (Klarna, Afterpay)
+* Fix - Hide account tools finish setup button for accounts completed the KYC and change it's link to Stripe KYC instead of the Stripe Express.
+* Fix - Remove extra WooPay icon on connect page
+* Fix - Remove incorrect "UTC" label from the time column of Transactions page
+* Fix - Remove redundant message after the account is onboarded
+* Fix - Resolves "Invalid recurring shipping method" errors when purchasing multiple subscriptions with Apple Pay and Google Pay.
+* Fix - Sync discount brakedown with how server processes it
+* Update - Adding a tracking event for external redirects to update account details, more consistent behaviour for redirects.
+* Update - Cleanup unused payment confirmation code.
+* Update - Reduce the visual footprint of the sandbox mode notice.
+* Update - Remove @wordpress/data dependency in the email input iframe file
+* Update - Remove ToS acceptance copy from all entrypoints in MOX
+* Update - Remove unwanted css overrides on the Payment activity widget wrapper
+* Update - Replace deprecated filter.
+* Update - Update Discover and Diners logos
+* Update - Updated Link by Stripe logo
+* Update - Update links across the plugin from woo.com to woocommerce.com (previous platform HQ URL).
+* Update - Update MOX cancellation to consistently redirect back to the payment connect page.
+* Dev - Address update PHPCS error - a single one recommending escaping an exception message
+* Dev - Add TypeScript development guidelines
+* Dev - Add VariableAnalysis sniffs for better ergonomics around unused and undefined variables
+* Dev - Changes are not user facing, behind a feature flag. Refactor - tooltip component flattened in place, instead of calling it from a separate file.
+* Dev - Clear WP cache on writes inside Database_Cache
+* Dev - Escaping error logs and ignoring noticese where there are no issues.
+* Dev - Fix e2e tests for BNPL checkout
+* Dev - Fixed phpcs errors
+* Dev - Fixes to comply with updates to PHPCS linter.
+* Dev - Ignore alternative function WordPress PHPCS sniffs in the GH workflows and tests
+* Dev - Increase unit test coverage for WooPay direct checkout flow.
+* Dev - Payments Activity - add scaffolding for Total Payment Volume.
+* Dev - refactor: reduce wp-data dependency on shortcode checkout
+* Dev - Updated PHPCS and sniffs used for static analysis
+* Dev - Updates to remove deprecated function usage in the Jetpack Connection manager. Doesn't affect functionality.
+
 = 7.4.0 - 2024-03-27 =
 * Add - Add account reset for sandboxes
 * Add - Add a loading spinner to the "Proceed to Checkout" button in shortcode cart.
