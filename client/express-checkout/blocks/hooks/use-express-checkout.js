@@ -89,5 +89,6 @@ export const useExpressCheckout = ( {
 		onButtonClick,
 		onConfirm,
 		onCancel,
+		elements,
 	};
 };
