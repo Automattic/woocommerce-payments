@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Fix unused parameter phpcs sniffs in checkout classes.

@@ -1054,6 +1054,7 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
+			$wcpay_connect_param    = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 			$incentive              = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 			$progressive            = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 			$create_builder_account = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
@@ -1095,7 +1096,27 @@ class WC_Payments_Account {
 						WC_Payments_Onboarding_Service::set_test_mode( false );
 					}
 
-					$this->redirect_to_onboarding_flow_page( $connect_page_source );
+					if ( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE === $connect_page_source ) {
+						$this->redirect_to_onboarding_welcome_page();
+					} else {
+						$this->redirect_to_onboarding_flow_page( $connect_page_source );
+					}
+				} elseif ( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE === $connect_page_source && ! $this->is_details_submitted() ) {
+					try {
+						$this->init_stripe_onboarding(
+							$wcpay_connect_param,
+							[
+								'promo'       => $incentive,
+								'progressive' => $progressive,
+							]
+						);
+					} catch ( Exception $e ) {
+						Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
+						$this->redirect_to_onboarding_welcome_page(
+							__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
+						);
+					}
+					return;
 				} else {
 					// Accounts with Stripe account connected will be redirected to the overview page.
 					$this->redirect_to( static::get_overview_page_url() );
@@ -1159,8 +1180,6 @@ class WC_Payments_Account {
 					$event_properties
 				);
 			}
-
-			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
 			try {
 				$this->maybe_init_jetpack_connection(

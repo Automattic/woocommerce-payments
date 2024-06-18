@@ -45,7 +45,7 @@ describe( 'getPaymentActivityData resolver', () => {
 	describe( 'on success', () => {
 		test( 'should update state with payment activity data', () => {
 			expect( generator.next( successfulResponse ).value ).toEqual(
-				updatePaymentActivity( successfulResponse )
+				updatePaymentActivity( successfulResponse, query )
 			);
 		} );
 	} );

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: address normalization on checkout for tokenized cart PRBs

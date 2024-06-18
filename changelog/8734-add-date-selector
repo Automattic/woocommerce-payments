@@ -1,0 +1,5 @@
+Significance: patch
+Type: add
+Comment: Changes behind a feature flag. The PR allows merchants to change the time period of stats shown in the payment activity widget.
+
+
