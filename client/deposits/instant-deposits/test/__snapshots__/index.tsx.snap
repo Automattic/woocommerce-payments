@@ -18,7 +18,7 @@ exports[`Instant deposit button and modal button renders correctly with zero bal
     disabled=""
     type="button"
   >
-    Instantly deposit $0.00
+    Instantly deposit $0
   </button>
 </div>
 `;
