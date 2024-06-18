@@ -173,10 +173,15 @@ export default class WooPaymentsPaymentRequest {
 						paymentRequest.update( {
 							total: {
 								label: getPaymentRequestData( 'total_label' ),
-								amount: parseInt(
-									newCartData.totals.total_price,
-									10
-								),
+								amount:
+									parseInt(
+										newCartData.totals.total_price,
+										10
+									) -
+									parseInt(
+										newCartData.totals.total_refund || 0,
+										10
+									),
 							},
 							displayItems: transformCartDataForDisplayItems(
 								newCartData
@@ -257,7 +262,9 @@ export default class WooPaymentsPaymentRequest {
 					),
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount: parseInt( cartData.totals.total_price, 10 ),
+						amount:
+							parseInt( cartData.totals.total_price, 10 ) -
+							parseInt( cartData.totals.total_refund || 0, 10 ),
 					},
 					displayItems: transformCartDataForDisplayItems( cartData ),
 				} );
@@ -281,7 +288,9 @@ export default class WooPaymentsPaymentRequest {
 					status: 'success',
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount: parseInt( cartData.totals.total_price, 10 ),
+						amount:
+							parseInt( cartData.totals.total_price, 10 ) -
+							parseInt( cartData.totals.total_refund || 0, 10 ),
 					},
 					displayItems: transformCartDataForDisplayItems( cartData ),
 				} );
