@@ -340,11 +340,24 @@ function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 	}
 }
 
-function trimEndingZeroes( formattedCurrencyAmount = '' ) {
+export function trimEndingZeroes( formattedCurrencyAmount = '' ) {
 	return formattedCurrencyAmount
 		.split( ' ' )
 		.map( ( chunk ) =>
 			endsWith( chunk, '0' ) ? trimEnd( chunk, '0' ) : chunk
+		)
+		.join( ' ' );
+}
+
+export function trimEndingZeroesAndDecimalSeparator(
+	formattedCurrencyAmount = ''
+) {
+	return formattedCurrencyAmount
+		.split( ' ' )
+		.map( ( chunk ) =>
+			endsWith( chunk, '0' )
+				? trimEnd( chunk, '0' ).replace( '.', '' )
+				: chunk
 		)
 		.join( ' ' );
 }
