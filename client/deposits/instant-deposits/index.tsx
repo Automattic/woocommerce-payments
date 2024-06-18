@@ -12,7 +12,10 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import './style.scss';
-import { formatCurrency } from 'wcpay/utils/currency';
+import {
+	formatCurrency,
+	trimEndingZeroesAndDecimalSeparator,
+} from 'wcpay/utils/currency';
 import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'wcpay/data';
 import type * as AccountOverview from 'wcpay/types/account-overview';
@@ -42,6 +45,9 @@ const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
 		setModalOpen( false );
 		submit();
 	};
+	const formattedInstantBalanceAmount = trimEndingZeroesAndDecimalSeparator(
+		formatCurrency( instantBalance.amount, instantBalance.currency )
+	);
 
 	return (
 		<>
@@ -52,10 +58,7 @@ const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
 			>
 				{ sprintf(
 					__( 'Instantly deposit %s', 'woocommerce-payments' ),
-					formatCurrency(
-						instantBalance.amount,
-						instantBalance.currency
-					)
+					formattedInstantBalanceAmount
 				) }
 			</Button>
 			{ ( isModalOpen || inProgress ) && (

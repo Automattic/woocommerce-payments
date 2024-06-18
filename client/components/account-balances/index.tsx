@@ -13,15 +13,19 @@ import { Link } from '@woocommerce/components';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import BalanceBlock from './balance-block';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
-import InstantDepositButton from 'deposits/instant-deposits';
 import InlineNotice from '../inline-notice';
+import InstantDepositButton from 'deposits/instant-deposits';
+import SendMoneyIcon from 'assets/images/icons/send-money.svg?asset';
 import {
 	TotalBalanceTooltip,
 	AvailableBalanceTooltip,
 } from './balance-tooltip';
 import { fundLabelStrings } from './strings';
 import { ClickTooltip } from '../tooltip';
-import { formatCurrency } from 'wcpay/utils/currency';
+import {
+	formatCurrency,
+	trimEndingZeroesAndDecimalSeparator,
+} from 'wcpay/utils/currency';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import './style.scss';
@@ -92,6 +96,15 @@ const AccountBalances: React.FC = () => {
 	const totalBalance =
 		selectedOverview.availableFunds + selectedOverview.pendingFunds;
 
+	const formattedAmount = selectedOverview.instantBalance
+		? trimEndingZeroesAndDecimalSeparator(
+				formatCurrency(
+					selectedOverview.instantBalance.amount,
+					selectedOverview.instantBalance.currency
+				)
+		  )
+		: '';
+
 	return (
 		<>
 			<Flex gap={ 0 } className="wcpay-account-balances__balances">
@@ -124,6 +137,8 @@ const AccountBalances: React.FC = () => {
 					>
 						{ showInstantDepositNotice && (
 							<InlineNotice
+								className="wcpay-account-balances__instant-deposit-notice"
+								icon={ <img src={ SendMoneyIcon } alt="" /> }
 								isDismissible={ true }
 								onRemove={ () =>
 									setShowInstantDepositNotice( false )
@@ -134,10 +149,7 @@ const AccountBalances: React.FC = () => {
 										'Instantly deposit %s and get funds in your bank account in 30 mins for a %s%% fee.',
 										'woocommerce-payments'
 									),
-									formatCurrency(
-										selectedOverview.instantBalance.amount,
-										selectedOverview.instantBalance.currency
-									),
+									formattedAmount,
 									selectedOverview.instantBalance
 										.fee_percentage
 								) }
