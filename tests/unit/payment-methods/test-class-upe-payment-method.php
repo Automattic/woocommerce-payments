@@ -86,6 +86,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		];
 
 		foreach ( $payment_method_classes as $payment_method_class ) {
+			/** @var UPE_Payment_Method|MockObject */
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
 				->setConstructorArgs( [ $this->mock_token_service ] )
 				->onlyMethods( [] )

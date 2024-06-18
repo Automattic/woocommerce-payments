@@ -104,7 +104,10 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method supported countries
+	 * Returns payment method supported countries.
+	 *
+	 * For Klarna we need to include additional logic to support transactions between countries in the EEA,
+	 * UK, and Switzerland.
 	 *
 	 * @return array
 	 */
@@ -118,7 +121,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 			[ Country_Code::SWITZERLAND, Country_Code::UNITED_KINGDOM ]
 		);
 
-		// If the merchant is in the EEA, all EEA countries that share the store currency are supported.
+		// If the merchant is in the EEA, UK, or Switzerland, only the countries that have the same domestic currency as the store currency will be supported.
 		if ( in_array( $account_country, $eea_countries, true ) ) {
 			$store_currency = strtoupper( get_woocommerce_currency() );
 
