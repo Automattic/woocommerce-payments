@@ -22,6 +22,9 @@ import apiFetch from '@wordpress/api-fetch';
 import { VatError, VatFormOnCompleted, VatValidationResult } from '../../types';
 import '../style.scss';
 
+/**
+ * These country-specific getters may belong on server.
+ */
 const getVatPrefix = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'GR':
@@ -30,6 +33,41 @@ const getVatPrefix = () => {
 			return 'CHE ';
 		default:
 			return `${ wcpaySettings.accountStatus.country } `;
+	}
+};
+
+const getVatTaxName = () => {
+	// TODO: do these strings need to be localised?
+	switch ( wcpaySettings.accountStatus.country ) {
+		// Future: 'GST' for NZ, AU, IN.
+		case 'JP':
+			return 'JCT'; // AKA consumption tax.
+		default:
+			return 'VAT'; // AKA value-added tax.
+	}
+};
+
+const getVatTaxIDName = () => {
+	switch ( wcpaySettings.accountStatus.country ) {
+		case 'JP':
+			return __( 'Corporate Number', 'woocommerce-payments' );
+		default:
+			return __( 'VAT Number', 'woocommerce-payments' );
+	}
+};
+
+const getVatTaxIDValidationHint = () => {
+	switch ( wcpaySettings.accountStatus.country ) {
+		case 'JP':
+			return __(
+				'This is a 13 digit number, for example 1234567890123.',
+				'woocommerce-payments'
+			);
+		default:
+			return __(
+				'This is 8 to 12 digits with your country code prefix, for example DE 123456789.',
+				'woocommerce-payments'
+			);
 	}
 };
 
@@ -97,15 +135,12 @@ export const VatNumberTask = ( {
 	return (
 		<WizardTaskItem
 			index={ 1 }
-			title={ __(
-				'Update your VAT information',
-				'woocommerce-payments'
-			) }
+			title={ __( 'Set your tax ID', 'woocommerce-payments' ) }
 			className={ null }
 		>
 			<p className="wcpay-wizard-task__description-element">
 				{ __(
-					'VAT information saved on this page will be applied to all of your account’s receipts.',
+					"The information you provide here will be used for all of your account's tax documents.",
 					'woocommerce-payments'
 				) }
 			</p>
@@ -115,21 +150,19 @@ export const VatNumberTask = ( {
 					checked={ isVatRegistered }
 					onChange={ setVatRegistered }
 					label={ __(
-						'I’m registered for a VAT number',
+						"I'm registered for a VAT number",
 						'woocommerce-payments'
 					) }
 					help={ __(
-						'If your sales exceed the VAT threshold for your country, you’re required to register for a VAT number.',
+						"If your sales exceed the relevant threshold, you're required to provide a tax ID.",
 						'woocommerce-payments'
 					) }
 				/>
 				{ isVatRegistered && (
+					// TODO: refactor this into a little component e.g. VATIdTextControl?
 					<TextControl
-						label={ __( 'VAT Number', 'woocommerce-payments' ) }
-						help={ __(
-							'This is 8 to 12 digits with your country code prefix, for example DE 123456789.',
-							'woocommerce-payments'
-						) }
+						label={ getVatTaxIDName() }
+						help={ getVatTaxIDValidationHint() }
 						value={ vatNumber }
 						onChange={ setVatNumber }
 					/>
