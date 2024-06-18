@@ -146,7 +146,8 @@ const AccountBalances: React.FC = () => {
 							>
 								{ sprintf(
 									__(
-										'Instantly deposit %s and get funds in your bank account in 30 mins for a %s%% fee.',
+										/* translators: %$1$s: Available instant deposit amount, %2$s: Instant deposit fee percentage */
+										'Instantly deposit %1$s and get funds in your bank account in 30 mins for a %2$s%% fee.',
 										'woocommerce-payments'
 									),
 									formattedAmount,
@@ -175,6 +176,7 @@ const AccountBalances: React.FC = () => {
 										interpolateComponents( {
 											mixedString: sprintf(
 												__(
+													/* translators: %s: Instant deposit fee percentage */
 													'With {{strong}}instant deposit{{/strong}} you can receive requested funds in your bank account within 30 mins for a %s%% fee. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 													'woocommerce-payments'
 												),

@@ -57,7 +57,11 @@ const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
 				onClick={ () => setModalOpen( true ) }
 			>
 				{ sprintf(
-					__( 'Instantly deposit %s', 'woocommerce-payments' ),
+					__(
+						/* translators: %s: Available instant deposit amount */
+						'Instantly deposit %s',
+						'woocommerce-payments'
+					),
 					formattedInstantBalanceAmount
 				) }
 			</Button>
