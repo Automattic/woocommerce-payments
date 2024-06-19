@@ -24,7 +24,7 @@ const VatFormModal = ( {
 } ): JSX.Element | null => {
 	return isModalOpen ? (
 		<Modal
-			title={ __( 'Add your tax information', 'woocommerce-payments' ) }
+			title={ __( 'Set your tax details', 'woocommerce-payments' ) }
 			onRequestClose={ () => setModalOpen( false ) }
 		>
 			<VatForm onCompleted={ onCompleted } />
