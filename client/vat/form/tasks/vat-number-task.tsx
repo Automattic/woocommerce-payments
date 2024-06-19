@@ -56,6 +56,24 @@ const getVatTaxIDName = () => {
 	}
 };
 
+const getVatTaxIDRequirementHint = () => {
+	switch ( wcpaySettings.accountStatus.country ) {
+		case 'JP':
+			// TODO do we need a note/legal requirement hint for Japan?
+			return __( '', 'woocommerce-payments' );
+		default:
+			// TODO this message is a little alarming and doesn't provide guidance for confused merchants.
+			// What are the thresholds?
+			// How do I register for a VAT number?
+			// Idea: add a learn more link to our docs page, and link to relevant sources there.
+			// https://woocommerce.com/document/woopayments/taxes/documents/
+			return __(
+				"If your sales exceed the VAT threshold for your country, you're required to register for a VAT number.",
+				'woocommerce-payments'
+			);
+	}
+};
+
 const getVatTaxIDValidationHint = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'JP':
@@ -153,10 +171,7 @@ export const VatNumberTask = ( {
 						"I'm registered for a VAT number",
 						'woocommerce-payments'
 					) }
-					help={ __(
-						"If your sales exceed the relevant threshold, you're required to provide a tax ID.",
-						'woocommerce-payments'
-					) }
+					help={ getVatTaxIDRequirementHint() }
 				/>
 				{ isVatRegistered && (
 					// TODO: refactor this into a little component e.g. VATIdTextControl?
