@@ -59,7 +59,7 @@ const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
 				{ sprintf(
 					__(
 						/* translators: %s: Available instant deposit amount */
-						'Instantly deposit %s',
+						'Get %s now',
 						'woocommerce-payments'
 					),
 					formattedInstantBalanceAmount

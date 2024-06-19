@@ -147,7 +147,8 @@ const AccountBalances: React.FC = () => {
 								{ sprintf(
 									__(
 										/* translators: %$1$s: Available instant deposit amount, %2$s: Instant deposit fee percentage */
-										'Instantly deposit %1$s and get funds in your bank account in 30 mins for a %2$s%% fee.',
+										/* 'Instantly deposit %1$s and get funds in your bank account in 30 mins for a %2$s%% fee.' */
+										'Get %1$s via instant deposit. Funds are typically in your bank account within 30 mins. Fee: %2$s%%.',
 										'woocommerce-payments'
 									),
 									formattedAmount,
