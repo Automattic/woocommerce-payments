@@ -67,6 +67,7 @@ const getVatTaxIDRequirementHint = () => {
 			// How do I register for a VAT number?
 			// Idea: add a learn more link to our docs page, and link to relevant sources there.
 			// https://woocommerce.com/document/woopayments/taxes/documents/
+			// Alternative - maybe this can be removed.
 			return __(
 				"If your sales exceed the VAT threshold for your country, you're required to register for a VAT number.",
 				'woocommerce-payments'
