@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { WPCard } from 'hack-week-2024-components';
+import { WPCard as Card } from 'hack-week-2024-components';
 
 /**
  * Internal dependencies
@@ -16,7 +16,7 @@ import LinkExpressCheckoutItem from './link-item';
 
 const ExpressCheckout = () => {
 	return (
-		<WPCard className="express-checkouts">
+		<Card className="express-checkouts">
 			<CardBody>
 				<ul className="express-checkouts-list">
 					<WooPayExpressCheckoutItem />
@@ -24,7 +24,7 @@ const ExpressCheckout = () => {
 					<LinkExpressCheckoutItem />
 				</ul>
 			</CardBody>
-		</WPCard>
+		</Card>
 	);
 };
 

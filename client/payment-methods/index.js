@@ -6,7 +6,10 @@
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 
-import { WPCard, WPCardHeader, WPCardBody } from 'hack-week-2024-components';
+import {
+	WPCard as Card,
+	WPCardHeader as CardHeader,
+} from 'hack-week-2024-components';
 
 /**
  * Internal dependencies
@@ -25,6 +28,7 @@ import PAYMENT_METHOD_IDS from './constants';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
 import methodsConfiguration from '../payment-methods-map';
+import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
@@ -133,16 +137,16 @@ const PaymentMethods = () => {
 
 	return (
 		<>
-			<WPCard className="payment-methods">
-				<WPCardHeader className="payment-methods__header">
+			<Card className="payment-methods">
+				<CardHeader className="payment-methods__header">
 					<h4 className="payment-methods__heading">
 						<span>
 							{ __( 'Payment methods', 'woocommerce-payments' ) }
 						</span>
 					</h4>
-				</WPCardHeader>
+				</CardHeader>
 
-				<WPCardBody size={ 'none' }>
+				<CardBody>
 					<CapabilityRequestNotice />
 
 					<PaymentMethodsList className="payment-methods__available-methods">
@@ -222,8 +226,8 @@ const PaymentMethods = () => {
 							}
 						) }
 					</PaymentMethodsList>
-				</WPCardBody>
-			</WPCard>
+				</CardBody>
+			</Card>
 
 			{ activationModalParams && (
 				<ConfirmPaymentMethodActivationModal

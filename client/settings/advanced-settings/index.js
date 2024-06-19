@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { WPCard } from 'hack-week-2024-components';
+import { WPCard as Card } from 'hack-week-2024-components';
 
 /**
  * Internal dependencies
@@ -17,7 +17,7 @@ import StripeBillingSection from './stripe-billing-section';
 const AdvancedSettings = () => {
 	return (
 		<>
-			<WPCard>
+			<Card>
 				<CardBody>
 					<MultiCurrencyToggle />
 					{ wcpaySettings.isSubscriptionsActive &&
@@ -28,7 +28,7 @@ const AdvancedSettings = () => {
 					) }
 					<DebugMode />
 				</CardBody>
-			</WPCard>
+			</Card>
 		</>
 	);
 };

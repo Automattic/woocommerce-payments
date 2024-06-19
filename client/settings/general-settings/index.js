@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import { WPCard } from 'hack-week-2024-components';
+import { WPCard as Card } from 'hack-week-2024-components';
 
 /**
  * Internal dependencies
@@ -25,7 +25,7 @@ const GeneralSettings = () => {
 
 	return (
 		<>
-			<WPCard>
+			<Card>
 				<CardBody>
 					<EnableWooPaymentsCheckbox />
 					{ ! isDevModeEnabled && (
@@ -123,7 +123,7 @@ const GeneralSettings = () => {
 						</InlineNotice>
 					) }
 				</CardBody>
-			</WPCard>
+			</Card>
 			{ modalVisible && (
 				<SetupLivePaymentsModal
 					onClose={ () => setModalVisible( false ) }

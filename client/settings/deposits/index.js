@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { SelectControl, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { STORE_NAME } from 'wcpay/data/constants';
-import { WPCard } from 'hack-week-2024-components';
+import { WPCard as Card } from 'hack-week-2024-components';
 
 /**
  * Internal dependencies
@@ -210,7 +210,7 @@ const Deposits = () => {
 	} = useContext( WCPaySettingsContext );
 
 	return (
-		<WPCard className="deposits">
+		<Card className="deposits">
 			<CardBody>
 				<h4>{ __( 'Deposit schedule', 'woocommerce-payments' ) }</h4>
 
@@ -242,7 +242,7 @@ const Deposits = () => {
 					</p>
 				</div>
 			</CardBody>
-		</WPCard>
+		</Card>
 	);
 };
 
