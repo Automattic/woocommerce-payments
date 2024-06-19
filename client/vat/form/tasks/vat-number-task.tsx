@@ -38,17 +38,6 @@ const getVatPrefix = () => {
 	}
 };
 
-const getVatTaxName = () => {
-	// TODO: do these strings need to be localised?
-	switch ( wcpaySettings.accountStatus.country ) {
-		// Future: 'GST' for NZ, AU, IN.
-		case 'JP':
-			return 'JCT'; // AKA consumption tax.
-		default:
-			return 'VAT'; // AKA value-added tax.
-	}
-};
-
 const getVatTaxIDName = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'JP':
