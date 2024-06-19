@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { CardBody } from '@wordpress/components';
+import { WPCardBody } from 'hack-week-2024-components';
 import classNames from 'classnames';
 
 /**
@@ -18,7 +18,8 @@ const WcpayCardBody: React.FC< WcpayCardBodyProps > = ( {
 	className,
 	...props
 } ): JSX.Element => (
-	<CardBody
+	<WPCardBody
+		size={ 'none' }
 		className={ classNames( 'wcpay-card-body', className ) }
 		{ ...props }
 	/>

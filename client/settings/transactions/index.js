@@ -2,12 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CheckboxControl,
-	Notice,
-	TextControl,
-} from '@wordpress/components';
+import { CheckboxControl, Notice, TextControl } from '@wordpress/components';
+import { WPCard } from 'hack-week-2024-components';
 
 /**
  * Internal dependencies
@@ -60,7 +56,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 	}, [ isEmailInputValid, isPhoneInputValid, setTransactionInputsValid ] );
 
 	return (
-		<Card className="transactions">
+		<WPCard className="transactions">
 			<CardBody>
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
@@ -195,7 +191,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 					<SupportPhoneInput setInputVallid={ setPhoneInputValid } />
 				</div>
 			</CardBody>
-		</Card>
+		</WPCard>
 	);
 };
 

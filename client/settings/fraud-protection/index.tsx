@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card } from '@wordpress/components';
+import { WPCard } from 'hack-week-2024-components';
 
 /**
  * Internal dependencies
@@ -16,7 +16,7 @@ import FraudProtectionTour from './tour';
 const FraudProtection: React.FC = () => {
 	return (
 		<>
-			<Card className="fraud-protection">
+			<WPCard className="fraud-protection">
 				<CardBody>
 					<h4>
 						<span id="fraud-protection-card-title">
@@ -28,7 +28,7 @@ const FraudProtection: React.FC = () => {
 					</h4>
 					<ProtectionLevels />
 				</CardBody>
-			</Card>
+			</WPCard>
 
 			<FraudProtectionTour />
 		</>
