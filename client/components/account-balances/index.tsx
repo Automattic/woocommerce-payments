@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
+import { useDispatch } from '@wordpress/data';
 import { Flex } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -30,6 +31,24 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import './style.scss';
 
+const useInstantDepositNoticeState = () => {
+	const { updateOptions } = useDispatch( 'wc/admin/options' );
+	const [ isDismissed, setIsDismissed ] = useState(
+		wcpaySettings.isInstantDepositNoticeDismissed
+	);
+
+	const setInstantDepositNoticeDismissed = () => {
+		setIsDismissed( true );
+		wcpaySettings.isInstantDepositNoticeDismissed = true;
+		updateOptions( { wcpay_instant_deposit_notice_dismissed: true } );
+	};
+
+	return {
+		isInstantDepositNoticeDismissed: isDismissed,
+		handleDismissInstantDepositNotice: setInstantDepositNoticeDismissed,
+	};
+};
+
 /**
  * Renders account balances for the selected currency.
  */
@@ -37,9 +56,10 @@ const AccountBalances: React.FC = () => {
 	const { overviews, isLoading } = useAllDepositsOverviews();
 	const { selectedCurrency } = useSelectedCurrency();
 
-	const [ showInstantDepositNotice, setShowInstantDepositNotice ] = useState(
-		true
-	);
+	const {
+		isInstantDepositNoticeDismissed,
+		handleDismissInstantDepositNotice,
+	} = useInstantDepositNoticeState();
 
 	if ( ! isLoading && overviews.currencies.length === 0 ) {
 		return null;
@@ -135,13 +155,13 @@ const AccountBalances: React.FC = () => {
 						direction="column"
 						align="start"
 					>
-						{ showInstantDepositNotice && (
+						{ ! isInstantDepositNoticeDismissed && (
 							<InlineNotice
 								className="wcpay-account-balances__instant-deposit-notice"
 								icon={ <img src={ SendMoneyIcon } alt="" /> }
 								isDismissible={ true }
 								onRemove={ () =>
-									setShowInstantDepositNotice( false )
+									handleDismissInstantDepositNotice()
 								}
 							>
 								{ sprintf(
@@ -164,7 +184,7 @@ const AccountBalances: React.FC = () => {
 									selectedOverview.instantBalance
 								}
 							/>
-							{ ! showInstantDepositNotice && ( // Show the tooltip only when the notice is dismissed.
+							{ isInstantDepositNoticeDismissed && ( // Show the tooltip only when the notice is dismissed.
 								<ClickTooltip
 									buttonIcon={ <HelpOutlineIcon /> }
 									buttonLabel={ __(
