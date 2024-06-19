@@ -518,8 +518,17 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $dispute_id id of requested dispute.
 	 * @return array dispute object.
+	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_dispute( $dispute_id ) {
+		if ( ! preg_match( '/(dp|dispute)_[A-Za-z0-9]+/', $dispute_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id, self::GET );
 
 		if ( is_wp_error( $dispute ) ) {
@@ -726,8 +735,17 @@ class WC_Payments_API_Client {
 	 * @return array
 	 *
 	 * @throws Exception - Exception thrown on request failure.
+	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_timeline( $id ) {
+		if ( ! preg_match( '/(ch|pi|py)_[A-Za-z0-9]+/', $id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
 		$timeline = $this->request( [], self::TIMELINE_API . '/' . $id, self::GET );
 
 		$has_fraud_outcome_event = false;
@@ -955,36 +973,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Get the required verification information, needed for our KYC onboarding flow.
-	 *
-	 * @param string      $country_code The country code.
-	 * @param string      $type         The business type.
-	 * @param string|null $structure    The business structure (optional).
-	 *
-	 * @return array An array containing the required verification information.
-	 *
-	 * @throws API_Exception Exception thrown on request failure.
-	 */
-	public function get_onboarding_required_verification_information( string $country_code, string $type, $structure = null ) {
-		$params = [
-			'country' => $country_code,
-			'type'    => $type,
-		];
-
-		if ( ! is_null( $structure ) ) {
-			$params = array_merge( $params, [ 'structure' => $structure ] );
-		}
-
-		return $this->request(
-			$params,
-			self::ONBOARDING_API . '/required_verification_information',
-			self::GET,
-			true,
-			true
-		);
-	}
-
-	/**
 	 * Get a link's details from the server.
 	 *
 	 * @param array $args The arguments to be sent with the link request.
@@ -1199,6 +1187,14 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception
 	 */
 	public function get_charge( string $charge_id ) {
+		if ( ! preg_match( '/(ch|pi|py)_[A-Za-z0-9]+/', $charge_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
 		return $this->request(
 			[],
 			self::CHARGES_API . '/' . $charge_id,

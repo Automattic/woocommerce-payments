@@ -7,13 +7,11 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import './style.scss';
 import InlineNotice from 'wcpay/components/inline-notice';
 
 const IncompatibilityNotice = ( { message, learnMoreLinkHref } ) => (
 	<InlineNotice status="warning" icon={ true } isDismissible={ false }>
-		{ message }
-		<br />
+		{ message }{ ' ' }
 		{ interpolateComponents( {
 			mixedString: __(
 				'{{learnMoreLink}}Learn More{{/learnMoreLink}}',

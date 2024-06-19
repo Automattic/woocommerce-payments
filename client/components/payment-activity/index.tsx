@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -12,25 +12,15 @@ import moment from 'moment';
  */
 
 import EmptyStateAsset from 'assets/images/payment-activity-empty-state.svg?asset';
+import InlineLabelSelect from '../inline-label-select';
 import PaymentActivityDataComponent from './payment-activity-data';
 import Survey from './survey';
-import { WcPayOverviewSurveyContextProvider } from './survey/context';
+import { recordEvent } from 'wcpay/tracks';
 import { usePaymentActivityData } from 'wcpay/data';
-import type { DateRange } from './types';
+import { usePaymentActivityDateRangePresets } from './hooks';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
+import { WcPayOverviewSurveyContextProvider } from './survey/context';
 import './style.scss';
-
-/**
- * This will be replaces in the future with a dynamic date range picker.
- */
-const getDateRange = (): DateRange => {
-	return {
-		// Subtract 7 days from the current date.
-		date_start: moment()
-			.subtract( 7, 'd' )
-			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
-		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
-	};
-};
 
 const PaymentActivityEmptyState: React.FC = () => (
 	<Card>
@@ -61,12 +51,40 @@ const PaymentActivityEmptyState: React.FC = () => (
 	</Card>
 );
 
+const formatDateRange = (
+	start: moment.Moment,
+	end: moment.Moment
+): string => {
+	// Today - show only today's date.
+	if ( start.isSame( end, 'day' ) ) {
+		return start.format( 'MMMM D, YYYY' );
+	}
+
+	// Different years - show year for both start and end
+	if ( ! start.isSame( end, 'year' ) ) {
+		return `${ start.format( 'MMMM D, YYYY' ) } - ${ end.format(
+			'MMMM D, YYYY'
+		) }`;
+	}
+
+	// Same year - show year only for end date.
+	return `${ start.format( 'MMMM D' ) } - ${ end.format( 'MMMM D, YYYY' ) }`;
+};
+
 const PaymentActivity: React.FC = () => {
 	const isOverviewSurveySubmitted =
 		wcpaySettings.isOverviewSurveySubmitted ?? false;
 
+	const { selectedCurrency } = useSelectedCurrency();
+	const {
+		selectedDateRange,
+		setSelectedDateRange,
+		dateRangePresets,
+	} = usePaymentActivityDateRangePresets();
 	const { paymentActivityData, isLoading } = usePaymentActivityData( {
-		...getDateRange(),
+		currency: selectedCurrency ?? wcpaySettings.accountDefaultCurrency,
+		date_start: selectedDateRange.date_start,
+		date_end: selectedDateRange.date_end,
 		timezone: moment( new Date() ).format( 'Z' ),
 	} );
 
@@ -79,11 +97,53 @@ const PaymentActivity: React.FC = () => {
 		return <></>;
 	}
 
+	const options = Object.keys( dateRangePresets ).map( ( presetName ) => {
+		const preset = dateRangePresets[ presetName ];
+		return {
+			key: presetName,
+			name: preset.displayKey,
+			hint: formatDateRange( preset.start, preset.end ),
+		};
+	} );
+
 	return (
 		<Card>
-			<CardHeader>
+			<CardHeader className="wcpay-payment-activity__card__header">
 				{ __( 'Your payment activity', 'woocommerce-payments' ) }
-				{ /* Filters go here */ }
+				<InlineLabelSelect
+					label="Period"
+					options={ options }
+					value={ options.find(
+						( option ) =>
+							option.key === selectedDateRange.preset_name
+					) }
+					placeholder="Select an option..."
+					onChange={ ( changes ) => {
+						const selectedItem = changes.selectedItem;
+						if ( selectedItem ) {
+							const start = dateRangePresets[
+								selectedItem.key
+							].start
+								.clone()
+								.format( 'YYYY-MM-DD\\THH:mm:ss' );
+							const end = dateRangePresets[ selectedItem.key ].end
+								.clone()
+								.format( 'YYYY-MM-DD\\THH:mm:ss' );
+							const { key: presetName } = selectedItem;
+							recordEvent(
+								'wcpay_overview_payment_activity_period_change',
+								{
+									preset_name: presetName,
+								}
+							);
+							setSelectedDateRange( {
+								date_start: start,
+								date_end: end,
+								preset_name: presetName,
+							} );
+						}
+					} }
+				/>
 			</CardHeader>
 			<CardBody className="wcpay-payment-activity__card__body">
 				<PaymentActivityDataComponent

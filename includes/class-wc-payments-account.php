@@ -1054,6 +1054,7 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
+			$wcpay_connect_param    = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 			$incentive              = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 			$progressive            = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 			$create_builder_account = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
@@ -1095,7 +1096,27 @@ class WC_Payments_Account {
 						WC_Payments_Onboarding_Service::set_test_mode( false );
 					}
 
-					$this->redirect_to_onboarding_flow_page( $connect_page_source );
+					if ( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE === $connect_page_source ) {
+						$this->redirect_to_onboarding_welcome_page();
+					} else {
+						$this->redirect_to_onboarding_flow_page( $connect_page_source );
+					}
+				} elseif ( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE === $connect_page_source && ! $this->is_details_submitted() ) {
+					try {
+						$this->init_stripe_onboarding(
+							$wcpay_connect_param,
+							[
+								'promo'       => $incentive,
+								'progressive' => $progressive,
+							]
+						);
+					} catch ( Exception $e ) {
+						Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
+						$this->redirect_to_onboarding_welcome_page(
+							__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
+						);
+					}
+					return;
 				} else {
 					// Accounts with Stripe account connected will be redirected to the overview page.
 					$this->redirect_to( static::get_overview_page_url() );
@@ -1159,8 +1180,6 @@ class WC_Payments_Account {
 					$event_properties
 				);
 			}
-
-			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
 			try {
 				$this->maybe_init_jetpack_connection(
@@ -1235,9 +1254,13 @@ class WC_Payments_Account {
 	/**
 	 * Payments task page url
 	 *
+	 * @deprecated 7.8.0
+	 *
 	 * @return string payments task page url
 	 */
 	public static function get_payments_task_page_url() {
+		wc_deprecated_function( __FUNCTION__, '7.8.0' );
+
 		return add_query_arg(
 			[
 				'page'   => 'wc-admin',
@@ -1396,11 +1419,9 @@ class WC_Payments_Account {
 			);
 		}
 
-		// If connection originated on the WCADMIN payment task page, return there.
-		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
+		// Custom return URL for the connect page based on the source.
+		// Default goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		switch ( $wcpay_connect_from ) {
-			case 'WCADMIN_PAYMENT_TASK':
-				return static::get_payments_task_page_url();
 			case 'WC_SUBSCRIPTIONS_TABLE':
 				return admin_url( add_query_arg( [ 'post_type' => 'shop_subscription' ], 'edit.php' ) );
 			default:
@@ -1675,7 +1696,7 @@ class WC_Payments_Account {
 	 *
 	 * @return void
 	 */
-	public function update_cached_account_data( $property, $data ) {
+	public function update_account_data( $property, $data ) {
 		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
 
 		$account_data[ $property ] = is_array( $data ) ? array_merge( $account_data[ $property ] ?? [], $data ) : $data;
@@ -1690,16 +1711,6 @@ class WC_Payments_Account {
 	 */
 	public function refresh_account_data() {
 		return $this->get_cached_account_data( true );
-	}
-
-	/**
-	 * Updates the account data.
-	 *
-	 * @param string $property Property to update.
-	 * @param mixed  $data     Data to update.
-	 */
-	public function update_account_data( $property, $data ) {
-		return $this->update_cached_account_data( $property, $data );
 	}
 
 	/**

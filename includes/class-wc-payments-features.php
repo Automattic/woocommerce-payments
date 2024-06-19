@@ -262,7 +262,7 @@ class WC_Payments_Features {
 		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
 		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 
-		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_first_party_auth_enabled();
+		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_enabled();
 	}
 
 	/**

@@ -13,26 +13,45 @@ import { __ } from '@wordpress/i18n';
 export const transformCartDataForDisplayItems = ( cartData ) => {
 	const displayItems = cartData.items.map( ( item ) => ( {
 		amount: parseInt( item.prices.price, 10 ),
-		// TODO: should we also add variation attributes?
-		label: [ item.name, item.quantity > 1 && ` (x${ item.quantity })` ]
+		label: [
+			item.name,
+			item.quantity > 1 && `(x${ item.quantity })`,
+			item.variation &&
+				item.variation
+					.map(
+						( variation ) =>
+							`${ variation.attribute }: ${ variation.value }`
+					)
+					.join( ', ' ),
+		]
 			.filter( Boolean )
-			.join( '' ),
-		pending: true,
+			.join( ' ' ),
 	} ) );
 
-	if ( cartData.totals.total_tax ) {
+	const taxAmount = parseInt( cartData.totals.total_tax || '0', 10 );
+	if ( taxAmount ) {
 		displayItems.push( {
-			amount: parseInt( cartData.totals.total_tax, 10 ),
+			amount: taxAmount,
 			label: __( 'Tax', 'woocommerce-payments' ),
-			pending: true,
 		} );
 	}
 
-	if ( cartData.totals.total_shipping ) {
+	const shippingAmount = parseInt(
+		cartData.totals.total_shipping || '0',
+		10
+	);
+	if ( shippingAmount ) {
 		displayItems.push( {
-			amount: parseInt( cartData.totals.total_shipping, 10 ),
+			amount: shippingAmount,
 			label: __( 'Shipping', 'woocommerce-payments' ),
-			pending: true,
+		} );
+	}
+
+	const refundAmount = parseInt( cartData.totals.total_refund || '0', 10 );
+	if ( refundAmount ) {
+		displayItems.push( {
+			amount: -refundAmount,
+			label: __( 'Refund', 'woocommerce-payments' ),
 		} );
 	}
 

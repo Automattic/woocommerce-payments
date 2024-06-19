@@ -45,6 +45,13 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	/**
 	 * Express Checkout Helper instance.
 	 *
+	 * @var WC_Payments_Express_Checkout_Ajax_Handler
+	 */
+	private $express_checkout_ajax_handler;
+
+	/**
+	 * Express Checkout Helper instance.
+	 *
 	 * @var WC_Payments_Express_Checkout_Button_Helper
 	 */
 	private $express_checkout_helper;
@@ -56,19 +63,22 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @param WC_Payments_Payment_Request_Button_Handler  $payment_request_button_handler Payment request button handler.
 	 * @param WC_Payments_WooPay_Button_Handler           $platform_checkout_button_handler Platform checkout button handler.
 	 * @param WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler Express Checkout Element button handler.
-	 * @param WC_Payments_Express_Checkout_Button_Helper  $express_checkout_helper Express checkout helper.
+	 * @param WC_Payments_Express_Checkout_Ajax_Handler   $express_checkout_ajax_handler Express checkout ajax handlers.
+	 * @param WC_Payments_Express_Checkout_Button_Helper  $express_checkout_helper Express checkout button helper.
 	 */
 	public function __construct(
 		WC_Payment_Gateway_WCPay $gateway,
 		WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler,
 		WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler,
 		WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler,
+		WC_Payments_Express_Checkout_Ajax_Handler $express_checkout_ajax_handler,
 		WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper
 	) {
 		$this->gateway                          = $gateway;
 		$this->payment_request_button_handler   = $payment_request_button_handler;
 		$this->platform_checkout_button_handler = $platform_checkout_button_handler;
 		$this->express_checkout_button_handler  = $express_checkout_button_handler;
+		$this->express_checkout_ajax_handler    = $express_checkout_ajax_handler;
 		$this->express_checkout_helper          = $express_checkout_helper;
 	}
 
@@ -86,8 +96,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$is_payment_request_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
 
 		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
-			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_helper, 'ajax_add_to_cart' ] );
-			add_action( 'wc_ajax_wcpay_empty_cart', [ $this->express_checkout_helper, 'ajax_empty_cart' ] );
+			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_ajax_handler, 'ajax_add_to_cart' ] );
+			add_action( 'wc_ajax_wcpay_empty_cart', [ $this->express_checkout_ajax_handler, 'ajax_empty_cart' ] );
 
 			add_action( 'woocommerce_after_add_to_cart_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );
@@ -120,12 +130,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_buttons() {
-		$should_show_woopay          = $this->platform_checkout_button_handler->should_show_woopay_button();
-		$should_show_payment_request = $this->payment_request_button_handler->should_show_payment_request_button();
+		$should_show_woopay                  = $this->platform_checkout_button_handler->should_show_woopay_button();
+		$should_show_payment_request         = $this->payment_request_button_handler->should_show_payment_request_button();
+		$should_show_express_checkout_button = $this->express_checkout_helper->should_show_express_checkout_button();
+
 		// When Payment Request button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any payment request methods to display.
 		// More details: https://github.com/Automattic/woocommerce-payments/pull/5399#discussion_r1073633776.
-		$separator_starts_hidden = $should_show_payment_request && ! $should_show_woopay;
-		if ( $should_show_woopay || $should_show_payment_request ) {
+		$separator_starts_hidden = ( $should_show_payment_request || $should_show_express_checkout_button ) && ! $should_show_woopay;
+		if ( $should_show_woopay || $should_show_payment_request || $should_show_express_checkout_button ) {
 			?>
 			<div class='wcpay-payment-request-wrapper' >
 			<?php
@@ -190,9 +202,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 						$session_email = is_array( $customer ) && isset( $customer['email'] ) ? $customer['email'] : '';
 					}
 
-					// Silence the filter_input warning because we are sanitizing the input with sanitize_email().
-					// nosemgrep: audit.php.lang.misc.filter-input-no-filter.
-					$user_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email' ) ) ) : $session_email;
+					$user_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email', FILTER_SANITIZE_EMAIL ) ) ) : $session_email;
 
 					$js_config['order_id'] = $order->get_id();
 					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
