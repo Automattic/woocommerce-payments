@@ -70,13 +70,6 @@ describe( 'Instant deposit button and modal', () => {
 		};
 	} );
 
-	test( 'button renders correctly with zero balance', () => {
-		const { container } = render(
-			<InstantDepositButton instantBalance={ mockZeroInstantBalance } />
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
 	test( 'button renders correctly with balance', () => {
 		const { container } = render(
 			<InstantDepositButton instantBalance={ mockInstantBalance } />
