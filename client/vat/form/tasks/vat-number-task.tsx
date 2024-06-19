@@ -9,7 +9,7 @@ import {
 	Notice,
 	TextControl,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import React, { useContext, useState } from 'react';
 import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
 import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
@@ -27,6 +27,8 @@ import '../style.scss';
  */
 const getVatPrefix = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'JP':
+			return '';
 		case 'GR':
 			return 'EL ';
 		case 'CH':
@@ -69,7 +71,7 @@ const getVatTaxIDRequirementHint = () => {
 			// https://woocommerce.com/document/woopayments/taxes/documents/
 			// Alternative - maybe this can be removed.
 			return __(
-				"If your sales exceed the VAT threshold for your country, you're required to register for a VAT number.",
+				"If your sales exceed the VAT threshold for your country, you're required to register for a VAT Number.",
 				'woocommerce-payments'
 			);
 	}
@@ -79,12 +81,12 @@ const getVatTaxIDValidationHint = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'JP':
 			return __(
-				'This is a 13 digit number, for example 1234567890123.',
+				'A 13 digit number, for example 1234567890123.',
 				'woocommerce-payments'
 			);
 		default:
 			return __(
-				'This is 8 to 12 digits with your country code prefix, for example DE 123456789.',
+				'8 to 12 digits with your country code prefix, for example DE 123456789.',
 				'woocommerce-payments'
 			);
 	}
@@ -154,7 +156,14 @@ export const VatNumberTask = ( {
 	return (
 		<WizardTaskItem
 			index={ 1 }
-			title={ __( 'Set your tax ID', 'woocommerce-payments' ) }
+			title={ sprintf(
+				__(
+					/* translators: %$1$s: tax ID name, e.g. VAT Number, GST Number, Corporate Number */
+					'Set your %1$s',
+					'woocommerce-payments'
+				),
+				getVatTaxIDName()
+			) }
 			className={ null }
 		>
 			<p className="wcpay-wizard-task__description-element">
@@ -168,9 +177,13 @@ export const VatNumberTask = ( {
 				<CheckboxControl
 					checked={ isVatRegistered }
 					onChange={ setVatRegistered }
-					label={ __(
-						"I'm registered for a VAT number",
-						'woocommerce-payments'
+					label={ sprintf(
+						__(
+							/* translators: %$1$s: tax ID name, e.g. VAT Number, GST Number, Corporate Number */
+							"I'm registered for a %1$s",
+							'woocommerce-payments'
+						),
+						getVatTaxIDName()
 					) }
 					help={ getVatTaxIDRequirementHint() }
 				/>
