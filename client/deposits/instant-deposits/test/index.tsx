@@ -31,14 +31,6 @@ const mockInstantBalance = {
 	currency: 'USD',
 } as AccountOverview.InstantBalance;
 
-const mockZeroInstantBalance = {
-	amount: 0,
-	fee: 0,
-	net: 0,
-	fee_percentage: 1.5,
-	currency: 'USD',
-} as AccountOverview.InstantBalance;
-
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
