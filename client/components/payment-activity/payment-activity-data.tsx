@@ -207,11 +207,19 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 							) }
 							content={ interpolateComponents( {
 								mixedString: __(
-									'{{strong}}Disputes{{/strong}} includes the amount of any disputed charges. Dispute fees are included in the Fees section.',
+									'{{strong}}Disputes{{/strong}} includes the amount of any disputed charges. Dispute fees are included in the Fees section. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
 									'woocommerce-payments'
 								),
 								components: {
 									strong: <strong />,
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+										/>
+									),
 								},
 							} ) }
 						/>
