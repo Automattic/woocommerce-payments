@@ -28,6 +28,7 @@ import '../style.scss';
 const getVatPrefix = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'JP':
+			// Corporate numbers are not prefixed.
 			return '';
 		case 'GR':
 			return 'EL ';
