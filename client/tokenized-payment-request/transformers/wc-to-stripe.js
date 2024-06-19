@@ -47,6 +47,14 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 		} );
 	}
 
+	const refundAmount = parseInt( cartData.totals.total_refund || '0', 10 );
+	if ( refundAmount ) {
+		displayItems.push( {
+			amount: -refundAmount,
+			label: __( 'Refund', 'woocommerce-payments' ),
+		} );
+	}
+
 	return displayItems;
 };
 

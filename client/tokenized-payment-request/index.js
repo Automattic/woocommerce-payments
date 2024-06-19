@@ -7,8 +7,10 @@ import { doAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
+import { getUPEConfig } from 'wcpay/utils/checkout';
 import WCPayAPI from '../checkout/api';
 import PaymentRequestCartApi from './cart-api';
+import PaymentRequestOrderApi from './order-api';
 import WooPaymentsPaymentRequest from './payment-request';
 import paymentRequestButtonUi from './button-ui';
 import { getPaymentRequestData } from './frontend-utils';
@@ -52,7 +54,14 @@ jQuery( ( $ ) => {
 			} );
 		}
 	);
-	const paymentRequestCartApi = new PaymentRequestCartApi();
+	let paymentRequestCartApi = new PaymentRequestCartApi();
+	if ( getPaymentRequestData( 'button_context' ) === 'pay_for_order' ) {
+		paymentRequestCartApi = new PaymentRequestOrderApi( {
+			orderId: getUPEConfig( 'order_id' ),
+			key: getUPEConfig( 'key' ),
+			billingEmail: getUPEConfig( 'billing_email' ),
+		} );
+	}
 
 	const wooPaymentsPaymentRequest = new WooPaymentsPaymentRequest( {
 		wcpayApi: api,
