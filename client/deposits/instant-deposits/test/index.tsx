@@ -86,7 +86,7 @@ describe( 'Instant deposit button and modal', () => {
 		).not.toBeInTheDocument();
 		fireEvent.click(
 			screen.getByRole( 'button', {
-				name: /Instantly deposit \$123\.45/i,
+				name: /Get \$123\.45 now/i,
 			} )
 		);
 		const modal = screen.queryByRole( 'dialog', {
