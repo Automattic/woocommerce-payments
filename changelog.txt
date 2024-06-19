@@ -18,6 +18,7 @@
 * Fix - Fix input-specific credit card errors.
 * Fix - Fix Payment method title for PRBs not displaying correctly because of ECE code.
 * Fix - Fix Teams for WooCommerce Memberships on product WooPay Express Checkout Button.
+* Fix - Fix WooPay Direct Checkout feature check.
 * Fix - Improve consistency of Manage button for different WooPayments KYC states
 * Fix - Make it so that the WooPay button is not triggered on Checkout pages when the "Enter" key is pressed on a keyboard.
 * Fix - Prevent account creation during WooPay preflight request.
