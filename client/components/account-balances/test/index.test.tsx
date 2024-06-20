@@ -302,7 +302,7 @@ describe( 'AccountBalances', () => {
 		render( <AccountBalances /> );
 
 		screen.getByRole( 'button', {
-			name: 'Get $300 now',
+			name: 'Get $300.00 now',
 		} );
 	} );
 

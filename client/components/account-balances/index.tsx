@@ -23,10 +23,7 @@ import {
 } from './balance-tooltip';
 import { fundLabelStrings } from './strings';
 import { ClickTooltip } from '../tooltip';
-import {
-	formatCurrency,
-	trimEndingZeroesAndDecimalSeparator,
-} from 'wcpay/utils/currency';
+import { formatCurrency } from 'wcpay/utils/currency';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import './style.scss';
@@ -116,15 +113,6 @@ const AccountBalances: React.FC = () => {
 	const totalBalance =
 		selectedOverview.availableFunds + selectedOverview.pendingFunds;
 
-	const formattedAmount = selectedOverview.instantBalance
-		? trimEndingZeroesAndDecimalSeparator(
-				formatCurrency(
-					selectedOverview.instantBalance.amount,
-					selectedOverview.instantBalance.currency
-				)
-		  )
-		: '';
-
 	return (
 		<>
 			<Flex gap={ 0 } className="wcpay-account-balances__balances">
@@ -171,7 +159,10 @@ const AccountBalances: React.FC = () => {
 										'Get %1$s via instant deposit. Funds are typically in your bank account within 30 mins. Fee: %2$s%%.',
 										'woocommerce-payments'
 									),
-									formattedAmount,
+									formatCurrency(
+										selectedOverview.instantBalance.amount,
+										selectedOverview.instantBalance.currency
+									),
 									selectedOverview.instantBalance
 										.fee_percentage
 								) }

@@ -349,19 +349,6 @@ export function trimEndingZeroes( formattedCurrencyAmount = '' ) {
 		.join( ' ' );
 }
 
-export function trimEndingZeroesAndDecimalSeparator(
-	formattedCurrencyAmount = ''
-) {
-	return formattedCurrencyAmount
-		.split( ' ' )
-		.map( ( chunk ) =>
-			endsWith( chunk, '0' )
-				? trimEnd( chunk, '0' ).replace( '.', '' )
-				: chunk
-		)
-		.join( ' ' );
-}
-
 function htmlDecode( input ) {
 	const doc = new DOMParser().parseFromString( input, 'text/html' );
 	return doc.documentElement.textContent;
