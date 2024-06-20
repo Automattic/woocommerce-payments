@@ -23,6 +23,7 @@ describe( 'PaymentRequestCartApi', () => {
 	} );
 
 	it( 'should allow to create an anonymous cart for a specific class instance, without affecting other instances', async () => {
+		global.wcpayPaymentRequestParams.button_context = 'product';
 		const headers = new Headers();
 		headers.append(
 			'X-WooPayments-Express-Payment-Request-Nonce',
@@ -99,6 +100,7 @@ describe( 'PaymentRequestCartApi', () => {
 	} );
 
 	it( 'should call `/cart/update-customer` with the global headers if the cart is not anonymous', async () => {
+		global.wcpayPaymentRequestParams.button_context = 'cart';
 		const api = new PaymentRequestCartApi();
 
 		await api.updateCustomer( {
@@ -110,7 +112,7 @@ describe( 'PaymentRequestCartApi', () => {
 				path: expect.stringContaining(
 					'/wc/store/v1/cart/update-customer'
 				),
-				credentials: 'omit',
+				credentials: undefined,
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
 					'X-WooPayments-Express-Payment-Request': true,

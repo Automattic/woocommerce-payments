@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Use FILTER_SANITIZE_EMAIL to sanitize email input

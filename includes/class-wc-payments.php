@@ -1849,6 +1849,7 @@ class WC_Payments {
 				'wcpay_next_deposit_notice_dismissed',
 				'wcpay_duplicate_payment_method_notices_dismissed',
 				'wcpay_exit_survey_dismissed',
+				'wcpay_instant_deposit_notice_dismissed',
 			],
 			true
 		);
