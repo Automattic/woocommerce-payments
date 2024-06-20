@@ -3,6 +3,7 @@
  */
 import {
 	normalizeOrderData,
+	normalizePayForOrderData,
 	normalizeShippingAddress,
 	normalizeLineItems,
 } from './utils';
@@ -90,6 +91,64 @@ export const onConfirmHandler = async (
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
 			completePayment( createOrderResponse.redirect );
+		} else {
+			const redirectUrl = await confirmationRequest;
+
+			completePayment( redirectUrl );
+		}
+	} catch ( e ) {
+		return abortPayment( event, e.message );
+	}
+};
+
+/**
+ * Generates a Pay for Order handler based on a particular order.
+ * Contains pretty much the same logic in `onConfirmHandler`.
+ *
+ * @param {integer} order The ID of the order that is being paid.
+ * @return {Function} The handler.
+ */
+export const payForOrderHandler = ( order ) => async (
+	api,
+	stripe,
+	elements,
+	completePayment,
+	abortPayment,
+	event
+) => {
+	const { error: submitError } = await elements.submit();
+	if ( submitError ) {
+		return abortPayment( event, submitError.message );
+	}
+
+	const { paymentMethod, error } = await stripe.createPaymentMethod( {
+		elements,
+	} );
+
+	if ( error ) {
+		return abortPayment( event, error.message );
+	}
+
+	// Kick off checkout processing step.
+	// const orderResponse = await api.paymentRequestPayForOrder(
+	const orderResponse = await api.expressCheckoutECEPayForOrder(
+		order,
+		normalizePayForOrderData( event, paymentMethod.id )
+	);
+
+	if ( orderResponse.result !== 'success' ) {
+		return abortPayment(
+			event,
+			getErrorMessageFromNotice( orderResponse.messages )
+		);
+	}
+
+	try {
+		const confirmationRequest = api.confirmIntent( orderResponse.redirect );
+
+		// `true` means there is no intent to confirm.
+		if ( confirmationRequest === true ) {
+			completePayment( orderResponse.redirect );
 		} else {
 			const redirectUrl = await confirmationRequest;
 
