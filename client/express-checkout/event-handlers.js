@@ -9,34 +9,42 @@ import {
 import { getErrorMessageFromNotice } from './utils/index';
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
-	const response = await api.expressCheckoutECECalculateShippingOptions(
-		normalizeShippingAddress( event.address )
-	);
+	try {
+		const response = await api.expressCheckoutECECalculateShippingOptions(
+			normalizeShippingAddress( event.address )
+		);
 
-	if ( response.result === 'success' ) {
-		elements.update( {
-			amount: response.total.amount,
-		} );
-		event.resolve( {
-			shippingRates: response.shipping_options,
-			lineItems: normalizeLineItems( response.displayItems ),
-		} );
-	} else {
+		if ( response.result === 'success' ) {
+			elements.update( {
+				amount: response.total.amount,
+			} );
+			event.resolve( {
+				shippingRates: response.shipping_options,
+				lineItems: normalizeLineItems( response.displayItems ),
+			} );
+		} else {
+			event.reject();
+		}
+	} catch ( e ) {
 		event.reject();
 	}
 };
 
 export const shippingRateChangeHandler = async ( api, event, elements ) => {
-	const response = await api.paymentRequestUpdateShippingDetails(
-		event.shippingRate
-	);
+	try {
+		const response = await api.paymentRequestUpdateShippingDetails(
+			event.shippingRate
+		);
 
-	if ( response.result === 'success' ) {
-		elements.update( { amount: response.total.amount } );
-		event.resolve( {
-			lineItems: normalizeLineItems( response.displayItems ),
-		} );
-	} else {
+		if ( response.result === 'success' ) {
+			elements.update( { amount: response.total.amount } );
+			event.resolve( {
+				lineItems: normalizeLineItems( response.displayItems ),
+			} );
+		} else {
+			event.reject();
+		}
+	} catch ( e ) {
 		event.reject();
 	}
 };
@@ -88,6 +96,6 @@ export const onConfirmHandler = async (
 			completePayment( redirectUrl );
 		}
 	} catch ( e ) {
-		return abortPayment( event, error.message );
+		return abortPayment( event, e.message );
 	}
 };
