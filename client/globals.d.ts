@@ -118,6 +118,7 @@ declare global {
 		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
+		isInstantDepositNoticeDismissed: boolean;
 		reporting: {
 			exportModalDismissed?: boolean;
 		};
