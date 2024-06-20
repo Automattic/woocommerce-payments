@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Make it so that the WooPay button is not triggered on Checkout pages when the "Enter" key is pressed on a keyboard.

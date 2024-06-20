@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix WooPay OTP modal not rendering on the shortcode checkout if BNPL methods are available.

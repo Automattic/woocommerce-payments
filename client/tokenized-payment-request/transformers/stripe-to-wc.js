@@ -83,6 +83,10 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 		payment_method: 'woocommerce_payments',
 		payment_data: [
 			{
+				key: 'payment_method',
+				value: 'card',
+			},
+			{
 				key: 'payment_request_type',
 				value: paymentRequestType,
 			},

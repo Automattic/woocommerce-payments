@@ -210,7 +210,15 @@ class WC_Payments_Features {
 
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
+
+		$is_account_rejected = WC_Payments::get_account_service()->is_account_rejected();
+
+		$is_account_under_review = WC_Payments::get_account_service()->is_account_under_review();
+
+		return is_array( $account )
+			&& ( $account['platform_checkout_eligible'] ?? false )
+			&& ! $is_account_rejected
+			&& ! $is_account_under_review;
 	}
 
 	/**
@@ -262,7 +270,7 @@ class WC_Payments_Features {
 		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
 		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 
-		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_first_party_auth_enabled();
+		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_enabled();
 	}
 
 	/**
