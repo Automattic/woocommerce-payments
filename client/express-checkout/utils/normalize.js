@@ -12,10 +12,7 @@ export const normalizeLineItems = ( displayItems ) => {
 		( {
 			...displayItem,
 			name: displayItem.label,
-			amount:
-				displayItem?.amount ??
-				displayItem?.valueWithTax ??
-				displayItem?.value,
+			amount: displayItem?.amount ?? displayItem?.value,
 		} )
 	);
 };
