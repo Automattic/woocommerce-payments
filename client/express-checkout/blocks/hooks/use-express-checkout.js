@@ -19,6 +19,23 @@ export const useExpressCheckout = ( {
 	const stripe = useStripe();
 	const elements = useElements();
 
+	const mapWooPaymentsThemeToButtonTheme = ( buttonType, theme ) => {
+		switch ( theme ) {
+			case 'dark':
+				return 'black';
+			case 'light':
+				return 'white';
+			case 'light-outline':
+				if ( buttonType === 'googlePay' ) {
+					return 'white';
+				}
+
+				return 'white-outline';
+			default:
+				return 'black';
+		}
+	};
+
 	const buttonOptions = {
 		paymentMethods: {
 			applePay: 'always',
@@ -28,6 +45,24 @@ export const useExpressCheckout = ( {
 		buttonType: {
 			googlePay: wcpayExpressCheckoutParams.button.type,
 			applePay: wcpayExpressCheckoutParams.button.type,
+		},
+		// Allowed height must be 40px to 55px.
+		buttonHeight: Math.min(
+			Math.max(
+				parseInt( wcpayExpressCheckoutParams.button.height, 10 ),
+				40
+			),
+			55
+		),
+		buttonTheme: {
+			googlePay: mapWooPaymentsThemeToButtonTheme(
+				'googlePay',
+				wcpayExpressCheckoutParams.button.theme
+			),
+			applePay: mapWooPaymentsThemeToButtonTheme(
+				'applePay',
+				wcpayExpressCheckoutParams.button.theme
+			),
 		},
 	};
 

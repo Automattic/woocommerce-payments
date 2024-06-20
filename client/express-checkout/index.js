@@ -227,17 +227,56 @@ jQuery( ( $ ) => {
 				return;
 			}
 
+			const mapWooPaymentsThemeToButtonTheme = ( buttonType, theme ) => {
+				switch ( theme ) {
+					case 'dark':
+						return 'black';
+					case 'light':
+						return 'white';
+					case 'light-outline':
+						if ( buttonType === 'googlePay' ) {
+							return 'white';
+						}
+
+						return 'white-outline';
+					default:
+						return 'black';
+				}
+			};
+
 			const elements = api.getStripe().elements( {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
 				currency: options?.currency,
 				paymentMethodCreation: 'manual',
+				// appearance: { variables: { borderRadius: '99999px' } },
 			} );
 
 			const eceButton = wcpayECE.createButton( elements, {
 				buttonType: {
 					googlePay: getExpressCheckoutData( 'button' ).type,
 					applePay: getExpressCheckoutData( 'button' ).type,
+				},
+				// Allowed height must be 40px to 55px.
+				buttonHeight: Math.min(
+					Math.max(
+						parseInt(
+							wcpayExpressCheckoutParams.button.height,
+							10
+						),
+						40
+					),
+					55
+				),
+				buttonTheme: {
+					googlePay: mapWooPaymentsThemeToButtonTheme(
+						'googlePay',
+						wcpayExpressCheckoutParams.button.theme
+					),
+					applePay: mapWooPaymentsThemeToButtonTheme(
+						'applePay',
+						wcpayExpressCheckoutParams.button.theme
+					),
 				},
 			} );
 
