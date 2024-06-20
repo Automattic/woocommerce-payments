@@ -22,6 +22,11 @@ export const getAvailableCountries = (): Country[] =>
 		.map( ( [ key, name ] ) => ( { key, name, types: [] } ) )
 		.sort( ( a, b ) => a.name.localeCompare( b.name ) );
 
+export const getWooBaseCountries = (): Country[] =>
+	Object.entries( wcSettings?.countries || [] )
+		.map( ( [ key, name ] ) => ( { key, name, types: [] } ) )
+		.sort( ( a, b ) => a.name.localeCompare( b.name ) );
+
 export const getBusinessTypes = (): Country[] => {
 	const data = wcpaySettings?.onboardingFieldsData?.business_types;
 

@@ -12,6 +12,9 @@ import {
 	Notice,
 	Panel,
 	PanelBody,
+	Spinner,
+	Flex,
+	FlexItem,
 } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
@@ -25,11 +28,15 @@ import BannerNotice from 'components/banner-notice';
 import PaymentMethods from './payment-methods';
 import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
+import ConnectUnsupportedAccountPage from './unsupported-country';
 import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
+import RegionPicker from './region-picker';
+import { Apm, suggestedApmsResponseInterface } from './types';
+import { NAMESPACE } from 'wcpay/data/constants';
 
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
@@ -54,7 +61,13 @@ const ConnectAccountPage: React.FC = () => {
 		devMode,
 	} = wcpaySettings;
 
-	const isCountrySupported = !! availableCountries[ country ];
+	const [ isLoading, setLoading ] = useState( false );
+	const [ storeCountry, setStoreCountry ] = useState( country );
+	const [ suggestedApms, setSuggestedApms ] = useState(
+		wcMarketplaceSuggestions || {}
+	);
+
+	const isCountrySupported = !! availableCountries[ storeCountry ];
 
 	useEffect( () => {
 		recordEvent( 'page_view', {
@@ -67,34 +80,36 @@ const ConnectAccountPage: React.FC = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
-	const handleLocationCheck = () => {
-		// Reset the 'Set up' button state if merchant decided to stop
-		const handleModalDeclined = () => {
-			setSubmitted( false );
-		};
-		// Redirect the merchant if merchant decided to continue
-		const handleModalConfirmed = () => {
-			window.location.href = connectUrl;
-		};
+	const handleLocationChange = async ( countryID: string ) => {
+		try {
+			setLoading( true );
 
-		// Populate translated list of supported countries we want to render in the modal window.
-		const countries = Object.values( availableCountries )
-			.sort()
-			.map( ( countryName ) => {
-				return { title: countryName };
+			const response = await apiFetch< suggestedApmsResponseInterface >( {
+				path: `${ NAMESPACE }/settings/get_apms/${ countryID }`,
+				method: 'GET',
 			} );
 
-		const container = document.createElement( 'div' );
-		container.id = 'wcpay-onboarding-location-check-container';
-		render(
-			<OnboardingLocationCheckModal
-				countries={ countries }
-				onDeclined={ handleModalDeclined }
-				onConfirmed={ handleModalConfirmed }
-			/>,
-			container
-		);
-		document.body.appendChild( container );
+			setSuggestedApms( response );
+			setStoreCountry( countryID );
+		} finally {
+			setLoading( false );
+		}
+	};
+
+	const getSuggestedApms = (): Apm[] => {
+		const {
+			paymentGatewaySuggestions = [],
+			activePlugins = [],
+		} = suggestedApms;
+
+		return paymentGatewaySuggestions
+			.filter( ( apm: Apm ) => apm.plugins && apm.plugins.length > 0 )
+			.filter(
+				( apm: Apm ) =>
+					! Object.values( activePlugins ).includes(
+						apm.plugins[ 0 ]
+					)
+			);
 	};
 
 	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
@@ -129,12 +144,11 @@ const ConnectAccountPage: React.FC = () => {
 			}
 		}
 
-		// Inform the merchant if country specified in business address is not yet supported, but allow to proceed.
-		if ( ! isCountrySupported ) {
-			return handleLocationCheck();
-		}
+		const url = addQueryArgs( connectUrl, {
+			country: storeCountry,
+		} );
 
-		window.location.href = connectUrl;
+		window.location.href = url;
 	};
 
 	const handleEnableSandboxMode = async () => {
@@ -151,6 +165,16 @@ const ConnectAccountPage: React.FC = () => {
 
 	return (
 		<Page isNarrow className="connect-account-page">
+			{ isLoading && (
+				<Flex
+					direction="column"
+					className="connect-account-page__loading"
+				>
+					<FlexItem>
+						<Spinner />
+					</FlexItem>
+				</Flex>
+			) }
 			{ errorMessage && (
 				<Notice
 					className="wcpay-connect-error-notice"
@@ -166,75 +190,91 @@ const ConnectAccountPage: React.FC = () => {
 				</Card>
 			) : (
 				<>
-					{ ! isCountrySupported && (
-						<BannerNotice status="error" isDismissible={ false }>
-							{ strings.nonSupportedCountry }
-						</BannerNotice>
-					) }
 					{ devMode && <SandboxModeNotice /> }
-					<Card>
-						<div className="connect-account-page__heading">
-							<img src={ LogoImg } alt="logo" />
-							<h2>{ strings.heading( firstName ) }</h2>
-						</div>
-						<div className="connect-account-page__content">
-							<InfoNotice />
-						</div>
-						<div className="connect-account-page__payment-methods">
-							<PaymentMethods />
-							<div className="connect-account-page__payment-methods__description">
-								<div>
-									<p>Deposits</p>
-									<span>Automatic - Daily</span>
+					{ ! isCountrySupported && (
+						<ConnectUnsupportedAccountPage
+							country={ storeCountry }
+							setStoreCountry={ handleLocationChange }
+							suggestedApms={ getSuggestedApms() }
+						/>
+					) }
+					{ isCountrySupported && (
+						<>
+							<Card>
+								<div className="connect-account-page__heading">
+									<div className="connect-account-page__heading--wrapper">
+										<img src={ LogoImg } alt="logo" />
+										<RegionPicker
+											country={ storeCountry }
+											setStoreCountry={
+												handleLocationChange
+											}
+										/>
+									</div>
+
+									<h2>{ strings.heading( firstName ) }</h2>
 								</div>
-								<div className="connect-account-page__payment-methods__description__divider"></div>
-								<div>
-									<p>Payments capture</p>
-									<span>Capture on order</span>
+								<div className="connect-account-page__content">
+									<InfoNotice />
 								</div>
-								<div className="connect-account-page__payment-methods__description__divider"></div>
-								<div>
-									<p>Recurring payments</p>
-									<span>Supported</span>
+								<div className="connect-account-page__payment-methods">
+									<PaymentMethods />
+									<div className="connect-account-page__payment-methods__description">
+										<div>
+											<p>Deposits</p>
+											<span>Automatic - Daily</span>
+										</div>
+										<div className="connect-account-page__payment-methods__description__divider"></div>
+										<div>
+											<p>Payments capture</p>
+											<span>Capture on order</span>
+										</div>
+										<div className="connect-account-page__payment-methods__description__divider"></div>
+										<div>
+											<p>Recurring payments</p>
+											<span>Supported</span>
+										</div>
+									</div>
 								</div>
-							</div>
-						</div>
-						<div className="connect-account-page__buttons">
-							<Button
-								variant="primary"
-								isBusy={ isSubmitted }
-								disabled={ isSubmitted }
-								onClick={ handleSetup }
-							>
-								{ wcpaySettings.isJetpackConnected
-									? strings.button.jetpack_connected
-									: strings.button.jetpack_not_connected }
-							</Button>
-						</div>
-					</Card>
-					{ incentive && <Incentive { ...incentive } /> }
-					<Panel className="connect-account-page__sandbox-mode-panel">
-						<PanelBody
-							title={ strings.sandboxMode.title }
-							initialOpen={ false }
-						>
-							<InlineNotice
-								icon
-								status="info"
-								isDismissible={ false }
-							>
-								{ strings.sandboxMode.description }
-							</InlineNotice>
-							<Button
-								variant="secondary"
-								isBusy={ isSandboxModeClicked }
-								disabled={ isSandboxModeClicked }
-								onClick={ handleEnableSandboxMode }
-							>
-								{ strings.button.sandbox }
-							</Button>
-						</PanelBody>
-					</Panel>
+								<div className="connect-account-page__buttons">
+									<Button
+										variant="primary"
+										isBusy={ isSubmitted }
+										disabled={ isSubmitted }
+										onClick={ handleSetup }
+									>
+										{ wcpaySettings.isJetpackConnected
+											? strings.button.jetpack_connected
+											: strings.button
+													.jetpack_not_connected }
+									</Button>
+								</div>
+							</Card>
+							{ incentive && <Incentive { ...incentive } /> }
+							<Panel className="connect-account-page__sandbox-mode-panel">
+								<PanelBody
+									title={ strings.sandboxMode.title }
+									initialOpen={ false }
+								>
+									<InlineNotice
+										icon
+										status="info"
+										isDismissible={ false }
+									>
+										{ strings.sandboxMode.description }
+									</InlineNotice>
+									<Button
+										variant="secondary"
+										isBusy={ isSandboxModeClicked }
+										disabled={ isSandboxModeClicked }
+										onClick={ handleEnableSandboxMode }
+									>
+										{ strings.button.sandbox }
+									</Button>
+								</PanelBody>
+							</Panel>
+						</>
+					) }
 				</>
 			) }
 		</Page>

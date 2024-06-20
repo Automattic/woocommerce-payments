@@ -180,4 +180,9 @@ declare global {
 		homeUrl: string;
 		siteTitle: string;
 	};
+
+	const wcMarketplaceSuggestions: {
+		activePlugins: Array< string >;
+		paymentGatewaySuggestions: Array< Record >;
+	};
 }

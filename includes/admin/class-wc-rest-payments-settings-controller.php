@@ -8,6 +8,7 @@
 use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
+use Automattic\WooCommerce\Admin\Features\PaymentGatewaySuggestions;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -316,6 +317,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/get_apms/(?P<country>[A-Za-z0-9_\-]+)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_apms' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -562,6 +572,24 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return new WP_REST_Response( $this->get_settings(), 200 );
+	}
+
+	/**
+	 * Retrieve additional payment methods available for the given country.
+	 *
+	 * @param WP_REST_Request $request The request object. Optional. If passed, the function will return a REST response.
+	 *
+	 * @return WP_REST_Response The response object, if this is a REST request.
+	 */
+	public function get_apms( WP_REST_Request $request = null ) {
+		// To-Do, get suggestions for the provided country as currently it returns the suggestions for stored WC country.
+
+		return new WP_REST_Response(
+			[
+				'paymentGatewaySuggestions' => PaymentGatewaySuggestions\Init::get_suggestions(),
+				'activePlugins'             => array_map( 'dirname', get_option( 'active_plugins' ) ),
+			]
+		);
 	}
 
 	/**
