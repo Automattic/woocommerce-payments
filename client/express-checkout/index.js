@@ -1,4 +1,4 @@
-/* global jQuery, wcpayExpressCheckoutParams */
+/* global jQuery, wcpayExpressCheckoutParams, wcpayECEPayForOrderParams */
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -11,6 +11,7 @@ import {
 	onConfirmHandler,
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
+	payForOrderHandler,
 } from './event-handlers';
 
 jQuery( ( $ ) => {
@@ -269,16 +270,18 @@ jQuery( ( $ ) => {
 				shippingRateChangeHandler( api, event, elements )
 			);
 
-			eceButton.on( 'confirm', async ( event ) =>
-				onConfirmHandler(
+			eceButton.on( 'confirm', async ( event ) => {
+				const handler = options.confirmHandler ?? onConfirmHandler;
+
+				return handler(
 					api,
 					api.getStripe(),
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
 					event
-				)
-			);
+				);
+			} );
 
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.unblock();
@@ -393,7 +396,24 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				wcpayECE.startExpressCheckoutElement();
+				const {
+					total: { amount: total },
+					displayItems,
+					order,
+				} = wcpayECEPayForOrderParams;
+
+				wcpayECE.startExpressCheckoutElement( {
+					mode: 'payment',
+					total,
+					currency: getExpressCheckoutData( 'checkout' )
+						?.currency_code,
+					requestShipping: false,
+					requestPhone:
+						getExpressCheckoutData( 'checkout' )
+							?.needs_payer_phone ?? false,
+					displayItems,
+					confirmHandler: payForOrderHandler( order ),
+				} );
 			} else if ( wcpayExpressCheckoutParams.is_product_page ) {
 				wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
