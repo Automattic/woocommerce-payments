@@ -20,6 +20,8 @@ import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import expressCheckoutElementPaymentMethod from '../../express-checkout/blocks';
+import tokenizedCartPaymentRequestPaymentMethod from '../../tokenized-payment-request/blocks';
+
 import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_BANCONTACT,
@@ -154,7 +156,11 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
+	registerExpressPaymentMethod(
+		tokenizedCartPaymentRequestPaymentMethod( api )
+	);
+} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
 	registerExpressPaymentMethod( expressCheckoutElementPaymentMethod( api ) );
 } else {
 	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );

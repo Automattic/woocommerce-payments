@@ -1147,4 +1147,46 @@ class WC_Payments_Utils {
 		// Fallback to 'stripe' if no transients are set.
 		return 'stripe';
 	}
+
+	/**
+	 * Returns the list of countries in the European Economic Area (EEA).
+	 *
+	 * Based on the list documented at https://www.gov.uk/eu-eea.
+	 *
+	 * @return string[]
+	 */
+	public static function get_european_economic_area_countries() {
+		return [
+			Country_Code::AUSTRIA,
+			Country_Code::BELGIUM,
+			Country_Code::BULGARIA,
+			Country_Code::CROATIA,
+			Country_Code::CYPRUS,
+			Country_Code::CZECHIA,
+			Country_Code::DENMARK,
+			Country_Code::ESTONIA,
+			Country_Code::FINLAND,
+			Country_Code::FRANCE,
+			Country_Code::GERMANY,
+			Country_Code::GREECE,
+			Country_Code::HUNGARY,
+			Country_Code::IRELAND,
+			Country_Code::ICELAND,
+			Country_Code::ITALY,
+			Country_Code::LATVIA,
+			Country_Code::LIECHTENSTEIN,
+			Country_Code::LITHUANIA,
+			Country_Code::LUXEMBOURG,
+			Country_Code::MALTA,
+			Country_Code::NORWAY,
+			Country_Code::NETHERLANDS,
+			Country_Code::POLAND,
+			Country_Code::PORTUGAL,
+			Country_Code::ROMANIA,
+			Country_Code::SLOVAKIA,
+			Country_Code::SLOVENIA,
+			Country_Code::SPAIN,
+			Country_Code::SWEDEN,
+		];
+	}
 }
