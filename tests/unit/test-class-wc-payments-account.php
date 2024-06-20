@@ -392,6 +392,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->method( 'is_server_connected' )
 			->willReturn( $is_server_connected );
 
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
+
 		$this->mock_redirect_service->expects( $this->exactly( $expected_redirect_to_count ) )->method( $expected_method );
 
 		$this->wcpay_account->maybe_redirect_from_onboarding_page();
@@ -447,8 +449,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'path' => '/payments/does-not-exist',
 				],
 			],
-			'server_not_connected' => [ // TODO check if it works properly.
-				0,
+			'server_not_connected' => [
+				1,
 				'redirect_to_connect_page',
 				false,
 				false,
