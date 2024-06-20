@@ -178,14 +178,14 @@ export default class WooPaymentsPaymentRequest {
 						total: {
 							label: getPaymentRequestData( 'total_label' ),
 							amount:
-									parseInt(
-										newCartData.totals.total_price,
-										10
-									) -
-									parseInt(
-										newCartData.totals.total_refund || 0,
-										10
-									),
+								parseInt(
+									newCartData.totals.total_price,
+									10
+								) -
+								parseInt(
+									newCartData.totals.total_refund || 0,
+									10
+								),
 						},
 						displayItems: transformCartDataForDisplayItems(
 							newCartData
