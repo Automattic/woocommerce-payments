@@ -143,51 +143,58 @@ export default class WooPaymentsPaymentRequest {
 			paymentRequestButton.on( 'click', () => {
 				trackPaymentRequestButtonClick( 'pay_for_order' );
 			} );
-		} else {
+		}
+
+		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
 			this.attachPaymentRequestButtonEventListeners();
-			removeAction(
-				'wcpay.payment-request.update-button-data',
-				'automattic/wcpay/payment-request'
-			);
-			addAction(
-				'wcpay.payment-request.update-button-data',
-				'automattic/wcpay/payment-request',
-				async () => {
-					const newCartData = await _self.getCartData();
-					// checking if items needed shipping, before assigning new cart data.
-					const didItemsNeedShipping =
-						_self.initialProductData?.needs_shipping ||
-						_self.cachedCartData?.needs_shipping;
+		}
 
-					_self.cachedCartData = newCartData;
+		removeAction(
+			'wcpay.payment-request.update-button-data',
+			'automattic/wcpay/payment-request'
+		);
+		addAction(
+			'wcpay.payment-request.update-button-data',
+			'automattic/wcpay/payment-request',
+			async () => {
+				const newCartData = await _self.getCartData();
+				// checking if items needed shipping, before assigning new cart data.
+				const didItemsNeedShipping =
+					_self.initialProductData?.needs_shipping ||
+					_self.cachedCartData?.needs_shipping;
 
-					/**
-					 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
-					 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
-					 * consistent, we can simply update the payment request button with the new total and display items.
-					 */
-					if (
-						! _self.isPaymentAborted &&
-						didItemsNeedShipping === newCartData.needs_shipping
-					) {
-						paymentRequest.update( {
-							total: {
-								label: getPaymentRequestData( 'total_label' ),
-								amount: parseInt(
-									newCartData.totals.total_price,
+				_self.cachedCartData = newCartData;
+
+				/**
+				 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
+				 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
+				 * consistent, we can simply update the payment request button with the new total and display items.
+				 */
+				if (
+					! _self.isPaymentAborted &&
+					didItemsNeedShipping === newCartData.needs_shipping
+				) {
+					paymentRequest.update( {
+						total: {
+							label: getPaymentRequestData( 'total_label' ),
+							amount:
+								parseInt( newCartData.totals.total_price, 10 ) -
+								parseInt(
+									newCartData.totals.total_refund || 0,
 									10
 								),
-							},
-							displayItems: transformCartDataForDisplayItems(
-								newCartData
-							),
-						} );
-					} else {
-						_self.init().then( noop );
-					}
+						},
+						displayItems: transformCartDataForDisplayItems(
+							newCartData
+						),
+					} );
+				} else {
+					_self.init().then( noop );
 				}
-			);
+			}
+		);
 
+		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
 			const $addToCartButton = jQuery( '.single_add_to_cart_button' );
 
 			paymentRequestButton.on( 'click', ( event ) => {
@@ -216,10 +223,12 @@ export default class WooPaymentsPaymentRequest {
 						);
 					} else {
 						window.alert(
-							__(
-								'Please select your product options before proceeding.',
-								'woocommerce-payments'
-							)
+							window?.wc_add_to_cart_variation_params
+								?.i18n_make_a_selection_text ||
+								__(
+									'Please select some product options before adding this product to your cart.',
+									'woocommerce-payments'
+								)
 						);
 					}
 					return;
@@ -257,7 +266,9 @@ export default class WooPaymentsPaymentRequest {
 					),
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount: parseInt( cartData.totals.total_price, 10 ),
+						amount:
+							parseInt( cartData.totals.total_price, 10 ) -
+							parseInt( cartData.totals.total_refund || 0, 10 ),
 					},
 					displayItems: transformCartDataForDisplayItems( cartData ),
 				} );
@@ -281,7 +292,9 @@ export default class WooPaymentsPaymentRequest {
 					status: 'success',
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount: parseInt( cartData.totals.total_price, 10 ),
+						amount:
+							parseInt( cartData.totals.total_price, 10 ) -
+							parseInt( cartData.totals.total_refund || 0, 10 ),
 					},
 					displayItems: transformCartDataForDisplayItems( cartData ),
 				} );
