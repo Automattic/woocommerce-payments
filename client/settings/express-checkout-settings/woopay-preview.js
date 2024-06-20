@@ -5,6 +5,7 @@
 import React, { useMemo } from 'react';
 import { decodeEntities } from '@wordpress/html-entities';
 import { chevronLeft, Icon } from '@wordpress/icons';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -183,10 +184,13 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 			NAMESPACE.substring( 1 ) +
 			'/file/' +
 			storeLogo;
-		storeHeader = <img src={ storeLogoUrl } alt="Store logo" />;
+		storeHeader = <img src={ storeLogoUrl } alt={ __( 'Store logo' ) } />;
 	} else if ( wcpaySettings?.siteLogoUrl ) {
 		storeHeader = (
-			<img src={ wcpaySettings?.siteLogoUrl } alt="Store logo" />
+			<img
+				src={ wcpaySettings?.siteLogoUrl }
+				alt={ __( 'Store logo' ) }
+			/>
 		);
 	} else {
 		storeHeader = (

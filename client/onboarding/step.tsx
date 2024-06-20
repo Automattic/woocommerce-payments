@@ -4,6 +4,7 @@
 import React from 'react';
 import { Icon, closeSmall } from '@wordpress/icons';
 import ChevronLeft from 'gridicons/dist/chevron-left';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -40,7 +41,7 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 				</button>
 				<img
 					src={ Logo }
-					alt="WooPayments"
+					alt={ __( 'WooPayments' ) }
 					className="stepper__nav-logo"
 				/>
 				<button

@@ -15,6 +15,7 @@ import {
 } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -174,7 +175,7 @@ const ConnectAccountPage: React.FC = () => {
 					{ devMode && <SandboxModeNotice /> }
 					<Card>
 						<div className="connect-account-page__heading">
-							<img src={ LogoImg } alt="logo" />
+							<img src={ LogoImg } alt={ __( 'logo' ) } />
 							<h2>{ strings.heading( firstName ) }</h2>
 						</div>
 						<div className="connect-account-page__content">
@@ -184,18 +185,18 @@ const ConnectAccountPage: React.FC = () => {
 							<PaymentMethods />
 							<div className="connect-account-page__payment-methods__description">
 								<div>
-									<p>Deposits</p>
-									<span>Automatic - Daily</span>
+									<p>{ __( 'Deposits' ) }</p>
+									<span>{ __( 'Automatic - Daily' ) }</span>
 								</div>
 								<div className="connect-account-page__payment-methods__description__divider"></div>
 								<div>
-									<p>Payments capture</p>
-									<span>Capture on order</span>
+									<p>{ __( 'Payments capture' ) }</p>
+									<span>{ __( 'Capture on order' ) }</span>
 								</div>
 								<div className="connect-account-page__payment-methods__description__divider"></div>
 								<div>
-									<p>Recurring payments</p>
-									<span>Supported</span>
+									<p>{ __( 'Recurring payments' ) }</p>
+									<span>{ __( 'Supported' ) }</span>
 								</div>
 							</div>
 						</div>

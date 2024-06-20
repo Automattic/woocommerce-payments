@@ -4,6 +4,7 @@
  * External dependencies
  */
 import * as React from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -66,7 +67,9 @@ const Loadable = ( {
  */
 export const LoadableBlock = ( props: LoadableBlockProps ): JSX.Element => {
 	const placeholder = (
-		<p style={ { lineHeight: props.numLines } }>Block placeholder</p>
+		<p style={ { lineHeight: props.numLines } }>
+			{ __( 'Block placeholder' ) }
+		</p>
 	);
 	return (
 		<Loadable { ...props } placeholder={ placeholder } display="block" />

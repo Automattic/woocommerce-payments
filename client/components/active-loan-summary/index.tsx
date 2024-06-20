@@ -86,7 +86,7 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 						<Loadable
 							isLoading={ true }
 							display="inline"
-							placeholder="Date disbursed"
+							placeholder={ __( 'Date disbursed' ) }
 						/>
 					</Block>
 					<Block
@@ -95,14 +95,14 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 						<Loadable
 							isLoading={ true }
 							display="inline"
-							placeholder="Loan amount"
+							placeholder={ __( 'Loan amount' ) }
 						/>
 					</Block>
 					<Block title={ __( 'Fixed fee', 'woocommerce-payments' ) }>
 						<Loadable
 							isLoading={ true }
 							display="inline"
-							placeholder="Fixed fee"
+							placeholder={ __( 'Fixed fee' ) }
 						/>
 					</Block>
 					<Block
@@ -111,7 +111,7 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 						<Loadable
 							isLoading={ true }
 							display="inline"
-							placeholder="Rate"
+							placeholder={ __( 'Rate' ) }
 						/>
 					</Block>
 					<Block

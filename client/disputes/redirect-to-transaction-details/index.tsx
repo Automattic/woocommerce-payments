@@ -4,6 +4,7 @@
 import React, { useEffect } from 'react';
 import { getHistory } from '@woocommerce/navigation';
 import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -50,9 +51,13 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 						</FlexItem>
 						<FlexItem>
 							<div>
-								<b>Error retrieving dispute</b>
+								<b>{ __( 'Error retrieving dispute' ) }</b>
 							</div>
-							<div>Please check your network and try again.</div>
+							<div>
+								{ __(
+									'Please check your network and try again.'
+								) }
+							</div>
 						</FlexItem>
 					</>
 				) : (
@@ -62,9 +67,11 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 						</FlexItem>
 						<FlexItem>
 							<div>
-								<b>One moment please</b>
+								<b>{ __( 'One moment please' ) }</b>
 							</div>
-							<div>Redirecting to payment details…</div>
+							<div>
+								{ __( 'Redirecting to payment details…' ) }
+							</div>
 						</FlexItem>
 					</>
 				) }

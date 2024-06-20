@@ -142,7 +142,7 @@ export const formatMethodFeesTooltip = (
 	return (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
-				<div>Base fee</div>
+				<div>{ __( 'Base fee' ) }</div>
 				<div>
 					{ getFeeDescriptionString(
 						accountFees.base,
@@ -152,7 +152,7 @@ export const formatMethodFeesTooltip = (
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>
-					<div>International payment method fee</div>
+					<div>{ __( 'International payment method fee' ) }</div>
 					<div>
 						{ getFeeDescriptionString(
 							accountFees.additional,
@@ -165,14 +165,14 @@ export const formatMethodFeesTooltip = (
 			) }
 			{ hasFees( accountFees.fx ) ? (
 				<div>
-					<div>Foreign exchange fee</div>
+					<div>{ __( 'Foreign exchange fee' ) }</div>
 					<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
 				</div>
 			) : (
 				''
 			) }
 			<div>
-				<div>Total per transaction</div>
+				<div>{ __( 'Total per transaction' ) }</div>
 				<div className={ 'wcpay-fees-tooltip__bold' }>
 					{ getFeeDescriptionString( total ) }
 				</div>

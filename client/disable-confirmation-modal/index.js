@@ -56,7 +56,11 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 		>
 			<PaymentDeleteIllustration
 				icon={ ( props ) => (
-					<img src={ WooCardIcon } alt="WooCard" { ...props } />
+					<img
+						src={ WooCardIcon }
+						alt={ __( 'WooCard' ) }
+						{ ...props }
+					/>
 				) }
 			/>
 			<p>

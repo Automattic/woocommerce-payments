@@ -171,7 +171,7 @@ const CVSExportModal: React.FunctionComponent< CSVExportModalProps > = ( {
 			</div>
 
 			<div className="reporting-export-modal__settings">
-				<h4>Settings</h4>
+				<h4>{ __( 'Settings' ) }</h4>
 
 				<div className="reporting-export-modal__settings--language">
 					<div className="reporting-export-modal__settings--language-label">

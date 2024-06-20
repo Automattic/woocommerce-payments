@@ -117,7 +117,7 @@ const PaymentActivity: React.FC = () => {
 						( option ) =>
 							option.key === selectedDateRange.preset_name
 					) }
-					placeholder="Select an option..."
+					placeholder={ __( 'Select an option…' ) }
 					onChange={ ( changes ) => {
 						const selectedItem = changes.selectedItem;
 						if ( selectedItem ) {

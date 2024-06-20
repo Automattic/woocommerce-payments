@@ -77,7 +77,7 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 					<Loadable
 						isLoading={ isLoading }
 						display="inline"
-						placeholder="loading amount"
+						placeholder={ __( 'loading amount' ) }
 						value={ formatCurrency( amount, currencyCode ) }
 					/>
 				</p>

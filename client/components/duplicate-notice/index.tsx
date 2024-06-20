@@ -83,7 +83,7 @@ function DuplicateNotice( {
 								tab: 'checkout',
 							} ) }
 						>
-							Review extensions
+							{ __( 'Review extensions' ) }
 						</a>
 					),
 				},

@@ -2,6 +2,7 @@
  * External dependencies
  */
 import * as React from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -61,7 +62,7 @@ const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 				<Loadable
 					isLoading={ isLoading }
 					display="inline"
-					placeholder="loading amount"
+					placeholder={ __( 'loading amount' ) }
 					value={ formatCurrency( amount, currencyCode ) }
 				/>
 			</p>

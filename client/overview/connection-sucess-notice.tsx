@@ -44,7 +44,7 @@ const ConnectionSuccessNotice: React.FC = () => {
 	return ! isDismissed && ! onboardingTestMode && isPoDisabledOrCompleted ? (
 		<Card className="wcpay-connection-success">
 			<DismissMenu />
-			<img src={ ConfettiImage } alt="confetti" />
+			<img src={ ConfettiImage } alt={ __( 'confetti' ) } />
 			{ accountStatus !== 'complete' ? (
 				<h2>
 					{ __(
