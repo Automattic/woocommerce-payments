@@ -25,6 +25,7 @@ import {
 import {
 	transformCartDataForDisplayItems,
 	transformCartDataForShippingOptions,
+	transformPrice,
 } from './transformers/wc-to-stripe';
 import paymentRequestButtonUi from './button-ui';
 import {
@@ -177,12 +178,14 @@ export default class WooPaymentsPaymentRequest {
 					paymentRequest.update( {
 						total: {
 							label: getPaymentRequestData( 'total_label' ),
-							amount:
+							amount: transformPrice(
 								parseInt( newCartData.totals.total_price, 10 ) -
-								parseInt(
-									newCartData.totals.total_refund || 0,
-									10
-								),
+									parseInt(
+										newCartData.totals.total_refund || 0,
+										10
+									),
+								newCartData.totals
+							),
 						},
 						displayItems: transformCartDataForDisplayItems(
 							newCartData
@@ -266,9 +269,14 @@ export default class WooPaymentsPaymentRequest {
 					),
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount:
+						amount: transformPrice(
 							parseInt( cartData.totals.total_price, 10 ) -
-							parseInt( cartData.totals.total_refund || 0, 10 ),
+								parseInt(
+									cartData.totals.total_refund || 0,
+									10
+								),
+							cartData.totals
+						),
 					},
 					displayItems: transformCartDataForDisplayItems( cartData ),
 				} );
@@ -292,9 +300,14 @@ export default class WooPaymentsPaymentRequest {
 					status: 'success',
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount:
+						amount: transformPrice(
 							parseInt( cartData.totals.total_price, 10 ) -
-							parseInt( cartData.totals.total_refund || 0, 10 ),
+								parseInt(
+									cartData.totals.total_refund || 0,
+									10
+								),
+							cartData.totals
+						),
 					},
 					displayItems: transformCartDataForDisplayItems( cartData ),
 				} );
