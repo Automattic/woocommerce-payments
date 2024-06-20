@@ -7,16 +7,13 @@
  * @return {Array} An array of PaymentItems
  */
 export const normalizeLineItems = ( displayItems ) => {
-	return displayItems
-		.filter( ( displayItem ) => {
-			return !! displayItem.value;
+	return displayItems.map( ( displayItem ) =>
+		// The amount prop is already present on the item.
+		( {
+			...displayItem,
+			name: displayItem.label,
 		} )
-		.map( ( displayItem ) => {
-			return {
-				amount: displayItem.value,
-				name: displayItem.label,
-			};
-		} );
+	);
 };
 
 /**
@@ -98,8 +95,8 @@ export const normalizeShippingAddress = ( shippingAddress ) => {
 		address_1: shippingAddress?.addressLine?.[ 0 ] ?? '',
 		address_2: shippingAddress?.addressLine?.[ 1 ] ?? '',
 		city: shippingAddress?.city ?? '',
-		state: shippingAddress?.region ?? '',
+		state: shippingAddress?.state ?? '',
 		country: shippingAddress?.country ?? '',
-		postcode: shippingAddress?.postalCode?.replace( ' ', '' ) ?? '',
+		postcode: shippingAddress?.postal_code ?? '',
 	};
 };
