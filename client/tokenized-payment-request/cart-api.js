@@ -53,13 +53,17 @@ export default class PaymentRequestCartApi {
 	 *          payment_method: string,
 	 *          payment_data: Array,
 	 *        }} paymentData Additional payment data to place the order.
+	 * @param {string} context The context in which the request is being made.
 	 * @return {Promise} Result of the order creation request.
 	 */
 	async placeOrder( paymentData ) {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/checkout',
-			credentials: 'omit',
+			credentials:
+				getPaymentRequestData( 'button_context' ) === 'product'
+					? 'omit'
+					: undefined,
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
 				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
@@ -79,10 +83,17 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart response object.
 	 */
 	async getCart() {
-		return await this._request( {
+		const response = await this._request( {
 			method: 'GET',
 			path: '/wc/store/v1/cart',
+			parse: false,
 		} );
+
+		this.cartRequestHeaders = {
+			Nonce: response.headers.get( 'Nonce' ),
+		};
+
+		return response.json();
 	}
 
 	/**
@@ -120,13 +131,17 @@ export default class PaymentRequestCartApi {
 	 *          billing_address: Object?,
 	 *          shipping_address: Object?,
 	 *        }} customerData Customer data to update.
+	 * @param {string} context The context in which the request is being made.
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */
 	async updateCustomer( customerData ) {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/update-customer',
-			credentials: 'omit',
+			credentials:
+				getPaymentRequestData( 'button_context' ) === 'product'
+					? 'omit'
+					: undefined,
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
 				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
@@ -144,13 +159,17 @@ export default class PaymentRequestCartApi {
 	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/cart.md#select-shipping-rate
 	 *
 	 * @param {{rate_id: string, package_id: integer}} shippingRate The selected shipping rate.
+	 * @param {string} context The context in which the request is being made.
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */
 	async selectShippingRate( shippingRate ) {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/select-shipping-rate',
-			credentials: 'omit',
+			credentials:
+				getPaymentRequestData( 'button_context' ) === 'product'
+					? 'omit'
+					: undefined,
 			data: shippingRate,
 		} );
 	}
