@@ -43,7 +43,7 @@ describe( 'Express checkout normalization', () => {
 				{
 					name: 'Item 3',
 					label: 'Item 3',
-					amount: 300,
+					amount: 200,
 					valueWithTax: 300,
 					value: 200,
 				},
