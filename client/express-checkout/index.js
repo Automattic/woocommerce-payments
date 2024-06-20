@@ -283,6 +283,10 @@ jQuery( ( $ ) => {
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.unblock();
 			} );
+
+			if ( wcpayExpressCheckoutParams.is_product_page ) {
+				wcpayECE.attachProductPageEventListeners( eceButton, elements );
+			}
 		},
 
 		getSelectedProductData: () => {
@@ -344,14 +348,67 @@ jQuery( ( $ ) => {
 			return elements.create( 'expressCheckout', options );
 		},
 
+		attachProductPageEventListeners: ( eceButton, elements ) => {
+			$( '.quantity' )
+				.off( 'input', '.qty' )
+				.on( 'input', '.qty', () => {
+					wcpayECE.blockExpressCheckoutButton();
+
+					$.when( wcpayECE.getSelectedProductData() )
+						.then( ( response ) => {
+							if (
+								! wcpayECE.paymentAborted &&
+								wcpayExpressCheckoutParams.product
+									.needs_shipping === response.needs_shipping
+							) {
+								elements.update( {
+									amount: response.total.amount,
+								} );
+							} else {
+								wcpayECE.reInitPaymentRequest( response );
+								wcpayECE.reInitExpressCheckoutElement(
+									response
+								);
+							}
+						} )
+						.always( function () {
+							wcpayECE.unblockExpressCheckoutButton();
+						} );
+				} );
+		},
+
+		reInitExpressCheckoutElement: ( response ) => {
+			wcpayExpressCheckoutParams.product.needs_shipping =
+				response.needs_shipping;
+			wcpayExpressCheckoutParams.product.total = response.total;
+			wcpayExpressCheckoutParams.product.displayItems =
+				response.displayItems;
+			wcpayECE.init();
+		},
+
+		blockExpressCheckoutButton: () => {
+			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
+			// blockUI.isBlocked is either undefined or 0 when element is not blocked
+			if (
+				$( '#wcpay-express-checkout-element' ).data(
+					'blockUI.isBlocked'
+				)
+			) {
+				return;
+			}
+
+			$( '#wcpay-express-checkout-element' ).block( { message: null } );
+		},
+
+		unblockExpressCheckoutButton: () => {
+			wcpayECE.show();
+			$( '#wcpay-express-checkout-element' ).unblock();
+		},
+
 		getElements: () => {
 			return $(
 				'.wcpay-payment-request-wrapper,#wcpay-express-checkout-button-separator'
 			);
-		},
-
-		hide: () => {
-			wcpayECE.getElements().hide();
 		},
 
 		show: () => {
