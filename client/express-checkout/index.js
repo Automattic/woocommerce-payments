@@ -396,7 +396,7 @@ jQuery( ( $ ) => {
 			$( document.body )
 				.off( 'woocommerce_variation_has_changed' )
 				.on( 'woocommerce_variation_has_changed', () => {
-					wcpayECE.blockButton();
+					wcpayECE.blockExpressCheckoutButton();
 					wcPayECEError = [];
 
 					$.when( wcpayECE.getSelectedProductData() )
@@ -423,11 +423,13 @@ jQuery( ( $ ) => {
 									response
 								);
 							}
-
-							wcpayECE.unblockExpressCheckoutButton();
 						} )
 						.catch( () => {
 							wcpayECE.hide();
+						} )
+						.always( () => {
+							console.log( 'always' );
+							wcpayECE.unblockExpressCheckoutButton();
 						} );
 				} );
 
@@ -506,25 +508,6 @@ jQuery( ( $ ) => {
 				wcpayECE.show();
 				eceButton.mount( '#wcpay-express-checkout-element' );
 			}
-		},
-
-		blockButton: () => {
-			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
-			// blockUI.isBlocked is either undefined or 0 when element is not blocked
-			if (
-				$( '#wcpay-express-checkout-button' ).data(
-					'blockUI.isBlocked'
-				)
-			) {
-				return;
-			}
-
-			$( '#wcpay-express-checkout-button' ).block( { message: null } );
-		},
-
-		unblockButton: () => {
-			wcpayECE.show();
-			$( '#wcpay-express-checkout-button' ).unblock();
 		},
 
 		/**
