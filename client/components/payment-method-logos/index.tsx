@@ -80,8 +80,7 @@ export const WooPaymentMethodLogos: React.VFC< {
 			<div className="woocommerce-payments-method-logos">
 				{ Payments.map( ( payment ) => {
 					if ( i >= maxNrElements ) {
-						i++;
-						return <Fragment key={ i - 1 }></Fragment>;
+						return <Fragment key={ payment.name }></Fragment>;
 					}
 					i++;
 
@@ -97,8 +96,7 @@ export const WooPaymentMethodLogos: React.VFC< {
 			<div className="woocommerce-payments-method-logos_mini">
 				{ Payments.map( ( payment ) => {
 					if ( j >= 5 ) {
-						j++;
-						return <Fragment key={ j - 1 }></Fragment>;
+						return <Fragment key={ payment.name }></Fragment>;
 					}
 					j++;
 
