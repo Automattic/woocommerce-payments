@@ -54,6 +54,21 @@ $space-header-item: 12px;
 			top: 5px;
 		}
 		.woocommerce-table__actions {
+			justify-content: space-between;
+
+			& > div {
+				width: 85%;
+				margin-right: 0;
+			}
+
+			button.woocommerce-table__download-button {
+				@include breakpoint( '<1040px' ) {
+					.woocommerce-table__download-button__label {
+						display: none;
+					}
+				}
+			}
+
 			.woocommerce-select-control.is-focused
 				.woocommerce-select-control__control {
 				flex-wrap: wrap;
@@ -68,6 +83,12 @@ $space-header-item: 12px;
 				white-space: nowrap;
 				scrollbar-width: none;
 				margin-right: 25px;
+			}
+
+			@include breakpoint( '<960px' ) {
+				.woocommerce-search {
+					margin: 0;
+				}
 			}
 		}
 	}
