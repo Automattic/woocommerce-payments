@@ -303,7 +303,10 @@ abstract class UPE_Payment_Method {
 	 * @return array
 	 */
 	public function get_countries() {
-		return $this->countries;
+		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
+
+		return $this->has_domestic_transactions_restrictions() ? [ $account_country ] : $this->countries;
 	}
 
 	/**
