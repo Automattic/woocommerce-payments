@@ -40,7 +40,7 @@ export const useExpressCheckout = ( {
 	};
 
 	const abortPayment = ( onConfirmEvent, message ) => {
-		onConfirmEvent.paymentFailed( 'fail' );
+		onConfirmEvent.paymentFailed( { reason: 'fail' } );
 		setExpressPaymentError( message );
 	};
 

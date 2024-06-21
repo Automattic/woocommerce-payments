@@ -81,7 +81,7 @@ jQuery( ( $ ) => {
 		 * @param {string} message Error message to display.
 		 */
 		abortPayment: ( payment, message ) => {
-			payment.paymentFailed();
+			payment.paymentFailed( { reason: 'fail' } );
 			wcpayECE.unblock();
 
 			$( '.woocommerce-error' ).remove();
