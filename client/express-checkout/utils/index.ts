@@ -1,5 +1,11 @@
 export * from './normalize';
 
+interface MyWindow extends Window {
+	wcpayExpressCheckoutParams: WCPayExpressCheckoutParams;
+}
+
+declare let window: MyWindow;
+
 /**
  * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
  */
@@ -72,6 +78,12 @@ export interface WCPayExpressCheckoutParams {
 			amount: number;
 		};
 	};
+
+	/**
+	 * Settings for the user authentication dialog and redirection.
+	 */
+	login_confirmation: { message: string; redirect_url: string } | false;
+
 	stripe: {
 		accountId: string;
 		locale: string;
@@ -87,11 +99,13 @@ declare global {
 	}
 }
 
-export const getExpressCheckoutData = (
-	key: keyof WCPayExpressCheckoutParams
+export const getExpressCheckoutData = <
+	K extends keyof WCPayExpressCheckoutParams
+>(
+	key: K
 ) => {
-	if ( window.wcpayExpressCheckoutParams ) {
-		return window.wcpayExpressCheckoutParams?.[ key ];
+	if ( key in window.wcpayExpressCheckoutParams ) {
+		return window.wcpayExpressCheckoutParams[ key ];
 	}
 
 	return null;
@@ -107,4 +121,35 @@ export const getErrorMessageFromNotice = ( notice: string ) => {
 	const div = document.createElement( 'div' );
 	div.innerHTML = notice.trim();
 	return div.firstChild ? div.firstChild.textContent : '';
+};
+
+/**
+ * Displays a `confirm` dialog which leads to a redirect.
+ *
+ * @param paymentRequestType Can be either apple_pay, google_pay or payment_request_api.
+ */
+export const displayLoginConfirmation = ( paymentRequestType: string ) => {
+	const loginConfirmation = getExpressCheckoutData( 'login_confirmation' );
+
+	if ( ! loginConfirmation ) {
+		return;
+	}
+
+	let message = loginConfirmation.message;
+
+	// Replace dialog text with specific payment request type "Apple Pay" or "Google Pay".
+	if ( paymentRequestType !== 'payment_request_api' ) {
+		message = message.replace(
+			/\*\*.*?\*\*/,
+			paymentRequestType === 'apple_pay' ? 'Apple Pay' : 'Google Pay'
+		);
+	}
+
+	// Remove asterisks from string.
+	message = message.replace( /\*\*/g, '' );
+
+	if ( confirm( message ) ) {
+		// Redirect to my account page.
+		window.location.href = loginConfirmation.redirect_url;
+	}
 };

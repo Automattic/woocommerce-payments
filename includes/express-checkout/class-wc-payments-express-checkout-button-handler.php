@@ -145,7 +145,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
 			'button'             => $this->get_button_settings(),
-			'login_confirmation' => '',
+			'login_confirmation' => false, // TODO: Update with correct value.
 			'is_product_page'    => $this->express_checkout_helper->is_product(),
 			'button_context'     => $this->express_checkout_helper->get_button_context(),
 			'is_pay_for_order'   => $this->express_checkout_helper->is_pay_for_order_page(),

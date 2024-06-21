@@ -12,6 +12,7 @@ import {
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
+import { displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -42,6 +43,8 @@ jQuery( ( $ ) => {
 			} );
 		}
 	);
+
+	let wcPayECEError = [];
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -244,9 +247,49 @@ jQuery( ( $ ) => {
 			wcpayECE.showButton( eceButton );
 
 			eceButton.on( 'click', function ( event ) {
-				// TODO: handle cases where we need login confirmation.
-
 				if ( getExpressCheckoutData( 'is_product_page' ) ) {
+					// If login is required for checkout, display redirect confirmation dialog.
+					if ( getExpressCheckoutData( 'login_confirmation' ) ) {
+						// TODO: Define paymentRequestType properly.
+						const paymentRequestType = '';
+						displayLoginConfirmation( paymentRequestType );
+						return;
+					}
+
+					const addToCartButton = $( '.single_add_to_cart_button' );
+
+					// First check if product can be added to cart.
+					if ( addToCartButton.is( '.disabled' ) ) {
+						if (
+							addToCartButton.is( '.wc-variation-is-unavailable' )
+						) {
+							window.alert(
+								window?.wc_add_to_cart_variation_params
+									?.i18n_unavailable_text ||
+									__(
+										'Sorry, this product is unavailable. Please choose a different combination.',
+										'woocommerce-payments'
+									)
+							);
+						} else {
+							window.alert(
+								__(
+									'Please select your product options before proceeding.',
+									'woocommerce-payments'
+								)
+							);
+						}
+						return;
+					}
+
+					// TODO: This scenario.
+					// For PRBs wcPayECEError (paymentRequestError) is never re-assigned so it might be not working properly.
+					if ( wcPayECEError.length > 0 ) {
+						window.alert( wcPayECEError );
+						return;
+					}
+
+					// Add products to the cart if everything is right.
 					wcpayECE.addToCart();
 				}
 
@@ -281,11 +324,12 @@ jQuery( ( $ ) => {
 			);
 
 			eceButton.on( 'cancel', async () => {
+				wcpayECE.paymentAborted = true;
 				wcpayECE.unblock();
 			} );
 
 			if ( wcpayExpressCheckoutParams.is_product_page ) {
-				wcpayECE.attachProductPageEventListeners( eceButton, elements );
+				wcpayECE.attachProductPageEventListeners( elements );
 			}
 		},
 
@@ -348,7 +392,45 @@ jQuery( ( $ ) => {
 			return elements.create( 'expressCheckout', options );
 		},
 
-		attachProductPageEventListeners: ( eceButton, elements ) => {
+		attachProductPageEventListeners: ( elements ) => {
+			$( document.body )
+				.off( 'woocommerce_variation_has_changed' )
+				.on( 'woocommerce_variation_has_changed', () => {
+					wcpayECE.blockButton();
+					wcPayECEError = [];
+
+					$.when( wcpayECE.getSelectedProductData() )
+						.then( ( response ) => {
+							/**
+							 * If the customer aborted the payment request,
+							 * we need to re init the payment request button to ensure the shipping
+							 * options are refetched. If the customer didn't abort the payment request,
+							 * and the product's shipping status is consistent,
+							 * we can simply update the payment request button with the new total and display items.
+							 */
+							if (
+								! wcpayECE.paymentAborted &&
+								getExpressCheckoutData( 'product' )
+									.needs_shipping === response.needs_shipping
+							) {
+								// TODO: checck this if updates correctly.
+								elements.update( {
+									amount: response.total.amount,
+									displayItems: response.displayItems,
+								} );
+							} else {
+								wcpayECE.reInitExpressCheckoutElement(
+									response
+								);
+							}
+
+							wcpayECE.unblockExpressCheckoutButton();
+						} )
+						.catch( () => {
+							wcpayECE.hide();
+						} );
+				} );
+
 			$( '.quantity' )
 				.off( 'input', '.qty' )
 				.on( 'input', '.qty', () => {
@@ -356,16 +438,20 @@ jQuery( ( $ ) => {
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
+							if ( response.error ) {
+								wcPayECEError = [ response.error ];
+								return; // TODO: This scenario.
+							}
+
 							if (
 								! wcpayECE.paymentAborted &&
-								wcpayExpressCheckoutParams.product
+								getExpressCheckoutData( 'product' )
 									.needs_shipping === response.needs_shipping
 							) {
 								elements.update( {
 									amount: response.total.amount,
 								} );
 							} else {
-								wcpayECE.reInitPaymentRequest( response );
 								wcpayECE.reInitExpressCheckoutElement(
 									response
 								);
