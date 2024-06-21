@@ -130,6 +130,10 @@ const PaymentActivity: React.FC = () => {
 								.clone()
 								.format( 'YYYY-MM-DD\\THH:mm:ss' );
 							const { key: presetName } = selectedItem;
+							sessionStorage.setItem(
+								'selectedPresetName',
+								selectedItem.key
+							);
 							recordEvent(
 								'wcpay_overview_payment_activity_period_change',
 								{
