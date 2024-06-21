@@ -3,7 +3,7 @@ export * from './normalize';
 /**
  * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
  */
-interface WCPayExpressCheckoutParams {
+export interface WCPayExpressCheckoutParams {
 	ajax_url: string;
 
 	/**
