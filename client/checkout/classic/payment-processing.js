@@ -586,3 +586,15 @@ export const processPayment = (
 	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
 	return false;
 };
+
+/**
+ * Used only for testing, resets the gatewayUPEComponents internal cache of elements for a given property.
+ *
+ * @param {string} paymentMethodType The paymentMethodType we want to remove the upeElement from.
+ * @return {void}
+ */
+export function __resetGatewayUPEComponentsElement( paymentMethodType ) {
+	if ( gatewayUPEComponents[ paymentMethodType ]?.upeElement ) {
+		delete gatewayUPEComponents[ paymentMethodType ].upeElement;
+	}
+}
