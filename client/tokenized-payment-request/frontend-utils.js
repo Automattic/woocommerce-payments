@@ -61,7 +61,9 @@ export const getPaymentRequest = ( { stripe, cartData, productData } ) => {
 					currency: cartData.totals.currency_code.toLowerCase(),
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount: parseInt( cartData.totals.total_price, 10 ),
+						amount:
+							parseInt( cartData.totals.total_price, 10 ) -
+							parseInt( cartData.totals.total_refund || 0, 10 ),
 					},
 					requestShipping:
 						getPaymentRequestData( 'button_context' ) ===

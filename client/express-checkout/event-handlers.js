@@ -1,16 +1,52 @@
 /**
  * Internal dependencies
  */
-import { normalizeOrderData, normalizeShippingAddress } from './utils';
-import { getErrorMessageFromNotice } from 'utils/express-checkout';
+import {
+	normalizeOrderData,
+	normalizeShippingAddress,
+	normalizeLineItems,
+} from './utils';
+import { getErrorMessageFromNotice } from './utils/index';
 
-export const shippingAddressChangeHandler = async ( api, event ) => {
-	const response = await api.expressCheckoutECECalculateShippingOptions(
-		normalizeShippingAddress( event.shippingAddress )
-	);
-	event.resolve( {
-		shippingRates: response.shipping_options,
-	} );
+export const shippingAddressChangeHandler = async ( api, event, elements ) => {
+	try {
+		const response = await api.expressCheckoutECECalculateShippingOptions(
+			normalizeShippingAddress( event.address )
+		);
+
+		if ( response.result === 'success' ) {
+			elements.update( {
+				amount: response.total.amount,
+			} );
+			event.resolve( {
+				shippingRates: response.shipping_options,
+				lineItems: normalizeLineItems( response.displayItems ),
+			} );
+		} else {
+			event.reject();
+		}
+	} catch ( e ) {
+		event.reject();
+	}
+};
+
+export const shippingRateChangeHandler = async ( api, event, elements ) => {
+	try {
+		const response = await api.paymentRequestUpdateShippingDetails(
+			event.shippingRate
+		);
+
+		if ( response.result === 'success' ) {
+			elements.update( { amount: response.total.amount } );
+			event.resolve( {
+				lineItems: normalizeLineItems( response.displayItems ),
+			} );
+		} else {
+			event.reject();
+		}
+	} catch ( e ) {
+		event.reject();
+	}
 };
 
 export const onConfirmHandler = async (
@@ -21,13 +57,17 @@ export const onConfirmHandler = async (
 	abortPayment,
 	event
 ) => {
+	const { error: submitError } = await elements.submit();
+	if ( submitError ) {
+		return abortPayment( event, submitError.message );
+	}
+
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
 		elements,
 	} );
 
 	if ( error ) {
-		abortPayment( event, error.message );
-		return;
+		return abortPayment( event, error.message );
 	}
 
 	// Kick off checkout processing step.
@@ -56,6 +96,6 @@ export const onConfirmHandler = async (
 			completePayment( redirectUrl );
 		}
 	} catch ( e ) {
-		abortPayment( event, error.message );
+		return abortPayment( event, e.message );
 	}
 };

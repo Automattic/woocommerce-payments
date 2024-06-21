@@ -70,6 +70,10 @@ class Fraud_Prevention_Service {
 	 * @return  void
 	 */
 	public static function maybe_append_fraud_prevention_token() {
+		if ( wp_script_is( self::TOKEN_NAME, 'enqueued' ) ) {
+			return;
+		}
+
 		// Check session first before trying to append the token.
 		if ( ! WC()->session ) {
 			return;
