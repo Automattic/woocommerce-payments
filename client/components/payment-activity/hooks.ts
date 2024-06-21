@@ -108,12 +108,14 @@ export const usePaymentActivityDateRangePresets = (): {
 		},
 	};
 
+	const defaultPreset =
+		sessionStorage.getItem( 'selectedPresetName' ) ?? 'last_7_days';
 	const defaultDateRange = {
-		preset_name: 'last_7_days',
-		date_start: dateRangePresets.last_7_days.start.format(
+		preset_name: defaultPreset,
+		date_start: dateRangePresets[ defaultPreset ].start.format(
 			'YYYY-MM-DD\\THH:mm:ss'
 		),
-		date_end: dateRangePresets.last_7_days.end.format(
+		date_end: dateRangePresets[ defaultPreset ].end.format(
 			'YYYY-MM-DD\\THH:mm:ss'
 		),
 	};
