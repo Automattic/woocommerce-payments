@@ -4061,7 +4061,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			/**
 			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
 			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
-			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block'.
+			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block', 'add_payment_method'.
 			 *
 			 * @since 7.4.0
 			 */
