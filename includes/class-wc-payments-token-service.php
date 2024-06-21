@@ -252,7 +252,7 @@ class WC_Payments_Token_Service {
 
 		foreach ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD as $payment_method => $gateway ) {
 			if ( $gateway === $gateway_id ) {
-				if ( Payment_Method::LINK ) {
+				if ( Payment_Method::LINK === $payment_method ) {
 					if ( $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
 						$methods[] = Payment_Method::LINK;
 					}
