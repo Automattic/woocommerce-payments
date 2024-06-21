@@ -428,7 +428,6 @@ jQuery( ( $ ) => {
 							wcpayECE.hide();
 						} )
 						.always( () => {
-							console.log( 'always' );
 							wcpayECE.unblockExpressCheckoutButton();
 						} );
 				} );
@@ -445,6 +444,8 @@ jQuery( ( $ ) => {
 								return; // TODO: This scenario.
 							}
 
+							// TODO: Cache the `needs_shipping` value of the last response so
+							// we re-init only when necessary, that is when `needs_shipping` has changed.
 							if (
 								! wcpayECE.paymentAborted &&
 								getExpressCheckoutData( 'product' )
