@@ -153,6 +153,7 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 			googlePay: 'always',
 			link: 'auto',
 		},
+		layout: { overflow: 'never' },
 		buttonTheme: {
 			googlePay: mapWooPaymentsThemeToButtonTheme(
 				'googlePay',
