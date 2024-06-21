@@ -164,15 +164,26 @@ class WC_Payments_Token_Service {
 			}
 
 			$retrievable_payment_method_types = [];
+			if ( empty( $gateway_id ) ) {
+				$retrievable_payment_method_types[] = Payment_Method::CARD;
 
-			foreach ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD as $payment_method => $gateway ) {
-				if ( $gateway === $gateway_id ) {
-					if ( Payment_Method::LINK === $payment_method ) {
-						if ( in_array( Payment_Method::LINK, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
-							$retrievable_payment_method_types[] = Payment_Method::LINK;
+				if ( in_array( Payment_Method::SEPA, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
+					$retrievable_payment_method_types[] = Payment_Method::SEPA;
+				}
+
+				if ( in_array( Payment_Method::LINK, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
+					$retrievable_payment_method_types[] = Payment_Method::LINK;
+				}
+			} else {
+				foreach ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD as $payment_method => $gateway ) {
+					if ( $gateway === $gateway_id ) {
+						if ( Payment_Method::LINK === $payment_method ) {
+							if ( in_array( Payment_Method::LINK, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
+								$retrievable_payment_method_types[] = Payment_Method::LINK;
+							}
+						} else {
+							$retrievable_payment_method_types[] = $payment_method;
 						}
-					} else {
-						$retrievable_payment_method_types[] = $payment_method;
 					}
 				}
 			}
