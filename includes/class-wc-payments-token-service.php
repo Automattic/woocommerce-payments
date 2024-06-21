@@ -163,30 +163,7 @@ class WC_Payments_Token_Service {
 				}
 			}
 
-			$retrievable_payment_method_types = [];
-			if ( empty( $gateway_id ) ) {
-				$retrievable_payment_method_types[] = Payment_Method::CARD;
-
-				if ( in_array( Payment_Method::SEPA, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
-					$retrievable_payment_method_types[] = Payment_Method::SEPA;
-				}
-
-				if ( in_array( Payment_Method::LINK, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
-					$retrievable_payment_method_types[] = Payment_Method::LINK;
-				}
-			} else {
-				foreach ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD as $payment_method => $gateway ) {
-					if ( $gateway === $gateway_id ) {
-						if ( Payment_Method::LINK === $payment_method ) {
-							if ( in_array( Payment_Method::LINK, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
-								$retrievable_payment_method_types[] = Payment_Method::LINK;
-							}
-						} else {
-							$retrievable_payment_method_types[] = $payment_method;
-						}
-					}
-				}
-			}
+			$retrievable_payment_method_types = $this->get_retrievable_payment_method_types( $gateway_id );
 
 			$payment_methods = [];
 
@@ -226,6 +203,76 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 
 		return $tokens;
+	}
+
+	/**
+	 * Retrieves the payment method types for which tokens should be retrieved.
+	 *
+	 * This function determines the appropriate payment method types based on the provided gateway ID.
+	 * - If a gateway ID is provided, it retrieves the payment methods specific to that gateway to prevent duplication of saved tokens under incorrect payment methods during checkout.
+	 * - If no gateway ID is provided, it retrieves the default payment methods to fetch all saved tokens, e.g., for the My Account page.
+	 *
+	 * @param string|null $gateway_id The optional ID of the gateway.
+	 * @return array The list of retrievable payment method types.
+	 */
+	private function get_retrievable_payment_method_types( $gateway_id = null ) {
+		if ( empty( $gateway_id ) ) {
+			return $this->get_all_retrievable_payment_methods();
+		} else {
+			return $this->get_gateway_specific_retrievable_payment_methods( $gateway_id );
+		}
+	}
+
+	/**
+	 * Returns all the enabled retrievable payment method types.
+	 *
+	 * @return array Enabled retrievable payment method types.
+	 */
+	private function get_all_retrievable_payment_methods() {
+		$methods = [ Payment_Method::CARD ];
+
+		if ( $this->is_payment_method_enabled( Payment_Method::SEPA ) ) {
+			$methods[] = Payment_Method::SEPA;
+		}
+
+		if ( $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
+			$methods[] = Payment_Method::LINK;
+		}
+
+		return $methods;
+	}
+	/**
+	 * Returns retrievable payment method types for a given gateway.
+	 *
+	 * @param string $gateway_id The ID of the gateway.
+	 * @return array Retrievable payment method types for the specified gateway.
+	 */
+	private function get_gateway_specific_retrievable_payment_methods( $gateway_id ) {
+		$methods = [];
+
+		foreach ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD as $payment_method => $gateway ) {
+			if ( $gateway === $gateway_id ) {
+				if ( Payment_Method::LINK ) {
+					if ( $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
+						$methods[] = Payment_Method::LINK;
+					}
+				} else {
+					$methods[] = $payment_method;
+				}
+			}
+		}
+
+		return $methods;
+	}
+
+	/**
+	 * Checks if a payment method is enabled.
+	 *
+	 * @param string $payment_method The payment method to check.
+	 * @return bool True if the payment method is enabled, false otherwise.
+	 */
+	private function is_payment_method_enabled( $payment_method ) {
+		return in_array( $payment_method, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true );
 	}
 
 	/**
