@@ -210,16 +210,16 @@ class WC_Payments_Token_Service {
 	 *
 	 * This function determines the appropriate payment method types based on the provided gateway ID.
 	 * - If a gateway ID is provided, it retrieves the payment methods specific to that gateway to prevent duplication of saved tokens under incorrect payment methods during checkout.
-	 * - If no gateway ID is provided, it retrieves the default payment methods to fetch all saved tokens, e.g., for the My Account page.
+	 * - If no gateway ID is provided, it retrieves the default payment methods to fetch all saved tokens, e.g., for the Blocks checkout or My Account page.
 	 *
 	 * @param string|null $gateway_id The optional ID of the gateway.
 	 * @return array The list of retrievable payment method types.
 	 */
 	private function get_retrievable_payment_method_types( $gateway_id = null ) {
 		if ( empty( $gateway_id ) ) {
-			return $this->get_all_retrievable_payment_methods();
+			return $this->get_all_retrievable_payment_types();
 		} else {
-			return $this->get_gateway_specific_retrievable_payment_methods( $gateway_id );
+			return $this->get_gateway_specific_retrievable_payment_types( $gateway_id );
 		}
 	}
 
@@ -228,18 +228,18 @@ class WC_Payments_Token_Service {
 	 *
 	 * @return array Enabled retrievable payment method types.
 	 */
-	private function get_all_retrievable_payment_methods() {
-		$methods = [ Payment_Method::CARD ];
+	private function get_all_retrievable_payment_types() {
+		$types = [ Payment_Method::CARD ];
 
 		if ( $this->is_payment_method_enabled( Payment_Method::SEPA ) ) {
-			$methods[] = Payment_Method::SEPA;
+			$types[] = Payment_Method::SEPA;
 		}
 
 		if ( $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
-			$methods[] = Payment_Method::LINK;
+			$types[] = Payment_Method::LINK;
 		}
 
-		return $methods;
+		return $types;
 	}
 	/**
 	 * Returns retrievable payment method types for a given gateway.
@@ -247,22 +247,23 @@ class WC_Payments_Token_Service {
 	 * @param string $gateway_id The ID of the gateway.
 	 * @return array Retrievable payment method types for the specified gateway.
 	 */
-	private function get_gateway_specific_retrievable_payment_methods( $gateway_id ) {
-		$methods = [];
+	private function get_gateway_specific_retrievable_payment_types( $gateway_id ) {
+		$types = [];
 
 		foreach ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD as $payment_method => $gateway ) {
 			if ( $gateway === $gateway_id ) {
+				// Stripe Link is part of the card gateway, so we need to check separately if Link is enabled.
 				if ( Payment_Method::LINK === $payment_method ) {
 					if ( $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
-						$methods[] = Payment_Method::LINK;
+						$types[] = Payment_Method::LINK;
 					}
 				} else {
-					$methods[] = $payment_method;
+					$types[] = $payment_method;
 				}
 			}
 		}
 
-		return $methods;
+		return $types;
 	}
 
 	/**
