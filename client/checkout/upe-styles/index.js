@@ -11,7 +11,7 @@ import {
 	getBackgroundColor,
 } from './utils.js';
 
-const appearanceSelectors = {
+export const appearanceSelectors = {
 	default: {
 		hiddenContainer: '#wcpay-hidden-div',
 		hiddenInput: '#wcpay-hidden-input',
