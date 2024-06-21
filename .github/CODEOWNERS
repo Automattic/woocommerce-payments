@@ -3,4 +3,4 @@
 # Each line is a file pattern followed by one or more owners.
 
 # Harmony owns any files in the .github directory at the root of the repository and any of its subdirectories.
-/.github/ @Automattic/harmony
+/.github/ @Automattic/transact-architecture-devops
