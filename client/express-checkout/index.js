@@ -247,13 +247,13 @@ jQuery( ( $ ) => {
 			wcpayECE.showButton( eceButton );
 
 			eceButton.on( 'click', function ( event ) {
-				if ( getExpressCheckoutData( 'is_product_page' ) ) {
-					// If login is required for checkout, display redirect confirmation dialog.
-					if ( getExpressCheckoutData( 'login_confirmation' ) ) {
-						displayLoginConfirmation( event.expressPaymentType );
-						return;
-					}
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( getExpressCheckoutData( 'login_confirmation' ) ) {
+					displayLoginConfirmation( event.expressPaymentType );
+					return;
+				}
 
+				if ( getExpressCheckoutData( 'is_product_page' ) ) {
 					const addToCartButton = $( '.single_add_to_cart_button' );
 
 					// First check if product can be added to cart.
@@ -326,7 +326,7 @@ jQuery( ( $ ) => {
 				wcpayECE.unblock();
 			} );
 
-			if ( wcpayExpressCheckoutParams.is_product_page ) {
+			if ( getExpressCheckoutData( 'is_product_page' ) ) {
 				wcpayECE.attachProductPageEventListeners( elements );
 			}
 		},
