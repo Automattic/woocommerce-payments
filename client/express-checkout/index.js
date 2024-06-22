@@ -250,9 +250,7 @@ jQuery( ( $ ) => {
 				if ( getExpressCheckoutData( 'is_product_page' ) ) {
 					// If login is required for checkout, display redirect confirmation dialog.
 					if ( getExpressCheckoutData( 'login_confirmation' ) ) {
-						// TODO: Define paymentRequestType properly.
-						const paymentRequestType = '';
-						displayLoginConfirmation( paymentRequestType );
+						displayLoginConfirmation( event.expressPaymentType );
 						return;
 					}
 

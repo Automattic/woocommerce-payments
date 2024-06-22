@@ -38,11 +38,15 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 * @return  void
 	 */
 	public function init() {
+		add_action( 'template_redirect', [ $this, 'set_session' ] ); // TODO: Check if this function is necessary.
+		add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
 		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
 		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
+		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 	}
 
 	/**
@@ -252,6 +256,23 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 	}
 
+	/**
+	 * Returns the login redirect URL.
+	 *
+	 * @param string $redirect Default redirect URL.
+	 *
+	 * @return string Redirect URL.
+	 */
+	public function get_login_redirect_url( $redirect ) {
+		$url = esc_url_raw( wp_unslash( $_COOKIE['wcpay_payment_request_redirect_url'] ?? '' ) );
+
+		if ( empty( $url ) ) {
+			return $redirect;
+		}
+		wc_setcookie( 'wcpay_payment_request_redirect_url', '' );
+
+		return $url;
+	}
 
 	/**
 	 * Gets the product total price.
@@ -452,5 +473,42 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		wp_send_json( [ 'result' => 'success' ] );
+	}
+
+	/**
+	 * Sets the WC customer session if one is not set.
+	 * This is needed so nonces can be verified by AJAX Request.
+	 *
+	 * @return void
+	 */
+	public function set_session() {
+		// Don't set session cookies on product pages to allow for caching when payment request
+		// buttons are disabled. But keep cookies if there is already an active WC session in place.
+		if (
+			! ( $this->express_checkout_button_helper->is_product() && $this->express_checkout_button_helper->should_show_express_checkout_button() )
+			|| ( isset( WC()->session ) && WC()->session->has_session() )
+		) {
+			return;
+		}
+
+		WC()->session->set_customer_session_cookie( true );
+	}
+
+	/**
+	 * Handles payment request redirect when the redirect dialog "Continue" button is clicked.
+	 */
+	public function handle_payment_request_redirect() {
+		if (
+			! empty( $_GET['wcpay_payment_request_redirect_url'] )
+			&& ! empty( $_GET['_wpnonce'] )
+			&& wp_verify_nonce( $_GET['_wpnonce'], 'wcpay-set-redirect-url' ) // @codingStandardsIgnoreLine
+		) {
+			$url = rawurldecode( esc_url_raw( wp_unslash( $_GET['wcpay_payment_request_redirect_url'] ) ) );
+			// Sets a redirect URL cookie for 10 minutes, which we will redirect to after authentication.
+			// Users will have a 10 minute timeout to login/create account, otherwise redirect URL expires.
+			wc_setcookie( 'wcpay_payment_request_redirect_url', $url, time() + MINUTE_IN_SECONDS * 10 );
+			// Redirects to "my-account" page.
+			wp_safe_redirect( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ) );
+		}
 	}
 }

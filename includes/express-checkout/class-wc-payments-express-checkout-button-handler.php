@@ -110,6 +110,99 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	}
 
 	/**
+	 * Settings array for the user authentication dialog and redirection.
+	 *
+	 * @return array|false
+	 */
+	public function get_login_confirmation_settings() {
+		if ( is_user_logged_in() || ! $this->is_authentication_required() ) {
+			return false;
+		}
+
+		/* translators: The text encapsulated in `**` can be replaced with "Apple Pay" or "Google Pay". Please translate this text, but don't remove the `**`. */
+		$message      = __( 'To complete your transaction with **the selected payment method**, you must log in or create an account with our site.', 'woocommerce-payments' );
+		$redirect_url = add_query_arg(
+			[
+				'_wpnonce'                           => wp_create_nonce( 'wcpay-set-redirect-url' ),
+				'wcpay_payment_request_redirect_url' => rawurlencode( home_url( add_query_arg( [] ) ) ),
+				// Current URL to redirect to after login.
+			],
+			home_url()
+		);
+
+		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- home_url passed in to add_query_arg.
+			'message'      => $message,
+			'redirect_url' => $redirect_url,
+		];
+	}
+
+	/**
+	 * Checks whether authentication is required for checkout.
+	 *
+	 * @return bool
+	 */
+	public function is_authentication_required() {
+		// If guest checkout is disabled and account creation is not possible, authentication is required.
+		if ( 'no' === get_option( 'woocommerce_enable_guest_checkout', 'yes' ) && ! $this->is_account_creation_possible() ) {
+			return true;
+		}
+		// If cart contains subscription and account creation is not posible, authentication is required.
+		if ( $this->has_subscription_product() && ! $this->is_account_creation_possible() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @return boolean
+	 */
+	public function has_subscription_product() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return false;
+		}
+
+		if ( $this->express_checkout_helper->is_product() ) {
+			$product = $this->express_checkout_helper->get_product();
+			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+				return true;
+			}
+		}
+
+		if ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) {
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether account creation is possible during checkout.
+	 *
+	 * @return bool
+	 */
+	public function is_account_creation_possible() {
+		$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
+
+		// If a subscription is being purchased, check if account creation is allowed for subscriptions.
+		if ( ! $is_signup_from_checkout_allowed && $this->has_subscription_product() ) {
+			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
+		}
+
+		// If automatically generate username/password are disabled, the Payment Request API
+		// can't include any of those fields, so account creation is not possible.
+		return (
+			$is_signup_from_checkout_allowed &&
+			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
+			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
+		);
+	}
+
+	/**
 	 * Load public scripts and styles.
 	 */
 	public function scripts() {
@@ -145,7 +238,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
 			'button'             => $this->get_button_settings(),
-			'login_confirmation' => false, // TODO: Update with correct value.
+			'login_confirmation' => $this->get_login_confirmation_settings(),
 			'is_product_page'    => $this->express_checkout_helper->is_product(),
 			'button_context'     => $this->express_checkout_helper->get_button_context(),
 			'is_pay_for_order'   => $this->express_checkout_helper->is_pay_for_order_page(),
