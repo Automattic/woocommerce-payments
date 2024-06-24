@@ -80,13 +80,22 @@ jobs:
   slack-notification:
     name: "Send notification to Slack"
     needs: [check-code-freeze, create-release-pr]
-    if: ${{ ! ( inputs.skipSlackPing && needs.create-release-pr.outputs.release-pr-id ) }}
+    if: ${{ ! ( inputs.skipSlackPing && cancelled() ) }}
     runs-on: ubuntu-latest
     env:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}
       RELEASE_PR_ID: ${{ needs.create-release-pr.outputs.release-pr-id }}
     steps:
+      - name: Check whether PR is created
+        id: check-pr-status
+        run: |
+          if [[ -z "$RELEASE_PR_ID" ]]; then
+            echo "RELEASE_PR_STATUS=:warning-8c: Failed to create Release PR. <https://github.com/Automattic/woocommerce-payments/compare/release/${{ env.RELEASE_VERSION }}|Click here to create the PR manually.>" >> $GITHUB_OUTPUT
+          else
+            echo "RELEASE_PR_STATUS=• Raised a <https://github.com/Automattic/woocommerce-payments/pull/${{ env.RELEASE_PR_ID }}|Pull Request> to `trunk`" >> $GITHUB_OUTPUT
+          fi
+
       - name: "Slack ping"
         uses: slackapi/slack-github-action@v1.25.0
         env:
@@ -116,7 +125,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a <https://github.com/Automattic/woocommerce-payments/pull/${{ env.RELEASE_PR_ID }}|Pull Request> to `trunk`\n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|zip file and ran smoke tests> against it"
+                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n ${{ steps.check-pr-status.outputs.RELEASE_PR_STATUS }} \n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|zip file and ran smoke tests> against it"
                   }
                 },
                 {
