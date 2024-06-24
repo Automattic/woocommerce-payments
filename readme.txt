@@ -94,6 +94,22 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.9.0-test-1 - unreleased =
+* Add - Add support for ECE elements on the Shortcode Cart and Checkout pages
+* Add - Add support for Express Checkout Element on shortcode Cart and Checkout pages.
+* Add - Add support for the Express Checkout Element on product pages.
+* Add - feat: tokenized cart PRBs on shortcode cart and checkout behind feature flag.
+* Fix - Clearly display available instant deposit amount on notice and button label on Payment Overview page
+* Fix - Disable WooPay for suspended and rejected accounts.
+* Fix - fix: display refund amount w/ tokenized cart PRBs
+* Fix - fix: pricing decimal formatting for tokenized cart
+* Fix - fix: tokenized PRBs payment type
+* Fix - Fixed an error when renewing subscriptions without a billing country
+* Fix - Fix output for compatibility data.
+* Fix - Fix WooPay OTP modal not rendering on the shortcode checkout if BNPL methods are available.
+* Fix - Hide payment methods with domestic transactions restrictions (Klarna, Affirm, Afterpay) when conditions are not met.
+* Dev - Migrate Affirm and Afterpay payment method components to TypeScript.
+
 = 7.8.0 - 2024-06-19 =
 * Add - Add a feedback survey modal upon deactivation.
 * Add - Add new select component to be used for reporting filters, e.g. Payments overview currency select
