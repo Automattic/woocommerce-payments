@@ -4,6 +4,11 @@
 import { __ } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { getPaymentRequestData } from '../frontend-utils';
+
+/**
  * GooglePay/ApplePay expect the prices to be formatted in cents.
  * But WooCommerce has a setting to define the number of decimals for amounts.
  * Using this function to ensure the prices provided to GooglePay/ApplePay
@@ -14,9 +19,13 @@ import { __ } from '@wordpress/i18n';
  *
  * @return {number} the price amount for GooglePay/ApplePay, always expressed in cents.
  */
-export const transformPrice = ( price, priceObject ) =>
+export const transformPrice = ( price, priceObject ) => {
+	const currencyDecimals =
+		getPaymentRequestData( 'checkout' )?.currency_decimals ?? 2;
+
 	// making sure the decimals are always correctly represented for GooglePay/ApplePay, since they don't allow us to specify the decimals.
-	price * 10 ** ( 2 - priceObject.currency_minor_unit );
+	return price * 10 ** ( currencyDecimals - priceObject.currency_minor_unit );
+};
 
 /**
  * Transforms the data from the Store API Cart response to `displayItems` for the Stripe PRB.
