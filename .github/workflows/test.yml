@@ -1,0 +1,40 @@
+name: "Testing variables"
+
+on:
+  pull_request
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check_mc_changes:
+    name: "Compare GitHub env vars & context"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: GitHub Actor 
+        run: |
+          echo "GitHub Context - ${{ github.actor }}"
+          echo "GitHub Variable - $GITHUB_ACTOR"
+
+      - name: GitHub Run ID 
+        run: |
+          echo "GitHub Context - ${{ github.run_id }}"
+          echo "GitHub Variable - $GITHUB_RUN_ID" 
+
+      - name: Custom env vars
+        env:
+          BASE_BRANCH_REF: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER_FROM_EVENT: ${{ github.event.number }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          echo "Base branch ref - $BASE_BRANCH_REF"
+          echo "PR head - $PR_HEAD"
+          echo "PR author - $PR_AUTHOR"
+          echo "PR number (pull request) - $PR_NUMBER"
+          echo "PR number (event) - $PR_NUMBER_FROM_EVENT"
+          echo "Base ref - $BASE_REF"
