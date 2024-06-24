@@ -970,6 +970,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			],
 			'checkout'           => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
+				'currency_decimals' => WC_Payments::get_localization_service()->get_currency_format( get_woocommerce_currency() )['num_decimals'],
 				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
 				'needs_shipping'    => WC()->cart->needs_shipping(),
 				// Defaults to 'required' to match how core initializes this option.
