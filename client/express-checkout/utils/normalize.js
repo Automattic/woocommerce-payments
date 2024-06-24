@@ -7,23 +7,21 @@
  * @return {Array} An array of PaymentItems
  */
 export const normalizeLineItems = ( displayItems ) => {
-	return displayItems
-		.filter( ( displayItem ) => {
-			return !! displayItem.value;
+	return displayItems.map( ( displayItem ) =>
+		// The amount prop is already present on the item.
+		( {
+			...displayItem,
+			name: displayItem.label,
+			amount: displayItem?.amount ?? displayItem?.value,
 		} )
-		.map( ( displayItem ) => {
-			return {
-				amount: displayItem.value,
-				name: displayItem.label,
-			};
-		} );
+	);
 };
 
 /**
  * Normalize order data from Stripe's object to the expected format for WC.
  *
  * @param {Object} event Stripe's event object.
- * @param {Object} paymentMethodId Stripe's payment method id.
+ * @param {string} paymentMethodId Stripe's payment method id.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
@@ -35,14 +33,14 @@ export const normalizeOrderData = ( event, paymentMethodId ) => {
 	const fraudPreventionTokenValue = window.wcpayFraudPreventionToken ?? '';
 
 	const phone =
-		event?.billingDetails?.phone ??
-		event?.payerPhone?.replace( '/[() -]/g', '' ) ??
+		event?.billingDetails?.phone?.replace( /[() -]/g, '' ) ??
+		event?.payerPhone?.replace( /[() -]/g, '' ) ??
 		'';
 
 	return {
 		billing_first_name:
 			name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
-		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) || '-',
+		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '-',
 		billing_company: billing?.organization ?? '',
 		billing_email: email ?? event?.payerEmail ?? '',
 		billing_phone: phone,
@@ -98,8 +96,8 @@ export const normalizeShippingAddress = ( shippingAddress ) => {
 		address_1: shippingAddress?.addressLine?.[ 0 ] ?? '',
 		address_2: shippingAddress?.addressLine?.[ 1 ] ?? '',
 		city: shippingAddress?.city ?? '',
-		state: shippingAddress?.region ?? '',
+		state: shippingAddress?.state ?? '',
 		country: shippingAddress?.country ?? '',
-		postcode: shippingAddress?.postalCode?.replace( ' ', '' ) ?? '',
+		postcode: shippingAddress?.postal_code ?? '',
 	};
 };

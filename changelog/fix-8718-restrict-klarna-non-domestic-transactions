@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Hide payment methods with domestic transactions restrictions (Klarna, Affirm, Afterpay) when conditions are not met.

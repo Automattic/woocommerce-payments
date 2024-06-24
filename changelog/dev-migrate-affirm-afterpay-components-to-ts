@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Migrate Affirm and Afterpay payment method components to TypeScript.
