@@ -2,111 +2,109 @@
  * External dependencies
  */
 import React from 'react';
-import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import {
-	Visa,
-	MasterCard,
-	Amex,
-	WooPay,
-	ApplePay,
-	GooglePay,
-	Discover,
-	JCB,
-	Afterpay,
-	Affirm,
-	Klarna,
-} from './Icons';
+import Visa from 'assets/images/payment-method-icons/visa.svg';
+import Mastercard from 'assets/images/payment-method-icons/mastercard.svg';
+import Amex from 'assets/images/payment-method-icons/amex.svg';
+import Discover from 'assets/images/payment-method-icons/discover.svg';
+import WooPay from 'assets/images/payment-method-icons/woopay.svg';
+import ApplePay from 'assets/images/payment-method-icons/applepay.svg';
+import AfterPay from 'assets/images/payment-method-icons/afterpay.svg';
+import Affirm from 'assets/images/payment-method-icons/affirm.svg';
+import Klarna from 'assets/images/payment-method-icons/klarna.svg';
+import Jcb from 'assets/images/payment-method-icons/jcb.svg';
 
 import './style.scss';
 
-const Payments = [
+const PaymentMethods = [
 	{
 		name: 'visa',
-		component: <Visa key="visa" />,
+		component: Visa,
 	},
 	{
 		name: 'mastercard',
-		component: <MasterCard key="mastercard" />,
+		component: Mastercard,
 	},
 	{
 		name: 'amex',
-		component: <Amex key="amex" />,
+		component: Amex,
 	},
 	{
 		name: 'discover',
-		component: <Discover key="discover" />,
+		component: Discover,
 	},
 	{
 		name: 'woopay',
-		component: <WooPay key="woopay" />,
+		component: WooPay,
 	},
 	{
 		name: 'applepay',
-		component: <ApplePay key="applepay" />,
-	},
-	{
-		name: 'googlepay',
-		component: <GooglePay key="googlepay" />,
+		component: ApplePay,
 	},
 	{
 		name: 'afterpay',
-		component: <Afterpay key="afterpay" />,
+		component: AfterPay,
 	},
 	{
 		name: 'affirm',
-		component: <Affirm key="affirm" />,
+		component: Affirm,
 	},
 	{
 		name: 'klarna',
-		component: <Klarna key="klarna" />,
+		component: Klarna,
 	},
 	{
 		name: 'jcb',
-		component: <JCB key="jcb" />,
+		component: Jcb,
 	},
 ];
 
-export const WooPaymentMethodLogos: React.VFC< {
-	maxNrElements: number;
-} > = ( { maxNrElements = 10 } ) => {
-	let i = 0;
-	let j = 0;
+export const WooPaymentMethodsLogos: React.VFC< {
+	maxElements: number;
+} > = ( { maxElements = 10 } ) => {
+	const totalPaymentMethods = 21;
+	const maxElementsMiniView = 5;
 	return (
 		<>
 			<div className="woocommerce-payments-method-logos">
-				{ Payments.map( ( payment ) => {
-					if ( i >= maxNrElements ) {
-						return <Fragment key={ payment.name }></Fragment>;
-					}
-					i++;
-
-					return payment.component;
+				{ PaymentMethods.slice( 0, maxElements ).map( ( pm ) => {
+					return (
+						<img
+							key={ pm.name }
+							alt={ pm.name }
+							src={ pm.component }
+							width={ 38 }
+							height={ 24 }
+						/>
+					);
 				} ) }
-				{ i < 21 && (
+				{ maxElements < totalPaymentMethods && (
 					<div className="woocommerce-payments-method-logos_count">
-						+ { 21 - i }
+						+ { totalPaymentMethods - maxElements }
 					</div>
 				) }
 			</div>
 
 			<div className="woocommerce-payments-method-logos_mini">
-				{ Payments.map( ( payment ) => {
-					if ( j >= 5 ) {
-						return <Fragment key={ payment.name }></Fragment>;
+				{ PaymentMethods.slice( 0, maxElementsMiniView ).map(
+					( pm ) => {
+						return (
+							<img
+								key={ pm.name }
+								alt={ pm.name }
+								src={ pm.component }
+								width={ 38 }
+								height={ 24 }
+							/>
+						);
 					}
-					j++;
-
-					return payment.component;
-				} ) }
-				{ j < 21 && (
-					<div className="woocommerce-payments-method-logos_count">
-						+ { 21 - j }
-					</div>
 				) }
+				<div className="woocommerce-payments-method-logos_count">
+					+ { totalPaymentMethods - maxElementsMiniView }
+				</div>
 			</div>
 		</>
 	);
