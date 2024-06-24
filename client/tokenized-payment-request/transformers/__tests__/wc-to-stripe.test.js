@@ -27,7 +27,7 @@ describe( 'wc-to-stripe transformers', () => {
 		} );
 
 		it( 'transforms the price if the currency is configured with two decimals', () => {
-			// with one decimal, `1800` would mean `18.00`.
+			// with two decimals, `1800` would mean `18.00`.
 			// But since Stripe expects the price to be in cents, the return value should be `1800`
 			expect( transformPrice( 1800, { currency_minor_unit: 2 } ) ).toBe(
 				1800
