@@ -38,6 +38,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 * @return  void
 	 */
 	public function init() {
+		add_action( 'template_redirect', [ $this, 'set_session' ] );
 		add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
@@ -472,6 +473,25 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		wp_send_json( [ 'result' => 'success' ] );
+	}
+
+	/**
+	 * Sets the WC customer session if one is not set.
+	 * This is needed so nonces can be verified by AJAX Request.
+	 *
+	 * @return void
+	 */
+	public function set_session() {
+		// Don't set session cookies on product pages to allow for caching when payment request
+		// buttons are disabled. But keep cookies if there is already an active WC session in place.
+		if (
+			! ( $this->express_checkout_button_helper->is_product() && $this->express_checkout_button_helper->should_show_express_checkout_button() )
+			|| ( isset( WC()->session ) && WC()->session->has_session() )
+		) {
+			return;
+		}
+
+		WC()->session->set_customer_session_cookie( true );
 	}
 
 	/**
