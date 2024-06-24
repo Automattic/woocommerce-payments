@@ -37,7 +37,6 @@ describe( 'wc-to-stripe transformers', () => {
 		it( 'transforms the price if the currency is a zero decimal currency (e.g.: Yen)', () => {
 			global.wcpayPaymentRequestParams.checkout.currency_decimals = 0;
 			// with zero decimals, `18` would mean `18`.
-			// But since Stripe expects the price to be in the minimum currency amount, the return value should be `18`
 			expect( transformPrice( 18, { currency_minor_unit: 0 } ) ).toBe(
 				18
 			);
