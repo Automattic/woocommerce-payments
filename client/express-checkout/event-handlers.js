@@ -70,19 +70,19 @@ export const onConfirmHandler = async (
 		return abortPayment( event, error.message );
 	}
 
-	// Kick off checkout processing step.
-	const createOrderResponse = await api.expressCheckoutECECreateOrder(
-		normalizeOrderData( event, paymentMethod.id )
-	);
-
-	if ( createOrderResponse.result !== 'success' ) {
-		return abortPayment(
-			event,
-			getErrorMessageFromNotice( createOrderResponse.messages )
-		);
-	}
-
 	try {
+		// Kick off checkout processing step.
+		const createOrderResponse = await api.expressCheckoutECECreateOrder(
+			normalizeOrderData( event, paymentMethod.id )
+		);
+
+		if ( createOrderResponse.result !== 'success' ) {
+			return abortPayment(
+				event,
+				getErrorMessageFromNotice( createOrderResponse.messages )
+			);
+		}
+
 		const confirmationRequest = api.confirmIntent(
 			createOrderResponse.redirect
 		);
@@ -96,6 +96,9 @@ export const onConfirmHandler = async (
 			completePayment( redirectUrl );
 		}
 	} catch ( e ) {
-		return abortPayment( event, e.message );
+		return abortPayment(
+			event,
+			e.message ?? 'There was a problem creating the order'
+		);
 	}
 };
