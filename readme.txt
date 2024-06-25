@@ -95,6 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 7.8.1 - 2024-06-25 =
+* Fix - Fix "Dispute not loaded" error that was affecting responding to disputes.
 
 
 = 7.8.0 - 2024-06-19 =
