@@ -8,7 +8,9 @@ import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
 import { getExpressCheckoutData, normalizeLineItems } from './utils/index';
 import {
+	onClickHandler,
 	onConfirmHandler,
+	onReadyHandler,
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
@@ -259,6 +261,7 @@ jQuery( ( $ ) => {
 				};
 				wcpayECE.block();
 				event.resolve( clickOptions );
+				onClickHandler( event );
 			} );
 
 			eceButton.on( 'shippingaddresschange', async ( event ) =>
@@ -283,6 +286,8 @@ jQuery( ( $ ) => {
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.unblock();
 			} );
+
+			eceButton.on( 'ready', onReadyHandler );
 		},
 
 		getSelectedProductData: () => {
