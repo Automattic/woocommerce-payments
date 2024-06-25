@@ -171,6 +171,20 @@ $gap-small: 12px;
 				white-space: nowrap;
 				scrollbar-width: none;
 				margin-right: 25px;
+
+				&::after {
+					content: '';
+					position: absolute;
+					top: 0;
+					right: 0;
+					width: 25px;
+					height: 100%;
+					background: linear-gradient(
+						to right,
+						rgba( 255, 255, 255, 0 ),
+						rgba( 255, 255, 255, 1 ) 90%
+					);
+				}
 			}
 
 			@include breakpoint( '<960px' ) {
