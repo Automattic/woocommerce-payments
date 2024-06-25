@@ -162,8 +162,8 @@ $gap-small: 12px;
 				flex-wrap: wrap;
 
 				.woocommerce-select-control__tags {
-					overflow-x: scroll;
-					scrollbar-width: auto;
+					overflow-x: visible;
+					white-space: wrap;
 				}
 			}
 			.woocommerce-select-control__tags {
