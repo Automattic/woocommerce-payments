@@ -246,7 +246,11 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public static function get_source( string $referer, array $get_params ): string {
 		$wcpay_connect_param = sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) );
-		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param ) {
+		$from_param          = sanitize_text_field( wp_unslash( $get_params['from'] ) );
+
+		// Sometimes we have it in the `wcpay-connect` param and other times in the `from` one.
+		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param
+			|| 'WCADMIN_PAYMENT_TASK' === $from_param ) {
 			return self::SOURCE_WCADMIN_PAYMENT_TASK;
 		}
 		// Payments tab in Woo Admin Settings page.
