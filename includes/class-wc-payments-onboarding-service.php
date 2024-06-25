@@ -245,8 +245,8 @@ class WC_Payments_Onboarding_Service {
 	 * @return string The source or empty string if the source is unsupported.
 	 */
 	public static function get_source( string $referer, array $get_params ): string {
-		$wcpay_connect_param = sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) );
-		$from_param          = sanitize_text_field( wp_unslash( $get_params['from'] ) );
+		$wcpay_connect_param = isset( $get_params['wcpay-connect'] ) ? sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) ) : '';
+		$from_param          = isset( $get_params['from'] ) ? sanitize_text_field( wp_unslash( $get_params['from'] ) ) : '';
 
 		// Sometimes we have it in the `wcpay-connect` param and other times in the `from` one.
 		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param
@@ -270,6 +270,7 @@ class WC_Payments_Onboarding_Service {
 		if ( isset( $get_params['wcpay-reset-account'] ) ) {
 			return self::SOURCE_WCPAY_RESET_ACCOUNT;
 		}
+
 		return '';
 	}
 }
