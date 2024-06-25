@@ -129,6 +129,17 @@ describe( 'Overview page', () => {
 			connect: {
 				country: 'DE',
 			},
+			lifetimeTPV: 1000,
+			currencyData: {
+				EU: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'left',
+					thousandSeparator: '.',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+			},
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
@@ -369,5 +380,14 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect( query() ).not.toBeInTheDocument();
+	} );
+
+	it( 'Displays the Payment Activity Card', () => {
+		const { getByLabelText, getByText } = render( <OverviewPage /> );
+
+		getByText( 'Your payment activity' );
+		// Check correct currency/value is displayed.
+		const tpvElement = getByLabelText( 'Total payment volume' );
+		expect( tpvElement ).toHaveTextContent( '€1.234,56' );
 	} );
 } );
