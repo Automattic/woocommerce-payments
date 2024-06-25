@@ -37,6 +37,43 @@ export const usePaymentCompleteHandler = (
 	);
 };
 
+/**
+ * Handles the Block Checkout onCheckoutFail event.
+ *
+ * Displays the error message returned from server in the paymentDetails object in the PAYMENTS notice context container.
+ *
+ * @param {*} api            The api object.
+ * @param {*} stripe         The Stripe object.
+ * @param {*} elements       The Stripe elements object.
+ * @param {*} onCheckoutFail The onCheckoutFail event.
+ * @param {*} emitResponse   Various helpers for usage with observer.
+ */
+export const usePaymentFailHandler = (
+	api,
+	stripe,
+	elements,
+	onCheckoutFail,
+	emitResponse
+) => {
+	useEffect(
+		() =>
+			onCheckoutFail( ( { processingResponse: { paymentDetails } } ) => {
+				return {
+					type: 'failure',
+					message: paymentDetails.errorMessage,
+					messageContext: emitResponse.noticeContexts.PAYMENTS,
+				};
+			} ),
+		[
+			elements,
+			stripe,
+			api,
+			onCheckoutFail,
+			emitResponse.noticeContexts.PAYMENTS,
+		]
+	);
+};
+
 export const useFingerprint = () => {
 	const [ fingerprint, setFingerprint ] = useState( '' );
 	const [ error, setError ] = useState( null );
