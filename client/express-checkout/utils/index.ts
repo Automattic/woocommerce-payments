@@ -150,6 +150,16 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 		}
 	};
 
+	const googlePayType =
+		buttonSettings?.type === 'default'
+			? 'plain'
+			: buttonSettings?.type ?? 'buy';
+
+	const applePayType =
+		buttonSettings?.type === 'default'
+			? 'plain'
+			: buttonSettings?.type ?? 'plain';
+
 	return {
 		paymentMethods: {
 			applePay: 'always',
@@ -168,8 +178,8 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 			),
 		},
 		buttonType: {
-			googlePay: buttonSettings?.type ?? 'buy',
-			applePay: buttonSettings?.type ?? 'plain',
+			googlePay: googlePayType,
+			applePay: applePayType,
 		},
 		// Allowed height must be 40px to 55px.
 		buttonHeight: Math.min(
