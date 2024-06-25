@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Retrieve saved tokens only relevant for the specific payment gateway.
