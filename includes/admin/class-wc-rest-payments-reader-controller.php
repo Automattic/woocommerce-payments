@@ -114,7 +114,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/charges/(?P<transaction_id>[A-Za-z0-9_\-]+)',
+			'/' . $this->rest_base . '/charges/(?P<transaction_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_summary' ],
@@ -132,7 +132,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/receipts/(?P<payment_intent_id>(ch|pi|py)_[A-Za-z0-9]+)',
+			'/' . $this->rest_base . '/receipts/(?P<payment_intent_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'generate_print_receipt' ],
