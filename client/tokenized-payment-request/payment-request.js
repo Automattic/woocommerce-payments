@@ -5,9 +5,9 @@
 import { __ } from '@wordpress/i18n';
 import {
 	doAction,
-	addAction,
-	removeAction,
 	applyFilters,
+	removeFilter,
+	addFilter,
 } from '@wordpress/hooks';
 
 /**
@@ -32,7 +32,6 @@ import {
 	getPaymentRequest,
 	displayLoginConfirmationDialog,
 	getPaymentRequestData,
-	waitForAction,
 } from './frontend-utils';
 import PaymentRequestCartApi from './cart-api';
 import debounce from './debounce';
@@ -150,14 +149,17 @@ export default class WooPaymentsPaymentRequest {
 			this.attachPaymentRequestButtonEventListeners();
 		}
 
-		removeAction(
+		removeFilter(
 			'wcpay.payment-request.update-button-data',
 			'automattic/wcpay/payment-request'
 		);
-		addAction(
+		addFilter(
 			'wcpay.payment-request.update-button-data',
 			'automattic/wcpay/payment-request',
-			async () => {
+			async ( previousPromise ) => {
+				// Wait for previous filters
+				await previousPromise;
+
 				const newCartData = await _self.getCartData();
 				// checking if items needed shipping, before assigning new cart data.
 				const didItemsNeedShipping =
@@ -400,9 +402,9 @@ export default class WooPaymentsPaymentRequest {
 			'input',
 			'.qty',
 			debounce( 250, async () => {
-				doAction( 'wcpay.payment-request.update-button-data' );
-				await waitForAction(
-					'wcpay.payment-request.update-button-data'
+				await applyFilters(
+					'wcpay.payment-request.update-button-data',
+					Promise.resolve()
 				);
 				paymentRequestButtonUi.unblockButton();
 			} )
