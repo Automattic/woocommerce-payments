@@ -88,7 +88,7 @@ class Fraud_Prevention_Service {
 
 		// Don't add the token if the user isn't on the cart or checkout page.
 		// Checking the cart page too because the user can pay quickly via the payment buttons on that page.
-		if ( ! is_checkout() && ! is_cart() ) {
+		if ( ! is_checkout() && ! is_cart() && ! is_product() ) {
 			return;
 		}
 
