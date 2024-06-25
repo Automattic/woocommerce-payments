@@ -46,52 +46,6 @@ $space-header-item: 12px;
 		top: 3px;
 		left: 8px;
 	}
-
-	.components-card__header {
-		.woocommerce-search.woocommerce-select-control
-			.woocommerce-select-control__listbox {
-			position: relative;
-			top: 5px;
-		}
-		.woocommerce-table__actions {
-			justify-content: space-between;
-
-			& > div {
-				width: 85%;
-				margin-right: 0;
-			}
-
-			button.woocommerce-table__download-button {
-				@include breakpoint( '<1040px' ) {
-					.woocommerce-table__download-button__label {
-						display: none;
-					}
-				}
-			}
-
-			.woocommerce-select-control.is-focused
-				.woocommerce-select-control__control {
-				flex-wrap: wrap;
-
-				.woocommerce-select-control__tags {
-					overflow-x: scroll;
-					scrollbar-width: auto;
-				}
-			}
-			.woocommerce-select-control__tags {
-				overflow-x: auto;
-				white-space: nowrap;
-				scrollbar-width: none;
-				margin-right: 25px;
-			}
-
-			@include breakpoint( '<960px' ) {
-				.woocommerce-search {
-					margin: 0;
-				}
-			}
-		}
-	}
 }
 
 /**
@@ -178,6 +132,52 @@ $gap-small: 12px;
 		.woocommerce-compare-button {
 			padding: 3px $gap-small;
 			height: auto;
+		}
+	}
+
+	.components-card__header {
+		.woocommerce-search.woocommerce-select-control
+			.woocommerce-select-control__listbox {
+			position: relative;
+			top: 5px;
+		}
+		.woocommerce-table__actions {
+			justify-content: space-between;
+
+			& > div {
+				width: 85%;
+				margin-right: 0;
+			}
+
+			button.woocommerce-table__download-button {
+				@include breakpoint( '<1040px' ) {
+					.woocommerce-table__download-button__label {
+						display: none;
+					}
+				}
+			}
+
+			.woocommerce-select-control.is-focused
+				.woocommerce-select-control__control {
+				flex-wrap: wrap;
+
+				.woocommerce-select-control__tags {
+					overflow-x: scroll;
+					scrollbar-width: auto;
+				}
+			}
+			.woocommerce-select-control__tags {
+				overflow-x: auto;
+				white-space: nowrap;
+				scrollbar-width: none;
+				margin-right: 25px;
+			}
+
+			@include breakpoint( '<960px' ) {
+				.woocommerce-search {
+					margin: 0;
+				}
+			}
 		}
 	}
 }
