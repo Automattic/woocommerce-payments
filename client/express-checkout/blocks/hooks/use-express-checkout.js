@@ -5,8 +5,14 @@
  */
 import { useCallback } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
-import { normalizeLineItems } from 'wcpay/express-checkout/utils';
-import { onConfirmHandler } from 'wcpay/express-checkout/event-handlers';
+import {
+	getExpressCheckoutData,
+	normalizeLineItems,
+} from 'wcpay/express-checkout/utils';
+import {
+	onClickHandler,
+	onConfirmHandler,
+} from 'wcpay/express-checkout/event-handlers';
 
 export const useExpressCheckout = ( {
 	api,
@@ -51,7 +57,8 @@ export const useExpressCheckout = ( {
 				emailRequired: true,
 				shippingAddressRequired: shippingData?.needsShipping,
 				phoneNumberRequired:
-					wcpayExpressCheckoutParams?.checkout?.needs_payer_phone,
+					getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
+					false,
 				shippingRates: shippingData?.shippingRates[ 0 ]?.shipping_rates?.map(
 					( r ) => {
 						return {
@@ -63,7 +70,10 @@ export const useExpressCheckout = ( {
 				),
 			};
 			event.resolve( options );
+			// Click event from WC Blocks.
 			onClick();
+			// Global click event handler from WooPayments to ECE.
+			onClickHandler( event );
 		},
 		[
 			onClick,
