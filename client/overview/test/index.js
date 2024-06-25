@@ -66,6 +66,21 @@ jest.mock( 'wcpay/data', () => ( {
 		.fn()
 		.mockReturnValue( { overviews: { currencies: [] } } ),
 	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
+	usePaymentActivityData: jest.fn().mockReturnValue( {
+		paymentActivityData: {
+			currency: 'eur',
+			total_payment_volume: 123456,
+			charges: 9876,
+			fees: 1234,
+			disputes: 5555,
+			refunds: 4444,
+			date_start: '2024-01-01',
+			date_end: '2024-01-31',
+			timezone: 'UTC',
+			interval: 'daily',
+		},
+		isLoading: false,
+	} ),
 } ) );
 
 select.mockReturnValue( {
@@ -111,6 +126,9 @@ describe( 'Overview page', () => {
 				remindMeAt: null,
 				dontShowAgain: false,
 			} ),
+			connect: {
+				country: 'DE',
+			},
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
