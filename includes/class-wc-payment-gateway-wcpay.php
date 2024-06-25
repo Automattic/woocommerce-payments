@@ -1299,8 +1299,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// This allows WC to check if WP_DEBUG mode is enabled before returning previous Exception and expose Exception class name to frontend.
 			add_filter( 'woocommerce_return_previous_exceptions', '__return_true' );
-			$message = wp_strip_all_tags( $e->getMessage() );
-			wc_add_notice( $message, 'error' );
+			wc_add_notice( wp_strip_all_tags( $e->getMessage() ), 'error' );
 			do_action( 'wc_gateway_stripe_process_payment_error', $e, $order );
 
 			return [
@@ -1308,28 +1307,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'redirect' => '',
 			];
 		}
-	}
-
-	/**
-	 * Sets up a handler to add error details to the payment result.
-	 * Registers an action to handle 'wc_gateway_stripe_process_payment_error',
-	 * using the payment result object from 'woocommerce_rest_checkout_process_payment_with_context'.
-	 *
-	 * @param PaymentContext $context The payment context.
-	 * @param PaymentResult  $result  The payment result, passed by reference.
-	 */
-	public function setup_payment_error_handler( PaymentContext $context, PaymentResult &$result ) {
-		add_action(
-			'wc_gateway_stripe_process_payment_error',
-			function ( $error ) use ( &$result ) {
-				$result->set_payment_details(
-					array_merge(
-						$result->payment_details,
-						[ 'errorMessage' => wp_strip_all_tags( $error->getMessage() ) ]
-					)
-				);
-			}
-		);
 	}
 
 	/**
@@ -1393,6 +1370,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the existing customer with the current order details.
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 		$this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+	}
+
+	/**
+	 * Sets up a handler to add error details to the payment result.
+	 * Registers an action to handle 'wc_gateway_stripe_process_payment_error',
+	 * using the payment result object from 'woocommerce_rest_checkout_process_payment_with_context'.
+	 *
+	 * @param PaymentContext $context The payment context.
+	 * @param PaymentResult  $result  The payment result, passed by reference.
+	 */
+	public function setup_payment_error_handler( PaymentContext $context, PaymentResult &$result ) {
+		add_action(
+			'wc_gateway_stripe_process_payment_error',
+			function ( $error ) use ( &$result ) {
+				$result->set_payment_details(
+					array_merge(
+						$result->payment_details,
+						[ 'errorMessage' => wp_strip_all_tags( $error->getMessage() ) ]
+					)
+				);
+			}
+		);
 	}
 
 	/**
