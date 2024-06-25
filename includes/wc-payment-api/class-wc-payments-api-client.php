@@ -518,17 +518,8 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $dispute_id id of requested dispute.
 	 * @return array dispute object.
-	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_dispute( $dispute_id ) {
-		if ( ! preg_match( '/(dp|dispute)_[A-Za-z0-9]+/', $dispute_id ) ) {
-			throw new API_Exception(
-				__( 'Route param validation failed.', 'woocommerce-payments' ),
-				'wcpay_route_validation_failure',
-				400
-			);
-		}
-
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id, self::GET );
 
 		if ( is_wp_error( $dispute ) ) {
@@ -735,17 +726,8 @@ class WC_Payments_API_Client {
 	 * @return array
 	 *
 	 * @throws Exception - Exception thrown on request failure.
-	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_timeline( $id ) {
-		if ( ! preg_match( '/(ch|pi|py)_[A-Za-z0-9]+/', $id ) ) {
-			throw new API_Exception(
-				__( 'Route param validation failed.', 'woocommerce-payments' ),
-				'wcpay_route_validation_failure',
-				400
-			);
-		}
-
 		$timeline = $this->request( [], self::TIMELINE_API . '/' . $id, self::GET );
 
 		$has_fraud_outcome_event = false;
@@ -1187,14 +1169,6 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception
 	 */
 	public function get_charge( string $charge_id ) {
-		if ( ! preg_match( '/(ch|pi|py)_[A-Za-z0-9]+/', $charge_id ) ) {
-			throw new API_Exception(
-				__( 'Route param validation failed.', 'woocommerce-payments' ),
-				'wcpay_route_validation_failure',
-				400
-			);
-		}
-
 		return $this->request(
 			[],
 			self::CHARGES_API . '/' . $charge_id,
