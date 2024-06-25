@@ -108,12 +108,16 @@ export const onConfirmHandler = async (
 
 export const onReadyHandler = async function ( { availablePaymentMethods } ) {
 	if ( availablePaymentMethods ) {
-		for ( const paymentMethod of availablePaymentMethods ) {
-			setExpressCheckoutBranding( paymentMethod );
-			trackExpressCheckoutButtonLoad(
-				getExpressCheckoutData( 'button_context' )
-			);
-		}
+		const enabledMethods = Object.entries( availablePaymentMethods )
+			// eslint-disable-next-line no-unused-vars
+			.filter( ( [ _, isEnabled ] ) => isEnabled )
+			// eslint-disable-next-line no-unused-vars
+			.map( ( [ methodName, _ ] ) => methodName );
+
+		trackExpressCheckoutButtonLoad( {
+			paymentMethods: enabledMethods,
+			source: getExpressCheckoutData( 'button_context' ),
+		} );
 	}
 };
 
