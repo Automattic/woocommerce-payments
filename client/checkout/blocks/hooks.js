@@ -42,19 +42,10 @@ export const usePaymentCompleteHandler = (
  *
  * Displays the error message returned from server in the paymentDetails object in the PAYMENTS notice context container.
  *
- * @param {*} api            The api object.
- * @param {*} stripe         The Stripe object.
- * @param {*} elements       The Stripe elements object.
  * @param {*} onCheckoutFail The onCheckoutFail event.
  * @param {*} emitResponse   Various helpers for usage with observer.
  */
-export const usePaymentFailHandler = (
-	api,
-	stripe,
-	elements,
-	onCheckoutFail,
-	emitResponse
-) => {
+export const usePaymentFailHandler = ( onCheckoutFail, emitResponse ) => {
 	useEffect(
 		() =>
 			onCheckoutFail( ( { processingResponse: { paymentDetails } } ) => {
@@ -64,13 +55,7 @@ export const usePaymentFailHandler = (
 					messageContext: emitResponse.noticeContexts.PAYMENTS,
 				};
 			} ),
-		[
-			elements,
-			stripe,
-			api,
-			onCheckoutFail,
-			emitResponse.noticeContexts.PAYMENTS,
-		]
+		[ onCheckoutFail, emitResponse.noticeContexts.PAYMENTS ]
 	);
 };
 

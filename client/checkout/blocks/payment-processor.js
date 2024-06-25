@@ -237,13 +237,7 @@ const PaymentProcessor = ( {
 		shouldSavePayment
 	);
 
-	usePaymentFailHandler(
-		api,
-		stripe,
-		elements,
-		onCheckoutFail,
-		emitResponse
-	);
+	usePaymentFailHandler( onCheckoutFail, emitResponse );
 
 	const setHasLoadError = ( event ) => {
 		hasLoadErrorRef.current = true;
