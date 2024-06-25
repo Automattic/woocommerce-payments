@@ -16,6 +16,7 @@ import AfterPay from 'assets/images/payment-method-icons/afterpay.svg';
 import Affirm from 'assets/images/payment-method-icons/affirm.svg';
 import Klarna from 'assets/images/payment-method-icons/klarna.svg';
 import Jcb from 'assets/images/payment-method-icons/jcb.svg';
+import GooglePay from 'assets/images/payment-method-icons/gpay.svg';
 
 import './style.scss';
 
@@ -43,6 +44,10 @@ const PaymentMethods = [
 	{
 		name: 'applepay',
 		component: ApplePay,
+	},
+	{
+		name: 'googlepay',
+		component: GooglePay,
 	},
 	{
 		name: 'afterpay',
