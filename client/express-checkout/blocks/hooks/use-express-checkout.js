@@ -12,6 +12,7 @@ import {
 import {
 	onClickHandler,
 	onConfirmHandler,
+	onReadyHandler,
 } from 'wcpay/express-checkout/event-handlers';
 
 export const useExpressCheckout = ( {
@@ -98,6 +99,7 @@ export const useExpressCheckout = ( {
 		buttonOptions,
 		onButtonClick,
 		onConfirm,
+		onReady: onReadyHandler,
 		onCancel,
 		elements,
 	};
