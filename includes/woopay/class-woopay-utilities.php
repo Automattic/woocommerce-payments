@@ -259,7 +259,8 @@ class WooPay_Utilities {
 	 * @return array The encrypted and signed data.
 	 */
 	public static function encrypt_and_sign_data( $data ) {
-		$store_blog_token = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
+		$dev_store_blog_token = defined( 'DEV_BLOG_TOKEN_SECRET' ) ? DEV_BLOG_TOKEN_SECRET : '';
+		$store_blog_token     = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : $dev_store_blog_token;
 
 		if ( empty( $store_blog_token ) ) {
 			return [];
@@ -295,7 +296,8 @@ class WooPay_Utilities {
 	 * @return mixed The decoded data.
 	 */
 	public static function decrypt_signed_data( $data ) {
-		$store_blog_token = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : 'dev_mode';
+		$dev_store_blog_token = defined( 'DEV_BLOG_TOKEN_SECRET' ) ? DEV_BLOG_TOKEN_SECRET : '';
+		$store_blog_token     = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) ? Jetpack_Options::get_option( 'blog_token' ) : $dev_store_blog_token;
 
 		if ( empty( $store_blog_token ) ) {
 			return null;
