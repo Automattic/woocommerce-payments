@@ -251,16 +251,16 @@ class WC_Payments_Token_Service {
 		$types = [];
 
 		foreach ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD as $payment_method => $gateway ) {
-			if ( $gateway === $gateway_id ) {
-				// Stripe Link is part of the card gateway, so we need to check separately if Link is enabled.
-				if ( Payment_Method::LINK === $payment_method ) {
-					if ( $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
-						$types[] = Payment_Method::LINK;
-					}
-				} else {
-					$types[] = $payment_method;
-				}
+			if ( $gateway !== $gateway_id ) {
+				continue;
 			}
+
+			// Stripe Link is part of the card gateway, so we need to check separately if Link is enabled.
+			if ( Payment_Method::LINK === $payment_method && ! $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
+				continue;
+			}
+
+			$types[] = $payment_method;
 		}
 
 		return $types;
