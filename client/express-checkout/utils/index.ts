@@ -15,6 +15,7 @@ export interface WCPayExpressCheckoutParams {
 		height: string;
 		locale: string;
 		branded_type: string;
+		radius: number;
 	};
 
 	/**
@@ -116,8 +117,10 @@ export const getErrorMessageFromNotice = ( notice: string ) => {
  * Currently only configures border radius for the buttons.
  */
 export const getExpressCheckoutButtonAppearance = () => {
+	const buttonSettings = getExpressCheckoutData( 'button' );
+
 	return {
-		// variables: { borderRadius: '99999px' },
+		variables: { borderRadius: `${ buttonSettings?.radius ?? 10 }px` },
 	};
 };
 

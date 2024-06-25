@@ -249,11 +249,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function get_common_button_settings() {
 		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
-		return [
+		$settings    = [
 			'type'   => $button_type,
 			'theme'  => $this->gateway->get_option( 'payment_request_button_theme' ),
 			'height' => $this->get_button_height(),
 		];
+
+		if ( WC_Payments_Features::is_stripe_ece_enabled() ) {
+			$settings['radius'] = $this->gateway->get_option( 'payment_request_button_border_radius' );
+		}
+
+		return $settings;
 	}
 
 	/**

@@ -4,7 +4,12 @@
  */
 import React, { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { SelectControl, RadioControl, Notice } from '@wordpress/components';
+import {
+	SelectControl,
+	RadioControl,
+	Notice,
+	RangeControl,
+} from '@wordpress/components';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useContext } from '@wordpress/element';
@@ -22,6 +27,7 @@ import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
+	usePaymentRequestButtonBorderRadius,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 } from 'wcpay/data';
@@ -130,10 +136,14 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	const [ buttonType, setButtonType ] = usePaymentRequestButtonType();
 	const [ size, setSize ] = usePaymentRequestButtonSize();
 	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
+	const [ radius, setRadius ] = usePaymentRequestButtonBorderRadius();
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 	const {
-		featureFlags: { woopay: isWooPayFeatureFlagEnabled },
+		featureFlags: {
+			woopay: isWooPayFeatureFlagEnabled,
+			isStripeEceEnabled: isEceEnabled,
+		},
 	} = useContext( WCPaySettingsContext );
 
 	const stripePromise = useMemo( () => {
@@ -210,6 +220,21 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 				options={ buttonThemeOptions }
 				onChange={ setTheme }
 			/>
+			{ isEceEnabled && (
+				<>
+					<h4>{ __( 'Border radius', 'woocommerce-payments' ) }</h4>
+					<RangeControl
+						help={ __(
+							'Control the border radius of express checkout buttons',
+							'woocommerce-payments'
+						) }
+						value={ radius }
+						max={ 30 }
+						min={ 0 }
+						onChange={ setRadius }
+					/>
+				</>
+			) }
 			<h4>{ __( 'Preview', 'woocommerce-payments' ) }</h4>
 			<div className="payment-method-settings__option-help-text">
 				{ __(

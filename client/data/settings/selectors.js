@@ -184,6 +184,10 @@ export const getPaymentRequestButtonTheme = ( state ) => {
 	return getSettings( state ).payment_request_button_theme || '';
 };
 
+export const getPaymentRequestButtonBorderRadius = ( state ) => {
+	return getSettings( state )?.payment_request_button_border_radius ?? 10;
+};
+
 export const getIsSavedCardsEnabled = ( state ) => {
 	return getSettings( state ).is_saved_cards_enabled || false;
 };
