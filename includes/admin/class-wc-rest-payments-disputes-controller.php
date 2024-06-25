@@ -54,7 +54,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<dispute_id>(dp|dispute)_[A-Za-z0-9]+)',
+			'/' . $this->rest_base . '/(?P<dispute_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_dispute' ],
@@ -63,7 +63,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<dispute_id>(dp|dispute)_[A-Za-z0-9]+)',
+			'/' . $this->rest_base . '/(?P<dispute_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'update_dispute' ],
@@ -72,7 +72,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<dispute_id>(dp|dispute)_[A-Za-z0-9]+)/close',
+			'/' . $this->rest_base . '/(?P<dispute_id>\w+)/close',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'close_dispute' ],

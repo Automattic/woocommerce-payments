@@ -40,7 +40,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<id>[A-Za-z0-9_\-]+)',
+			'/' . $this->rest_base . '/(?P<id>\w+)',
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
