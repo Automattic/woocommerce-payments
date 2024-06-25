@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 7.8.1 - 2024-06-25 =
+* Fix - Fix "Dispute not loaded" error that was affecting responding to disputes.
+
 = 7.8.0 - 2024-06-19 =
 * Add - Add a feedback survey modal upon deactivation.
 * Add - Add new select component to be used for reporting filters, e.g. Payments overview currency select
