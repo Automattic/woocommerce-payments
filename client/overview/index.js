@@ -132,7 +132,6 @@ const OverviewPage = () => {
 		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
 		enabledPaymentMethods,
-		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
@@ -235,7 +234,6 @@ const OverviewPage = () => {
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<Welcome />
-
 					{ showTaskList && (
 						<Card>
 							<ErrorBoundary>
@@ -248,21 +246,15 @@ const OverviewPage = () => {
 							</ErrorBoundary>
 						</Card>
 					) }
-
 					<Card>
 						<ErrorBoundary>
 							<AccountBalances />
 						</ErrorBoundary>
 					</Card>
 
-					{
-						/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
-						isPaymentOverviewWidgetEnabled && (
-							<ErrorBoundary>
-								<PaymentActivity />
-							</ErrorBoundary>
-						)
-					}
+					<ErrorBoundary>
+						<PaymentActivity />
+					</ErrorBoundary>
 
 					<DepositsOverview />
 				</ErrorBoundary>

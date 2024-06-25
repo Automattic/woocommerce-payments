@@ -25,7 +25,6 @@ class WC_Payments_Features {
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
 	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
 	const TOKENIZED_CART_PRB_FLAG_NAME      = '_wcpay_feature_tokenized_cart_prb';
-	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME = '_wcpay_feature_payment_overview_widget';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -252,15 +251,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Payment Overview Widget is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_payment_overview_widget_ui_enabled(): bool {
-		return '1' === get_option( self::PAYMENT_OVERVIEW_WIDGET_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Checks whether WooPay Direct Checkout is enabled.
 	 *
 	 * @return bool True if Direct Checkout is enabled, false otherwise.
@@ -387,7 +377,6 @@ class WC_Payments_Features {
 				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),
-				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
 			]
 		);
 	}
