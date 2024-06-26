@@ -81,8 +81,8 @@ jQuery( ( $ ) => {
 	} );
 
 	// We need to refresh payment request data when total is updated.
-	$( document.body ).on( 'updated_checkout', () => {
-		applyFilters(
+	$( document.body ).on( 'updated_checkout', async () => {
+		await applyFilters(
 			'wcpay.payment-request.update-button-data',
 			Promise.resolve()
 		);

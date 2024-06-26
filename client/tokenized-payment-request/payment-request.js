@@ -194,7 +194,7 @@ export default class WooPaymentsPaymentRequest {
 						),
 					} );
 				} else {
-					_self.init().then( noop );
+					await _self.init();
 				}
 			}
 		);
@@ -443,7 +443,7 @@ export default class WooPaymentsPaymentRequest {
 			}
 		}
 
-		this.startPaymentRequest().then( noop );
+		await this.startPaymentRequest();
 
 		// After initializing a new payment request, we need to reset the isPaymentAborted flag.
 		this.isPaymentAborted = false;
