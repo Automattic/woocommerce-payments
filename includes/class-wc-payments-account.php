@@ -830,6 +830,7 @@ class WC_Payments_Account {
 			[
 				'wcpay-connect' => '1',
 				'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
+				'from'          => 'WCPAY_KYC_REMINDER',
 			],
 			admin_url( 'admin.php' )
 		);
@@ -871,6 +872,7 @@ class WC_Payments_Account {
 						[
 							'page' => 'wc-admin',
 							'path' => '/payments/connect',
+							'from' => 'WCADMIN_PAYMENT_SETTINGS',
 						],
 						'admin.php'
 					)
@@ -890,6 +892,7 @@ class WC_Payments_Account {
 						[
 							'page' => 'wc-admin',
 							'path' => '/payments/overview',
+							'from' => 'WCADMIN_PAYMENT_SETTINGS',
 						],
 						'admin.php'
 					)
@@ -942,6 +945,7 @@ class WC_Payments_Account {
 					[
 						'page' => 'wc-admin',
 						'path' => '/payments/overview',
+						'from' => 'WCPAY_ONBOARDING_FLOW',
 					],
 					'admin.php'
 				)
