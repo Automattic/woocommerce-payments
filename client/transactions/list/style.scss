@@ -136,6 +136,7 @@ $gap-small: 12px;
 	}
 
 	.components-card__header {
+		// These styles improve the overflow behaviour of the Search component within the TableCard, when many tags are selected. Used for transaction list views. See PR #8996
 		.woocommerce-search.woocommerce-select-control
 			.woocommerce-select-control__listbox {
 			position: relative;
@@ -162,7 +163,6 @@ $gap-small: 12px;
 				flex-wrap: wrap;
 
 				.woocommerce-select-control__tags {
-					overflow-x: visible;
 					white-space: wrap;
 				}
 			}
