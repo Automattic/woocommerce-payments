@@ -5,43 +5,47 @@ exports[`Disputes list renders correctly 1`] = `
   <div
     class=" woocommerce-payments-page"
   >
-    <h2
-      class="screen-reader-text"
-    >
-      Filters
-    </h2>
     <div
-      class="woocommerce-filters"
+      class="woocommerce-filters-disputes"
     >
+      <h2
+        class="screen-reader-text"
+      >
+        Filters
+      </h2>
       <div
-        class="woocommerce-filters__basic-filters"
+        class="woocommerce-filters"
       >
         <div
-          class="woocommerce-filters-filter"
+          class="woocommerce-filters__basic-filters"
         >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Show
-            :
-          </span>
           <div
-            class="components-dropdown"
-            tabindex="-1"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Show
+              :
+            </span>
+            <div
+              class="components-dropdown"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All disputes
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All disputes
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>

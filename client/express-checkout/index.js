@@ -6,7 +6,12 @@ import { __ } from '@wordpress/i18n';
  */
 import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
-import { getExpressCheckoutData, normalizeLineItems } from './utils/index';
+import {
+	getExpressCheckoutButtonAppearance,
+	getExpressCheckoutButtonStyleSettings,
+	getExpressCheckoutData,
+	normalizeLineItems,
+} from './utils/index';
 import {
 	onClickHandler,
 	onConfirmHandler,
@@ -234,14 +239,13 @@ jQuery( ( $ ) => {
 				amount: options?.total,
 				currency: options?.currency,
 				paymentMethodCreation: 'manual',
+				appearance: getExpressCheckoutButtonAppearance(),
 			} );
 
-			const eceButton = wcpayECE.createButton( elements, {
-				buttonType: {
-					googlePay: getExpressCheckoutData( 'button' ).type,
-					applePay: getExpressCheckoutData( 'button' ).type,
-				},
-			} );
+			const eceButton = wcpayECE.createButton(
+				elements,
+				getExpressCheckoutButtonStyleSettings()
+			);
 
 			wcpayECE.showButton( eceButton );
 

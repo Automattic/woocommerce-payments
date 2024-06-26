@@ -586,7 +586,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'section' => 'woocommerce_payments',
 				],
 				true,
-				'connect',
+				'connect&from=WCADMIN_PAYMENT_SETTINGS',
 			],
 			'account_partially_onboarded' => [
 				1,
@@ -597,7 +597,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'section' => 'woocommerce_payments',
 				],
 				false,
-				'overview',
+				'overview&from=WCADMIN_PAYMENT_SETTINGS',
 			],
 			'account_fully_onboarded'     => [
 				0,

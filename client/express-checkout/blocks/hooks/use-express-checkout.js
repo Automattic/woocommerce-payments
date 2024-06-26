@@ -1,12 +1,14 @@
-/* global wcpayExpressCheckoutParams */
-
 /**
  * External dependencies
  */
 import { useCallback } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
+/**
+ * Internal dependencies
+ */
 import {
-	getExpressCheckoutData,
+	getExpressCheckoutButtonStyleSettings,
+  getExpressCheckoutData,
 	normalizeLineItems,
 } from 'wcpay/express-checkout/utils';
 import {
@@ -26,17 +28,7 @@ export const useExpressCheckout = ( {
 	const stripe = useStripe();
 	const elements = useElements();
 
-	const buttonOptions = {
-		paymentMethods: {
-			applePay: 'always',
-			googlePay: 'always',
-			link: 'auto',
-		},
-		buttonType: {
-			googlePay: wcpayExpressCheckoutParams.button.type,
-			applePay: wcpayExpressCheckoutParams.button.type,
-		},
-	};
+	const buttonOptions = getExpressCheckoutButtonStyleSettings();
 
 	const onCancel = () => {
 		onClose();
