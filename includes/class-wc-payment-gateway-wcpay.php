@@ -1299,7 +1299,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// This allows WC to check if WP_DEBUG mode is enabled before returning previous Exception and expose Exception class name to frontend.
 			add_filter( 'woocommerce_return_previous_exceptions', '__return_true' );
-			wc_add_notice( wp_strip_all_tags( $e->getMessage() ), 'error' );
+			wc_add_notice( wp_strip_all_tags( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) ), 'error' );
 			do_action( 'update_payment_result_on_error', $e, $order );
 
 			return [
