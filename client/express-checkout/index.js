@@ -1,5 +1,6 @@
 /* global jQuery, wcpayExpressCheckoutParams */
 import { __ } from '@wordpress/i18n';
+import { debounce } from 'lodash';
 
 /**
  * Internal dependencies
@@ -432,36 +433,41 @@ jQuery( ( $ ) => {
 
 			$( '.quantity' )
 				.off( 'input', '.qty' )
-				.on( 'input', '.qty', () => {
-					wcpayECE.blockExpressCheckoutButton();
+				.on(
+					'input',
+					'.qty',
+					debounce( () => {
+						wcpayECE.blockExpressCheckoutButton();
 
-					$.when( wcpayECE.getSelectedProductData() )
-						.then( ( response ) => {
-							if ( response.error ) {
-								wcPayECEError = [ response.error ];
-								return; // TODO: This scenario.
-							}
+						$.when( wcpayECE.getSelectedProductData() )
+							.then( ( response ) => {
+								if ( response.error ) {
+									wcPayECEError = [ response.error ];
+									return; // TODO: This scenario.
+								}
 
-							// TODO: Cache the `needs_shipping` value of the last response so
-							// we re-init only when necessary, that is when `needs_shipping` has changed.
-							if (
-								! wcpayECE.paymentAborted &&
-								getExpressCheckoutData( 'product' )
-									.needs_shipping === response.needs_shipping
-							) {
-								elements.update( {
-									amount: response.total.amount,
-								} );
-							} else {
-								wcpayECE.reInitExpressCheckoutElement(
-									response
-								);
-							}
-						} )
-						.always( function () {
-							wcpayECE.unblockExpressCheckoutButton();
-						} );
-				} );
+								// TODO: Cache the `needs_shipping` value of the last response so
+								// we re-init only when necessary, that is when `needs_shipping` has changed.
+								if (
+									! wcpayECE.paymentAborted &&
+									getExpressCheckoutData( 'product' )
+										.needs_shipping ===
+										response.needs_shipping
+								) {
+									elements.update( {
+										amount: response.total.amount,
+									} );
+								} else {
+									wcpayECE.reInitExpressCheckoutElement(
+										response
+									);
+								}
+							} )
+							.always( function () {
+								wcpayECE.unblockExpressCheckoutButton();
+							} );
+					}, 250 )
+				);
 		},
 
 		reInitExpressCheckoutElement: ( response ) => {
