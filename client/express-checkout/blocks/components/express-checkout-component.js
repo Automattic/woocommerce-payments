@@ -2,7 +2,10 @@
  * External dependencies
  */
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
-import { shippingAddressChangeHandler } from '../../event-handlers';
+import {
+	shippingAddressChangeHandler,
+	shippingRateChangeHandler,
+} from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
 
 /**
@@ -25,6 +28,7 @@ const ExpressCheckoutComponent = ( {
 		onButtonClick,
 		onConfirm,
 		onCancel,
+		elements,
 	} = useExpressCheckout( {
 		api,
 		billing,
@@ -34,9 +38,11 @@ const ExpressCheckoutComponent = ( {
 		setExpressPaymentError,
 	} );
 
-	const onShippingAddressChange = ( event ) => {
-		shippingAddressChangeHandler( api, event );
-	};
+	const onShippingAddressChange = ( event ) =>
+		shippingAddressChangeHandler( api, event, elements );
+
+	const onShippingRateChange = ( event ) =>
+		shippingRateChangeHandler( api, event, elements );
 
 	return (
 		<ExpressCheckoutElement
@@ -45,6 +51,7 @@ const ExpressCheckoutComponent = ( {
 			onConfirm={ onConfirm }
 			onCancel={ onCancel }
 			onShippingAddressChange={ onShippingAddressChange }
+			onShippingRateChange={ onShippingRateChange }
 		/>
 	);
 };

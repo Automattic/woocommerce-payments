@@ -35,7 +35,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<file_id>[A-Za-z0-9_\-]+)/details',
+			'/' . $this->rest_base . '/(?P<file_id>\w+)/details',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_file_detail' ],
@@ -45,7 +45,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<file_id>[A-Za-z0-9_\-]+)/content',
+			'/' . $this->rest_base . '/(?P<file_id>\w+)/content',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_file_content' ],
@@ -55,7 +55,7 @@ class WC_REST_Payments_Files_Controller extends WC_Payments_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<file_id>[A-Za-z0-9_\-]+)',
+			'/' . $this->rest_base . '/(?P<file_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_file' ],

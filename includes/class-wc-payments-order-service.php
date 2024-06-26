@@ -923,6 +923,11 @@ class WC_Payments_Order_Service {
 			$billing_details['name'] = trim( $order->get_formatted_billing_full_name() );
 		}
 
+		// The country field can't ever be empty, so we remove it if it is.
+		if ( empty( $billing_details['address']['country'] ) ) {
+			unset( $billing_details['address']['country'] );
+		}
+
 		return $billing_details;
 	}
 

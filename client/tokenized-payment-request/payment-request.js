@@ -25,6 +25,7 @@ import {
 import {
 	transformCartDataForDisplayItems,
 	transformCartDataForShippingOptions,
+	transformPrice,
 } from './transformers/wc-to-stripe';
 import paymentRequestButtonUi from './button-ui';
 import {
@@ -139,7 +140,16 @@ export default class WooPaymentsPaymentRequest {
 			} );
 		paymentRequestButtonUi.showButton( paymentRequestButton );
 
-		this.attachPaymentRequestButtonEventListeners();
+		if ( getPaymentRequestData( 'button_context' ) === 'pay_for_order' ) {
+			paymentRequestButton.on( 'click', () => {
+				trackPaymentRequestButtonClick( 'pay_for_order' );
+			} );
+		}
+
+		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
+			this.attachPaymentRequestButtonEventListeners();
+		}
+
 		removeAction(
 			'wcpay.payment-request.update-button-data',
 			'automattic/wcpay/payment-request'
@@ -168,9 +178,13 @@ export default class WooPaymentsPaymentRequest {
 					paymentRequest.update( {
 						total: {
 							label: getPaymentRequestData( 'total_label' ),
-							amount: parseInt(
-								newCartData.totals.total_price,
-								10
+							amount: transformPrice(
+								parseInt( newCartData.totals.total_price, 10 ) -
+									parseInt(
+										newCartData.totals.total_refund || 0,
+										10
+									),
+								newCartData.totals
 							),
 						},
 						displayItems: transformCartDataForDisplayItems(
@@ -183,49 +197,58 @@ export default class WooPaymentsPaymentRequest {
 			}
 		);
 
-		const $addToCartButton = jQuery( '.single_add_to_cart_button' );
+		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
+			const $addToCartButton = jQuery( '.single_add_to_cart_button' );
 
-		paymentRequestButton.on( 'click', ( event ) => {
-			trackPaymentRequestButtonClick( 'product' );
+			paymentRequestButton.on( 'click', ( event ) => {
+				trackPaymentRequestButtonClick( 'product' );
 
-			// If login is required for checkout, display redirect confirmation dialog.
-			if ( getPaymentRequestData( 'login_confirmation' ) ) {
-				event.preventDefault();
-				displayLoginConfirmationDialog( buttonBranding );
-				return;
-			}
-
-			// First check if product can be added to cart.
-			if ( $addToCartButton.is( '.disabled' ) ) {
-				event.preventDefault(); // Prevent showing payment request modal.
-				if ( $addToCartButton.is( '.wc-variation-is-unavailable' ) ) {
-					window.alert(
-						window.wc_add_to_cart_variation_params
-							?.i18n_unavailable_text ||
-							__(
-								'Sorry, this product is unavailable. Please choose a different combination.',
-								'woocommerce-payments'
-							)
-					);
-				} else {
-					window.alert(
-						__(
-							'Please select your product options before proceeding.',
-							'woocommerce-payments'
-						)
-					);
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( getPaymentRequestData( 'login_confirmation' ) ) {
+					event.preventDefault();
+					displayLoginConfirmationDialog( buttonBranding );
+					return;
 				}
-				return;
-			}
 
-			_self.paymentRequestCartApi.addProductToCart();
-		} );
+				// First check if product can be added to cart.
+				if ( $addToCartButton.is( '.disabled' ) ) {
+					event.preventDefault(); // Prevent showing payment request modal.
+					if (
+						$addToCartButton.is( '.wc-variation-is-unavailable' )
+					) {
+						window.alert(
+							window.wc_add_to_cart_variation_params
+								?.i18n_unavailable_text ||
+								__(
+									'Sorry, this product is unavailable. Please choose a different combination.',
+									'woocommerce-payments'
+								)
+						);
+					} else {
+						window.alert(
+							window?.wc_add_to_cart_variation_params
+								?.i18n_make_a_selection_text ||
+								__(
+									'Please select some product options before adding this product to your cart.',
+									'woocommerce-payments'
+								)
+						);
+					}
+					return;
+				}
+
+				_self.paymentRequestCartApi.addProductToCart();
+			} );
+		}
 
 		paymentRequest.on( 'cancel', () => {
 			_self.isPaymentAborted = true;
-			// clearing the cart to avoid issues with products with low or limited availability
-			// being held hostage by customers cancelling the PRB.
-			_self.paymentRequestCartApi.emptyCart();
+
+			if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
+				// clearing the cart to avoid issues with products with low or limited availability
+				// being held hostage by customers cancelling the PRB.
+				_self.paymentRequestCartApi.emptyCart();
+			}
 		} );
 
 		paymentRequest.on( 'shippingaddresschange', async ( event ) => {
@@ -246,7 +269,14 @@ export default class WooPaymentsPaymentRequest {
 					),
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount: parseInt( cartData.totals.total_price, 10 ),
+						amount: transformPrice(
+							parseInt( cartData.totals.total_price, 10 ) -
+								parseInt(
+									cartData.totals.total_refund || 0,
+									10
+								),
+							cartData.totals
+						),
 					},
 					displayItems: transformCartDataForDisplayItems( cartData ),
 				} );
@@ -270,7 +300,14 @@ export default class WooPaymentsPaymentRequest {
 					status: 'success',
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount: parseInt( cartData.totals.total_price, 10 ),
+						amount: transformPrice(
+							parseInt( cartData.totals.total_price, 10 ) -
+								parseInt(
+									cartData.totals.total_refund || 0,
+									10
+								),
+							cartData.totals
+						),
 					},
 					displayItems: transformCartDataForDisplayItems( cartData ),
 				} );
@@ -281,7 +318,7 @@ export default class WooPaymentsPaymentRequest {
 		} );
 
 		paymentRequest.on( 'paymentmethod', async ( event ) => {
-			// TODO: this works for PDPs - need to handle checkout scenarios for pay-for-order, cart, checkout.
+			// TODO: this works for PDPs - need to handle checkout scenarios for cart, checkout.
 			try {
 				const response = await _self.paymentRequestCartApi.placeOrder( {
 					// adding extension data as a separate action,

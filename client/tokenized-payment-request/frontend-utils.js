@@ -7,7 +7,10 @@ import { doingAction } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { transformCartDataForDisplayItems } from './transformers/wc-to-stripe';
+import {
+	transformCartDataForDisplayItems,
+	transformPrice,
+} from './transformers/wc-to-stripe';
 
 /**
  * Retrieves payment request data from global variable.
@@ -61,7 +64,14 @@ export const getPaymentRequest = ( { stripe, cartData, productData } ) => {
 					currency: cartData.totals.currency_code.toLowerCase(),
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
-						amount: parseInt( cartData.totals.total_price, 10 ),
+						amount: transformPrice(
+							parseInt( cartData.totals.total_price, 10 ) -
+								parseInt(
+									cartData.totals.total_refund || 0,
+									10
+								),
+							cartData.totals
+						),
 					},
 					requestShipping:
 						getPaymentRequestData( 'button_context' ) ===

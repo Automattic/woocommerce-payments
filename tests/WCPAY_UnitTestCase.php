@@ -15,6 +15,68 @@ use WCPay\Core\Server\Response;
  * Class WP_UnitTestCase
  */
 class WCPAY_UnitTestCase extends WP_UnitTestCase {
+	public function set_up() {
+		parent::set_up();
+
+		// Use a priority of 9 to ensure that these filters will allow tests that want to mock external requests
+		// to hook in with the regular 10 priority and do their thing.
+		// But by default we will intercept all external requests.
+		add_filter( 'pre_http_request', [ $this, 'filter_intercept_external_requests' ], 9, 3 );
+		add_filter( 'woocommerce_get_geolocation', [ $this, 'filter_mock_wc_geolocation' ], 9, 2 );
+	}
+
+	public function tear_down() {
+		remove_filter( 'pre_http_request', [ $this, 'filter_intercept_external_requests' ], 9, 3 );
+		remove_filter( 'woocommerce_get_geolocation', [ $this, 'filter_mock_wc_geolocation' ], 9, 2 );
+
+		parent::tear_down();
+	}
+
+	/**
+	 * Intercept external requests and return a service unavailable response.
+	 *
+	 * This way we don't allow relying on external services for tests (fragile and slow tests) and force those tests
+	 * that care about a response to mock the request response.
+	 *
+	 * @see WP_Http::request()
+	 *
+	 * @param false|array|WP_Error $response    A preemptive return value of an HTTP request. Default false.
+	 * @param array                $parsed_args HTTP request arguments.
+	 * @param string               $url         The request URL.
+	 *
+	 * @return array
+	 */
+	public function filter_intercept_external_requests( $response, $parsed_args, $url ) {
+		// Return a service unavailable response.
+		return [
+			'body'          => '',
+			'response'      => [
+				'code' => WP_Http::SERVICE_UNAVAILABLE,
+			],
+			'headers'       => [],
+			'cookies'       => [],
+			'http_response' => null,
+		];
+	}
+
+	/**
+	 * Intercept geolocation requests and return mock data.
+	 *
+	 * @param array $geolocation
+	 * @param string $ip_address
+	 *
+	 * @return array
+	 */
+	public function filter_mock_wc_geolocation( $geolocation, $ip_address ) {
+		$ip_geolocation_test_data = json_decode( file_get_contents( __DIR__ . '/unit/test-data/ip-geolocation.json' ), true );
+
+		if ( ! empty( $ip_geolocation_test_data[ $ip_address ] ) ) {
+			$geolocation = array_merge( $geolocation, $ip_geolocation_test_data[ $ip_address ] );
+		}
+
+		return $geolocation;
+	}
+
 	protected function is_wpcom() {
 		return defined( 'IS_WPCOM' ) && IS_WPCOM;
 	}

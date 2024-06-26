@@ -69,15 +69,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		$items     = [];
-		$subtotal  = 0;
 		$discounts = 0;
 		$currency  = get_woocommerce_currency();
 
 		// Default show only subtotal instead of itemization.
 		if ( ! apply_filters( 'wcpay_payment_request_hide_itemization', ! $itemized_display_items ) ) {
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			foreach ( WC()->cart->get_cart() as $cart_item ) {
 				$amount         = $cart_item['line_subtotal'];
-				$subtotal      += $cart_item['line_subtotal'];
 				$quantity_label = 1 < $cart_item['quantity'] ? ' (x' . $cart_item['quantity'] . ')' : '';
 
 				$product_name = $cart_item['data']->get_name();
@@ -138,7 +136,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		// Include fees and taxes as display items.
-		foreach ( $cart_fees as $key => $fee ) {
+		foreach ( $cart_fees as $fee ) {
 			$items[] = [
 				'label'  => $fee->name,
 				'amount' => WC_Payments_Utils::prepare_amount( $fee->amount, $currency ),
@@ -507,12 +505,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			$packages = WC()->shipping->get_packages();
 
 			if ( ! empty( $packages ) && WC()->customer->has_calculated_shipping() ) {
-				foreach ( $packages as $package_key => $package ) {
+				foreach ( $packages as $package ) {
 					if ( empty( $package['rates'] ) ) {
 						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
 					}
 
-					foreach ( $package['rates'] as $key => $rate ) {
+					foreach ( $package['rates'] as $rate ) {
 						$data['shipping_options'][] = [
 							'id'          => $rate->id,
 							'displayName' => $rate->label,
