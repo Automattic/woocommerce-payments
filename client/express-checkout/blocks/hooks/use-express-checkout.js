@@ -8,7 +8,7 @@ import { useStripe, useElements } from '@stripe/react-stripe-js';
  */
 import {
 	getExpressCheckoutButtonStyleSettings,
-  getExpressCheckoutData,
+	getExpressCheckoutData,
 	normalizeLineItems,
 } from 'wcpay/express-checkout/utils';
 import {
