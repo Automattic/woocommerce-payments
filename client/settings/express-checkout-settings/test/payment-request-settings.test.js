@@ -18,6 +18,7 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	useWooPayEnabledSettings,
+	useExpressCheckoutShowIncompatibilityNotice,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
@@ -27,13 +28,14 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	useWooPayEnabledSettings: jest.fn(),
+	useExpressCheckoutShowIncompatibilityNotice: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
 
-jest.mock( 'payment-request/utils', () => ( {
+jest.mock( 'utils/express-checkout', () => ( {
 	getPaymentRequestData: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',
@@ -253,5 +255,29 @@ describe( 'PaymentRequestSettings', () => {
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );
+	} );
+
+	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( true );
+
+		render( <PaymentRequestSettings section="enable" /> );
+
+		expect(
+			screen.queryByText(
+				'Your custom checkout fields may not be compatible with these payment methods.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( false );
+
+		render( <PaymentRequestSettings section="enable" /> );
+
+		expect(
+			screen.queryByText(
+				'Your custom checkout fields may not be compatible with these payment methods.'
+			)
+		).not.toBeInTheDocument();
 	} );
 } );

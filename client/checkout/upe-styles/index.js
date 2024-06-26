@@ -11,7 +11,7 @@ import {
 	getBackgroundColor,
 } from './utils.js';
 
-const appearanceSelectors = {
+export const appearanceSelectors = {
 	default: {
 		hiddenContainer: '#wcpay-hidden-div',
 		hiddenInput: '#wcpay-hidden-input',
@@ -59,6 +59,55 @@ const appearanceSelectors = {
 			'body',
 		],
 	},
+	bnplProductPage: {
+		appendTarget: '.product .cart .quantity',
+		upeThemeInputSelector: '.product .cart .quantity .qty',
+		upeThemeLabelSelector: '.product .cart .quantity label',
+		rowElement: 'div',
+		validClasses: [ 'input-text' ],
+		invalidClasses: [ 'input-text', 'has-error' ],
+		backgroundSelectors: [
+			'#payment-method-message',
+			'#main > .product > div.summary.entry-summary',
+			'#main > .product',
+			'#main',
+			'body',
+		],
+	},
+	bnplClassicCart: {
+		appendTarget: '.cart .quantity',
+		upeThemeInputSelector: '.cart .quantity .qty',
+		upeThemeLabelSelector: '.cart .quantity label',
+		rowElement: 'div',
+		validClasses: [ 'input-text' ],
+		invalidClasses: [ 'input-text', 'has-error' ],
+		backgroundSelectors: [
+			'#payment-method-message',
+			'#main .entry-content .cart_totals',
+			'#main .entry-content',
+			'#main',
+			'body',
+		],
+	},
+	bnplCartBlock: {
+		appendTarget: '.wc-block-cart .wc-block-components-quantity-selector',
+		upeThemeInputSelector:
+			'.wc-block-cart .wc-block-components-quantity-selector .wc-block-components-quantity-selector__input',
+		upeThemeLabelSelector: '.wc-block-components-text-input',
+		rowElement: 'div',
+		validClasses: [ 'wc-block-components-text-input' ],
+		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+		backgroundSelectors: [
+			'.wc-block-components-bnpl-wrapper',
+			'.wc-block-components-order-meta',
+			'.wc-block-components-totals-wrapper',
+			'.wp-block-woocommerce-cart-order-summary-block',
+			'.wp-block-woocommerce-cart-totals-block',
+			'.wp-block-woocommerce-cart .wc-block-cart',
+			'.wp-block-woocommerce-cart',
+			'body',
+		],
+	},
 
 	/**
 	 * Update selectors to use alternate if not present on DOM.
@@ -88,21 +137,34 @@ const appearanceSelectors = {
 	/**
 	 * Returns selectors based on checkout type.
 	 *
-	 * @param {boolean} isBlocksCheckout True ff block checkout. Default false.
+	 * @param {boolean} elementsLocation The location of the elements.
 	 *
 	 * @return {Object} Selectors for checkout type specified.
 	 */
-	getSelectors: function ( isBlocksCheckout = false ) {
-		if ( isBlocksCheckout ) {
-			return {
-				...this.default,
-				...this.updateSelectors( this.blocksCheckout ),
-			};
+	getSelectors: function ( elementsLocation ) {
+		let appearanceSelector = this.blocksCheckout;
+
+		switch ( elementsLocation ) {
+			case 'blocks_checkout':
+				appearanceSelector = this.blocksCheckout;
+				break;
+			case 'shortcode_checkout':
+				appearanceSelector = this.classicCheckout;
+				break;
+			case 'bnpl_product_page':
+				appearanceSelector = this.bnplProductPage;
+				break;
+			case 'bnpl_classic_cart':
+				appearanceSelector = this.bnplClassicCart;
+				break;
+			case 'bnpl_cart_block':
+				appearanceSelector = this.bnplCartBlock;
+				break;
 		}
 
 		return {
 			...this.default,
-			...this.updateSelectors( this.classicCheckout ),
+			...this.updateSelectors( appearanceSelector ),
 		};
 	},
 };
@@ -180,10 +242,10 @@ const hiddenElementsForUPE = {
 	/**
 	 * Initialize hidden fields to generate UPE styles.
 	 *
-	 * @param {boolean} isBlocksCheckout True if Blocks Checkout. Default false.
+	 * @param {boolean} elementsLocation The location of the elements.
 	 */
-	init: function ( isBlocksCheckout = false ) {
-		const selectors = appearanceSelectors.getSelectors( isBlocksCheckout ),
+	init: function ( elementsLocation ) {
+		const selectors = appearanceSelectors.getSelectors( elementsLocation ),
 			appendTarget = document.querySelector( selectors.appendTarget ),
 			elementToClone = document.querySelector(
 				selectors.upeThemeInputSelector
@@ -342,11 +404,11 @@ export const getFontRulesFromPage = () => {
 	return fontRules;
 };
 
-export const getAppearance = ( isBlocksCheckout = false ) => {
-	const selectors = appearanceSelectors.getSelectors( isBlocksCheckout );
+export const getAppearance = ( elementsLocation ) => {
+	const selectors = appearanceSelectors.getSelectors( elementsLocation );
 
 	// Add hidden fields to DOM for generating styles.
-	hiddenElementsForUPE.init( isBlocksCheckout );
+	hiddenElementsForUPE.init( elementsLocation );
 
 	const inputRules = getFieldStyles( selectors.hiddenInput, '.Input' );
 	const inputInvalidRules = getFieldStyles(

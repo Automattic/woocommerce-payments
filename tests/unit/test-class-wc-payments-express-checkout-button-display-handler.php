@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WooPay\WooPay_Utilities;
@@ -65,11 +66,25 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	private $mock_woopay_utilities;
 
 	/**
+	 * Express Checkout ECE Button Handler mock instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Handler|MockObject
+	 */
+	private $mock_express_checkout_ece_button_handler;
+
+	/**
 	 * Express Checkout Helper instance.
 	 *
 	 * @var WC_Payments_Express_Checkout_Button_Helper
 	 */
-	private $express_checkout_helper;
+	private $mock_express_checkout_helper;
+
+	/**
+	 * Express Checkout Ajax Handler instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Ajax_Handler
+	 */
+	private $mock_express_checkout_ajax_handler;
 
 	/**
 	 * Sets up things all tests need.
@@ -109,6 +124,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			)
 			->getMock();
 
+		$this->mock_express_checkout_ajax_handler = $this->getMockBuilder( WC_Payments_Express_Checkout_Ajax_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_express_checkout_helper,
+				]
+			)
+			->getMock();
+
 		$this->mock_woopay_button_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
 			->setConstructorArgs(
 				[
@@ -142,12 +165,35 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			)
 			->getMock();
 
-			$this->express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( $this->mock_wcpay_gateway, $this->mock_payment_request_button_handler, $this->mock_woopay_button_handler, $this->mock_express_checkout_helper );
-			$this->express_checkout_button_display_handler->init();
+		$this->mock_express_checkout_ece_button_handler = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+					$this->mock_express_checkout_helper,
+					$this->mock_express_checkout_ajax_handler,
+				]
+			)
+			->setMethods(
+				[
+					'should_show_express_checkout_button',
+				]
+			)
+			->getMock();
+
+		$this->express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler(
+			$this->mock_wcpay_gateway,
+			$this->mock_payment_request_button_handler,
+			$this->mock_woopay_button_handler,
+			$this->mock_express_checkout_ece_button_handler,
+			$this->mock_express_checkout_ajax_handler,
+			$this->mock_express_checkout_helper
+		);
+		$this->express_checkout_button_display_handler->init();
 
 		add_filter(
 			'woocommerce_available_payment_gateways',
-			function() {
+			function () {
 				return [ 'woocommerce_payments' => $this->mock_wcpay_gateway ];
 			}
 		);
@@ -177,7 +223,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			$mock_order_service,
 			$mock_dpps,
 			$this->createMock( WC_Payments_Localization_Service::class ),
-			$this->createMock( WC_Payments_Fraud_Service::class )
+			$this->createMock( WC_Payments_Fraud_Service::class ),
+			$this->createMock( Duplicates_Detection_Service::class )
 		);
 	}
 

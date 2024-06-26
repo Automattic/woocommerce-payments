@@ -184,7 +184,7 @@ class WC_Payments_Account {
 	public function try_is_stripe_connected(): bool {
 		$account = $this->get_cached_account_data();
 		if ( false === $account ) {
-			throw new Exception( __( 'Failed to detect connection status', 'woocommerce-payments' ) );
+			throw new Exception( esc_html__( 'Failed to detect connection status', 'woocommerce-payments' ) );
 		}
 
 		// The empty array indicates that account is not connected yet.
@@ -314,7 +314,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Account statement descriptor.
 	 */
-	public function get_statement_descriptor() : string {
+	public function get_statement_descriptor(): string {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['statement_descriptor'] ) ? $account['statement_descriptor'] : '';
 	}
@@ -324,7 +324,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Account statement descriptor.
 	 */
-	public function get_statement_descriptor_kanji() : string {
+	public function get_statement_descriptor_kanji(): string {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['statement_descriptor_kanji'] ) ? $account['statement_descriptor_kanji'] : '';
 	}
@@ -334,7 +334,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Account statement descriptor.
 	 */
-	public function get_statement_descriptor_kana() : string {
+	public function get_statement_descriptor_kana(): string {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['statement_descriptor_kana'] ) ? $account['statement_descriptor_kana'] : '';
 	}
@@ -344,7 +344,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Business profile name.
 	 */
-	public function get_business_name() : string {
+	public function get_business_name(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['name'] ) ? $account['business_profile']['name'] : '';
 	}
@@ -354,7 +354,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Business profile url.
 	 */
-	public function get_business_url() : string {
+	public function get_business_url(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['url'] ) ? $account['business_profile']['url'] : '';
 	}
@@ -364,7 +364,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array Business profile support address.
 	 */
-	public function get_business_support_address() : array {
+	public function get_business_support_address(): array {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['support_address'] ) ? $account['business_profile']['support_address'] : [];
 	}
@@ -374,7 +374,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Business profile support email.
 	 */
-	public function get_business_support_email() : string {
+	public function get_business_support_email(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['support_email'] ) ? $account['business_profile']['support_email'] : '';
 	}
@@ -384,7 +384,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Business profile support phone.
 	 */
-	public function get_business_support_phone() : string {
+	public function get_business_support_phone(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['support_phone'] ) ? $account['business_profile']['support_phone'] : '';
 	}
@@ -394,7 +394,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string branding logo.
 	 */
-	public function get_branding_logo() : string {
+	public function get_branding_logo(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['branding']['logo'] ) ? $account['branding']['logo'] : '';
 	}
@@ -404,7 +404,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string branding icon.
 	 */
-	public function get_branding_icon() : string {
+	public function get_branding_icon(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['branding']['icon'] ) ? $account['branding']['icon'] : '';
 	}
@@ -414,7 +414,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string branding primary color.
 	 */
-	public function get_branding_primary_color() : string {
+	public function get_branding_primary_color(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['branding']['primary_color'] ) ? $account['branding']['primary_color'] : '';
 	}
@@ -424,7 +424,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string branding secondary color.
 	 */
-	public function get_branding_secondary_color() : string {
+	public function get_branding_secondary_color(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['branding']['secondary_color'] ) ? $account['branding']['secondary_color'] : '';
 	}
@@ -524,7 +524,7 @@ class WC_Payments_Account {
 	 *
 	 * @return array Fees.
 	 */
-	public function get_fees() {
+	public function get_fees(): array {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['fees'] ) ? $account['fees'] : [];
 	}
@@ -1054,8 +1054,10 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
-			$incentive   = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
-			$progressive = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+			$wcpay_connect_param    = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+			$incentive              = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+			$progressive            = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+			$create_builder_account = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
 
 			// Track connection start.
 			if ( ! isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
@@ -1071,9 +1073,11 @@ class WC_Payments_Account {
 				);
 			}
 
-			$source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
-			if ( in_array(
-				$source,
+			$connect_page_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
+			// Redirect to the onboarding flow page if the account is not onboarded otherwise to the overview page.
+			// Builder accounts are handled below and redirected to Stripe KYC directly.
+			if ( ! $create_builder_account && in_array(
+				$connect_page_source,
 				[
 					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 					WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
@@ -1092,7 +1096,27 @@ class WC_Payments_Account {
 						WC_Payments_Onboarding_Service::set_test_mode( false );
 					}
 
-					$this->redirect_to_onboarding_flow_page( $source );
+					if ( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE === $connect_page_source ) {
+						$this->redirect_to_onboarding_welcome_page();
+					} else {
+						$this->redirect_to_onboarding_flow_page( $connect_page_source );
+					}
+				} elseif ( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE === $connect_page_source && ! $this->is_details_submitted() ) {
+					try {
+						$this->init_stripe_onboarding(
+							$wcpay_connect_param,
+							[
+								'promo'       => $incentive,
+								'progressive' => $progressive,
+							]
+						);
+					} catch ( Exception $e ) {
+						Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
+						$this->redirect_to_onboarding_welcome_page(
+							__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
+						);
+					}
+					return;
 				} else {
 					// Accounts with Stripe account connected will be redirected to the overview page.
 					$this->redirect_to( static::get_overview_page_url() );
@@ -1100,7 +1124,7 @@ class WC_Payments_Account {
 			}
 
 			// Handle the flow for a builder moving from test to live.
-			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS === $source ) {
+			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS === $connect_page_source ) {
 				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 
 				// Delete the account if the test mode is enabled otherwise it'll cause issues to onboard again.
@@ -1110,16 +1134,16 @@ class WC_Payments_Account {
 
 				// Set the test mode to false now that we are handling a real onboarding.
 				WC_Payments_Onboarding_Service::set_test_mode( false );
-				$this->redirect_to_onboarding_flow_page( $source );
+				$this->redirect_to_onboarding_flow_page( $connect_page_source );
 				return;
 			}
 
-			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $source ) {
-				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
+			if ( WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT === $connect_page_source ) {
+				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled() || WC_Payments::mode()->is_dev();
 
 				// Delete the account.
 				$this->payments_api_client->delete_account( $test_mode );
-				$this->redirect_to_onboarding_flow_page( $source );
+				$this->redirect_to_onboarding_flow_page( $connect_page_source );
 				return;
 			}
 
@@ -1156,8 +1180,6 @@ class WC_Payments_Account {
 					$event_properties
 				);
 			}
-
-			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
 			try {
 				$this->maybe_init_jetpack_connection(
@@ -1232,9 +1254,13 @@ class WC_Payments_Account {
 	/**
 	 * Payments task page url
 	 *
+	 * @deprecated 7.8.0
+	 *
 	 * @return string payments task page url
 	 */
 	public static function get_payments_task_page_url() {
+		wc_deprecated_function( __FUNCTION__, '7.8.0' );
+
 		return add_query_arg(
 			[
 				'page'   => 'wc-admin',
@@ -1393,11 +1419,9 @@ class WC_Payments_Account {
 			);
 		}
 
-		// If connection originated on the WCADMIN payment task page, return there.
-		// else goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
+		// Custom return URL for the connect page based on the source.
+		// Default goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
 		switch ( $wcpay_connect_from ) {
-			case 'WCADMIN_PAYMENT_TASK':
-				return static::get_payments_task_page_url();
 			case 'WC_SUBSCRIPTIONS_TABLE':
 				return admin_url( add_query_arg( [ 'post_type' => 'shop_subscription' ], 'edit.php' ) );
 			default:
@@ -1435,9 +1459,6 @@ class WC_Payments_Account {
 		if ( $test_mode ) {
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
-
-		// Clear persisted onboarding flow state.
-		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 
 		if ( ! $collect_payout_requirements ) {
 			// Clear onboarding related account options if this is an initial onboarding attempt.
@@ -1675,7 +1696,7 @@ class WC_Payments_Account {
 	 *
 	 * @return void
 	 */
-	public function update_cached_account_data( $property, $data ) {
+	public function update_account_data( $property, $data ) {
 		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
 
 		$account_data[ $property ] = is_array( $data ) ? array_merge( $account_data[ $property ] ?? [], $data ) : $data;
@@ -1690,16 +1711,6 @@ class WC_Payments_Account {
 	 */
 	public function refresh_account_data() {
 		return $this->get_cached_account_data( true );
-	}
-
-	/**
-	 * Updates the account data.
-	 *
-	 * @param string $property Property to update.
-	 * @param mixed  $data     Data to update.
-	 */
-	public function update_account_data( $property, $data ) {
-		return $this->update_cached_account_data( $property, $data );
 	}
 
 	/**
@@ -1846,7 +1857,7 @@ class WC_Payments_Account {
 		}
 
 		// Fetch the last 10 actioned wcpay-promo admin notifications.
-		$add_like_clause = function( $where_clause ) {
+		$add_like_clause = function ( $where_clause ) {
 			return $where_clause . " AND name like 'wcpay-promo-%'";
 		};
 
@@ -1891,7 +1902,7 @@ class WC_Payments_Account {
 	 *
 	 * @return string Currency code in lowercase.
 	 */
-	public function get_account_default_currency() {
+	public function get_account_default_currency(): string {
 		$account = $this->get_cached_account_data();
 		return $account['store_currencies']['default'] ?? strtolower( Currency_Code::UNITED_STATES_DOLLAR );
 	}
@@ -2022,7 +2033,7 @@ class WC_Payments_Account {
 
 		return $this->database_cache->get_or_add(
 			Database_Cache::TRACKING_INFO_KEY,
-			function(): array {
+			function (): array {
 				return $this->payments_api_client->get_tracking_info();
 			},
 			'is_array', // We expect an array back from the cache.
@@ -2052,7 +2063,12 @@ class WC_Payments_Account {
 		);
 
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			$this->payments_api_client->start_server_connection( $onboarding_url );
+			try {
+				$this->payments_api_client->start_server_connection( $onboarding_url );
+			} catch ( API_Exception $e ) {
+				// If we can't connect to the server, return, the error will be shown on the relevant page.
+				return;
+			}
 		} else {
 			$this->redirect_to( $onboarding_url );
 		}
@@ -2094,21 +2110,32 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get the all-time total payment volume.
+	 *
+	 * @return int The all-time total payment volume, or null if not available.
+	 */
+	public function get_lifetime_total_payment_volume(): int {
+		$account = $this->get_cached_account_data();
+		return (int) ! empty( $account ) && isset( $account['lifetime_total_payment_volume'] ) ? $account['lifetime_total_payment_volume'] : 0;
+	}
+
+	/**
 	 * Get user data to send to the onboarding flow.
 	 *
 	 * @return array The user data.
 	 */
 	private function get_onboarding_user_data(): array {
 		return [
-			'user_id'         => get_current_user_id(),
-			'sift_session_id' => $this->session_service->get_sift_session_id(),
-			'ip_address'      => \WC_Geolocation::get_ip_address(),
-			'browser'         => [
+			'user_id'           => get_current_user_id(),
+			'sift_session_id'   => $this->session_service->get_sift_session_id(),
+			'ip_address'        => \WC_Geolocation::get_ip_address(),
+			'browser'           => [
 				'user_agent'       => isset( $_SERVER['HTTP_USER_AGENT'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
 				'accept_language'  => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '',
 				'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
 			],
-			'referer'         => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
+			'referer'           => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
+			'onboarding_source' => sanitize_text_field( wp_unslash( $_GET['source'] ) ),
 		];
 	}
 }

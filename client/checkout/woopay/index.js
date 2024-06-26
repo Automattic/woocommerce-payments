@@ -23,21 +23,13 @@ const renderSaveUserSection = () => {
 	);
 
 	if ( blocksCheckout.length ) {
-		const checkoutPageSaveUserContainer = document.createElement(
-			'fieldset'
-		);
+		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		const paymentOptions = document.getElementsByClassName(
 			'wp-block-woocommerce-checkout-payment-block'
 		)?.[ 0 ];
-		const isPaymentOptionsNumbered = paymentOptions?.classList?.contains(
-			'wc-block-components-checkout-step--with-step-number'
-		);
 
 		checkoutPageSaveUserContainer.className =
-			'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block ' +
-			`wc-block-components-checkout-step wc-block-components-checkout-step${
-				isPaymentOptionsNumbered ? '--with-step-number' : ''
-			}`;
+			'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block ';
 		checkoutPageSaveUserContainer.id = 'remember-me';
 
 		if ( paymentOptions ) {

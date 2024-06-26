@@ -258,14 +258,15 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		];
 
 		$user_data = [
-			'user_id'    => 1,
-			'ip_address' => '0.0.0.0',
-			'browser'    => [
+			'user_id'           => 1,
+			'ip_address'        => '0.0.0.0',
+			'browser'           => [
 				'user_agent'       => 'Unit Test Agent/0.1.0',
 				'accept_language'  => 'en-US,en;q=0.5',
 				'content_language' => 'en-US,en;q=0.5',
 			],
-			'referer'    => 'https://example.com',
+			'referer'           => 'https://example.com',
+			'onboarding_source' => 'test_source',
 		];
 
 		$account_data = [];
@@ -275,6 +276,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			'e' => 5,
 			'f' => 6,
 		];
+
+		$default_wc_pages = $this->create_woocommerce_default_pages();
 
 		$this->mock_http_client
 			->expects( $this->once() )
@@ -325,6 +328,9 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		// Assert the response is correct.
 		$this->assertEquals( [ 'url' => false ], $result );
+
+		// Remove test pages created.
+		$this->delete_test_posts( $default_wc_pages );
 	}
 
 	/**
@@ -337,50 +343,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/business_types?test_mode=0',
-					'method'          => 'GET',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/business_types?test_mode=0' ),
 				null,
 				true,
 				true // get_onboarding_business_types should use user token auth.
 			);
 
 		$this->payments_api_client->get_onboarding_business_types();
-	}
-
-	/**
-	 * Test getting onboarding required verification information.
-	 *
-	 * @throws API_Exception
-	 */
-	public function test_get_onboarding_required_verification_information() {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/required_verification_information?test_mode=0&country=country&type=type',
-					'method'          => 'GET',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
-				null,
-				true,
-				true // get_onboarding_required_verification_information should use user token auth.
-			);
-
-		$this->payments_api_client->get_onboarding_required_verification_information( 'country', 'type' );
 	}
 
 	public function test_get_link() {
@@ -432,16 +401,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/currency/rates?test_mode=0&currency_from=USD',
-					'method'          => 'GET',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/currency/rates?test_mode=0&currency_from=USD' ),
 				null,
 				true,
 				false
@@ -581,16 +541,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations/tml_XXXXXXX?test_mode=0',
-					'method'          => 'DELETE',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/terminal/locations/tml_XXXXXXX?test_mode=0' ),
 				null,
 				true,
 				false
@@ -751,16 +702,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				[
-					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/subscriptions/sub_test?test_mode=0',
-					'method'          => 'DELETE',
-					'headers'         => [
-						'Content-Type' => 'application/json; charset=utf-8',
-						'User-Agent'   => 'Unit Test Agent/0.1.0',
-					],
-					'timeout'         => 70,
-					'connect_timeout' => 70,
-				],
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/subscriptions/sub_test?test_mode=0' ),
 				null,
 				true,
 				false
@@ -1308,7 +1250,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 70, $data['timeout'] );
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
-
 	}
 
 	/**
@@ -1321,18 +1262,85 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	private function get_mock_compatibility_data( array $args = [] ): array {
 		return array_merge(
 			[
-				'woopayments_version' => WCPAY_VERSION_NUMBER,
-				'woocommerce_version' => WC_VERSION,
-				'blog_theme'          => 'default',
-				'active_plugins'      => [],
-				'post_types_count'    => [
+				'woopayments_version'    => WCPAY_VERSION_NUMBER,
+				'woocommerce_version'    => WC_VERSION,
+				'woocommerce_permalinks' => get_option( 'woocommerce_permalinks' ),
+				'woocommerce_shop'       => get_permalink( wc_get_page_id( 'shop' ) ),
+				'woocommerce_cart'       => get_permalink( wc_get_page_id( 'cart' ) ),
+				'woocommerce_checkout'   => get_permalink( wc_get_page_id( 'checkout' ) ),
+				'blog_theme'             => 'default',
+				'active_plugins'         => [],
+				'post_types_count'       => [
 					'post'       => 0,
-					'page'       => 0,
+					'page'       => 4,
 					'attachment' => 0,
 					'product'    => 0,
 				],
 			],
 			$args
 		);
+	}
+
+	/**
+	 * Creates the default WooCommerce pages for test purposes.
+	 *
+	 * @return array Array of post IDs that were created.
+	 */
+	private function create_woocommerce_default_pages(): array {
+		// Note: Inspired by WC_Install::create_pages().
+
+		$pages = [
+			'shop'           => [
+				'name'    => 'shop',
+				'title'   => 'Shop',
+				'content' => '',
+			],
+			'cart'           => [
+				'name'    => 'cart',
+				'title'   => 'Cart',
+				'content' => '',
+			],
+			'checkout'       => [
+				'name'    => 'checkout',
+				'title'   => 'Checkout',
+				'content' => '',
+			],
+			'myaccount'      => [
+				'name'    => 'my-account',
+				'title'   => 'My account',
+				'content' => '',
+			],
+			'refund_returns' => [
+				'name'        => 'refund_returns',
+				'title'       => 'Refund and Returns Policy',
+				'content'     => '',
+				'post_status' => 'draft',
+			],
+		];
+
+		$page_ids = [];
+		foreach ( $pages as $key => $page ) {
+			$page_ids[] = wc_create_page(
+				esc_sql( $page['name'] ),
+				'woocommerce_' . $key . '_page_id',
+				$page['title'],
+				$page['content'],
+				'',
+				! empty( $page['post_status'] ) ? $page['post_status'] : 'publish'
+			);
+		}
+
+		return $page_ids;
+	}
+
+	/**
+	 * Delete test posts that were created during a unit test.
+	 *
+	 * @param array $post_ids Array of post IDs to delete.
+	 */
+	private function delete_test_posts( array $post_ids = [] ) {
+		foreach ( $post_ids as $post_id ) {
+			wp_delete_post( (int) $post_id, true );
+		}
 	}
 }

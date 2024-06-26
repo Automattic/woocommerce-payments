@@ -7,50 +7,30 @@ import React, { useEffect } from 'react';
  * Internal dependencies
  */
 import Page from 'components/page';
-import { OnboardingContextProvider, useOnboardingContext } from './context';
+import { OnboardingContextProvider } from './context';
 import { Stepper } from 'components/stepper';
+import { getMccFromIndustry } from 'onboarding/utils';
 import { OnboardingForm } from './form';
 import Step from './step';
-import ModeChoice from './steps/mode-choice';
-import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
+import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
-import { persistFlowState } from './utils';
 
 const OnboardingStepper = () => {
-	const { data } = useOnboardingContext();
-
 	const handleExit = () => {
-		if (
-			window.history.length > 1 &&
-			document.referrer.includes( wcSettings.adminUrl )
-		)
-			return window.history.back();
-		window.location.href = wcSettings.adminUrl;
+		window.location.href = getAdminUrl( {
+			page: 'wc-admin',
+			path: '/payments/connect',
+		} );
 	};
 
-	const handleStepChange = ( step: string ) => {
-		window.scroll( 0, 0 );
-		persistFlowState( step, data );
-	};
+	const handleStepChange = () => window.scroll( 0, 0 );
 
 	return (
-		<Stepper
-			initialStep={ wcpaySettings.onboardingFlowState?.current_step }
-			onStepChange={ handleStepChange }
-			onExit={ handleExit }
-		>
-			<Step name="mode">
-				<ModeChoice />
-			</Step>
-			<Step name="personal">
-				<OnboardingForm>
-					<PersonalDetails />
-				</OnboardingForm>
-			</Step>
+		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
 			<Step name="business">
 				<OnboardingForm>
 					<BusinessDetails />
@@ -66,12 +46,27 @@ const OnboardingStepper = () => {
 	);
 };
 
-const initialData = wcpaySettings.onboardingFlowState?.data ?? {
+const getComingSoonShareKey = () => {
+	const {
+		woocommerce_share_key: shareKey,
+		woocommerce_coming_soon: comingSoon,
+		woocommerce_private_link: privateLink,
+	} = wcSettings?.admin?.siteVisibilitySettings || {};
+
+	if ( comingSoon !== 'yes' || privateLink === 'no' ) {
+		return '';
+	}
+
+	return shareKey ? '?woo-share=' + shareKey : '';
+};
+
+const initialData = {
 	business_name: wcSettings?.siteTitle,
+	mcc: getMccFromIndustry(),
 	url:
 		location.hostname === 'localhost'
 			? 'https://wcpay.test'
-			: wcSettings?.homeUrl,
+			: wcSettings?.homeUrl + getComingSoonShareKey(),
 	country: wcpaySettings?.connect?.country,
 };
 

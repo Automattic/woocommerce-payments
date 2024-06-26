@@ -44,7 +44,7 @@ describe( 'Getting styles for automated theming', () => {
 			'.Input'
 		);
 		expect( fieldStyles ).toEqual( {
-			backgroundColor: 'rgb(0, 0, 0)',
+			backgroundColor: 'rgb(255, 255, 255)',
 			color: 'rgb(109, 109, 109)',
 			fontFamily:
 				'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -119,7 +119,7 @@ describe( 'Getting styles for automated theming', () => {
 			return mockCSStyleDeclaration;
 		} );
 
-		const appearance = upeStyles.getAppearance();
+		const appearance = upeStyles.getAppearance( 'shortcode_checkout' );
 		expect( appearance ).toEqual( {
 			variables: {
 				colorBackground: '#ffffff',
@@ -131,7 +131,7 @@ describe( 'Getting styles for automated theming', () => {
 			theme: 'stripe',
 			rules: {
 				'.Input': {
-					backgroundColor: 'rgb(0, 0, 0)',
+					backgroundColor: 'rgb(255, 255, 255)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -140,7 +140,7 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 				},
 				'.Input--invalid': {
-					backgroundColor: 'rgb(0, 0, 0)',
+					backgroundColor: 'rgb(255, 255, 255)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -156,24 +156,24 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 				},
 				'.Tab': {
-					backgroundColor: 'rgb(0, 0, 0)',
+					backgroundColor: 'rgb(255, 255, 255)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab:hover': {
-					backgroundColor: 'rgb(18, 18, 18)',
-					color: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgb(237, 237, 237)',
+					color: 'rgb(0, 0, 0)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab--selected': {
-					backgroundColor: 'rgb(0, 0, 0)',
+					backgroundColor: 'rgb(255, 255, 255)',
 					color: 'rgb(109, 109, 109)',
 					outline: '1px solid rgb(150, 88, 138)',
 				},
 				'.TabIcon:hover': {
-					color: 'rgb(255, 255, 255)',
+					color: 'rgb(0, 0, 0)',
 				},
 				'.TabIcon--selected': {
 					color: 'rgb(109, 109, 109)',
@@ -197,6 +197,59 @@ describe( 'Getting styles for automated theming', () => {
 					backgroundColor: '#ffffff',
 				},
 			},
+		} );
+	} );
+
+	[
+		{
+			elementsLocation: 'shortcode_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'blocks_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'other',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+	].forEach( ( { elementsLocation, expectedSelectors } ) => {
+		afterEach( () => {
+			document.querySelector.mockClear();
+		} );
+
+		describe( `when elementsLocation is ${ elementsLocation }`, () => {
+			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
+				jest.spyOn( document, 'querySelector' ).mockImplementation(
+					() => mockElement
+				);
+				jest.spyOn( window, 'getComputedStyle' ).mockImplementation(
+					() => mockCSStyleDeclaration
+				);
+
+				upeStyles.getAppearance( elementsLocation );
+
+				expectedSelectors.forEach( ( selector ) => {
+					expect( document.querySelector ).toHaveBeenCalledWith(
+						selector
+					);
+				} );
+			} );
 		} );
 	} );
 } );

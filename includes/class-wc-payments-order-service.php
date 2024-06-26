@@ -476,7 +476,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_intent_id_for_order( $order ) : string {
+	public function get_intent_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::INTENT_ID_META_KEY, true );
 	}
@@ -510,7 +510,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_payment_method_id_for_order( $order ) : string {
+	public function get_payment_method_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::PAYMENT_METHOD_ID_META_KEY, true );
 	}
@@ -575,7 +575,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_charge_id_for_order( $order ) : string {
+	public function get_charge_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::CHARGE_ID_META_KEY, true );
 	}
@@ -603,7 +603,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_intention_status_for_order( $order ) : string {
+	public function get_intention_status_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::INTENTION_STATUS_META_KEY, true );
 	}
@@ -617,7 +617,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function has_open_authorization( $order ) : bool {
+	public function has_open_authorization( $order ): bool {
 		$order = $this->get_order( $order );
 		return Intent_Status::REQUIRES_CAPTURE === $order->get_meta( self::INTENTION_STATUS_META_KEY, true );
 	}
@@ -646,7 +646,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_customer_id_for_order( $order ) : string {
+	public function get_customer_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::CUSTOMER_ID_META_KEY, true );
 	}
@@ -674,7 +674,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_wcpay_intent_currency_for_order( $order ) : string {
+	public function get_wcpay_intent_currency_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_INTENT_CURRENCY_META_KEY, true );
 	}
@@ -716,7 +716,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_wcpay_refund_id_for_order( $order ) : string {
+	public function get_wcpay_refund_id_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_REFUND_ID_META_KEY, true );
 	}
@@ -744,7 +744,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_wcpay_refund_status_for_order( $order ) : string {
+	public function get_wcpay_refund_status_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_REFUND_STATUS_META_KEY, true );
 	}
@@ -772,7 +772,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_fraud_outcome_status_for_order( $order ) : string {
+	public function get_fraud_outcome_status_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_FRAUD_OUTCOME_STATUS_META_KEY, true );
 	}
@@ -800,7 +800,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_fraud_meta_box_type_for_order( $order ) : string {
+	public function get_fraud_meta_box_type_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_FRAUD_META_BOX_TYPE_META_KEY, true );
 	}
@@ -891,30 +891,44 @@ class WC_Payments_Order_Service {
 
 	/**
 	 * Create the billing data array to send to Stripe when making a purchase, based on order's billing data.
+	 * It only returns the fields that are present in the billing section of the checkout.
 	 *
 	 * @param WC_Order $order The order that is being paid for.
 	 * @return array          The shipping data to send to Stripe.
 	 */
 	public function get_billing_data_from_order( WC_Order $order ): array {
-		return [
-			'name'    => implode(
-				' ',
-				array_filter(
-					[
-						$order->get_billing_first_name(),
-						$order->get_billing_last_name(),
-					]
-				)
-			),
-			'address' => [
-				'line1'       => $order->get_billing_address_1(),
-				'line2'       => $order->get_billing_address_2(),
-				'postal_code' => $order->get_billing_postcode(),
-				'city'        => $order->get_billing_city(),
-				'state'       => $order->get_billing_state(),
-				'country'     => $order->get_billing_country(),
-			],
+		$billing_fields       = array_keys( WC()->countries->get_address_fields( $order->get_billing_country() ) );
+		$address_field_to_key = [
+			'billing_city'      => 'city',
+			'billing_country'   => 'country',
+			'billing_address_1' => 'line1',
+			'billing_address_2' => 'line2',
+			'billing_postcode'  => 'postal_code',
+			'billing_state'     => 'state',
 		];
+		$field_to_key         = [
+			'billing_email' => 'email',
+			'billing_phone' => 'phone',
+		];
+		$billing_details      = [ 'address' => [] ];
+		foreach ( $billing_fields as $field ) {
+			if ( isset( $address_field_to_key[ $field ] ) ) {
+				$billing_details['address'][ $address_field_to_key[ $field ] ] = $order->{"get_{$field}"}();
+			} elseif ( isset( $field_to_key[ $field ] ) ) {
+				$billing_details[ $field_to_key[ $field ] ] = $order->{"get_{$field}"}();
+			}
+		}
+
+		if ( in_array( 'billing_first_name', $billing_fields, true ) && in_array( 'billing_last_name', $billing_fields, true ) ) {
+			$billing_details['name'] = trim( $order->get_formatted_billing_full_name() );
+		}
+
+		// The country field can't ever be empty, so we remove it if it is.
+		if ( empty( $billing_details['address']['country'] ) ) {
+			unset( $billing_details['address']['country'] );
+		}
+
+		return $billing_details;
 	}
 
 	/**
@@ -1138,7 +1152,6 @@ class WC_Payments_Order_Service {
 			// Log the error and don't block checkout.
 			Logger::log( 'Error saving transaction fee into metadata for the order ' . $order->get_id() . ': ' . $e->getMessage() );
 		}
-
 	}
 
 	/**
@@ -1266,7 +1279,7 @@ class WC_Payments_Order_Service {
 		);
 
 		if ( is_wp_error( $refund ) ) {
-			throw new Exception( $refund->get_error_message() );
+			throw new Exception( esc_html( $refund->get_error_message() ) );
 		}
 
 		return $refund;
@@ -1495,7 +1508,6 @@ class WC_Payments_Order_Service {
 			),
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
-
 	}
 
 	/**
@@ -1917,7 +1929,7 @@ class WC_Payments_Order_Service {
 		$order = $this->is_order_type_object( $order ) ? $order : wc_get_order( $order );
 		if ( ! $this->is_order_type_object( $order ) ) {
 			throw new Order_Not_Found_Exception(
-				__( 'The requested order was not found.', 'woocommerce-payments' ),
+				esc_html__( 'The requested order was not found.', 'woocommerce-payments' ),
 				'order_not_found'
 			);
 		}

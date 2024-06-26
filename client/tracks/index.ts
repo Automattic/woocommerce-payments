@@ -8,7 +8,7 @@ import domReady from '@wordpress/dom-ready';
  */
 import { Event } from './event';
 import { getConfig } from 'wcpay/utils/checkout';
-import { getPaymentRequestData } from 'wcpay/payment-request/utils';
+import { getPaymentRequestData } from 'wcpay/utils/express-checkout';
 
 /**
  * Checks if site tracking is enabled.
@@ -62,12 +62,10 @@ export const recordEvent = (
  *
  * @param {string}  eventName         Name of the event.
  * @param {Object}  [eventProperties] Event properties (optional).
- * @param {boolean} isLegacy Event properties (optional).
  */
 export const recordUserEvent = (
 	eventName: string,
-	eventProperties: Record< string, unknown > = {},
-	isLegacy = false
+	eventProperties: Record< string, unknown > = {}
 ): void => {
 	const nonce =
 		getConfig( 'platformTrackerNonce' ) ??
@@ -80,7 +78,6 @@ export const recordUserEvent = (
 	body.append( 'action', 'platform_tracks' );
 	body.append( 'tracksEventName', eventName );
 	body.append( 'tracksEventProp', JSON.stringify( eventProperties ) );
-	body.append( 'isLegacy', JSON.stringify( isLegacy ) ); // formData does not allow appending booleans, so we stringify it - it is parsed back to a boolean on the PHP side.
 	fetch( ajaxUrl, {
 		method: 'post',
 		body,
@@ -114,36 +111,35 @@ export const getTracksIdentity = async (): Promise< string | undefined > => {
 	// if cookie is set, get identity from the cookie.
 	// eslint-disable-next-line
 	let _ui = getIdentityCookieValue();
+	if ( _ui ) {
+		const data = { _ut: 'anon', _ui: _ui };
+		return JSON.stringify( data );
+	}
 	// Otherwise get it via an Ajax request.
-	if ( ! _ui ) {
-		const nonce =
-			getConfig( 'platformTrackerNonce' ) ??
-			getPaymentRequestData( 'nonce' )?.platform_tracker;
-		const ajaxUrl =
-			getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
-		const body = new FormData();
+	const nonce =
+		getConfig( 'platformTrackerNonce' ) ??
+		getPaymentRequestData( 'nonce' )?.platform_tracker;
+	const ajaxUrl =
+		getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
+	const body = new FormData();
 
-		body.append( 'tracksNonce', nonce );
-		body.append( 'action', 'get_identity' );
-		try {
-			const response = await fetch( ajaxUrl, {
-				method: 'post',
-				body,
-			} );
-			if ( ! response.ok ) {
-				return undefined;
-			}
-
-			const data = await response.json();
-			if ( data.success && data.data ) {
-				_ui = data.data._ui;
-			} else {
-				return undefined;
-			}
-		} catch ( error ) {
+	body.append( 'tracksNonce', nonce );
+	body.append( 'action', 'get_identity' );
+	try {
+		const response = await fetch( ajaxUrl, {
+			method: 'post',
+			body,
+		} );
+		if ( ! response.ok ) {
 			return undefined;
 		}
+
+		const data = await response.json();
+		if ( data.success && data.data && data.data._ui && data.data._ut ) {
+			return JSON.stringify( data.data );
+		}
+		return undefined;
+	} catch ( error ) {
+		return undefined;
 	}
-	const data = { _ut: 'anon', _ui: _ui };
-	return JSON.stringify( data );
 };

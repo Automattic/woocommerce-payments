@@ -30,19 +30,6 @@ export const useCardPresentEligible = () => {
 	return [ isCardPresentEligible, updateIsCardPresentEligible ];
 };
 
-export const useClientSecretEncryption = () => {
-	const { updateIsClientSecretEncryptionEnabled } = useDispatch( STORE_NAME );
-
-	const isClientSecretEncryptionEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsClientSecretEncryptionEnabled()
-	);
-
-	return [
-		isClientSecretEncryptionEnabled,
-		updateIsClientSecretEncryptionEnabled,
-	];
-};
-
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
@@ -322,6 +309,11 @@ export const useGetAvailablePaymentMethodIds = () =>
 export const useGetPaymentMethodStatuses = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getPaymentMethodStatuses() );
 
+export const useGetDuplicatedPaymentMethodIds = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getDuplicatedPaymentMethodIds()
+	);
+
 export const useGetSettings = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getSettings() );
 
@@ -467,6 +459,11 @@ export const useAdvancedFraudProtectionSettings = () => {
 export const useWooPayShowIncompatibilityNotice = () =>
 	useSelect( ( select ) =>
 		select( STORE_NAME ).getShowWooPayIncompatibilityNotice()
+	);
+
+export const useExpressCheckoutShowIncompatibilityNotice = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getShowExpressCheckoutIncompatibilityNotice()
 	);
 
 export const useStripeBilling = () => {

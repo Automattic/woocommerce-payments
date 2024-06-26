@@ -18,7 +18,6 @@ use WCPay\Exceptions\API_Exception;
 class WC_Payments_Onboarding_Service {
 
 	const TEST_MODE_OPTION                    = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_FLOW_STATE_OPTION        = 'wcpay_onboarding_flow_state';
 	const ONBOARDING_ELIGIBILITY_MODAL_OPTION = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const SOURCE_WCADMIN_PAYMENT_TASK         = 'wcadmin-payment-task';
 	const SOURCE_WCADMIN_SETTINGS_PAGE        = 'wcadmin-settings-page';
@@ -144,21 +143,6 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Get the required verification information for the selected country/type/structure combination from the API.
-	 *
-	 * @param string      $country_code The currently selected country code.
-	 * @param string      $type         The currently selected business type.
-	 * @param string|null $structure    The currently selected business structure (optional).
-	 *
-	 * @return array
-	 *
-	 * @throws API_Exception
-	 */
-	public function get_required_verification_information( string $country_code, string $type, $structure = null ): array {
-		return $this->payments_api_client->get_onboarding_required_verification_information( $country_code, $type, $structure );
-	}
-
-	/**
 	 * Check whether the business types fetched from the cache are valid.
 	 *
 	 * @param array|bool|string $business_types The business types returned from the cache.
@@ -204,34 +188,6 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		return $classes;
-	}
-
-	/**
-	 * Get the onboarding flow state.
-	 *
-	 * @return ?array The onboarding flow state, or null if not set.
-	 */
-	public function get_onboarding_flow_state(): ?array {
-		return get_option( self::ONBOARDING_FLOW_STATE_OPTION, null );
-	}
-
-	/**
-	 * Set the onboarding flow state.
-	 *
-	 * @param array $value The onboarding flow state.
-	 * @return bool Whether the option was updated successfully.
-	 */
-	public function set_onboarding_flow_state( array $value ): bool {
-		return update_option( self::ONBOARDING_FLOW_STATE_OPTION, $value );
-	}
-
-	/**
-	 * Clear the onboarding flow state.
-	 *
-	 * @return boolean Whether the option was deleted successfully.
-	 */
-	public static function clear_onboarding_flow_state(): bool {
-		return delete_option( self::ONBOARDING_FLOW_STATE_OPTION );
 	}
 
 	/**
@@ -288,7 +244,7 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return string The source or empty string if the source is unsupported.
 	 */
-	public static function get_source( string $referer, array $get_params ) : string {
+	public static function get_source( string $referer, array $get_params ): string {
 		$wcpay_connect_param = sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) );
 		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param ) {
 			return self::SOURCE_WCADMIN_PAYMENT_TASK;

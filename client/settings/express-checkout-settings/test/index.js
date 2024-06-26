@@ -30,6 +30,9 @@ jest.mock( '../../../data', () => ( {
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
+	useExpressCheckoutShowIncompatibilityNotice: jest
+		.fn()
+		.mockReturnValue( false ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -46,7 +49,7 @@ jest.mock( '@stripe/stripe-js', () => ( {
 	loadStripe: jest.fn().mockReturnValue( null ),
 } ) );
 
-jest.mock( 'payment-request/utils', () => ( {
+jest.mock( 'utils/express-checkout', () => ( {
 	getPaymentRequestData: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',

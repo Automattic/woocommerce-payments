@@ -74,15 +74,23 @@ class Compatibility_Service {
 	 * @return array
 	 */
 	private function get_compatibility_data(): array {
-		$active_plugins   = get_option( 'active_plugins', [] );
-		$post_types_count = $this->get_post_types_count();
+		$active_plugins        = get_option( 'active_plugins', [] );
+		$post_types_count      = $this->get_post_types_count();
+		$wc_permalinks         = get_option( 'woocommerce_permalinks', [] );
+		$wc_shop_permalink     = $this->get_permalink_for_page_id( 'shop' );
+		$wc_cart_permalink     = $this->get_permalink_for_page_id( 'cart' );
+		$wc_checkout_permalink = $this->get_permalink_for_page_id( 'checkout' );
 
 		return [
-			'woopayments_version' => WCPAY_VERSION_NUMBER,
-			'woocommerce_version' => WC_VERSION,
-			'blog_theme'          => get_stylesheet(),
-			'active_plugins'      => $active_plugins,
-			'post_types_count'    => $post_types_count,
+			'woopayments_version'    => WCPAY_VERSION_NUMBER,
+			'woocommerce_version'    => WC_VERSION,
+			'woocommerce_permalinks' => $wc_permalinks,
+			'woocommerce_shop'       => $wc_shop_permalink,
+			'woocommerce_cart'       => $wc_cart_permalink,
+			'woocommerce_checkout'   => $wc_checkout_permalink,
+			'blog_theme'             => get_stylesheet(),
+			'active_plugins'         => $active_plugins,
+			'post_types_count'       => $post_types_count,
 		];
 	}
 
@@ -105,5 +113,18 @@ class Compatibility_Service {
 		}
 
 		return $post_types_count;
+	}
+
+	/**
+	 * Gets the permalink for a page ID.
+	 *
+	 * @param string $page_id The page ID to get the permalink for.
+	 *
+	 * @return string The permalink for the page ID, or 'Not set' if the permalink is not available.
+	 */
+	private function get_permalink_for_page_id( string $page_id ): string {
+		$permalink = get_permalink( wc_get_page_id( $page_id ) );
+
+		return $permalink ? $permalink : 'Not set';
 	}
 }

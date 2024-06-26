@@ -2,8 +2,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { WC_STORE_CART, getPaymentMethodsConstants } from '../constants';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { getPaymentMethodsConstants } from '../constants';
 
 /**
  * Generates terms parameter for UPE, with value set for reusable payment methods
@@ -14,7 +13,9 @@ import { useDispatch, useSelect } from '@wordpress/data';
  */
 export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 	const reusablePaymentMethods = Object.keys( paymentMethodsConfig ).filter(
-		( method ) => paymentMethodsConfig[ method ].isReusable
+		( method ) =>
+			// Stripe link doesn't need the "terms" - adding this property causes a warning in the console.
+			method !== 'link' && paymentMethodsConfig[ method ].isReusable
 	);
 
 	return reusablePaymentMethods.reduce( ( obj, method ) => {
@@ -184,32 +185,6 @@ export function dispatchChangeEventFor( element ) {
 }
 
 /**
- *
- * Custom React hook that provides customer data and related functions for managing customer information.
- * The hook retrieves customer data from the WC_STORE_CART selector and dispatches actions to modify billing and shipping addresses.
- *
- * @return {Object} An object containing customer data and functions for managing customer information.
- */
-export const useCustomerData = () => {
-	const customerData = useSelect( ( select ) =>
-		select( WC_STORE_CART ).getCustomerData()
-	);
-	const {
-		setShippingAddress,
-		setBillingData,
-		setBillingAddress,
-	} = useDispatch( WC_STORE_CART );
-
-	return {
-		// Backward compatibility billingData/billingAddress
-		billingAddress: customerData.billingAddress || customerData.billingData,
-		// Backward compatibility setBillingData/setBillingAddress
-		setBillingAddress: setBillingAddress || setBillingData,
-		setShippingAddress,
-	};
-};
-
-/**
  * Returns the prepared set of options needed to initialize the Stripe elements for UPE in Block Checkout.
  * The initial options have all the fields set to 'never' to hide them from the UPE, because all the
  * information is already collected in the checkout form. Additionally, the options are updated with
@@ -317,25 +292,28 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 };
 
 /**
- * Hides payment method if it has set specific countries in the PHP class.
+ * Returns true if the payment method has configured with any country restrictions.
  *
- * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  * @return {boolean} Whether the payment method is restricted to selected billing country.
  **/
-export const isPaymentMethodRestrictedToLocation = ( upeElement ) => {
+export const hasPaymentMethodCountryRestrictions = ( upeElement ) => {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
 	return !! paymentMethodsConfig[ paymentMethodType ].countries.length;
 };
 
 /**
- * @param {Object} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * Hides payment method if it has set specific countries in the PHP class.
+ *
+ * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  **/
 export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
+	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
 
 	/* global wcpayCustomerData */
 	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
@@ -351,5 +329,11 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		upeContainer.style.display = 'block';
 	} else {
 		upeContainer.style.display = 'none';
+		// if the toggled off payment method was selected, we need to fall back to credit card
+		if ( paymentMethodType === selectedPaymentMethod ) {
+			document
+				.querySelector( '#payment_method_woocommerce_payments' )
+				.click();
+		}
 	}
 };

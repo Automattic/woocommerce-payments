@@ -50,7 +50,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	private $post_types_count = [
 		'post'       => 1,
-		'page'       => 6,
+		'page'       => 4,
 		'attachment' => 0,
 		'product'    => 12,
 	];
@@ -158,6 +158,40 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$this->fix_active_plugins_option();
 	}
 
+	/**
+	 * Checks to make sure "Not set" is returned if a page id is not returned.
+	 *
+	 * @dataProvider provider_update_compatibility_data_permalinks_not_set
+	 */
+	public function test_update_compatibility_data_permalinks_not_set( $page_name ) {
+		// Arrange: Create the expected value to be passed to update_compatibility_data.
+		$expected = $this->get_mock_compatibility_data(
+			[
+				'woocommerce_' . $page_name => 'Not set',
+			]
+		);
+
+		// Arrange: Delete the page id reference from the database.
+		delete_option( 'woocommerce_' . $page_name . '_page_id' );
+
+		// Arrange/Assert: Set the expectations for update_compatibility_data.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_compatibility_data' )
+			->with( $expected );
+
+		// Act: Call the method we're testing.
+		$this->compatibility_service->update_compatibility_data();
+	}
+
+	public function provider_update_compatibility_data_permalinks_not_set(): array {
+		return [
+			'shop'     => [ 'shop' ],
+			'cart'     => [ 'cart' ],
+			'checkout' => [ 'checkout' ],
+		];
+	}
+
 	public function test_add_compatibility_onboarding_data() {
 		// Arrange: Create the expected value.
 		$expected = [ 'compatibility_data' => $this->get_mock_compatibility_data() ];
@@ -176,11 +210,15 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	private function get_mock_compatibility_data( array $args = [] ): array {
 		return array_merge(
 			[
-				'woopayments_version' => WCPAY_VERSION_NUMBER,
-				'woocommerce_version' => WC_VERSION,
-				'blog_theme'          => $this->stylesheet,
-				'active_plugins'      => $this->active_plugins,
-				'post_types_count'    => $this->post_types_count,
+				'woopayments_version'    => WCPAY_VERSION_NUMBER,
+				'woocommerce_version'    => WC_VERSION,
+				'woocommerce_permalinks' => get_option( 'woocommerce_permalinks', [] ),
+				'woocommerce_shop'       => get_permalink( wc_get_page_id( 'shop' ) ),
+				'woocommerce_cart'       => get_permalink( wc_get_page_id( 'cart' ) ),
+				'woocommerce_checkout'   => get_permalink( wc_get_page_id( 'checkout' ) ),
+				'blog_theme'             => $this->stylesheet,
+				'active_plugins'         => $this->active_plugins,
+				'post_types_count'       => $this->post_types_count,
 			],
 			$args
 		);
@@ -198,7 +236,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$stylesheet = $stylesheet ?? $this->stylesheet;
 		add_filter(
 			'stylesheet',
-			function( $theme ) use ( $stylesheet ) {
+			function ( $theme ) use ( $stylesheet ) {
 				return $stylesheet;
 			},
 			404 // 404 is used to be able to use remove_all_filters later.
@@ -222,7 +260,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$plugins = $plugins ?? $this->active_plugins;
 		add_filter(
 			'option_active_plugins',
-			function( $active_plugins ) use ( $plugins ) {
+			function ( $active_plugins ) use ( $plugins ) {
 				return $plugins;
 			},
 			404 // 404 is used to be able to use remove_all_filters later.
@@ -258,6 +296,11 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$post_types = ! empty( $post_types ) ? $post_types : $this->post_types_count;
 		$post_ids   = [];
 		foreach ( $post_types as $post_type => $count ) {
+			// Let's create the default WooCommerce pages for the test pages.
+			if ( 'page' === $post_type ) {
+				$post_ids = array_merge( $post_ids, $this->create_woocommerce_default_pages() );
+				continue;
+			}
 			$title_content = 'This is a ' . $post_type . ' test post';
 			for ( $i = 0; $i < $count; $i++ ) {
 				$post_ids[] = (int) wp_insert_post(
@@ -285,5 +328,57 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		foreach ( $post_ids as $post_id ) {
 			wp_delete_post( (int) $post_id, true );
 		}
+	}
+
+	/**
+	 * Creates the default WooCommerce pages for test purposes.
+	 *
+	 * @return array Array of post IDs that were created.
+	 */
+	private function create_woocommerce_default_pages(): array {
+		// Note: Inspired by WC_Install::create_pages().
+
+		$pages = [
+			'shop'           => [
+				'name'    => 'shop',
+				'title'   => 'Shop',
+				'content' => '',
+			],
+			'cart'           => [
+				'name'    => 'cart',
+				'title'   => 'Cart',
+				'content' => '',
+			],
+			'checkout'       => [
+				'name'    => 'checkout',
+				'title'   => 'Checkout',
+				'content' => '',
+			],
+			'myaccount'      => [
+				'name'    => 'my-account',
+				'title'   => 'My account',
+				'content' => '',
+			],
+			'refund_returns' => [
+				'name'        => 'refund_returns',
+				'title'       => 'Refund and Returns Policy',
+				'content'     => '',
+				'post_status' => 'draft',
+			],
+		];
+
+		$page_ids = [];
+		foreach ( $pages as $key => $page ) {
+			$page_ids[] = wc_create_page(
+				esc_sql( $page['name'] ),
+				'woocommerce_' . $key . '_page_id',
+				$page['title'],
+				$page['content'],
+				'',
+				! empty( $page['post_status'] ) ? $page['post_status'] : 'publish'
+			);
+		}
+
+		return $page_ids;
 	}
 }

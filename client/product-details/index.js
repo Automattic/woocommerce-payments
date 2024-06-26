@@ -5,8 +5,10 @@
  * Internal dependencies
  */
 import { initializeBnplSiteMessaging } from './bnpl-site-messaging';
+import request from 'wcpay/checkout/utils/request';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 
-jQuery( function ( $ ) {
+jQuery( async function ( $ ) {
 	/**
 	 * Check for the existence of the `wcpayStripeSiteMessaging` variable on the window object.
 	 * This variable holds the configuration for Stripe site messaging and contains the following keys:
@@ -18,15 +20,29 @@ jQuery( function ( $ ) {
 	 *
 	 * If this variable is not set, the script will exit early to prevent further execution.
 	 */
-	if ( ! window.wcpayStripeSiteMessaging ) {
+	if (
+		! window.wcpayStripeSiteMessaging ||
+		window.wcpayStripeSiteMessaging.isCartBlock
+	) {
 		return;
 	}
 
-	const { productVariations, productId } = window.wcpayStripeSiteMessaging;
 	const {
-		amount: baseProductAmount = 0,
-		currency: productCurrency,
-	} = productVariations[ productId ];
+		productVariations,
+		productId,
+		isCart,
+	} = window.wcpayStripeSiteMessaging;
+
+	let baseProductAmount;
+	let productCurrency;
+
+	if ( ! isCart ) {
+		const { amount, currency } = productVariations[ productId ];
+
+		baseProductAmount = amount || 0;
+		productCurrency = currency;
+	}
+
 	const QUANTITY_INPUT_SELECTOR = '.quantity input[type=number]';
 	const SINGLE_VARIATION_SELECTOR = '.single_variation_wrap';
 	const VARIATIONS_SELECTOR = '.variations';
@@ -34,7 +50,7 @@ jQuery( function ( $ ) {
 	const VARIATION_ID_SELECTOR = 'input[name="variation_id"]';
 
 	const quantityInput = $( QUANTITY_INPUT_SELECTOR );
-	const bnplPaymentMessageElement = initializeBnplSiteMessaging();
+	const bnplPaymentMessageElement = await initializeBnplSiteMessaging();
 	const hasVariations = Object.keys( productVariations ).length > 1;
 
 	/**
@@ -62,11 +78,9 @@ jQuery( function ( $ ) {
 	const updateBnplPaymentMessage = ( amount, currency, quantity = 1 ) => {
 		const totalAmount =
 			parseIntOrReturnZero( amount ) * parseIntOrReturnZero( quantity );
-
 		if ( totalAmount <= 0 || ! currency ) {
 			return;
 		}
-
 		bnplPaymentMessageElement.update( { amount: totalAmount, currency } );
 	};
 
@@ -80,6 +94,18 @@ jQuery( function ( $ ) {
 			baseProductAmount,
 			productCurrency,
 			quantityInput.val()
+		);
+	};
+
+	const bnplGetCartTotal = () => {
+		return request(
+			buildAjaxURL(
+				window.wcpayStripeSiteMessaging.wcAjaxUrl,
+				'get_cart_total'
+			),
+			{
+				security: window.wcpayStripeSiteMessaging.nonce,
+			}
 		);
 	};
 
@@ -97,6 +123,23 @@ jQuery( function ( $ ) {
 		}
 
 		updateBnplPaymentMessage( amount, productCurrency, event.target.value );
+	} );
+
+	$( document.body ).on( 'updated_cart_totals', () => {
+		$( '#payment-method-message' ).before(
+			'<div class="pmme-loading"></div>'
+		);
+		$( '#payment-method-message' ).hide();
+		bnplGetCartTotal().then( ( response ) => {
+			window.wcpayStripeSiteMessaging.cartTotal = response.total;
+			initializeBnplSiteMessaging().then( () => {
+				setTimeout( () => {
+					$( '.pmme-loading' ).remove();
+					$( '#payment-method-message' ).show();
+					$( '#payment-method-message' ).addClass( 'pmme-updated' );
+				}, 1000 );
+			} );
+		} );
 	} );
 
 	// Handle BNPL messaging for variable products.

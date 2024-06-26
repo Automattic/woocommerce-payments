@@ -34,6 +34,25 @@ class WC_Payments_Utils {
 	const FORCE_DISCONNECTED_FLAG_NAME = 'wcpaydev_force_disconnected';
 
 	/**
+	 * The Store API route patterns that should be handled by the WooPay session handler.
+	 */
+	const STORE_API_ROUTE_PATTERNS = [
+		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
+		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
+		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
+		// By adding it to this list, we're able to identify the user and load the correct session for this route.
+		'@^\/wc\/v3\/woopay\/session$@',
+	];
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -219,7 +238,7 @@ class WC_Payments_Utils {
 
 	/**
 	 * List of countries enabled for Stripe platform account. See also this URL:
-	 * https://woo.com/document/woopayments/compatibility/countries/#supported-countries
+	 * https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries
 	 *
 	 * @return string[]
 	 */
@@ -263,6 +282,7 @@ class WC_Payments_Utils {
 			Country_Code::SLOVAKIA             => __( 'Slovakia', 'woocommerce-payments' ),
 			Country_Code::SINGAPORE            => __( 'Singapore', 'woocommerce-payments' ),
 			Country_Code::UNITED_STATES        => __( 'United States (US)', 'woocommerce-payments' ),
+			Country_Code::PUERTO_RICO          => __( 'Puerto Rico', 'woocommerce-payments' ),
 		];
 	}
 
@@ -334,31 +354,6 @@ class WC_Payments_Utils {
 			}
 		}
 		return $terms;
-	}
-
-	/**
-	 * Extract the billing details from the WC order
-	 *
-	 * @param WC_Order $order Order to extract the billing details from.
-	 *
-	 * @return array
-	 */
-	public static function get_billing_details_from_order( $order ) {
-		$billing_details = [
-			'address' => [
-				'city'        => $order->get_billing_city(),
-				'country'     => $order->get_billing_country(),
-				'line1'       => $order->get_billing_address_1(),
-				'line2'       => $order->get_billing_address_2(),
-				'postal_code' => $order->get_billing_postcode(),
-				'state'       => $order->get_billing_state(),
-			],
-			'email'   => $order->get_billing_email(),
-			'name'    => trim( $order->get_formatted_billing_full_name() ),
-			'phone'   => $order->get_billing_phone(),
-		];
-
-		return array_filter( $billing_details );
 	}
 
 	/**
@@ -544,11 +539,12 @@ class WC_Payments_Utils {
 	 * Generally, only Stripe exceptions with type of `card_error` should be displayed.
 	 * Other API errors should be redacted (https://stripe.com/docs/api/errors#errors-message).
 	 *
-	 * @param Exception $e Exception to get the message from.
+	 * @param Exception $e                      Exception to get the message from.
+	 * @param boolean   $blocked_by_fraud_rules Whether the payment was blocked by the fraud rules. Defaults to false.
 	 *
 	 * @return string
 	 */
-	public static function get_filtered_error_message( Exception $e ) {
+	public static function get_filtered_error_message( Exception $e, bool $blocked_by_fraud_rules = false ) {
 		$error_message = method_exists( $e, 'getLocalizedMessage' ) ? $e->getLocalizedMessage() : $e->getMessage();
 
 		// These notices can be shown when placing an order or adding a new payment method, so we aim for
@@ -572,11 +568,13 @@ class WC_Payments_Utils {
 				),
 				wp_strip_all_tags( html_entity_decode( $price ) )
 			);
+		} elseif ( $e instanceof API_Exception && 'amount_too_large' === $e->get_error_code() ) {
+			$error_message = $e->getMessage();
 		} elseif ( $e instanceof API_Exception && 'wcpay_bad_request' === $e->get_error_code() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && ! empty( $e->get_error_type() ) && 'card_error' !== $e->get_error_type() ) {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
-		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() ) {
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() && ! $blocked_by_fraud_rules ) {
 			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
 		}
 
@@ -590,11 +588,20 @@ class WC_Payments_Utils {
 	 *
 	 * @return  int
 	 */
-	public static function get_filtered_error_status_code( Exception $e ) : int {
+	public static function get_filtered_error_status_code( Exception $e ): int {
+		$status_code = null;
 		if ( $e instanceof API_Exception ) {
-			return $e->get_http_code() ?? 400;
+			$status_code = $e->get_http_code();
 		}
-		return 400;
+
+		// Hosting companies might use the 402 status code to return a custom error page.
+		// When 402 is returned by Stripe, let's return 400 instead.
+		// The frontend doesn't make use of the status code.
+		if ( 402 === $status_code ) {
+			$status_code = 400;
+		}
+
+		return $status_code ?? 400;
 	}
 
 	/**
@@ -870,27 +877,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Encrypts client secret of intents created on Stripe.
-	 *
-	 * @param   string $stripe_account_id Stripe account ID.
-	 * @param   string $client_secret     Client secret string.
-	 *
-	 * @return  string                 Encrypted value.
-	 */
-	public static function encrypt_client_secret( string $stripe_account_id, string $client_secret ): string {
-		if ( \WC_Payments_Features::is_client_secret_encryption_enabled() ) {
-			return openssl_encrypt(
-				$client_secret,
-				'aes-128-cbc',
-				substr( $stripe_account_id, 5 ),
-				0,
-				str_repeat( 'WC', 8 )
-			);
-		}
-		return $client_secret;
-	}
-
-	/**
 	 * Checks if the HPOS order tables are being used.
 	 *
 	 * @return bool True if HPOS tables are enabled and being used.
@@ -1071,5 +1057,136 @@ class WC_Payments_Utils {
 	 */
 	public static function is_cart_page(): bool {
 		return is_cart() || has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
+	 * in this case because it checks the page content for the block, which isn't present.
+	 *
+	 * @return bool
+	 *
+	 * @psalm-suppress UndefinedFunction
+	 */
+	public static function is_cart_block(): bool {
+		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+	}
+
+	/**
+	 * Returns true if the request that's currently being processed is a Store API request, false
+	 * otherwise.
+	 *
+	 * @return bool True if request is a Store API request, false otherwise.
+	 */
+	public static function is_store_api_request(): bool {
+		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
+		} else {
+			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$request_path = rtrim( $url_parts['path'], '/' );
+			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		}
+
+		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
+			if ( 1 === preg_match( $pattern, $rest_route ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Gets the current active theme transient for a given location
+	 * Falls back to 'stripe' if no transients are set.
+	 *
+	 * @param string $location The theme location.
+	 * @param string $context The theme location to fall back to if both transients are set.
+	 * @return string
+	 */
+	public static function get_active_upe_theme_transient_for_location( string $location = 'checkout', string $context = 'blocks' ) {
+		$themes       = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
+		$active_theme = false;
+
+		// If an invalid location is sent, we fallback to trying $themes[ 'checkout' ][ 'block' ].
+		if ( ! isset( $themes[ $location ] ) ) {
+			$active_theme = get_transient( $themes['checkout']['blocks'] );
+		} elseif ( ! isset( $themes[ $location ][ $context ] ) ) {
+			// If the location is valid but the context is invalid, we fallback to trying $themes[ $location ][ 'block' ].
+			$active_theme = get_transient( $themes[ $location ]['blocks'] );
+		} else {
+			$active_theme = get_transient( $themes[ $location ][ $context ] );
+		}
+
+		// If $active_theme is still false here, that means that $themes[ $location ][ $context ] is not set, so we try $themes[ $location ][ 'classic' ].
+		if ( ! $active_theme ) {
+			$active_theme = get_transient( $themes[ $location ][ 'blocks' === $context ? 'classic' : 'blocks' ] );
+		}
+
+		// If $active_theme is still false here, nothing at the location is set so we'll try all locations.
+		if ( ! $active_theme ) {
+			foreach ( $themes as $location_const => $contexts ) {
+				// We don't need to check the same location again.
+				if ( $location_const === $location ) {
+					continue;
+				}
+
+				foreach ( $contexts as $context => $transient ) {
+					$active_theme = get_transient( $transient );
+					if ( $active_theme ) {
+						break 2; // This will break both loops.
+					}
+				}
+			}
+		}
+
+		// If $active_theme is still false, we don't have any theme set in the transients, so we fallback to 'stripe'.
+		if ( $active_theme ) {
+			return $active_theme;
+		}
+
+		// Fallback to 'stripe' if no transients are set.
+		return 'stripe';
+	}
+
+	/**
+	 * Returns the list of countries in the European Economic Area (EEA).
+	 *
+	 * Based on the list documented at https://www.gov.uk/eu-eea.
+	 *
+	 * @return string[]
+	 */
+	public static function get_european_economic_area_countries() {
+		return [
+			Country_Code::AUSTRIA,
+			Country_Code::BELGIUM,
+			Country_Code::BULGARIA,
+			Country_Code::CROATIA,
+			Country_Code::CYPRUS,
+			Country_Code::CZECHIA,
+			Country_Code::DENMARK,
+			Country_Code::ESTONIA,
+			Country_Code::FINLAND,
+			Country_Code::FRANCE,
+			Country_Code::GERMANY,
+			Country_Code::GREECE,
+			Country_Code::HUNGARY,
+			Country_Code::IRELAND,
+			Country_Code::ICELAND,
+			Country_Code::ITALY,
+			Country_Code::LATVIA,
+			Country_Code::LIECHTENSTEIN,
+			Country_Code::LITHUANIA,
+			Country_Code::LUXEMBOURG,
+			Country_Code::MALTA,
+			Country_Code::NORWAY,
+			Country_Code::NETHERLANDS,
+			Country_Code::POLAND,
+			Country_Code::PORTUGAL,
+			Country_Code::ROMANIA,
+			Country_Code::SLOVAKIA,
+			Country_Code::SLOVENIA,
+			Country_Code::SPAIN,
+			Country_Code::SWEDEN,
+		];
 	}
 }

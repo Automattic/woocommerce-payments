@@ -100,6 +100,56 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
 	}
 
+	public function test_add_cobranded_token_to_user_with_preferred_network() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'card' => [
+				'brand'     => 'visa',
+				'networks'  => [ 'preferred' => 'cartes_bancaires' ],
+				'last4'     => '4242',
+				'exp_month' => 6,
+				'exp_year'  => $expiry_year,
+			],
+			'type' => Payment_Method::CARD,
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( 'cartes_bancaires', $token->get_card_type() );
+		$this->assertEquals( '4242', $token->get_last4() );
+		$this->assertEquals( '06', $token->get_expiry_month() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
+	}
+
+	public function test_add_cobranded_token_to_user_with_display_brand() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'card' => [
+				'brand'         => 'visa',
+				'display_brand' => 'cartes_bancaires',
+				'last4'         => '4242',
+				'exp_month'     => 6,
+				'exp_year'      => $expiry_year,
+			],
+			'type' => Payment_Method::CARD,
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( 'cartes_bancaires', $token->get_card_type() );
+		$this->assertEquals( '4242', $token->get_last4() );
+		$this->assertEquals( '06', $token->get_expiry_month() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
+	}
+
 	/**
 	 * Test add SEPA token to user.
 	 */
@@ -141,7 +191,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
-
 	}
 
 	/**
@@ -164,7 +213,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
-
 	}
 
 	/**
@@ -258,6 +306,68 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 1, $token->get_user_id() );
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( 'visa', $token->get_card_type() );
+		$this->assertEquals( '4242', $token->get_last4() );
+		$this->assertEquals( '06', $token->get_expiry_month() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
+	}
+
+	public function test_add_cobranded_payment_method_to_user_with_preferred_network() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'card' => [
+				'brand'     => 'visa',
+				'networks'  => [ 'preferred' => 'cartes_bancaires' ],
+				'last4'     => '4242',
+				'exp_month' => 6,
+				'exp_year'  => $expiry_year,
+			],
+			'type' => Payment_Method::CARD,
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( 'pm_mock' )
+			->willReturn( $mock_payment_method );
+
+		$token = $this->token_service->add_payment_method_to_user( $mock_payment_method['id'], wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( 'cartes_bancaires', $token->get_card_type() );
+		$this->assertEquals( '4242', $token->get_last4() );
+		$this->assertEquals( '06', $token->get_expiry_month() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
+	}
+
+	public function test_add_cobranded_payment_method_to_user_with_display_brand() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'card' => [
+				'brand'         => 'visa',
+				'display_brand' => 'cartes_bancaires',
+				'last4'         => '4242',
+				'exp_month'     => 6,
+				'exp_year'      => $expiry_year,
+			],
+			'type' => Payment_Method::CARD,
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( 'pm_mock' )
+			->willReturn( $mock_payment_method );
+
+		$token = $this->token_service->add_payment_method_to_user( $mock_payment_method['id'], wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( 'cartes_bancaires', $token->get_card_type() );
 		$this->assertEquals( '4242', $token->get_last4() );
 		$this->assertEquals( '06', $token->get_expiry_month() );
 		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
@@ -379,17 +489,23 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$gateway->settings['upe_enabled_payment_method_ids'] = $payment_methods;
 
 		// Array keys should match the database ID of the token.
-		$tokens = [
+		$card_tokens        = [
 			1 => $this->generate_card_token( 'pm_111', 1 ),
 			2 => $this->generate_card_token( 'pm_222', 2 ),
+		];
+		$sepa_tokens        = [
 			3 => $this->generate_sepa_token( 'pm_333', 3 ),
 			4 => $this->generate_sepa_token( 'pm_444', 4 ),
+		];
+		$stripe_link_tokens = [
 			5 => $this->generate_link_token( 'pm_555', 5 ),
 			6 => $this->generate_link_token( 'pm_666', 6 ),
 		];
 
+		$all_saved_tokens = $card_tokens + $sepa_tokens + $stripe_link_tokens;
+
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( $customer_id );
 
@@ -399,7 +515,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_payment_methods_for_customer' )
 			->withConsecutive(
 				[ $customer_id, Payment_Method::CARD ],
-				[ $customer_id, Payment_Method::SEPA ],
 				[ $customer_id, Payment_Method::LINK ]
 			)
 			->willReturnOnConsecutiveCalls(
@@ -408,19 +523,26 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 					$this->generate_card_pm_response( 'pm_222' ),
 				],
 				[
-					$this->generate_sepa_pm_response( 'pm_333' ),
-					$this->generate_sepa_pm_response( 'pm_444' ),
-				],
-				[
 					$this->generate_link_pm_response( 'pm_555' ),
 					$this->generate_link_pm_response( 'pm_666' ),
+				],
+				[
+					$this->generate_sepa_pm_response( 'pm_333' ),
+					$this->generate_sepa_pm_response( 'pm_444' ),
 				]
 			);
 
-		$result = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
+		$card_and_link_result = $this->token_service->woocommerce_get_customer_payment_tokens( $all_saved_tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$sepa_result          = $this->token_service->woocommerce_get_customer_payment_tokens( $all_saved_tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
+
 		$this->assertSame(
-			array_keys( $tokens ),
-			array_keys( $result )
+			array_keys( $card_tokens + $stripe_link_tokens ),
+			array_keys( $card_and_link_result )
+		);
+
+		$this->assertSame(
+			array_keys( $sepa_tokens ),
+			array_keys( $sepa_result )
 		);
 	}
 
@@ -546,51 +668,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'pm_444', $result_tokens[3]->get_token() );
 	}
 
-	public function test_woocommerce_get_customer_payment_tokens_not_added_from_different_gateway() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
-		$gateway_id      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$tokens          = [];
-		$payment_methods = [ Payment_Method::CARD, Payment_Method::SEPA ];
-
-		$gateway = WC_Payments::get_gateway();
-		$gateway->settings['upe_enabled_payment_method_ids'] = $payment_methods;
-
-		$this->mock_customer_service
-			->expects( $this->any() )
-			->method( 'get_customer_id_by_user_id' )
-			->willReturn( 'cus_12345' );
-
-		$this->mock_customer_service
-			->expects( $this->exactly( 2 ) )
-			->method( 'get_payment_methods_for_customer' )
-			->withConsecutive(
-				[ 'cus_12345', Payment_Method::CARD ],
-				[ 'cus_12345', Payment_Method::SEPA ]
-			)
-			->willReturnOnConsecutiveCalls(
-				[
-					$this->generate_card_pm_response( 'pm_mock0' ),
-					$this->generate_card_pm_response( 'pm_222' ),
-				],
-				[
-					$this->generate_sepa_pm_response( 'other_gateway_pm_111' ),
-					$this->generate_sepa_pm_response( 'other_gateway_pm_222' ),
-					$this->generate_sepa_pm_response( 'other_gateway_pm_333' ),
-					$this->generate_sepa_pm_response( 'other_gateway_pm_444' ),
-					$this->generate_sepa_pm_response( 'other_gateway_pm_555' ),
-				]
-			);
-
-		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
-		$result_tokens = array_values( $result );
-
-		$this->assertEquals( 2, count( $result_tokens ) );
-		$this->assertEquals( $gateway_id, $result_tokens[0]->get_gateway_id() );
-		$this->assertEquals( $gateway_id, $result_tokens[1]->get_gateway_id() );
-		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
-		$this->assertEquals( 'pm_222', $result_tokens[1]->get_token() );
-	}
-
 	public function test_woocommerce_get_customer_payment_tokens_payment_methods_only_for_retrievable_types() {
 		$enabled_upe_payment_methods = [
 			Payment_Method::CARD,
@@ -606,7 +683,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$gateway                     = WC_Payments::get_gateway();
 		$gateway->settings['upe_enabled_payment_method_ids'] = $enabled_upe_payment_methods;
 		$tokens      = [];
-		$gateway_id  = 'woocommerce_payments';
 		$customer_id = 'cus_12345';
 
 		$this->mock_customer_service
@@ -619,22 +695,23 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_payment_methods_for_customer' )
 			->withConsecutive(
 				[ $customer_id, Payment_Method::CARD ],
+				[ $customer_id, Payment_Method::LINK ],
 				[ $customer_id, Payment_Method::SEPA ],
-				[ $customer_id, Payment_Method::LINK ]
 			)
 			->willReturnOnConsecutiveCalls(
 				[
 					$this->generate_card_pm_response( 'pm_mock0' ),
 				],
 				[
-					$this->generate_sepa_pm_response( 'pm_mock_2' ),
+					$this->generate_link_pm_response( 'pm_mock_3' ),
 				],
 				[
-					$this->generate_link_pm_response( 'pm_mock_3' ),
-				]
+					$this->generate_sepa_pm_response( 'pm_mock_2' ),
+				],
 			);
 
-		$this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
+		$this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
 	}
 
 	/**

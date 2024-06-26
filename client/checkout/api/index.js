@@ -8,8 +8,9 @@ import {
 	getPaymentRequestData,
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
-} from '../../payment-request/utils';
-import { decryptClientSecret } from '../utils/encryption';
+	getExpressCheckoutAjaxURL,
+	getExpressCheckoutConfig,
+} from 'utils/express-checkout';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -118,90 +119,6 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Generates a Stripe payment method.
-	 *
-	 * @param {Object} elements A hash of all Stripe elements, used to enter card data.
-	 * @param {Object} preparedCustomerData Default values for customer data, used on pages like Pay for Order.
-	 * @return {Object} A request object, which will be prepared and then `.send()`.
-	 */
-	generatePaymentMethodRequest( elements, preparedCustomerData = {} ) {
-		const stripe = this.getStripe();
-
-		return new ( class {
-			constructor() {
-				this.args = {
-					...elements,
-					billing_details: {
-						address: {},
-					},
-				};
-			}
-
-			/**
-			 * Prepares a value that's been loaded from inputs,
-			 * uses a default value if none is present.
-			 *
-			 * @param {string} name The key of the value.
-			 * @param {mixed} value The value to sanitize.
-			 * @return {mixed}     The sanitized value, `undefined` if not present.
-			 */
-			prepareValue( name, value ) {
-				// Fall back to the value in `preparedCustomerData`.
-				if ( typeof value === 'undefined' || value.length === 0 ) {
-					value = preparedCustomerData[ name ]; // `undefined` if not set.
-				}
-
-				if ( typeof value !== 'undefined' && value.length > 0 ) {
-					return value;
-				}
-			}
-
-			/**
-			 * Updates a billing detail within the request.
-			 *
-			 * @param {string} name The name of the billing value.
-			 * @param {string} value The actual value.
-			 */
-			setBillingDetail( name, value ) {
-				const preparedValue = this.prepareValue( name, value );
-				if ( typeof preparedValue !== 'undefined' ) {
-					this.args.billing_details[ name ] = preparedValue;
-				}
-			}
-
-			/**
-			 * Updates an address detail within the request.
-			 *
-			 * @param {string} name The name of the address value.
-			 * @param {string} value The actual value.
-			 */
-			setAddressDetail( name, value ) {
-				const preparedValue = this.prepareValue( name, value );
-				if ( typeof preparedValue !== 'undefined' ) {
-					this.args.billing_details.address[ name ] = preparedValue;
-				}
-			}
-
-			/**
-			 * Sends the request to Stripe once everything is ready.
-			 *
-			 * @return {Object} The payment method object if successfully loaded.
-			 */
-			send() {
-				return stripe
-					.createPaymentMethod( this.args )
-					.then( ( paymentMethod ) => {
-						if ( paymentMethod.error ) {
-							throw paymentMethod.error;
-						}
-
-						return paymentMethod;
-					} );
-			}
-		} )();
-	}
-
-	/**
 	 * Extracts the details about a payment intent from the redirect URL,
 	 * and displays the intent confirmation modal (if needed).
 	 *
@@ -253,7 +170,7 @@ export default class WCPayAPI {
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
 				return this.getStripe().handleNextAction( {
-					clientSecret: decryptClientSecret( clientSecret ),
+					clientSecret: clientSecret,
 				} );
 			}
 
@@ -264,18 +181,13 @@ export default class WCPayAPI {
 					publishableKey,
 					locale,
 					accountIdForIntentConfirmation
-				).confirmCardPayment(
-					decryptClientSecret(
-						clientSecret,
-						accountIdForIntentConfirmation
-					)
-				);
+				).confirmCardPayment( clientSecret );
 			}
 
 			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
 			return this.getStripe( true ).handleNextAction( {
-				clientSecret: decryptClientSecret( clientSecret ),
+				clientSecret: clientSecret,
 			} );
 		};
 
@@ -353,9 +265,7 @@ export default class WCPayAPI {
 			}
 
 			return this.getStripe()
-				.confirmCardSetup(
-					decryptClientSecret( response.data.client_secret )
-				)
+				.confirmCardSetup( response.data.client_secret )
 				.then( ( confirmedSetupIntent ) => {
 					const { setupIntent, error } = confirmedSetupIntent;
 					if ( error ) {
@@ -368,55 +278,16 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Confirm Stripe payment with fallback for rate limit error.
-	 *
-	 * @param {Object|StripeElements} elements Stripe elements.
-	 * @param {Object} confirmParams Confirm payment request parameters.
-	 * @param {string|null} paymentIntentSecret Payment intent secret used to validate payment on rate limit error
-	 *
-	 * @return {Promise} The payment confirmation promise.
-	 */
-	async handlePaymentConfirmation(
-		elements,
-		confirmParams,
-		paymentIntentSecret
-	) {
-		const stripe = this.getStripe();
-		const confirmPaymentResult = await stripe.confirmPayment( {
-			elements,
-			confirmParams,
-		} );
-		if (
-			paymentIntentSecret &&
-			confirmPaymentResult.error &&
-			confirmPaymentResult.error.code === 'lock_timeout'
-		) {
-			const paymentIntentResult = await stripe.retrievePaymentIntent(
-				decryptClientSecret( paymentIntentSecret )
-			);
-			if (
-				! paymentIntentResult.error &&
-				paymentIntentResult.paymentIntent.status === 'succeeded'
-			) {
-				window.location.href = confirmParams.redirect_url;
-				return paymentIntentResult; //To prevent returning an error during the redirection.
-			}
-		}
-
-		return confirmPaymentResult;
-	}
-
-	/**
 	 * Saves the calculated UPE appearance values in a transient.
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
-	 * @param {string} isBlocksCheckout 'true' if save request is for Blocks Checkout. Default 'false'.
+	 * @param {string} elementsLocation The location of the elements.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	saveUPEAppearance( appearance, isBlocksCheckout = 'false' ) {
+	saveUPEAppearance( appearance, elementsLocation ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
-			is_blocks_checkout: isBlocksCheckout,
+			elements_location: elementsLocation,
 			appearance: JSON.stringify( appearance ),
 			action: 'save_upe_appearance',
 			// eslint-disable-next-line camelcase
@@ -537,6 +408,37 @@ export default class WCPayAPI {
 		} );
 	}
 
+	/**
+	 * Submits shipping address to get available shipping options
+	 * from Express Checkout ECE payment method.
+	 *
+	 * @param {Object} shippingAddress Shipping details.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	expressCheckoutECECalculateShippingOptions( shippingAddress ) {
+		return this.request(
+			getExpressCheckoutAjaxURL( 'get_shipping_options' ),
+			{
+				security: getExpressCheckoutConfig( 'nonce' )?.shipping,
+				is_product_page: getExpressCheckoutConfig( 'is_product_page' ),
+				...shippingAddress,
+			}
+		);
+	}
+
+	/**
+	 * Creates order based on Express Checkout ECE payment method.
+	 *
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	expressCheckoutECECreateOrder( paymentData ) {
+		return this.request( getExpressCheckoutAjaxURL( 'create_order' ), {
+			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.checkout,
+			...paymentData,
+		} );
+	}
+
 	initWooPay( userEmail, woopayUserSession ) {
 		if ( ! this.isWooPayRequesting ) {
 			this.isWooPayRequesting = true;
@@ -570,6 +472,27 @@ export default class WCPayAPI {
 			_wpnonce: getPaymentRequestData( 'nonce' )?.pay_for_order,
 			order,
 			...paymentData,
+		} );
+	}
+
+	/**
+	 * Fetches the cart data from the woocommerce store api.
+	 *
+	 * @return {Object} JSON data.
+	 * @throws Error if the response is not ok.
+	 */
+	pmmeGetCartData() {
+		return fetch( `${ getUPEConfig( 'storeApiURL' ) }/cart`, {
+			method: 'GET',
+			credentials: 'same-origin',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		} ).then( ( response ) => {
+			if ( ! response.ok ) {
+				throw new Error( response.statusText );
+			}
+			return response.json();
 		} );
 	}
 }

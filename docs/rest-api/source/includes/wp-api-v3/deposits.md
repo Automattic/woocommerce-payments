@@ -354,7 +354,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
 
 ## Submit an instant deposit
 
-Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woo.com/document/woopayments/deposits/instant-deposits/) for more information.
+Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woocommerce.com/document/woopayments/deposits/instant-deposits/) for more information.
 
 ### HTTP request
 
@@ -414,7 +414,7 @@ Request a CSV export of deposits matching the query. A link to the exported CSV 
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits/download?status_is=paid' \
   -u consumer_key:consumer_secret
   --data '{
-      "user_email": "name@example.woo.com"
+      "user_email": "name@example.woocommerce.com"
     }'
 ```
 

@@ -1,11 +1,8 @@
 /**
  * Internal dependencies
  */
-import type {
-	MccsDisplayTreeItem,
-	Country,
-	OnboardingFields,
-} from 'onboarding/types';
+import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
+import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 
 declare global {
 	const wcpaySettings: {
@@ -82,6 +79,7 @@ declare global {
 		currentUserEmail: string;
 		zeroDecimalCurrencies: string[];
 		restUrl: string;
+		siteLogoUrl: string;
 		shouldUseExplicitPrice: boolean;
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
@@ -93,6 +91,7 @@ declare global {
 			isEligibilityModalDismissed: boolean;
 		};
 		enabledPaymentMethods: string[];
+		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
@@ -100,10 +99,7 @@ declare global {
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
-		};
-		onboardingFlowState?: {
-			current_step: string;
-			data: OnboardingFields;
+			industry_to_mcc: { [ key: string ]: string };
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
@@ -122,6 +118,7 @@ declare global {
 		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
+		isInstantDepositNoticeDismissed: boolean;
 		reporting: {
 			exportModalDismissed?: boolean;
 		};
@@ -133,6 +130,8 @@ declare global {
 		trackingInfo?: {
 			hosting_provider: string;
 		};
+		isOverviewSurveySubmitted: boolean;
+		lifetimeTPV: number;
 	};
 
 	const wc: {
@@ -157,6 +156,7 @@ declare global {
 			onboarding: {
 				profile: {
 					wccom_connected: boolean;
+					industry?: string[];
 				};
 			};
 			currentUserData: {
@@ -169,6 +169,11 @@ declare global {
 					woocommerce_specific_allowed_countries: string[];
 					woocommerce_default_country: string;
 				};
+			};
+			siteVisibilitySettings: {
+				woocommerce_share_key: string;
+				woocommerce_coming_soon: string;
+				woocommerce_private_link: string;
 			};
 		};
 		adminUrl: string;

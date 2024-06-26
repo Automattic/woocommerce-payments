@@ -28,12 +28,6 @@ export function updateIsCardPresentEligible( isEnabled ) {
 	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
 }
 
-export function updateIsClientSecretEncryptionEnabled( isEnabled ) {
-	return updateSettingsValues( {
-		is_client_secret_encryption_enabled: isEnabled,
-	} );
-}
-
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -217,10 +211,14 @@ export function* saveSettings() {
 
 		yield updateIsSavingSettings( true, null );
 
-		yield apiFetch( {
+		const response = yield apiFetch( {
 			path: `${ NAMESPACE }/settings`,
 			method: 'post',
 			data: settings,
+		} );
+
+		yield updateSettingsValues( {
+			payment_method_statuses: response.data.payment_method_statuses,
 		} );
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(

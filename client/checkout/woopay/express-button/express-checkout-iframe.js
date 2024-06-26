@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import {
 	getTargetElement,
 	validateEmail,
@@ -172,7 +172,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			userEmail = email;
 			urlParams.append( 'email', email );
 		}
-		urlParams.append( 'is_blocks', !! wcSettings.wcBlocksConfig );
+		urlParams.append( 'is_blocks', !! window.wcSettings?.wcBlocksConfig );
 		urlParams.append( 'is_express', 'true' );
 		urlParams.append( 'express_context', context );
 		urlParams.append( 'source_url', window.location.href );

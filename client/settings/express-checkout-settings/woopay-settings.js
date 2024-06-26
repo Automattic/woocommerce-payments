@@ -28,7 +28,7 @@ import {
 	useWooPayShowIncompatibilityNotice,
 } from 'wcpay/data';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
-import WooPayIncompatibilityNotice from '../settings-warnings/incompatibility-notice';
+import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
 
 const WooPaySettings = ( { section } ) => {
 	const [
@@ -96,7 +96,7 @@ const WooPaySettings = ( { section } ) => {
 												<a
 													target="_blank"
 													rel="noreferrer"
-													href="https://woo.com/document/woopay-merchant-documentation/"
+													href="https://woocommerce.com/document/woopay-merchant-documentation/"
 												/>
 											),
 											tosLink: (
@@ -117,7 +117,7 @@ const WooPaySettings = ( { section } ) => {
 												<a
 													target="_blank"
 													rel="noreferrer"
-													href="https://woo.com/usage-tracking/"
+													href="https://woocommerce.com/usage-tracking/"
 												/>
 											),
 										},
@@ -230,7 +230,7 @@ const WooPaySettings = ( { section } ) => {
 									/* eslint-enable prettier/prettier */
 									learnMoreLink: (
 										// eslint-disable-next-line max-len
-										<ExternalLink href="https://woo.com/document/woopay-merchant-documentation/#checkout-appearance" />
+										<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance" />
 									),
 								}
 							} ) }
@@ -254,7 +254,7 @@ const WooPaySettings = ( { section } ) => {
 							storeName={ wcSettings.siteTitle }
 							storeLogo={ woopayStoreLogo }
 							customMessage={ woopayCustomMessage }
-						></WooPayPreview>
+						/>
 					</div>
 				</CardBody>
 			) }

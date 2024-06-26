@@ -3,7 +3,7 @@
  */
 import { getConfig } from 'wcpay/utils/checkout';
 import request from 'wcpay/checkout/utils/request';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
 
@@ -19,6 +19,10 @@ class WooPayDirectCheckout {
 		CLASSIC_CART_PROCEED_BUTTON: '.wc-proceed-to-checkout .checkout-button',
 		BLOCKS_CART_PROCEED_BUTTON:
 			'.wp-block-woocommerce-proceed-to-checkout-block',
+		BLOCKS_MINI_CART_PROCEED_BUTTON:
+			'a.wp-block-woocommerce-mini-cart-checkout-button-block',
+		CLASSIC_MINI_CART_PROCEED_BUTTON:
+			'.widget_shopping_cart a.button.checkout',
 	};
 
 	/**
@@ -77,10 +81,19 @@ class WooPayDirectCheckout {
 	/**
 	 * Checks if the user is logged in.
 	 *
-	 * @return {Promise<*>} Resolves to true if the user is logged in.
+	 * @return {Promise<bool>} Resolves to true if the user is logged in.
 	 */
 	static async isUserLoggedIn() {
 		return this.getUserConnect().isUserLoggedIn();
+	}
+
+	/**
+	 * Retrieves encrypted data from WooPay.
+	 *
+	 * @return {Promise<Object>} Resolves to an object with encrypted data.
+	 */
+	static async getEncryptedData() {
+		return this.getUserConnect().getEncryptedData();
 	}
 
 	/**
@@ -94,11 +107,12 @@ class WooPayDirectCheckout {
 
 	/**
 	 * Resolves the redirect URL to the WooPay checkout page or throws an error if the request fails.
+	 * This function should only be called when we have determined the shopper is already logged in to WooPay.
 	 *
 	 * @return {string} The redirect URL.
 	 * @throws {Error} If the session data could not be sent to WooPay.
 	 */
-	static async resolveWooPayRedirectUrl() {
+	static async getWooPayCheckoutUrl() {
 		// We're intentionally adding a try-catch block to catch any errors
 		// that might occur other than the known validation errors.
 		try {
@@ -119,6 +133,16 @@ class WooPayDirectCheckout {
 			);
 			if ( ! woopaySessionData?.redirect_url ) {
 				throw new Error( 'Could not retrieve WooPay checkout URL.' );
+			}
+
+			const { redirect_url: redirectUrl } = woopaySessionData;
+			if (
+				! this.validateRedirectUrl(
+					redirectUrl,
+					'platform_checkout_key'
+				)
+			) {
+				throw new Error( 'Invalid WooPay session URL: ' + redirectUrl );
 			}
 
 			return woopaySessionData.redirect_url;
@@ -144,11 +168,47 @@ class WooPayDirectCheckout {
 	}
 
 	/**
+	 * Gets the necessary merchant data to create session from WooPay request or throws an error if the request fails.
+	 * This function should only be called if we still need to determine if the shopper is logged into WooPay or not.
+	 *
+	 * @return {string} WooPay redirect URL with parameters.
+	 */
+	static async getWooPayMinimumSessionUrl() {
+		const redirectData = await this.getWooPayMinimumSesssionDataFromMerchant();
+		if ( redirectData?.success === false ) {
+			throw new Error(
+				'Could not retrieve redirect data from merchant.'
+			);
+		}
+
+		if ( ! this.isValidEncryptedSessionData( redirectData ) ) {
+			throw new Error( 'Invalid encrypted session data.' );
+		}
+
+		const {
+			blog_id, // eslint-disable-line camelcase
+			data: { session, iv, hash },
+		} = redirectData;
+		const redirectParams = new URLSearchParams( {
+			checkout_redirect: 1,
+			blog_id,
+			session,
+			iv,
+			hash,
+		} );
+
+		const redirectUrl =
+			getConfig( 'woopayHost' ) + '/woopay/?' + redirectParams.toString();
+
+		return redirectUrl;
+	}
+
+	/**
 	 * Gets the checkout redirect elements.
 	 *
 	 * @return {*[]} The checkout redirect elements.
 	 */
-	static getCheckoutRedirectElements() {
+	static getCheckoutButtonElements() {
 		const elements = [];
 		const addElementBySelector = ( selector ) => {
 			const element = document.querySelector( selector );
@@ -163,6 +223,9 @@ class WooPayDirectCheckout {
 		);
 		addElementBySelector(
 			this.redirectElements.BLOCKS_CART_PROCEED_BUTTON
+		);
+		addElementBySelector(
+			this.redirectElements.CLASSIC_MINI_CART_PROCEED_BUTTON
 		);
 
 		return elements;
@@ -180,14 +243,95 @@ class WooPayDirectCheckout {
 	}
 
 	/**
+	 * Gets the mini cart 'Go to checkout' button.
+	 *
+	 * @return {Element} The mini cart 'Go to checkout' button.
+	 */
+	static getMiniCartProceedToCheckoutButton() {
+		return document.querySelector(
+			this.redirectElements.BLOCKS_MINI_CART_PROCEED_BUTTON
+		);
+	}
+
+	/**
 	 * Adds a click-event listener to the given elements that redirects to the WooPay checkout page.
 	 *
 	 * @param {*[]} elements The elements to add a click-event listener to.
-	 * @param {boolean} useCheckoutRedirect Whether to use the `checkout_redirect` flag to let WooPay handle the checkout flow.
+	 * @param {boolean} userIsLoggedIn True if we determined the user is already logged in, false otherwise.
 	 */
-	static redirectToWooPay( elements, useCheckoutRedirect = false ) {
+	static addRedirectToWooPayEventListener(
+		elements,
+		userIsLoggedIn = false
+	) {
+		/**
+		 * Adds a loading spinner to the given element.
+		 *
+		 * @param {Element} element The element to add the loading spinner to.
+		 */
+		const addLoadingSpinner = ( element ) => {
+			// Create a spinner to show when the user clicks the button.
+			const spinner = document.createElement( 'span' );
+			spinner.classList.add( 'wc-block-components-spinner' );
+			spinner.style.position = 'relative';
+			spinner.style.fontSize = 'unset';
+			spinner.style.display = 'inline';
+			spinner.style.lineHeight = '0';
+			spinner.style.margin = '0';
+			spinner.style.border = '0';
+			spinner.style.padding = '0';
+			// Remove the existing content of the button.
+			// Set innerHTML to '&nbsp;' to keep the button's height.
+			element.innerHTML = '&nbsp;';
+			element.classList.remove( 'wc-forward' );
+			// Add the spinner to the button.
+			element.appendChild( spinner );
+		};
+
+		/**
+		 * Checks if a loading spinner should be added to the given element.
+		 *
+		 * @param {Element} element The element to check.
+		 *
+		 * @return {boolean} True if a loading spinner should be added.
+		 */
+		const shouldAddLoadingSpinner = ( element ) => {
+			// If the button is in the mini cart, add a spinner.
+			if (
+				element.classList.contains(
+					'wp-block-woocommerce-mini-cart-checkout-button-block'
+				)
+			) {
+				return true;
+			}
+
+			// If the button is in the classic cart, add a spinner.
+			const isCheckoutButton = element.classList.contains(
+				'checkout-button'
+			);
+			const isParentProceedToCheckout = element.parentElement?.classList?.contains(
+				'wc-proceed-to-checkout'
+			);
+
+			return isCheckoutButton && isParentProceedToCheckout;
+		};
+
 		elements.forEach( ( element ) => {
+			const elementState = {
+				is_loading: false,
+			};
+
 			element.addEventListener( 'click', async ( event ) => {
+				if ( elementState.is_loading ) {
+					event.preventDefault();
+					return;
+				}
+
+				elementState.is_loading = true;
+
+				if ( shouldAddLoadingSpinner( element ) ) {
+					addLoadingSpinner( element );
+				}
+
 				// Store href before the async call to not lose the reference.
 				let currTargetHref;
 				const isAElement = element.tagName.toLowerCase() === 'a';
@@ -206,9 +350,11 @@ class WooPayDirectCheckout {
 				event.preventDefault();
 
 				try {
-					let woopayRedirectUrl = await this.resolveWooPayRedirectUrl();
-					if ( useCheckoutRedirect ) {
-						woopayRedirectUrl += '&checkout_redirect=1';
+					let woopayRedirectUrl = '';
+					if ( userIsLoggedIn ) {
+						woopayRedirectUrl = await this.getWooPayCheckoutUrl();
+					} else {
+						woopayRedirectUrl = await this.getWooPayMinimumSessionUrl();
 					}
 
 					this.teardown();
@@ -231,12 +377,60 @@ class WooPayDirectCheckout {
 	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay session response.
 	 */
 	static async getEncryptedSessionData() {
+		const encryptedData = await this.getEncryptedData();
 		return request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+				...( encryptedData && { encrypted_data: encryptedData } ),
 			}
 		);
+	}
+
+	/**
+	 * Gets the WooPay redirect data.
+	 *
+	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay redirect response.
+	 */
+	static async getWooPayMinimumSesssionDataFromMerchant() {
+		// This should always be defined, but fallback to a request in case of the unexpected.
+		if ( getConfig( 'woopayMinimumSessionData' ) ) {
+			return getConfig( 'woopayMinimumSessionData' );
+		}
+
+		return request(
+			buildAjaxURL(
+				getConfig( 'wcAjaxUrl' ),
+				'get_woopay_minimum_session_data'
+			),
+			{
+				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+			}
+		);
+	}
+
+	/**
+	 * Validates a WooPay redirect URL.
+	 *
+	 * @param {string} redirectUrl The URL to validate.
+	 * @param {string} requiredParam The URL parameter that is required in the URL.
+	 *
+	 * @return {boolean} True if URL is valid, false otherwise.
+	 */
+	static validateRedirectUrl( redirectUrl, requiredParam ) {
+		try {
+			const parsedUrl = new URL( redirectUrl );
+			if (
+				parsedUrl.origin !== getConfig( 'woopayHost' ) ||
+				! parsedUrl.searchParams.has( requiredParam )
+			) {
+				return false;
+			}
+
+			return true;
+		} catch ( error ) {
+			return false;
+		}
 	}
 
 	/**

@@ -103,10 +103,11 @@ const getPaymentSourceDetails = ( txn: Transaction ) => {
 
 	switch ( txn.source ) {
 		case 'giropay':
-			return <Fragment>{ txn.source_identifier }</Fragment>;
+			return <Fragment>&nbsp;&nbsp;{ txn.source_identifier }</Fragment>;
 		case 'p24':
 			return (
 				<Fragment>
+					&nbsp;&nbsp;
 					{ p24BankList[ txn.source_identifier ] ?? '' }
 				</Fragment>
 			);
@@ -155,11 +156,8 @@ const getColumns = (
 		},
 		{
 			key: 'date',
-			label: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
-			screenReaderLabel: __(
-				'Date and time in UTC',
-				'woocommerce-payments'
-			),
+			label: __( 'Date / Time', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',

@@ -8,8 +8,9 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { useAllDepositsOverviews } from 'data';
 import { useCurrentWpUser } from './hooks';
-import wooPaymentsLogo from 'assets/images/woopayments.svg?asset';
+import { CurrencySelect } from './currency-select';
 import './style.scss';
 
 type TimeOfDay = 'morning' | 'afternoon' | 'evening';
@@ -67,13 +68,16 @@ const getGreeting = ( name?: string, date: Date = new Date() ): string => {
 };
 
 /**
- * Renders a welcome card header with a greeting and the WooPayments logo.
- *
- * @return {JSX.Element} Rendered element with the account balances card header.
+ * Renders a welcome card header with a greeting and a currency select input if supported.
  */
 const Welcome: React.FC = () => {
 	const { user } = useCurrentWpUser();
 	const greeting = getGreeting( user?.first_name );
+	const { overviews } = useAllDepositsOverviews();
+	const depositCurrencies =
+		overviews?.currencies.map( ( currencyObj ) => currencyObj.currency ) ||
+		[];
+	const renderCurrencySelect = depositCurrencies.length > 1;
 
 	return (
 		<CardHeader className="wcpay-welcome">
@@ -85,14 +89,14 @@ const Welcome: React.FC = () => {
 				<FlexItem className="wcpay-welcome__flex__greeting">
 					{ greeting }
 				</FlexItem>
-				<FlexItem>
-					<img
-						className="wcpay-welcome__flex__logo"
-						src={ wooPaymentsLogo }
-						alt="WooPayments logo"
-						width={ 107 }
-					/>
-				</FlexItem>
+
+				{ renderCurrencySelect && (
+					<FlexItem>
+						<CurrencySelect
+							depositCurrencies={ depositCurrencies }
+						/>
+					</FlexItem>
+				) }
 			</Flex>
 		</CardHeader>
 	);

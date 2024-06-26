@@ -22,9 +22,11 @@ export const WooPayConnectIframe = () => {
 		const fetchConfigAndSetIframeUrl = async () => {
 			const testMode = getConfig( 'testMode' );
 			const woopayHost = getConfig( 'woopayHost' );
+			const blogId = getConfig( 'woopayMerchantId' );
 			const urlParams = new URLSearchParams( {
 				testMode,
-				source_url: window.location.href,
+				source_url: window.location.href, // TODO: refactor this to camel case.
+				blogId,
 			} );
 
 			const tracksUserId = await getTracksIdentity();
