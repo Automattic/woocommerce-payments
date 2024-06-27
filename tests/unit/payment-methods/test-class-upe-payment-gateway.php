@@ -933,6 +933,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order->save();
 		$result = $this->mock_gateway->process_payment( $order->get_id() );
 		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
+		WC()->session->set( 'wc_notices', [] );
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {

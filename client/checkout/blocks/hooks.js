@@ -55,7 +55,7 @@ export const usePaymentFailHandler = ( onCheckoutFail, emitResponse ) => {
 					messageContext: emitResponse.noticeContexts.PAYMENTS,
 				};
 			} ),
-		[ onCheckoutFail, emitResponse.noticeContexts.PAYMENTS ]
+		[ onCheckoutFail, emitResponse ]
 	);
 };
 

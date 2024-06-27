@@ -209,7 +209,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			'wcpay-payment-method' => 'pm_mock',
 			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		];
-		WC()->session->set( 'wc_notices', [] );
 	}
 
 	/**
@@ -650,7 +649,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$error_notices = WC()->session->get( 'wc_notices' );
 		$this->assertNotEmpty( $error_notices );
 		$this->assertEquals( $error_message, $error_notices['error'][0]['notice'] );
-		WC()->session->set( 'wc_notices', [] );
 	}
 
 	public function rate_limiter_error_code_provider() {
