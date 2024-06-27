@@ -37,11 +37,18 @@ test.describe( 'Merchant Account Balance Overview', () => {
 						}
 					);
 
-					// To demonstrate auto-wait, try:
-					expect( totalBalanceValue ).toHaveText( /\$\d+/ );
-
 					// Match the total balance value to the USD format $1*
 					await expect( totalBalanceValue ).toHaveText( /\$\d+/ );
+
+					// Example of what to avoid: using a class name (non-user-facing implementation detail) to find the total balance value element
+					// const totalBalanceValueWithClassname = page
+					// 	.locator(
+					// 		'.wcpay-account-balances__balances__item__amount'
+					// 	)
+					// 	.first();
+					// await expect( totalBalanceValueWithClassname ).toHaveText(
+					// 	/\$\d+/
+					// );
 				}
 			);
 
