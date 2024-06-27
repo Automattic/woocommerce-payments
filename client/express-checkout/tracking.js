@@ -4,16 +4,14 @@
 import { debounce } from 'lodash';
 import { recordUserEvent } from 'tracks';
 
-let expressCheckoutBranding;
-
 // Track the button click event.
-export const trackExpressCheckoutButtonClick = ( source ) => {
+export const trackExpressCheckoutButtonClick = ( paymentMethod, source ) => {
 	const expressPaymentTypeEvents = {
 		google_pay: 'gpay_button_click',
 		apple_pay: 'applepay_button_click',
 	};
 
-	const event = expressPaymentTypeEvents[ expressCheckoutBranding ];
+	const event = expressPaymentTypeEvents[ paymentMethod ];
 	if ( ! event ) return;
 
 	recordUserEvent( event, { source } );
@@ -36,6 +34,3 @@ export const trackExpressCheckoutButtonLoad = debounce(
 	},
 	1000
 );
-
-export const setExpressCheckoutBranding = ( branding ) =>
-	( expressCheckoutBranding = branding );

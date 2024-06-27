@@ -9,7 +9,6 @@ import {
 	getExpressCheckoutData,
 } from './utils';
 import {
-	setExpressCheckoutBranding,
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
@@ -122,8 +121,8 @@ export const onReadyHandler = async function ( { availablePaymentMethods } ) {
 };
 
 export const onClickHandler = async function ( { expressPaymentType } ) {
-	setExpressCheckoutBranding( expressPaymentType );
 	trackExpressCheckoutButtonClick(
+		expressPaymentType,
 		getExpressCheckoutData( 'button_context' )
 	);
 };
