@@ -13,7 +13,9 @@ import {
 	normalizeLineItems,
 } from './utils/index';
 import {
+	onClickHandler,
 	onConfirmHandler,
+	onReadyHandler,
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
@@ -262,6 +264,7 @@ jQuery( ( $ ) => {
 					shippingRates,
 				};
 				wcpayECE.block();
+				onClickHandler( event );
 				event.resolve( clickOptions );
 			} );
 
@@ -287,6 +290,8 @@ jQuery( ( $ ) => {
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.unblock();
 			} );
+
+			eceButton.on( 'ready', onReadyHandler );
 		},
 
 		getSelectedProductData: () => {
