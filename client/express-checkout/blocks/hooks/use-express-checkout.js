@@ -62,11 +62,13 @@ export const useExpressCheckout = ( {
 					}
 				),
 			};
-			event.resolve( options );
+
 			// Click event from WC Blocks.
 			onClick();
 			// Global click event handler from WooPayments to ECE.
 			onClickHandler( event );
+
+			event.resolve( options );
 		},
 		[
 			onClick,

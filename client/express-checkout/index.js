@@ -264,8 +264,8 @@ jQuery( ( $ ) => {
 					shippingRates,
 				};
 				wcpayECE.block();
-				event.resolve( clickOptions );
 				onClickHandler( event );
+				event.resolve( clickOptions );
 			} );
 
 			eceButton.on( 'shippingaddresschange', async ( event ) =>
