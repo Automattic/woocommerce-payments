@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { Elements } from '@stripe/react-stripe-js';
+import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
 
 /**
  * Internal dependencies
@@ -16,6 +17,7 @@ const ExpressCheckoutContainer = ( props ) => {
 		paymentMethodCreation: 'manual',
 		amount: billing.cartTotal.value,
 		currency: billing.currency.code.toLowerCase(),
+		appearance: getExpressCheckoutButtonAppearance(),
 	};
 
 	return (

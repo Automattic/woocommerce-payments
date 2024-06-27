@@ -3,7 +3,7 @@ export * from './normalize';
 /**
  * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
  */
-interface WCPayExpressCheckoutParams {
+export interface WCPayExpressCheckoutParams {
 	ajax_url: string;
 
 	/**
@@ -87,8 +87,10 @@ declare global {
 	}
 }
 
-export const getExpressCheckoutData = (
-	key: keyof WCPayExpressCheckoutParams
+export const getExpressCheckoutData = <
+	K extends keyof WCPayExpressCheckoutParams
+>(
+	key: K
 ) => {
 	if ( window.wcpayExpressCheckoutParams ) {
 		return window.wcpayExpressCheckoutParams?.[ key ];
@@ -107,4 +109,79 @@ export const getErrorMessageFromNotice = ( notice: string ) => {
 	const div = document.createElement( 'div' );
 	div.innerHTML = notice.trim();
 	return div.firstChild ? div.firstChild.textContent : '';
+};
+
+/**
+ * Returns the appearance settings for the Express Checkout buttons.
+ * Currently only configures border radius for the buttons.
+ */
+export const getExpressCheckoutButtonAppearance = () => {
+	return {
+		// variables: { borderRadius: '99999px' },
+	};
+};
+
+/**
+ * Returns the style settings for the Express Checkout buttons.
+ */
+export const getExpressCheckoutButtonStyleSettings = () => {
+	const buttonSettings = getExpressCheckoutData( 'button' );
+
+	const mapWooPaymentsThemeToButtonTheme = (
+		buttonType: string,
+		theme: string
+	) => {
+		switch ( theme ) {
+			case 'dark':
+				return 'black';
+			case 'light':
+				return 'white';
+			case 'light-outline':
+				if ( buttonType === 'googlePay' ) {
+					return 'white';
+				}
+
+				return 'white-outline';
+			default:
+				return 'black';
+		}
+	};
+
+	const googlePayType =
+		buttonSettings?.type === 'default'
+			? 'plain'
+			: buttonSettings?.type ?? 'buy';
+
+	const applePayType =
+		buttonSettings?.type === 'default'
+			? 'plain'
+			: buttonSettings?.type ?? 'plain';
+
+	return {
+		paymentMethods: {
+			applePay: 'always',
+			googlePay: 'always',
+			link: 'auto',
+		},
+		layout: { overflow: 'never' },
+		buttonTheme: {
+			googlePay: mapWooPaymentsThemeToButtonTheme(
+				'googlePay',
+				buttonSettings?.theme ?? 'black'
+			),
+			applePay: mapWooPaymentsThemeToButtonTheme(
+				'applePay',
+				buttonSettings?.theme ?? 'black'
+			),
+		},
+		buttonType: {
+			googlePay: googlePayType,
+			applePay: applePayType,
+		},
+		// Allowed height must be 40px to 55px.
+		buttonHeight: Math.min(
+			Math.max( parseInt( buttonSettings?.height ?? '48', 10 ), 40 ),
+			55
+		),
+	};
 };

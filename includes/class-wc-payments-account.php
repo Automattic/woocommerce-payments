@@ -653,7 +653,7 @@ class WC_Payments_Account {
 			];
 			$this->tracks_event( self::TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED, $track_props );
 
-			$this->redirect_service->redirect_to_wcpay_connect();
+			$this->redirect_service->redirect_to_wcpay_connect( 'WCPAY_KYC_REMINDER' );
 		}
 
 		// This is an automatic redirection page, used to authenticate users that come from the capitcal offer email. For this reason
@@ -764,7 +764,7 @@ class WC_Payments_Account {
 
 		// Not able to establish Stripe connection, redirect to the Connect page.
 		if ( ! $this->is_stripe_connected() ) {
-			$this->redirect_service->redirect_to_connect_page();
+			$this->redirect_service->redirect_to_connect_page( 'WCADMIN_PAYMENT_SETTINGS' );
 			return true;
 		}
 
@@ -773,7 +773,7 @@ class WC_Payments_Account {
 			return false;
 		} else {
 			// Account not yet fully onboarded so redirect to overview page.
-			$this->redirect_service->redirect_to_overview_page();
+			$this->redirect_service->redirect_to_overview_page( 'WCADMIN_PAYMENT_SETTINGS' );
 			return true;
 		}
 	}
@@ -836,7 +836,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		$this->redirect_service->redirect_to_overview_page();
+		$this->redirect_service->redirect_to_overview_page( 'WCPAY_ONBOARDING_FLOW' );
 
 		return true;
 	}
