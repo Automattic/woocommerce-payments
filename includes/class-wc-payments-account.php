@@ -764,7 +764,7 @@ class WC_Payments_Account {
 
 		// Not able to establish Stripe connection, redirect to the Connect page.
 		if ( ! $this->is_stripe_connected() ) {
-			$this->redirect_service->redirect_to_connect_page( 'WCADMIN_PAYMENT_SETTINGS' );
+			$this->redirect_service->redirect_to_connect_page( null, 'WCADMIN_PAYMENT_SETTINGS' );
 			return true;
 		}
 

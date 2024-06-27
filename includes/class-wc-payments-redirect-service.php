@@ -55,15 +55,21 @@ class WC_Payments_Redirect_Service {
 	 * directly to the wcpay-connect URL because it's nonced, and the
 	 * nonce will likely be expired by the time the user follows the link.
 	 * That's why we need this middleman instead.
+	 *
+	 * @param string $from Source of the redirect.
 	 */
-	public function redirect_to_wcpay_connect(): void {
+	public function redirect_to_wcpay_connect( string $from = '' ): void {
 		// Take the user to the 'wcpay-connect' URL.
 		// We handle creating and redirecting to the account link there.
+		$params = [
+			'wcpay-connect' => '1',
+			'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
+		];
+		if ( '' !== $from ) {
+			$params['from'] = $from;
+		}
 		$connect_url = add_query_arg(
-			[
-				'wcpay-connect' => '1',
-				'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
-			],
+			$params,
 			admin_url( 'admin.php' )
 		);
 
@@ -116,8 +122,9 @@ class WC_Payments_Redirect_Service {
 	 * Note that this function immediately ends the execution.
 	 *
 	 * @param string|null $error_message Optional error message to show in a notice.
+	 * @param string      $from          Optional source of the redirect.
 	 */
-	public function redirect_to_connect_page( ?string $error_message = null ): void {
+	public function redirect_to_connect_page( ?string $error_message = null, string $from = '' ): void {
 		if ( isset( $error_message ) ) {
 			set_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
@@ -126,9 +133,14 @@ class WC_Payments_Redirect_Service {
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
 		];
+
 		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			// We are already in the onboarding page, do nothing.
 			return;
+		}
+
+		if ( '' !== $from ) {
+			$params['from'] = $from;
 		}
 
 		$this->redirect_to( admin_url( add_query_arg( $params, 'admin.php' ) ) );
@@ -136,9 +148,15 @@ class WC_Payments_Redirect_Service {
 
 	/**
 	 * Redirect to the overview page.
+	 *
+	 * @param string $from Source of the redirect.
 	 */
-	public function redirect_to_overview_page(): void {
-		$this->redirect_to( WC_Payments_Account::get_overview_page_url() );
+	public function redirect_to_overview_page( string $from = '' ): void {
+		$overview_page_url = WC_Payments_Account::get_overview_page_url();
+		if ( '' !== $from ) {
+			$overview_page_url = add_query_arg( 'from', $from, $overview_page_url );
+		}
+		$this->redirect_to( $overview_page_url );
 	}
 
 	/**
