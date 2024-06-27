@@ -2,6 +2,10 @@
  * External dependencies
  */
 import { test, expect } from '@playwright/test';
+
+/**
+ * Internal dependencies
+ */
 import { useMerchant } from '../../utils/helpers';
 
 test.describe( 'Merchant Account Balance Overview', () => {
