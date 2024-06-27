@@ -38,9 +38,9 @@ export const usePaymentCompleteHandler = (
 };
 
 /**
- * Handles the Block Checkout onCheckoutFail event.
+ * Handles onCheckoutFail event emitter which fires after Blocks checkout processor responds with error.
  *
- * Displays the error message returned from server in the paymentDetails object in the PAYMENTS notice context container.
+ * Displays the error message returned from checkout processor in the noticeContexts.PAYMENTS area.
  *
  * @param {*} onCheckoutFail The onCheckoutFail event.
  * @param {*} emitResponse   Various helpers for usage with observer.
