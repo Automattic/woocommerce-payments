@@ -29,10 +29,6 @@ describe( 'usePaymentFailHandler', () => {
 			errorMessage: errorMessage,
 		};
 
-		mockOnCheckoutFail.mockImplementation( ( callback ) => {
-			callback( { processingResponse: { paymentDetails } } );
-		} );
-
 		renderHook( () =>
 			usePaymentFailHandler( mockOnCheckoutFail, mockEmitResponse )
 		);
