@@ -790,7 +790,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_timeline( $id ) {
-		if ( ! preg_match( '/[A-Za-z0-9_-]+/', $id ) ) {
+		if ( ! preg_match( '/\w+/', $id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
