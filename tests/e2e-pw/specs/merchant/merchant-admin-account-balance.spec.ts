@@ -79,7 +79,11 @@ test.describe(
 		tag: '@critical @todo',
 	},
 	() => {
-		// Use the merchant user for this test suite.
+		/**
+		 * Test requirements not yet met:
+		 * - A merchant account with multiple deposit currencies must be available in our e2e environment
+		 */
+
 		useMerchant();
 
 		test( 'Select multiple deposit currencies and view the total and available account balance for each', async () => {
