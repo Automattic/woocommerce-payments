@@ -32,7 +32,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<payment_intent_id>[A-Za-z0-9_-]+)',
+			'/' . $this->rest_base . '/(?P<payment_intent_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_payment_intent' ],
