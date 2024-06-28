@@ -304,6 +304,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 
 		wcpay_get_test_container()->reset_all_replacements();
+		WC()->session->set( 'wc_notices', [] );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -827,13 +828,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->set_billing_phone( '+1123456789123456789123' );
 		$order->save();
-		try {
-			$this->card_gateway->process_payment( $order->get_id() );
-		} catch ( Exception $e ) {
-			$this->assertEquals( 'Exception', get_class( $e ) );
-			$this->assertEquals( 'Invalid phone number.', $e->getMessage() );
-			$this->assertEquals( 'WCPay\Exceptions\Invalid_Phone_Number_Exception', get_class( $e->getPrevious() ) );
-		}
+		$result = $this->card_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {
@@ -2869,17 +2868,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
-		$this->expectException( Exception::class );
-		$price   = html_entity_decode( wp_strip_all_tags( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
-		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
-		$this->expectExceptionMessage( $message );
 
-		try {
-			$this->card_gateway->process_payment( $order->get_id() );
-		} catch ( Exception $e ) {
-			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
-			throw $e;
-		}
+		$this->card_gateway->process_payment( $order->get_id() );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( 'The selected payment method requires a total amount of at least $60.00.', $error_notices['error'][0]['notice'] );
+		$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
 	}
 
 	public function test_process_payment_rejects_if_missing_fraud_prevention_token() {
@@ -2979,10 +2973,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' )
 			->willThrowException( new API_Exception( $error_message, 'wcpay_blocked_by_fraud_rule', 400, 'card_error' ) );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( $error_message );
-
-		$mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( $error_message, $error_notices['error'][0]['notice'] );
 	}
 
 	public function test_process_payment_marks_order_as_blocked_for_fraud_avs_mismatch() {
@@ -3049,10 +3044,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' )
 			->willThrowException( new API_Exception( $error_message, 'incorrect_zip', 400, 'card_error' ) );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( $error_message );
-
-		$mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( $error_message, $error_notices['error'][0]['notice'] );
 
 		delete_transient( 'wcpay_fraud_protection_settings' );
 	}
@@ -3121,10 +3117,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' )
 			->willThrowException( new API_Exception( $error_message, 'incorrect_zip', 400, 'card_error' ) );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( $error_message );
-
-		$mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( $error_message, $error_notices['error'][0]['notice'] );
 
 		delete_transient( 'wcpay_fraud_protection_settings' );
 	}
