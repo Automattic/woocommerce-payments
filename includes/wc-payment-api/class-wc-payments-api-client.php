@@ -234,7 +234,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_intent( $intent_id ) {
-		if ( ! preg_match( '/\w+/', $intent_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $intent_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -460,7 +460,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_transaction( $transaction_id ) {
-		if ( ! preg_match( '/\w+/', $transaction_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $transaction_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -539,7 +539,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_dispute( $dispute_id ) {
-		if ( ! preg_match( '/\w+/', $dispute_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $dispute_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -569,7 +569,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function update_dispute( $dispute_id, $evidence, $submit, $metadata ) {
-		if ( ! preg_match( '/\w+/', $dispute_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $dispute_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -605,7 +605,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function close_dispute( $dispute_id ) {
-		if ( ! preg_match( '/\w+/', $dispute_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $dispute_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -732,7 +732,7 @@ class WC_Payments_API_Client {
 	 */
 	public function get_file_contents( string $file_id, bool $as_account = true ): array {
 		try {
-			if ( ! preg_match( '/\w+/', $file_id ) ) {
+			if ( ! preg_match( '/^\w+$/', $file_id ) ) {
 				throw new API_Exception(
 					__( 'Route param validation failed.', 'woocommerce-payments' ),
 					'wcpay_route_validation_failure',
@@ -757,7 +757,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception
 	 */
 	public function get_file( string $file_id, bool $as_account = true ): array {
-		if ( ! preg_match( '/\w+/', $file_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $file_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -790,7 +790,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_timeline( $id ) {
-		if ( ! preg_match( '/\w+/', $id ) ) {
+		if ( ! preg_match( '/^\w+$/', $id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1170,7 +1170,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If fetching the invoice fails.
 	 */
 	public function get_invoice( string $invoice_id ) {
-		if ( ! preg_match( '/\w+/', $invoice_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $invoice_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1197,7 +1197,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception Error charging the invoice.
 	 */
 	public function charge_invoice( string $invoice_id, array $data = [] ) {
-		if ( ! preg_match( '/\w+/', $invoice_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $invoice_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1222,7 +1222,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception Error updating the invoice.
 	 */
 	public function update_invoice( string $invoice_id, array $data = [] ) {
-		if ( ! preg_match( '/\w+/', $invoice_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $invoice_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1247,7 +1247,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception
 	 */
 	public function update_charge( string $charge_id, array $data = [] ) {
-		if ( ! preg_match( '/\w+/', $charge_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $charge_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1271,7 +1271,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception
 	 */
 	public function get_charge( string $charge_id ) {
-		if ( ! preg_match( '/\w+/', $charge_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $charge_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1296,7 +1296,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception
 	 */
 	public function update_transaction( string $transaction_id, array $data = [] ) {
-		if ( ! preg_match( '/\w+/', $transaction_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $transaction_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1321,7 +1321,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If fetching the subscription fails.
 	 */
 	public function get_subscription( string $wcpay_subscription_id ) {
-		if ( ! preg_match( '/\w+/', $wcpay_subscription_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $wcpay_subscription_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1364,7 +1364,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If updating the WCPay subscription fails.
 	 */
 	public function update_subscription( $wcpay_subscription_id, $data ) {
-		if ( ! preg_match( '/\w+/', $wcpay_subscription_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $wcpay_subscription_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1389,7 +1389,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If canceling the subscription fails.
 	 */
 	public function cancel_subscription( string $wcpay_subscription_id ) {
-		if ( ! preg_match( '/\w+/', $wcpay_subscription_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $wcpay_subscription_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1415,7 +1415,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If updating the WCPay subscription item fails.
 	 */
 	public function update_subscription_item( $wcpay_subscription_item_id, $data ) {
-		if ( ! preg_match( '/\w+/', $wcpay_subscription_item_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $wcpay_subscription_item_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1440,7 +1440,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If payment method does not exist.
 	 */
 	public function get_payment_method( $payment_method_id ) {
-		if ( ! preg_match( '/\w+/', $payment_method_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $payment_method_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1466,7 +1466,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If payment method update fails.
 	 */
 	public function update_payment_method( $payment_method_id, $payment_method_data = [] ) {
-		if ( ! preg_match( '/\w+/', $payment_method_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $payment_method_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1493,7 +1493,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If an error occurs.
 	 */
 	public function get_payment_methods( $customer_id, $type, $limit = 100 ) {
-		if ( ! preg_match( '/\w+/', $customer_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $customer_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1522,7 +1522,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If detachment fails.
 	 */
 	public function detach_payment_method( $payment_method_id ) {
-		if ( ! preg_match( '/\w+/', $payment_method_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $payment_method_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1695,7 +1695,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If an error occurs.
 	 */
 	public function update_terminal_location( $location_id, $display_name, $address ) {
-		if ( ! preg_match( '/\w+/', $location_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $location_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1727,7 +1727,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If the location id is invalid or downstream call fails.
 	 */
 	public function delete_terminal_location( $location_id ) {
-		if ( ! preg_match( '/\w+/', $location_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $location_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
@@ -1771,7 +1771,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - If not connected or request failed.
 	 */
 	public function get_document( $document_id ) {
-		if ( ! preg_match( '/\w+/', $document_id ) ) {
+		if ( ! preg_match( '/^\w+$/', $document_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
