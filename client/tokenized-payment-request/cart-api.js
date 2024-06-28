@@ -36,6 +36,11 @@ export default class PaymentRequestCartApi {
 				).currency_code.toUpperCase(),
 			} ),
 			headers: {
+				'X-WooPayments-Tokenized-Cart-Session-Nonce':
+					getPaymentRequestData( 'button_context' ) === 'product'
+						? getPaymentRequestData( 'nonce' )
+								.tokenized_cart_session_nonce
+						: undefined,
 				...this.cartRequestHeaders,
 				...options.headers,
 			},
@@ -60,10 +65,6 @@ export default class PaymentRequestCartApi {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/checkout',
-			credentials:
-				getPaymentRequestData( 'button_context' ) === 'product'
-					? 'omit'
-					: undefined,
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
 				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
@@ -105,14 +106,15 @@ export default class PaymentRequestCartApi {
 		const response = await this._request( {
 			method: 'GET',
 			path: '/wc/store/v1/cart',
-			// omitting credentials, to create a new cart object separate from the user's cart.
-			credentials: 'omit',
 			// parse: false to ensure we can get the response headers
 			parse: false,
 		} );
 
 		this.cartRequestHeaders = {
 			Nonce: response.headers.get( 'Nonce' ),
+			'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
+				'X-WooPayments-Tokenized-Cart-Session'
+			),
 			// this header will be overwritten by a filter in the backend to overcome nonce overwrites in this middleware:
 			// https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce-blocks/assets/js/middleware/store-api-nonce.js
 			'X-WooPayments-Store-Api-Nonce': response.headers.get( 'Nonce' ),
@@ -138,10 +140,6 @@ export default class PaymentRequestCartApi {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/update-customer',
-			credentials:
-				getPaymentRequestData( 'button_context' ) === 'product'
-					? 'omit'
-					: undefined,
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
 				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
@@ -166,10 +164,6 @@ export default class PaymentRequestCartApi {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/select-shipping-rate',
-			credentials:
-				getPaymentRequestData( 'button_context' ) === 'product'
-					? 'omit'
-					: undefined,
 			data: shippingRate,
 		} );
 	}
@@ -192,7 +186,6 @@ export default class PaymentRequestCartApi {
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/cart/add-item',
-			credentials: 'omit',
 			data: applyFilters(
 				'wcpay.payment-request.cart-add-item',
 				productData
@@ -211,14 +204,12 @@ export default class PaymentRequestCartApi {
 			const cartData = await this._request( {
 				method: 'GET',
 				path: '/wc/store/v1/cart',
-				credentials: 'omit',
 			} );
 
 			const removeItemsPromises = cartData.items.map( ( item ) => {
 				return this._request( {
 					method: 'POST',
 					path: '/wc/store/v1/cart/remove-item',
-					credentials: 'omit',
 					data: {
 						key: item.key,
 					},
