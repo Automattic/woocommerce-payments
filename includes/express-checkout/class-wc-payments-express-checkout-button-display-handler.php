@@ -57,6 +57,27 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	private $express_checkout_helper;
 
 	/**
+	 * Whether to show the WooPay button.
+	 *
+	 * @var bool
+	 */
+	private $should_show_woopay;
+
+	/**
+	 * Whether to show the Payment Request button.
+	 *
+	 * @var bool
+	 */
+	private $should_show_payment_request;
+
+	/**
+	 * Whether to show the Express Checkout button.
+	 *
+	 * @var bool
+	 */
+	private $should_show_express_checkout_button;
+
+	/**
 	 * Initialize class actions.
 	 *
 	 * @param WC_Payment_Gateway_WCPay                    $gateway WCPay gateway.
@@ -103,6 +124,11 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_pay_order_before_payment', [ $this, 'display_express_checkout_buttons' ], 1 );
+
+			add_action( 'woocommerce_after_add_to_cart_form', [ $this, 'add_order_attribution_inputs' ], 1 );
+			add_action( 'woocommerce_after_cart', [ $this, 'add_order_attribution_inputs' ], 1 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'add_order_attribution_inputs' ], 1 );
+			add_action( 'woocommerce_pay_order_before_payment', [ $this, 'add_order_attribution_inputs' ], 1 );
 		}
 
 		if ( $this->is_pay_for_order_flow_supported() ) {
@@ -130,14 +156,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_buttons() {
-		$should_show_woopay                  = $this->platform_checkout_button_handler->should_show_woopay_button();
-		$should_show_payment_request         = $this->payment_request_button_handler->should_show_payment_request_button();
-		$should_show_express_checkout_button = $this->express_checkout_helper->should_show_express_checkout_button();
 
+		$this->set_button_visibility();
 		// When Payment Request button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any payment request methods to display.
 		// More details: https://github.com/Automattic/woocommerce-payments/pull/5399#discussion_r1073633776.
-		$separator_starts_hidden = ( $should_show_payment_request || $should_show_express_checkout_button ) && ! $should_show_woopay;
-		if ( $should_show_woopay || $should_show_payment_request || $should_show_express_checkout_button ) {
+		$separator_starts_hidden = ( $this->should_show_payment_request || $this->should_show_express_checkout_button ) && ! $this->should_show_woopay;
+		if ( $this->should_show_woopay || $this->should_show_payment_request || $this->should_show_express_checkout_button ) {
 			?>
 			<div class='wcpay-payment-request-wrapper' >
 			<?php
@@ -151,11 +175,34 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 				$this->payment_request_button_handler->display_payment_request_button_html();
 			}
 			?>
-			<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>
 			</div >
 			<?php
 			$this->display_express_checkout_separator_if_necessary( $separator_starts_hidden );
 		}
+	}
+
+	/**
+	 * Add order attribution inputs to the page.
+	 *
+	 * @return void
+	 */
+	public function add_order_attribution_inputs() {
+		if ( $this->should_show_woopay || $this->should_show_payment_request || $this->should_show_express_checkout_button ) {
+			?>
+			<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>
+			<?php
+		}
+	}
+
+	/**
+	 * Set the visibility of Payment Request and WooPay buttons.
+	 *
+	 * @return void
+	 */
+	private function set_button_visibility() {
+		$this->should_show_woopay                  = $this->platform_checkout_button_handler->should_show_woopay_button();
+		$this->should_show_payment_request         = $this->payment_request_button_handler->should_show_payment_request_button();
+		$this->should_show_express_checkout_button = $this->express_checkout_helper->should_show_express_checkout_button();
 	}
 
 	/**
