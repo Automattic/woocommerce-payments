@@ -462,6 +462,9 @@ class WooPay_Session {
 			$order_id = $checkout_data['order_id'] ?? null;
 		}
 
+		$theme_json = \WP_Theme_JSON_Resolver::get_merged_data();
+		$theme_data = $theme_json->get_data();
+
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
@@ -487,6 +490,7 @@ class WooPay_Session {
 				'return_url'                     => ! $is_pay_for_order ? wc_get_cart_url() : $order->get_checkout_payment_url(),
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
+				'theme_data'                     => $theme_data,
 			],
 			'user_session'         => null,
 			'preloaded_requests'   => ! $is_pay_for_order ? [
