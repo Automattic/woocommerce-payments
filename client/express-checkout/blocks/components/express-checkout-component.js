@@ -2,11 +2,37 @@
  * External dependencies
  */
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
+/**
+ * Internal dependencies
+ */
 import {
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
+
+const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
+	const allDisabled = {
+		amazonPay: 'never',
+		applePay: 'never',
+		googlePay: 'never',
+		link: 'never',
+		paypal: 'never',
+	};
+
+	const enabledParam = [ 'applePay', 'googlePay' ].includes(
+		enabledPaymentMethod
+	)
+		? 'always'
+		: 'auto';
+
+	return {
+		paymentMethods: {
+			...allDisabled,
+			[ enabledPaymentMethod ]: enabledParam,
+		},
+	};
+};
 
 /**
  * ExpressCheckout express payment method component.
@@ -22,6 +48,7 @@ const ExpressCheckoutComponent = ( {
 	setExpressPaymentError,
 	onClick,
 	onClose,
+	expressPaymentMethod = '',
 } ) => {
 	const {
 		buttonOptions,
@@ -47,7 +74,10 @@ const ExpressCheckoutComponent = ( {
 
 	return (
 		<ExpressCheckoutElement
-			options={ buttonOptions }
+			options={ {
+				...buttonOptions,
+				...getPaymentMethodsOverride( expressPaymentMethod ),
+			} }
 			onClick={ onButtonClick }
 			onConfirm={ onConfirm }
 			onReady={ onReady }
