@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { React, useState, useEffect } from 'react';
+import { React, useState, useEffect, useContext } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	PaymentRequestButtonElement,
@@ -23,6 +23,8 @@ import {
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 } from '../../data';
+import WCPaySettingsContext from '../wcpay-settings-context';
+import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/blocks/components/express-checkout-preview';
 
 const isPaymentRequestSettingsPage = () =>
 	document.getElementById( 'wcpay-express-checkout-settings-container' )
@@ -77,8 +79,18 @@ const PaymentRequestButtonPreview = () => {
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 
+	const {
+		featureFlags: { isStripeEceEnabled },
+	} = useContext( WCPaySettingsContext );
+
 	useEffect( () => {
 		if ( ! stripe ) {
+			return;
+		}
+
+		// We don't need a payment request when using the ECE buttons.
+		if ( isStripeEceEnabled ) {
+			setIsLoading( false );
 			return;
 		}
 
@@ -101,7 +113,7 @@ const PaymentRequestButtonPreview = () => {
 			}
 			setIsLoading( false );
 		} );
-	}, [ stripe, setPaymentRequest, setIsLoading ] );
+	}, [ stripe, setPaymentRequest, setIsLoading, isStripeEceEnabled ] );
 
 	/**
 	 * If stripe is loading, then display nothing.
@@ -112,6 +124,7 @@ const PaymentRequestButtonPreview = () => {
 	return (
 		<>
 			{ ( isWooPayEnabled ||
+				isStripeEceEnabled ||
 				( isPaymentRequestEnabled && paymentRequest ) ) && (
 				<div
 					className="payment-method-settings__preview"
@@ -132,7 +145,19 @@ const PaymentRequestButtonPreview = () => {
 							} }
 						/>
 					) }
-					{ isPaymentRequestEnabled &&
+					{ isStripeEceEnabled && (
+						<ExpressCheckoutPreviewComponent
+							stripe={ stripe }
+							buttonType={ buttonType }
+							theme={ theme }
+							height={
+								buttonSizeToPxMap[ size ] ||
+								buttonSizeToPxMap.medium
+							}
+						/>
+					) }
+					{ ! isStripeEceEnabled &&
+						isPaymentRequestEnabled &&
 						! isLoading &&
 						paymentRequest && (
 							<PaymentRequestButtonElement
