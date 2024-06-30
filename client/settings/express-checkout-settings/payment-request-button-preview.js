@@ -93,6 +93,18 @@ const ButtonPreviewWrapper = ( { theme, children } ) => (
 	</>
 );
 
+const PreviewRequirementsNotice = () => (
+	<InlineNotice icon status="info" isDismissible={ false }>
+		{ __(
+			'To preview the express checkout buttons, ' +
+				'ensure your store is served over HTTPS on a domain available to the public internet, ' +
+				'your device is configured to use Apple Pay or Google Pay, ' +
+				'and view this page using the Safari or Chrome browsers.',
+			'woocommerce-payments'
+		) }
+	</InlineNotice>
+);
+
 const PaymentRequestButtonPreview = () => {
 	const stripe = useStripe();
 	const [ paymentRequest, setPaymentRequest ] = useState();
@@ -169,17 +181,8 @@ const PaymentRequestButtonPreview = () => {
 				/>
 			</ButtonPreviewWrapper>
 		);
-	} else if ( isStripeEceEnabled && window.location.protocol !== 'https:' ) {
-		return (
-			<InlineNotice icon status="info" isDismissible={ false }>
-				{ __(
-					'To preview the Apple Pay and Google Pay buttons, ensure your store is served ' +
-						'over HTTPS, your device is configured to accept Apple Pay or Google Pay, ' +
-						'and view this page using the Safari or Chrome browsers.',
-					'woocommerce-payments'
-				) }
-			</InlineNotice>
-		);
+	} else if ( window.location.protocol !== 'https:' ) {
+		return <PreviewRequirementsNotice />;
 	} else if ( isStripeEceEnabled ) {
 		return (
 			<ButtonPreviewWrapper theme={ theme }>
@@ -217,16 +220,7 @@ const PaymentRequestButtonPreview = () => {
 		</ButtonPreviewWrapper>;
 	}
 
-	return (
-		<InlineNotice icon status="info" isDismissible={ false }>
-			{ __(
-				'To preview the Apple Pay and Google Pay buttons, ' +
-					'ensure your device is configured to accept Apple Pay or Google Pay, ' +
-					'and view this page using the Safari or Chrome browsers.',
-				'woocommerce-payments'
-			) }
-		</InlineNotice>
-	);
+	return <PreviewRequirementsNotice />;
 };
 
 export default PaymentRequestButtonPreview;
