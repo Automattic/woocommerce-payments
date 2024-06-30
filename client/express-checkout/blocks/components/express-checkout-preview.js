@@ -1,7 +1,14 @@
 /**
  * External dependencies
  */
+import { useState } from 'react';
 import { Elements, ExpressCheckoutElement } from '@stripe/react-stripe-js';
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import InlineNotice from 'components/inline-notice';
 
 export const ExpressCheckoutPreviewComponent = ( {
 	stripe,
@@ -9,6 +16,8 @@ export const ExpressCheckoutPreviewComponent = ( {
 	theme,
 	height,
 } ) => {
+	const [ canRenderButtons, setCanRenderButtons ] = useState( true );
+
 	const options = {
 		mode: 'payment',
 		amount: 1000,
@@ -53,19 +62,42 @@ export const ExpressCheckoutPreviewComponent = ( {
 		},
 	};
 
+	const onReady = ( { availablePaymentMethods } ) => {
+		if ( availablePaymentMethods ) {
+			setCanRenderButtons( true );
+		} else {
+			setCanRenderButtons( false );
+		}
+	};
+
+	if ( canRenderButtons ) {
+		return (
+			<div
+				key={ `${ buttonType }-${ height }-${ theme }` }
+				style={ { minHeight: `${ height }px`, width: '100%' } }
+			>
+				<Elements stripe={ stripe } options={ options }>
+					<ExpressCheckoutElement
+						options={ buttonOptions }
+						onClick={ () => {} }
+						onReady={ onReady }
+						// onConfirm={ onConfirm }
+						// onCancel={ onCancel }
+					/>
+				</Elements>
+			</div>
+		);
+	}
+
 	return (
-		<div
-			key={ `${ buttonType }-${ height }-${ theme }` }
-			style={ { minHeight: `${ height }px`, width: '100%' } }
-		>
-			<Elements stripe={ stripe } options={ options }>
-				<ExpressCheckoutElement
-					options={ buttonOptions }
-					onClick={ () => {} }
-					// onConfirm={ onConfirm }
-					// onCancel={ onCancel }
-				/>
-			</Elements>
-		</div>
+		<InlineNotice icon status="error" isDismissible={ false }>
+			{ __(
+				'Failed to preview the Apple Pay or Google Pay button. ' +
+					'Please ensure your store is served over HTTPS on a domain available to the public internet, ' +
+					'your device is configured to use Apple Pay or Google Pay, ' +
+					'and view this page using the Safari or Chrome browsers.',
+				'woocommerce-payments'
+			) }
+		</InlineNotice>
 	);
 };
