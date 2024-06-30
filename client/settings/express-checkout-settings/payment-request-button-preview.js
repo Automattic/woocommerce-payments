@@ -169,6 +169,17 @@ const PaymentRequestButtonPreview = () => {
 				/>
 			</ButtonPreviewWrapper>
 		);
+	} else if ( isStripeEceEnabled && window.location.protocol !== 'https:' ) {
+		return (
+			<InlineNotice icon status="info" isDismissible={ false }>
+				{ __(
+					'To preview the Apple Pay and Google Pay buttons, ensure your store is served ' +
+						'over HTTPS, your device is configured to accept Apple Pay or Google Pay, ' +
+						'and view this page using the Safari or Chrome browsers.',
+					'woocommerce-payments'
+				) }
+			</InlineNotice>
+		);
 	} else if ( isStripeEceEnabled ) {
 		return (
 			<ButtonPreviewWrapper theme={ theme }>
