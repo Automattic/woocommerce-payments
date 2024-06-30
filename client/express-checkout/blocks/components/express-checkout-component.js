@@ -27,6 +27,7 @@ const ExpressCheckoutComponent = ( {
 		buttonOptions,
 		onButtonClick,
 		onConfirm,
+		onReady,
 		onCancel,
 		elements,
 	} = useExpressCheckout( {
@@ -49,6 +50,7 @@ const ExpressCheckoutComponent = ( {
 			options={ buttonOptions }
 			onClick={ onButtonClick }
 			onConfirm={ onConfirm }
+			onReady={ onReady }
 			onCancel={ onCancel }
 			onShippingAddressChange={ onShippingAddressChange }
 			onShippingRateChange={ onShippingRateChange }
