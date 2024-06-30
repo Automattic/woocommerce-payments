@@ -56,7 +56,7 @@ export const ExpressCheckoutPreviewComponent = ( {
 	return (
 		<div
 			key={ `${ buttonType }-${ height }-${ theme }` }
-			style={ { minHeight: `${ height }px` } }
+			style={ { minHeight: `${ height }px`, width: '100%' } }
 		>
 			<Elements stripe={ stripe } options={ options }>
 				<ExpressCheckoutElement
