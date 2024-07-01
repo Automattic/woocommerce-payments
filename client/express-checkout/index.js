@@ -11,7 +11,6 @@ import {
 	onConfirmHandler,
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
-	payForOrderHandler,
 } from './event-handlers';
 
 jQuery( ( $ ) => {
@@ -271,15 +270,16 @@ jQuery( ( $ ) => {
 			);
 
 			eceButton.on( 'confirm', async ( event ) => {
-				const handler = options.confirmHandler ?? onConfirmHandler;
+				const order = options.order ?? 0;
 
-				return handler(
+				return onConfirmHandler(
 					api,
 					api.getStripe(),
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
-					event
+					event,
+					order
 				);
 			} );
 
@@ -412,7 +412,7 @@ jQuery( ( $ ) => {
 						getExpressCheckoutData( 'checkout' )
 							?.needs_payer_phone ?? false,
 					displayItems,
-					confirmHandler: payForOrderHandler( order ),
+					order,
 				} );
 			} else if ( wcpayExpressCheckoutParams.is_product_page ) {
 				wcpayECE.startExpressCheckoutElement( {

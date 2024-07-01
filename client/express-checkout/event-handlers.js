@@ -56,7 +56,8 @@ export const onConfirmHandler = async (
 	elements,
 	completePayment,
 	abortPayment,
-	event
+	event,
+	order = 0 // Order ID for the pay for order flow.
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
@@ -72,68 +73,17 @@ export const onConfirmHandler = async (
 	}
 
 	// Kick off checkout processing step.
-	const createOrderResponse = await api.expressCheckoutECECreateOrder(
-		normalizeOrderData( event, paymentMethod.id )
-	);
-
-	if ( createOrderResponse.result !== 'success' ) {
-		return abortPayment(
-			event,
-			getErrorMessageFromNotice( createOrderResponse.messages )
+	let orderResponse;
+	if ( ! order ) {
+		orderResponse = await api.expressCheckoutECECreateOrder(
+			normalizeOrderData( event, paymentMethod.id )
+		);
+	} else {
+		orderResponse = await api.expressCheckoutECEPayForOrder(
+			order,
+			normalizePayForOrderData( event, paymentMethod.id )
 		);
 	}
-
-	try {
-		const confirmationRequest = api.confirmIntent(
-			createOrderResponse.redirect
-		);
-
-		// `true` means there is no intent to confirm.
-		if ( confirmationRequest === true ) {
-			completePayment( createOrderResponse.redirect );
-		} else {
-			const redirectUrl = await confirmationRequest;
-
-			completePayment( redirectUrl );
-		}
-	} catch ( e ) {
-		return abortPayment( event, e.message );
-	}
-};
-
-/**
- * Generates a Pay for Order handler based on a particular order.
- * Contains pretty much the same logic in `onConfirmHandler`.
- *
- * @param {integer} order The ID of the order that is being paid.
- * @return {Function} The handler.
- */
-export const payForOrderHandler = ( order ) => async (
-	api,
-	stripe,
-	elements,
-	completePayment,
-	abortPayment,
-	event
-) => {
-	const { error: submitError } = await elements.submit();
-	if ( submitError ) {
-		return abortPayment( event, submitError.message );
-	}
-
-	const { paymentMethod, error } = await stripe.createPaymentMethod( {
-		elements,
-	} );
-
-	if ( error ) {
-		return abortPayment( event, error.message );
-	}
-
-	// Kick off checkout processing step.
-	const orderResponse = await api.expressCheckoutECEPayForOrder(
-		order,
-		normalizePayForOrderData( event, paymentMethod.id )
-	);
 
 	if ( orderResponse.result !== 'success' ) {
 		return abortPayment(
