@@ -199,4 +199,57 @@ describe( 'Getting styles for automated theming', () => {
 			},
 		} );
 	} );
+
+	[
+		{
+			elementsLocation: 'shortcode_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'blocks_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'other',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+	].forEach( ( { elementsLocation, expectedSelectors } ) => {
+		afterEach( () => {
+			document.querySelector.mockClear();
+		} );
+
+		describe( `when elementsLocation is ${ elementsLocation }`, () => {
+			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
+				jest.spyOn( document, 'querySelector' ).mockImplementation(
+					() => mockElement
+				);
+				jest.spyOn( window, 'getComputedStyle' ).mockImplementation(
+					() => mockCSStyleDeclaration
+				);
+
+				upeStyles.getAppearance( elementsLocation );
+
+				expectedSelectors.forEach( ( selector ) => {
+					expect( document.querySelector ).toHaveBeenCalledWith(
+						selector
+					);
+				} );
+			} );
+		} );
+	} );
 } );

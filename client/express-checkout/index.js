@@ -6,9 +6,16 @@ import { __ } from '@wordpress/i18n';
  */
 import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
-import { getExpressCheckoutData, normalizeLineItems } from './utils/index';
 import {
+	getExpressCheckoutButtonAppearance,
+	getExpressCheckoutButtonStyleSettings,
+	getExpressCheckoutData,
+	normalizeLineItems,
+} from './utils/index';
+import {
+	onClickHandler,
 	onConfirmHandler,
+	onReadyHandler,
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
@@ -232,14 +239,13 @@ jQuery( ( $ ) => {
 				amount: options?.total,
 				currency: options?.currency,
 				paymentMethodCreation: 'manual',
+				appearance: getExpressCheckoutButtonAppearance(),
 			} );
 
-			const eceButton = wcpayECE.createButton( elements, {
-				buttonType: {
-					googlePay: getExpressCheckoutData( 'button' ).type,
-					applePay: getExpressCheckoutData( 'button' ).type,
-				},
-			} );
+			const eceButton = wcpayECE.createButton(
+				elements,
+				getExpressCheckoutButtonStyleSettings()
+			);
 
 			wcpayECE.showButton( eceButton );
 
@@ -258,6 +264,7 @@ jQuery( ( $ ) => {
 					shippingRates,
 				};
 				wcpayECE.block();
+				onClickHandler( event );
 				event.resolve( clickOptions );
 			} );
 
@@ -286,6 +293,8 @@ jQuery( ( $ ) => {
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.unblock();
 			} );
+
+			eceButton.on( 'ready', onReadyHandler );
 		},
 
 		getSelectedProductData: () => {
