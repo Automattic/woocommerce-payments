@@ -5,7 +5,6 @@ import {
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 	onConfirmHandler,
-	payForOrderHandler,
 } from '../event-handlers';
 import {
 	normalizeLineItems,
@@ -215,10 +214,12 @@ describe( 'Express checkout event handlers', () => {
 		let completePayment;
 		let abortPayment;
 		let event;
+		let order;
 
 		beforeEach( () => {
 			api = {
 				expressCheckoutECECreateOrder: jest.fn(),
+				expressCheckoutECEPayForOrder: jest.fn(),
 				confirmIntent: jest.fn(),
 			};
 			stripe = {
@@ -259,6 +260,7 @@ describe( 'Express checkout event handlers', () => {
 				shippingRate: { id: 'rate_1' },
 				expressPaymentType: 'express',
 			};
+			order = 123;
 			global.window.wcpayFraudPreventionToken = 'token123';
 		} );
 
@@ -435,115 +437,6 @@ describe( 'Express checkout event handlers', () => {
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
 		} );
-	} );
-
-	describe( 'payForOrderHandler', () => {
-		let order;
-		let api;
-		let stripe;
-		let elements;
-		let completePayment;
-		let abortPayment;
-		let event;
-
-		beforeEach( () => {
-			order = 123;
-			api = {
-				expressCheckoutECEPayForOrder: jest.fn(),
-				confirmIntent: jest.fn(),
-			};
-			stripe = {
-				createPaymentMethod: jest.fn(),
-			};
-			elements = {
-				submit: jest.fn(),
-			};
-			completePayment = jest.fn();
-			abortPayment = jest.fn();
-			event = {
-				billingDetails: {
-					name: 'John Doe',
-					email: 'john.doe@example.com',
-					address: {
-						organization: 'Some Company',
-						country: 'US',
-						line1: '123 Main St',
-						line2: 'Apt 4B',
-						city: 'New York',
-						state: 'NY',
-						postal_code: '10001',
-					},
-					phone: '(123) 456-7890',
-				},
-				shippingAddress: {
-					name: 'John Doe',
-					organization: 'Some Company',
-					address: {
-						country: 'US',
-						line1: '123 Main St',
-						line2: 'Apt 4B',
-						city: 'New York',
-						state: 'NY',
-						postal_code: '10001',
-					},
-				},
-				shippingRate: { id: 'rate_1' },
-				expressPaymentType: 'express',
-			};
-			global.window.wcpayFraudPreventionToken = 'token123';
-		} );
-
-		afterEach( () => {
-			jest.clearAllMocks();
-		} );
-
-		test( 'should abort payment if elements.submit fails', async () => {
-			elements.submit.mockResolvedValue( {
-				error: { message: 'Submit error' },
-			} );
-
-			await payForOrderHandler( order )(
-				api,
-				stripe,
-				elements,
-				completePayment,
-				abortPayment,
-				event
-			);
-
-			expect( elements.submit ).toHaveBeenCalled();
-			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
-				'Submit error'
-			);
-			expect( completePayment ).not.toHaveBeenCalled();
-		} );
-
-		test( 'should abort payment if stripe.createPaymentMethod fails', async () => {
-			elements.submit.mockResolvedValue( {} );
-			stripe.createPaymentMethod.mockResolvedValue( {
-				error: { message: 'Payment method error' },
-			} );
-
-			await payForOrderHandler( order )(
-				api,
-				stripe,
-				elements,
-				completePayment,
-				abortPayment,
-				event
-			);
-
-			expect( elements.submit ).toHaveBeenCalled();
-			expect( stripe.createPaymentMethod ).toHaveBeenCalledWith( {
-				elements,
-			} );
-			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
-				'Payment method error'
-			);
-			expect( completePayment ).not.toHaveBeenCalled();
-		} );
 
 		test( 'should abort payment if expressCheckoutECEPayForOrder fails', async () => {
 			elements.submit.mockResolvedValue( {} );
@@ -555,13 +448,14 @@ describe( 'Express checkout event handlers', () => {
 				messages: 'Order creation error',
 			} );
 
-			await payForOrderHandler( order )(
+			await onConfirmHandler(
 				api,
 				stripe,
 				elements,
 				completePayment,
 				abortPayment,
-				event
+				event,
+				order
 			);
 
 			const expectedOrderData = normalizePayForOrderData(
@@ -579,7 +473,7 @@ describe( 'Express checkout event handlers', () => {
 			expect( completePayment ).not.toHaveBeenCalled();
 		} );
 
-		test( 'should complete payment if confirmationRequest is true', async () => {
+		test( 'should complete payment (pay for order) if confirmationRequest is true', async () => {
 			elements.submit.mockResolvedValue( {} );
 			stripe.createPaymentMethod.mockResolvedValue( {
 				paymentMethod: { id: 'pm_123' },
@@ -590,13 +484,14 @@ describe( 'Express checkout event handlers', () => {
 			} );
 			api.confirmIntent.mockReturnValue( true );
 
-			await payForOrderHandler( order )(
+			await onConfirmHandler(
 				api,
 				stripe,
 				elements,
 				completePayment,
 				abortPayment,
-				event
+				event,
+				order
 			);
 
 			expect( api.confirmIntent ).toHaveBeenCalledWith(
@@ -608,7 +503,7 @@ describe( 'Express checkout event handlers', () => {
 			expect( abortPayment ).not.toHaveBeenCalled();
 		} );
 
-		test( 'should complete payment if confirmationRequest returns a redirect URL', async () => {
+		test( 'should complete payment (pay for order) if confirmationRequest returns a redirect URL', async () => {
 			elements.submit.mockResolvedValue( {} );
 			stripe.createPaymentMethod.mockResolvedValue( {
 				paymentMethod: { id: 'pm_123' },
@@ -621,13 +516,14 @@ describe( 'Express checkout event handlers', () => {
 				'https://example.com/confirmation_redirect'
 			);
 
-			await payForOrderHandler( order )(
+			await onConfirmHandler(
 				api,
 				stripe,
 				elements,
 				completePayment,
 				abortPayment,
-				event
+				event,
+				order
 			);
 
 			expect( api.confirmIntent ).toHaveBeenCalledWith(
@@ -639,7 +535,7 @@ describe( 'Express checkout event handlers', () => {
 			expect( abortPayment ).not.toHaveBeenCalled();
 		} );
 
-		test( 'should abort payment if confirmIntent throws an error', async () => {
+		test( 'should abort payment (pay for order) if confirmIntent throws an error', async () => {
 			elements.submit.mockResolvedValue( {} );
 			stripe.createPaymentMethod.mockResolvedValue( {
 				paymentMethod: { id: 'pm_123' },
@@ -652,13 +548,14 @@ describe( 'Express checkout event handlers', () => {
 				new Error( 'Intent confirmation error' )
 			);
 
-			await payForOrderHandler( order )(
+			await onConfirmHandler(
 				api,
 				stripe,
 				elements,
 				completePayment,
 				abortPayment,
-				event
+				event,
+				order
 			);
 
 			expect( api.confirmIntent ).toHaveBeenCalledWith(
