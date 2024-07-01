@@ -130,7 +130,6 @@ export const payForOrderHandler = ( order ) => async (
 	}
 
 	// Kick off checkout processing step.
-	// const orderResponse = await api.paymentRequestPayForOrder(
 	const orderResponse = await api.expressCheckoutECEPayForOrder(
 		order,
 		normalizePayForOrderData( event, paymentMethod.id )
