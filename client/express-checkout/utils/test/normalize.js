@@ -299,11 +299,7 @@ describe( 'Express checkout normalization', () => {
 				expressPaymentType: 'express',
 			};
 
-			const paymentMethodId = 'pm_123456';
-
-			expect(
-				normalizePayForOrderData( event, paymentMethodId )
-			).toEqual( {
+			expect( normalizePayForOrderData( event, 'pm_123456' ) ).toEqual( {
 				payment_method: 'woocommerce_payments',
 				'wcpay-payment-method': 'pm_123456',
 				express_payment_type: 'express',
