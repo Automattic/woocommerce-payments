@@ -938,7 +938,7 @@ class WC_Payments_Account {
 					}
 
 					if ( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE === $connect_page_source ) {
-						$this->redirect_service->redirect_to_connect_page();
+						$this->redirect_service->redirect_to_connect_page( null, 'WCADMIN_PAYMENT_SETTINGS' );
 					} else {
 						$this->redirect_to_onboarding_page_or_start_server_connection( $connect_page_source );
 					}
@@ -992,6 +992,12 @@ class WC_Payments_Account {
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
+				$test_mode        = isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) );
+				$event_properties = [
+					'incentive' => $incentive,
+					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
+				];
+
 				if ( ! $this->payments_api_client->is_server_connected() ) {
 					// Track unsuccessful Jetpack connection.
 					$this->tracks_event(
@@ -1011,11 +1017,6 @@ class WC_Payments_Account {
 				}
 
 				// Track successful Jetpack connection.
-				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
-				$event_properties = [
-					'incentive' => $incentive,
-					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
-				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS,
 					$event_properties
