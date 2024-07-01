@@ -818,7 +818,8 @@ class WC_Payments_Account {
 				/* translators: %s: WooPayments */
 					__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
 					'WooPayments'
-				)
+				),
+				'WCPAY_ONBOARDING_FLOW'
 			);
 			return true;
 		}
