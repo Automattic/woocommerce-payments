@@ -94,6 +94,31 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 7.9.0-test-2 - unreleased =
+* Add - Add a separate transient to save UPE appearance styles for the Add Payment Method standalone page. Correct regression that prevented proper styles calculation in the shortcode checkout.
+* Add - Add support for ECE elements on the Shortcode Cart and Checkout pages
+* Add - Add support for Express Checkout Element on shortcode Cart and Checkout pages.
+* Add - Add support for the Express Checkout Element on product pages.
+* Add - Add telemetry events from PRBs into ECE.
+* Add - feat: tokenized cart PRBs on shortcode cart and checkout behind feature flag.
+* Add - Support style settings for ECE buttons
+* Fix - Clearly display available instant deposit amount on notice and button label on Payment Overview page
+* Fix - Disable WooPay for suspended and rejected accounts.
+* Fix - Display payment error message in the Payment context with Blocks.
+* Fix - fix: display refund amount w/ tokenized cart PRBs
+* Fix - fix: pricing decimal formatting for tokenized cart
+* Fix - fix: tokenized PRBs payment type
+* Fix - Fixed an error when renewing subscriptions without a billing country
+* Fix - Fix output for compatibility data.
+* Fix - Fix transaction list and document list advanced filter styling issue preventing dates to be input on mobile screens.
+* Fix - Fix WooPay Direct Checkout feature check.
+* Fix - Fix WooPay OTP modal not rendering on the shortcode checkout if BNPL methods are available.
+* Fix - Hide payment methods with domestic transactions restrictions (Klarna, Affirm, Afterpay) when conditions are not met.
+* Fix - Make the search box, and typed search term visible clearly on the 'Payments > Transactions' page, when there are too many existing search tags.
+* Fix - Retrieve saved tokens only relevant for the specific payment gateway.
+* Dev - Migrate Affirm and Afterpay payment method components to TypeScript.
+* Dev - Refactor redirects logic in payments
+
 = 7.8.1 - 2024-06-25 =
 * Fix - Fix "Dispute not loaded" error that was affecting responding to disputes.
 
