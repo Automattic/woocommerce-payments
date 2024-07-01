@@ -67,7 +67,7 @@ const ConnectAccountPage: React.FC = () => {
 				source = 'wcadmin-payment-task';
 				break;
 			case 'WCADMIN_PAYMENT_SETTINGS':
-				source = 'wcadmin-payment-settings';
+				source = 'wcadmin-settings-page';
 				break;
 		}
 
