@@ -6,17 +6,17 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import Visa from 'assets/images/payment-method-icons/visa.svg';
-import Mastercard from 'assets/images/payment-method-icons/mastercard.svg';
-import Amex from 'assets/images/payment-method-icons/amex.svg';
-import Discover from 'assets/images/payment-method-icons/discover.svg';
-import WooPay from 'assets/images/payment-method-icons/woopay.svg';
-import ApplePay from 'assets/images/payment-method-icons/applepay.svg';
-import AfterPay from 'assets/images/payment-method-icons/afterpay.svg';
-import Affirm from 'assets/images/payment-method-icons/affirm.svg';
-import Klarna from 'assets/images/payment-method-icons/klarna.svg';
-import Jcb from 'assets/images/payment-method-icons/jcb.svg';
-import GooglePay from 'assets/images/payment-method-icons/gpay.svg';
+import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
+import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
+import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
+import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
+import WooPay from 'assets/images/payment-method-icons/woopay.svg?asset';
+import ApplePay from 'assets/images/payment-method-icons/applepay.svg?asset';
+import AfterPay from 'assets/images/payment-method-icons/afterpay.svg?asset';
+import Affirm from 'assets/images/payment-method-icons/affirm.svg?asset';
+import Klarna from 'assets/images/payment-method-icons/klarna.svg?asset';
+import Jcb from 'assets/images/payment-method-icons/jcb.svg?asset';
+import GooglePay from 'assets/images/payment-method-icons/gpay.svg?asset';
 
 import './style.scss';
 
