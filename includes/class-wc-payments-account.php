@@ -1081,15 +1081,26 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Get Stripe connect url
+	 * Get connect url.
 	 *
 	 * @see WC_Payments_Account::get_onboarding_return_url(). The $wcpay_connect_from param relies on this function returning the corresponding URL.
-	 * @param string $wcpay_connect_from Optional. A page ID representing where the user should be returned to after connecting. Default is '1' - redirects back to the WC Payments overview page.
 	 *
-	 * @return string Stripe account login url.
+	 * @param string $wcpay_connect_from Optional. A page ID representing where the user should be returned to after connecting.
+	 *                                   Default is '1' - redirects back to the WooPayments overview page.
+	 *
+	 * @return string Connect URL.
 	 */
 	public static function get_connect_url( $wcpay_connect_from = '1' ) {
-		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => $wcpay_connect_from ], admin_url( 'admin.php' ) ), 'wcpay-connect' );
+		$url_params = [
+			'wcpay-connect' => $wcpay_connect_from,
+		];
+
+		// Maintain the `from` param from the request URL, if present.
+		if ( isset( $_GET['from'] ) ) {
+			$url_params['from'] = sanitize_text_field( wp_unslash( $_GET['from'] ) );
+		}
+
+		return wp_nonce_url( add_query_arg( $url_params, admin_url( 'admin.php' ) ), 'wcpay-connect' );
 	}
 
 	/**
