@@ -366,6 +366,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_tokenized_cart_address_postcode_normalization() {
 		$request = new WP_REST_Request();
+		$request->set_route( '/wc/store/v1/cart/update-customer' );
 		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
 		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
 		$request->set_header( 'Content-Type', 'application/json' );
@@ -393,6 +394,42 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$this->assertSame( 'H3B000', $shipping_address['postcode'] );
 		// this shouldn't be modified.
 		$this->assertSame( '90210', $billing_address['postcode'] );
+	}
+
+	public function test_tokenized_cart_avoid_address_postcode_normalization_if_route_incorrect() {
+		$request = new WP_REST_Request();
+		$request->set_route( '/wc/store/v1/checkout' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
+		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => 'CA',
+				'postcode' => 'H3B',
+				'state'    => 'Colombie-Britannique',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => 'CA',
+				'postcode' => 'H3B',
+				'state'    => 'Colombie-Britannique',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		// this should be modified.
+		$this->assertSame( 'BC', $shipping_address['state'] );
+		$this->assertSame( 'BC', $billing_address['state'] );
+		// this shouldn't be modified.
+		$this->assertSame( 'H3B', $shipping_address['postcode'] );
+		$this->assertSame( 'H3B', $billing_address['postcode'] );
 	}
 
 	public function test_get_shipping_options_returns_shipping_options() {

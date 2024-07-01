@@ -122,7 +122,7 @@ describe( 'PaymentActivity component', () => {
 	} );
 
 	it( 'should render', () => {
-		const { container, getByText, getByLabelText } = render(
+		const { container, getByText, getByLabelText, getAllByText } = render(
 			<PaymentActivity />
 		);
 
@@ -132,6 +132,15 @@ describe( 'PaymentActivity component', () => {
 		// Check correct currency/value is displayed.
 		const tpvElement = getByLabelText( 'Total payment volume' );
 		expect( tpvElement ).toHaveTextContent( '€1.234,56' );
+
+		// Check the "View report" link is rendered with the correct currency query param.
+		const viewReportLinks = getAllByText( 'View report' );
+		viewReportLinks.forEach( ( link ) => {
+			expect( link ).toHaveAttribute(
+				'href',
+				expect.stringContaining( 'store_currency_is=eur' )
+			);
+		} );
 
 		expect( container ).toMatchSnapshot();
 	} );
