@@ -443,14 +443,14 @@ export default class WooPaymentsPaymentRequest {
 			}
 		}
 
-		await this.startPaymentRequest();
-
-		// After initializing a new payment request, we need to reset the isPaymentAborted flag.
-		this.isPaymentAborted = false;
-
 		// once cart data has been fetched, we can safely clear cached product data.
 		if ( this.cachedCartData ) {
 			this.initialProductData = undefined;
 		}
+
+		await this.startPaymentRequest();
+
+		// After initializing a new payment request, we need to reset the isPaymentAborted flag.
+		this.isPaymentAborted = false;
 	}
 }
