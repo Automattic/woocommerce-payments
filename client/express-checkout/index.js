@@ -422,7 +422,6 @@ jQuery( ( $ ) => {
 								getExpressCheckoutData( 'product' )
 									.needs_shipping === response.needs_shipping
 							) {
-								// TODO: checck this if updates correctly.
 								elements.update( {
 									amount: response.total.amount,
 									displayItems: response.displayItems,
@@ -566,6 +565,9 @@ jQuery( ( $ ) => {
 					} );
 				} );
 			}
+
+			// After initializing a new payment request, we need to reset the paymentAborted flag.
+			wcpayECE.paymentAborted = false;
 		},
 	};
 
