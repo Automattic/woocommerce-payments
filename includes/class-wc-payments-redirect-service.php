@@ -122,9 +122,10 @@ class WC_Payments_Redirect_Service {
 	 * Note that this function immediately ends the execution.
 	 *
 	 * @param string|null $error_message Optional error message to show in a notice.
-	 * @param string      $from          Optional source of the redirect.
+	 * @param string|null $from Optional source of the redirect.
+	 *                     Will fall back to keeping the `from` parameter in the current request URL, if present.
 	 */
-	public function redirect_to_connect_page( ?string $error_message = null, string $from = '' ): void {
+	public function redirect_to_connect_page( ?string $error_message = null, ?string $from = null ): void {
 		if ( isset( $error_message ) ) {
 			set_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
@@ -135,11 +136,16 @@ class WC_Payments_Redirect_Service {
 		];
 
 		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
-			// We are already in the onboarding page, do nothing.
+			// We are already on the Connect page. Do nothing.
 			return;
 		}
 
-		if ( '' !== $from ) {
+		// If we were not given a source, try to get it from the request URL.
+		if ( ! isset( $from ) && isset( $_GET['from'] ) ) {
+			$from = sanitize_text_field( wp_unslash( $_GET['from'] ) );
+		}
+
+		if ( ! empty( $from ) ) {
 			$params['from'] = $from;
 		}
 

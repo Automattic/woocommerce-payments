@@ -254,11 +254,13 @@ class WC_Payments_Onboarding_Service {
 			return self::SOURCE_WCADMIN_PAYMENT_TASK;
 		}
 		// Payments tab in Woo Admin Settings page.
-		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' )
+			|| 'WCADMIN_PAYMENT_SETTINGS' === $from_param ) {
 			return self::SOURCE_WCADMIN_SETTINGS_PAGE;
 		}
-		// Payments tab in the sidebar.
-		if ( false !== strpos( $referer, 'path=%2Fwc-pay-welcome-page' ) ) {
+		// Payments incentive page.
+		if ( false !== strpos( $referer, 'path=%2Fwc-pay-welcome-page' )
+			|| 'WCADMIN_PAYMENT_INCENTIVE' === $from_param ) {
 			return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		}
 		if ( false !== strpos( $referer, 'path=%2Fpayments%2Fconnect' ) ) {
