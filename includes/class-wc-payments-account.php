@@ -803,13 +803,18 @@ class WC_Payments_Account {
 
 		// Prevent access to onboarding flow if the server is not connected. Redirect back to the connect page with an error message.
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			$referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
+			$referer = sanitize_text_field( wp_get_raw_referer() );
 
 			// Track unsuccessful Jetpack connection.
 			if ( strpos( $referer, 'wordpress.com' ) ) {
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE,
-					[ 'mode' => WC_Payments::mode()->is_test() ? 'test' : 'live' ]
+					[
+						'mode'   => WC_Payments::mode()->is_test() ? 'test' : 'live',
+						// Capture the user source of the connection attempt originating page.
+						// This is the same source that is used to track the onboarding flow origin.
+						'source' => isset( $_GET['source'] ) ? sanitize_text_field( wp_unslash( $_GET['source'] ) ) : '',
+					]
 				);
 			}
 
