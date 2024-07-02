@@ -125,7 +125,7 @@ class WC_Payments_Redirect_Service {
 	 * @param string|null $from Optional source of the redirect.
 	 *                     Will fall back to keeping the `from` parameter in the current request URL, if present.
 	 */
-	public function redirect_to_connect_page( ?string $error_message = null, string $from = null ): void {
+	public function redirect_to_connect_page( ?string $error_message = null, ?string $from = null ): void {
 		if ( isset( $error_message ) ) {
 			set_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
