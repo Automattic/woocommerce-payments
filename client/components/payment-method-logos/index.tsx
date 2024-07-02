@@ -74,7 +74,7 @@ export const WooPaymentMethodsLogos: React.VFC< {
 	const [ maxShownElements, setMaxShownElements ] = useState( maxElements );
 
 	useEffect( () => {
-		const getShowElements = () => {
+		const updateMaxElements = () => {
 			if ( window.innerWidth <= 480 ) {
 				setMaxShownElements( 5 );
 			} else if ( window.innerWidth <= 768 ) {
@@ -84,13 +84,13 @@ export const WooPaymentMethodsLogos: React.VFC< {
 			}
 		};
 
-		getShowElements();
-		window.addEventListener( 'resize', getShowElements );
+		updateMaxElements();
+		window.addEventListener( 'resize', updateMaxElements );
 	}, [ maxElements ] );
 
 	return (
 		<>
-			<div className="woocommerce-payments-method-logos">
+			<div className="connect-account-page__payment-methods--logos">
 				{ PaymentMethods.slice( 0, maxShownElements ).map( ( pm ) => {
 					return (
 						<img
@@ -103,7 +103,7 @@ export const WooPaymentMethodsLogos: React.VFC< {
 					);
 				} ) }
 				{ maxShownElements < totalPaymentMethods && (
-					<div className="woocommerce-payments-method-logos_count">
+					<div className="woocommerce-payments-method--logos-count">
 						+ { totalPaymentMethods - maxShownElements }
 					</div>
 				) }
