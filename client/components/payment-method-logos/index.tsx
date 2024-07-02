@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -71,11 +71,27 @@ export const WooPaymentMethodsLogos: React.VFC< {
 	maxElements: number;
 } > = ( { maxElements = 10 } ) => {
 	const totalPaymentMethods = 21;
-	const maxElementsMiniView = 5;
+	const [ maxShownElements, setMaxShownElements ] = useState( maxElements );
+
+	useEffect( () => {
+		const getShowElements = () => {
+			if ( window.innerWidth <= 480 ) {
+				setMaxShownElements( 5 );
+			} else if ( window.innerWidth <= 768 ) {
+				setMaxShownElements( 7 );
+			} else {
+				setMaxShownElements( maxElements );
+			}
+		};
+
+		getShowElements();
+		window.addEventListener( 'resize', getShowElements );
+	}, [ maxElements ] );
+
 	return (
 		<>
 			<div className="woocommerce-payments-method-logos">
-				{ PaymentMethods.slice( 0, maxElements ).map( ( pm ) => {
+				{ PaymentMethods.slice( 0, maxShownElements ).map( ( pm ) => {
 					return (
 						<img
 							key={ pm.name }
@@ -86,30 +102,11 @@ export const WooPaymentMethodsLogos: React.VFC< {
 						/>
 					);
 				} ) }
-				{ maxElements < totalPaymentMethods && (
+				{ maxShownElements < totalPaymentMethods && (
 					<div className="woocommerce-payments-method-logos_count">
-						+ { totalPaymentMethods - maxElements }
+						+ { totalPaymentMethods - maxShownElements }
 					</div>
 				) }
-			</div>
-
-			<div className="woocommerce-payments-method-logos_mini">
-				{ PaymentMethods.slice( 0, maxElementsMiniView ).map(
-					( pm ) => {
-						return (
-							<img
-								key={ pm.name }
-								alt={ pm.name }
-								src={ pm.component }
-								width={ 38 }
-								height={ 24 }
-							/>
-						);
-					}
-				) }
-				<div className="woocommerce-payments-method-logos_count">
-					+ { totalPaymentMethods - maxElementsMiniView }
-				</div>
 			</div>
 		</>
 	);

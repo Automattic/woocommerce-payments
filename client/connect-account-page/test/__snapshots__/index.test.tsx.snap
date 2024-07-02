@@ -129,46 +129,6 @@ exports[`ConnectAccountPage should render correctly 1`] = `
             </div>
           </div>
           <div
-            class="woocommerce-payments-method-logos_mini"
-          >
-            <img
-              alt="visa"
-              height="24"
-              src="assets/images/payment-method-icons/visa.svg"
-              width="38"
-            />
-            <img
-              alt="mastercard"
-              height="24"
-              src="assets/images/payment-method-icons/mastercard.svg"
-              width="38"
-            />
-            <img
-              alt="amex"
-              height="24"
-              src="assets/images/payment-method-icons/amex.svg"
-              width="38"
-            />
-            <img
-              alt="discover"
-              height="24"
-              src="assets/images/payment-method-icons/discover.svg"
-              width="38"
-            />
-            <img
-              alt="woopay"
-              height="24"
-              src="assets/images/payment-method-icons/woopay.svg"
-              width="38"
-            />
-            <div
-              class="woocommerce-payments-method-logos_count"
-            >
-              + 
-              16
-            </div>
-          </div>
-          <div
             class="connect-account-page__payment-methods__description"
           >
             <div>
@@ -434,46 +394,6 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
             </div>
           </div>
           <div
-            class="woocommerce-payments-method-logos_mini"
-          >
-            <img
-              alt="visa"
-              height="24"
-              src="assets/images/payment-method-icons/visa.svg"
-              width="38"
-            />
-            <img
-              alt="mastercard"
-              height="24"
-              src="assets/images/payment-method-icons/mastercard.svg"
-              width="38"
-            />
-            <img
-              alt="amex"
-              height="24"
-              src="assets/images/payment-method-icons/amex.svg"
-              width="38"
-            />
-            <img
-              alt="discover"
-              height="24"
-              src="assets/images/payment-method-icons/discover.svg"
-              width="38"
-            />
-            <img
-              alt="woopay"
-              height="24"
-              src="assets/images/payment-method-icons/woopay.svg"
-              width="38"
-            />
-            <div
-              class="woocommerce-payments-method-logos_count"
-            >
-              + 
-              16
-            </div>
-          </div>
-          <div
             class="connect-account-page__payment-methods__description"
           >
             <div>
@@ -698,46 +618,6 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
             >
               + 
               11
-            </div>
-          </div>
-          <div
-            class="woocommerce-payments-method-logos_mini"
-          >
-            <img
-              alt="visa"
-              height="24"
-              src="assets/images/payment-method-icons/visa.svg"
-              width="38"
-            />
-            <img
-              alt="mastercard"
-              height="24"
-              src="assets/images/payment-method-icons/mastercard.svg"
-              width="38"
-            />
-            <img
-              alt="amex"
-              height="24"
-              src="assets/images/payment-method-icons/amex.svg"
-              width="38"
-            />
-            <img
-              alt="discover"
-              height="24"
-              src="assets/images/payment-method-icons/discover.svg"
-              width="38"
-            />
-            <img
-              alt="woopay"
-              height="24"
-              src="assets/images/payment-method-icons/woopay.svg"
-              width="38"
-            />
-            <div
-              class="woocommerce-payments-method-logos_count"
-            >
-              + 
-              16
             </div>
           </div>
           <div

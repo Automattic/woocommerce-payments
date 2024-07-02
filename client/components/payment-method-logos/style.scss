@@ -9,38 +9,22 @@
 	font-weight: 600;
 }
 
-.woocommerce-payments-method-logos > svg,
-.woocommerce-payments-method-logos_mini > svg {
+.woocommerce-payments-method-logos > svg {
 	width: 38px;
 	height: 24px;
 }
 
-.woocommerce-payments-method-logos img,
-.woocommerce-payments-method-logos_mini img {
+.woocommerce-payments-method-logos img {
 	margin-right: 8px;
 }
 
-.connect-account-page__payment-methods .woocommerce-payments-method-logos,
-.connect-account-page__payment-methods .woocommerce-payments-method-logos_mini {
+.connect-account-page__payment-methods .woocommerce-payments-method-logos {
 	border: 1px solid #ddd;
 	border-bottom: none;
 	padding: 12px;
 }
 
-.woocommerce-payments-method-logos,
-.woocommerce-payments-method-logos_mini {
+.woocommerce-payments-method-logos {
 	display: flex;
 	align-items: center;
-}
-
-@media only screen and ( min-width: 480px ) {
-	.woocommerce-payments-method-logos_mini {
-		display: none;
-	}
-}
-
-@media only screen and ( max-width: 480px ) {
-	.woocommerce-payments-method-logos {
-		display: none;
-	}
 }
