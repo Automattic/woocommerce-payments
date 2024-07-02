@@ -71,12 +71,12 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		$request
 			->expects( $this->once() )
 			->method( 'set_return_url' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/overview' ) );
 
 		$request
 			->expects( $this->once() )
 			->method( 'set_refresh_url' )
-			->with( 'http://example.org/wp-admin/admin.php?wcpay-loan-offer' );
+			->with( admin_url( 'admin.php?wcpay-loan-offer' ) );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -97,12 +97,12 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		$request
 			->expects( $this->once() )
 			->method( 'set_return_url' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/overview' ) );
 
 		$request
 			->expects( $this->once() )
 			->method( 'set_refresh_url' )
-			->with( 'http://example.org/wp-admin/admin.php?wcpay-loan-offer' );
+			->with( admin_url( 'admin.php?wcpay-loan-offer' ) );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -142,7 +142,7 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		$this->redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Foverview&wcpay-server-link-error=1' );
+			->with( admin_url( 'admin.php?page=wc-admin&path=%2Fpayments%2Foverview&wcpay-server-link-error=1' ) );
 
 		$this->redirect_service->redirect_to_account_link(
 			[
@@ -158,7 +158,7 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_redirect_url' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/overview' ) );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
