@@ -49,7 +49,7 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
 		$this->redirect_service = $this->getMockBuilder( WC_Payments_Redirect_Service::class )
-			->setMethods( [ 'redirect_to' ] )
+			->onlyMethods( [ 'redirect_to' ] )
 			->setConstructorArgs( [ $this->mock_api_client ] )
 			->getMock();
 	}
