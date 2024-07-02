@@ -7,9 +7,16 @@ import { debounce } from 'lodash';
  */
 import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
-import { getExpressCheckoutData, normalizeLineItems } from './utils/index';
 import {
+	getExpressCheckoutButtonAppearance,
+	getExpressCheckoutButtonStyleSettings,
+	getExpressCheckoutData,
+	normalizeLineItems,
+} from './utils/index';
+import {
+	onClickHandler,
 	onConfirmHandler,
+	onReadyHandler,
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
@@ -237,14 +244,13 @@ jQuery( ( $ ) => {
 				amount: options?.total,
 				currency: options?.currency,
 				paymentMethodCreation: 'manual',
+				appearance: getExpressCheckoutButtonAppearance(),
 			} );
 
-			const eceButton = wcpayECE.createButton( elements, {
-				buttonType: {
-					googlePay: getExpressCheckoutData( 'button' ).type,
-					applePay: getExpressCheckoutData( 'button' ).type,
-				},
-			} );
+			const eceButton = wcpayECE.createButton(
+				elements,
+				getExpressCheckoutButtonStyleSettings()
+			);
 
 			wcpayECE.showButton( eceButton );
 
@@ -301,6 +307,7 @@ jQuery( ( $ ) => {
 					shippingRates,
 				};
 				wcpayECE.block();
+				onClickHandler( event );
 				event.resolve( clickOptions );
 			} );
 
@@ -327,6 +334,8 @@ jQuery( ( $ ) => {
 				wcpayECE.paymentAborted = true;
 				wcpayECE.unblock();
 			} );
+
+			eceButton.on( 'ready', onReadyHandler );
 
 			if ( getExpressCheckoutData( 'is_product_page' ) ) {
 				wcpayECE.attachProductPageEventListeners( elements );

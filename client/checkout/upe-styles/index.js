@@ -11,7 +11,7 @@ import {
 	getBackgroundColor,
 } from './utils.js';
 
-const appearanceSelectors = {
+export const appearanceSelectors = {
 	default: {
 		hiddenContainer: '#wcpay-hidden-div',
 		hiddenInput: '#wcpay-hidden-input',
@@ -148,7 +148,7 @@ const appearanceSelectors = {
 			case 'blocks_checkout':
 				appearanceSelector = this.blocksCheckout;
 				break;
-			case 'classic_checkout':
+			case 'shortcode_checkout':
 				appearanceSelector = this.classicCheckout;
 				break;
 			case 'bnpl_product_page':

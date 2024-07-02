@@ -2,11 +2,16 @@
  * Internal dependencies
  */
 import {
+	getErrorMessageFromNotice,
 	normalizeOrderData,
 	normalizeShippingAddress,
 	normalizeLineItems,
+	getExpressCheckoutData,
 } from './utils';
-import { getErrorMessageFromNotice } from './utils/index';
+import {
+	trackExpressCheckoutButtonClick,
+	trackExpressCheckoutButtonLoad,
+} from './tracking';
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
@@ -101,4 +106,26 @@ export const onConfirmHandler = async (
 			e.message ?? 'There was a problem creating the order'
 		);
 	}
+};
+
+export const onReadyHandler = async function ( { availablePaymentMethods } ) {
+	if ( availablePaymentMethods ) {
+		const enabledMethods = Object.entries( availablePaymentMethods )
+			// eslint-disable-next-line no-unused-vars
+			.filter( ( [ _, isEnabled ] ) => isEnabled )
+			// eslint-disable-next-line no-unused-vars
+			.map( ( [ methodName, _ ] ) => methodName );
+
+		trackExpressCheckoutButtonLoad( {
+			paymentMethods: enabledMethods,
+			source: getExpressCheckoutData( 'button_context' ),
+		} );
+	}
+};
+
+export const onClickHandler = async function ( { expressPaymentType } ) {
+	trackExpressCheckoutButtonClick(
+		expressPaymentType,
+		getExpressCheckoutData( 'button_context' )
+	);
 };
