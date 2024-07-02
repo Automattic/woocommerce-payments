@@ -122,7 +122,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               width="38"
             />
             <div
-              class="woocommerce-payments-method--logos-count"
+              class="connect-account-page__payment-methods--logos-count"
             >
               + 
               11
@@ -387,7 +387,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
               width="38"
             />
             <div
-              class="woocommerce-payments-method--logos-count"
+              class="connect-account-page__payment-methods--logos-count"
             >
               + 
               11
@@ -614,7 +614,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               width="38"
             />
             <div
-              class="woocommerce-payments-method--logos-count"
+              class="connect-account-page__payment-methods--logos-count"
             >
               + 
               11

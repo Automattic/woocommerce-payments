@@ -103,7 +103,7 @@ export const WooPaymentMethodsLogos: React.VFC< {
 					);
 				} ) }
 				{ maxShownElements < totalPaymentMethods && (
-					<div className="woocommerce-payments-method--logos-count">
+					<div className="connect-account-page__payment-methods--logos-count">
 						+ { totalPaymentMethods - maxShownElements }
 					</div>
 				) }
