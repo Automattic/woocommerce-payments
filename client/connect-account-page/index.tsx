@@ -105,6 +105,7 @@ const ConnectAccountPage: React.FC = () => {
 				incentive_id: incentive.id,
 			} ),
 			sandbox_mode: sandboxMode,
+			path: 'payments_connect_v2',
 		} );
 	};
 
