@@ -10,6 +10,7 @@ import {
 	shippingRateChangeHandler,
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
+import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
 
 const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
 	const allDisabled = {
@@ -72,6 +73,25 @@ const ExpressCheckoutComponent = ( {
 	const onShippingRateChange = ( event ) =>
 		shippingRateChangeHandler( api, event, elements );
 
+	const onElementsReady = ( event ) => {
+		const paymentMethodContainer = document.getElementById(
+			`express-payment-method-${ PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT }_${ expressPaymentMethod }`
+		);
+
+		const availablePaymentMethods = event.availablePaymentMethods || {};
+
+		if ( paymentMethodContainer ) {
+			paymentMethodContainer.style.display = availablePaymentMethods[
+				expressPaymentMethod
+			]
+				? null
+				: 'none';
+		}
+
+		// Any actions that WooPayments needs to perform.
+		onReady( event );
+	};
+
 	return (
 		<ExpressCheckoutElement
 			options={ {
@@ -80,7 +100,7 @@ const ExpressCheckoutComponent = ( {
 			} }
 			onClick={ onButtonClick }
 			onConfirm={ onConfirm }
-			onReady={ onReady }
+			onReady={ onElementsReady }
 			onCancel={ onCancel }
 			onShippingAddressChange={ onShippingAddressChange }
 			onShippingRateChange={ onShippingRateChange }
