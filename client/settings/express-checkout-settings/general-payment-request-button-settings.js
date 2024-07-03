@@ -5,6 +5,10 @@
 import React, { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalNumberControl as NumberControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalInputControlSuffixWrapper as InputControlSuffixWrapper,
 	SelectControl,
 	RadioControl,
 	Notice,
@@ -223,16 +227,53 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 			{ isEceEnabled && (
 				<>
 					<h4>{ __( 'Border radius', 'woocommerce-payments' ) }</h4>
-					<RangeControl
-						help={ __(
-							'Control the border radius of express checkout buttons',
+					<div className="payment-method-settings__border-radius">
+						<NumberControl
+							label={ __(
+								/* translators: Label for a number input, hidden from view. Intended for accessibility. */
+								'Border radius, number input',
+								'woocommerce-payments'
+							) }
+							hideLabelFromVision
+							isPressEnterToChange={ true }
+							value={ radius }
+							max={ 30 }
+							min={ 0 }
+							hideHTMLArrows
+							onChange={ ( value ) => {
+								if ( typeof value === 'string' ) {
+									setRadius( parseInt( value, 10 ) );
+								} else {
+									setRadius( value );
+								}
+							} }
+							suffix={
+								<InputControlSuffixWrapper>
+									px
+								</InputControlSuffixWrapper>
+							}
+						/>
+						<RangeControl
+							label={ __(
+								/* translators: Label for an input slider, hidden from view. Intended for accessibility. */
+								'Border radius, slider',
+								'woocommerce-payments'
+							) }
+							hideLabelFromVision
+							className="payment-method-settings__border-radius__slider"
+							value={ radius }
+							max={ 30 }
+							min={ 0 }
+							withInputField={ false }
+							onChange={ setRadius }
+						/>
+					</div>
+					<p className="payment-method-settings__option-help-text">
+						{ __(
+							'Controls the corner roundness of express payment buttons',
 							'woocommerce-payments'
 						) }
-						value={ radius }
-						max={ 30 }
-						min={ 0 }
-						onChange={ setRadius }
-					/>
+					</p>
 				</>
 			) }
 			<h4>{ __( 'Preview', 'woocommerce-payments' ) }</h4>
