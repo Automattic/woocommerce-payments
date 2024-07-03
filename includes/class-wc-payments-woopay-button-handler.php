@@ -333,7 +333,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		$settings = $this->get_button_settings();
-		$radius   = WC_Payments_Features::is_stripe_ece_enabled() ? $settings['radius'] : 10;
+		$radius   = WC_Payments_Features::is_stripe_ece_enabled() ? $settings['radius'] : 4;
 
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->express_checkout_helper->is_product() ); ?>>

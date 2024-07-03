@@ -508,7 +508,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_size'          => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
 				'payment_request_button_type'          => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'         => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
-				'payment_request_button_border_radius' => WC_Payments_Features::is_stripe_ece_enabled() ? $this->wcpay_gateway->get_option( 'payment_request_button_border_radius' ) : 10,
+				'payment_request_button_border_radius' => WC_Payments_Features::is_stripe_ece_enabled() ? $this->wcpay_gateway->get_option( 'payment_request_button_border_radius' ) : 4,
 				'is_saved_cards_enabled'               => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'             => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
 				'is_woopay_enabled'                    => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),

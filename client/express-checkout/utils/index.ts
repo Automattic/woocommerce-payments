@@ -120,7 +120,7 @@ export const getExpressCheckoutButtonAppearance = () => {
 	const buttonSettings = getExpressCheckoutData( 'button' );
 
 	return {
-		variables: { borderRadius: `${ buttonSettings?.radius ?? 10 }px` },
+		variables: { borderRadius: `${ buttonSettings?.radius ?? 4 }px` },
 	};
 };
 

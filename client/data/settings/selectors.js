@@ -185,7 +185,7 @@ export const getPaymentRequestButtonTheme = ( state ) => {
 };
 
 export const getPaymentRequestButtonBorderRadius = ( state ) => {
-	return getSettings( state )?.payment_request_button_border_radius ?? 10;
+	return getSettings( state )?.payment_request_button_border_radius ?? 4;
 };
 
 export const getIsSavedCardsEnabled = ( state ) => {
