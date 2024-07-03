@@ -268,7 +268,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					</div>
 					<p className="payment-method-settings__option-help-text">
 						{ __(
-							'Controls the corner roundness of express payment buttons',
+							'Controls the corner roundness of express payment buttons.',
 							'woocommerce-payments'
 						) }
 					</p>
