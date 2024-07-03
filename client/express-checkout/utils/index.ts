@@ -104,11 +104,7 @@ export const getExpressCheckoutData = <
 >(
 	key: K
 ) => {
-	if ( key in window.wcpayExpressCheckoutParams ) {
-		return window.wcpayExpressCheckoutParams[ key ];
-	}
-
-	return null;
+	return window.wcpayExpressCheckoutParams?.[ key ] ?? null;
 };
 
 /**
