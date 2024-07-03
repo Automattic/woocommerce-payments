@@ -49,7 +49,7 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
 		$this->redirect_service = $this->getMockBuilder( WC_Payments_Redirect_Service::class )
-			->setMethods( [ 'redirect_to' ] )
+			->onlyMethods( [ 'redirect_to' ] )
 			->setConstructorArgs( [ $this->mock_api_client ] )
 			->getMock();
 	}
@@ -71,12 +71,12 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		$request
 			->expects( $this->once() )
 			->method( 'set_return_url' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/overview' ) );
 
 		$request
 			->expects( $this->once() )
 			->method( 'set_refresh_url' )
-			->with( 'http://example.org/wp-admin/admin.php?wcpay-loan-offer' );
+			->with( admin_url( 'admin.php?wcpay-loan-offer' ) );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -97,12 +97,12 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		$request
 			->expects( $this->once() )
 			->method( 'set_return_url' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/overview' ) );
 
 		$request
 			->expects( $this->once() )
 			->method( 'set_refresh_url' )
-			->with( 'http://example.org/wp-admin/admin.php?wcpay-loan-offer' );
+			->with( admin_url( 'admin.php?wcpay-loan-offer' ) );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -142,7 +142,7 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		$this->redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Foverview&wcpay-server-link-error=1' );
+			->with( admin_url( 'admin.php?page=wc-admin&path=%2Fpayments%2Foverview&wcpay-server-link-error=1' ) );
 
 		$this->redirect_service->redirect_to_account_link(
 			[
@@ -158,7 +158,7 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_redirect_url' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/overview' ) );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -170,5 +170,109 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 			->with( 'https://login.url' );
 
 		$this->redirect_service->redirect_to_login();
+	}
+
+	public function test_redirect_to_connect_page_no_redirect() {
+		// Arrange.
+		// Set the request as if the user is already on the Connect page.
+		$_GET = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		];
+
+		// Assert.
+		$this->redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to' );
+
+		// Act.
+		$this->redirect_service->redirect_to_connect_page();
+
+		// Cleanup.
+		unset( $_GET );
+	}
+
+	public function test_redirect_to_connect_page_sets_transient_on_error_message() {
+		// Arrange.
+		// Set the request as if the user is already on the Connect page.
+		$_GET = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		];
+
+		// Assert.
+		$this->redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to' );
+
+		// Act.
+		$this->redirect_service->redirect_to_connect_page( 'Error message' );
+
+		// Assert.
+		$this->assertEquals( 'Error message', get_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT ) );
+
+		// Cleanup.
+		unset( $_GET );
+	}
+
+	public function test_redirect_to_connect_page_redirects() {
+		// Arrange.
+		$_GET = [
+			'page' => 'wc-admin',
+			'path' => '/some-other-path',
+		];
+
+		// Assert.
+		$this->redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/connect' ) );
+
+		// Act.
+		$this->redirect_service->redirect_to_connect_page();
+
+		// Cleanup.
+		unset( $_GET );
+	}
+
+	public function test_redirect_to_connect_page_redirects_with_from() {
+		// Assert.
+		$this->redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/connect&from=FROM_SOMEWHERE' ) );
+
+		// Act.
+		$this->redirect_service->redirect_to_connect_page( null, 'FROM_SOMEWHERE' );
+	}
+
+	public function test_redirect_to_connect_page_redirects_with_from_param_from_get() {
+		// Arrange.
+		$_GET = [
+			'from' => 'FROM_SOMEWHERE',
+		];
+
+		// Assert.
+		$this->redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/connect&from=FROM_SOMEWHERE' ) );
+
+		// Act.
+		$this->redirect_service->redirect_to_connect_page();
+
+		// Cleanup.
+		unset( $_GET );
+	}
+
+	public function test_redirect_to_connect_page_redirects_without_from_when_empty() {
+		// Assert.
+		$this->redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/connect' ) );
+
+		// Act.
+		$this->redirect_service->redirect_to_connect_page( null, '' );
 	}
 }
