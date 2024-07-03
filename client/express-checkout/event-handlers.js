@@ -4,6 +4,7 @@
 import {
 	getErrorMessageFromNotice,
 	normalizeOrderData,
+	normalizePayForOrderData,
 	normalizeShippingAddress,
 	normalizeLineItems,
 	getExpressCheckoutData,
@@ -60,7 +61,8 @@ export const onConfirmHandler = async (
 	elements,
 	completePayment,
 	abortPayment,
-	event
+	event,
+	order = 0 // Order ID for the pay for order flow.
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
@@ -77,24 +79,30 @@ export const onConfirmHandler = async (
 
 	try {
 		// Kick off checkout processing step.
-		const createOrderResponse = await api.expressCheckoutECECreateOrder(
-			normalizeOrderData( event, paymentMethod.id )
-		);
-
-		if ( createOrderResponse.result !== 'success' ) {
-			return abortPayment(
-				event,
-				getErrorMessageFromNotice( createOrderResponse.messages )
+		let orderResponse;
+		if ( ! order ) {
+			orderResponse = await api.expressCheckoutECECreateOrder(
+				normalizeOrderData( event, paymentMethod.id )
+			);
+		} else {
+			orderResponse = await api.expressCheckoutECEPayForOrder(
+				order,
+				normalizePayForOrderData( event, paymentMethod.id )
 			);
 		}
 
-		const confirmationRequest = api.confirmIntent(
-			createOrderResponse.redirect
-		);
+		if ( orderResponse.result !== 'success' ) {
+			return abortPayment(
+				event,
+				getErrorMessageFromNotice( orderResponse.messages )
+			);
+		}
+
+		const confirmationRequest = api.confirmIntent( orderResponse.redirect );
 
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
-			completePayment( createOrderResponse.redirect );
+			completePayment( orderResponse.redirect );
 		} else {
 			const redirectUrl = await confirmationRequest;
 
