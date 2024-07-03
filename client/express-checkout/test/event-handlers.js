@@ -10,6 +10,7 @@ import {
 	normalizeLineItems,
 	normalizeShippingAddress,
 	normalizeOrderData,
+	normalizePayForOrderData,
 } from '../utils';
 
 describe( 'Express checkout event handlers', () => {
@@ -213,10 +214,12 @@ describe( 'Express checkout event handlers', () => {
 		let completePayment;
 		let abortPayment;
 		let event;
+		let order;
 
 		beforeEach( () => {
 			api = {
 				expressCheckoutECECreateOrder: jest.fn(),
+				expressCheckoutECEPayForOrder: jest.fn(),
 				confirmIntent: jest.fn(),
 			};
 			stripe = {
@@ -257,6 +260,7 @@ describe( 'Express checkout event handlers', () => {
 				shippingRate: { id: 'rate_1' },
 				expressPaymentType: 'express',
 			};
+			order = 123;
 			global.window.wcpayFraudPreventionToken = 'token123';
 		} );
 
@@ -422,6 +426,136 @@ describe( 'Express checkout event handlers', () => {
 				completePayment,
 				abortPayment,
 				event
+			);
+
+			expect( api.confirmIntent ).toHaveBeenCalledWith(
+				'https://example.com/redirect'
+			);
+			expect( abortPayment ).toHaveBeenCalledWith(
+				event,
+				'Intent confirmation error'
+			);
+			expect( completePayment ).not.toHaveBeenCalled();
+		} );
+
+		test( 'should abort payment if expressCheckoutECEPayForOrder fails', async () => {
+			elements.submit.mockResolvedValue( {} );
+			stripe.createPaymentMethod.mockResolvedValue( {
+				paymentMethod: { id: 'pm_123' },
+			} );
+			api.expressCheckoutECEPayForOrder.mockResolvedValue( {
+				result: 'error',
+				messages: 'Order creation error',
+			} );
+
+			await onConfirmHandler(
+				api,
+				stripe,
+				elements,
+				completePayment,
+				abortPayment,
+				event,
+				order
+			);
+
+			const expectedOrderData = normalizePayForOrderData(
+				event,
+				'pm_123'
+			);
+			expect( api.expressCheckoutECEPayForOrder ).toHaveBeenCalledWith(
+				123,
+				expectedOrderData
+			);
+			expect( abortPayment ).toHaveBeenCalledWith(
+				event,
+				'Order creation error'
+			);
+			expect( completePayment ).not.toHaveBeenCalled();
+		} );
+
+		test( 'should complete payment (pay for order) if confirmationRequest is true', async () => {
+			elements.submit.mockResolvedValue( {} );
+			stripe.createPaymentMethod.mockResolvedValue( {
+				paymentMethod: { id: 'pm_123' },
+			} );
+			api.expressCheckoutECEPayForOrder.mockResolvedValue( {
+				result: 'success',
+				redirect: 'https://example.com/redirect',
+			} );
+			api.confirmIntent.mockReturnValue( true );
+
+			await onConfirmHandler(
+				api,
+				stripe,
+				elements,
+				completePayment,
+				abortPayment,
+				event,
+				order
+			);
+
+			expect( api.confirmIntent ).toHaveBeenCalledWith(
+				'https://example.com/redirect'
+			);
+			expect( completePayment ).toHaveBeenCalledWith(
+				'https://example.com/redirect'
+			);
+			expect( abortPayment ).not.toHaveBeenCalled();
+		} );
+
+		test( 'should complete payment (pay for order) if confirmationRequest returns a redirect URL', async () => {
+			elements.submit.mockResolvedValue( {} );
+			stripe.createPaymentMethod.mockResolvedValue( {
+				paymentMethod: { id: 'pm_123' },
+			} );
+			api.expressCheckoutECEPayForOrder.mockResolvedValue( {
+				result: 'success',
+				redirect: 'https://example.com/redirect',
+			} );
+			api.confirmIntent.mockResolvedValue(
+				'https://example.com/confirmation_redirect'
+			);
+
+			await onConfirmHandler(
+				api,
+				stripe,
+				elements,
+				completePayment,
+				abortPayment,
+				event,
+				order
+			);
+
+			expect( api.confirmIntent ).toHaveBeenCalledWith(
+				'https://example.com/redirect'
+			);
+			expect( completePayment ).toHaveBeenCalledWith(
+				'https://example.com/confirmation_redirect'
+			);
+			expect( abortPayment ).not.toHaveBeenCalled();
+		} );
+
+		test( 'should abort payment (pay for order) if confirmIntent throws an error', async () => {
+			elements.submit.mockResolvedValue( {} );
+			stripe.createPaymentMethod.mockResolvedValue( {
+				paymentMethod: { id: 'pm_123' },
+			} );
+			api.expressCheckoutECEPayForOrder.mockResolvedValue( {
+				result: 'success',
+				redirect: 'https://example.com/redirect',
+			} );
+			api.confirmIntent.mockRejectedValue(
+				new Error( 'Intent confirmation error' )
+			);
+
+			await onConfirmHandler(
+				api,
+				stripe,
+				elements,
+				completePayment,
+				abortPayment,
+				event,
+				order
 			);
 
 			expect( api.confirmIntent ).toHaveBeenCalledWith(

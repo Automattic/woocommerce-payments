@@ -439,6 +439,21 @@ export default class WCPayAPI {
 		} );
 	}
 
+	/**
+	 * Pays for an order based on the Express Checkout payment method.
+	 *
+	 * @param {integer} order The order ID.
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	expressCheckoutECEPayForOrder( order, paymentData ) {
+		return this.request( getExpressCheckoutAjaxURL( 'pay_for_order' ), {
+			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.pay_for_order,
+			order,
+			...paymentData,
+		} );
+	}
+
 	initWooPay( userEmail, woopayUserSession ) {
 		if ( ! this.isWooPayRequesting ) {
 			this.isWooPayRequesting = true;
