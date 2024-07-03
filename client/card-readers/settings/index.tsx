@@ -5,7 +5,6 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
-import { Link } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
 
 /**
@@ -19,7 +18,6 @@ import BusinessDetailsSection from './sections/business-details';
 import ContactsDetailsSection from './sections/contacts-details';
 import AddressDetailsSection from './sections/address-details';
 import BrandingDetailsSection from './sections/branding-details';
-import { getAdminUrl } from 'wcpay/utils';
 
 const ReadersSettingsDescription = (): JSX.Element => (
 	<>
