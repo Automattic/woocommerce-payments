@@ -160,7 +160,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return boolean
 	 */
 	public function has_subscription_product() {
-		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
 			return false;
 		}
 

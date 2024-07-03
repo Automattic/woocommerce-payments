@@ -294,22 +294,24 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		// If WooCommerce Deposits is active, we need to get the correct price for the product.
-		if ( class_exists( 'WC_Deposits_Product_Manager' ) && class_exists( 'WC_Deposits_Plans_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
-			// If is_deposit is null, we use the default deposit type for the product.
-			if ( is_null( $is_deposit ) ) {
-				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
-			}
-			if ( $is_deposit ) {
-				$deposit_type       = WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
-				$available_plan_ids = WC_Deposits_Plans_Manager::get_plan_ids_for_product( $product->get_id() );
-				// Default to first (default) plan if no plan is specified.
-				if ( 'plan' === $deposit_type && 0 === $deposit_plan_id && ! empty( $available_plan_ids ) ) {
-					$deposit_plan_id = $available_plan_ids[0];
+		if ( class_exists( 'WC_Deposits_Product_Manager' ) && class_exists( 'WC_Deposits_Plans_Manager' ) ) {
+			if ( WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
+				// If is_deposit is null, we use the default deposit type for the product.
+				if ( is_null( $is_deposit ) ) {
+					$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
 				}
+				if ( $is_deposit ) {
+					$deposit_type       = WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
+					$available_plan_ids = WC_Deposits_Plans_Manager::get_plan_ids_for_product( $product->get_id() );
+					// Default to first (default) plan if no plan is specified.
+					if ( 'plan' === $deposit_type && 0 === $deposit_plan_id && ! empty( $available_plan_ids ) ) {
+						$deposit_plan_id = $available_plan_ids[0];
+					}
 
-				// Ensure the selected plan is available for the product.
-				if ( 0 === $deposit_plan_id || in_array( $deposit_plan_id, $available_plan_ids, true ) ) {
-					$base_price = WC_Deposits_Product_Manager::get_deposit_amount( $product, $deposit_plan_id, 'display', $base_price );
+					// Ensure the selected plan is available for the product.
+					if ( 0 === $deposit_plan_id || in_array( $deposit_plan_id, $available_plan_ids, true ) ) {
+						$base_price = WC_Deposits_Product_Manager::get_deposit_amount( $product, $deposit_plan_id, 'display', $base_price );
+					}
 				}
 			}
 		}
