@@ -54,6 +54,8 @@ jQuery( ( $ ) => {
 	);
 
 	let wcPayECEError = [];
+	const defaultErrorMessage =
+		'There was an error getting the product information.';
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -288,8 +290,6 @@ jQuery( ( $ ) => {
 						return;
 					}
 
-					// TODO: This scenario.
-					// For PRBs wcPayECEError (paymentRequestError) is never re-assigned so it might be not working properly.
 					if ( wcPayECEError.length > 0 ) {
 						window.alert( wcPayECEError );
 						return;
@@ -406,7 +406,6 @@ jQuery( ( $ ) => {
 				.off( 'woocommerce_variation_has_changed' )
 				.on( 'woocommerce_variation_has_changed', () => {
 					wcpayECE.blockExpressCheckoutButton();
-					wcPayECEError = [];
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
@@ -447,31 +446,37 @@ jQuery( ( $ ) => {
 					'.qty',
 					debounce( () => {
 						wcpayECE.blockExpressCheckoutButton();
+						wcPayECEError = '';
 
 						$.when( wcpayECE.getSelectedProductData() )
-							.then( ( response ) => {
-								if ( response.error ) {
-									wcPayECEError = [ response.error ];
-									return; // TODO: This scenario.
-								}
+							.then(
+								( response ) => {
+									// In case the server returns an unexpected response
+									if ( typeof response !== 'object' ) {
+										wcPayECEError = defaultErrorMessage;
+									}
 
-								// TODO: Cache the `needs_shipping` value of the last response so
-								// we re-init only when necessary, that is when `needs_shipping` has changed.
-								if (
-									! wcpayECE.paymentAborted &&
-									getExpressCheckoutData( 'product' )
-										.needs_shipping ===
-										response.needs_shipping
-								) {
-									elements.update( {
-										amount: response.total.amount,
-									} );
-								} else {
-									wcpayECE.reInitExpressCheckoutElement(
-										response
-									);
+									if (
+										! wcpayECE.paymentAborted &&
+										getExpressCheckoutData( 'product' )
+											.needs_shipping ===
+											response.needs_shipping
+									) {
+										elements.update( {
+											amount: response.total.amount,
+										} );
+									} else {
+										wcpayECE.reInitExpressCheckoutElement(
+											response
+										);
+									}
+								},
+								( response ) => {
+									wcPayECEError =
+										response.responseJSON?.error ??
+										defaultErrorMessage;
 								}
-							} )
+							)
 							.always( function () {
 								wcpayECE.unblockExpressCheckoutButton();
 							} );
