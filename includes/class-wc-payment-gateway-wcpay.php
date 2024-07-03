@@ -1408,8 +1408,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$user = wp_get_current_user();
 		}
 
-		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$payment_information = $options['payment_information'] ?? null;
+
+		if ( $payment_information && $payment_information->get_customer_id() ) {
+			$customer_id = $payment_information->get_customer_id();
+		} else {
+			// Determine the customer making the payment, create one if we don't have one already.
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		}
 
 		if ( null === $customer_id ) {
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
@@ -1476,7 +1482,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
 		$customer_details_options   = [
-			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			'is_woopay'           => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			'payment_information' => $payment_information,
 		];
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 
