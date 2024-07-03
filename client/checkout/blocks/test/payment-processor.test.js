@@ -17,6 +17,7 @@ jest.mock( 'wcpay/checkout/blocks/utils', () => ( {
 } ) );
 jest.mock( '../hooks', () => ( {
 	usePaymentCompleteHandler: () => null,
+	usePaymentFailHandler: () => null,
 } ) );
 jest.mock( '@woocommerce/blocks-registry', () => ( {
 	getPaymentMethods: () => ( {

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Make the search box, and typed search term visible clearly on the 'Payments > Transactions' page, when there are too many existing search tags.

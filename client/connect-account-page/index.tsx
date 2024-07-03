@@ -56,12 +56,31 @@ const ConnectAccountPage: React.FC = () => {
 
 	const isCountrySupported = !! availableCountries[ country ];
 
+	const determineTrackingSource = () => {
+		const urlParams = new URLSearchParams( window.location.search );
+		const from = urlParams.get( 'from' ) || '';
+
+		// Determine where the user came from.
+		let source = 'wcadmin';
+		switch ( from ) {
+			case 'WCADMIN_PAYMENT_TASK':
+				source = 'wcadmin-payment-task';
+				break;
+			case 'WCADMIN_PAYMENT_SETTINGS':
+				source = 'wcadmin-settings-page';
+				break;
+		}
+
+		return source;
+	};
+
 	useEffect( () => {
 		recordEvent( 'page_view', {
 			path: 'payments_connect_v2',
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
+			source: determineTrackingSource(),
 		} );
 		// We only want to run this once.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -105,6 +124,8 @@ const ConnectAccountPage: React.FC = () => {
 				incentive_id: incentive.id,
 			} ),
 			sandbox_mode: sandboxMode,
+			path: 'payments_connect_v2',
+			source: determineTrackingSource(),
 		} );
 	};
 
