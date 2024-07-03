@@ -344,6 +344,12 @@
 		&__slider {
 			flex-grow: 1;
 		}
+
+		&__number-control {
+			&__suffix {
+				padding-inline: $gap-smaller;
+			}
+		}
 	}
 }
 

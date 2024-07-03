@@ -7,8 +7,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalNumberControl as NumberControl,
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-	__experimentalInputControlSuffixWrapper as InputControlSuffixWrapper,
 	SelectControl,
 	RadioControl,
 	Notice,
@@ -248,9 +246,9 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 								}
 							} }
 							suffix={
-								<InputControlSuffixWrapper>
+								<div className="payment-method-settings__border-radius__number-control__suffix">
 									px
-								</InputControlSuffixWrapper>
+								</div>
 							}
 						/>
 						<RangeControl
