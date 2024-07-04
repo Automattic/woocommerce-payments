@@ -7,6 +7,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 import {
 	INJECTED_STATE,
 	getConnectIframeInjectedState,
+	getPostMessageTimeout,
 	setConnectIframeInjectedState,
 } from 'wcpay/checkout/woopay/connect/connect-utils';
 
@@ -166,9 +167,36 @@ class WoopayConnect {
 	 * @return {Promise<*>} Resolves to the response from the WooPayConnectIframe.
 	 */
 	async sendMessageAndListenWith( messageObj, listenerCallback ) {
-		const promise = new Promise( ( resolve ) => {
-			this.listeners[ listenerCallback ] = resolve;
+		const promise = new Promise( ( resolve, reject ) => {
+			let isRejected = false;
+
+			// Create a fail-safe timeout in case the WooPayConnectIframe does not respond.
+			const rejectTimeoutId = setTimeout( () => {
+				isRejected = true;
+
+				reject(
+					new Error(
+						'WooPayConnectIframe did not respond within the allotted time.'
+					)
+				);
+			}, getPostMessageTimeout() );
+
+			this.listeners[ listenerCallback ] = ( value ) => {
+				if ( isRejected ) {
+					return;
+				}
+
+				if ( rejectTimeoutId ) {
+					clearTimeout( rejectTimeoutId );
+				}
+
+				resolve( value );
+			};
 		} );
+
+		if ( typeof this.iframePostMessage?.then !== 'function' ) {
+			throw new Error( 'iframePostMessage is not set' );
+		}
 
 		const postMessage = await this.iframePostMessage;
 		postMessage( messageObj );
