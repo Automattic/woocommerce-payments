@@ -13,6 +13,7 @@ class WooPaySessionConnect extends WoopayConnect {
 			...this.listeners,
 			setRedirectSessionDataCallback: () => {},
 			setTempThirdPartyCookieCallback: () => {},
+			getIsWooPayReachableCallback: () => {},
 			getIsThirdPartyCookiesEnabledCallback: () => {},
 			setPreemptiveSessionDataCallback: () => {},
 		};
@@ -157,6 +158,22 @@ class WooPaySessionConnect extends WoopayConnect {
 	}
 
 	/**
+	 * Checks if WooPay is reachable.
+	 *
+	 * @return {Promise<bool>} Resolves to true if WooPay is reachable.
+	 */
+	async isWooPayReachable() {
+		try {
+			return await this.sendMessageAndListenWith(
+				{ action: 'isWooPayReachable' },
+				'getIsWooPayReachableCallback'
+			);
+		} catch ( error ) {
+			return false;
+		}
+	}
+
+	/**
 	 * The callback function that is called when a message is received from the WooPayConnectIframe.
 	 *
 	 * @param {Object} data The data received from the WooPayConnectIframe.
@@ -180,6 +197,9 @@ class WooPaySessionConnect extends WoopayConnect {
 				this.listeners.getIsThirdPartyCookiesEnabledCallback(
 					data.value
 				);
+				break;
+			case 'get_is_reachable_success':
+				this.listeners.getIsWooPayReachableCallback( data.value );
 				break;
 			case 'set_preemptive_session_data_success':
 				this.listeners.setPreemptiveSessionDataCallback( data.value );

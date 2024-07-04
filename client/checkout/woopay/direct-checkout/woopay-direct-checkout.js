@@ -80,6 +80,15 @@ class WooPayDirectCheckout {
 	}
 
 	/**
+	 * Checks if WooPay is reachable.
+	 *
+	 * @return {Promise<bool>} Resolves to true if WooPay is reachable.
+	 */
+	static async isWooPayReachable() {
+		return this.getSessionConnect().isWooPayReachable();
+	}
+
+	/**
 	 * Checks if the user is logged in.
 	 *
 	 * @return {Promise<bool>} Resolves to true if the user is logged in.
@@ -365,6 +374,13 @@ class WooPayDirectCheckout {
 					if ( userIsLoggedIn ) {
 						woopayRedirectUrl = await this.getWooPayCheckoutUrl();
 					} else {
+						// Ensure WooPay is reachable before redirecting.
+						if ( ! ( await this.isWooPayReachable() ) ) {
+							throw new Error(
+								'WooPay is currently not available.'
+							);
+						}
+
 						woopayRedirectUrl = await this.getWooPayMinimumSessionUrl();
 					}
 
