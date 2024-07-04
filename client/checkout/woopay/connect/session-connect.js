@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import WoopayConnect from 'wcpay/checkout/woopay/connect/woopay-connect';
+import { getPostMessageTimeout } from 'wcpay/checkout/woopay/connect/connect-utils';
 
 class WooPaySessionConnect extends WoopayConnect {
 	constructor() {
@@ -32,28 +33,93 @@ class WooPaySessionConnect extends WoopayConnect {
 			removeTemporaryIframe,
 		} = this.injectTemporaryWooPayConnectIframe();
 
-		const isThirdPartyCookieSetPromise = new Promise( ( resolve ) => {
-			this.listeners.setTempThirdPartyCookieCallback = resolve;
-		} );
+		const isThirdPartyCookieSetPromise = new Promise(
+			( resolve, reject ) => {
+				let isRejected = false;
+
+				// Create a fail-safe timeout in case the WooPayConnectIframe does not respond.
+				const rejectTimeoutId = setTimeout( () => {
+					isRejected = true;
+
+					reject(
+						new Error(
+							'WooPayConnectIframe did not respond within the allotted time.'
+						)
+					);
+				}, getPostMessageTimeout() );
+
+				this.listeners.setTempThirdPartyCookieCallback = ( value ) => {
+					if ( isRejected ) {
+						return;
+					}
+
+					if ( rejectTimeoutId ) {
+						clearTimeout( rejectTimeoutId );
+					}
+
+					resolve( value );
+				};
+			}
+		);
 
 		// This request causes a page reload after the cookie has been set.
 		const tempPostMessage = await resolvePostMessagePromise;
 		tempPostMessage( { action: 'setTempThirdPartyCookie' } );
 
-		if ( ! ( await isThirdPartyCookieSetPromise ) ) {
+		try {
+			if ( ! ( await isThirdPartyCookieSetPromise ) ) {
+				// Once we have the result, we remove the temporary iframe.
+				removeTemporaryIframe();
+				return false;
+			}
+		} catch ( error ) {
+			// Once we have the result, we remove the temporary iframe.
+			removeTemporaryIframe();
 			return false;
 		}
 
-		const isThirdPartyCookieEnabledPromise = new Promise( ( resolve ) => {
-			this.listeners.getIsThirdPartyCookiesEnabledCallback = resolve;
-		} );
+		const isThirdPartyCookieEnabledPromise = new Promise(
+			( resolve, reject ) => {
+				let isRejected = false;
+
+				// Create a fail-safe timeout in case the WooPayConnectIframe does not respond.
+				const rejectTimeoutId = setTimeout( () => {
+					isRejected = true;
+
+					reject(
+						new Error(
+							'WooPayConnectIframe did not respond within the allotted time.'
+						)
+					);
+				}, getPostMessageTimeout() );
+
+				this.listeners.getIsThirdPartyCookiesEnabledCallback = (
+					value
+				) => {
+					if ( isRejected ) {
+						return;
+					}
+
+					if ( rejectTimeoutId ) {
+						clearTimeout( rejectTimeoutId );
+					}
+
+					resolve( value );
+				};
+			}
+		);
 		tempPostMessage( { action: 'getIsThirdPartyCookiesEnabled' } );
-		const isThirdPartyCookieEnabled = await isThirdPartyCookieEnabledPromise;
 
-		// Once we have the result, we remove the temporary iframe.
-		removeTemporaryIframe();
+		try {
+			const isThirdPartyCookieEnabled = await isThirdPartyCookieEnabledPromise;
 
-		return isThirdPartyCookieEnabled;
+			return isThirdPartyCookieEnabled;
+		} catch ( error ) {
+			return false;
+		} finally {
+			// Once we have the result, we remove the temporary iframe.
+			removeTemporaryIframe();
+		}
 	}
 
 	/**
