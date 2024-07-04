@@ -6,6 +6,7 @@ import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
+import { setPostMessageTimeout } from 'wcpay/checkout/woopay/connect/connect-utils';
 
 /**
  * The WooPayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
@@ -103,6 +104,16 @@ class WooPayDirectCheckout {
 	 */
 	static async isWooPayThirdPartyCookiesEnabled() {
 		return this.getSessionConnect().isWooPayThirdPartyCookiesEnabled();
+	}
+
+	/**
+	 * Sets the length of time to wait for when a message is sent to WooPay through the iframe.
+	 */
+	static async initPostMessageTimeout() {
+		const postMessageTimeout = await this.getSessionConnect().getPostMessageTimeout();
+		if ( postMessageTimeout ) {
+			setPostMessageTimeout( postMessageTimeout );
+		}
 	}
 
 	/**

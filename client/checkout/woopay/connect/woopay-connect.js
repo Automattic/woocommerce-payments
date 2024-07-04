@@ -18,6 +18,7 @@ class WoopayConnect {
 		// The initial state of these listeners serve as a placeholder.
 		this.listeners = {
 			getIframePostMessageCallback: () => {},
+			getPostMessageTimeoutCallback: () => {},
 		};
 		this.removeMessageListener = this.attachMessageListener();
 		this.injectWooPayConnectIframe();
@@ -176,6 +177,22 @@ class WoopayConnect {
 	}
 
 	/**
+	 * Retrieves the configured postMessageTimeout from WooPay.
+	 *
+	 * @return {int|null} The postMessage timeout in milliseconds.
+	 */
+	async getPostMessageTimeout() {
+		try {
+			return await this.sendMessageAndListenWith(
+				{ action: 'getPostMessageTimeout' },
+				'getPostMessageTimeoutCallback'
+			);
+		} catch ( error ) {
+			return null;
+		}
+	}
+
+	/**
 	 * The callback function that is called when a message is received from the WooPayConnectIframe.
 	 *
 	 * @param {Object} data The data received from the WooPayConnectIframe.
@@ -184,6 +201,9 @@ class WoopayConnect {
 		switch ( data.action ) {
 			case 'get_iframe_post_message_success':
 				this.listeners.getIframePostMessageCallback( data.value );
+				break;
+			case 'get_post_message_timeout_success':
+				this.listeners.getPostMessageTimeoutCallback( data.value );
 				break;
 		}
 	}
