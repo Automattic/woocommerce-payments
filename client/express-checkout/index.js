@@ -53,7 +53,7 @@ jQuery( ( $ ) => {
 		}
 	);
 
-	let wcPayECEError = [];
+	let wcPayECEError = '';
 	const defaultErrorMessage = __(
 		'There was an error getting the product information.',
 		'woocommerce-payments'
@@ -292,7 +292,7 @@ jQuery( ( $ ) => {
 						return;
 					}
 
-					if ( wcPayECEError.length > 0 ) {
+					if ( wcPayECEError ) {
 						window.alert( wcPayECEError );
 						return;
 					}
