@@ -126,26 +126,34 @@ class WooPaySessionConnect extends WoopayConnect {
 	 * Sends session data to WooPay.
 	 *
 	 * @param {Object} data The data to send to WooPay.
-	 * @return {Promise<*>} Resolves to the WooPay session response.
+	 * @return {Promise<Object|null>} Resolves to the WooPay session response.
 	 */
 	async sendRedirectSessionDataToWooPay( data ) {
-		return await super.sendMessageAndListenWith(
-			{ action: 'setRedirectSessionData', value: data },
-			'setRedirectSessionDataCallback'
-		);
+		try {
+			return await super.sendMessageAndListenWith(
+				{ action: 'setRedirectSessionData', value: data },
+				'setRedirectSessionDataCallback'
+			);
+		} catch ( error ) {
+			return null;
+		}
 	}
 
 	/**
 	 * Sends session data to WooPay, preemptively.
 	 *
 	 * @param {Object} data The data to send to WooPay.
-	 * @return {Promise<*>} Resolves to the WooPay session response.
+	 * @return {Promise<Object|null>} Resolves to the WooPay session response.
 	 */
 	async setPreemptiveSessionData( data ) {
-		return await super.sendMessageAndListenWith(
-			{ action: 'setPreemptiveSessionData', value: data },
-			'setPreemptiveSessionDataCallback'
-		);
+		try {
+			return await super.sendMessageAndListenWith(
+				{ action: 'setPreemptiveSessionData', value: data },
+				'setPreemptiveSessionDataCallback'
+			);
+		} catch ( error ) {
+			return null;
+		}
 	}
 
 	/**
