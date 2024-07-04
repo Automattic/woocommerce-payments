@@ -87,6 +87,10 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
+		add_action( 'template_redirect', [ $this, 'set_session' ] );
+		add_action( 'template_redirect', [ $this, 'handle_express_checkout_redirect' ] );
+		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
 
@@ -341,5 +345,60 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		];
 
 		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayECEPayForOrderParams', $data );
+	}
+
+	/**
+	 * Sets the WC customer session if one is not set.
+	 * This is needed so nonces can be verified by AJAX Request.
+	 *
+	 * @return void
+	 */
+	public function set_session() {
+		// Don't set session cookies on product pages to allow for caching when express checkout
+		// buttons are disabled. But keep cookies if there is already an active WC session in place.
+		if (
+			! ( $this->express_checkout_helper->is_product() && $this->express_checkout_helper->should_show_express_checkout_button() )
+			|| ( isset( WC()->session ) && WC()->session->has_session() )
+		) {
+			return;
+		}
+
+		WC()->session->set_customer_session_cookie( true );
+	}
+
+	/**
+	 * Handles express checkout redirect when the redirect dialog "Continue" button is clicked.
+	 */
+	public function handle_express_checkout_redirect() {
+		if (
+			! empty( $_GET['wcpay_express_checkout_redirect_url'] )
+			&& ! empty( $_GET['_wpnonce'] )
+			&& wp_verify_nonce( $_GET['_wpnonce'], 'wcpay-set-redirect-url' ) // @codingStandardsIgnoreLine
+		) {
+			$url = rawurldecode( esc_url_raw( wp_unslash( $_GET['wcpay_express_checkout_redirect_url'] ) ) );
+			// Sets a redirect URL cookie for 10 minutes, which we will redirect to after authentication.
+			// Users will have a 10 minute timeout to login/create account, otherwise redirect URL expires.
+			wc_setcookie( 'wcpay_express_checkout_redirect_url', $url, time() + MINUTE_IN_SECONDS * 10 );
+			// Redirects to "my-account" page.
+			wp_safe_redirect( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ) );
+		}
+	}
+
+	/**
+	 * Returns the login redirect URL.
+	 *
+	 * @param string $redirect Default redirect URL.
+	 *
+	 * @return string Redirect URL.
+	 */
+	public function get_login_redirect_url( $redirect ) {
+		$url = esc_url_raw( wp_unslash( $_COOKIE['wcpay_express_checkout_redirect_url'] ?? '' ) );
+
+		if ( empty( $url ) ) {
+			return $redirect;
+		}
+		wc_setcookie( 'wcpay_express_checkout_redirect_url', '' );
+
+		return $url;
 	}
 }
