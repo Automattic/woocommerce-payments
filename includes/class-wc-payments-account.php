@@ -803,13 +803,18 @@ class WC_Payments_Account {
 
 		// Prevent access to onboarding flow if the server is not connected. Redirect back to the connect page with an error message.
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			$referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
+			$referer = sanitize_text_field( wp_get_raw_referer() );
 
 			// Track unsuccessful Jetpack connection.
 			if ( strpos( $referer, 'wordpress.com' ) ) {
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE,
-					[ 'mode' => WC_Payments::mode()->is_test() ? 'test' : 'live' ]
+					[
+						'mode'   => WC_Payments::mode()->is_test() ? 'test' : 'live',
+						// Capture the user source of the connection attempt originating page.
+						// This is the same source that is used to track the onboarding flow origin.
+						'source' => isset( $_GET['source'] ) ? sanitize_text_field( wp_unslash( $_GET['source'] ) ) : '',
+					]
 				);
 			}
 
@@ -818,7 +823,8 @@ class WC_Payments_Account {
 				/* translators: %s: WooPayments */
 					__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
 					'WooPayments'
-				)
+				),
+				'WCPAY_ONBOARDING_FLOW'
 			);
 			return true;
 		}
@@ -938,7 +944,7 @@ class WC_Payments_Account {
 					}
 
 					if ( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE === $connect_page_source ) {
-						$this->redirect_service->redirect_to_connect_page();
+						$this->redirect_service->redirect_to_connect_page( null, 'WCADMIN_PAYMENT_SETTINGS' );
 					} else {
 						$this->redirect_to_onboarding_page_or_start_server_connection( $connect_page_source );
 					}
@@ -992,6 +998,12 @@ class WC_Payments_Account {
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
+				$test_mode        = isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) );
+				$event_properties = [
+					'incentive' => $incentive,
+					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
+				];
+
 				if ( ! $this->payments_api_client->is_server_connected() ) {
 					// Track unsuccessful Jetpack connection.
 					$this->tracks_event(
@@ -1011,11 +1023,6 @@ class WC_Payments_Account {
 				}
 
 				// Track successful Jetpack connection.
-				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
-				$event_properties = [
-					'incentive' => $incentive,
-					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
-				];
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS,
 					$event_properties
@@ -1081,15 +1088,26 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Get Stripe connect url
+	 * Get connect url.
 	 *
 	 * @see WC_Payments_Account::get_onboarding_return_url(). The $wcpay_connect_from param relies on this function returning the corresponding URL.
-	 * @param string $wcpay_connect_from Optional. A page ID representing where the user should be returned to after connecting. Default is '1' - redirects back to the WC Payments overview page.
 	 *
-	 * @return string Stripe account login url.
+	 * @param string $wcpay_connect_from Optional. A page ID representing where the user should be returned to after connecting.
+	 *                                   Default is '1' - redirects back to the WooPayments overview page.
+	 *
+	 * @return string Connect URL.
 	 */
 	public static function get_connect_url( $wcpay_connect_from = '1' ) {
-		return wp_nonce_url( add_query_arg( [ 'wcpay-connect' => $wcpay_connect_from ], admin_url( 'admin.php' ) ), 'wcpay-connect' );
+		$url_params = [
+			'wcpay-connect' => $wcpay_connect_from,
+		];
+
+		// Maintain the `from` param from the request URL, if present.
+		if ( isset( $_GET['from'] ) ) {
+			$url_params['from'] = sanitize_text_field( wp_unslash( $_GET['from'] ) );
+		}
+
+		return wp_nonce_url( add_query_arg( $url_params, admin_url( 'admin.php' ) ), 'wcpay-connect' );
 	}
 
 	/**
