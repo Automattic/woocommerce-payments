@@ -119,27 +119,42 @@ export const getErrorMessageFromNotice = ( notice: string ) => {
 	return div.firstChild ? div.firstChild.textContent : '';
 };
 
+type ExpressPaymentType =
+	| 'apple_pay'
+	| 'google_pay'
+	| 'amazon_pay'
+	| 'paypal'
+	| 'link';
+
 /**
  * Displays a `confirm` dialog which leads to a redirect.
  *
- * @param paymentRequestType Can be either apple_pay, google_pay or payment_request_api.
+ * @param expressPaymentType Can be either 'apple_pay', 'google_pay', 'amazon_pay', 'paypal' or 'link'.
  */
-export const displayLoginConfirmation = ( paymentRequestType: string ) => {
+export const displayLoginConfirmation = (
+	expressPaymentType: ExpressPaymentType
+) => {
 	const loginConfirmation = getExpressCheckoutData( 'login_confirmation' );
 
 	if ( ! loginConfirmation ) {
 		return;
 	}
 
-	let message = loginConfirmation.message;
+	const paymentTypesMap = {
+		apple_pay: 'Apple Pay',
+		google_pay: 'Google Pay',
+		amazon_pay: 'Amazon Pay',
+		paypal: 'PayPal',
+		link: 'Link',
+	};
+	let message =
+		'To complete your transaction with **the selected payment method**, you must log in or create an account with our site.';
 
-	// Replace dialog text with specific payment request type "Apple Pay" or "Google Pay".
-	if ( paymentRequestType !== 'payment_request_api' ) {
-		message = message.replace(
-			/\*\*.*?\*\*/,
-			paymentRequestType === 'apple_pay' ? 'Apple Pay' : 'Google Pay'
-		);
-	}
+	// Replace dialog text with specific express checkout type.
+	message = message.replace(
+		/\*\*.*?\*\*/,
+		paymentTypesMap[ expressPaymentType ]
+	);
 
 	// Remove asterisks from string.
 	message = message.replace( /\*\*/g, '' );
