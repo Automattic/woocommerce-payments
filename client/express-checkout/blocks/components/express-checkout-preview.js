@@ -45,6 +45,11 @@ export const ExpressCheckoutPreviewComponent = ( {
 
 	const applePayType = buttonType === 'default' ? 'plain' : buttonType;
 
+	let shouldOnlyShowApplePay = false;
+	if ( window.ApplePaySession && window.ApplePaySession.canMakePayments() ) {
+		shouldOnlyShowApplePay = true;
+	}
+
 	const buttonOptions = {
 		buttonHeight: Math.min( Math.max( height, 40 ), 55 ),
 		buttonTheme: {
@@ -57,8 +62,8 @@ export const ExpressCheckoutPreviewComponent = ( {
 		},
 		paymentMethods: {
 			link: 'never',
-			googlePay: 'always',
-			applePay: 'always',
+			googlePay: shouldOnlyShowApplePay ? 'never' : 'always',
+			applePay: shouldOnlyShowApplePay ? 'always' : 'never',
 		},
 		layout: { maxColumns: 1, overflow: 'never' },
 	};
