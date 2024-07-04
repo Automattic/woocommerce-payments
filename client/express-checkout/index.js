@@ -54,8 +54,10 @@ jQuery( ( $ ) => {
 	);
 
 	let wcPayECEError = [];
-	const defaultErrorMessage =
-		'There was an error getting the product information.';
+	const defaultErrorMessage = __(
+		'There was an error getting the product information.',
+		'woocommerce-payments'
+	);
 
 	/**
 	 * Object to handle Stripe payment forms.
