@@ -13,6 +13,7 @@ import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
+import { __ } from '@wordpress/i18n';
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
@@ -111,7 +112,11 @@ export const onConfirmHandler = async (
 	} catch ( e ) {
 		return abortPayment(
 			event,
-			e.message ?? 'There was a problem creating the order'
+			e.message ??
+				__(
+					'There was a problem processing the order.',
+					'woocommerce-payments'
+				)
 		);
 	}
 };
