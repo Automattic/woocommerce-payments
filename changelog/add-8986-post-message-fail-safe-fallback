@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Ensure shoppers can still checkout, even when WooPay is slow or unavailable.
