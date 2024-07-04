@@ -1086,6 +1086,14 @@ class WC_Payments_API_Client {
 			);
 		}
 
+		if ( ! preg_match( '/^\w+$/', $customer_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
 		$this->request(
 			$customer_data,
 			self::CUSTOMERS_API . '/' . $customer_id,
@@ -1129,6 +1137,14 @@ class WC_Payments_API_Client {
 			);
 		}
 
+		if ( ! preg_match( '/^\w+$/', $product_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
 		return $this->request(
 			$product_data,
 			self::PRODUCTS_API . '/' . $product_id,
@@ -1149,6 +1165,14 @@ class WC_Payments_API_Client {
 			throw new API_Exception(
 				__( 'Price ID is required', 'woocommerce-payments' ),
 				'wcpay_mandatory_price_id_missing',
+				400
+			);
+		}
+
+		if ( ! preg_match( '/^\w+$/', $price_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
 				400
 			);
 		}
@@ -1857,6 +1881,14 @@ class WC_Payments_API_Client {
 	 * @return array The response object.
 	 */
 	public function get_latest_fraud_outcome( $id ) {
+		if ( ! preg_match( '/^\w+$/', $id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
 		$response = $this->request(
 			[],
 			self::FRAUD_OUTCOMES_API . '/order_id/' . $id,
@@ -2638,6 +2670,14 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If an error occurs.
 	 */
 	public function get_currency_minimum_recurring_amount( $currency ) {
+		if ( ! preg_match( '/^\w+$/', $currency ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
 		return (int) $this->request(
 			[],
 			self::MINIMUM_RECURRING_AMOUNT_API . '/' . $currency,
@@ -2676,8 +2716,17 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $payment_intent_id id of requested transaction.
 	 * @return array authorization object.
+	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
 	public function get_authorization( string $payment_intent_id ) {
+		if ( ! preg_match( '/^\w+$/', $payment_intent_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
 		return $this->request( [], self::AUTHORIZATIONS_API . '/' . $payment_intent_id, self::GET );
 	}
 
