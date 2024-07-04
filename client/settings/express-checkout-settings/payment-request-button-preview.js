@@ -197,27 +197,29 @@ const PaymentRequestButtonPreview = () => {
 			</ButtonPreviewWrapper>
 		);
 	} else if ( isPaymentRequestEnabled && ! isLoading && paymentRequest ) {
-		<ButtonPreviewWrapper theme={ theme }>
-			<PaymentRequestButtonElement
-				key={ `${ buttonType }-${ theme }-${ size }` }
-				onClick={ ( e ) => {
-					e.preventDefault();
-				} }
-				options={ {
-					paymentRequest: paymentRequest,
-					style: {
-						paymentRequestButton: {
-							type: buttonType,
-							theme: theme,
-							height: `${
-								buttonSizeToPxMap[ size ] ||
-								buttonSizeToPxMap.medium
-							}px`,
+		return (
+			<ButtonPreviewWrapper theme={ theme }>
+				<PaymentRequestButtonElement
+					key={ `${ buttonType }-${ theme }-${ size }` }
+					onClick={ ( e ) => {
+						e.preventDefault();
+					} }
+					options={ {
+						paymentRequest: paymentRequest,
+						style: {
+							paymentRequestButton: {
+								type: buttonType,
+								theme: theme,
+								height: `${
+									buttonSizeToPxMap[ size ] ||
+									buttonSizeToPxMap.medium
+								}px`,
+							},
 						},
-					},
-				} }
-			/>
-		</ButtonPreviewWrapper>;
+					} }
+				/>
+			</ButtonPreviewWrapper>
+		);
 	}
 
 	return <PreviewRequirementsNotice />;
