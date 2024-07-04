@@ -415,11 +415,11 @@ jQuery( ( $ ) => {
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
 							/**
-							 * If the customer aborted the payment request,
-							 * we need to re init the payment request button to ensure the shipping
-							 * options are refetched. If the customer didn't abort the payment request,
+							 * If the customer aborted the express checkout,
+							 * we need to re init the express checkout button to ensure the shipping
+							 * options are refetched. If the customer didn't abort the express checkout,
 							 * and the product's shipping status is consistent,
-							 * we can simply update the payment request button with the new total and display items.
+							 * we can simply update the express checkout button with the new total and display items.
 							 */
 							if (
 								! wcpayECE.paymentAborted &&
@@ -593,7 +593,7 @@ jQuery( ( $ ) => {
 				} );
 			}
 
-			// After initializing a new payment request, we need to reset the paymentAborted flag.
+			// After initializing a new express checkout button, we need to reset the paymentAborted flag.
 			wcpayECE.paymentAborted = false;
 		},
 	};
