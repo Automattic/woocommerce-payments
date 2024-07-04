@@ -63,6 +63,10 @@ class WooPaySessionConnect extends WoopayConnect {
 			}
 		);
 
+		if ( typeof resolvePostMessagePromise?.then !== 'function' ) {
+			return false;
+		}
+
 		// This request causes a page reload after the cookie has been set.
 		const tempPostMessage = await resolvePostMessagePromise;
 		tempPostMessage( { action: 'setTempThirdPartyCookie' } );
