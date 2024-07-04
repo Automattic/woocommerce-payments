@@ -82,8 +82,6 @@ export const ExpressCheckoutPreviewComponent = ( {
 						options={ buttonOptions }
 						onClick={ () => {} }
 						onReady={ onReady }
-						// onConfirm={ onConfirm }
-						// onCancel={ onCancel }
 					/>
 				</Elements>
 			</div>
