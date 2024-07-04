@@ -85,11 +85,18 @@ describe( 'PaymentRequestButtonPreview', () => {
 		render( <PaymentRequestButtonPreview /> );
 
 		expect(
+			await screen.findByText( 'Stripe button mock' )
+		).toBeInTheDocument();
+		expect(
 			await screen.findByText(
 				'To preview the Google Pay button, view this page in the Google Chrome browser.'
 			)
 		).toBeInTheDocument();
-		expect( screen.queryByText( /Safari/ ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( /Safari/, {
+				ignore: '.a11y-speak-region',
+			} )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'displays Safari Apple Pay when page is in Google Chrome', async () => {
@@ -98,11 +105,18 @@ describe( 'PaymentRequestButtonPreview', () => {
 		render( <PaymentRequestButtonPreview /> );
 
 		expect(
+			await screen.findByText( 'Stripe button mock' )
+		).toBeInTheDocument();
+		expect(
 			await screen.findByText(
 				'To preview the Apple Pay button, view this page in the Safari browser.'
 			)
 		).toBeInTheDocument();
-		expect( screen.queryByText( /Chrome/ ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( /Chrome/, {
+				ignore: '.a11y-speak-region',
+			} )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'does not display anything if stripe is falsy', () => {
