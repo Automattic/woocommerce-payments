@@ -32,7 +32,7 @@ jQuery( ( $ ) => {
 	}
 
 	const publishableKey = wcpayExpressCheckoutParams.stripe.publishableKey;
-	const quantityInoutSelector = '.quantity .qty[type=number]';
+	const quantityInputSelector = '.quantity .qty[type=number]';
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -163,7 +163,7 @@ jQuery( ( $ ) => {
 
 			const data = {
 				product_id: productId,
-				qty: $( quantityInoutSelector ).val(),
+				qty: $( quantityInputSelector ).val(),
 				attributes: $( '.variations_form' ).length
 					? wcpayECE.getAttributes().data
 					: [],
@@ -381,7 +381,7 @@ jQuery( ( $ ) => {
 
 			const data = {
 				product_id: productId,
-				qty: $( quantityInoutSelector ).val(),
+				qty: $( quantityInputSelector ).val(),
 				attributes: $( '.variations_form' ).length
 					? wcpayECE.getAttributes().data
 					: [],
