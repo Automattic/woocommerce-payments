@@ -39,7 +39,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 */
 	public function init() {
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
-		add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
+		add_action( 'template_redirect', [ $this, 'handle_express_checkout_redirect' ] );
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
@@ -331,12 +331,12 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 * @return string Redirect URL.
 	 */
 	public function get_login_redirect_url( $redirect ) {
-		$url = esc_url_raw( wp_unslash( $_COOKIE['wcpay_payment_request_redirect_url'] ?? '' ) );
+		$url = esc_url_raw( wp_unslash( $_COOKIE['wcpay_express_checkout_redirect_url'] ?? '' ) );
 
 		if ( empty( $url ) ) {
 			return $redirect;
 		}
-		wc_setcookie( 'wcpay_payment_request_redirect_url', '' );
+		wc_setcookie( 'wcpay_express_checkout_redirect_url', '' );
 
 		return $url;
 	}
@@ -562,18 +562,18 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Handles payment request redirect when the redirect dialog "Continue" button is clicked.
+	 * Handles express checkout redirect when the redirect dialog "Continue" button is clicked.
 	 */
-	public function handle_payment_request_redirect() {
+	public function handle_express_checkout_redirect() {
 		if (
-			! empty( $_GET['wcpay_payment_request_redirect_url'] )
+			! empty( $_GET['wcpay_express_checkout_redirect_url'] )
 			&& ! empty( $_GET['_wpnonce'] )
 			&& wp_verify_nonce( $_GET['_wpnonce'], 'wcpay-set-redirect-url' ) // @codingStandardsIgnoreLine
 		) {
-			$url = rawurldecode( esc_url_raw( wp_unslash( $_GET['wcpay_payment_request_redirect_url'] ) ) );
+			$url = rawurldecode( esc_url_raw( wp_unslash( $_GET['wcpay_express_checkout_redirect_url'] ) ) );
 			// Sets a redirect URL cookie for 10 minutes, which we will redirect to after authentication.
 			// Users will have a 10 minute timeout to login/create account, otherwise redirect URL expires.
-			wc_setcookie( 'wcpay_payment_request_redirect_url', $url, time() + MINUTE_IN_SECONDS * 10 );
+			wc_setcookie( 'wcpay_express_checkout_redirect_url', $url, time() + MINUTE_IN_SECONDS * 10 );
 			// Redirects to "my-account" page.
 			wp_safe_redirect( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ) );
 		}

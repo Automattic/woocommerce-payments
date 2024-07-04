@@ -124,8 +124,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		$message      = __( 'To complete your transaction with **the selected payment method**, you must log in or create an account with our site.', 'woocommerce-payments' );
 		$redirect_url = add_query_arg(
 			[
-				'_wpnonce'                           => wp_create_nonce( 'wcpay-set-redirect-url' ),
-				'wcpay_payment_request_redirect_url' => rawurlencode( home_url( add_query_arg( [] ) ) ),
+				'_wpnonce'                            => wp_create_nonce( 'wcpay-set-redirect-url' ),
+				'wcpay_express_checkout_redirect_url' => rawurlencode( home_url( add_query_arg( [] ) ) ),
 				// Current URL to redirect to after login.
 			],
 			home_url()
