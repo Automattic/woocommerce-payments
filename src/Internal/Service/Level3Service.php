@@ -112,7 +112,7 @@ class Level3Service {
 			$level3_data['shipping_from_zip'] = $store_postcode;
 		}
 
-		return $level3_data;
+		return apply_filters( 'wcpay_payment_request_level3_data', $level3_data, $order );
 	}
 
 	/**
