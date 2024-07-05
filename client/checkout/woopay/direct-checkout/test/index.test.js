@@ -22,6 +22,7 @@ jest.mock(
 	() => ( {
 		init: jest.fn(),
 		isWooPayThirdPartyCookiesEnabled: jest.fn(),
+		initPostMessageTimeout: jest.fn(),
 		getCheckoutButtonElements: jest.fn(),
 		isUserLoggedIn: jest.fn(),
 		maybePrefetchEncryptedSessionData: jest.fn(),
