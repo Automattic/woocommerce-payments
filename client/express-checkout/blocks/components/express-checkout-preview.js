@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Elements, ExpressCheckoutElement } from '@stripe/react-stripe-js';
 import { __ } from '@wordpress/i18n';
 
@@ -43,10 +43,11 @@ export const ExpressCheckoutPreviewComponent = ( {
 
 	const type = buttonType === 'default' ? 'plain' : buttonType;
 
-	let shouldOnlyShowApplePay = false;
-	if ( window.ApplePaySession && window.ApplePaySession.canMakePayments() ) {
-		shouldOnlyShowApplePay = true;
-	}
+	const shouldOnlyShowApplePay = useMemo(
+		() =>
+			window.ApplePaySession && window.ApplePaySession.canMakePayments(),
+		[]
+	);
 
 	const buttonOptions = {
 		buttonHeight: Math.min( Math.max( height, 40 ), 55 ),
