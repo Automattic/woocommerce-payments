@@ -171,53 +171,58 @@ const PaymentRequestButtonPreview = () => {
 		);
 	}
 
-	if ( isWooPayEnabled ) {
-		return (
-			<ButtonPreviewWrapper theme={ theme }>
-				<WooPayButtonPreview
-					size={ size }
-					buttonType={ buttonType }
-					theme={ theme }
-				/>
-			</ButtonPreviewWrapper>
-		);
-	} else if ( window.location.protocol !== 'https:' ) {
-		return <PreviewRequirementsNotice />;
-	} else if ( isStripeEceEnabled ) {
-		return (
-			<ButtonPreviewWrapper theme={ theme }>
-				<ExpressCheckoutPreviewComponent
-					stripe={ stripe }
-					buttonType={ buttonType }
-					theme={ theme }
-					height={
-						buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium
-					}
-				/>
-			</ButtonPreviewWrapper>
-		);
-	} else if ( isPaymentRequestEnabled && ! isLoading && paymentRequest ) {
-		return (
-			<ButtonPreviewWrapper theme={ theme }>
-				<PaymentRequestButtonElement
-					key={ `${ buttonType }-${ theme }-${ size }` }
-					onClick={ ( e ) => {
-						e.preventDefault();
-					} }
-					options={ {
-						paymentRequest: paymentRequest,
-						style: {
-							paymentRequestButton: {
-								type: buttonType,
-								theme: theme,
-								height: `${
-									buttonSizeToPxMap[ size ] ||
-									buttonSizeToPxMap.medium
-								}px`,
-							},
+	const woopayPreview = isWooPayEnabled ? (
+		<WooPayButtonPreview
+			size={ size }
+			buttonType={ buttonType }
+			theme={ theme }
+		/>
+	) : null;
+
+	const expressCheckoutButtonPreview =
+		isPaymentRequestEnabled && isStripeEceEnabled ? (
+			<ExpressCheckoutPreviewComponent
+				stripe={ stripe }
+				buttonType={ buttonType }
+				theme={ theme }
+				height={ buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium }
+			/>
+		) : null;
+
+	const prbButtonPreview =
+		isPaymentRequestEnabled && paymentRequest && ! isLoading ? (
+			<PaymentRequestButtonElement
+				key={ `${ buttonType }-${ theme }-${ size }` }
+				onClick={ ( e ) => {
+					e.preventDefault();
+				} }
+				options={ {
+					paymentRequest: paymentRequest,
+					style: {
+						paymentRequestButton: {
+							type: buttonType,
+							theme: theme,
+							height: `${
+								buttonSizeToPxMap[ size ] ||
+								buttonSizeToPxMap.medium
+							}px`,
 						},
-					} }
-				/>
+					},
+				} }
+			/>
+		) : null;
+
+	if (
+		woopayPreview ||
+		( window.location.protocol === 'https:' &&
+			expressCheckoutButtonPreview ) ||
+		( window.location.protocol === 'https:' && prbButtonPreview )
+	) {
+		return (
+			<ButtonPreviewWrapper theme={ theme }>
+				{ woopayPreview }
+				{ /* We never want to show both ECE and PRB previews at the same time. */ }
+				{ expressCheckoutButtonPreview || prbButtonPreview }
 			</ButtonPreviewWrapper>
 		);
 	}
