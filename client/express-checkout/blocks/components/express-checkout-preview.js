@@ -41,9 +41,7 @@ export const ExpressCheckoutPreviewComponent = ( {
 		}
 	};
 
-	const googlePayType = buttonType === 'default' ? 'plain' : buttonType;
-
-	const applePayType = buttonType === 'default' ? 'plain' : buttonType;
+	const type = buttonType === 'default' ? 'plain' : buttonType;
 
 	let shouldOnlyShowApplePay = false;
 	if ( window.ApplePaySession && window.ApplePaySession.canMakePayments() ) {
@@ -57,8 +55,8 @@ export const ExpressCheckoutPreviewComponent = ( {
 			applePay: mapThemeConfigToButtonTheme( 'applePay', theme ),
 		},
 		buttonType: {
-			googlePay: googlePayType,
-			applePay: applePayType,
+			googlePay: type,
+			applePay: type,
 		},
 		paymentMethods: {
 			link: 'never',
