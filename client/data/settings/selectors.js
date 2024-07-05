@@ -4,6 +4,7 @@
  * Internal dependencies
  */
 import { ProtectionLevel } from '../../settings/fraud-protection/advanced-settings/constants';
+import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 const EMPTY_OBJ = {};
 const EMPTY_ARR = [];
@@ -185,7 +186,10 @@ export const getPaymentRequestButtonTheme = ( state ) => {
 };
 
 export const getPaymentRequestButtonBorderRadius = ( state ) => {
-	return getSettings( state )?.payment_request_button_border_radius ?? 4;
+	return (
+		getSettings( state )?.payment_request_button_border_radius ||
+		getDefaultBorderRadius()
+	);
 };
 
 export const getIsSavedCardsEnabled = ( state ) => {

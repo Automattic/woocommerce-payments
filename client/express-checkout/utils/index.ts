@@ -1,4 +1,8 @@
+/**
+ * Internal dependencies
+ */
 export * from './normalize';
+import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 /**
  * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
@@ -120,7 +124,11 @@ export const getExpressCheckoutButtonAppearance = () => {
 	const buttonSettings = getExpressCheckoutData( 'button' );
 
 	return {
-		variables: { borderRadius: `${ buttonSettings?.radius ?? 4 }px` },
+		variables: {
+			borderRadius: `${
+				buttonSettings?.radius ?? getDefaultBorderRadius()
+			}px`,
+		},
 	};
 };
 
