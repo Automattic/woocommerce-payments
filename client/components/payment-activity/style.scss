@@ -167,13 +167,12 @@
 	}
 
 	&__total-payment-volume {
-		border-left: none;
-		align-self: stretch;
-
+		// @todo this selector is not used, verify and remove
 		&__label {
 			@include label-styles;
 		}
 
+		// @todo this selector is not used, verify and remove
 		&__amount {
 			@include amount-styles;
 		}
