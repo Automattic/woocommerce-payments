@@ -161,6 +161,11 @@
 		}
 	}
 
+	// The first, large tile in the payment activity widget should not have a left border.
+	> .wcpay-payment-data-highlights__item {
+		border-left: none;
+	}
+
 	&__total-payment-volume {
 		border-left: none;
 		align-self: stretch;
