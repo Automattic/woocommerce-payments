@@ -7,6 +7,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 import {
 	INJECTED_STATE,
 	getConnectIframeInjectedState,
+	getPostMessageTimeout,
 	setConnectIframeInjectedState,
 } from 'wcpay/checkout/woopay/connect/connect-utils';
 
@@ -18,6 +19,7 @@ class WoopayConnect {
 		// The initial state of these listeners serve as a placeholder.
 		this.listeners = {
 			getIframePostMessageCallback: () => {},
+			getPostMessageTimeoutCallback: () => {},
 		};
 		this.removeMessageListener = this.attachMessageListener();
 		this.injectWooPayConnectIframe();
@@ -165,14 +167,57 @@ class WoopayConnect {
 	 * @return {Promise<*>} Resolves to the response from the WooPayConnectIframe.
 	 */
 	async sendMessageAndListenWith( messageObj, listenerCallback ) {
-		const promise = new Promise( ( resolve ) => {
-			this.listeners[ listenerCallback ] = resolve;
+		const promise = new Promise( ( resolve, reject ) => {
+			let isRejected = false;
+
+			// Create a fail-safe timeout in case the WooPayConnectIframe does not respond.
+			const rejectTimeoutId = setTimeout( () => {
+				isRejected = true;
+
+				reject(
+					new Error(
+						'WooPayConnectIframe did not respond within the allotted time.'
+					)
+				);
+			}, getPostMessageTimeout() );
+
+			this.listeners[ listenerCallback ] = ( value ) => {
+				if ( isRejected ) {
+					return;
+				}
+
+				if ( rejectTimeoutId ) {
+					clearTimeout( rejectTimeoutId );
+				}
+
+				resolve( value );
+			};
 		} );
+
+		if ( typeof this.iframePostMessage?.then !== 'function' ) {
+			throw new Error( 'iframePostMessage is not set' );
+		}
 
 		const postMessage = await this.iframePostMessage;
 		postMessage( messageObj );
 
 		return await promise;
+	}
+
+	/**
+	 * Retrieves the configured postMessageTimeout from WooPay.
+	 *
+	 * @return {int|null} The postMessage timeout in milliseconds.
+	 */
+	async getPostMessageTimeout() {
+		try {
+			return await this.sendMessageAndListenWith(
+				{ action: 'getPostMessageTimeout' },
+				'getPostMessageTimeoutCallback'
+			);
+		} catch ( error ) {
+			return null;
+		}
 	}
 
 	/**
@@ -184,6 +229,9 @@ class WoopayConnect {
 		switch ( data.action ) {
 			case 'get_iframe_post_message_success':
 				this.listeners.getIframePostMessageCallback( data.value );
+				break;
+			case 'get_post_message_timeout_success':
+				this.listeners.getPostMessageTimeoutCallback( data.value );
 				break;
 		}
 	}
