@@ -202,7 +202,7 @@ class WooPaySessionConnect extends WoopayConnect {
 					data.value
 				);
 				break;
-			case 'get_is_reachable_success':
+			case 'get_is_woopay_reachable_success':
 				this.listeners.getIsWooPayReachableCallback( data.value );
 				break;
 			case 'set_preemptive_session_data_success':
