@@ -190,6 +190,7 @@ const PaymentRequestButtonPreview = () => {
 				buttonType={ buttonType }
 				theme={ theme }
 				height={ buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium }
+				radius={ radius }
 			/>
 		) : null;
 

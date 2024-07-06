@@ -9,12 +9,14 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import InlineNotice from 'components/inline-notice';
+import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 export const ExpressCheckoutPreviewComponent = ( {
 	stripe,
 	buttonType,
 	theme,
 	height,
+	radius,
 } ) => {
 	const [ canRenderButtons, setCanRenderButtons ] = useState( true );
 
@@ -22,6 +24,11 @@ export const ExpressCheckoutPreviewComponent = ( {
 		mode: 'payment',
 		amount: 1000,
 		currency: 'usd',
+		appearance: {
+			variables: {
+				borderRadius: `${ radius ?? getDefaultBorderRadius() }px`,
+			},
+		},
 	};
 
 	const mapThemeConfigToButtonTheme = ( paymentMethod, buttonTheme ) => {
@@ -78,7 +85,7 @@ export const ExpressCheckoutPreviewComponent = ( {
 	if ( canRenderButtons ) {
 		return (
 			<div
-				key={ `${ buttonType }-${ height }-${ theme }` }
+				key={ `${ buttonType }-${ theme }` }
 				style={ { minHeight: `${ height }px`, width: '100%' } }
 			>
 				<Elements stripe={ stripe } options={ options }>
