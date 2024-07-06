@@ -217,17 +217,14 @@ const PaymentRequestButtonPreview = () => {
 			/>
 		) : null;
 
-	if (
-		woopayPreview ||
-		( window.location.protocol === 'https:' &&
-			expressCheckoutButtonPreview ) ||
-		( window.location.protocol === 'https:' && prbButtonPreview )
-	) {
+	if ( woopayPreview || expressCheckoutButtonPreview || prbButtonPreview ) {
 		return (
 			<ButtonPreviewWrapper theme={ theme }>
 				{ woopayPreview }
 				{ /* We never want to show both ECE and PRB previews at the same time. */ }
-				{ expressCheckoutButtonPreview || prbButtonPreview }
+				{ ( window.location.protocol === 'https:' &&
+					expressCheckoutButtonPreview ) ||
+					prbButtonPreview }
 			</ButtonPreviewWrapper>
 		);
 	}
