@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 7.9.0 - 2024-07-10 =
+= 7.9.0-test-3 - unreleased =
 * Add - Add a separate transient to save UPE appearance styles for the Add Payment Method standalone page. Correct regression that prevented proper styles calculation in the shortcode checkout.
 * Add - Add Pay for Order support in Express Checkout Elements.
 * Add - Add support for configuring button radius when ECE is enabled
