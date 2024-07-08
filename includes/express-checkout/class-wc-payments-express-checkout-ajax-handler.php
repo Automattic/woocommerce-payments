@@ -260,7 +260,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
 			}
 
-			$price = $this->get_product_price( $product, $is_deposit, $deposit_plan_id );
+			$price = $this->express_checkout_button_helper->get_product_price( $product, $is_deposit, $deposit_plan_id );
 			$total = $qty * $price + $addon_value;
 
 			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';
@@ -274,7 +274,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			];
 
 			$total_tax = 0;
-			foreach ( $this->get_taxes_like_cart( $product, $price ) as $tax ) {
+			foreach ( $this->express_checkout_button_helper->get_taxes_like_cart( $product, $price ) as $tax ) {
 				$total_tax += $tax;
 
 				$items[] = [
@@ -317,94 +317,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			}
 			wp_send_json( [ 'error' => wp_strip_all_tags( $e->getMessage() ) ], 500 );
 		}
-	}
-
-	/**
-	 * Gets the product total price.
-	 *
-	 * @param object $product WC_Product_* object.
-	 * @param bool   $is_deposit Whether customer is paying a deposit.
-	 * @param int    $deposit_plan_id The ID of the deposit plan.
-	 *
-	 * @return mixed Total price.
-	 *
-	 * @throws Invalid_Price_Exception Whenever a product has no price.
-	 */
-	public function get_product_price( $product, ?bool $is_deposit = null, int $deposit_plan_id = 0 ) {
-		// If prices should include tax, using tax inclusive price.
-		if ( $this->express_checkout_button_helper->cart_prices_include_tax() ) {
-			$base_price = wc_get_price_including_tax( $product );
-		} else {
-			$base_price = wc_get_price_excluding_tax( $product );
-		}
-
-		// If WooCommerce Deposits is active, we need to get the correct price for the product.
-		if ( class_exists( 'WC_Deposits_Product_Manager' ) && class_exists( 'WC_Deposits_Plans_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
-			// If is_deposit is null, we use the default deposit type for the product.
-			if ( is_null( $is_deposit ) ) {
-				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
-			}
-			if ( $is_deposit ) {
-				$deposit_type       = WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
-				$available_plan_ids = WC_Deposits_Plans_Manager::get_plan_ids_for_product( $product->get_id() );
-				// Default to first (default) plan if no plan is specified.
-				if ( 'plan' === $deposit_type && 0 === $deposit_plan_id && ! empty( $available_plan_ids ) ) {
-					$deposit_plan_id = $available_plan_ids[0];
-				}
-
-				// Ensure the selected plan is available for the product.
-				if ( 0 === $deposit_plan_id || in_array( $deposit_plan_id, $available_plan_ids, true ) ) {
-					$base_price = WC_Deposits_Product_Manager::get_deposit_amount( $product, $deposit_plan_id, 'display', $base_price );
-				}
-			}
-		}
-
-		// Add subscription sign-up fees to product price.
-		$sign_up_fee        = 0;
-		$subscription_types = [
-			'subscription',
-			'subscription_variation',
-		];
-		if ( in_array( $product->get_type(), $subscription_types, true ) && class_exists( 'WC_Subscriptions_Product' ) ) {
-			// When there is no sign-up fee, `get_sign_up_fee` falls back to an int 0.
-			$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
-		}
-
-		if ( ! is_numeric( $base_price ) || ! is_numeric( $sign_up_fee ) ) {
-			$error_message = sprintf(
-			// Translators: %d is the numeric ID of the product without a price.
-				__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
-				(int) $product->get_id()
-			);
-			throw new Invalid_Price_Exception(
-				esc_html( $error_message )
-			);
-		}
-
-		return $base_price + $sign_up_fee;
-	}
-
-	/**
-	 * Calculates taxes as displayed on cart, based on a product and a particular price.
-	 *
-	 * @param WC_Product $product The product, for retrieval of tax classes.
-	 * @param float      $price The price, which to calculate taxes for.
-	 *
-	 * @return array              An array of final taxes.
-	 */
-	private function get_taxes_like_cart( $product, $price ) {
-		if ( ! wc_tax_enabled() || $this->express_checkout_button_helper->cart_prices_include_tax() ) {
-			// Only proceed when taxes are enabled, but not included.
-			return [];
-		}
-
-		// Follows the way `WC_Cart_Totals::get_item_tax_rates()` works.
-		$tax_class = $product->get_tax_class();
-		$rates     = WC_Tax::get_rates( $tax_class );
-		// No cart item, `woocommerce_cart_totals_get_item_tax_rates` can't be applied here.
-
-		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
-		return WC_Tax::calc_tax( $price, $rates, false );
 	}
 
 	/**
