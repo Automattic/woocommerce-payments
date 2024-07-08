@@ -46,7 +46,14 @@ export const WoopayExpressCheckoutButton = ( {
 	const onClickCallbackRef = useRef( null );
 	const buttonRef = useRef( null );
 	const isLoadingRef = useRef( false );
-	const { type: buttonType, height, size, theme, context } = buttonSettings;
+	const {
+		type: buttonType,
+		height,
+		size,
+		theme,
+		context,
+		radius: borderRadius,
+	} = buttonSettings;
 	const [ isLoading, setIsLoading ] = useState( false );
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
@@ -344,7 +351,10 @@ export const WoopayExpressCheckoutButton = ( {
 			data-size={ size }
 			data-theme={ theme }
 			data-width-type={ buttonWidthType }
-			style={ { height: `${ height }px` } }
+			style={ {
+				height: `${ height }px`,
+				borderRadius: `${ borderRadius }px`,
+			} }
 			disabled={ isLoading }
 			type="button"
 		>

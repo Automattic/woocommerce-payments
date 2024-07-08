@@ -389,6 +389,21 @@ export const usePaymentRequestButtonTheme = () => {
 	return [ paymentRequestButtonTheme, updatePaymentRequestButtonTheme ];
 };
 
+export const usePaymentRequestButtonBorderRadius = () => {
+	const { updatePaymentRequestButtonBorderRadius } = useDispatch(
+		STORE_NAME
+	);
+
+	const paymentRequestButtonBorderRadius = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonBorderRadius()
+	);
+
+	return [
+		paymentRequestButtonBorderRadius,
+		updatePaymentRequestButtonBorderRadius,
+	];
+};
+
 export const useGetSavingError = () => {
 	return useSelect( ( select ) => select( STORE_NAME ).getSavingError(), [] );
 };
