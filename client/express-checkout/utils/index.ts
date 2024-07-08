@@ -152,8 +152,7 @@ export const displayLoginConfirmation = (
 		paypal: 'PayPal',
 		link: 'Link',
 	};
-	let message =
-		'To complete your transaction with **the selected payment method**, you must log in or create an account with our site.';
+	let message = loginConfirmation.message;
 
 	// Replace dialog text with specific express checkout type.
 	message = message.replace(
