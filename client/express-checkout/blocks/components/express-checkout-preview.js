@@ -65,7 +65,7 @@ export const ExpressCheckoutPreviewComponent = ( {
 			googlePay: 'always',
 			applePay: 'always',
 		},
-		layout: { maxColumns: 1, overflow: 'never' },
+		layout: { overflow: 'never' },
 	};
 
 	const onReady = ( { availablePaymentMethods } ) => {
