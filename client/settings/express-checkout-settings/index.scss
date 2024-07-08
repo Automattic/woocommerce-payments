@@ -335,6 +335,22 @@
 			background: #f0f0f0;
 		}
 	}
+
+	&__border-radius {
+		display: flex;
+		gap: $gap;
+		margin-block-end: 0;
+
+		&__slider {
+			flex-grow: 1;
+		}
+
+		&__number-control {
+			&__suffix {
+				padding-inline: $gap-smaller;
+			}
+		}
+	}
 }
 
 .components-notice {

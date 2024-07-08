@@ -22,6 +22,13 @@ export const getExpressCheckoutConfig = ( key ) => {
 	return null;
 };
 
+export const getDefaultBorderRadius = () => {
+	return parseInt(
+		wcpaySettings?.defaultExpressCheckoutBorderRadius ?? 4,
+		10
+	);
+};
+
 /**
  * Get WC AJAX endpoint URL for express checkout endpoints.
  *
