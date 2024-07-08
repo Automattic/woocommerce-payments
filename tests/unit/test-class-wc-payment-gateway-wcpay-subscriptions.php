@@ -416,9 +416,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->willReturn( WC_Helper_Intention::create_intention() );
 
 		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'update_customer_for_user' )
-			->willReturn( $saved_customer_id );
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
