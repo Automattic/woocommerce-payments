@@ -149,8 +149,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$item->save();
 
 		$expected = [
-			'key'   => 'checkboxes ($84.00)',
-			'value' => 'flat fee',
+			'key'   => 'checkboxes',
+			'value' => 'flat fee (+ $84.00)',
 		];
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
 	}
