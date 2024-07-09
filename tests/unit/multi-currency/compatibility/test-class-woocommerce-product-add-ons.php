@@ -137,7 +137,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price * 2 );
 		$addon = [
 			'name'       => 'checkboxes',
-			'value'      => 'flat fee',
+			'value'      => 'flat fee (+ $84.00)',
 			'price'      => (float) $price,
 			'field_type' => 'checkbox',
 			'price_type' => 'flat_fee',
@@ -441,8 +441,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 		$expected  = [
 			'name'    => 'Customer defined price',
-			'value'   => '(<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'display' => '(<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'value'   => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'display' => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
 		];
 
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
