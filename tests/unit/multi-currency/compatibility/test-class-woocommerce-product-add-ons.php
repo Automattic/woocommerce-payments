@@ -171,7 +171,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$item->save();
 
 		$expected = [
-			'key'   => 'checkboxes ($5.00)',
+			'key'   => 'checkboxes',
 			'value' => 'percentage based',
 		];
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
@@ -195,7 +195,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$item->save();
 
 		$expected = [
-			'key'   => 'quantity ($42.00)',
+			'key'   => 'quantity',
 			'value' => 2,
 		];
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
@@ -218,7 +218,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$item->save();
 
 		$expected = [
-			'key'   => 'checkboxes ($42.00)',
+			'key'   => 'checkboxes',
 			'value' => 42.0,
 		];
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
@@ -464,8 +464,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'quantity' => 1,
 		];
 		$expected  = [
-			'name'    => 'Multiplier (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'value'   => 2,
+			'name'    => 'Multiplier',
+			'value'   => '2 (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
 			'display' => '',
 		];
 
@@ -500,8 +500,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'quantity' => 1,
 		];
 		$expected  = [
-			'name'    => 'Checkbox (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'value'   => 'Flat fee',
+			'name'    => 'Checkbox',
+			'value'   => 'Flat fee (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
 			'display' => '',
 		];
 
@@ -526,8 +526,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'addons_price_before_calc' => 10,
 		];
 		$expected  = [
-			'name'    => 'Checkbox (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)',
-			'value'   => 'Percentage',
+			'name'    => 'Checkbox',
+			'value'   => 'Percentage (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)',
 			'display' => '',
 		];
 
