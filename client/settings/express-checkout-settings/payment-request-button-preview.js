@@ -20,6 +20,7 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	usePaymentRequestButtonType,
+	usePaymentRequestButtonBorderRadius,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 } from '../../data';
@@ -74,6 +75,7 @@ const PaymentRequestButtonPreview = () => {
 	const [ buttonType ] = usePaymentRequestButtonType();
 	const [ size ] = usePaymentRequestButtonSize();
 	const [ theme ] = usePaymentRequestButtonTheme();
+	const [ radius ] = usePaymentRequestButtonBorderRadius();
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 
@@ -129,6 +131,7 @@ const PaymentRequestButtonPreview = () => {
 									buttonSizeToPxMap.medium
 								}px`,
 								size,
+								radius,
 							} }
 						/>
 					) }

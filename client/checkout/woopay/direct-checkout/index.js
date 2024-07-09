@@ -215,6 +215,8 @@ window.addEventListener( 'load', async () => {
 
 	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
 
+	await WooPayDirectCheckout.initPostMessageTimeout();
+
 	// Note, although the following hooks are prefixed with 'experimental__', they will be
 	// graduated to stable in the near future (it'll include the 'experimental__' prefix).
 	addAction(
