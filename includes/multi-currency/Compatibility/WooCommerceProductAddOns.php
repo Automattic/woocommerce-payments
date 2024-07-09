@@ -137,6 +137,10 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 		} elseif ( 'flat_fee' === $addon['price_type'] && $addon['price'] ) {
 			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
+				if ( 'input_multiplier' === $addon['field_type'] ) {
+					// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
+					$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
+				}
 				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $cart_item['data'] ) );
 				/* translators: %1$s flat fee addon price in order */
 				$value .= sprintf( _x( ' (+ %1$s)', 'flat fee addon price in cart', 'woocommerce-payments' ), $addon_price );
