@@ -5,6 +5,7 @@ import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/con
 import { getConfig } from 'wcpay/utils/checkout';
 import ApplePayPreview from './components/apple-pay-preview';
 import ExpressCheckoutContainer from './components/express-checkout-container';
+import GooglePayPreview from './components/google-pay-preview';
 
 const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
@@ -34,7 +35,7 @@ const expressCheckoutElementGooglePay = ( api ) => ( {
 			expressPaymentMethod="googlePay"
 		/>
 	),
-	edit: <ApplePayPreview />,
+	edit: <GooglePayPreview />,
 	supports: {
 		features: getConfig( 'features' ),
 	},
