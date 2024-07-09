@@ -129,6 +129,10 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 			$value .= '';
 		} elseif ( 'custom_price' === $addon['field_type'] && $addon['price'] ) {
 			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
+				// phpcs:ignore
+				/**
+				 * @psalm-suppress UndefinedClass
+				 */
 				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon['price'], $cart_item['data'], true ) );
 				/* translators: %1$s custom addon price in cart */
 				$value           .= sprintf( _x( ' (%1$s)', 'custom price addon price in cart', 'woocommerce-payments' ), $addon_price );
@@ -141,6 +145,10 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 					// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
 					$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 				}
+				// phpcs:ignore
+				/**
+				 * @psalm-suppress UndefinedClass
+				 */
 				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $cart_item['data'] ) );
 				/* translators: %1$s flat fee addon price in order */
 				$value .= sprintf( _x( ' (+ %1$s)', 'flat fee addon price in cart', 'woocommerce-payments' ), $addon_price );
@@ -152,6 +160,10 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 					// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
 					$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 				}
+				// phpcs:ignore
+				/**
+				 * @psalm-suppress UndefinedClass
+				 */
 				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $cart_item['data'] ) );
 				/* translators: %1$s addon price in order */
 				$value .= sprintf( _x( ' (%1$s)', 'quantity based addon price in cart', 'woocommerce-payments' ), $addon_price );
@@ -297,6 +309,10 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 			}
 			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
+				// phpcs:ignore
+				/**
+				 * @psalm-suppress UndefinedClass
+				 */
 				$price = html_entity_decode(
 					wp_strip_all_tags( wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $values['data'] ) ) ),
 					ENT_QUOTES,
