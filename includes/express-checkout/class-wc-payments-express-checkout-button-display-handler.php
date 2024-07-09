@@ -151,12 +151,10 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 				$this->payment_request_button_handler->display_payment_request_button_html();
 			}
 
-			if ( ! is_cart() ) {
-				?>
-				<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>
-				<?php
-			} else {
+			if ( is_cart() ) {
 				add_action( 'woocommerce_after_cart', [ $this, 'add_order_attribution_inputs' ], 1 );
+			} else {
+				$this->add_order_attribution_inputs();
 			}
 
 			?>
