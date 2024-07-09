@@ -783,11 +783,20 @@ class WooPay_Session {
 
 		// Blocks checkout options. To get the blocks checkout options, we need
 		// to parse the checkout page content because the options are stored
-		// in the block attributes as a JSON.
-		$checkout_page_id      = get_option( 'woocommerce_checkout_page_id' );
-		$checkout_page_content = get_post( $checkout_page_id )->post_content;
-		$checkout_page_blocks  = parse_blocks( $checkout_page_content );
-		$checkout_block_index  = array_search( 'woocommerce/checkout', array_column( $checkout_page_blocks, 'blockName' ), true );
+		// in the blocks HTML as a JSON.
+		$checkout_page_id = get_option( 'woocommerce_checkout_page_id' );
+		$checkout_page    = get_post( $checkout_page_id );
+
+		if ( empty( $checkout_page ) ) {
+			return [
+				'company'   => $company,
+				'address_2' => $address_2,
+				'phone'     => $phone,
+			];
+		}
+
+		$checkout_page_blocks = parse_blocks( $checkout_page->post_content );
+		$checkout_block_index = array_search( 'woocommerce/checkout', array_column( $checkout_page_blocks, 'blockName' ), true );
 
 		// If we can find the index, it means the merchant checkout page is using blocks checkout.
 		if ( false !== $checkout_block_index ) {
