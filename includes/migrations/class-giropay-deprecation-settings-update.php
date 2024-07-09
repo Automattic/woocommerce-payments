@@ -23,7 +23,7 @@ class Giropay_Deprecation_Settings_Update {
 	 *
 	 * @var string
 	 */
-	const VERSION_SINCE = '8.0.0';
+	const VERSION_SINCE = '7.9.0';
 
 	/**
 	 * WCPay gateway.
