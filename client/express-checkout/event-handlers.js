@@ -13,6 +13,7 @@ import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
+import { __ } from '@wordpress/i18n';
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
@@ -77,27 +78,27 @@ export const onConfirmHandler = async (
 		return abortPayment( event, error.message );
 	}
 
-	// Kick off checkout processing step.
-	let orderResponse;
-	if ( ! order ) {
-		orderResponse = await api.expressCheckoutECECreateOrder(
-			normalizeOrderData( event, paymentMethod.id )
-		);
-	} else {
-		orderResponse = await api.expressCheckoutECEPayForOrder(
-			order,
-			normalizePayForOrderData( event, paymentMethod.id )
-		);
-	}
-
-	if ( orderResponse.result !== 'success' ) {
-		return abortPayment(
-			event,
-			getErrorMessageFromNotice( orderResponse.messages )
-		);
-	}
-
 	try {
+		// Kick off checkout processing step.
+		let orderResponse;
+		if ( ! order ) {
+			orderResponse = await api.expressCheckoutECECreateOrder(
+				normalizeOrderData( event, paymentMethod.id )
+			);
+		} else {
+			orderResponse = await api.expressCheckoutECEPayForOrder(
+				order,
+				normalizePayForOrderData( event, paymentMethod.id )
+			);
+		}
+
+		if ( orderResponse.result !== 'success' ) {
+			return abortPayment(
+				event,
+				getErrorMessageFromNotice( orderResponse.messages )
+			);
+		}
+
 		const confirmationRequest = api.confirmIntent( orderResponse.redirect );
 
 		// `true` means there is no intent to confirm.
@@ -109,7 +110,14 @@ export const onConfirmHandler = async (
 			completePayment( redirectUrl );
 		}
 	} catch ( e ) {
-		return abortPayment( event, e.message );
+		return abortPayment(
+			event,
+			e.message ??
+				__(
+					'There was a problem processing the order.',
+					'woocommerce-payments'
+				)
+		);
 	}
 };
 
