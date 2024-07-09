@@ -137,7 +137,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price * 2 );
 		$addon = [
 			'name'       => 'checkboxes',
-			'value'      => 'flat fee (+ $84.00)',
+			'value'      => 'flat fee',
 			'price'      => (float) $price,
 			'field_type' => 'checkbox',
 			'price_type' => 'flat_fee',
@@ -152,7 +152,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'key'   => 'checkboxes',
 			'value' => 'flat fee (+ $84.00)',
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] ) );
 	}
 
 	public function test_order_line_item_meta_returns_percentage_data_correctly() {
@@ -174,7 +174,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'key'   => 'checkboxes',
 			'value' => 'percentage based',
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] ) );
 	}
 
 	public function test_order_line_item_meta_returns_input_multiplier_data_correctly() {
@@ -198,15 +198,15 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'key'   => 'quantity',
 			'value' => 2,
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'quantity' ], $addon, $item, [ 'data' => '' ] ) );
 	}
 
 	public function test_order_line_item_meta_returns_custom_price_data_correctly() {
 		$price = 42;
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price * 2 );
 		$addon = [
-			'name'       => 'checkboxes',
-			'value'      => 'custom price',
+			'name'       => 'custom price',
+			'value'      => (float) $price,
 			'price'      => (float) $price,
 			'field_type' => 'custom_price',
 			'price_type' => '',
@@ -221,7 +221,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'key'   => 'checkboxes',
 			'value' => 42.0,
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] ) );
 	}
 
 	public function test_update_product_price_returns_flat_fee_data_correctly() {
@@ -440,9 +440,9 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'addons_price_before_calc' => 10,
 		];
 		$expected  = [
-			'name'    => 'Customer defined price (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'value'   => '',
-			'display' => '',
+			'name'    => 'Customer defined price',
+			'value'   => '(<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'display' => '(<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
 		];
 
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );

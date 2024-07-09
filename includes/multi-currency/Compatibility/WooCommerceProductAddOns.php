@@ -310,6 +310,8 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				/* translators: %1$s custom addon price in order */
 				$value = sprintf( _x( ' (%1$s)', 'custom addon price in order', 'woocommerce-payments' ), $price );
 			}
+
+			$meta_data['raw_price'] = $this->multi_currency->get_price( $addon['price'], 'product' );
 		}
 
 		$meta_data['value'] = $value;
