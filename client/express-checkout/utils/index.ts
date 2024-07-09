@@ -1,4 +1,8 @@
+/**
+ * Internal dependencies
+ */
 export * from './normalize';
+import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 /**
  * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
@@ -15,6 +19,7 @@ export interface WCPayExpressCheckoutParams {
 		height: string;
 		locale: string;
 		branded_type: string;
+		radius: number;
 	};
 
 	/**
@@ -116,8 +121,14 @@ export const getErrorMessageFromNotice = ( notice: string ) => {
  * Currently only configures border radius for the buttons.
  */
 export const getExpressCheckoutButtonAppearance = () => {
+	const buttonSettings = getExpressCheckoutData( 'button' );
+
 	return {
-		// variables: { borderRadius: '99999px' },
+		variables: {
+			borderRadius: `${
+				buttonSettings?.radius ?? getDefaultBorderRadius()
+			}px`,
+		},
 	};
 };
 
@@ -161,7 +172,9 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 		paymentMethods: {
 			applePay: 'always',
 			googlePay: 'always',
-			link: 'auto',
+			link: 'never',
+			paypal: 'never',
+			amazonPay: 'never',
 		},
 		layout: { overflow: 'never' },
 		buttonTheme: {
