@@ -80,12 +80,11 @@ const ExpressCheckoutComponent = ( {
 
 		const availablePaymentMethods = event.availablePaymentMethods || {};
 
-		if ( paymentMethodContainer ) {
-			paymentMethodContainer.style.display = availablePaymentMethods[
-				expressPaymentMethod
-			]
-				? null
-				: 'none';
+		if (
+			paymentMethodContainer &&
+			! availablePaymentMethods[ expressPaymentMethod ]
+		) {
+			paymentMethodContainer.style.display = 'none';
 		}
 
 		// Any actions that WooPayments needs to perform.
