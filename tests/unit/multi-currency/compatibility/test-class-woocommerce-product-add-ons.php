@@ -137,7 +137,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price * 2 );
 		$addon = [
 			'name'       => 'checkboxes',
-			'value'      => 'flat fee',
+			'value'      => 'flat fee (+ $84.00)',
 			'price'      => (float) $price,
 			'field_type' => 'checkbox',
 			'price_type' => 'flat_fee',
