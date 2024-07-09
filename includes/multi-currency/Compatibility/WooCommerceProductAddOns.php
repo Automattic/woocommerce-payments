@@ -128,24 +128,30 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 		} elseif ( 'percentage_based' === $addon['price_type'] && 0.0 === (float) $price ) {
 			$value .= '';
 		} elseif ( 'custom_price' === $addon['field_type'] && $addon['price'] ) {
-			$addon_price = wc_price( WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon['price'], $cart_item['data'], true ) );
-			/* translators: %1$s custom addon price in cart */
-			$value           .= sprintf( _x( ' (%1$s)', 'custom price addon price in cart', 'woocommerce-payments' ), $addon_price );
-			$addon['display'] = $value;
-		} elseif ( 'flat_fee' === $addon['price_type'] && $addon['price'] ) {
-			$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
-			$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $cart_item['data'] ) );
-			/* translators: %1$s flat fee addon price in order */
-			$value .= sprintf( _x( ' (+ %1$s)', 'flat fee addon price in cart', 'woocommerce-payments' ), $addon_price );
-		} elseif ( 'quantity_based' === $addon['price_type'] && $addon['price'] && $add_price_to_value ) {
-			$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
-			if ( 'input_multiplier' === $addon['field_type'] ) {
-				// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
-				$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
+			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
+				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon['price'], $cart_item['data'], true ) );
+				/* translators: %1$s custom addon price in cart */
+				$value           .= sprintf( _x( ' (%1$s)', 'custom price addon price in cart', 'woocommerce-payments' ), $addon_price );
+				$addon['display'] = $value;
 			}
-			$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $cart_item['data'] ) );
-			/* translators: %1$s addon price in order */
-			$value .= sprintf( _x( ' (%1$s)', 'quantity based addon price in cart', 'woocommerce-payments' ), $addon_price );
+		} elseif ( 'flat_fee' === $addon['price_type'] && $addon['price'] ) {
+			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
+				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
+				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $cart_item['data'] ) );
+				/* translators: %1$s flat fee addon price in order */
+				$value .= sprintf( _x( ' (+ %1$s)', 'flat fee addon price in cart', 'woocommerce-payments' ), $addon_price );
+			}
+		} elseif ( 'quantity_based' === $addon['price_type'] && $addon['price'] && $add_price_to_value ) {
+			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
+				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
+				if ( 'input_multiplier' === $addon['field_type'] ) {
+					// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
+					$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
+				}
+				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $cart_item['data'] ) );
+				/* translators: %1$s addon price in order */
+				$value .= sprintf( _x( ' (%1$s)', 'quantity based addon price in cart', 'woocommerce-payments' ), $addon_price );
+			}
 		} else {
 			// Get the percentage cost in the currency in use, and set the meta data on the product that the value was converted.
 			$_product = wc_get_product( $cart_item['product_id'] );
