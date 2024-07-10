@@ -88,11 +88,6 @@ describe( 'PaymentRequestButtonPreview', () => {
 			await screen.findByText( 'Stripe button mock' )
 		).toBeInTheDocument();
 		expect(
-			await screen.findByText(
-				'To preview the Google Pay button, view this page in the Google Chrome browser.'
-			)
-		).toBeInTheDocument();
-		expect(
 			screen.queryByText( /Safari/, {
 				ignore: '.a11y-speak-region',
 			} )
@@ -106,11 +101,6 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 		expect(
 			await screen.findByText( 'Stripe button mock' )
-		).toBeInTheDocument();
-		expect(
-			await screen.findByText(
-				'To preview the Apple Pay button, view this page in the Safari browser.'
-			)
 		).toBeInTheDocument();
 		expect(
 			screen.queryByText( /Chrome/, {
@@ -135,7 +125,7 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 		expect(
 			await screen.findByText(
-				/To preview the express checkout buttons, ensure your store is served/,
+				/To preview the express checkout buttons, ensure your store uses/,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -154,7 +144,7 @@ describe( 'PaymentRequestButtonPreview', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.queryByText(
-				/To preview the express checkout buttons, ensure your store is served/,
+				/To preview the express checkout buttons, ensure your store uses/,
 				{
 					ignore: '.a11y-speak-region',
 				}
