@@ -99,9 +99,9 @@ const PreviewRequirementsNotice = () => (
 	<InlineNotice icon status="info" isDismissible={ false }>
 		{ __(
 			'To preview the express checkout buttons, ' +
-				'ensure your store is served over HTTPS on a domain available to the public internet, ' +
-				'your device is configured to use Apple Pay or Google Pay, ' +
-				'and view this page using the Safari or Chrome browsers.',
+				'ensure your store uses HTTPS on a publicly available domain, ' +
+				"and you're viewing this page in a Safari or Chrome browser. " +
+				'Your device must be configured to use Apple Pay or Google Pay.',
 			'woocommerce-payments'
 		) }
 	</InlineNotice>

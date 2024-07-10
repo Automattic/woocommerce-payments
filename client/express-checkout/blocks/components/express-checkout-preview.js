@@ -97,9 +97,9 @@ export const ExpressCheckoutPreviewComponent = ( {
 		<InlineNotice icon status="error" isDismissible={ false }>
 			{ __(
 				'Failed to preview the Apple Pay or Google Pay button. ' +
-					'Please ensure your store is served over HTTPS on a domain available to the public internet, ' +
-					'your device is configured to use Apple Pay or Google Pay, ' +
-					'and view this page using the Safari or Chrome browsers.',
+					'Ensure your store uses HTTPS on a publicly available domain ' +
+					"and you're viewing this page in a Safari or Chrome browser. " +
+					'Your device must be configured to use Apple Pay or Google Pay.',
 				'woocommerce-payments'
 			) }
 		</InlineNotice>
