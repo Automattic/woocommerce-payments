@@ -4498,20 +4498,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$wc_locale_data = WC()->countries->get_country_locale();
 
 		$check_if_usable = function ( array $address ) use ( $wc_locale_data ): bool {
-			if ( $address['country'] ) {
-				$country_locale_data = $wc_locale_data[ $address['country'] ] ?? null;
+			if ( $address['country'] && isset( $wc_locale_data[ $address['country'] ] ) ) {
+				$country_locale_data = $wc_locale_data[ $address['country'] ];
+				$fields_to_check     = [
+					'state'     => 'state',
+					'city'      => 'city',
+					'postcode'  => 'postal_code',
+					'address_1' => 'line1',
+				];
 
-				$is_state_optional = (
-					is_array( $country_locale_data ) &&
-					isset( $country_locale_data['state'] ) &&
-					isset( $country_locale_data['state']['required'] ) &&
-					false === $country_locale_data['state']['required']
-				);
+				foreach ( $fields_to_check as $locale_field => $address_field ) {
+					$is_field_required = (
+						! isset( $country_locale_data[ $locale_field ] ) ||
+						! isset( $country_locale_data[ $locale_field ]['required'] ) ||
+						false !== $country_locale_data[ $locale_field ]['required']
+					);
 
-				if ( $is_state_optional ) {
-					return $address['country'] && $address['city'] && $address['postal_code'] && $address['line1'];
+					if ( $is_field_required && ! $address[ $address_field ] ) {
+						return false;
+					}
 				}
+
+				return true;
 			}
+
 			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 

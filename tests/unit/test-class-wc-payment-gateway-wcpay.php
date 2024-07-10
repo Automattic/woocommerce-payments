@@ -2885,7 +2885,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function process_payment_for_order_afterpay_clearpay_provider() {
 		return [
-			'with valid full address' => [
+			'with valid full address'         => [
 				'address'            => [
 					'city'     => 'WooCity',
 					'state'    => 'NY',
@@ -2896,7 +2896,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'locale_data'        => [],
 				'expected_exception' => null,
 			],
-			'with incomplete address' => [
+			'with incomplete address'         => [
 				'address'            => [
 					'city'     => 'WooCity',
 					'state'    => '',
@@ -2909,7 +2909,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				],
 				'expected_exception' => Invalid_Address_Exception::class,
 			],
-			'without state, GB'       => [
+			'optional state'                  => [
 				'address'            => [
 					'city'     => 'London',
 					'state'    => '',
@@ -2921,7 +2921,22 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				],
 				'expected_exception' => null,
 			],
-			'without city, GB'        => [
+			'optional state and postcode'     => [
+				'address'            => [
+					'city'     => 'London',
+					'state'    => '',
+					'postcode' => '',
+					'country'  => Country_Code::UNITED_KINGDOM,
+				],
+				'locale_data'        => [
+					Country_Code::UNITED_KINGDOM => [
+						'state'    => [ 'required' => false ],
+						'postcode' => [ 'required' => false ],
+					],
+				],
+				'expected_exception' => null,
+			],
+			'optional state, invalid address' => [
 				'address'            => [
 					'city'     => '',
 					'state'    => 'London',
