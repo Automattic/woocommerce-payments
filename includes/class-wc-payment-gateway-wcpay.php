@@ -4496,7 +4496,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
 		$check_if_usable = function ( array $address ): bool {
-			if ( in_array( $address['country'], [ 'GB', 'NZ' ], true ) ) {
+			if ( in_array( $address['country'], [ Country_Code::UNITED_KINGDOM, Country_Code::NEW_ZEALAND ], true ) ) {
 				$is_state_usable = true;
 			} else {
 				$is_state_usable = ! empty( $address['state'] );
