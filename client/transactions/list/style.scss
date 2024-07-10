@@ -127,6 +127,7 @@ $gap-small: 12px;
 					height: auto;
 
 					button.woocommerce-select-control__clear {
+						background-color: #fff;
 						&::before {
 							content: '';
 							position: absolute;
