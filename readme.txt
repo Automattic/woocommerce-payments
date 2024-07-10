@@ -121,8 +121,8 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Make the search box, and typed search term visible clearly on the 'Payments > Transactions' page, when there are too many existing search tags.
 * Fix - Properly wait for tokenized cart data updates before refreshing PRB data.
 * Fix - Retrieve saved tokens only relevant for the specific payment gateway.
-* Update - Update payment receipt settings to remove mention of the printed receipts.
 * Update - Deprecate Giropay.
+* Update - Update payment receipt settings to remove mention of the printed receipts.
 * Dev - Add validation for path variables.
 * Dev - Migrate Affirm and Afterpay payment method components to TypeScript.
 * Dev - Prevent infinite loop in usePaymentFailHandler effect
