@@ -125,9 +125,9 @@ $gap-small: 12px;
 				&.woocommerce-select-control__control {
 					min-height: 38px;
 					height: auto;
-
 					button.woocommerce-select-control__clear {
 						background-color: #fff;
+
 						&::before {
 							content: '';
 							position: absolute;
@@ -190,6 +190,12 @@ $gap-small: 12px;
 				white-space: nowrap;
 				scrollbar-width: none;
 				margin-right: 25px;
+			}
+
+			.woocommerce-select-control.is-focused
+				.components-base-control
+				.components-base-control__field {
+				flex-basis: 45%;
 			}
 
 			@include breakpoint( '<960px' ) {
