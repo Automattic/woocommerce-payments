@@ -191,6 +191,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $mock_duplicates_detection_service;
 
 	/**
+	 * Backup of WC locale data
+	 *
+	 * @var array
+	 */
+	private $locale_backup;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -271,6 +278,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_payment_metadata' )
 			->willReturn( [] );
 		wcpay_get_test_container()->replace( OrderService::class, $mock_order_service );
+
+		$this->locale_backup = WC()->countries->get_country_locale();
 	}
 
 	/**
@@ -307,6 +316,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		wcpay_get_test_container()->reset_all_replacements();
 		WC()->session->set( 'wc_notices', [] );
+		WC()->countries->locale = $this->locale_backup;
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -2830,7 +2840,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider process_payment_for_order_afterpay_clearpay_provider
 	 */
-	public function test_process_payment_for_order_afterpay_clearpay( array $address, ?string $expected_exception ) {
+	public function test_process_payment_for_order_afterpay_clearpay( array $address, array $locale_data, ?string $expected_exception ) {
 		$payment_method                              = 'woocommerce_payments_afterpay_clearpay';
 		$expected_upe_payment_method_for_pi_creation = 'afterpay_clearpay';
 		$order                                       = WC_Helper_Order::create_order();
@@ -2859,6 +2869,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
 		}
 
+		WC()->countries->locale = $locale_data;
+
 		$afterpay_gateway = current(
 			array_filter(
 				$this->gateways,
@@ -2880,6 +2892,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'postcode' => '12345',
 					'country'  => Country_Code::UNITED_STATES,
 				],
+				// An empty locale data means all fields should be required.
+				'locale_data'        => [],
 				'expected_exception' => null,
 			],
 			'with incomplete address' => [
@@ -2889,6 +2903,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'postcode' => '12345',
 					'country'  => Country_Code::UNITED_STATES,
 				],
+				'locale_data'        => [
+					// A missing `required` attribute means that the field will be required.
+					'US' => [ 'state' => [ 'label' => 'State' ] ],
+				],
 				'expected_exception' => Invalid_Address_Exception::class,
 			],
 			'without state, GB'       => [
@@ -2897,6 +2915,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'state'    => '',
 					'postcode' => 'HA9 9LY',
 					'country'  => Country_Code::UNITED_KINGDOM,
+				],
+				'locale_data'        => [
+					'GB' => [ 'state' => [ 'required' => false ] ],
 				],
 				'expected_exception' => null,
 
@@ -2908,17 +2929,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'postcode' => 'HA9 9LY',
 					'country'  => Country_Code::UNITED_KINGDOM,
 				],
+				'locale_data'        => [
+					'GB' => [ 'state' => [ 'required' => false ] ],
+				],
 				'expected_exception' => Invalid_Address_Exception::class,
 
-			],
-			'without state, NZ'       => [
-				'address'            => [
-					'city'     => 'Wellington',
-					'state'    => '',
-					'postcode' => '6011',
-					'country'  => Country_Code::NEW_ZEALAND,
-				],
-				'expected_exception' => null,
 			],
 		];
 	}

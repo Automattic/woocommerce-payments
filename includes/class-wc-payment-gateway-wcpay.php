@@ -4495,13 +4495,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
-		$check_if_usable = function ( array $address ): bool {
-			if ( in_array( $address['country'], [ Country_Code::UNITED_KINGDOM, Country_Code::NEW_ZEALAND ], true ) ) {
-				$is_state_usable = true;
-			} else {
-				$is_state_usable = ! empty( $address['state'] );
+		$wc_locale_data = WC()->countries->get_country_locale();
+
+		$check_if_usable = function ( array $address ) use ( $wc_locale_data ): bool {
+			if ( $address['country'] ) {
+				$country_locale_data = $wc_locale_data[ $address['country'] ] ?? null;
+
+				$is_state_not_required = (
+					is_array( $country_locale_data ) &&
+					isset( $country_locale_data['state'] ) &&
+					isset( $country_locale_data['state']['required'] ) &&
+					false === $country_locale_data['state']['required']
+				);
+
+				if ( $is_state_not_required ) {
+					return $address['country'] && $address['city'] && $address['postal_code'] && $address['line1'];
+				}
 			}
-			return $address['country'] && $is_state_usable && $address['city'] && $address['postal_code'] && $address['line1'];
+			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 
 		$shipping_data = $this->order_service->get_shipping_data_from_order( $order );
