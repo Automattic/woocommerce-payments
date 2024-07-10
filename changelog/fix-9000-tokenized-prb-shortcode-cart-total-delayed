@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Properly wait for tokenized cart data updates before refreshing PRB data.

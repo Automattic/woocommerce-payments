@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.3
-Stable tag: 7.8.1
+Stable tag: 7.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,40 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.9.0 - 2024-07-10 =
+* Add - Add a separate transient to save UPE appearance styles for the Add Payment Method standalone page. Correct regression that prevented proper styles calculation in the shortcode checkout.
+* Add - Add Pay for Order support in Express Checkout Elements.
+* Add - Add support for configuring button radius when ECE is enabled
+* Add - Add support for ECE elements on the Shortcode Cart and Checkout pages
+* Add - Add support for the Express Checkout Element on product pages.
+* Add - Add telemetry events from PRBs into ECE.
+* Add - Ensure shoppers can still checkout, even when WooPay is slow or unavailable.
+* Add - feat: tokenized cart PRBs on shortcode cart and checkout behind feature flag.
+* Add - Support style settings for ECE buttons
+* Fix - Clearly display available instant deposit amount on notice and button label on Payment Overview page
+* Fix - Disable Stripe Link in ECE.
+* Fix - Disable WooPay for suspended and rejected accounts.
+* Fix - Display an invalid address error instead of generic one in the checkout form when Afterpay is selected as payment method
+* Fix - Display payment error message in the Payment context with Blocks.
+* Fix - fix: display refund amount w/ tokenized cart PRBs
+* Fix - fix: pricing decimal formatting for tokenized cart
+* Fix - fix: tokenized PRBs payment type
+* Fix - Fixed an error when renewing subscriptions without a billing country
+* Fix - Fix output for compatibility data.
+* Fix - Fix transaction list and document list advanced filter styling issue preventing dates to be input on mobile screens.
+* Fix - Fix WooPay Direct Checkout feature check.
+* Fix - Fix WooPay OTP modal not rendering on the shortcode checkout if BNPL methods are available.
+* Fix - Hide payment methods with domestic transactions restrictions (Klarna, Affirm, Afterpay) when conditions are not met.
+* Fix - Make the search box, and typed search term visible clearly on the 'Payments > Transactions' page, when there are too many existing search tags.
+* Fix - Properly wait for tokenized cart data updates before refreshing PRB data.
+* Fix - Retrieve saved tokens only relevant for the specific payment gateway.
+* Update - Deprecate Giropay.
+* Update - Update payment receipt settings to remove mention of the printed receipts.
+* Dev - Add validation for path variables.
+* Dev - Migrate Affirm and Afterpay payment method components to TypeScript.
+* Dev - Prevent infinite loop in usePaymentFailHandler effect
+* Dev - Refactor redirects logic in payments
 
 = 7.8.1 - 2024-06-25 =
 * Fix - Fix "Dispute not loaded" error that was affecting responding to disputes.
