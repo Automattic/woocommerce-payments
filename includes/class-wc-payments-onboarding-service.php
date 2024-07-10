@@ -245,16 +245,22 @@ class WC_Payments_Onboarding_Service {
 	 * @return string The source or empty string if the source is unsupported.
 	 */
 	public static function get_source( string $referer, array $get_params ): string {
-		$wcpay_connect_param = sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) );
-		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param ) {
+		$wcpay_connect_param = isset( $get_params['wcpay-connect'] ) ? sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) ) : '';
+		$from_param          = isset( $get_params['from'] ) ? sanitize_text_field( wp_unslash( $get_params['from'] ) ) : '';
+
+		// Sometimes we have it in the `wcpay-connect` param and other times in the `from` one.
+		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param
+			|| 'WCADMIN_PAYMENT_TASK' === $from_param ) {
 			return self::SOURCE_WCADMIN_PAYMENT_TASK;
 		}
 		// Payments tab in Woo Admin Settings page.
-		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' )
+			|| 'WCADMIN_PAYMENT_SETTINGS' === $from_param ) {
 			return self::SOURCE_WCADMIN_SETTINGS_PAGE;
 		}
-		// Payments tab in the sidebar.
-		if ( false !== strpos( $referer, 'path=%2Fwc-pay-welcome-page' ) ) {
+		// Payments incentive page.
+		if ( false !== strpos( $referer, 'path=%2Fwc-pay-welcome-page' )
+			|| 'WCADMIN_PAYMENT_INCENTIVE' === $from_param ) {
 			return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		}
 		if ( false !== strpos( $referer, 'path=%2Fpayments%2Fconnect' ) ) {
@@ -266,6 +272,7 @@ class WC_Payments_Onboarding_Service {
 		if ( isset( $get_params['wcpay-reset-account'] ) ) {
 			return self::SOURCE_WCPAY_RESET_ACCOUNT;
 		}
+
 		return '';
 	}
 }

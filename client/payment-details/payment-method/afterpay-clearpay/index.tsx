@@ -4,21 +4,23 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import React from 'react';
 
 /**
  * Internal dependencies.
  */
 import Detail from '../detail';
+import { Charge } from 'wcpay/types/charges';
+import { PaymentMethodDetails } from 'wcpay/payment-details/types';
 
 /**
  * Extracts and formats payment method details from a charge.
  *
- * @param {Object} charge The charge object.
- * @return {Object}       A flat hash of all necessary values.
+ * @param {Charge} charge The charge object.
+ * @return {PaymentMethodDetails} A flat hash of all necessary values.
  */
-const formatPaymentMethodDetails = ( charge ) => {
+const formatPaymentMethodDetails = ( charge: Charge ): PaymentMethodDetails => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
-
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 
 	return {
@@ -30,22 +32,33 @@ const formatPaymentMethodDetails = ( charge ) => {
 };
 
 /**
- * Placeholders to display while loading.
+ * Placeholder object for loading state
  */
-const paymentMethodPlaceholders = {
+const paymentMethodPlaceholders: PaymentMethodDetails = {
 	id: 'id placeholder',
 	name: 'name placeholder',
 	email: 'email placeholder',
 	formattedAddress: 'address placeholder',
 };
 
-const CardDetails = ( { charge = {}, isLoading } ) => {
-	const details =
+/**
+ * Props interface for AfterpayClearpayDetailss component
+ */
+interface AfterpayClearpayDetailsProps {
+	charge?: Charge;
+	isLoading: boolean;
+}
+
+const AfterpayClearpayDetails: React.FC< AfterpayClearpayDetailsProps > = ( {
+	charge,
+	isLoading,
+} ) => {
+	const details: PaymentMethodDetails =
 		charge && charge.payment_method_details
 			? formatPaymentMethodDetails( charge )
 			: paymentMethodPlaceholders;
 
-	const { id, name, email, formattedAddress } = details;
+	const { id, name, email, formattedAddress }: PaymentMethodDetails = details;
 
 	return (
 		<div className="payment-method-details">
@@ -57,7 +70,6 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 					{ !! id ? id : '–' }
 				</Detail>
 			</div>
-
 			<div className="payment-method-details__column">
 				<Detail
 					isLoading={ isLoading }
@@ -78,6 +90,7 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 					label={ __( 'Address', 'woocommerce-payments' ) }
 				>
 					<span
+						// eslint-disable-next-line react/no-danger
 						dangerouslySetInnerHTML={ {
 							__html: formattedAddress || '–',
 						} }
@@ -88,4 +101,4 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 	);
 };
 
-export default CardDetails;
+export default AfterpayClearpayDetails;

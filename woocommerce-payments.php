@@ -3,7 +3,7 @@
  * Plugin Name: WooPayments
  * Plugin URI: https://woocommerce.com/payments/
  * Description: Accept payments via credit card. Manage transactions within WordPress.
- * Author: Automattic
+ * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
@@ -11,7 +11,7 @@
  * WC tested up to: 8.9.3
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 7.8.1
+ * Version: 7.9.0
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments

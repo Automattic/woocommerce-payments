@@ -2,7 +2,7 @@
  * External dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { addAction, doAction, doingAction } from '@wordpress/hooks';
+import { addAction, applyFilters, doAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -10,7 +10,6 @@ import { addAction, doAction, doingAction } from '@wordpress/hooks';
 import PaymentRequestCartApi from '../cart-api';
 import WooPaymentsPaymentRequest from '../payment-request';
 import { trackPaymentRequestButtonLoad } from '../tracking';
-import { waitFor } from '@testing-library/react';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 jest.mock( '../tracking', () => ( {
@@ -55,9 +54,6 @@ const jQueryMock = ( selector ) => {
 };
 jQueryMock.blockUI = () => null;
 
-const waitForAction = async ( hookName ) =>
-	await waitFor( () => doingAction( hookName ) === false );
-
 describe( 'WooPaymentsPaymentRequest', () => {
 	let wcpayApi;
 
@@ -98,7 +94,10 @@ describe( 'WooPaymentsPaymentRequest', () => {
 	} );
 
 	it( 'should initialize the Stripe payment request, fire initial tracking, and attach event listeners', async () => {
-		apiFetch.mockResolvedValue( {
+		const headers = new Headers();
+		headers.append( 'Nonce', 'nonce-value' );
+
+		const responseData = {
 			needs_shipping: false,
 			totals: {
 				currency_code: 'USD',
@@ -107,6 +106,11 @@ describe( 'WooPaymentsPaymentRequest', () => {
 				total_shipping: '5',
 			},
 			items: [ { name: 'Shirt', quantity: 1, prices: { price: '15' } } ],
+		};
+
+		apiFetch.mockResolvedValue( {
+			headers: headers,
+			json: () => Promise.resolve( responseData ),
 		} );
 		const paymentRequestAvailabilityCallback = jest.fn();
 		addAction(
@@ -132,16 +136,19 @@ describe( 'WooPaymentsPaymentRequest', () => {
 		);
 		expect( trackPaymentRequestButtonLoad ).toHaveBeenCalledWith( 'cart' );
 
-		doAction( 'wcpay.payment-request.update-button-data' );
-
-		await waitForAction( 'wcpay.payment-request.update-button-data' );
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
 		expect( paymentRequestAvailabilityCallback ).toHaveBeenCalledTimes( 1 );
 
 		// firing this should initialize the button again.
 		doAction( 'payment-request-test.registered-action.cancel' );
 
-		doAction( 'wcpay.payment-request.update-button-data' );
-		await waitForAction( 'wcpay.payment-request.update-button-data' );
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
 		expect( paymentRequestAvailabilityCallback ).toHaveBeenCalledTimes( 2 );
 	} );
 } );

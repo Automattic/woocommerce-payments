@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\StoreApi\Payments\PaymentContext;
+use Automattic\WooCommerce\StoreApi\Payments\PaymentResult;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Mode;
@@ -115,17 +117,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
-	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE       = 'upe_process_redirect_order_id_mismatched';
-	const UPE_APPEARANCE_TRANSIENT                         = 'wcpay_upe_appearance';
-	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT               = 'wcpay_wc_blocks_upe_appearance';
-	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_product_page_appearance';
-	const UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_classic_cart_appearance';
-	const UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT         = 'wcpay_upe_bnpl_cart_block_appearance';
-	const UPE_APPEARANCE_THEME_TRANSIENT                   = 'wcpay_upe_appearance_theme';
-	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT         = 'wcpay_wc_blocks_upe_appearance_theme';
-	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_product_page_appearance_theme';
-	const UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_classic_cart_appearance_theme';
-	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT   = 'wcpay_upe_bnpl_cart_block_appearance_theme';
+	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE        = 'upe_process_redirect_order_id_mismatched';
+	const UPE_APPEARANCE_TRANSIENT                          = 'wcpay_upe_appearance';
+	const UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT       = 'wcpay_upe_add_payment_method_appearance';
+	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT                = 'wcpay_wc_blocks_upe_appearance';
+	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT        = 'wcpay_upe_bnpl_product_page_appearance';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT        = 'wcpay_upe_bnpl_classic_cart_appearance';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT          = 'wcpay_upe_bnpl_cart_block_appearance';
+	const UPE_APPEARANCE_THEME_TRANSIENT                    = 'wcpay_upe_appearance_theme';
+	const UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_add_payment_method_appearance_theme';
+	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT          = 'wcpay_wc_blocks_upe_appearance_theme';
+	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT  = 'wcpay_upe_bnpl_product_page_appearance_theme';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT  = 'wcpay_upe_bnpl_classic_cart_appearance_theme';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT    = 'wcpay_upe_bnpl_cart_block_appearance_theme';
 
 	/**
 	 * The locations of appearance transients.
@@ -558,6 +562,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
 
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
+			add_action( 'woocommerce_rest_checkout_process_payment_with_context', [ $this, 'setup_payment_error_handler' ], 10, 2 );
 
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
 
@@ -1294,9 +1299,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// This allows WC to check if WP_DEBUG mode is enabled before returning previous Exception and expose Exception class name to frontend.
 			add_filter( 'woocommerce_return_previous_exceptions', '__return_true' );
-			// Re-throw the exception after setting everything up.
-			// This makes the error notice show up both in the regular and block checkout.
-			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ), 0, $e );
+			wc_add_notice( wp_strip_all_tags( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) ), 'error' );
+			do_action( 'update_payment_result_on_error', $e, $order );
+
+			return [
+				'result'   => 'fail',
+				'redirect' => '',
+			];
 		}
 	}
 
@@ -1361,6 +1370,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the existing customer with the current order details.
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 		$this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+	}
+
+	/**
+	 * Sets up a handler to add error details to the payment result.
+	 * Registers an action to handle 'update_payment_result_on_error',
+	 * using the payment result object from 'woocommerce_rest_checkout_process_payment_with_context'.
+	 *
+	 * @param PaymentContext $context The payment context.
+	 * @param PaymentResult  $result  The payment result, passed by reference.
+	 */
+	public function setup_payment_error_handler( PaymentContext $context, PaymentResult &$result ) {
+		add_action(
+			'update_payment_result_on_error',
+			function ( $error ) use ( &$result ) {
+				$result->set_payment_details(
+					array_merge(
+						$result->payment_details,
+						[ 'errorMessage' => wp_strip_all_tags( $error->getMessage() ) ]
+					)
+				);
+			}
+		);
 	}
 
 	/**
@@ -3998,7 +4029,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
@@ -4037,7 +4067,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$elements_location = isset( $_POST['elements_location'] ) ? wc_clean( wp_unslash( $_POST['elements_location'] ) ) : null;
 			$appearance        = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
 
-			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block' ];
+			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block', 'add_payment_method' ];
 			if ( ! $elements_location || ! in_array( $elements_location, $valid_locations, true ) ) {
 				throw new Exception(
 					__( 'Unable to update UPE appearance values at this time.', 'woocommerce-payments' )
@@ -4059,7 +4089,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			/**
 			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
 			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
-			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block'.
+			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block', 'add_payment_method'.
 			 *
 			 * @since 7.4.0
 			 */
@@ -4067,6 +4097,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$appearance_transient       = [
 				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
+				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
 				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
@@ -4074,6 +4105,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			][ $elements_location ];
 			$appearance_theme_transient = [
 				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
+				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
 				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,

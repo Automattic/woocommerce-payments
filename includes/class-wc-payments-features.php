@@ -210,7 +210,15 @@ class WC_Payments_Features {
 
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
+
+		$is_account_rejected = WC_Payments::get_account_service()->is_account_rejected();
+
+		$is_account_under_review = WC_Payments::get_account_service()->is_account_under_review();
+
+		return is_array( $account )
+			&& ( $account['platform_checkout_eligible'] ?? false )
+			&& ! $is_account_rejected
+			&& ! $is_account_under_review;
 	}
 
 	/**
@@ -380,6 +388,7 @@ class WC_Payments_Features {
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),
 				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
+				'isStripeEceEnabled'             => self::is_stripe_ece_enabled(),
 			]
 		);
 	}
