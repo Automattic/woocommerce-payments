@@ -2905,7 +2905,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				],
 				'locale_data'        => [
 					// A missing `required` attribute means that the field will be required.
-					'US' => [ 'state' => [ 'label' => 'State' ] ],
+					Country_Code::UNITED_STATES => [ 'state' => [ 'label' => 'State' ] ],
 				],
 				'expected_exception' => Invalid_Address_Exception::class,
 			],
@@ -2917,10 +2917,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'country'  => Country_Code::UNITED_KINGDOM,
 				],
 				'locale_data'        => [
-					'GB' => [ 'state' => [ 'required' => false ] ],
+					Country_Code::UNITED_KINGDOM => [ 'state' => [ 'required' => false ] ],
 				],
 				'expected_exception' => null,
-
 			],
 			'without city, GB'        => [
 				'address'            => [
@@ -2930,10 +2929,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'country'  => Country_Code::UNITED_KINGDOM,
 				],
 				'locale_data'        => [
-					'GB' => [ 'state' => [ 'required' => false ] ],
+					Country_Code::UNITED_KINGDOM => [ 'state' => [ 'required' => false ] ],
 				],
 				'expected_exception' => Invalid_Address_Exception::class,
-
 			],
 		];
 	}
