@@ -815,7 +815,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @param float      $price   The price, which to calculate taxes for.
 	 * @return array              An array of final taxes.
 	 */
-	private function get_taxes_like_cart( $product, $price ) {
+	public function get_taxes_like_cart( $product, $price ) {
 		if ( ! wc_tax_enabled() || $this->cart_prices_include_tax() ) {
 			// Only proceed when taxes are enabled, but not included.
 			return [];
