@@ -4496,7 +4496,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
 		$check_if_usable = function ( array $address ): bool {
-			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
+			if ( in_array( $address['country'], [ 'GB', 'NZ' ], true ) ) {
+				$is_state_usable = true;
+			} else {
+				$is_state_usable = ! empty( $address['state'] );
+			}
+			return $address['country'] && $is_state_usable && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 
 		$shipping_data = $this->order_service->get_shipping_data_from_order( $order );
