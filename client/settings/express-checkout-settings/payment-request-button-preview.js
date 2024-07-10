@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { React, useState, useEffect, useContext } from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import {
 	PaymentRequestButtonElement,
 	useStripe,
@@ -13,7 +13,6 @@ import {
 /**
  * Internal dependencies
  */
-import { shouldUseGooglePayBrand } from 'utils/express-checkout';
 import InlineNotice from 'components/inline-notice';
 import { WoopayExpressCheckoutButton } from 'wcpay/checkout/woopay/express-button/woopay-express-checkout-button';
 import {
@@ -26,43 +25,6 @@ import {
 } from '../../data';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/blocks/components/express-checkout-preview';
-
-const isPaymentRequestSettingsPage = () =>
-	document.getElementById( 'wcpay-express-checkout-settings-container' )
-		?.dataset.methodId === 'payment_request';
-
-/**
- * stripePromise is used to pass into <Elements>'s stripe props.
- * The stripe prop in <Elements> can't be change once passed in.
- * Keeping this outside of <PaymentRequestButtonPreview> so that
- * re-rendering does not change it.
- */
-
-const BrowserHelpText = () => {
-	if ( ! isPaymentRequestSettingsPage() ) return null;
-
-	let browser = 'Google Chrome';
-	let paymentMethodName = 'Google Pay';
-
-	if ( shouldUseGooglePayBrand() ) {
-		browser = 'Safari';
-		paymentMethodName = 'Apple Pay';
-	}
-
-	return (
-		<p className="payment-method-settings__preview-help-text">
-			{ sprintf(
-				__(
-					/* translators: %1: Payment method name %2: Browser name. */
-					'To preview the %1$s button, view this page in the %2$s browser.',
-					'woocommerce-payments'
-				),
-				paymentMethodName,
-				browser
-			) }
-		</p>
-	);
-};
 
 const buttonSizeToPxMap = {
 	small: 40,
@@ -91,7 +53,6 @@ const ButtonPreviewWrapper = ( { theme, children } ) => (
 		<div className="payment-method-settings__preview" data-theme={ theme }>
 			{ children }
 		</div>
-		<BrowserHelpText />
 	</>
 );
 
