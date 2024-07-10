@@ -183,8 +183,10 @@ const PaymentRequestButtonPreview = () => {
 		/>
 	) : null;
 
+	const isHttpsEnabled = window.location.protocol === 'https:';
+
 	const expressCheckoutButtonPreview =
-		isPaymentRequestEnabled && isStripeEceEnabled ? (
+		isHttpsEnabled && isPaymentRequestEnabled && isStripeEceEnabled ? (
 			<ExpressCheckoutPreviewComponent
 				stripe={ stripe }
 				buttonType={ buttonType }
@@ -195,7 +197,10 @@ const PaymentRequestButtonPreview = () => {
 		) : null;
 
 	const prbButtonPreview =
-		isPaymentRequestEnabled && paymentRequest && ! isLoading ? (
+		isHttpsEnabled &&
+		isPaymentRequestEnabled &&
+		paymentRequest &&
+		! isLoading ? (
 			<PaymentRequestButtonElement
 				key={ `${ buttonType }-${ theme }-${ size }` }
 				onClick={ ( e ) => {
@@ -222,9 +227,7 @@ const PaymentRequestButtonPreview = () => {
 			<ButtonPreviewWrapper theme={ theme }>
 				{ woopayPreview }
 				{ /* We never want to show both ECE and PRB previews at the same time. */ }
-				{ ( window.location.protocol === 'https:' &&
-					expressCheckoutButtonPreview ) ||
-					prbButtonPreview }
+				{ expressCheckoutButtonPreview || prbButtonPreview }
 			</ButtonPreviewWrapper>
 		);
 	}
