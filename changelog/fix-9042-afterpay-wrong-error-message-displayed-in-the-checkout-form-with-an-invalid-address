@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Display an invalid address error instead of generic one in the checkout form when Afterpay is selected as payment method

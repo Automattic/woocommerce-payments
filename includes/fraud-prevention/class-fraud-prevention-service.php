@@ -66,6 +66,7 @@ class Fraud_Prevention_Service {
 
 	/**
 	 * Appends the fraud prevention token to the JS context if the protection is enabled, and a session exists.
+	 * This token will also be used by express checkouts.
 	 *
 	 * @return  void
 	 */
@@ -86,9 +87,9 @@ class Fraud_Prevention_Service {
 			return;
 		}
 
-		// Don't add the token if the user isn't on the cart or checkout page.
-		// Checking the cart page too because the user can pay quickly via the payment buttons on that page.
-		if ( ! is_checkout() && ! is_cart() ) {
+		// Don't add the token if the user isn't on the cart, checkout or product page.
+		// Checking the product and cart page too because the user can pay quickly via the payment buttons on that page.
+		if ( ! is_checkout() && ! is_cart() && ! is_product() ) {
 			return;
 		}
 
