@@ -147,41 +147,45 @@ const PaymentRequestButtonPreview = () => {
 	const isHttpsEnabled = window.location.protocol === 'https:';
 
 	const expressCheckoutButtonPreview =
-		isHttpsEnabled && isPaymentRequestEnabled && isStripeEceEnabled ? (
-			<ExpressCheckoutPreviewComponent
-				stripe={ stripe }
-				buttonType={ buttonType }
-				theme={ theme }
-				height={ buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium }
-				radius={ radius }
-			/>
-		) : null;
+		isPaymentRequestEnabled && isStripeEceEnabled
+			? ( isHttpsEnabled && (
+					<ExpressCheckoutPreviewComponent
+						stripe={ stripe }
+						buttonType={ buttonType }
+						theme={ theme }
+						height={
+							buttonSizeToPxMap[ size ] ||
+							buttonSizeToPxMap.medium
+						}
+						radius={ radius }
+					/>
+			  ) ) || <PreviewRequirementsNotice />
+			: null;
 
 	const prbButtonPreview =
-		isHttpsEnabled &&
-		isPaymentRequestEnabled &&
-		paymentRequest &&
-		! isLoading ? (
-			<PaymentRequestButtonElement
-				key={ `${ buttonType }-${ theme }-${ size }` }
-				onClick={ ( e ) => {
-					e.preventDefault();
-				} }
-				options={ {
-					paymentRequest: paymentRequest,
-					style: {
-						paymentRequestButton: {
-							type: buttonType,
-							theme: theme,
-							height: `${
-								buttonSizeToPxMap[ size ] ||
-								buttonSizeToPxMap.medium
-							}px`,
-						},
-					},
-				} }
-			/>
-		) : null;
+		isPaymentRequestEnabled && paymentRequest && ! isLoading
+			? ( isHttpsEnabled && (
+					<PaymentRequestButtonElement
+						key={ `${ buttonType }-${ theme }-${ size }` }
+						onClick={ ( e ) => {
+							e.preventDefault();
+						} }
+						options={ {
+							paymentRequest: paymentRequest,
+							style: {
+								paymentRequestButton: {
+									type: buttonType,
+									theme: theme,
+									height: `${
+										buttonSizeToPxMap[ size ] ||
+										buttonSizeToPxMap.medium
+									}px`,
+								},
+							},
+						} }
+					/>
+			  ) ) || <PreviewRequirementsNotice />
+			: null;
 
 	if ( woopayPreview || expressCheckoutButtonPreview || prbButtonPreview ) {
 		return (
