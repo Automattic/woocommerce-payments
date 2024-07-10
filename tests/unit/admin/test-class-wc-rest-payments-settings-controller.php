@@ -244,7 +244,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				Payment_Method::BECS,
 				Payment_Method::BANCONTACT,
 				Payment_Method::EPS,
-				Payment_Method::GIROPAY,
 				Payment_Method::IDEAL,
 				Payment_Method::SOFORT,
 				Payment_Method::SEPA,
@@ -376,11 +375,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::GIROPAY ] );
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::IDEAL ] );
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' ) );
+		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::IDEAL ], WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {
