@@ -4501,14 +4501,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $address['country'] ) {
 				$country_locale_data = $wc_locale_data[ $address['country'] ] ?? null;
 
-				$is_state_not_required = (
+				$is_state_optional = (
 					is_array( $country_locale_data ) &&
 					isset( $country_locale_data['state'] ) &&
 					isset( $country_locale_data['state']['required'] ) &&
 					false === $country_locale_data['state']['required']
 				);
 
-				if ( $is_state_not_required ) {
+				if ( $is_state_optional ) {
 					return $address['country'] && $address['city'] && $address['postal_code'] && $address['line1'];
 				}
 			}
