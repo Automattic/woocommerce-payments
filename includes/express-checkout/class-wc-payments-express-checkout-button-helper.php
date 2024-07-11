@@ -1074,14 +1074,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			'google_pay' => 'Google Pay',
 		];
 
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-		if ( ! empty( $suffix ) ) {
-			$suffix = " ($suffix)";
-		}
+		$payment_method_title = $express_payment_titles[ $express_payment_type ] ?? false;
 
-		$payment_method_title = isset( $express_payment_titles[ $express_payment_type ] ) ? $express_payment_titles[ $express_payment_type ] : 'Express Payment';
-		$order->set_payment_method_title( $payment_method_title . $suffix );
-		$order->save();
+		if ( $payment_method_title ) {
+			$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+			if ( ! empty( $suffix ) ) {
+				$suffix = " ($suffix)";
+			}
+
+			$order->set_payment_method_title( $payment_method_title . $suffix );
+			$order->save();
+		}
 	}
 
 	/**

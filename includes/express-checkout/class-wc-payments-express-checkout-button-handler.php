@@ -424,7 +424,6 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				strpos( $method_title, 'Apple Pay' ) === 0
 				|| strpos( $method_title, 'Google Pay' ) === 0
 				|| strpos( $method_title, 'Payment Request' ) === 0 // Legacy PRB title.
-				|| strpos( $method_title, 'Express Payment' ) === 0
 			) {
 				return $method_title;
 			}
