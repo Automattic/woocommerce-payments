@@ -330,6 +330,26 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Used to get the order in admin edit page.
+	 *
+	 * @return WC_Order|WC_Order_Refund|bool
+	 */
+	public function get_current_order() {
+		global $theorder;
+		global $post;
+
+		if ( is_object( $theorder ) ) {
+			return $theorder;
+		}
+
+		if ( is_object( $post ) ) {
+			return wc_get_order( $post->ID );
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns true if the provided WC_Product is a subscription, false otherwise.
 	 *
 	 * @param WC_Product $product The product to check.
@@ -1031,6 +1051,37 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
+	}
+
+	/**
+	 * Add needed order meta
+	 *
+	 * @param integer $order_id The order ID.
+	 *
+	 * @return  void
+	 */
+	public function add_order_meta( $order_id ) {
+		if ( empty( $_POST['express_payment_type'] ) || ! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method'] ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+
+		$express_payment_type = wc_clean( wp_unslash( $_POST['express_payment_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		$express_payment_titles = [
+			'apple_pay'  => 'Apple Pay',
+			'google_pay' => 'Google Pay',
+		];
+
+		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+		if ( ! empty( $suffix ) ) {
+			$suffix = " ($suffix)";
+		}
+
+		$payment_method_title = isset( $express_payment_titles[ $express_payment_type ] ) ? $express_payment_titles[ $express_payment_type ] : 'Express Payment';
+		$order->set_payment_method_title( $payment_method_title . $suffix );
+		$order->save();
 	}
 
 	/**
