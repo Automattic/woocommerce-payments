@@ -95,6 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 7.9.1 - 2024-07-11 =
+* Fix - Fix Documents API regex to allow documents with dashes in name to be viewed.
 
 
 = 7.9.0 - 2024-07-10 =
