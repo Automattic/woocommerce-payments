@@ -394,6 +394,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
 		if ( $this->is_pay_for_order_page() ) {
+
+			// ECE doesn't work on the Pay For Order Page.
+			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+			if ( $order && class_exists( 'WC_Deposits_Order_Manager' ) && WC_Deposits_Order_Manager::is_follow_up_order( $order ) ) {
+				return false;
+			}
+
 			return true;
 		}
 
@@ -755,20 +762,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// If WooCommerce Deposits is active, we need to get the correct price for the product.
 		if ( class_exists( 'WC_Deposits_Product_Manager' ) && class_exists( 'WC_Deposits_Plans_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
+			// If is_deposit is null, we use the default deposit type for the product.
 			if ( is_null( $is_deposit ) ) {
-				/**
-				 * If is_deposit is null, we use the default deposit type for the product.
-				 *
-				 * @psalm-suppress UndefinedClass
-				 */
 				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
 			}
 			if ( $is_deposit ) {
-				/**
-				 * Ignore undefined classes from 3rd party plugins.
-				 *
-				 * @psalm-suppress UndefinedClass
-				 */
 				$deposit_type       = WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
 				$available_plan_ids = WC_Deposits_Plans_Manager::get_plan_ids_for_product( $product->get_id() );
 				// Default to first (default) plan if no plan is specified.
