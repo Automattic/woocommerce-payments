@@ -528,7 +528,7 @@ class WooPay_Session {
 	/**
 	 * Recursively map an array.
 	 *
-	 * @param function $callback The sanitize_text_field function.
+	 * @param callable $callback The sanitize_text_field function.
 	 * @param array    $array    The nested array.
 	 *
 	 * @return array A new appearance array.
