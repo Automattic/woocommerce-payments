@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { doAction } from '@wordpress/hooks';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -72,12 +72,19 @@ jQuery( ( $ ) => {
 	wooPaymentsPaymentRequest.init();
 
 	// When the cart is updated, the PRB is removed from the page and needs to be re-initialized.
-	$( document.body ).on( 'updated_cart_totals', () => {
+	$( document.body ).on( 'updated_cart_totals', async () => {
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
 		wooPaymentsPaymentRequest.init();
 	} );
 
 	// We need to refresh payment request data when total is updated.
-	$( document.body ).on( 'updated_checkout', () => {
-		doAction( 'wcpay.payment-request.update-button-data' );
+	$( document.body ).on( 'updated_checkout', async () => {
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
 	} );
 } );

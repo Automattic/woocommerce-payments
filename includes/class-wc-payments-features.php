@@ -377,6 +377,7 @@ class WC_Payments_Features {
 				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),
+				'isStripeEceEnabled'             => self::is_stripe_ece_enabled(),
 			]
 		);
 	}

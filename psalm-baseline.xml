@@ -31,6 +31,11 @@
       <code>WC_Subscriptions_Cart</code>
     </UndefinedClass>
   </file>
+  <file src="includes/express-checkout/class-wc-payments-express-checkout-button-handler.php">
+    <UndefinedClass occurrences="1">
+      <code>WC_Subscriptions_Cart</code>
+    </UndefinedClass>
+  </file>
   <file src="includes/class-wc-payments.php">
     <UndefinedClass occurrences="1">
       <code>WC_Subscriptions_Product</code>

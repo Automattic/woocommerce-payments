@@ -1,8 +1,4 @@
 /* global wcpayPaymentRequestParams */
-/**
- * External dependencies
- */
-import { doingAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -111,19 +107,3 @@ export const displayLoginConfirmationDialog = ( paymentRequestType ) => {
 		)?.redirect_url;
 	}
 };
-
-/**
- * Waiting for a specific WP action to finish completion.
- *
- * @param {string} hookName The name of the action to wait for.
- * @return {Promise} Resolves when the action is completed.
- */
-export const waitForAction = ( hookName ) =>
-	new Promise( ( resolve ) => {
-		const interval = setInterval( () => {
-			if ( doingAction( hookName ) === false ) {
-				clearInterval( interval );
-				resolve();
-			}
-		}, 500 );
-	} );

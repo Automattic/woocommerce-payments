@@ -2,7 +2,7 @@
  * External dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { addAction, doAction, doingAction } from '@wordpress/hooks';
+import { addAction, applyFilters, doAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -10,7 +10,6 @@ import { addAction, doAction, doingAction } from '@wordpress/hooks';
 import PaymentRequestCartApi from '../cart-api';
 import WooPaymentsPaymentRequest from '../payment-request';
 import { trackPaymentRequestButtonLoad } from '../tracking';
-import { waitFor } from '@testing-library/react';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 jest.mock( '../tracking', () => ( {
@@ -54,9 +53,6 @@ const jQueryMock = ( selector ) => {
 	};
 };
 jQueryMock.blockUI = () => null;
-
-const waitForAction = async ( hookName ) =>
-	await waitFor( () => doingAction( hookName ) === false );
 
 describe( 'WooPaymentsPaymentRequest', () => {
 	let wcpayApi;
@@ -140,16 +136,19 @@ describe( 'WooPaymentsPaymentRequest', () => {
 		);
 		expect( trackPaymentRequestButtonLoad ).toHaveBeenCalledWith( 'cart' );
 
-		doAction( 'wcpay.payment-request.update-button-data' );
-
-		await waitForAction( 'wcpay.payment-request.update-button-data' );
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
 		expect( paymentRequestAvailabilityCallback ).toHaveBeenCalledTimes( 1 );
 
 		// firing this should initialize the button again.
 		doAction( 'payment-request-test.registered-action.cancel' );
 
-		doAction( 'wcpay.payment-request.update-button-data' );
-		await waitForAction( 'wcpay.payment-request.update-button-data' );
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
 		expect( paymentRequestAvailabilityCallback ).toHaveBeenCalledTimes( 2 );
 	} );
 } );
