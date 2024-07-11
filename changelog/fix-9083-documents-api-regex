@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Documents API regex to allow documents with dashes in name to be viewed.
