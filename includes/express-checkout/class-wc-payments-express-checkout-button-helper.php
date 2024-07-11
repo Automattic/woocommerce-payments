@@ -365,6 +365,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
+		// Non-shipping product and billing is calculated based on shopper billing addres.
+		if ( $this->is_product() && ! $this->product_needs_shipping( $this->get_product() ) && 'billing' === get_option( 'woocommerce_tax_based_on' ) ) {
+			return false;
+		}
+
 		// Product page, but not available in settings.
 		if ( $this->is_product() && ! $this->is_available_at( 'product', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
 			return false;
@@ -409,6 +414,21 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if the passed product needs to be shipped.
+	 *
+	 * @param WC_Product $product The product to check.
+	 *
+	 * @return bool Returns true if the product requires shipping; otherwise, returns false.
+	 */
+	public function product_needs_shipping( WC_Product $product ) {
+		if ( ! $product ) {
+			return false;
+		}
+
+		return wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping();
 	}
 
 	/**
