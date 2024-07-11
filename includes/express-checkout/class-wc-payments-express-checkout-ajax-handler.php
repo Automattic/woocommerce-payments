@@ -112,7 +112,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 				throw new Exception( __( 'This order does not require payment!', 'woocommerce-payments' ) );
 			}
 
-			$this->express_checkout_button_helper->add_order_meta( $order_id );
+			$this->express_checkout_button_helper->add_order_payment_method_title( $order_id );
 
 			// Load the gateway.
 			$all_gateways = WC()->payment_gateways->get_available_payment_gateways();

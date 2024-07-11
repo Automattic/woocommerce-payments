@@ -95,7 +95,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
-		add_action( 'woocommerce_checkout_order_processed', [ $this->express_checkout_helper, 'add_order_meta' ], 10, 2 );
+		add_action( 'woocommerce_checkout_order_processed', [ $this->express_checkout_helper, 'add_order_payment_method_title' ], 10, 2 );
 
 		$this->express_checkout_ajax_handler->init();
 	}
