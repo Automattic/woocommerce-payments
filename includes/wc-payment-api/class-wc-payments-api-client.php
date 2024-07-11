@@ -1795,7 +1795,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - If not connected or request failed.
 	 */
 	public function get_document( $document_id ) {
-		if ( ! preg_match( '/^\w+$/', $document_id ) ) {
+		if ( ! preg_match( '/^[\w-]+$/', $document_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),
 				'wcpay_route_validation_failure',
