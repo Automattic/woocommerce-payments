@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 7.9.1 - 2024-07-11 =
+
 = 7.9.0 - 2024-07-10 =
 * Add - Add a separate transient to save UPE appearance styles for the Add Payment Method standalone page. Correct regression that prevented proper styles calculation in the shortcode checkout.
 * Add - Add Pay for Order support in Express Checkout Elements.
