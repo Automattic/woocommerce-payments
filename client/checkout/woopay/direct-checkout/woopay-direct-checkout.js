@@ -6,6 +6,7 @@ import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
+import { setPostMessageTimeout } from 'wcpay/checkout/woopay/connect/connect-utils';
 
 /**
  * The WooPayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
@@ -79,6 +80,15 @@ class WooPayDirectCheckout {
 	}
 
 	/**
+	 * Checks if WooPay is reachable.
+	 *
+	 * @return {Promise<bool>} Resolves to true if WooPay is reachable.
+	 */
+	static async isWooPayReachable() {
+		return this.getSessionConnect().isWooPayReachable();
+	}
+
+	/**
 	 * Checks if the user is logged in.
 	 *
 	 * @return {Promise<bool>} Resolves to true if the user is logged in.
@@ -103,6 +113,16 @@ class WooPayDirectCheckout {
 	 */
 	static async isWooPayThirdPartyCookiesEnabled() {
 		return this.getSessionConnect().isWooPayThirdPartyCookiesEnabled();
+	}
+
+	/**
+	 * Sets the length of time to wait for when a message is sent to WooPay through the iframe.
+	 */
+	static async initPostMessageTimeout() {
+		const postMessageTimeout = await this.getSessionConnect().getPostMessageTimeout();
+		if ( postMessageTimeout ) {
+			setPostMessageTimeout( postMessageTimeout );
+		}
 	}
 
 	/**
@@ -354,6 +374,13 @@ class WooPayDirectCheckout {
 					if ( userIsLoggedIn ) {
 						woopayRedirectUrl = await this.getWooPayCheckoutUrl();
 					} else {
+						// Ensure WooPay is reachable before redirecting.
+						if ( ! ( await this.isWooPayReachable() ) ) {
+							throw new Error(
+								'WooPay is currently not available.'
+							);
+						}
+
 						woopayRedirectUrl = await this.getWooPayMinimumSessionUrl();
 					}
 

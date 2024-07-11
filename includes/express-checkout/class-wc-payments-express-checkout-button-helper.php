@@ -249,11 +249,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function get_common_button_settings() {
 		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
-		return [
+		$settings    = [
 			'type'   => $button_type,
 			'theme'  => $this->gateway->get_option( 'payment_request_button_theme' ),
 			'height' => $this->get_button_height(),
 		];
+
+		if ( WC_Payments_Features::is_stripe_ece_enabled() ) {
+			$settings['radius'] = $this->gateway->get_option( 'payment_request_button_border_radius' );
+		}
+
+		return $settings;
 	}
 
 	/**
@@ -809,7 +815,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @param float      $price   The price, which to calculate taxes for.
 	 * @return array              An array of final taxes.
 	 */
-	private function get_taxes_like_cart( $product, $price ) {
+	public function get_taxes_like_cart( $product, $price ) {
 		if ( ! wc_tax_enabled() || $this->cart_prices_include_tax() ) {
 			// Only proceed when taxes are enabled, but not included.
 			return [];
