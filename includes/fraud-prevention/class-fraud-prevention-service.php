@@ -104,15 +104,12 @@ class Fraud_Prevention_Service {
 	}
 
 	/**
-	 * Checks if current page is the Pay for order page.
+	 * Checks if this is the Pay for Order page.
 	 *
 	 * @return bool
 	 */
 	public function is_pay_for_order_page() {
-		global $wp;
-		$order_id = $wp->query_vars['order-pay'] ?? null;
-		// phpcs:disable WordPress.Security.NonceVerification
-		return isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && current_user_can( 'pay_for_order', $order_id );
+		return is_checkout() && isset( $_GET['pay_for_order'] ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
 
 	/**
