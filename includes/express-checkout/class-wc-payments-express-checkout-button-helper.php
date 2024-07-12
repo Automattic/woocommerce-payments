@@ -365,26 +365,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// Non-shipping product and billing is calculated based on shopper billing addres.
-		if (
-			// Except for the Pay for order page.
-			! $this->is_pay_for_order_page() &&
-
-			// If the product doesn't needs shipping.
-			(
-				// on the product page.
-				( $this->is_product() && ! $this->product_needs_shipping( $this->get_product() ) ) ||
-
-				// on the cart or checkout page.
-				( ( $this->is_cart() || $this->is_checkout() ) && ! WC()->cart->needs_shipping() )
-			)
-
-			// ...and billing is calculated based on billing address.
-			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
-		) {
-			return false;
-		}
-
 		// Product page, but not available in settings.
 		if ( $this->is_product() && ! $this->is_available_at( 'product', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
 			return false;
@@ -415,6 +395,23 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
 		if ( $this->is_pay_for_order_page() ) {
 			return true;
+		}
+
+		// Non-shipping product and billing is calculated based on shopper billing addres. Excludes Pay for Order page.
+		if (
+			// If the product doesn't needs shipping.
+			(
+				// on the product page.
+				( $this->is_product() && ! $this->product_needs_shipping( $this->get_product() ) ) ||
+
+				// on the cart or checkout page.
+				( ( $this->is_cart() || $this->is_checkout() ) && ! WC()->cart->needs_shipping() )
+			)
+
+			// ...and billing is calculated based on billing address.
+			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
+		) {
+			return false;
 		}
 
 		// Cart total is 0 or is on product page and product price is 0.
