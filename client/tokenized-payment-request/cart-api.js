@@ -17,7 +17,9 @@ export default class PaymentRequestCartApi {
 	// This anonymous cart is separate from the customer's cart, which might contain additional products.
 	// This functionality is also useful to calculate product/shipping pricing (and shipping needs)
 	// for compatibility scenarios with other plugins (like WC Bookings, Product Add-Ons, WC Deposits, etc.).
-	cartRequestHeaders = {};
+	cartRequestHeaders = {
+		'Anonymous-Debug': 'false',
+	};
 
 	/**
 	 * Makes a request to the API.
@@ -108,16 +110,17 @@ export default class PaymentRequestCartApi {
 			path: '/wc/store/v1/cart',
 			// parse: false to ensure we can get the response headers
 			parse: false,
+			headers: {
+				'X-WooPayments-Tokenized-Cart-Session': '',
+			},
 		} );
 
 		this.cartRequestHeaders = {
+			'Anonymous-Debug': 'true',
 			Nonce: response.headers.get( 'Nonce' ),
 			'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
 				'X-WooPayments-Tokenized-Cart-Session'
 			),
-			// this header will be overwritten by a filter in the backend to overcome nonce overwrites in this middleware:
-			// https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce-blocks/assets/js/middleware/store-api-nonce.js
-			'X-WooPayments-Store-Api-Nonce': response.headers.get( 'Nonce' ),
 			'Cart-Token': response.headers.get( 'Cart-Token' ),
 			'X-WooPayments-Express-Payment-Request-Nonce': response.headers.get(
 				'X-WooPayments-Express-Payment-Request-Nonce'

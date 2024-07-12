@@ -120,7 +120,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				2
 			);
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
-			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_nonce_overwrite' ], 10, 3 );
 			add_filter(
 				'rest_post_dispatch',
 				[ $this, 'tokenized_cart_store_api_nonce_headers' ],
@@ -168,29 +167,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$payment_method_title = isset( $payment_method_titles[ $payment_request_type ] ) ? $payment_method_titles[ $payment_request_type ] : 'Payment Request';
 		$order->set_payment_method_title( $payment_method_title . $suffix );
-	}
-
-	/**
-	 * The nonce supplied by the frontend can be overwritten in this middleware:
-	 * https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce-blocks/assets/js/middleware/store-api-nonce.js
-	 *
-	 * This is a workaround to use instead a different nonce key, when supplied.
-	 *
-	 * @param mixed            $response Response to replace the requested version with.
-	 * @param \WP_REST_Server  $server Server instance.
-	 * @param \WP_REST_Request $request Request used to generate the response.
-	 *
-	 * @return mixed
-	 */
-	public function tokenized_cart_store_api_nonce_overwrite( $response, $server, $request ) {
-		$nonce = $request->get_header( 'X-WooPayments-Store-Api-Nonce' );
-		if ( empty( $nonce ) ) {
-			return $response;
-		}
-
-		$request->set_header( 'Nonce', $nonce );
-
-		return $response;
 	}
 
 	/**

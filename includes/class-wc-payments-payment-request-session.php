@@ -21,6 +21,7 @@ class WC_Payments_Payment_Request_Session {
 	 * @return void
 	 */
 	public function init() {
+		// adding this filter with a higher priority than the session handler of the Store API.
 		add_filter( 'woocommerce_session_handler', [ $this, 'add_payment_request_store_api_session_handler' ], 20 );
 		add_filter( 'rest_post_dispatch', [ $this, 'store_api_headers' ], 10, 3 );
 	}
@@ -51,7 +52,6 @@ class WC_Payments_Payment_Request_Session {
 	 * @return mixed
 	 */
 	public function store_api_headers( $response, $server, $request ) {
-
 		if ( ! \WC_Payments_Utils::is_store_api_request() ) {
 			return $response;
 		}
@@ -88,7 +88,8 @@ class WC_Payments_Payment_Request_Session {
 			return $default_session_handler;
 		}
 
-		// checking if the token is valid.
+		// checking if the token is valid, if it's provided.
+		// there can also be a case where the token is not provided, but we should still use the custom session handler.
 		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION'] ?? null ) );
 		if (
 			$cart_token && ! JsonWebToken::validate( $cart_token, '@' . wp_salt() )
