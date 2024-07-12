@@ -3,6 +3,10 @@
  */
 import WooPayDirectCheckout from '../woopay-direct-checkout';
 
+jest.spyOn( WooPayDirectCheckout, 'isWooPayReachable' ).mockResolvedValue(
+	true
+);
+
 describe( 'WooPayDirectCheckout', () => {
 	describe( 'addRedirectToWooPayEventListener', () => {
 		const originalLocation = window.location;

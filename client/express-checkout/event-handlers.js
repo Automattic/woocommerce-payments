@@ -2,11 +2,18 @@
  * Internal dependencies
  */
 import {
+	getErrorMessageFromNotice,
 	normalizeOrderData,
+	normalizePayForOrderData,
 	normalizeShippingAddress,
 	normalizeLineItems,
+	getExpressCheckoutData,
 } from './utils';
-import { getErrorMessageFromNotice } from './utils/index';
+import {
+	trackExpressCheckoutButtonClick,
+	trackExpressCheckoutButtonLoad,
+} from './tracking';
+import { __ } from '@wordpress/i18n';
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
@@ -55,7 +62,8 @@ export const onConfirmHandler = async (
 	elements,
 	completePayment,
 	abortPayment,
-	event
+	event,
+	order = 0 // Order ID for the pay for order flow.
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
@@ -70,32 +78,67 @@ export const onConfirmHandler = async (
 		return abortPayment( event, error.message );
 	}
 
-	// Kick off checkout processing step.
-	const createOrderResponse = await api.expressCheckoutECECreateOrder(
-		normalizeOrderData( event, paymentMethod.id )
-	);
-
-	if ( createOrderResponse.result !== 'success' ) {
-		return abortPayment(
-			event,
-			getErrorMessageFromNotice( createOrderResponse.messages )
-		);
-	}
-
 	try {
-		const confirmationRequest = api.confirmIntent(
-			createOrderResponse.redirect
-		);
+		// Kick off checkout processing step.
+		let orderResponse;
+		if ( ! order ) {
+			orderResponse = await api.expressCheckoutECECreateOrder(
+				normalizeOrderData( event, paymentMethod.id )
+			);
+		} else {
+			orderResponse = await api.expressCheckoutECEPayForOrder(
+				order,
+				normalizePayForOrderData( event, paymentMethod.id )
+			);
+		}
+
+		if ( orderResponse.result !== 'success' ) {
+			return abortPayment(
+				event,
+				getErrorMessageFromNotice( orderResponse.messages )
+			);
+		}
+
+		const confirmationRequest = api.confirmIntent( orderResponse.redirect );
 
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
-			completePayment( createOrderResponse.redirect );
+			completePayment( orderResponse.redirect );
 		} else {
 			const redirectUrl = await confirmationRequest;
 
 			completePayment( redirectUrl );
 		}
 	} catch ( e ) {
-		return abortPayment( event, e.message );
+		return abortPayment(
+			event,
+			e.message ??
+				__(
+					'There was a problem processing the order.',
+					'woocommerce-payments'
+				)
+		);
 	}
+};
+
+export const onReadyHandler = async function ( { availablePaymentMethods } ) {
+	if ( availablePaymentMethods ) {
+		const enabledMethods = Object.entries( availablePaymentMethods )
+			// eslint-disable-next-line no-unused-vars
+			.filter( ( [ _, isEnabled ] ) => isEnabled )
+			// eslint-disable-next-line no-unused-vars
+			.map( ( [ methodName, _ ] ) => methodName );
+
+		trackExpressCheckoutButtonLoad( {
+			paymentMethods: enabledMethods,
+			source: getExpressCheckoutData( 'button_context' ),
+		} );
+	}
+};
+
+export const onClickHandler = async function ( { expressPaymentType } ) {
+	trackExpressCheckoutButtonClick(
+		expressPaymentType,
+		getExpressCheckoutData( 'button_context' )
+	);
 };

@@ -16,7 +16,7 @@ import { useEffect, useRef } from 'react';
 /**
  * Internal dependencies
  */
-import { usePaymentCompleteHandler } from './hooks';
+import { usePaymentCompleteHandler, usePaymentFailHandler } from './hooks';
 import {
 	getStripeElementOptions,
 	blocksShowLinkButtonHandler,
@@ -55,7 +55,7 @@ const PaymentProcessor = ( {
 	api,
 	activePaymentMethod,
 	testingInstructions,
-	eventRegistration: { onPaymentSetup, onCheckoutSuccess },
+	eventRegistration: { onPaymentSetup, onCheckoutSuccess, onCheckoutFail },
 	emitResponse,
 	paymentMethodId,
 	upeMethods,
@@ -236,6 +236,8 @@ const PaymentProcessor = ( {
 		emitResponse,
 		shouldSavePayment
 	);
+
+	usePaymentFailHandler( onCheckoutFail, emitResponse );
 
 	const setHasLoadError = ( event ) => {
 		hasLoadErrorRef.current = true;

@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Use the customer id saved in the subscription to process renewal payments.

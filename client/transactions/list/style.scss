@@ -125,6 +125,25 @@ $gap-small: 12px;
 				&.woocommerce-select-control__control {
 					min-height: 38px;
 					height: auto;
+					button.woocommerce-select-control__clear {
+						background-color: #fff;
+
+						&::before {
+							content: '';
+							position: absolute;
+							left: -30px;
+							top: -2px;
+							bottom: 0;
+							width: 30px;
+							height: 100%;
+							background: linear-gradient(
+								to right,
+								rgba( 255, 255, 255, 0 ),
+								rgba( 255, 255, 255, 1 ) 90%
+							);
+							pointer-events: none;
+						}
+					}
 				}
 			}
 		}
@@ -132,6 +151,58 @@ $gap-small: 12px;
 		.woocommerce-compare-button {
 			padding: 3px $gap-small;
 			height: auto;
+		}
+	}
+
+	.components-card__header {
+		// These styles improve the overflow behaviour of the Search component within the TableCard, when many tags are selected. Used for transaction list views. See PR #8996
+		.woocommerce-search.woocommerce-select-control
+			.woocommerce-select-control__listbox {
+			position: relative;
+			top: 5px;
+		}
+		.woocommerce-table__actions {
+			justify-content: space-between;
+
+			& > div {
+				width: 85%;
+				margin-right: 0;
+			}
+
+			button.woocommerce-table__download-button {
+				@include breakpoint( '<1040px' ) {
+					.woocommerce-table__download-button__label {
+						display: none;
+					}
+				}
+			}
+
+			.woocommerce-select-control.is-focused
+				.woocommerce-select-control__control {
+				flex-wrap: wrap;
+
+				.woocommerce-select-control__tags {
+					white-space: wrap;
+				}
+			}
+			.woocommerce-select-control__tags {
+				overflow-x: auto;
+				white-space: nowrap;
+				scrollbar-width: none;
+				margin-right: 25px;
+			}
+
+			.woocommerce-select-control.is-focused
+				.components-base-control
+				.components-base-control__field {
+				flex-basis: 45%;
+			}
+
+			@include breakpoint( '<960px' ) {
+				.woocommerce-search {
+					margin: 0;
+				}
+			}
 		}
 	}
 }

@@ -58,6 +58,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	private $mock_session_service;
 
 	/**
+	 * Mock WC_Payments_Redirect_Service.
+	 *
+	 * @var WC_Payments_Redirect_Service|MockObject
+	 */
+	private $mock_redirect_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -77,8 +84,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
+		$this->mock_redirect_service         = $this->createMock( WC_Payments_Redirect_Service::class );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service );
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
 		$this->wcpay_account->init_hooks();
 	}
 
@@ -90,13 +98,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_handle_onboarding' ] ), 'maybe_handle_onboarding action does not exist.' );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_onboarding' ] ), 'maybe_redirect_to_onboarding action does not exist.' );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_wcpay_connect' ] ), 'maybe_redirect_to_wcpay_connect action does not exist.' );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_capital_offer' ] ), 'maybe_redirect_to_capital_offer action does not exist.' );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_server_link' ] ), 'maybe_redirect_to_server_link action does not exist.' );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_settings_to_connect_or_overview' ] ), 'maybe_redirect_settings_to_connect_or_overview action does not exist.' );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_onboarding_flow_to_overview' ] ), 'maybe_redirect_onboarding_flow_to_overview action does not exist.' );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_onboarding_flow_to_connect' ] ), 'maybe_redirect_onboarding_flow_to_connect action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_after_plugin_activation' ] ), 'maybe_redirect_after_plugin_activation action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_by_get_param' ] ), 'maybe_redirect_by_get_param action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_settings_page' ] ), 'maybe_redirect_from_settings_page action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_onboarding_page' ] ), 'maybe_redirect_from_onboarding_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_activate_woopay' ] ), 'maybe_activate_woopay action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_instant_deposits_inbox_note' ] ), 'handle_instant_deposits_inbox_note action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_loan_approved_inbox_note' ] ), 'handle_loan_approved_inbox_note action does not exist.' );
@@ -123,7 +128,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				new API_Exception( 'test', 'wcpay_account_not_found', 401 )
 			);
 
-		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
@@ -149,7 +154,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				)
 			);
 
-		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
@@ -173,7 +178,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->expectException( Exception::class );
 
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// Should not update the option.
 		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
@@ -203,7 +208,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				)
 			);
 
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
@@ -219,7 +224,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_request( Get_Account::class, 0 );
 
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// The option should be updated.
 		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
@@ -249,9 +254,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				)
 			);
 
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// call the method twice but use the mock_api_client to make sure the account has been retrieved only once.
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
@@ -298,14 +303,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		// First call, on-boarding is disabled.
-		$this->wcpay_account->maybe_redirect_to_onboarding();
+		$this->wcpay_account->maybe_redirect_after_plugin_activation();
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
 
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		// Second call, on-boarding re-enabled.
-		$this->wcpay_account->maybe_redirect_to_onboarding();
+		$this->wcpay_account->maybe_redirect_after_plugin_activation();
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
 	}
 
@@ -316,15 +321,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Set the redirection parameter.
 		$_GET['wcpay-connect-redirect'] = 1;
 
-		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
-		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
-			->getMock();
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_wcpay_connect' );
 
-		$mock_wcpay_account->expects( $this->once() )->method( 'redirect_to' );
-
-		$this->assertTrue( $mock_wcpay_account->maybe_redirect_to_wcpay_connect() );
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 
 	public function test_maybe_redirect_to_wcpay_connect_unauthorized_user() {
@@ -332,7 +331,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$editor_user = $this->factory()->user->create( [ 'role' => 'editor' ] );
 		wp_set_current_user( $editor_user );
 
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to' );
+
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 
 	public function test_maybe_redirect_to_wcpay_connect_doing_ajax() {
@@ -345,7 +346,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Simulate we're in an AJAX request.
 		add_filter( 'wp_doing_ajax', '__return_true' );
 
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to' );
+
+		$this->wcpay_account->maybe_redirect_by_get_param();
 
 		// Cleaning up.
 		remove_filter( 'wp_doing_ajax', '__return_true' );
@@ -360,13 +363,15 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$_GET['path'] = '/payments/overview';
 
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to' );
+
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 
 	/**
-	 * @dataProvider data_maybe_redirect_onboarding_flow_to_overview
+	 * @dataProvider data_maybe_redirect_from_onboarding_page
 	 */
-	public function test_maybe_redirect_onboarding_flow_to_overview( $expected_redirect_to_count, $stripe_account_connected, $get_params ) {
+	public function test_maybe_redirect_from_onboarding_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $is_server_connected, $get_params ) {
 		wp_set_current_user( 1 );
 		$_GET = $get_params;
 
@@ -379,68 +384,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			);
 		}
 
-		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
-		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
-			->getMock();
-
-		$mock_wcpay_account->expects( $this->exactly( $expected_redirect_to_count ) )->method( 'redirect_to' );
-
-		$mock_wcpay_account->maybe_redirect_onboarding_flow_to_overview();
-	}
-
-	/**
-	 * Data provider for test_maybe_redirect_onboarding_flow_to_overview
-	 */
-	public function data_maybe_redirect_onboarding_flow_to_overview() {
-		return [
-			'no_get_params'           => [
-				0,
-				false,
-				[],
-			],
-			'missing_param'           => [
-				0,
-				false,
-				[
-					'page' => 'wc-admin',
-				],
-			],
-			'incorrect_param'         => [
-				0,
-				false,
-				[
-					'page' => 'wc-settings',
-					'path' => '/payments/onboarding',
-				],
-			],
-			'account_fully_onboarded' => [
-				0,
-				false,
-				[
-					'page' => 'wc-admin',
-					'path' => '/payments/onboarding',
-				],
-			],
-			'happy_path'              => [
-				1,
-				true,
-				[
-					'page' => 'wc-admin',
-					'path' => '/payments/onboarding',
-				],
-			],
-		];
-	}
-
-	/**
-	 * @dataProvider data_maybe_redirect_onboarding_flow_to_connect
-	 */
-	public function test_maybe_redirect_onboarding_flow_to_connect( $expected_times_redirect_called, $is_server_connected, $get_params ) {
-		wp_set_current_user( 1 );
-		$_GET = $get_params;
-
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
 			->getMock();
@@ -449,39 +392,39 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->method( 'is_server_connected' )
 			->willReturn( $is_server_connected );
 
-		// Mock WC_Payments_Account without redirect_to_onboarding_welcome_page to prevent headers already sent error.
-		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
-			->onlyMethods( [ 'redirect_to_onboarding_welcome_page' ] )
-			->getMock();
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
 
-		$this->wcpay_account
-			->expects( $this->exactly( $expected_times_redirect_called ) )
-			->method( 'redirect_to_onboarding_welcome_page' );
+		$this->mock_redirect_service->expects( $this->exactly( $expected_redirect_to_count ) )->method( $expected_method );
 
-		$this->wcpay_account->maybe_redirect_onboarding_flow_to_connect();
+		$this->wcpay_account->maybe_redirect_from_onboarding_page();
 	}
 
 	/**
-	 * Data provider for test_maybe_redirect_onboarding_flow_to_connect
+	 * Data provider for test_maybe_redirect_from_onboarding_page
 	 */
-	public function data_maybe_redirect_onboarding_flow_to_connect() {
+	public function data_maybe_redirect_from_onboarding_page() {
 		return [
 			'no_get_params'        => [
 				0,
+				'redirect_to_connect_page',
 				false,
+				true,
 				[],
 			],
-			'empty_page_param'     => [
+			'missing_param'        => [
 				0,
+				'redirect_to_connect_page',
 				false,
+				true,
 				[
-					'path' => '/payments/onboarding',
+					'page' => 'wc-admin',
 				],
 			],
-			'incorrect_page_param' => [
+			'incorrect_param'      => [
 				0,
+				'redirect_to_connect_page',
 				false,
+				true,
 				[
 					'page' => 'wc-settings',
 					'path' => '/payments/onboarding',
@@ -489,21 +432,37 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'empty_path_param'     => [
 				0,
+				'redirect_to_connect_page',
 				false,
+				true,
 				[
 					'page' => 'wc-admin',
 				],
 			],
 			'incorrect_path_param' => [
 				0,
+				'redirect_to_connect_page',
 				false,
+				true,
 				[
 					'page' => 'wc-admin',
 					'path' => '/payments/does-not-exist',
 				],
 			],
-			'server_connected'     => [
+			'server_not_connected' => [
+				1,
+				'redirect_to_connect_page',
+				false,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/onboarding',
+				],
+			],
+			'stripe not connected' => [
 				0,
+				'redirect_to_connect_page',
+				false,
 				true,
 				[
 					'page' => 'wc-admin',
@@ -512,7 +471,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'happy_path'           => [
 				1,
-				false,
+				'redirect_to_overview_page',
+				true,
+				true,
 				[
 					'page' => 'wc-admin',
 					'path' => '/payments/onboarding',
@@ -522,9 +483,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * @dataProvider data_maybe_redirect_settings_to_connect_or_overview
+	 * @dataProvider data_maybe_redirect_from_settings_page
 	 */
-	public function test_maybe_redirect_settings_to_connect_or_overview( $expected_redirect_to_count, $details_submitted, $get_params, $no_account = false, $path = null ) {
+	public function test_maybe_redirect_from_settings_page( $expected_redirect_to_count, $expected_method, $details_submitted, $get_params, $no_account = false ) {
 		wp_set_current_user( 1 );
 		$_GET = $get_params;
 
@@ -537,31 +498,26 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 		}
-		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
-		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
-			->getMock();
+		$this->mock_redirect_service->expects( $this->exactly( $expected_redirect_to_count ) )
+			->method( $expected_method );
 
-		$mock_wcpay_account->expects( $this->exactly( $expected_redirect_to_count ) )
-			->method( 'redirect_to' )
-			->with( "http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/$path" );
-
-		$mock_wcpay_account->maybe_redirect_settings_to_connect_or_overview();
+		$this->wcpay_account->maybe_redirect_from_settings_page();
 	}
 
 	/**
-	 * Data provider for test_maybe_redirect_settings_to_connect_or_overview
+	 * Data provider for test_maybe_redirect_from_settings_page
 	 */
-	public function data_maybe_redirect_settings_to_connect_or_overview() {
+	public function data_maybe_redirect_from_settings_page() {
 		return [
 			'no_get_params'               => [
 				0,
+				'redirect_to_connect_page',
 				false,
 				[],
 			],
 			'missing_param'               => [
 				0,
+				'redirect_to_connect_page',
 				false,
 				[
 					'page' => 'wc-settings',
@@ -570,6 +526,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_param'             => [
 				0,
+				'redirect_to_connect_page',
 				false,
 				[
 					'page'    => 'wc-admin',
@@ -579,6 +536,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'no_account'                  => [
 				1,
+				'redirect_to_connect_page',
 				false,
 				[
 					'page'    => 'wc-settings',
@@ -586,10 +544,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'section' => 'woocommerce_payments',
 				],
 				true,
-				'connect',
 			],
 			'account_partially_onboarded' => [
 				1,
+				'redirect_to_overview_page',
 				false,
 				[
 					'page'    => 'wc-settings',
@@ -597,10 +555,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'section' => 'woocommerce_payments',
 				],
 				false,
-				'overview',
 			],
 			'account_fully_onboarded'     => [
 				0,
+				'redirect_to_connect_page',
 				true,
 				[
 					'page'    => 'wc-settings',
