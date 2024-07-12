@@ -89,7 +89,7 @@ class Fraud_Prevention_Service {
 
 		// Don't add the token if the user isn't on the cart, checkout or product page.
 		// Checking the product and cart page too because the user can pay quickly via the payment buttons on that page.
-		if ( ! is_checkout() && ! is_cart() && ! is_product() ) {
+		if ( ! is_checkout() && ! is_cart() && ! is_product() && ! $instance->is_pay_for_order_page() ) {
 			return;
 		}
 
@@ -101,6 +101,18 @@ class Fraud_Prevention_Service {
 			"window.wcpayFraudPreventionToken = '" . esc_js( $instance->get_token() ) . "';",
 			'after'
 		);
+	}
+
+	/**
+	 * Checks if current page is the Pay for order page.
+	 *
+	 * @return bool
+	 */
+	public function is_pay_for_order_page() {
+		global $wp;
+		$order_id = $wp->query_vars['order-pay'] ?? null;
+		// phpcs:disable WordPress.Security.NonceVerification
+		return isset( $_GET['pay_for_order'] ) && isset( $_GET['key'] ) && current_user_can( 'pay_for_order', $order_id );
 	}
 
 	/**
