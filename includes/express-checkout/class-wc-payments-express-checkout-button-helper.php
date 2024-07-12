@@ -394,13 +394,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
 		if ( $this->is_pay_for_order_page() ) {
-
-			// ECE doesn't work on the Pay For Order Page.
-			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
-			if ( $order && class_exists( 'WC_Deposits_Order_Manager' ) && WC_Deposits_Order_Manager::is_follow_up_order( $order ) ) {
-				return false;
-			}
-
 			return true;
 		}
 
