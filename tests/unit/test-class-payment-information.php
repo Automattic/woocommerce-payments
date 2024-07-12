@@ -98,6 +98,23 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $payment_information->is_using_saved_payment_method() );
 	}
 
+	public function test_get_customer_id() {
+		$expected_customer_id = 'old_customer_id';
+		$payment_information  = new Payment_Information(
+			self::PAYMENT_METHOD,
+			null,
+			Payment_Type::SINGLE(),
+			$this->card_token,
+			null,
+			null,
+			null,
+			'',
+			null,
+			$expected_customer_id
+		);
+		$this->assertEquals( $expected_customer_id, $payment_information->get_customer_id() );
+	}
+
 	public function test_get_payment_method_from_request() {
 		$payment_method = Payment_Information::get_payment_method_from_request(
 			[ self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD ]
