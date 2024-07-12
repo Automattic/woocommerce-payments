@@ -443,7 +443,6 @@ jQuery( ( $ ) => {
 							) {
 								elements.update( {
 									amount: response.total.amount,
-									displayItems: response.displayItems,
 								} );
 							} else {
 								wcpayECE.reInitExpressCheckoutElement(
