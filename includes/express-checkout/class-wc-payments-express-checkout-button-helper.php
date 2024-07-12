@@ -366,7 +366,20 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		// Non-shipping product and billing is calculated based on shopper billing addres.
-		if ( $this->is_product() && ! $this->product_needs_shipping( $this->get_product() ) && 'billing' === get_option( 'woocommerce_tax_based_on' ) ) {
+		if (
+			// If product doesn't needs shipping.
+			(
+				// on the product page.
+				( $this->is_product() && ! $this->product_needs_shipping( $this->get_product() ) ) ||
+
+				// on the cart or checkout page.
+				( ( $this->is_cart() || $this->is_checkout() ) && ! WC()->cart->needs_shipping() )
+			)
+
+			// ...and billing is calculated based on billing address.
+			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
+		) {
+
 			return false;
 		}
 
