@@ -270,7 +270,7 @@ class WC_Payments_Features {
 		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
 		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 
-		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_eligible();
+		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_enabled();
 	}
 
 	/**
@@ -388,6 +388,7 @@ class WC_Payments_Features {
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),
 				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
+				'isStripeEceEnabled'             => self::is_stripe_ece_enabled(),
 			]
 		);
 	}

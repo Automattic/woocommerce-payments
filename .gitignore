@@ -68,6 +68,7 @@ contributors.md
 # Volumes mounted by Docker containers
 docker/data
 docker/wordpress
+docker/mu-plugins
 docker/logs
 
 # Local machine docker override

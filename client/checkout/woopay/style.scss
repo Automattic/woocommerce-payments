@@ -141,6 +141,7 @@
 	justify-content: center;
 	white-space: nowrap;
 	text-transform: none;
+	list-style-type: none;
 
 	&:not( :disabled ):hover {
 		background: #e0e0e0 !important;

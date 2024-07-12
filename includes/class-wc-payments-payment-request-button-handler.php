@@ -970,6 +970,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			],
 			'checkout'           => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
+				'currency_decimals' => WC_Payments::get_localization_service()->get_currency_format( get_woocommerce_currency() )['num_decimals'],
 				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
 				'needs_shipping'    => WC()->cart->needs_shipping(),
 				// Defaults to 'required' to match how core initializes this option.
@@ -986,7 +987,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
-		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() && ( $this->express_checkout_helper->is_product() || $this->express_checkout_helper->is_pay_for_order_page() ) ) {
+		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() && ( $this->express_checkout_helper->is_product() || $this->express_checkout_helper->is_pay_for_order_page() || $this->express_checkout_helper->is_cart() || $this->express_checkout_helper->is_checkout() ) ) {
 			WC_Payments::register_script_with_dependencies(
 				'WCPAY_PAYMENT_REQUEST',
 				'dist/tokenized-payment-request',

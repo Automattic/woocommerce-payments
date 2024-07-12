@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { doAction } from '@wordpress/hooks';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -69,21 +69,22 @@ jQuery( ( $ ) => {
 		productData: getPaymentRequestData( 'product' ) || undefined,
 	} );
 
-	// We don't need to initialize payment request on the checkout page now because it will be initialized by updated_checkout event.
-	if (
-		getPaymentRequestData( 'button_context' ) !== 'checkout' ||
-		getPaymentRequestData( 'button_context' ) === 'pay_for_order'
-	) {
-		wooPaymentsPaymentRequest.init();
-	}
+	wooPaymentsPaymentRequest.init();
 
-	// We need to refresh payment request data when total is updated.
-	$( document.body ).on( 'updated_cart_totals', () => {
-		doAction( 'wcpay.payment-request.update-button-data' );
+	// When the cart is updated, the PRB is removed from the page and needs to be re-initialized.
+	$( document.body ).on( 'updated_cart_totals', async () => {
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
+		wooPaymentsPaymentRequest.init();
 	} );
 
 	// We need to refresh payment request data when total is updated.
-	$( document.body ).on( 'updated_checkout', () => {
-		doAction( 'wcpay.payment-request.update-button-data' );
+	$( document.body ).on( 'updated_checkout', async () => {
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
 	} );
 } );
