@@ -429,6 +429,7 @@ jQuery( ( $ ) => {
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
+							const isDeposits = wcpayECE.productHasDepositOption();
 							/**
 							 * If the customer aborted the express checkout,
 							 * we need to re init the express checkout button to ensure the shipping
@@ -436,11 +437,12 @@ jQuery( ( $ ) => {
 							 * and the product's shipping status is consistent,
 							 * we can simply update the express checkout button with the new total and display items.
 							 */
-							if (
+							const needsShipping =
 								! wcpayECE.paymentAborted &&
 								getExpressCheckoutData( 'product' )
-									.needs_shipping === response.needs_shipping
-							) {
+									.needs_shipping === response.needs_shipping;
+
+							if ( ! isDeposits && needsShipping ) {
 								elements.update( {
 									amount: response.total.amount,
 								} );
@@ -546,6 +548,12 @@ jQuery( ( $ ) => {
 				wcpayECE.show();
 				eceButton.mount( '#wcpay-express-checkout-element' );
 			}
+		},
+
+		productHasDepositOption() {
+			return !! $( 'form' ).has(
+				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
+			).length;
 		},
 
 		/**
