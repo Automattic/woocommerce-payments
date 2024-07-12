@@ -186,10 +186,13 @@ export const getPaymentRequestButtonTheme = ( state ) => {
 };
 
 export const getPaymentRequestButtonBorderRadius = ( state ) => {
-	return (
-		getSettings( state )?.payment_request_button_border_radius ||
-		getDefaultBorderRadius()
-	);
+	const radius = getSettings( state )?.payment_request_button_border_radius;
+
+	// We can't use a || shorthand because 0 is a valid value.
+	if ( radius === 0 || radius === '0' || radius ) {
+		return radius;
+	}
+	return getDefaultBorderRadius();
 };
 
 export const getIsSavedCardsEnabled = ( state ) => {

@@ -55,7 +55,16 @@ const render = ( ui, options ) =>
 describe( 'PaymentRequestButtonPreview', () => {
 	const canMakePaymentMock = jest.fn();
 
+	let location;
+	const mockHttpsLocation = new URL( 'https://example.com' );
+
 	beforeEach( () => {
+		// We need the preview component to think we're rendering on a HTTPS enabled page
+		// so the buttons are rendered.
+		location = global.location;
+		delete global.location;
+		global.location = mockHttpsLocation;
+
 		shouldUseGooglePayBrand.mockReturnValue( true );
 		useStripe.mockReturnValue( {
 			paymentRequest: () => ( {
@@ -67,6 +76,7 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 	afterEach( () => {
 		jest.clearAllMocks();
+		window.location = location;
 	} );
 
 	it( 'displays Google Chrome and Google Pay when page is in Safari', async () => {
@@ -75,11 +85,13 @@ describe( 'PaymentRequestButtonPreview', () => {
 		render( <PaymentRequestButtonPreview /> );
 
 		expect(
-			await screen.findByText(
-				'To preview the Google Pay button, view this page in the Google Chrome browser.'
-			)
+			await screen.findByText( 'Stripe button mock' )
 		).toBeInTheDocument();
-		expect( screen.queryByText( /Safari/ ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( /Safari/, {
+				ignore: '.a11y-speak-region',
+			} )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'displays Safari Apple Pay when page is in Google Chrome', async () => {
@@ -88,11 +100,13 @@ describe( 'PaymentRequestButtonPreview', () => {
 		render( <PaymentRequestButtonPreview /> );
 
 		expect(
-			await screen.findByText(
-				'To preview the Apple Pay button, view this page in the Safari browser.'
-			)
+			await screen.findByText( 'Stripe button mock' )
 		).toBeInTheDocument();
-		expect( screen.queryByText( /Google Chrome/ ) ).not.toBeInTheDocument();
+		expect(
+			screen.queryByText( /Chrome/, {
+				ignore: '.a11y-speak-region',
+			} )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'does not display anything if stripe is falsy', () => {
@@ -111,7 +125,7 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 		expect(
 			await screen.findByText(
-				/To preview the Apple Pay and Google Pay buttons, ensure your device is configured/,
+				/To preview the express checkout buttons, ensure your store uses/,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -129,9 +143,12 @@ describe( 'PaymentRequestButtonPreview', () => {
 			await screen.findByText( 'Stripe button mock' )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByText( /ensure your device is configured/, {
-				ignore: '.a11y-speak-region',
-			} )
+			screen.queryByText(
+				/To preview the express checkout buttons, ensure your store uses/,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
 		).not.toBeInTheDocument();
 	} );
 } );
