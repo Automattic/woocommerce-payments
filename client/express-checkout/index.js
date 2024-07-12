@@ -407,6 +407,21 @@ jQuery( ( $ ) => {
 		},
 
 		attachProductPageEventListeners: ( elements ) => {
+			// WooCommerce Deposits support.
+			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
+			// Needs to be defined before the `woocommerce_variation_has_changed` event handler is set.
+			$(
+				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
+			)
+				.off( 'change' )
+				.on( 'change', () => {
+					$( 'form' )
+						.has(
+							'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
+						)
+						.trigger( 'woocommerce_variation_has_changed' );
+				} );
+
 			$( document.body )
 				.off( 'woocommerce_variation_has_changed' )
 				.on( 'woocommerce_variation_has_changed', () => {
@@ -487,20 +502,6 @@ jQuery( ( $ ) => {
 							} );
 					}, 250 )
 				);
-
-			// WooCommerce Deposits support.
-			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
-			$(
-				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-			)
-				.off( 'change' )
-				.on( 'change', () => {
-					$( 'form' )
-						.has(
-							'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-						)
-						.trigger( 'woocommerce_variation_has_changed' );
-				} );
 		},
 
 		reInitExpressCheckoutElement: ( response ) => {
