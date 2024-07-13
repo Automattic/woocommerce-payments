@@ -6,6 +6,11 @@
 	&:first-child {
 		margin-top: 0;
 	}
+
+	#wcpay-express-checkout-element iframe {
+		// This fixes width calculation issues inside the iframe.
+		max-width: unset;
+	}
 }
 
 .woocommerce-checkout .wcpay-payment-request-wrapper {
