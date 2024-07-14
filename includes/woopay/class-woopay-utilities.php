@@ -253,15 +253,34 @@ class WooPay_Utilities {
 	}
 
 	/**
+	 * Get the store blog token.
+	 *
+	 * @return mixed|string the store blog token.
+	 */
+	public static function get_store_blog_token() {
+		if ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) {
+			// Using WooPay production: Use the blog token secret from the store blog.
+			return Jetpack_Options::get_option( 'blog_token' );
+		} elseif ( apply_filters( 'wcpay_woopay_use_blog_token', false ) ) {
+			// Requested to use the blog token secret from the store blog.
+			return Jetpack_Options::get_option( 'blog_token' );
+		} elseif ( defined( 'DEV_BLOG_TOKEN_SECRET' ) ) {
+			// Has a defined dev blog token secret: Use it.
+			return DEV_BLOG_TOKEN_SECRET;
+		} else {
+			// TODO: Should we log this?
+			return '';
+		}
+	}
+
+	/**
 	 * Return an array with encrypted and signed data.
 	 *
 	 * @param array $data The data to be encrypted and signed.
 	 * @return array The encrypted and signed data.
 	 */
 	public static function encrypt_and_sign_data( $data ) {
-		$use_jp_blog_token    = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) || ( defined( 'USE_STORE_BLOG_TOKEN' ) && USE_STORE_BLOG_TOKEN );
-		$dev_store_blog_token = defined( 'DEV_BLOG_TOKEN_SECRET' ) ? DEV_BLOG_TOKEN_SECRET : '';
-		$store_blog_token     = $use_jp_blog_token ? Jetpack_Options::get_option( 'blog_token' ) : $dev_store_blog_token;
+		$store_blog_token = self::get_store_blog_token();
 
 		if ( empty( $store_blog_token ) ) {
 			return [];
@@ -297,9 +316,7 @@ class WooPay_Utilities {
 	 * @return mixed The decoded data.
 	 */
 	public static function decrypt_signed_data( $data ) {
-		$use_jp_blog_token    = ( self::get_woopay_url() === self::DEFAULT_WOOPAY_URL ) || ( defined( 'USE_STORE_BLOG_TOKEN' ) && USE_STORE_BLOG_TOKEN );
-		$dev_store_blog_token = defined( 'DEV_BLOG_TOKEN_SECRET' ) ? DEV_BLOG_TOKEN_SECRET : '';
-		$store_blog_token     = $use_jp_blog_token ? Jetpack_Options::get_option( 'blog_token' ) : $dev_store_blog_token;
+		$store_blog_token = self::get_store_blog_token();
 
 		if ( empty( $store_blog_token ) ) {
 			return null;
