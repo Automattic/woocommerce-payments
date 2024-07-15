@@ -133,7 +133,6 @@ exports[`Disputes list renders correctly 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-0"
             class="woocommerce-table__table"
             role="group"

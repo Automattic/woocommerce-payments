@@ -89,7 +89,6 @@ exports[`RenderPaymentCardReaderChargeDetails renders reader charges 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-1"
             class="woocommerce-table__table"
             role="group"
@@ -286,7 +285,6 @@ exports[`RenderPaymentCardReaderChargeDetails renders without reader charges 1`]
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-0"
             class="woocommerce-table__table"
             role="group"

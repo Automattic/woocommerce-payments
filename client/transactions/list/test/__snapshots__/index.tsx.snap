@@ -208,7 +208,6 @@ exports[`Transactions list renders correctly when can filter by several currenci
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-15"
             class="woocommerce-table__table"
             role="group"
@@ -1197,7 +1196,6 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-16"
             class="woocommerce-table__table"
             role="group"
@@ -2183,7 +2181,6 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-0"
             class="woocommerce-table__table"
             role="group"
@@ -2860,7 +2857,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-14"
             class="woocommerce-table__table"
             role="group"
@@ -3923,7 +3919,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-1"
             class="woocommerce-table__table"
             role="group"
@@ -4954,7 +4949,6 @@ exports[`Transactions list when not filtered by deposit renders table summary on
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-11"
             class="woocommerce-table__table"
             role="group"

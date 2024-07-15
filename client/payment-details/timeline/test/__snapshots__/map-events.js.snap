@@ -15,7 +15,6 @@ Array [
       $20.97 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
-        type="wc-admin"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -54,7 +53,6 @@ Array [
       $20.97 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
-        type="wc-admin"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -125,7 +123,6 @@ Array [
       $44.99 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
-        type="wc-admin"
       >
         Apr 5, 2020 deposit
       </Link>
@@ -378,7 +375,6 @@ Array [
       $59.50 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
-        type="wc-admin"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -444,7 +440,6 @@ Array [
       $59.50 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
-        type="wc-admin"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -483,7 +478,6 @@ Array [
       $59.50 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
-        type="wc-admin"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -573,7 +567,6 @@ Array [
       $115.00 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
-        type="wc-admin"
       >
         Apr 5, 2020 deposit
       </Link>
@@ -600,7 +593,6 @@ Array [
         Loan repayment: 
         <Link
           href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=flxln_1KOKzdR4ByxURRrFX9A65q40"
-          type="wc-admin"
         >
           Loan flxln_1KOKzdR4ByxURRrFX9A65q40
         </Link>
@@ -684,7 +676,6 @@ Array [
       $19.19 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
-        type="wc-admin"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -734,7 +725,6 @@ Array [
       $59.50 USD was added to your 
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
-        type="wc-admin"
       >
         Apr 2, 2020 deposit
       </Link>

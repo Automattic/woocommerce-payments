@@ -107,9 +107,9 @@
     "@typescript-eslint/eslint-plugin": "4.15.2",
     "@typescript-eslint/parser": "4.15.2",
     "@woocommerce/api": "0.2.0",
-    "@woocommerce/components": "12.0.0",
+    "@woocommerce/components": "12.2.0",
     "@woocommerce/csv-export": "1.8.0",
-    "@woocommerce/currency": "4.2.0",
+    "@woocommerce/currency": "4.3.0",
     "@woocommerce/date": "4.2.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
     "@woocommerce/e2e-environment": "0.2.3",
@@ -196,6 +196,9 @@
     "yarnhook": "0.5.1"
   },
   "overrides": {
-    "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils#update/babel-deps"
+    "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils#update/babel-deps",
+    "@woocommerce/components": {
+      "@woocommerce/currency": "4.3.0"
+    }
   }
 }

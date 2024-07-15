@@ -109,7 +109,6 @@ exports[`Documents list renders correctly 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-0"
             class="woocommerce-table__table"
             role="group"
@@ -423,7 +422,6 @@ exports[`Documents list renders table summary only when the documents summary da
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-7"
             class="woocommerce-table__table"
             role="group"

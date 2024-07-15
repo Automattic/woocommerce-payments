@@ -121,6 +121,10 @@ module.exports = {
 				process.cwd(),
 				'node_modules/intl-tel-input/build/js'
 			),
+			'@woocommerce/currency': path.resolve(
+				process.cwd(),
+				'node_modules/@woocommerce/currency/build/utils.js'
+			),
 		},
 		fallback: {
 			crypto: require.resolve( 'crypto-browserify' ),
