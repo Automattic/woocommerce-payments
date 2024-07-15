@@ -67,6 +67,8 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 			$this->session_id = $this->generate_customer_id();
 			$this->_data      = [
 				'token_customer_id' => $this->_customer_id,
+				// populating with an empty array as a starting point.
+				'cart' => [],
 			];
 			// session_expiration can remain the same.
 

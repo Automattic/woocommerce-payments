@@ -23,7 +23,9 @@ class WC_Payments_Payment_Request_Session {
 	public function init() {
 		// adding this filter with a higher priority than the session handler of the Store API.
 		add_filter( 'woocommerce_session_handler', [ $this, 'add_payment_request_store_api_session_handler' ], 20 );
+		add_filter( 'wp', [ $this, 'maybe_avoid_emptying_cart' ] );
 		add_filter( 'rest_post_dispatch', [ $this, 'store_api_headers' ], 10, 3 );
+//		add_filter( 'rest_pre_dispatch', [ $this, 'store_api_remove_cart_token' ], 10, 3 );
 	}
 
 	/**
@@ -41,6 +43,43 @@ class WC_Payments_Payment_Request_Session {
 			'@' . wp_salt()
 		);
 	}
+
+	/**
+	 * Removes the "remove cart contents" filter on the order received page, if the order has been placed with the PRBs on a product page.
+	 */
+	public function maybe_avoid_emptying_cart() {
+		if ( !is_order_received_page() ) {
+			return;
+		}
+
+		remove_action( 'template_redirect', 'wc_clear_cart_after_payment', 20 );
+	}
+//
+//	/**
+//	 * @param mixed            $response Response to replace the requested version with.
+//	 * @param \WP_REST_Server  $server Server instance.
+//	 * @param \WP_REST_Request $request Request used to generate the response.
+//	 *
+//	 * @return mixed
+//	 */
+//	public function store_api_remove_cart_token( $response, $server, $request ) {
+//		if ( ! \WC_Payments_Utils::is_store_api_request() ) {
+//			return $response;
+//		}
+//
+//		if(!isset($_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION'])) {
+//			return $response;
+//		}
+//
+//		$nonce = $request->get_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce' );
+//		if ( ! wp_verify_nonce( $nonce, 'tokenized_cart_session_nonce' ) ) {
+//			return $response;
+//		}
+//
+//		$request->set_header( 'Cart-Token', '' );
+//
+//		return $response;
+//	}
 
 	/**
 	 * Adding the session key to the Store API response, to ensure the session can be retrieved later.
@@ -96,6 +135,9 @@ class WC_Payments_Payment_Request_Session {
 		) {
 			return $default_session_handler;
 		}
+
+		// ensures cart contents aren't merged across different sessions for the same customer.
+//		add_filter( 'woocommerce_persistent_cart_enabled', '__return_false' );
 
 		require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session-handler.php';
 
