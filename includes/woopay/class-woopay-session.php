@@ -799,7 +799,7 @@ class WooPay_Session {
 		$checkout_block_index = array_search( 'woocommerce/checkout', array_column( $checkout_page_blocks, 'blockName' ), true );
 
 		// If we can find the index, it means the merchant checkout page is using blocks checkout.
-		if ( false !== $checkout_block_index ) {
+		if ( false !== $checkout_block_index && ! empty( $checkout_page_blocks[ $checkout_block_index ]['attrs'] ) ) {
 			$checkout_block_attrs = $checkout_page_blocks[ $checkout_block_index ]['attrs'];
 
 			$company   = 'optional';
