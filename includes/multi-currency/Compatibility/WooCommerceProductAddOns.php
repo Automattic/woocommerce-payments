@@ -34,7 +34,6 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				add_filter( 'woocommerce_product_addons_update_product_price', [ $this, 'update_product_price' ], 50, 4 );
 				add_filter( 'woocommerce_product_addons_order_line_item_meta', [ $this, 'order_line_item_meta' ], 50, 4 );
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
-				add_filter( 'woocommerce_product_addons_update_flat_fees', [ $this, 'convert_flat_fees' ], 50, 2 );
 			}
 
 			if ( wp_doing_ajax() ) {
@@ -128,47 +127,31 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 		} elseif ( 'percentage_based' === $addon['price_type'] && 0.0 === (float) $price ) {
 			$value .= '';
 		} elseif ( 'custom_price' === $addon['field_type'] && $addon['price'] ) {
-			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
-				// phpcs:ignore
-				/**
-				 * @psalm-suppress UndefinedClass
-				 */
-				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon['price'], $cart_item['data'], true ) );
+			if ( class_exists( 'WC_Product_Addons_Helper' ) ) {
+				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon['price'], $cart_item['data'] ) );
 				/* translators: %1$s custom addon price in cart */
 				$value           .= sprintf( _x( ' (%1$s)', 'custom price addon price in cart', 'woocommerce-payments' ), $addon_price );
 				$addon['display'] = $value;
 			}
 		} elseif ( 'flat_fee' === $addon['price_type'] && $addon['price'] ) {
-			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
+			if ( class_exists( 'WC_Product_Addons_Helper' ) ) {
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
-				if ( 'input_multiplier' === $addon['field_type'] ) {
-					// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
-					$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
-				}
-				// phpcs:ignore
-				/**
-				 * @psalm-suppress UndefinedClass
-				 */
 				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $cart_item['data'] ) );
 				/* translators: %1$s flat fee addon price in order */
 				$value .= sprintf( _x( ' (+ %1$s)', 'flat fee addon price in cart', 'woocommerce-payments' ), $addon_price );
 			}
 		} elseif ( 'quantity_based' === $addon['price_type'] && $addon['price'] && $add_price_to_value ) {
-			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
+			if ( class_exists( 'WC_Product_Addons_Helper' ) ) {
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 				if ( 'input_multiplier' === $addon['field_type'] ) {
 					// Quantity/multiplier add on needs to be split, calculated, then multiplied by input value.
 					$addon_price = $this->multi_currency->get_price( $addon['price'] / $addon['value'], 'product' ) * $addon['value'];
 				}
-				// phpcs:ignore
-				/**
-				 * @psalm-suppress UndefinedClass
-				 */
 				$addon_price = wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $cart_item['data'] ) );
 				/* translators: %1$s addon price in order */
 				$value .= sprintf( _x( ' (%1$s)', 'quantity based addon price in cart', 'woocommerce-payments' ), $addon_price );
 			}
-		} else {
+		} elseif ( 'percentage_based' === $addon['price_type'] && $addon['price'] && $add_price_to_value ) {
 			// Get the percentage cost in the currency in use, and set the meta data on the product that the value was converted.
 			$_product = wc_get_product( $cart_item['product_id'] );
 			$price    = $this->multi_currency->get_price( $price, 'product' );
@@ -198,6 +181,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 		$price         = $this->multi_currency->get_price( $prices['price'], 'product' );
 		$regular_price = $this->multi_currency->get_price( $prices['regular_price'], 'product' );
 		$sale_price    = $this->multi_currency->get_price( $prices['sale_price'], 'product' );
+		$flat_fees     = 0;
 		$quantity      = $cart_item['quantity'];
 
 		// TODO: Check compat with Smart Coupons.
@@ -236,9 +220,11 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 					$sale_price    += (float) ( $sale_price * ( $addon_price / 100 ) );
 					break;
 				case 'flat_fee':
-					$price         += (float) ( $addon_price / $quantity );
-					$regular_price += (float) ( $addon_price / $quantity );
-					$sale_price    += (float) ( $addon_price / $quantity );
+					$flat_fee       = $quantity > 0 ? (float) ( $addon_price / $quantity ) : 0;
+					$price         += $flat_fee;
+					$regular_price += $flat_fee;
+					$sale_price    += $flat_fee;
+					$flat_fees     += $flat_fee;
 					break;
 				default:
 					$price         += (float) $addon_price;
@@ -252,22 +238,11 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 		$cart_item['data']->update_meta_data( self::ADDONS_CONVERTED_META_KEY, 1 );
 
 		return [
-			'price'         => $price,
-			'regular_price' => $regular_price,
-			'sale_price'    => $sale_price,
+			'price'                => $price,
+			'regular_price'        => $regular_price,
+			'sale_price'           => $sale_price,
+			'addons_flat_fees_sum' => $flat_fees,
 		];
-	}
-
-	/**
-	 * Checks to see if the product's price should be converted.
-	 *
-	 * @param float $flat_fees      Sum of flat fees, used to calculate product price in cart/checkout.
-	 * @param array $cart_item_data Cart item data.
-	 *
-	 * @return float Converted flat fees.
-	 */
-	public function convert_flat_fees( $flat_fees, $cart_item_data ) {
-		return $this->multi_currency->get_price( $flat_fees, 'product' );
 	}
 
 	/**
@@ -308,11 +283,7 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 				// Convert all others.
 				$addon_price = $this->multi_currency->get_price( $addon['price'], 'product' );
 			}
-			if ( class_exists( '\WC_Product_Addons_Helper' ) ) {
-				// phpcs:ignore
-				/**
-				 * @psalm-suppress UndefinedClass
-				 */
+			if ( class_exists( 'WC_Product_Addons_Helper' ) ) {
 				$price = html_entity_decode(
 					wp_strip_all_tags( wc_price( \WC_Product_Addons_Helper::get_product_addon_price_for_display( $addon_price, $values['data'] ) ) ),
 					ENT_QUOTES,
