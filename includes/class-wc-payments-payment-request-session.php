@@ -48,6 +48,7 @@ class WC_Payments_Payment_Request_Session {
 	 * Removes the "remove cart contents" filter on the order received page, if the order has been placed with the PRBs on a product page.
 	 */
 	public function maybe_avoid_emptying_cart() {
+		// TODO: ensure we're avoiding this only for orders placed with the PRBs.
 		if ( !is_order_received_page() ) {
 			return;
 		}
