@@ -243,9 +243,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'sale_price'    => 0,
 		];
 		$expected  = [
-			'price'         => 78.0, // (10 * 1.5) + (42 * 1.5)
-			'regular_price' => 78.0,
-			'sale_price'    => 63.0, // (0 * 1.5) + (42 * 1.5)
+			'price'                => 78.0, // (10 * 1.5) + (42 * 1.5)
+			'regular_price'        => 78.0,
+			'sale_price'           => 63.0, // (0 * 1.5) + (42 * 1.5)
+			'addons_flat_fees_sum' => 63.0,
 		];
 
 		$this->mock_multi_currency
@@ -282,9 +283,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'sale_price'    => 0,
 		];
 		$expected  = [
-			'price'         => 22.5, // 10 * 1.5 * 1.5
-			'regular_price' => 22.5,
-			'sale_price'    => 0.0,
+			'price'                => 22.5, // 10 * 1.5 * 1.5
+			'regular_price'        => 22.5,
+			'sale_price'           => 0.0,
+			'addons_flat_fees_sum' => 0,
 		];
 
 		// Product is created with a price of 10, and update_product_price calls get_price, which is already converted.
@@ -322,9 +324,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'sale_price'    => 0,
 		];
 		$expected  = [
-			'price'         => 57.0, // (10 * 1.5) + 42
-			'regular_price' => 57.0,
-			'sale_price'    => 42.0,
+			'price'                => 57.0, // (10 * 1.5) + 42
+			'regular_price'        => 57.0,
+			'sale_price'           => 42.0,
+			'addons_flat_fees_sum' => 0,
 		];
 
 		$this->mock_multi_currency
@@ -359,9 +362,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'sale_price'    => 0,
 		];
 		$expected  = [
-			'price'         => 141.0, // (10 * 1.5) + ((42 * 1.5) * 2)
-			'regular_price' => 141.0,
-			'sale_price'    => 126.0, // (0 * 1.5) + ((42 * 1.5) * 2)
+			'price'                => 141.0, // (10 * 1.5) + ((42 * 1.5) * 2)
+			'regular_price'        => 141.0,
+			'sale_price'           => 126.0, // (0 * 1.5) + ((42 * 1.5) * 2)
+			'addons_flat_fees_sum' => 126.0,
 		];
 
 		$this->mock_multi_currency
@@ -527,7 +531,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 		$expected  = [
 			'name'    => 'Checkbox',
-			'value'   => 'Percentage (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)',
+			'value'   => 'Percentage',
 			'display' => '',
 		];
 
