@@ -22,6 +22,7 @@ import { select } from '@wordpress/data';
 
 jest.mock( '@wordpress/data', () => ( {
 	select: jest.fn(),
+	registerStore: jest.fn(),
 } ) );
 const settingsMock = {
 	account_country: 'US',

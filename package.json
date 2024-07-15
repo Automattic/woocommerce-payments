@@ -83,7 +83,6 @@
     "@woocommerce/number": "2.4.0",
     "canvas-confetti": "1.9.2",
     "debug": "4.1.1",
-    "intl-tel-input": "17.0.15",
     "lodash": "4.17.21"
   },
   "devDependencies": {

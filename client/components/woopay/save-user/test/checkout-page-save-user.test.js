@@ -32,6 +32,10 @@ jest.mock( '@wordpress/data', () => ( {
 		setBillingAddress: jest.fn(),
 		setShippingAddress: jest.fn(),
 	} ),
+	dispatch: jest.fn().mockReturnValue( {
+		onLoad: jest.fn(),
+	} ),
+	registerStore: jest.fn(),
 } ) );
 
 jest.mock( 'tracks', () => ( {

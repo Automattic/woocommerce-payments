@@ -13,7 +13,7 @@ import {
 	useGetSavingError,
 	useDevMode,
 } from 'wcpay/data';
-import PhoneNumberInput from 'wcpay/settings/phone-input';
+import PhoneInput from 'wcpay/settings/phone-input';
 
 const SupportPhoneInput = ( { setInputVallid } ) => {
 	const [ supportPhone, setSupportPhone ] = useAccountBusinessSupportPhone();
@@ -71,11 +71,12 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 				label={ labelText }
 				id="account-business-support-phone-input"
 			>
-				<PhoneNumberInput
+				<PhoneInput
 					onValueChange={ setSupportPhone }
 					value={ supportPhone }
 					onValidationChange={ setPhoneValidity }
 					inputProps={ {
+						id: 'account-business-support-phone-input',
 						ariaLabel: labelText,
 					} }
 				/>

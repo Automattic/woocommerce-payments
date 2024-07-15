@@ -117,10 +117,6 @@ module.exports = {
 		alias: {
 			assets: path.resolve( process.cwd(), 'assets' ),
 			wcpay: path.resolve( process.cwd(), 'client' ),
-			iti: path.resolve(
-				process.cwd(),
-				'node_modules/intl-tel-input/build/js'
-			),
 			'@woocommerce/currency': path.resolve(
 				process.cwd(),
 				'node_modules/@woocommerce/currency/build/utils.js'

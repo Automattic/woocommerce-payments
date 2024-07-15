@@ -7,9 +7,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import PhoneNumberInput from '../';
+import PhoneInput from '../';
 
-describe( 'PhoneNumberInput', () => {
+describe( 'PhoneInput', () => {
 	const handlePhoneNumberChangeMock = jest.fn();
 	const handlePhoneValidationChangeMock = jest.fn();
 
@@ -23,7 +23,7 @@ describe( 'PhoneNumberInput', () => {
 
 	it( 'should render phone number input', () => {
 		render(
-			<PhoneNumberInput
+			<PhoneInput
 				onValueChange={ handlePhoneNumberChangeMock }
 				onValidationChange={ handlePhoneValidationChangeMock }
 				value="123"
@@ -36,7 +36,7 @@ describe( 'PhoneNumberInput', () => {
 
 	it( 'should render the default selected country with code', () => {
 		render(
-			<PhoneNumberInput
+			<PhoneInput
 				onValueChange={ handlePhoneNumberChangeMock }
 				onValidationChange={ handlePhoneValidationChangeMock }
 				value="123"
@@ -49,7 +49,7 @@ describe( 'PhoneNumberInput', () => {
 
 	it( 'should call the onValueChange with phone number including country code', () => {
 		render(
-			<PhoneNumberInput
+			<PhoneInput
 				onValueChange={ handlePhoneNumberChangeMock }
 				onValidationChange={ handlePhoneValidationChangeMock }
 				value="123"
@@ -66,7 +66,7 @@ describe( 'PhoneNumberInput', () => {
 
 	it( 'should call the onValidationChange with true if value is valid', () => {
 		render(
-			<PhoneNumberInput
+			<PhoneInput
 				onValueChange={ handlePhoneNumberChangeMock }
 				onValidationChange={ handlePhoneValidationChangeMock }
 				value="123"
