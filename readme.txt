@@ -94,6 +94,18 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.0.0-test-1 - unreleased =
+* Add - Add ECE support for multiple product types.
+* Add - Add independent ECE instances in WC Blocks.
+* Add - Use Stripe's Express Checkout Element (ECE) for express checkout button previews in the settings when ECE is enabled.
+* Fix - Disable ECE for non shipping products if Tax is calculated on billing address.
+* Fix - Fix Express Checkout Element button width.
+* Fix - Fix payment method title for Express Checkout Element orders.
+* Fix - Use the customer id saved in the subscription to process renewal payments.
+* Update - Deprecate Giropay.
+* Dev - Avoid using deprecated hook for processed checkout order.
+* Dev - Bump WC tested up to version to 9.1.2
+
 = 7.9.1 - 2024-07-11 =
 * Fix - Fix Documents API regex to allow documents with dashes in name to be viewed.
 
