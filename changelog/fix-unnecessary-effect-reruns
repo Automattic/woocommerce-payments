@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Prevent infinite loop in usePaymentFailHandler effect
