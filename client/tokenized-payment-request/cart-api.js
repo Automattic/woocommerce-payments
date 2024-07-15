@@ -109,12 +109,14 @@ export default class PaymentRequestCartApi {
 			// parse: false to ensure we can get the response headers
 			parse: false,
 			headers: {
+				// sending an empty value, so that the custom session handler is leveraged.
 				'X-WooPayments-Tokenized-Cart-Session': '',
 			},
 		} );
 
 		this.cartRequestHeaders = {
 			Nonce: response.headers.get( 'Nonce' ),
+			// saving the received value as a cart reference for future usage.
 			'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
 				'X-WooPayments-Tokenized-Cart-Session'
 			),
@@ -200,6 +202,7 @@ export default class PaymentRequestCartApi {
 	 */
 	async emptyCart() {
 		try {
+			// TODO: this could be optimized, if we could cache the previous request to cart data.
 			const cartData = await this._request( {
 				method: 'GET',
 				path: '/wc/store/v1/cart',

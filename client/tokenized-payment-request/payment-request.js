@@ -89,7 +89,6 @@ export default class WooPaymentsPaymentRequest {
 	async startPaymentRequest() {
 		// reference to this class' instance, to be used inside callbacks to avoid `this` misunderstandings.
 		const _self = this;
-		// TODO: is this creating multiple handlers to events on different `paymentRequest` objects?
 		const paymentRequest = getPaymentRequest( {
 			stripe: this.wcpayApi.getStripe(),
 			cartData: this.cachedCartData,
@@ -118,7 +117,8 @@ export default class WooPaymentsPaymentRequest {
 			getPaymentRequestData( 'button_context' )
 		);
 
-		// On PDP pages, we need to use an anonymous cart to check out.
+		// on product pages, we need to interact with an anonymous cart to checkout the product,
+		// so that we don't affect the products in the main cart.
 		// On cart, checkout, place order pages we instead use the cart itself.
 		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
 			await this.paymentRequestCartApi.createAnonymousCart();
@@ -435,7 +435,8 @@ export default class WooPaymentsPaymentRequest {
 	 * Initialize event handlers and UI state
 	 */
 	async init() {
-		if ( ! this.cachedCartData ) {
+		// on product pages, we should be able to have `initialProductData` from the backend - which saves us some AJAX calls.
+		if ( ! this.cachedCartData && ! this.initialProductData ) {
 			try {
 				this.cachedCartData = await this.getCartData();
 			} catch ( e ) {

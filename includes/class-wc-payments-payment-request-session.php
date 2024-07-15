@@ -55,7 +55,7 @@ class WC_Payments_Payment_Request_Session {
 
 		remove_action( 'template_redirect', 'wc_clear_cart_after_payment', 20 );
 	}
-//
+
 //	/**
 //	 * @param mixed            $response Response to replace the requested version with.
 //	 * @param \WP_REST_Server  $server Server instance.
