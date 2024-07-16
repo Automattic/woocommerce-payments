@@ -456,7 +456,7 @@ export default class WooPaymentsPaymentRequest {
 			}
 		}
 
-		// once cart data has been fetched, we can safely clear cached product data.
+		// once (and if) cart data has been fetched, we can safely clear cached product data.
 		if ( this.cachedCartData ) {
 			this.initialProductData = undefined;
 		}
