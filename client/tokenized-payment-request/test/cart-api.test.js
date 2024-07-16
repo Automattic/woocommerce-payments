@@ -26,7 +26,7 @@ describe( 'PaymentRequestCartApi', () => {
 		global.wcpayPaymentRequestParams.button_context = 'product';
 		const headers = new Headers();
 		headers.append(
-			'X-WooPayments-Express-Payment-Request-Nonce',
+			'X-WooPayments-Tokenized-Cart-Nonce',
 			'tokenized_cart_nonce'
 		);
 		headers.append( 'Nonce', 'nonce-value' );
@@ -63,8 +63,8 @@ describe( 'PaymentRequestCartApi', () => {
 				),
 				credentials: 'omit',
 				headers: expect.objectContaining( {
-					'X-WooPayments-Express-Payment-Request': true,
-					'X-WooPayments-Express-Payment-Request-Nonce':
+					'X-WooPayments-Tokenized-Cart': true,
+					'X-WooPayments-Tokenized-Cart-Nonce':
 						'tokenized_cart_nonce',
 					Nonce: 'nonce-value',
 					'Cart-Token': 'cart-token-value',
@@ -88,8 +88,8 @@ describe( 'PaymentRequestCartApi', () => {
 				credentials: 'omit',
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
-					'X-WooPayments-Express-Payment-Request': true,
-					'X-WooPayments-Express-Payment-Request-Nonce':
+					'X-WooPayments-Tokenized-Cart': true,
+					'X-WooPayments-Tokenized-Cart-Nonce':
 						'global_tokenized_cart_nonce',
 				} ),
 				data: expect.objectContaining( {
@@ -115,8 +115,8 @@ describe( 'PaymentRequestCartApi', () => {
 				credentials: undefined,
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
-					'X-WooPayments-Express-Payment-Request': true,
-					'X-WooPayments-Express-Payment-Request-Nonce':
+					'X-WooPayments-Tokenized-Cart': true,
+					'X-WooPayments-Tokenized-Cart-Nonce':
 						'global_tokenized_cart_nonce',
 				} ),
 				data: expect.objectContaining( {

@@ -40,7 +40,7 @@ export default class PaymentRequestCartApi {
 				// the Store API nonce, which could later be overwritten.
 				Nonce: getPaymentRequestData( 'nonce' ).tokenized_order_nonce,
 				// needed for validation of address data, etc.
-				'X-WooPayments-Express-Payment-Request-Nonce':
+				'X-WooPayments-Tokenized-Cart-Nonce':
 					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
 					undefined,
 				// necessary to validate any request made to the backend from the PDP.
@@ -84,7 +84,7 @@ export default class PaymentRequestCartApi {
 			method: 'POST',
 			path: '/wc/store/v1/checkout',
 			headers: {
-				'X-WooPayments-Express-Payment-Request': true,
+				'X-WooPayments-Tokenized-Cart': true,
 				...this.cartRequestHeaders,
 			},
 			data: paymentData,
@@ -111,7 +111,7 @@ export default class PaymentRequestCartApi {
 	 */
 	async createSeparateCart() {
 		this.cartRequestHeaders = {
-			// sending an empty value, so that the custom session handler is leveraged to create a separate cart.
+			// sending an empty value w/ the next request, so that the custom session handler is leveraged to create a separate cart.
 			'X-WooPayments-Tokenized-Cart-Session': '',
 		};
 
@@ -134,7 +134,7 @@ export default class PaymentRequestCartApi {
 			method: 'POST',
 			path: '/wc/store/v1/cart/update-customer',
 			headers: {
-				'X-WooPayments-Express-Payment-Request': true,
+				'X-WooPayments-Tokenized-Cart': true,
 				...this.cartRequestHeaders,
 			},
 			data: customerData,

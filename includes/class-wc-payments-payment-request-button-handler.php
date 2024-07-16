@@ -174,12 +174,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return mixed
 	 */
 	public function tokenized_cart_store_api_address_normalization( $response, $server, $request ) {
-		if ( 'true' !== $request->get_header( 'X-WooPayments-Express-Payment-Request' ) ) {
+		if ( 'true' !== $request->get_header( 'X-WooPayments-Tokenized-Cart' ) ) {
 			return $response;
 		}
 
 		// header added as additional layer of security.
-		$nonce = $request->get_header( 'X-WooPayments-Express-Payment-Request-Nonce' );
+		$nonce = $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
 		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
 			return $response;
 		}
