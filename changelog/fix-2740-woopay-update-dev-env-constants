@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Replace WooPay's development environment constants with global variables.
