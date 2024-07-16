@@ -1,115 +1,102 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
-import { Flex, TabPanel } from '@wordpress/components';
+import React, { useState } from 'react';
+import { useDispatch } from '@wordpress/data';
+import { Flex } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
-import { useAllDepositsOverviews } from 'wcpay/data';
-import { useSelectedCurrency } from 'wcpay/overview/hooks';
-import { getCurrencyTabTitle } from './utils';
+import type * as AccountOverview from 'wcpay/types/account-overview';
 import BalanceBlock from './balance-block';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import InlineNotice from '../inline-notice';
+import InstantDepositButton from 'deposits/instant-deposits';
+import SendMoneyIcon from 'assets/images/icons/send-money.svg?asset';
 import {
 	TotalBalanceTooltip,
 	AvailableBalanceTooltip,
 } from './balance-tooltip';
 import { fundLabelStrings } from './strings';
-import InstantDepositButton from 'deposits/instant-deposits';
-import { recordEvent } from 'tracks';
-import type * as AccountOverview from 'wcpay/types/account-overview';
+import { ClickTooltip } from '../tooltip';
+import { formatCurrency } from 'wcpay/utils/currency';
+import { useAllDepositsOverviews } from 'wcpay/data';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import './style.scss';
 
-/**
- * BalanceTabProps
- *
- * @typedef {Object} BalanceTab
- *
- * @param {string} name           Name of the tab.
- * @param {string} title          Title of the tab.
- * @param {string} currencyCode   Currency code of the tab.
- * @param {number} availableFunds Available funds of the tab.
- * @param {number} pendingFunds   Pending funds of the tab.
- * @param {number} delayDays	  The account's pending period in days.
- */
-type BalanceTabProps = {
-	name: string;
-	title: string;
-	currencyCode: string;
-	availableFunds: number;
-	pendingFunds: number;
-	delayDays: number;
-	instantBalance?: AccountOverview.InstantBalance;
+const useInstantDepositNoticeState = () => {
+	const { updateOptions } = useDispatch( 'wc/admin/options' );
+	const [ isDismissed, setIsDismissed ] = useState(
+		wcpaySettings.isInstantDepositNoticeDismissed
+	);
+
+	const setInstantDepositNoticeDismissed = () => {
+		setIsDismissed( true );
+		wcpaySettings.isInstantDepositNoticeDismissed = true;
+		updateOptions( { wcpay_instant_deposit_notice_dismissed: true } );
+	};
+
+	return {
+		isInstantDepositNoticeDismissed: isDismissed,
+		handleDismissInstantDepositNotice: setInstantDepositNoticeDismissed,
+	};
 };
 
 /**
- * Renders an account balances panel with tab navigation for each deposit currency.
- *
- * @return {JSX.Element} Rendered balances panel with tab navigation for each currency.
+ * Renders account balances for the selected currency.
  */
 const AccountBalances: React.FC = () => {
 	const { overviews, isLoading } = useAllDepositsOverviews();
-	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
+	const { selectedCurrency } = useSelectedCurrency();
+
+	const {
+		isInstantDepositNoticeDismissed,
+		handleDismissInstantDepositNotice,
+	} = useInstantDepositNoticeState();
 
 	if ( ! isLoading && overviews.currencies.length === 0 ) {
 		return null;
 	}
 
-	const onTabSelect = ( tabName: BalanceTabProps[ 'name' ] ) => {
-		setSelectedCurrency( tabName );
-		recordEvent( 'wcpay_overview_balances_currency_tab_click', {
-			selected_currency: tabName,
-		} );
-	};
-
 	if ( isLoading ) {
-		// While the data is loading, we show a loading currency tab.
-		const loadingTabs: BalanceTabProps[] = [
-			{
-				name: 'loading',
-				title: getCurrencyTabTitle(
-					wcpaySettings.accountDefaultCurrency
-				),
-				currencyCode: wcpaySettings.accountDefaultCurrency,
-				availableFunds: 0,
-				pendingFunds: 0,
-				delayDays: 0,
-			},
-		];
+		// While the data is loading, we show a loading state for the balances.
+		const loadingData = {
+			name: 'loading',
+			currencyCode: wcpaySettings.accountDefaultCurrency,
+			availableFunds: 0,
+			pendingFunds: 0,
+			delayDays: 0,
+		};
+
 		return (
-			<TabPanel tabs={ loadingTabs }>
-				{ ( tab: BalanceTabProps ) => (
-					<Flex
-						gap={ 0 }
-						className="wcpay-account-balances__balances"
-					>
-						<BalanceBlock
-							id={ `wcpay-account-balances-${ tab.currencyCode }-total` }
-							title={ fundLabelStrings.total }
-							amount={ 0 }
-							currencyCode={ tab.currencyCode }
-							isLoading
-						/>
-						<BalanceBlock
-							id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
-							title={ fundLabelStrings.available }
-							amount={ 0 }
-							currencyCode={ tab.currencyCode }
-							isLoading
-						/>
-					</Flex>
-				) }
-			</TabPanel>
+			<Flex gap={ 0 } className="wcpay-account-balances__balances">
+				<BalanceBlock
+					id={ `wcpay-account-balances-${ loadingData.currencyCode }-total` }
+					title={ fundLabelStrings.total }
+					amount={ 0 }
+					currencyCode={ loadingData.currencyCode }
+					isLoading
+				/>
+				<BalanceBlock
+					id={ `wcpay-account-balances-${ loadingData.currencyCode }-available` }
+					title={ fundLabelStrings.available }
+					amount={ 0 }
+					currencyCode={ loadingData.currencyCode }
+					isLoading
+				/>
+			</Flex>
 		);
 	}
 
 	const { currencies, account } = overviews;
 
-	const depositCurrencyTabs = currencies.map(
+	const depositCurrencyOverviews = currencies.map(
 		( overview: AccountOverview.Overview ) => ( {
 			name: overview.currency,
-			title: getCurrencyTabTitle( overview.currency ),
 			currencyCode: overview.currency,
 			availableFunds: overview.available?.amount ?? 0,
 			pendingFunds: overview.pending?.amount ?? 0,
@@ -118,65 +105,115 @@ const AccountBalances: React.FC = () => {
 		} )
 	);
 
-	// Selected currency is not valid if it is not in the list of deposit currencies.
-	const isSelectedCurrencyValid =
-		selectedCurrency &&
-		depositCurrencyTabs.some( ( tab ) => tab.name === selectedCurrency );
+	const selectedOverview =
+		depositCurrencyOverviews.find(
+			( overview ) => overview.name === selectedCurrency
+		) || depositCurrencyOverviews[ 0 ];
+
+	const totalBalance =
+		selectedOverview.availableFunds + selectedOverview.pendingFunds;
 
 	return (
-		<TabPanel
-			tabs={ depositCurrencyTabs }
-			onSelect={ onTabSelect }
-			initialTabName={
-				isSelectedCurrencyValid ? selectedCurrency : undefined
-			}
-		>
-			{ ( tab: BalanceTabProps ) => {
-				const totalBalance = tab.availableFunds + tab.pendingFunds;
-
-				return (
-					<>
-						<Flex
-							gap={ 0 }
-							className="wcpay-account-balances__balances"
-						>
-							<BalanceBlock
-								id={ `wcpay-account-balances-${ tab.currencyCode }-total` }
-								title={ fundLabelStrings.total }
-								amount={ totalBalance }
-								currencyCode={ tab.currencyCode }
-								tooltip={
-									<TotalBalanceTooltip
-										balance={ totalBalance }
-									/>
+		<>
+			<Flex gap={ 0 } className="wcpay-account-balances__balances">
+				<BalanceBlock
+					id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-total` }
+					title={ fundLabelStrings.total }
+					amount={ totalBalance }
+					currencyCode={ selectedOverview.currencyCode }
+					tooltip={ <TotalBalanceTooltip balance={ totalBalance } /> }
+				/>
+				<BalanceBlock
+					id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-available` }
+					title={ fundLabelStrings.available }
+					amount={ selectedOverview.availableFunds }
+					currencyCode={ selectedOverview.currencyCode }
+					tooltip={
+						<AvailableBalanceTooltip
+							balance={ selectedOverview.availableFunds }
+						/>
+					}
+				/>
+			</Flex>
+			{ selectedOverview.instantBalance &&
+				selectedOverview.instantBalance.amount > 0 && (
+					<Flex
+						gap={ 0 }
+						className="wcpay-account-balances__instant-deposit"
+						direction="column"
+						align="start"
+					>
+						{ ! isInstantDepositNoticeDismissed && (
+							<InlineNotice
+								className="wcpay-account-balances__instant-deposit-notice"
+								icon={ <img src={ SendMoneyIcon } alt="" /> }
+								isDismissible={ true }
+								onRemove={ () =>
+									handleDismissInstantDepositNotice()
 								}
-							/>
-							<BalanceBlock
-								id={ `wcpay-account-balances-${ tab.currencyCode }-available` }
-								title={ fundLabelStrings.available }
-								amount={ tab.availableFunds }
-								currencyCode={ tab.currencyCode }
-								tooltip={
-									<AvailableBalanceTooltip
-										balance={ tab.availableFunds }
-									/>
-								}
-							/>
-						</Flex>
-						{ tab.instantBalance && tab.instantBalance.amount > 0 && (
-							<Flex
-								gap={ 0 }
-								className="wcpay-account-balances__instant-deposit"
 							>
-								<InstantDepositButton
-									instantBalance={ tab.instantBalance }
-								/>
-							</Flex>
+								{ sprintf(
+									__(
+										/* translators: %$1$s: Available instant deposit amount, %2$s: Instant deposit fee percentage */
+										/* 'Instantly deposit %1$s and get funds in your bank account in 30 mins for a %2$s%% fee.' */
+										'Get %1$s via instant deposit. Funds are typically in your bank account within 30 mins. Fee: %2$s%%.',
+										'woocommerce-payments'
+									),
+									formatCurrency(
+										selectedOverview.instantBalance.amount,
+										selectedOverview.instantBalance.currency
+									),
+									selectedOverview.instantBalance
+										.fee_percentage
+								) }
+							</InlineNotice>
 						) }
-					</>
-				);
-			} }
-		</TabPanel>
+
+						<Flex justify="flex-start">
+							<InstantDepositButton
+								instantBalance={
+									selectedOverview.instantBalance
+								}
+							/>
+							{ isInstantDepositNoticeDismissed && ( // Show the tooltip only when the notice is dismissed.
+								<ClickTooltip
+									buttonIcon={ <HelpOutlineIcon /> }
+									buttonLabel={ __(
+										'Learn more about instant deposit',
+										'woocommerce-payments'
+									) }
+									content={
+										/* 'With instant deposit you can receive requested funds in your bank account within 30 mins for a 1.5% fee. Learn more' */
+
+										interpolateComponents( {
+											mixedString: sprintf(
+												__(
+													/* translators: %s: Instant deposit fee percentage */
+													'With {{strong}}instant deposit{{/strong}} you can receive requested funds in your bank account within 30 mins for a %s%% fee. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+													'woocommerce-payments'
+												),
+												selectedOverview.instantBalance
+													.fee_percentage
+											),
+											components: {
+												strong: <strong />,
+												learnMoreLink: (
+													<Link
+														href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/"
+														target="_blank"
+														rel="noreferrer"
+														type="external"
+													/>
+												),
+											},
+										} )
+									}
+								/>
+							) }
+						</Flex>
+					</Flex>
+				) }
+		</>
 	);
 };
 

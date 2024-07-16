@@ -1,23 +1,19 @@
-/* global wcpayConfig, wcpayExpressCheckoutParams */
-
 /**
  * Internal dependencies
  */
-import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from '../../checkout/constants';
+import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
+import { getConfig } from 'wcpay/utils/checkout';
+import ApplePayPreview from './components/apple-pay-preview';
 import ExpressCheckoutContainer from './components/express-checkout-container';
-import { getConfig } from '../../utils/checkout';
-import ApplePayPreview from './apple-pay-preview';
+import GooglePayPreview from './components/google-pay-preview';
 
-const expressCheckoutElementPaymentMethod = ( api ) => ( {
-	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
+const expressCheckoutElementApplePay = ( api ) => ( {
+	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
+	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
 	content: (
-		<ExpressCheckoutContainer
-			api={ api }
-			stripe={ api.loadStripe( true ) }
-		/>
+		<ExpressCheckoutContainer api={ api } expressPaymentMethod="applePay" />
 	),
 	edit: <ApplePayPreview />,
-	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	supports: {
 		features: getConfig( 'features' ),
 	},
@@ -26,12 +22,30 @@ const expressCheckoutElementPaymentMethod = ( api ) => ( {
 			return false;
 		}
 
-		if ( typeof wcpayConfig !== 'undefined' ) {
-			return wcpayConfig.isExpressCheckoutElementEnabled;
-		}
-
-		return false;
+		return true;
 	},
 } );
 
-export default expressCheckoutElementPaymentMethod;
+const expressCheckoutElementGooglePay = ( api ) => ( {
+	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
+	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
+	content: (
+		<ExpressCheckoutContainer
+			api={ api }
+			expressPaymentMethod="googlePay"
+		/>
+	),
+	edit: <GooglePayPreview />,
+	supports: {
+		features: getConfig( 'features' ),
+	},
+	canMakePayment: () => {
+		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			return false;
+		}
+
+		return true;
+	},
+} );
+
+export { expressCheckoutElementApplePay, expressCheckoutElementGooglePay };

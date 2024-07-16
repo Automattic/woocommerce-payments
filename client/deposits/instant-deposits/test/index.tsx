@@ -31,14 +31,6 @@ const mockInstantBalance = {
 	currency: 'USD',
 } as AccountOverview.InstantBalance;
 
-const mockZeroInstantBalance = {
-	amount: 0,
-	fee: 0,
-	net: 0,
-	fee_percentage: 1.5,
-	currency: 'USD',
-} as AccountOverview.InstantBalance;
-
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
@@ -70,13 +62,6 @@ describe( 'Instant deposit button and modal', () => {
 		};
 	} );
 
-	test( 'button renders correctly with zero balance', () => {
-		const { container } = render(
-			<InstantDepositButton instantBalance={ mockZeroInstantBalance } />
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
 	test( 'button renders correctly with balance', () => {
 		const { container } = render(
 			<InstantDepositButton instantBalance={ mockInstantBalance } />
@@ -92,7 +77,9 @@ describe( 'Instant deposit button and modal', () => {
 			screen.queryByRole( 'dialog', { name: /instant deposit/i } )
 		).not.toBeInTheDocument();
 		fireEvent.click(
-			screen.getByRole( 'button', { name: /Deposit available funds/i } )
+			screen.getByRole( 'button', {
+				name: /Get \$123\.45 now/i,
+			} )
 		);
 		const modal = screen.queryByRole( 'dialog', {
 			name: /instant deposit/i,

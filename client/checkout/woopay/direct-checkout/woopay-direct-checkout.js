@@ -6,6 +6,7 @@ import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
+import { setPostMessageTimeout } from 'wcpay/checkout/woopay/connect/connect-utils';
 
 /**
  * The WooPayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
@@ -21,6 +22,8 @@ class WooPayDirectCheckout {
 			'.wp-block-woocommerce-proceed-to-checkout-block',
 		BLOCKS_MINI_CART_PROCEED_BUTTON:
 			'a.wp-block-woocommerce-mini-cart-checkout-button-block',
+		CLASSIC_MINI_CART_PROCEED_BUTTON:
+			'.widget_shopping_cart a.button.checkout',
 	};
 
 	/**
@@ -77,12 +80,30 @@ class WooPayDirectCheckout {
 	}
 
 	/**
+	 * Checks if WooPay is reachable.
+	 *
+	 * @return {Promise<bool>} Resolves to true if WooPay is reachable.
+	 */
+	static async isWooPayReachable() {
+		return this.getSessionConnect().isWooPayReachable();
+	}
+
+	/**
 	 * Checks if the user is logged in.
 	 *
-	 * @return {Promise<*>} Resolves to true if the user is logged in.
+	 * @return {Promise<bool>} Resolves to true if the user is logged in.
 	 */
 	static async isUserLoggedIn() {
 		return this.getUserConnect().isUserLoggedIn();
+	}
+
+	/**
+	 * Retrieves encrypted data from WooPay.
+	 *
+	 * @return {Promise<Object>} Resolves to an object with encrypted data.
+	 */
+	static async getEncryptedData() {
+		return this.getUserConnect().getEncryptedData();
 	}
 
 	/**
@@ -92,6 +113,16 @@ class WooPayDirectCheckout {
 	 */
 	static async isWooPayThirdPartyCookiesEnabled() {
 		return this.getSessionConnect().isWooPayThirdPartyCookiesEnabled();
+	}
+
+	/**
+	 * Sets the length of time to wait for when a message is sent to WooPay through the iframe.
+	 */
+	static async initPostMessageTimeout() {
+		const postMessageTimeout = await this.getSessionConnect().getPostMessageTimeout();
+		if ( postMessageTimeout ) {
+			setPostMessageTimeout( postMessageTimeout );
+		}
 	}
 
 	/**
@@ -212,6 +243,9 @@ class WooPayDirectCheckout {
 		);
 		addElementBySelector(
 			this.redirectElements.BLOCKS_CART_PROCEED_BUTTON
+		);
+		addElementBySelector(
+			this.redirectElements.CLASSIC_MINI_CART_PROCEED_BUTTON
 		);
 
 		return elements;
@@ -340,6 +374,13 @@ class WooPayDirectCheckout {
 					if ( userIsLoggedIn ) {
 						woopayRedirectUrl = await this.getWooPayCheckoutUrl();
 					} else {
+						// Ensure WooPay is reachable before redirecting.
+						if ( ! ( await this.isWooPayReachable() ) ) {
+							throw new Error(
+								'WooPay is currently not available.'
+							);
+						}
+
 						woopayRedirectUrl = await this.getWooPayMinimumSessionUrl();
 					}
 
@@ -363,10 +404,12 @@ class WooPayDirectCheckout {
 	 * @return {Promise<Promise<*>|*>} Resolves to the WooPay session response.
 	 */
 	static async getEncryptedSessionData() {
+		const encryptedData = await this.getEncryptedData();
 		return request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'get_woopay_session' ),
 			{
 				_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+				...( encryptedData && { encrypted_data: encryptedData } ),
 			}
 		);
 	}

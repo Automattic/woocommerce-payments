@@ -50,6 +50,10 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 	const paymentRequestType =
 		paymentData.walletName === 'applePay' ? 'apple_pay' : 'google_pay';
 
+	const billingPhone =
+		paymentData.paymentMethod?.billing_details?.phone ??
+		paymentData.payerPhone?.replace( '/[() -]/g', '' ) ??
+		'';
 	return {
 		customer_note: paymentData.order_comments,
 		billing_address: {
@@ -66,15 +70,22 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 				paymentData.paymentMethod?.billing_details?.email ??
 				paymentData.payerEmail ??
 				'',
-			phone:
-				paymentData.paymentMethod?.billing_details?.phone ??
-				paymentData.payerPhone?.replace( '/[() -]/g', '' ) ??
-				'',
+			phone: billingPhone,
 		},
 		// refreshing any shipping address data, now that the customer is placing the order.
-		...transformStripeShippingAddressForStoreApi( shipping ),
+		shipping_address: {
+			...transformStripeShippingAddressForStoreApi( shipping )
+				.shipping_address,
+			// adding the phone number, because it might be needed.
+			// Stripe doesn't provide us with a different phone number for shipping, so we're going to use the same phone used for billing.
+			phone: billingPhone,
+		},
 		payment_method: 'woocommerce_payments',
 		payment_data: [
+			{
+				key: 'payment_method',
+				value: 'card',
+			},
 			{
 				key: 'payment_request_type',
 				value: paymentRequestType,

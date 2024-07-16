@@ -7,42 +7,43 @@
  * @return {Array} An array of PaymentItems
  */
 export const normalizeLineItems = ( displayItems ) => {
-	return displayItems
-		.filter( ( displayItem ) => {
-			return !! displayItem.value;
+	return displayItems.map( ( displayItem ) =>
+		// The amount prop is already present on the item.
+		( {
+			...displayItem,
+			name: displayItem.label,
+			amount: displayItem?.amount ?? displayItem?.value,
 		} )
-		.map( ( displayItem ) => {
-			return {
-				amount: displayItem.value,
-				name: displayItem.label,
-			};
-		} );
+	);
 };
 
 /**
  * Normalize order data from Stripe's object to the expected format for WC.
  *
  * @param {Object} event Stripe's event object.
- * @param {Object} paymentMethodId Stripe's payment method id.
+ * @param {string} paymentMethodId Stripe's payment method id.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
 export const normalizeOrderData = ( event, paymentMethodId ) => {
 	const name = event?.billingDetails?.name;
 	const email = event?.billingDetails?.email ?? '';
-	const phone = event?.billingDetails?.phone ?? '';
 	const billing = event?.billingDetails?.address ?? {};
 	const shipping = event?.shippingAddress ?? {};
 	const fraudPreventionTokenValue = window.wcpayFraudPreventionToken ?? '';
 
+	const phone =
+		event?.billingDetails?.phone?.replace( /[() -]/g, '' ) ??
+		event?.payerPhone?.replace( /[() -]/g, '' ) ??
+		'';
+
 	return {
 		billing_first_name:
 			name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
-		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) || '-',
+		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '-',
 		billing_company: billing?.organization ?? '',
 		billing_email: email ?? event?.payerEmail ?? '',
-		billing_phone:
-			phone ?? event?.payerPhone?.replace( '/[() -]/g', '' ) ?? '',
+		billing_phone: phone,
 		billing_country: billing?.country ?? '',
 		billing_address_1: billing?.line1 ?? '',
 		billing_address_2: billing?.line2 ?? '',
@@ -54,6 +55,7 @@ export const normalizeOrderData = ( event, paymentMethodId ) => {
 		shipping_last_name:
 			shipping?.name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
 		shipping_company: shipping?.organization ?? '',
+		shipping_phone: phone,
 		shipping_country: shipping?.address?.country ?? '',
 		shipping_address_1: shipping?.address?.line1 ?? '',
 		shipping_address_2: shipping?.address?.line2 ?? '',
@@ -69,6 +71,23 @@ export const normalizeOrderData = ( event, paymentMethodId ) => {
 		payment_request_type: event?.expressPaymentType,
 		express_payment_type: event?.expressPaymentType,
 		'wcpay-fraud-prevention-token': fraudPreventionTokenValue,
+	};
+};
+
+/**
+ * Normalize Pay for Order data from Stripe's object to the expected format for WC.
+ *
+ * @param {Object} event Stripe's event object.
+ * @param {string} paymentMethodId Stripe's payment method id.
+ *
+ * @return {Object} Order object in the format WooCommerce expects.
+ */
+export const normalizePayForOrderData = ( event, paymentMethodId ) => {
+	return {
+		payment_method: 'woocommerce_payments',
+		'wcpay-payment-method': paymentMethodId,
+		express_payment_type: event?.expressPaymentType,
+		'wcpay-fraud-prevention-token': window.wcpayFraudPreventionToken ?? '',
 	};
 };
 
@@ -94,8 +113,8 @@ export const normalizeShippingAddress = ( shippingAddress ) => {
 		address_1: shippingAddress?.addressLine?.[ 0 ] ?? '',
 		address_2: shippingAddress?.addressLine?.[ 1 ] ?? '',
 		city: shippingAddress?.city ?? '',
-		state: shippingAddress?.region ?? '',
+		state: shippingAddress?.state ?? '',
 		country: shippingAddress?.country ?? '',
-		postcode: shippingAddress?.postalCode?.replace( ' ', '' ) ?? '',
+		postcode: shippingAddress?.postal_code ?? '',
 	};
 };

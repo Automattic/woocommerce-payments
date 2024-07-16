@@ -234,40 +234,37 @@ const OverviewPage = () => {
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
-					<>
-						{ showTaskList ? (
-							<>
-								<Card>
-									<Welcome />
-									<ErrorBoundary>
-										<TaskList
-											tasks={ tasks }
-											overviewTasksVisibility={
-												overviewTasksVisibility
-											}
-										/>
-									</ErrorBoundary>
-								</Card>
-								<Card>
-									<AccountBalances />
-								</Card>
-							</>
-						) : (
-							<Card>
-								<Welcome />
-								<AccountBalances />
-							</Card>
-						) }
-						{
-							/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
-							isPaymentOverviewWidgetEnabled && (
-								<ErrorBoundary>
-									<PaymentActivity />
-								</ErrorBoundary>
-							)
-						}
-						<DepositsOverview />
-					</>
+					<Welcome />
+
+					{ showTaskList && (
+						<Card>
+							<ErrorBoundary>
+								<TaskList
+									tasks={ tasks }
+									overviewTasksVisibility={
+										overviewTasksVisibility
+									}
+								/>
+							</ErrorBoundary>
+						</Card>
+					) }
+
+					<Card>
+						<ErrorBoundary>
+							<AccountBalances />
+						</ErrorBoundary>
+					</Card>
+
+					{
+						/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
+						isPaymentOverviewWidgetEnabled && (
+							<ErrorBoundary>
+								<PaymentActivity />
+							</ErrorBoundary>
+						)
+					}
+
+					<DepositsOverview />
 				</ErrorBoundary>
 			) }
 			<ErrorBoundary>

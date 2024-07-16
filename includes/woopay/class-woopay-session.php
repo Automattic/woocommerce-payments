@@ -378,6 +378,38 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Retrieves the user email from the current session.
+	 *
+	 * @param \WP_User $user The user object.
+	 * @return string The user email.
+	 */
+	private static function get_user_email( $user ) {
+		if ( ! empty( $_POST['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return sanitize_email( wp_unslash( $_POST['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		}
+
+		if ( ! empty( $_GET['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return sanitize_email( wp_unslash( $_GET['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		}
+
+		if ( ! empty( $_POST['encrypted_data'] ) && is_array( $_POST['encrypted_data'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$decrypted_data = WooPay_Utilities::decrypt_signed_data( $_POST['encrypted_data'] );
+
+			if ( ! empty( $decrypted_data['user_email'] ) ) {
+				return sanitize_email( wp_unslash( $decrypted_data['user_email'] ) );
+			}
+		}
+
+		// As a last resort, we try to get the email from the customer logged in the store.
+		if ( $user->exists() ) {
+			return $user->user_email;
+		}
+
+		return '';
+	}
+
+	/**
 	 * Returns the initial session request data.
 	 *
 	 * @param int|null             $order_id Pay-for-order order ID.
@@ -424,12 +456,11 @@ class WooPay_Session {
 
 		$cart_data     = self::get_cart_data( $is_pay_for_order, $order_id, $key, $billing_email, $woopay_request );
 		$checkout_data = self::get_checkout_data( $woopay_request );
+		$email         = self::get_user_email( $user );
 
 		if ( $woopay_request ) {
 			$order_id = $checkout_data['order_id'] ?? null;
 		}
-
-		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 
 		$request = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
@@ -456,6 +487,7 @@ class WooPay_Session {
 				'return_url'                     => ! $is_pay_for_order ? wc_get_cart_url() : $order->get_checkout_payment_url(),
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
 				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
+				'optional_fields_status'         => self::get_option_fields_status(),
 			],
 			'user_session'         => null,
 			'preloaded_requests'   => ! $is_pay_for_order ? [
@@ -736,5 +768,70 @@ class WooPay_Session {
 		];
 
 		return str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $custom_message );
+	}
+
+	/**
+	 * Returns the status of checkout optional/required address fields.
+	 *
+	 * @return array The status of the checkout fields.
+	 */
+	private static function get_option_fields_status() {
+		// Shortcode checkout options.
+		$company   = get_option( 'woocommerce_checkout_company_field', 'optional' );
+		$address_2 = get_option( 'woocommerce_checkout_address_2_field', 'optional' );
+		$phone     = get_option( 'woocommerce_checkout_phone_field', 'required' );
+
+		// Blocks checkout options. To get the blocks checkout options, we need
+		// to parse the checkout page content because the options are stored
+		// in the blocks HTML as a JSON.
+		$checkout_page_id = get_option( 'woocommerce_checkout_page_id' );
+		$checkout_page    = get_post( $checkout_page_id );
+
+		if ( empty( $checkout_page ) ) {
+			return [
+				'company'   => $company,
+				'address_2' => $address_2,
+				'phone'     => $phone,
+			];
+		}
+
+		$checkout_page_blocks = parse_blocks( $checkout_page->post_content );
+		$checkout_block_index = array_search( 'woocommerce/checkout', array_column( $checkout_page_blocks, 'blockName' ), true );
+
+		// If we can find the index, it means the merchant checkout page is using blocks checkout.
+		if ( false !== $checkout_block_index && ! empty( $checkout_page_blocks[ $checkout_block_index ]['attrs'] ) ) {
+			$checkout_block_attrs = $checkout_page_blocks[ $checkout_block_index ]['attrs'];
+
+			$company   = 'optional';
+			$address_2 = 'optional';
+			$phone     = 'optional';
+
+			if ( ! empty( $checkout_block_attrs['requireCompanyField'] ) ) {
+				$company = 'required';
+			}
+
+			if ( ! empty( $checkout_block_attrs['requirePhoneField'] ) ) {
+				$phone = 'required';
+			}
+
+			// showCompanyField is undefined by default.
+			if ( empty( $checkout_block_attrs['showCompanyField'] ) ) {
+				$company = 'hidden';
+			}
+
+			if ( isset( $checkout_block_attrs['showApartmentField'] ) && false === $checkout_block_attrs['showApartmentField'] ) {
+				$address_2 = 'hidden';
+			}
+
+			if ( isset( $checkout_block_attrs['showPhoneField'] ) && false === $checkout_block_attrs['showPhoneField'] ) {
+				$phone = 'hidden';
+			}
+		}
+
+		return [
+			'company'   => $company,
+			'address_2' => $address_2,
+			'phone'     => $phone,
+		];
 	}
 }

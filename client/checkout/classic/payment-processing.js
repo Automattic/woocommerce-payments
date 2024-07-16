@@ -39,7 +39,7 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
 		upeElement: null,
-		isPaymentInformationComplete: false,
+		hasLoadError: false,
 	};
 }
 
@@ -49,17 +49,24 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
  * it is simply returned.
  *
  * @param {Object} api The API object used to save the UPE configuration.
+ * @param {string} elementsLocation The location of the UPE elements.
  * @return {Promise<Object>} The appearance object for the UPE.
  */
-async function initializeAppearance( api ) {
-	const appearance = getUPEConfig( 'upeAppearance' );
+async function initializeAppearance( api, elementsLocation ) {
+	const upeConfigMap = {
+		shortcode_checkout: 'upeAppearance',
+		add_payment_method: 'upeAddPaymentMethodAppearance',
+	};
+	const upeConfigProperty =
+		upeConfigMap[ elementsLocation ] ?? 'upeAppearance';
+	const appearance = getUPEConfig( upeConfigProperty );
 	if ( appearance ) {
 		return Promise.resolve( appearance );
 	}
 
 	return await api.saveUPEAppearance(
-		getAppearance( 'shortcode_checkout' ),
-		'shortcode_checkout'
+		getAppearance( elementsLocation ),
+		elementsLocation
 	);
 }
 
@@ -202,9 +209,14 @@ function createStripePaymentMethod(
  *
  * @param {Object} api The API object used to create the Stripe payment element.
  * @param {string} paymentMethodType The type of Stripe payment method to create.
+ * @param {string} elementsLocation The location of the UPE elements.
  * @return {Object} A promise that resolves with the created Stripe payment element.
  */
-async function createStripePaymentElement( api, paymentMethodType ) {
+async function createStripePaymentElement(
+	api,
+	paymentMethodType,
+	elementsLocation
+) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
 	const options = {
@@ -213,7 +225,7 @@ async function createStripePaymentElement( api, paymentMethodType ) {
 		amount: amount,
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
-		appearance: await initializeAppearance( api ),
+		appearance: await initializeAppearance( api, elementsLocation ),
 		fonts: getFontRulesFromPage(),
 	};
 
@@ -373,8 +385,13 @@ export function maybeEnableStripeLink( api ) {
  *
  * @param {Object} api The API object.
  * @param {string} domElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * @param {string} elementsLocation Thhe location of the UPE element.
  **/
-export async function mountStripePaymentElement( api, domElement ) {
+export async function mountStripePaymentElement(
+	api,
+	domElement,
+	elementsLocation
+) {
 	try {
 		if ( ! fingerprint ) {
 			const { visitorId } = await getFingerprint();
@@ -404,13 +421,15 @@ export async function mountStripePaymentElement( api, domElement ) {
 
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
-		( await createStripePaymentElement( api, paymentMethodType ) );
+		( await createStripePaymentElement(
+			api,
+			paymentMethodType,
+			elementsLocation
+		) );
 	upeElement.mount( domElement );
-	upeElement.on( 'change', ( e ) => {
-		gatewayUPEComponents[ paymentMethodType ].isPaymentInformationComplete =
-			e.complete;
-	} );
 	upeElement.on( 'loaderror', ( e ) => {
+		// setting the flag to true to prevent the form from being submitted.
+		gatewayUPEComponents[ paymentMethodType ].hasLoadError = true;
 		// unset any styling to ensure the WC error message wrapper can take more width.
 		domElement.style.padding = '0';
 		// creating a new element to be added to the DOM, so that the message can be displayed.
@@ -524,15 +543,14 @@ export const processPayment = (
 		try {
 			await blockUI( $form );
 
-			const {
-				elements,
-				isPaymentInformationComplete,
-			} = gatewayUPEComponents[ paymentMethodType ];
+			const { elements, hasLoadError } = gatewayUPEComponents[
+				paymentMethodType
+			];
 
-			if ( ! isPaymentInformationComplete ) {
+			if ( hasLoadError ) {
 				throw new Error(
 					__(
-						'Your payment information is incomplete.',
+						'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.',
 						'woocommerce-payments'
 					)
 				);
@@ -568,3 +586,15 @@ export const processPayment = (
 	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
 	return false;
 };
+
+/**
+ * Used only for testing, resets the gatewayUPEComponents internal cache of elements for a given property.
+ *
+ * @param {string} paymentMethodType The paymentMethodType we want to remove the upeElement from.
+ * @return {void}
+ */
+export function __resetGatewayUPEComponentsElement( paymentMethodType ) {
+	if ( gatewayUPEComponents[ paymentMethodType ]?.upeElement ) {
+		delete gatewayUPEComponents[ paymentMethodType ].upeElement;
+	}
+}

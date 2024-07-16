@@ -28,6 +28,7 @@ const searchTermsForViewReportLink = {
 		'dispute',
 		'dispute_reversal',
 		'card_reader_fee',
+		'adjustment',
 	],
 
 	charge: [ 'charge', 'payment', 'adjustment' ],
@@ -87,7 +88,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 							<>
 								{ interpolateComponents( {
 									mixedString: __(
-										'{{strong}}Total payment volume{{/strong}} is gross value of payments successfully processed over a given timeframe.',
+										'{{strong}}Total payment volume{{/strong}} is the sum of all transactions in a given time period, minus refunds and disputes.',
 										'woocommerce-payments'
 									),
 									components: {
@@ -112,6 +113,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
 					filter: 'advanced',
+					store_currency_is: currency,
 					'date_between[0]': moment(
 						paymentActivityData?.date_start
 					).format( 'YYYY-MM-DD' ),
@@ -154,6 +156,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
@@ -176,6 +179,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
@@ -193,11 +197,39 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 					id="wcpay-payment-data-highlights__disputes"
 					label={ __( 'Disputes', 'woocommerce-payments' ) }
 					currencyCode={ currency }
+					tooltip={
+						<ClickTooltip
+							className="payment-data-highlights__disputes__tooltip"
+							buttonIcon={ <HelpOutlineIcon /> }
+							buttonLabel={ __(
+								'Disputes tooltip',
+								'woocommerce-payments'
+							) }
+							content={ interpolateComponents( {
+								mixedString: __(
+									'{{strong}}Disputes{{/strong}} includes the amount of any disputed charges. Dispute fees are included in the Fees section. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
+									'woocommerce-payments'
+								),
+								components: {
+									strong: <strong />,
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+										/>
+									),
+								},
+							} ) }
+						/>
+					}
 					amount={ disputes }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
 						).format( 'YYYY-MM-DD' ),
@@ -225,11 +257,19 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 							) }
 							content={ interpolateComponents( {
 								mixedString: __(
-									'{{strong}}Fees{{/strong}} includes fees on payments as well as disputes.',
+									'{{strong}}Fees{{/strong}} includes all types of fees charged by WooPayments. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
 									'woocommerce-payments'
 								),
 								components: {
 									strong: <strong />,
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woopayments/fees-and-debits/fees/"
+										/>
+									),
 								},
 							} ) }
 						/>

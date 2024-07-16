@@ -11,11 +11,58 @@ exports[`PaymentActivity component should render 1`] = `
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__header components-card-header wcpay-payment-activity__card__header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Your payment activity
+        <div
+          class="wcpay-filter components-custom-select-control"
+        >
+          <button
+            aria-describedby="Currently selected: Last 7 days"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-label="Period"
+            class="components-button wcpay-filter components-custom-select-control__button"
+            id="downshift-0-toggle-button"
+            type="button"
+          >
+            <label
+              class="wcpay-filter components-custom-select-control__label"
+              for="downshift-0-toggle-button"
+              id="downshift-0-label"
+            >
+              Period
+            </label>
+            <span
+              class="wcpay-filter components-custom-select-control__button-value"
+            >
+              Last 7 days
+            </span>
+            <svg
+              aria-hidden="true"
+              class="wcpay-filter components-custom-select-control__button-icon"
+              focusable="false"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+              />
+            </svg>
+          </button>
+          <ul
+            aria-hidden="true"
+            aria-labelledby="downshift-0-label"
+            class="wcpay-filter components-custom-select-control__menu"
+            id="downshift-0-menu"
+            role="listbox"
+            tabindex="-1"
+          />
+        </div>
       </div>
       <div
         class="components-card__body components-card-body wcpay-payment-activity__card__body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
@@ -76,7 +123,7 @@ exports[`PaymentActivity component should render 1`] = `
               </p>
               <a
                 data-link-type="wc-admin"
-                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=charge&search%5B1%5D=payment&search%5B2%5D=payment_failure_refund&search%5B3%5D=payment_refund&search%5B4%5D=refund&search%5B5%5D=refund_failure&search%5B6%5D=dispute&search%5B7%5D=dispute_reversal&search%5B8%5D=card_reader_fee"
+                href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&store_currency_is=eur&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=charge&search%5B1%5D=payment&search%5B2%5D=payment_failure_refund&search%5B3%5D=payment_refund&search%5B4%5D=refund&search%5B5%5D=refund_failure&search%5B6%5D=dispute&search%5B7%5D=dispute_reversal&search%5B8%5D=card_reader_fee&search%5B9%5D=adjustment"
               >
                 View report
               </a>
@@ -136,7 +183,7 @@ exports[`PaymentActivity component should render 1`] = `
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=charge&search%5B1%5D=payment&search%5B2%5D=adjustment"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&store_currency_is=eur&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=charge&search%5B1%5D=payment&search%5B2%5D=adjustment"
                 >
                   View report
                 </a>
@@ -165,7 +212,7 @@ exports[`PaymentActivity component should render 1`] = `
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=refund&search%5B1%5D=refund_failure&search%5B2%5D=payment_refund&search%5B3%5D=payment_failure_refund"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&store_currency_is=eur&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=refund&search%5B1%5D=refund_failure&search%5B2%5D=payment_refund&search%5B3%5D=payment_failure_refund"
                 >
                   View report
                 </a>
@@ -182,6 +229,34 @@ exports[`PaymentActivity component should render 1`] = `
                 >
                   Disputes
                 </span>
+                <button
+                  class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+                  type="button"
+                >
+                  <div
+                    class="wcpay-tooltip__content-wrapper"
+                  >
+                    <div
+                      aria-label="Disputes tooltip"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <svg
+                        class="gridicon gridicons-help-outline"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        width="16"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                  </div>
+                </button>
               </p>
               <div
                 class="wcpay-payment-data-highlights__item__wrapper"
@@ -194,7 +269,7 @@ exports[`PaymentActivity component should render 1`] = `
                 </p>
                 <a
                   data-link-type="wc-admin"
-                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=dispute&search%5B1%5D=dispute_reversal"
+                  href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&store_currency_is=eur&date_between%5B0%5D=2024-01-01&date_between%5B1%5D=2024-01-31&search%5B0%5D=dispute&search%5B1%5D=dispute_reversal"
                 >
                   View report
                 </a>
