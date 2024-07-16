@@ -150,4 +150,20 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 			$this->_dirty = false;
 		}
 	}
+
+	/**
+	 * Get a session variable.
+	 * Overridden default method, so that the `cart` session data always returns a value, in order to prevent the "saved cart after login" feature to get wrong cart data.
+	 *
+	 * @param string $key Key to get.
+	 * @param mixed  $default used if the session variable isn't set.
+	 * @return array|string value of session variable
+	 */
+	public function get( $key, $default = null ) {
+		if ( 'cart' === $key && ! isset( $this->_data['cart'] ) ) {
+			return [];
+		}
+
+		return parent::get( $key, $default );
+	}
 }
