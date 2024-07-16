@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { PhoneNumberInput } from '@woocommerce/components';
 import { validatePhoneNumber } from '@woocommerce/components/build/phone-number-input/validation';
@@ -56,11 +56,6 @@ const PhoneInput = ( {
 			<PhoneNumberInput
 				value={ value }
 				onChange={ handlePhoneInputChange }
-				placeholder={ __( 'Mobile number', 'woocommerce-payments' ) }
-				aria-label={
-					inputProps.ariaLabel ||
-					__( 'Mobile phone number', 'woocommerce-payments' )
-				}
 				name={ inputProps.name }
 				id={ inputProps.id }
 				className="phone-input input-text"

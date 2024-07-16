@@ -6,6 +6,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import { validatePhoneNumber } from '@woocommerce/components/build/phone-number-input/validation';
 
 /**
  * Internal dependencies
@@ -92,9 +93,14 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const handleCheckboxClick = ( e ) => {
 		const isChecked = e.target.checked;
 		if ( isChecked ) {
-			setPhoneNumber( getPhoneFieldValue() );
+			const phoneFieldValue = getPhoneFieldValue();
+			setPhoneNumber( phoneFieldValue );
+			onPhoneValidationChange(
+				validatePhoneNumber( phoneFieldValue, '' )
+			);
 		} else {
 			setPhoneNumber( '' );
+			onPhoneValidationChange( null );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
@@ -245,6 +251,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							inputProps={ {
 								name:
 									'woopay_user_phone_field[no-country-code]',
+								id: 'woopay_user_phone_field_no_country_code',
 							} }
 							isBlocksCheckout={ isBlocksCheckout }
 						/>
