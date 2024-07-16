@@ -263,12 +263,24 @@ export default class WooPaymentsPaymentRequest {
 					)
 				);
 
+				const shippingOptions = transformCartDataForShippingOptions(
+					cartData
+				);
+
+				if ( shippingOptions.length === 0 ) {
+					event.updateWith( {
+						// Possible statuses: https://docs.stripe.com/js/appendix/payment_response#payment_response_object-complete
+						status: 'invalid_shipping_address',
+					} );
+					_self.cachedCartData = cartData;
+
+					return;
+				}
+
 				event.updateWith( {
 					// Possible statuses: https://docs.stripe.com/js/appendix/payment_response#payment_response_object-complete
 					status: 'success',
-					shippingOptions: transformCartDataForShippingOptions(
-						cartData
-					),
+					shippingOptions,
 					total: {
 						label: getPaymentRequestData( 'total_label' ),
 						amount: transformPrice(
