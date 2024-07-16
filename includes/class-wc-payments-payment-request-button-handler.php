@@ -918,7 +918,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'pay_for_order'                => wp_create_nonce( 'pay_for_order' ),
 				'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
 				'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
-				'tokenized_order_nonce'        => wp_create_nonce( 'wc_store_api' ),
+				'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
 			],
 			'checkout'           => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),

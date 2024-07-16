@@ -44,7 +44,7 @@ export default class PaymentRequestOrderApi {
 			method: 'POST',
 			path: `/wc/store/v1/checkout/${ this.orderId }`,
 			headers: {
-				Nonce: getPaymentRequestData( 'nonce' ).tokenized_order_nonce,
+				Nonce: getPaymentRequestData( 'nonce' ).store_api_nonce,
 			},
 			data: {
 				...paymentData,

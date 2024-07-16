@@ -38,7 +38,7 @@ export default class PaymentRequestCartApi {
 			} ),
 			headers: {
 				// the Store API nonce, which could later be overwritten.
-				Nonce: getPaymentRequestData( 'nonce' ).tokenized_order_nonce,
+				Nonce: getPaymentRequestData( 'nonce' ).store_api_nonce,
 				// needed for validation of address data, etc.
 				'X-WooPayments-Tokenized-Cart-Nonce':
 					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
@@ -184,7 +184,7 @@ export default class PaymentRequestCartApi {
 	 */
 	async emptyCart() {
 		try {
-			// TODO: this could be optimized, if we could cache the previous request to cart data.
+			// TODO: this could be optimized, if we could cache the previous request of cart data for later reference.
 			const cartData = await this._request( {
 				method: 'GET',
 				path: '/wc/store/v1/cart',
