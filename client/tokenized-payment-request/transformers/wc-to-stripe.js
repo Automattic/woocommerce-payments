@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
+
 /**
  * Internal dependencies
  */
@@ -60,6 +61,10 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 		displayItems.push( {
 			amount: transformPrice( taxAmount, cartData.totals ),
 			label: __( 'Tax', 'woocommerce-payments' ),
+			// pending because tax calculation could be based on the shopper's billing address,
+			// which won't be provided to us until the shopper confirms the payment.
+			pending:
+				getPaymentRequestData( 'button_context' ) === 'pay_for_order',
 		} );
 	}
 
