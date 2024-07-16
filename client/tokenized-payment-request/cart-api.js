@@ -36,6 +36,11 @@ export default class PaymentRequestCartApi {
 				).currency_code.toUpperCase(),
 			} ),
 			headers: {
+				// needed for validation of address data, etc.
+				'X-WooPayments-Express-Payment-Request-Nonce':
+					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
+					undefined,
+				// necessary to validate any request made to the backend from the PDP.
 				'X-WooPayments-Tokenized-Cart-Session-Nonce':
 					getPaymentRequestData( 'button_context' ) === 'product'
 						? getPaymentRequestData( 'nonce' )
@@ -67,10 +72,6 @@ export default class PaymentRequestCartApi {
 			path: '/wc/store/v1/checkout',
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
-				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
-				'X-WooPayments-Express-Payment-Request-Nonce':
-					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
-					undefined,
 				...this.cartRequestHeaders,
 			},
 			data: paymentData,
@@ -120,9 +121,6 @@ export default class PaymentRequestCartApi {
 			'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
 				'X-WooPayments-Tokenized-Cart-Session'
 			),
-			'X-WooPayments-Express-Payment-Request-Nonce': response.headers.get(
-				'X-WooPayments-Express-Payment-Request-Nonce'
-			),
 		};
 	}
 
@@ -143,10 +141,6 @@ export default class PaymentRequestCartApi {
 			path: '/wc/store/v1/cart/update-customer',
 			headers: {
 				'X-WooPayments-Express-Payment-Request': true,
-				// either using the global nonce or the one cached from the anonymous cart (with the anonymous cart one taking precedence).
-				'X-WooPayments-Express-Payment-Request-Nonce':
-					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
-					undefined,
 				...this.cartRequestHeaders,
 			},
 			data: customerData,

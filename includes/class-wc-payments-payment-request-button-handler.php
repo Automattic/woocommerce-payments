@@ -120,12 +120,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				2
 			);
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
-			add_filter(
-				'rest_post_dispatch',
-				[ $this, 'tokenized_cart_store_api_nonce_headers' ],
-				10,
-				3
-			);
 		}
 	}
 
@@ -214,25 +208,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			if ( $is_update_customer_route ) {
 				$request->set_param( 'billing_address', $this->transform_prb_address_postcode_data( $request_data['billing_address'] ) );
 			}
-		}
-
-		return $response;
-	}
-
-	/**
-	 * In order to create an additional layer of security, we're adding a custom nonce to the Store API REST responses.
-	 * This nonce is added as a response header on the Store API, because nonces are tied to user sessions,
-	 * and anonymous carts count as separate user sessions.
-	 *
-	 * @param \WP_HTTP_Response $response Response to replace the requested version with.
-	 * @param \WP_REST_Server   $server Server instance.
-	 * @param \WP_REST_Request  $request Request used to generate the response.
-	 *
-	 * @return \WP_HTTP_Response
-	 */
-	public function tokenized_cart_store_api_nonce_headers( $response, $server, $request ) {
-		if ( $request->get_route() === '/wc/store/v1/cart' ) {
-			$response->header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
 		}
 
 		return $response;
