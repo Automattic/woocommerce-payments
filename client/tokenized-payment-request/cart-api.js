@@ -106,16 +106,12 @@ export default class PaymentRequestCartApi {
 
 	/**
 	 * Creates and returns a new cart object. The response type is the same as `getCart()`.
-	 *
-	 * @return {Promise} Cart response object.
 	 */
-	async createSeparateCart() {
+	useSeparateCart() {
 		this.cartRequestHeaders = {
 			// sending an empty value w/ the next request, so that the custom session handler is leveraged to create a separate cart.
 			'X-WooPayments-Tokenized-Cart-Session': '',
 		};
-
-		return Promise.resolve();
 	}
 
 	/**

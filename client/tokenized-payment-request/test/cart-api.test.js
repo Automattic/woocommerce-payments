@@ -38,7 +38,7 @@ describe( 'PaymentRequestCartApi', () => {
 		const api = new PaymentRequestCartApi();
 		const anotherApi = new PaymentRequestCartApi();
 
-		await api.createSeparateCart();
+		api.useSeparateCart();
 
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
