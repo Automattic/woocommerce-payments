@@ -4511,7 +4511,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$is_field_required = (
 						! isset( $country_locale_data[ $locale_field ] ) ||
 						! isset( $country_locale_data[ $locale_field ]['required'] ) ||
-						false !== $country_locale_data[ $locale_field ]['required']
+						$country_locale_data[ $locale_field ]['required']
 					);
 
 					if ( $is_field_required && ! $address[ $address_field ] ) {
