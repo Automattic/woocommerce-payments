@@ -330,6 +330,26 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Used to get the order in admin edit page.
+	 *
+	 * @return WC_Order|WC_Order_Refund|bool
+	 */
+	public function get_current_order() {
+		global $theorder;
+		global $post;
+
+		if ( is_object( $theorder ) ) {
+			return $theorder;
+		}
+
+		if ( is_object( $post ) ) {
+			return wc_get_order( $post->ID );
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns true if the provided WC_Product is a subscription, false otherwise.
 	 *
 	 * @param WC_Product $product The product to check.
@@ -397,6 +417,23 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return true;
 		}
 
+		// Non-shipping product and billing is calculated based on shopper billing addres. Excludes Pay for Order page.
+		if (
+			// If the product doesn't needs shipping.
+			(
+				// on the product page.
+				( $this->is_product() && ! $this->product_needs_shipping( $this->get_product() ) ) ||
+
+				// on the cart or checkout page.
+				( ( $this->is_cart() || $this->is_checkout() ) && ! WC()->cart->needs_shipping() )
+			)
+
+			// ...and billing is calculated based on billing address.
+			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
+		) {
+			return false;
+		}
+
 		// Cart total is 0 or is on product page and product price is 0.
 		// Exclude pay-for-order pages from this check.
 		if (
@@ -409,6 +446,21 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if the passed product needs to be shipped.
+	 *
+	 * @param WC_Product $product The product to check.
+	 *
+	 * @return bool Returns true if the product requires shipping; otherwise, returns false.
+	 */
+	public function product_needs_shipping( WC_Product $product ) {
+		if ( ! $product ) {
+			return false;
+		}
+
+		return wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping();
 	}
 
 	/**
@@ -1031,6 +1083,39 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
+	}
+
+	/**
+	 * Add express checkout payment method title to the order.
+	 *
+	 * @param integer $order_id The order ID.
+	 *
+	 * @return  void
+	 */
+	public function add_order_payment_method_title( $order_id ) {
+		if ( empty( $_POST['express_payment_type'] ) || ! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method'] ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return;
+		}
+
+		$express_payment_type   = wc_clean( wp_unslash( $_POST['express_payment_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$express_payment_titles = [
+			'apple_pay'  => 'Apple Pay',
+			'google_pay' => 'Google Pay',
+		];
+		$payment_method_title   = $express_payment_titles[ $express_payment_type ] ?? false;
+
+		if ( ! $payment_method_title ) {
+			return;
+		}
+
+		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+		if ( ! empty( $suffix ) ) {
+			$suffix = " ($suffix)";
+		}
+
+		$order = wc_get_order( $order_id );
+		$order->set_payment_method_title( $payment_method_title . $suffix );
+		$order->save();
 	}
 
 	/**

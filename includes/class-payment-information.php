@@ -106,6 +106,13 @@ class Payment_Information {
 	private $payment_method_stripe_id;
 
 	/**
+	 * The WCPay Customer ID that owns the payment token.
+	 *
+	 * @var string
+	 */
+	private $customer_id;
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
@@ -117,6 +124,7 @@ class Payment_Information {
 	 * @param string               $cvc_confirmation The CVC confirmation for this payment method.
 	 * @param string               $fingerprint The attached fingerprint.
 	 * @param string               $payment_method_stripe_id The Stripe ID of the payment method used for this payment.
+	 * @param string               $customer_id The WCPay Customer ID that owns the payment token.
 	 *
 	 * @throws Invalid_Payment_Method_Exception When no payment method is found in the provided request.
 	 */
@@ -129,7 +137,8 @@ class Payment_Information {
 		Payment_Capture_Type $manual_capture = null,
 		string $cvc_confirmation = null,
 		string $fingerprint = '',
-		string $payment_method_stripe_id = null
+		string $payment_method_stripe_id = null,
+		string $customer_id = null
 	) {
 		if ( empty( $payment_method ) && empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
 			// If network-wide cards are enabled, a payment method or token may not be specified and the platform default one will be used.
@@ -147,6 +156,7 @@ class Payment_Information {
 		$this->cvc_confirmation         = $cvc_confirmation;
 		$this->fingerprint              = $fingerprint;
 		$this->payment_method_stripe_id = $payment_method_stripe_id;
+		$this->customer_id              = $customer_id;
 	}
 
 	/**
@@ -435,5 +445,14 @@ class Payment_Information {
 	 */
 	public function get_payment_method_stripe_id() {
 		return $this->payment_method_stripe_id;
+	}
+
+	/**
+	 * Returns the WCPay Customer ID that owns the payment token.
+	 *
+	 * @return string The WCPay Customer ID.
+	 */
+	public function get_customer_id() {
+		return $this->customer_id;
 	}
 }

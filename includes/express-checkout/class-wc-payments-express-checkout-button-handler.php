@@ -94,6 +94,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
+		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
+		add_action( 'woocommerce_checkout_order_processed', [ $this->express_checkout_helper, 'add_order_payment_method_title' ], 10, 2 );
 
 		$this->express_checkout_ajax_handler->init();
 	}
@@ -401,5 +403,32 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		wc_setcookie( 'wcpay_express_checkout_redirect_url', '' );
 
 		return $url;
+	}
+
+	/**
+	 * Filters the gateway title to reflect the button type used.
+	 *
+	 * @param string $title Gateway title.
+	 * @param string $id Gateway ID.
+	 */
+	public function filter_gateway_title( $title, $id ) {
+		if ( 'woocommerce_payments' !== $id || ! is_admin() ) {
+			return $title;
+		}
+
+		$order        = $this->express_checkout_helper->get_current_order();
+		$method_title = is_object( $order ) ? $order->get_payment_method_title() : '';
+
+		if ( ! empty( $method_title ) ) {
+			if (
+				strpos( $method_title, 'Apple Pay' ) === 0
+				|| strpos( $method_title, 'Google Pay' ) === 0
+				|| strpos( $method_title, 'Payment Request' ) === 0 // Legacy PRB title.
+			) {
+				return $method_title;
+			}
+		}
+
+		return $title;
 	}
 }
