@@ -37,6 +37,8 @@ export default class PaymentRequestCartApi {
 				).currency_code.toUpperCase(),
 			} ),
 			headers: {
+				// the Store API nonce, which could later be overwritten.
+				Nonce: getPaymentRequestData( 'nonce' ).tokenized_order_nonce,
 				// needed for validation of address data, etc.
 				'X-WooPayments-Express-Payment-Request-Nonce':
 					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
@@ -108,14 +110,12 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart response object.
 	 */
 	async createSeparateCart() {
-		return await this._request( {
-			method: 'GET',
-			path: '/wc/store/v1/cart',
-			headers: {
-				// sending an empty value, so that the custom session handler is leveraged to create a separate cart.
-				'X-WooPayments-Tokenized-Cart-Session': '',
-			},
-		} );
+		this.cartRequestHeaders = {
+			// sending an empty value, so that the custom session handler is leveraged to create a separate cart.
+			'X-WooPayments-Tokenized-Cart-Session': '',
+		};
+
+		return Promise.resolve();
 	}
 
 	/**
