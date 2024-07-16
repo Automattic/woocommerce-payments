@@ -55,6 +55,7 @@ export default class PaymentRequestCartApi {
 		} );
 
 		this.cartRequestHeaders = {
+			// used as a reference on shortcode cart/checkout pages, where the Nonce might not be automatically added to the request.
 			Nonce: response.headers.get( 'Nonce' ),
 			// saving the received value as a cart reference for future usage. This value could be updated multiple times.
 			'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
