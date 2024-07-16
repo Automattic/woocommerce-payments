@@ -9,6 +9,7 @@ namespace WCPay\WooPay;
 
 use WC_Payments_Features;
 use WC_Payments_Subscriptions_Utilities;
+use WCPay\Logger;
 use WooPay_Extension;
 use WC_Geolocation;
 use WC_Payments;
@@ -268,7 +269,7 @@ class WooPay_Utilities {
 			// Has a defined dev blog token secret: Use it.
 			return DEV_BLOG_TOKEN_SECRET;
 		} else {
-			// TODO: Should we log this?
+			Logger::log( __( 'WooPay blog_token is currently misconfigured.', 'woocommerce-payments' ) );
 			return '';
 		}
 	}
