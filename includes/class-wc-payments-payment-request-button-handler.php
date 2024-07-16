@@ -917,7 +917,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
 				'pay_for_order'                => wp_create_nonce( 'pay_for_order' ),
 				'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
-				'tokenized_cart_session_nonce' => wp_create_nonce( 'tokenized_cart_session_nonce' ),
+				'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
 				'tokenized_order_nonce'        => wp_create_nonce( 'wc_store_api' ),
 			],
 			'checkout'           => [

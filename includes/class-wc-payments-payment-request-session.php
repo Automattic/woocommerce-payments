@@ -138,7 +138,7 @@ class WC_Payments_Payment_Request_Session {
 		}
 
 		$nonce = $request->get_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce' );
-		if ( ! wp_verify_nonce( $nonce, 'tokenized_cart_session_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_session_nonce' ) ) {
 			return $response;
 		}
 
@@ -157,7 +157,7 @@ class WC_Payments_Payment_Request_Session {
 	 */
 	public function add_payment_request_store_api_session_handler( $default_session_handler ) {
 		$nonce = wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] ?? null ) );
-		if ( ! wp_verify_nonce( $nonce, 'tokenized_cart_session_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_session_nonce' ) ) {
 			return $default_session_handler;
 		}
 
