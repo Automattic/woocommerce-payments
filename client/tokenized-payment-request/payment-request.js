@@ -369,6 +369,7 @@ export default class WooPaymentsPaymentRequest {
 
 				window.location = redirectUrl;
 			} catch ( error ) {
+				const response = await error.json();
 				event.complete( 'fail' );
 
 				jQuery( '.woocommerce-error' ).remove();
@@ -380,7 +381,7 @@ export default class WooPaymentsPaymentRequest {
 				if ( $container.length ) {
 					$container.append(
 						jQuery( '<div class="woocommerce-error" />' ).text(
-							error.message
+							response.message
 						)
 					);
 
