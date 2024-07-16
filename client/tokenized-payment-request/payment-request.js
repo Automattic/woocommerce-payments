@@ -121,7 +121,7 @@ export default class WooPaymentsPaymentRequest {
 		// so that we don't affect the products in the main cart.
 		// On cart, checkout, place order pages we instead use the cart itself.
 		if ( getPaymentRequestData( 'button_context' ) === 'product' ) {
-			await this.paymentRequestCartApi.createAnonymousCart();
+			await this.paymentRequestCartApi.createSeparateCart();
 		}
 
 		const paymentRequestButton = this.wcpayApi
@@ -432,7 +432,7 @@ export default class WooPaymentsPaymentRequest {
 		// to avoid scenarios where the stock for a product with limited (or low) availability is added to the cart,
 		// preventing other customers from purchasing.
 		const temporaryCart = new PaymentRequestCartApi();
-		await temporaryCart.createAnonymousCart();
+		await temporaryCart.createSeparateCart();
 
 		const cartData = await temporaryCart.addProductToCart();
 

@@ -103,14 +103,14 @@ export default class PaymentRequestCartApi {
 	 *
 	 * @return {Promise} Cart response object.
 	 */
-	async createAnonymousCart() {
+	async createSeparateCart() {
 		const response = await this._request( {
 			method: 'GET',
 			path: '/wc/store/v1/cart',
 			// parse: false to ensure we can get the response headers
 			parse: false,
 			headers: {
-				// sending an empty value, so that the custom session handler is leveraged.
+				// sending an empty value, so that the custom session handler is leveraged to create a separate cart.
 				'X-WooPayments-Tokenized-Cart-Session': '',
 			},
 		} );
