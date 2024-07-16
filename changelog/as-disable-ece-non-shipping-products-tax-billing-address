@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Disable ECE for non shipping products if Tax is calculated on billing address.
