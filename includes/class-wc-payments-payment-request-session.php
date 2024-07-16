@@ -16,6 +16,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Payment_Request_Session {
 	/**
+	 * Name of the parameter added to the "order received" page for orders placed with the custom session handler on product pages.
+	 *
+	 * @var string Name of the parameter.
+	 */
+	private static $prevent_empty_cart_parameter = 'woopayments-custom-session';
+
+	/**
+	 * Used as a temporary reference to cart data, so it can be restored later.
+	 *
+	 * @var null|WC_Cart Temporary reference to cart data.
+	 */
+	private $cart_clone = null;
+
+	/**
 	 * Init the hooks.
 	 *
 	 * @return void
@@ -24,19 +38,73 @@ class WC_Payments_Payment_Request_Session {
 		// adding this filter with a higher priority than the session handler of the Store API.
 		add_filter( 'woocommerce_session_handler', [ $this, 'add_payment_request_store_api_session_handler' ], 20 );
 		add_filter( 'rest_post_dispatch', [ $this, 'store_api_headers' ], 10, 3 );
-		add_action( 'before_woocommerce_init', [ $this,'maybe_avoid_emptying_cart_on_template_redirect' ] );
+
+		if ( $this->is_custom_session_order_received_page() ) {
+			add_filter( 'woocommerce_persistent_cart_enabled', '__return_false' );
+			add_filter( 'woocommerce_cart_session_initialize', '__return_false' );
+			add_action(
+				'woocommerce_before_cart_emptied',
+				[ $this, 'save_old_cart_data_for_restore' ]
+			);
+			add_action(
+				'woocommerce_cart_emptied',
+				[ $this, 'restore_old_cart_data' ]
+			);
+		}
 	}
 
 	/**
-	 * Check if the $_SERVER global has order received URL slug in its 'REQUEST_URI' value
+	 * Saves an instance of the current cart, so it can be restored later.
+	 * Used on the "order received" page for orders placed with the PRB. The "order received" page empties the cart, otherwise.
 	 *
-	 * Similar to WooCommerce's is_order_received_page(), but can be used before the $wp's query vars are setup, which is essential
+	 * @return void
+	 */
+	public function save_old_cart_data_for_restore() {
+		$this->cart_clone = clone WC()->cart;
+	}
+
+	/**
+	 * Restores the cart saved previously.
+	 *
+	 * @return void
+	 */
+	public function restore_old_cart_data() {
+		if ( ! $this->cart_clone ) {
+			return;
+		}
+
+		WC()->cart->cart_contents         = $this->cart_clone->cart_contents;
+		WC()->cart->removed_cart_contents = $this->cart_clone->removed_cart_contents;
+		WC()->cart->applied_coupons       = $this->cart_clone->applied_coupons;
+
+		$this->cart_clone = null;
+	}
+
+	/**
+	 * Ensuring that the return URL for the "order received" page contains a query string parameter
+	 * that can later be identified to ensure we don't clear the cart.
+	 * This function is only executed when we're using the custom session handler on Store API requests.
+	 *
+	 * @param string $return_url The URL for the "Order received" page.
+	 *
+	 * @return string
+	 */
+	public function store_api_order_received_return_url( $return_url ) {
+		return add_query_arg( self::$prevent_empty_cart_parameter, '1', $return_url );
+	}
+
+	/**
+	 * Check if the $_SERVER global has order received URL slug in its 'REQUEST_URI' value - just like `wcs_is_order_received_page`.
+	 *
+	 * Similar to WooCommerce's is_custom_session_order_received_page(), but can be used before the $wp's query vars are setup, which is essential
 	 * when preventing the cart from being emptied on the "order received" page, if the order has been placed with WooPayments GooglePay/ApplePay on the product page.
 	 *
 	 * @return bool
 	 **/
-	private function is_order_received_page() {
-		return ( false !== strpos( $_SERVER['REQUEST_URI'], 'order-received' ) );
+	private function is_custom_session_order_received_page() {
+		// ignoring because we're not storing the value anywhere, just checking its existence.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		return ( false !== strpos( $_SERVER['REQUEST_URI'], 'order-received' ) ) && ( false !== strpos( $_SERVER['REQUEST_URI'], self::$prevent_empty_cart_parameter ) );
 	}
 
 	/**
@@ -53,19 +121,6 @@ class WC_Payments_Payment_Request_Session {
 			],
 			'@' . wp_salt()
 		);
-	}
-
-	/**
-	 * Removes the "remove cart contents" filter on the order received page, if the order has been placed with the PRBs on a product page.
-	 */
-	public function maybe_avoid_emptying_cart_on_template_redirect() {
-		// TODO: check if the order has been placed with WooPayments' PRBs.
-		if ( ! $this->is_order_received_page() ) {
-			return;
-		}
-
-		remove_action( 'template_redirect', 'wc_clear_cart_after_payment', 20 );
-		add_filter( 'woocommerce_cart_session_initialize', '__return_false' );
 	}
 
 	/**
@@ -125,6 +180,7 @@ class WC_Payments_Payment_Request_Session {
 
 		// ensures cart contents aren't merged across different sessions for the same customer.
 		add_filter( 'woocommerce_persistent_cart_enabled', '__return_false' );
+		add_filter( 'woocommerce_get_return_url', [ $this, 'store_api_order_received_return_url' ], 10, 1 );
 
 		require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session-handler.php';
 
