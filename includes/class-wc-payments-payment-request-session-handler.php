@@ -63,13 +63,13 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * Process the token header to load the correct session.
 	 */
 	protected function init_session_from_token() {
+		$default_value = [
+			'token_customer_id' => $this->_customer_id,
+		];
+
 		if ( empty( $this->token ) ) {
 			$this->session_id = $this->generate_customer_id();
-			$this->_data      = [
-				'token_customer_id' => $this->_customer_id,
-				// populating with an empty array as a starting point.
-				'cart'              => [],
-			];
+			$this->_data      = $default_value;
 			// session_expiration can remain the same.
 
 			return;
@@ -79,7 +79,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 
 		$this->session_id         = $payload->session_id;
 		$this->session_expiration = $payload->exp;
-		$this->_data              = (array) $this->get_session( $this->session_id, [ 'token_customer_id' => $this->_customer_id ] );
+		$this->_data              = (array) $this->get_session( $this->session_id, $default_value );
 	}
 
 	/**
@@ -88,8 +88,6 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * @param int $customer_id Customer ID.
 	 */
 	public function delete_session( $customer_id ) {
-		// TODO ~FR: check if both are needed.
-		parent::delete_session( $customer_id );
 		parent::delete_session( $this->session_id );
 	}
 
@@ -100,8 +98,6 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	 * @param int    $timestamp Timestamp to expire the cookie.
 	 */
 	public function update_session_timestamp( $customer_id, $timestamp ) {
-		// TODO ~FR: check if both are needed.
-		parent::update_session_timestamp( $customer_id, $timestamp );
 		parent::update_session_timestamp( $this->session_id, $timestamp );
 	}
 
@@ -129,7 +125,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	}
 
 	/**
-	 * Save data and delete guest session.
+	 * Save data  - copy of parent method with a few modifications.
 	 *
 	 * @param int $old_session_key session ID before user logs in.
 	 */
@@ -140,20 +136,33 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 
 			$wpdb->query(
 				$wpdb->prepare(
-					"INSERT INTO $this->table (`session_key`, `session_value`, `session_expiry`) VALUES (%s, %s, %d) ON DUPLICATE KEY UPDATE `session_value` = VALUES(`session_value`), `session_expiry` = VALUES(`session_expiry`)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"INSERT INTO $this->_table (`session_key`, `session_value`, `session_expiry`) VALUES (%s, %s, %d)
+ 					ON DUPLICATE KEY UPDATE `session_value` = VALUES(`session_value`), `session_expiry` = VALUES(`session_expiry`)",
 					$this->session_id,
 					maybe_serialize( $this->_data ),
-					$this->session_expiration
+					$this->_session_expiration
 				)
 			);
 
+			wp_cache_set( $this->get_cache_prefix() . $this->session_id, $this->_data, WC_SESSION_CACHE_GROUP, $this->_session_expiration - time() );
 			$this->_dirty = false;
 		}
 	}
 
 	/**
+	 * Gets a cache prefix. This is used in session names so the entire cache can be invalidated with 1 function call.
+	 *
+	 * @return string
+	 */
+	private function get_cache_prefix() {
+		return WC_Cache_Helper::get_cache_prefix( WC_SESSION_CACHE_GROUP );
+	}
+
+	/**
 	 * Get a session variable.
 	 * Overridden default method, so that the `cart` session data always returns a value, in order to prevent the "saved cart after login" feature to get wrong cart data.
+	 * See "WC_Cart_Session::get_cart_from_session".
 	 *
 	 * @param string $key Key to get.
 	 * @param mixed  $default used if the session variable isn't set.

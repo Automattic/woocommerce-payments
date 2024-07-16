@@ -26,8 +26,9 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Result from `apiFetch`.
 	 */
 	async _request( options ) {
-		return await apiFetch( {
+		const response = await apiFetch( {
 			...options,
+			parse: false,
 			path: addQueryArgs( options.path, {
 				// `wcpayPaymentRequestParams` will always be defined if this file is needed.
 				// If there's an issue with it, ask yourself why this file is queued and `wcpayPaymentRequestParams` isn't present.
@@ -50,6 +51,16 @@ export default class PaymentRequestCartApi {
 				...options.headers,
 			},
 		} );
+
+		this.cartRequestHeaders = {
+			Nonce: response.headers.get( 'Nonce' ),
+			// saving the received value as a cart reference for future usage. This value could be updated multiple times.
+			'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
+				'X-WooPayments-Tokenized-Cart-Session'
+			),
+		};
+
+		return response.json();
 	}
 
 	/**
@@ -85,17 +96,10 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart response object.
 	 */
 	async getCart() {
-		const response = await this._request( {
+		return await this._request( {
 			method: 'GET',
 			path: '/wc/store/v1/cart',
-			parse: false,
 		} );
-
-		this.cartRequestHeaders = {
-			Nonce: response.headers.get( 'Nonce' ),
-		};
-
-		return response.json();
 	}
 
 	/**
@@ -104,24 +108,14 @@ export default class PaymentRequestCartApi {
 	 * @return {Promise} Cart response object.
 	 */
 	async createSeparateCart() {
-		const response = await this._request( {
+		return await this._request( {
 			method: 'GET',
 			path: '/wc/store/v1/cart',
-			// parse: false to ensure we can get the response headers
-			parse: false,
 			headers: {
 				// sending an empty value, so that the custom session handler is leveraged to create a separate cart.
 				'X-WooPayments-Tokenized-Cart-Session': '',
 			},
 		} );
-
-		this.cartRequestHeaders = {
-			Nonce: response.headers.get( 'Nonce' ),
-			// saving the received value as a cart reference for future usage.
-			'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
-				'X-WooPayments-Tokenized-Cart-Session'
-			),
-		};
 	}
 
 	/**
