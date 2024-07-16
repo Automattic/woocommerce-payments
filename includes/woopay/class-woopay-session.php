@@ -319,9 +319,10 @@ class WooPay_Session {
 		$key           = ! empty( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : null;
 		$billing_email = ! empty( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : null;
 		// phpcs:enable
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, Generic.Arrays.DisallowLongArraySyntax.Found
+		$appearance = ! empty( $_POST['appearance'] ) ? self::array_map_recursive( array( __CLASS__, 'sanitize_string' ), $_POST['appearance'] ) : null;
 
-		$session = self::get_init_session_request( $order_id, $key, $billing_email );
-
+		$session = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance );
 		return WooPay_Utilities::encrypt_and_sign_data( $session );
 	}
 
@@ -416,9 +417,10 @@ class WooPay_Session {
 	 * @param string|null          $key Pay-for-order key.
 	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
+	 * @param array                $appearance Merchant appearance.
 	 * @return array The initial session request data without email and user_session.
 	 */
-	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null ) {
+	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null, $appearance = null ) {
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
 		$order            = wc_get_order( $order_id );
@@ -500,6 +502,7 @@ class WooPay_Session {
 				],
 			],
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity(),
+			'appearance'           => $appearance,
 		];
 
 		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
@@ -571,10 +574,10 @@ class WooPay_Session {
 		$order_id      = ! empty( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : null;
 		$key           = ! empty( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : null;
 		$billing_email = ! empty( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : null;
+		$appearance    = ! empty( $_POST['appearance'] ) ? self::array_map_recursive( array( __CLASS__, 'sanitize_string' ), $_POST['appearance'] ) : null; // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, Generic.Arrays.DisallowLongArraySyntax.Found
 
-		$body                 = self::get_init_session_request( $order_id, $key, $billing_email );
+		$body                 = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance );
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
-		$body['appearance']   = isset( $_REQUEST['appearance'] ) ? self::array_map_recursive( array( __CLASS__, 'sanitize_string' ), $_REQUEST['appearance'] ) : null; // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, Generic.Arrays.DisallowLongArraySyntax.Found
 
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
