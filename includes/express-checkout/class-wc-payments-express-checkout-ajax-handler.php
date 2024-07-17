@@ -48,26 +48,38 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 	/**
 	 * Create order. Security is handled by WC.
+	 *
+	 * @throws Exception If cart is empty. That is handled within the method.
 	 */
 	public function ajax_create_order() {
-		if ( WC()->cart->is_empty() ) {
-			wp_send_json_error( __( 'Empty cart', 'woocommerce-payments' ), 400 );
+		try {
+			if ( WC()->cart->is_empty() ) {
+				throw new Exception( __( 'Empty cart', 'woocommerce-payments' ) );
+			}
+
+			if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+				define( 'WOOCOMMERCE_CHECKOUT', true );
+			}
+
+			if ( ! defined( 'WCPAY_ECE_CHECKOUT' ) ) {
+				define( 'WCPAY_ECE_CHECKOUT', true );
+			}
+
+			// In case the state is required, but is missing, add a more descriptive error notice.
+			$this->express_checkout_button_helper->validate_state();
+
+			$this->express_checkout_button_helper->normalize_state();
+
+			WC()->checkout()->process_checkout();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to process express checkout payment: ' . $e );
+
+			$response = [
+				'result'   => 'error',
+				'messages' => $e->getMessage(),
+			];
+			wp_send_json( $response, 400 );
 		}
-
-		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
-			define( 'WOOCOMMERCE_CHECKOUT', true );
-		}
-
-		if ( ! defined( 'WCPAY_ECE_CHECKOUT' ) ) {
-			define( 'WCPAY_ECE_CHECKOUT', true );
-		}
-
-		// In case the state is required, but is missing, add a more descriptive error notice.
-		$this->express_checkout_button_helper->validate_state();
-
-		$this->express_checkout_button_helper->normalize_state();
-
-		WC()->checkout()->process_checkout();
 
 		die( 0 );
 	}
@@ -80,22 +92,16 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	public function ajax_pay_for_order() {
 		check_ajax_referer( 'pay_for_order' );
 
-		if (
-			! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method']
-			|| ! isset( $_POST['order'] ) || ! intval( $_POST['order'] )
-			|| ! isset( $_POST['wcpay-payment-method'] ) || empty( $_POST['wcpay-payment-method'] )
-		) {
-			// Incomplete request.
-			$response = [
-				'result'   => 'error',
-				'messages' => __( 'Invalid request', 'woocommerce-payments' ),
-			];
-			wp_send_json( $response, 400 );
-
-			return;
-		}
-
 		try {
+			if (
+				! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method']
+				|| ! isset( $_POST['order'] ) || ! intval( $_POST['order'] )
+				|| ! isset( $_POST['wcpay-payment-method'] ) || empty( $_POST['wcpay-payment-method'] )
+			) {
+				// Incomplete request.
+				throw new Exception( __( 'Invalid request', 'woocommerce-payments' ) );
+			}
+
 			// Set up an environment, similar to core checkout.
 			wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
 			wc_set_time_limit( 0 );
@@ -128,14 +134,18 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			$result['order_id'] = $order_id;
 
 			$result = apply_filters( 'woocommerce_payment_successful_result', $result, $order_id );
+
+			wp_send_json( $result );
 		} catch ( Exception $e ) {
+			$order_message = isset( $order_id ) ? "order #$order_id" : 'invalid order';
+			Logger::error( 'Failed to process express checkout payment for ' . $order_message . ': ' . $e );
+
 			$result = [
 				'result'   => 'error',
 				'messages' => $e->getMessage(),
 			];
+			wp_send_json( $result, 400 );
 		}
-
-		wp_send_json( $result );
 	}
 
 	/**
