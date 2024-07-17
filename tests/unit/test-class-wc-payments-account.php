@@ -102,6 +102,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_by_get_param' ] ), 'maybe_redirect_by_get_param action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_settings_page' ] ), 'maybe_redirect_from_settings_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_onboarding_page' ] ), 'maybe_redirect_from_onboarding_page action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_connect_page' ] ), 'maybe_redirect_from_connect_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_activate_woopay' ] ), 'maybe_activate_woopay action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_instant_deposits_inbox_note' ] ), 'handle_instant_deposits_inbox_note action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_loan_approved_inbox_note' ] ), 'handle_loan_approved_inbox_note action does not exist.' );
@@ -569,6 +570,122 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider data_maybe_redirect_from_connect_page
+	 */
+	public function test_maybe_redirect_from_connect_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params ) {
+		wp_set_current_user( 1 );
+		$_GET = $get_params;
+
+		if ( $stripe_account_connected ) {
+			$this->cache_account_details(
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+				]
+			);
+		}
+
+		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( $has_working_jetpack_connection );
+		$this->mock_api_client
+			->method( 'has_server_connection_owner' )
+			->willReturn( $has_working_jetpack_connection );
+
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
+
+		$this->mock_redirect_service->expects( $this->exactly( $expected_redirect_to_count ) )->method( $expected_method );
+
+		$this->wcpay_account->maybe_redirect_from_connect_page();
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_from_connect_page
+	 */
+	public function data_maybe_redirect_from_connect_page() {
+		return [
+			'no_get_params'        => [
+				0,
+				'redirect_to_overview_page',
+				true,
+				true,
+				[],
+			],
+			'missing_param'        => [
+				0,
+				'redirect_to_overview_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_param'      => [
+				0,
+				'redirect_to_overview_page',
+				true,
+				true,
+				[
+					'page' => 'wc-settings',
+					'path' => '/payments/connect',
+				],
+			],
+			'empty_path_param'     => [
+				0,
+				'redirect_to_overview_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_path_param' => [
+				0,
+				'redirect_to_overview_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/does-not-exist',
+				],
+			],
+			'server_not_connected' => [
+				0,
+				'redirect_to_overview_page',
+				true,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/connect',
+				],
+			],
+			'stripe_not_connected' => [
+				0,
+				'redirect_to_overview_page',
+				false,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/connect',
+				],
+			],
+			'happy_path'           => [
+				1,
+				'redirect_to_overview_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/connect',
+				],
+			],
+		];
+	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected() {
 		$this->mock_empty_cache();
