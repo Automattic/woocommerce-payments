@@ -1093,6 +1093,7 @@ class WC_Payments_Account {
 			// First, default/fallback handling of the WPCOM/Jetpack connection.
 			try {
 				$this->maybe_init_jetpack_connection(
+					// Carry all the important GET params so we have then after the Jetpack connection setup.
 					add_query_arg(
 						[
 							'wcpay-connect'          => $wcpay_connect_param,
