@@ -103,7 +103,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 				'type'   => 'buy',
 				'theme'  => 'dark',
 				'height' => '48',
-				'radius' => ''
+				'radius' => '',
 			],
 			$this->mock_express_checkout_helper->get_common_button_settings()
 		);

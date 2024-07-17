@@ -120,7 +120,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 			->setMethods(
 				[
 					'is_checkout',
-					'should_show_express_checkout_button'
+					'should_show_express_checkout_button',
 				]
 			)
 			->getMock();
@@ -244,8 +244,6 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		ob_start();
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
-
-		var_dump( ob_get_contents() );
 
 		$this->assertStringContainsString( 'wcpay-woopay-button', ob_get_contents() );
 		$this->assertStringContainsString( 'wcpay-express-checkout-element', ob_get_contents() );
