@@ -31,6 +31,10 @@ import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 
+interface AccountData {
+	status: string;
+}
+
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
 		{ strings.sandboxModeNotice }
@@ -53,6 +57,7 @@ const ConnectAccountPage: React.FC = () => {
 	);
 	const {
 		connectUrl,
+		overviewUrl,
 		connect: { availableCountries, country },
 		devMode,
 	} = wcpaySettings;
@@ -173,6 +178,19 @@ const ConnectAccountPage: React.FC = () => {
 		window.location.href = url;
 	};
 
+	const checkAccountStatus = () => {
+		apiFetch( {
+			path: `/wc/v3/payments/accounts`,
+			method: 'GET',
+		} ).then( ( account ) => {
+			if ( ( account as AccountData ).status === 'complete' ) {
+				window.location.href = overviewUrl;
+			} else {
+				setTimeout( checkAccountStatus, 3000 );
+			}
+		} );
+	};
+
 	const handleSetupTestDriveMode = async () => {
 		setTestDriveModeSubmitted( true );
 
@@ -182,7 +200,17 @@ const ConnectAccountPage: React.FC = () => {
 			test_mode: true,
 			test_drive: true,
 		} );
-		window.location.href = url;
+
+		fetch( url, {
+			method: 'GET',
+			credentials: 'same-origin',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		} ).then( ( response ) => {
+			// ToDo: In case of error, stop loader and display the error.
+			checkAccountStatus();
+		} );
 	};
 
 	return (
