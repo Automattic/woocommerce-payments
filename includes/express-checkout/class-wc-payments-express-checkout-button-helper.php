@@ -299,7 +299,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		if ( 'large' === $height ) {
-			return '56';
+			return '55';
 		}
 
 		// for the "default"/"small" and "catch-all" scenarios.
