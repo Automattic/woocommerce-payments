@@ -109,6 +109,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_by_get_param' ], 12 ); // Run this after the redirect to onboarding logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_settings_page' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_page' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_connect_page' ] );
 
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
@@ -864,6 +865,37 @@ class WC_Payments_Account {
 		$this->redirect_service->redirect_to_overview_page( 'WCPAY_ONBOARDING_FLOW' );
 
 		return true;
+	}
+
+	/**
+	 * Redirects connect page (payments/connect) to the overview page for stores that
+	 * have a working Jetpack connection and a connected Stripe account.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_from_connect_page(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		];
+
+		// We're not on the Connect page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		// If everything is in good working condition, redirect to Payments Overview page.
+		if ( $this->has_working_jetpack_connection() && $this->is_stripe_connected() ) {
+			$this->redirect_service->redirect_to_overview_page( 'WCPAY_CONNECT' );
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
