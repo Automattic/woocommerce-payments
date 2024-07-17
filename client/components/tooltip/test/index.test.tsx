@@ -193,13 +193,17 @@ describe( 'ClickTooltip', () => {
 
 		act( () => {
 			userEvent.click( screen.getByText( 'Trigger element' ) );
+		} );
+
+		expect( handleHideMock ).toHaveBeenCalled();
+
+		act( () => {
 			jest.runAllTimers();
 		} );
 
 		expect(
 			screen.queryByText( 'Tooltip content' )
 		).not.toBeInTheDocument();
-		expect( handleHideMock ).toHaveBeenCalled();
 	} );
 
 	it( `doesn't show or hide on hover events`, () => {
