@@ -43,6 +43,7 @@ jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		onLoad: jest.fn(),
+		onHistoryChange: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
@@ -67,13 +68,15 @@ const mockUseTransactions = useTransactions as jest.MockedFunction<
 	typeof useTransactions
 >;
 
-const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
-	typeof useTransactionsSummary
->;
+const mockUseTransactionsSummary =
+	useTransactionsSummary as jest.MockedFunction<
+		typeof useTransactionsSummary
+	>;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
->;
+const mockUseReportingExportLanguage =
+	useReportingExportLanguage as jest.MockedFunction<
+		typeof useReportingExportLanguage
+	>;
 
 declare const global: {
 	wcpaySettings: {

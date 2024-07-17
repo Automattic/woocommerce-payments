@@ -6,7 +6,6 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
-import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
@@ -91,8 +90,7 @@ describe( 'ConnectAccountPage', () => {
 
 		await waitFor( () => {
 			expect( apiFetch ).toHaveBeenCalledWith( {
-				path:
-					'/wc-analytics/admin/notes/experimental-activate-promo/incentive-id',
+				path: '/wc-analytics/admin/notes/experimental-activate-promo/incentive-id',
 				method: 'POST',
 			} );
 		} );
@@ -103,7 +101,7 @@ describe( 'ConnectAccountPage', () => {
 		render( <ConnectAccountPage /> );
 
 		// mockApiFetch.mockRejectedValueOnce( {} );
-		mocked( apiFetch ).mockRejectedValueOnce( new Error() );
+		jest.mocked( apiFetch ).mockRejectedValueOnce( new Error() );
 
 		userEvent.click(
 			screen.getByRole( 'button', { name: 'Verify business details' } )

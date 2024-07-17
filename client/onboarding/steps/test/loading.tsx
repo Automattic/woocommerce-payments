@@ -4,7 +4,6 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
-import { mocked } from 'ts-jest/utils';
 /**
  * Internal dependencies
  */
@@ -80,7 +79,7 @@ describe( 'Loading', () => {
 			go_live_timeframe: 'within_1month',
 		};
 
-		mocked( apiFetch ).mockResolvedValueOnce( {
+		jest.mocked( apiFetch ).mockResolvedValueOnce( {
 			result: 'eligible',
 			data: [],
 		} );
@@ -117,7 +116,7 @@ describe( 'Loading', () => {
 			go_live_timeframe: 'within_1month',
 		};
 
-		mocked( apiFetch ).mockResolvedValueOnce( {
+		jest.mocked( apiFetch ).mockResolvedValueOnce( {
 			result: 'not_eligible',
 			data: [],
 		} );

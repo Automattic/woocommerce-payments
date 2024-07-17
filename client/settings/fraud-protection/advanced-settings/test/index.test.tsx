@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
-import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
@@ -76,9 +75,9 @@ declare const global: {
 	};
 };
 
-const mockUseCurrentProtectionLevel = mocked( useCurrentProtectionLevel );
+const mockUseCurrentProtectionLevel = jest.mocked( useCurrentProtectionLevel );
 
-const mockUseAdvancedFraudProtectionSettings = mocked(
+const mockUseAdvancedFraudProtectionSettings = jest.mocked(
 	useAdvancedFraudProtectionSettings
 );
 
@@ -206,10 +205,8 @@ describe( 'Advanced fraud protection settings', () => {
 			/There was an error retrieving your fraud protection settings/i
 		);
 
-		const [
-			firstSaveButton,
-			secondSaveButton,
-		] = await container.findAllByText( 'Save Changes' );
+		const [ firstSaveButton, secondSaveButton ] =
+			await container.findAllByText( 'Save Changes' );
 
 		expect( firstSaveButton ).toBeDisabled();
 		expect( secondSaveButton ).toBeDisabled();

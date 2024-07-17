@@ -14,7 +14,6 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { DocumentsList } from '../';
 import { useDocuments, useDocumentsSummary } from 'data/index';
 import type { Document } from 'data/documents/hooks';
-import { mocked } from 'ts-jest/utils';
 import VatForm from 'wcpay/vat/form';
 
 jest.mock( 'data/index', () => ( {
@@ -182,7 +181,7 @@ describe( 'Document download button', () => {
 				documentsError: undefined,
 			} );
 
-			mocked( VatForm ).mockImplementation( ( { onCompleted } ) => (
+			jest.mocked( VatForm ).mockImplementation( ( { onCompleted } ) => (
 				<button
 					onClick={ () =>
 						onCompleted(

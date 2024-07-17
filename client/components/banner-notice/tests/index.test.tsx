@@ -4,7 +4,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import { mocked } from 'ts-jest/utils';
 import { speak } from '@wordpress/a11y';
 
 /**
@@ -16,7 +15,7 @@ jest.mock( '@wordpress/a11y', () => ( { speak: jest.fn() } ) );
 
 describe( 'BannerNotice', () => {
 	beforeEach( () => {
-		mocked( speak ).mockClear();
+		jest.mocked( speak ).mockClear();
 	} );
 
 	it( 'should match snapshot', () => {
