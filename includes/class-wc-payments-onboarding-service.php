@@ -266,7 +266,7 @@ class WC_Payments_Onboarding_Service {
 			return $source_param;
 		}
 
-		// Action params take precedence.
+		// Action-type params take precedence.
 		if ( isset( $get_params['wcpay-disable-onboarding-test-mode'] ) ) {
 			return self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS;
 		}
@@ -277,6 +277,11 @@ class WC_Payments_Onboarding_Service {
 		$wcpay_connect_param = isset( $get_params['wcpay-connect'] ) ? sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) ) : '';
 		$from_param          = isset( $get_params['from'] ) ? sanitize_text_field( wp_unslash( $get_params['from'] ) ) : '';
 
+		// Ensure we decode the referer URL in case it contains encoded characters in its GET parameters.
+		// This way we don't need to distinguish between `%2F` and `/`.
+		$referer = urldecode( $referer );
+
+		// Woo setup payments task (directly from the payments task list item or the payments task page).
 		// Sometimes we have it in the `wcpay-connect` param and other times in the `from` one.
 		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param
 			|| 'WCADMIN_PAYMENT_TASK' === $from_param ) {
@@ -287,15 +292,17 @@ class WC_Payments_Onboarding_Service {
 			|| 'WCADMIN_PAYMENT_SETTINGS' === $from_param ) {
 			return self::SOURCE_WCADMIN_SETTINGS_PAGE;
 		}
-		// Payments incentive page.
-		if ( false !== strpos( $referer, 'path=%2Fwc-pay-welcome-page' )
+		// Woo payments incentive page.
+		if ( false !== strpos( $referer, 'path=/wc-pay-welcome-page' )
 			|| 'WCADMIN_PAYMENT_INCENTIVE' === $from_param ) {
 			return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		}
-		if ( false !== strpos( $referer, 'path=%2Fpayments%2Fconnect' ) ) {
+		// Our own connect page.
+		if ( false !== strpos( $referer, 'path=/payments/connect' ) ) {
 			return self::SOURCE_WCPAY_CONNECT_PAGE;
 		}
 
-		return '';
+		// Default to an unknown source.
+		return 'unknown';
 	}
 }
