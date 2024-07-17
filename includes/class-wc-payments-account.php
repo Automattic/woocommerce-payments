@@ -293,6 +293,7 @@ class WC_Payments_Account {
 			'country'               => $account['country'] ?? Country_Code::UNITED_STATES,
 			'status'                => $account['status'],
 			'created'               => $account['created'] ?? '',
+			'testDrive'             => $account['is_test_drive'] ?? false,
 			'paymentsEnabled'       => $account['payments_enabled'],
 			'detailsSubmitted'      => $account['details_submitted'] ?? true,
 			'deposits'              => $account['deposits'] ?? [],
@@ -901,10 +902,11 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
-			$wcpay_connect_param    = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
-			$incentive              = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
-			$progressive            = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
-			$create_builder_account = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
+			$wcpay_connect_param       = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+			$incentive                 = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+			$progressive               = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+			$create_builder_account    = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
+			$create_test_drive_account = ! empty( $_GET['test_drive'] ) && 'true' === $_GET['test_drive'];
 
 			// Track connection start.
 			if ( ! isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
@@ -923,7 +925,7 @@ class WC_Payments_Account {
 			$connect_page_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
 			// Redirect to the onboarding flow page if the account is not onboarded otherwise to the overview page.
 			// Builder accounts are handled below and redirected to Stripe KYC directly.
-			if ( ! $create_builder_account && in_array(
+			if ( ! $create_builder_account && ! $create_test_drive_account && in_array(
 				$connect_page_source,
 				[
 					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
@@ -1286,6 +1288,9 @@ class WC_Payments_Account {
 		// Enable dev mode if the test_mode query param is set.
 		$test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 
+		// Determine if we are creating a test-drive account.
+		$test_drive_account = ! empty( $_GET['test_drive'] ) && 'true' === $_GET['test_drive'];
+
 		if ( $test_mode ) {
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
@@ -1327,6 +1332,27 @@ class WC_Payments_Account {
 				'store'         => [
 					'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
 					'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
+				],
+			];
+		} elseif ( $test_drive_account ) {
+			$home_url    = get_home_url();
+			$default_url = 'http://wcpay.test';
+			$url         = wp_http_validate_url( $home_url ) ? $home_url : $default_url;
+			// If the site is running on localhost, use the default URL. This is to avoid Stripe's errors.
+			// wp_http_validate_url does not check that, unfortunately.
+			if ( wp_parse_url( $home_url, PHP_URL_HOST ) === 'localhost' ) {
+				$url = $default_url;
+			}
+
+			$current_user = get_userdata( get_current_user_id() );
+			$account_data = [
+				'setup_mode'    => 'test_drive',
+				'country'       => WC()->countries->get_base_country() ?? null,
+				'url'           => $url,
+				'business_name' => get_bloginfo( 'name' ),
+				'individual'    => [
+					'first_name' => $current_user->first_name ?? '',
+					'last_name'  => $current_user->last_name ?? '',
 				],
 			];
 		} elseif ( $test_mode ) {

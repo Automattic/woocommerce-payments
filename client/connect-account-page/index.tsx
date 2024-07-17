@@ -48,6 +48,9 @@ const ConnectAccountPage: React.FC = () => {
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ isSandboxModeClicked, setSandboxModeClicked ] = useState( false );
+	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
+		false
+	);
 	const {
 		connectUrl,
 		connect: { availableCountries, country },
@@ -170,6 +173,18 @@ const ConnectAccountPage: React.FC = () => {
 		window.location.href = url;
 	};
 
+	const handleSetupTestDriveMode = async () => {
+		setTestDriveModeSubmitted( true );
+
+		trackConnectAccountClicked( true );
+
+		const url = addQueryArgs( connectUrl, {
+			test_mode: true,
+			test_drive: true,
+		} );
+		window.location.href = url;
+	};
+
 	return (
 		<Page isNarrow className="connect-account-page">
 			{ errorMessage && (
@@ -230,6 +245,14 @@ const ConnectAccountPage: React.FC = () => {
 								{ wcpaySettings.isJetpackConnected
 									? strings.button.jetpack_connected
 									: strings.button.jetpack_not_connected }
+							</Button>
+							<Button
+								variant="secondary"
+								isBusy={ isTestDriveModeSubmitted }
+								disabled={ isTestDriveModeSubmitted }
+								onClick={ handleSetupTestDriveMode }
+							>
+								{ strings.button.test_drive }
 							</Button>
 						</div>
 					</Card>

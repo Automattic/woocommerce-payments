@@ -18,6 +18,7 @@ export default {
 			'woocommerce-payments'
 		),
 		sandbox: __( 'Enable sandbox mode', 'woocommerce-payments' ),
+		test_drive: __( 'Test payments', 'woocommerce-payments' ),
 	},
 	heading: ( firstName?: string ): string =>
 		sprintf(
