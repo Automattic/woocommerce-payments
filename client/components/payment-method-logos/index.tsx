@@ -70,7 +70,7 @@ const PaymentMethods = [
 export const WooPaymentMethodsLogos: React.VFC< {
 	maxElements: number;
 } > = ( { maxElements = 10 } ) => {
-	const totalPaymentMethods = 21;
+	const totalPaymentMethods = 20;
 	const [ maxShownElements, setMaxShownElements ] = useState( maxElements );
 
 	useEffect( () => {
