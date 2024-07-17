@@ -804,6 +804,8 @@ class WC_Payments_Account {
 		// Prevent access to onboarding flow if the server is not connected. Redirect back to the connect page with an error message.
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			$referer = sanitize_text_field( wp_get_raw_referer() );
+			// Determine the original source from where the merchant entered the onboarding flow.
+			$onboarding_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
 
 			// Track unsuccessful Jetpack connection.
 			if ( strpos( $referer, 'wordpress.com' ) ) {
@@ -813,9 +815,26 @@ class WC_Payments_Account {
 						'mode'   => WC_Payments::mode()->is_test() ? 'test' : 'live',
 						// Capture the user source of the connection attempt originating page.
 						// This is the same source that is used to track the onboarding flow origin.
-						'source' => isset( $_GET['source'] ) ? sanitize_text_field( wp_unslash( $_GET['source'] ) ) : '',
+						'source' => $onboarding_source,
 					]
 				);
+			}
+
+			// Determine the `from` GET param value based on the current onboarding source.
+			// This way we maintain the source as we redirect back to the Connect page.
+			switch ( $onboarding_source ) {
+				case WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK:
+					$from = 'WCADMIN_PAYMENT_TASK';
+					break;
+				case WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE:
+					$from = 'WCADMIN_PAYMENT_SETTINGS';
+					break;
+				case WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE:
+					$from = 'WCADMIN_PAYMENT_INCENTIVE';
+					break;
+				default:
+					$from = 'WCPAY_ONBOARDING_FLOW';
+					break;
 			}
 
 			$this->redirect_service->redirect_to_connect_page(
@@ -824,7 +843,7 @@ class WC_Payments_Account {
 					__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
 					'WooPayments'
 				),
-				'WCPAY_ONBOARDING_FLOW'
+				$from
 			);
 			return true;
 		}
