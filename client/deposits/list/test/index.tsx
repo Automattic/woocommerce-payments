@@ -109,10 +109,9 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
-const mockUseReportingExportLanguage =
-	useReportingExportLanguage as jest.MockedFunction<
-		typeof useReportingExportLanguage
-	>;
+const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
+	typeof useReportingExportLanguage
+>;
 
 describe( 'Deposits list', () => {
 	beforeEach( () => {
@@ -347,7 +346,8 @@ describe( 'Deposits list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
-					path: '/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en',
+					path:
+						'/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en',
 				} );
 			} );
 		} );

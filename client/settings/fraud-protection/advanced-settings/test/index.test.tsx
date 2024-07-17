@@ -205,8 +205,10 @@ describe( 'Advanced fraud protection settings', () => {
 			/There was an error retrieving your fraud protection settings/i
 		);
 
-		const [ firstSaveButton, secondSaveButton ] =
-			await container.findAllByText( 'Save Changes' );
+		const [
+			firstSaveButton,
+			secondSaveButton,
+		] = await container.findAllByText( 'Save Changes' );
 
 		expect( firstSaveButton ).toBeDisabled();
 		expect( secondSaveButton ).toBeDisabled();

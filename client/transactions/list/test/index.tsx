@@ -68,15 +68,13 @@ const mockUseTransactions = useTransactions as jest.MockedFunction<
 	typeof useTransactions
 >;
 
-const mockUseTransactionsSummary =
-	useTransactionsSummary as jest.MockedFunction<
-		typeof useTransactionsSummary
-	>;
+const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
+	typeof useTransactionsSummary
+>;
 
-const mockUseReportingExportLanguage =
-	useReportingExportLanguage as jest.MockedFunction<
-		typeof useReportingExportLanguage
-	>;
+const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
+	typeof useReportingExportLanguage
+>;
 
 declare const global: {
 	wcpaySettings: {

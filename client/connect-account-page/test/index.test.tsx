@@ -90,7 +90,8 @@ describe( 'ConnectAccountPage', () => {
 
 		await waitFor( () => {
 			expect( apiFetch ).toHaveBeenCalledWith( {
-				path: '/wc-analytics/admin/notes/experimental-activate-promo/incentive-id',
+				path:
+					'/wc-analytics/admin/notes/experimental-activate-promo/incentive-id',
 				method: 'POST',
 			} );
 		} );

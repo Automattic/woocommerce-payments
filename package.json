@@ -60,6 +60,7 @@
     "lint": "npm run lint:js && npm run lint:css && npm run lint:php",
     "lint:css": "stylelint 'client/**/*.scss' 'client/**/*.css' 'assets/**/*.scss' 'assets/**/*.css'",
     "lint:js": "tsc --noEmit && eslint . --ext=js,jsx,ts,tsx",
+    "eslint": "eslint . --ext=js,jsx,ts,tsx",
     "lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "format": "npm run format:js && npm run format:css",
@@ -159,7 +160,7 @@
     "eslint-plugin-jest": "24.3.6",
     "eslint-plugin-jsdoc-alignment": "0.0.5",
     "eslint-plugin-jsx-a11y": "6.4.1",
-    "eslint-plugin-prettier": "5.2.1",
+    "eslint-plugin-prettier": "3.4.1",
     "eslint-plugin-react": "7.22.0",
     "eslint-plugin-react-hooks": "4.2.0",
     "eslint-plugin-wpcalypso": "5.0.0",
@@ -173,7 +174,7 @@
     "moment": "2.29.4",
     "node-wp-i18n": "1.2.5",
     "postcss": "8.3.5",
-    "prettier": "npm:wp-prettier@3.0.3",
+    "prettier": "npm:wp-prettier@2.0.5",
     "process": "0.11.10",
     "qrcode.react": "3.1.0",
     "react": "17.0.2",
@@ -206,6 +207,9 @@
     "@woocommerce/components": {
       "@woocommerce/csv-export": "1.9.0",
       "@woocommerce/currency": "4.3.0"
+    },
+    "@wordpress/scripts": {
+      "@wordpress/eslint-plugin": "8.0.2"
     }
   }
 }
