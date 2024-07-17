@@ -1369,6 +1369,7 @@ class WC_Payments_Account {
 	 * @param array  $additional_args    - additional query args to add to the return URL.
 	 */
 	private function init_stripe_onboarding( $wcpay_connect_from, $additional_args = [] ) {
+		// Prevent duplicate requests to start the onboarding flow.
 		if ( get_transient( self::ON_BOARDING_STARTED_TRANSIENT ) ) {
 			$this->redirect_service->redirect_to_connect_page(
 				__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
@@ -1406,7 +1407,6 @@ class WC_Payments_Account {
 		if ( ! empty( $additional_args ) ) {
 			$return_url = add_query_arg( $additional_args, $return_url );
 		}
-
 		// Onboarding self-assessment data.
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
 		if ( $self_assessment_data ) {
@@ -1472,7 +1472,7 @@ class WC_Payments_Account {
 		delete_transient( self::ON_BOARDING_STARTED_TRANSIENT );
 
 		// If an account already exists for this site, we're done.
-		if ( false === $onboarding_data['url'] ) {
+		if ( isset( $onboarding_data['url'] ) && false === $onboarding_data['url'] ) {
 			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
 			update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => true ] );
 			$redirect_url = add_query_arg(
@@ -1482,10 +1482,14 @@ class WC_Payments_Account {
 			$this->redirect_service->redirect_to( $redirect_url );
 		}
 
-		set_transient( 'woopay_enabled_by_default', $onboarding_data['woopay_enabled_by_default'], DAY_IN_SECONDS );
-		set_transient( 'wcpay_stripe_onboarding_state', $onboarding_data['state'], DAY_IN_SECONDS );
+		set_transient( 'woopay_enabled_by_default', isset( $onboarding_data['woopay_enabled_by_default'] ) ?? false, DAY_IN_SECONDS );
+		set_transient( 'wcpay_stripe_onboarding_state', $onboarding_data['state'] ?? '', DAY_IN_SECONDS );
 
-		$this->redirect_service->redirect_to( $onboarding_data['url'] );
+		// We will only redirect if the URL is valid.
+		// Otherwise, we will let the calling logic deal with fallback redirects.
+		if ( isset( $onboarding_data['url'] ) && wp_validate_redirect( $onboarding_data['url'], false ) ) {
+			$this->redirect_service->redirect_to( $onboarding_data['url'] );
+		}
 	}
 
 	/**
