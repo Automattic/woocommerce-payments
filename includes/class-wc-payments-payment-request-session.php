@@ -39,6 +39,7 @@ class WC_Payments_Payment_Request_Session {
 		add_filter( 'woocommerce_session_handler', [ $this, 'add_payment_request_store_api_session_handler' ], 20 );
 		add_filter( 'rest_post_dispatch', [ $this, 'store_api_headers' ], 10, 3 );
 
+		// checking to ensure we're not erasing the cart on the "order received" page.
 		if ( $this->is_custom_session_order_received_page() ) {
 			add_filter( 'woocommerce_persistent_cart_enabled', '__return_false' );
 			add_filter( 'woocommerce_cart_session_initialize', '__return_false' );
