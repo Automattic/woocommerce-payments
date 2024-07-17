@@ -49,7 +49,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	/**
 	 * Create order. Security is handled by WC.
 	 *
-	 * @throws Exception If cart is empty.
+	 * @throws Exception If cart is empty. That is handled within the method.
 	 */
 	public function ajax_create_order() {
 		try {
