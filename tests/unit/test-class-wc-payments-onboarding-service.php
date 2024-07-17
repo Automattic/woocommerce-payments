@@ -223,7 +223,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 				'any',
 				[
 					'wcpay-connect'                      => '1',
-					'wcpay-disable-onboarding-test-mode' => '1',
+					'wcpay-disable-onboarding-test-mode' => 'true',
 				],
 			],
 			[
@@ -231,7 +231,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 				'any',
 				[
 					'wcpay-connect'       => '1',
-					'wcpay-reset-account' => '1',
+					'wcpay-reset-account' => 'true',
 				],
 			],
 		];

@@ -93,6 +93,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
 		unset( $_GET );
+		unset( $_REQUEST );
 		parent::tear_down();
 	}
 
@@ -111,6 +112,590 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'jetpack_site_registered', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_registered action does not exist.' );
 		$this->assertNotFalse( has_action( 'updated_option', [ $this->wcpay_account, 'possibly_update_wcpay_account_locale' ] ), 'updated_option action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->wcpay_account, 'clear_cache' ] ), 'woocommerce_woocommerce_payments_updated action does not exist.' );
+	}
+
+	public function test_maybe_handle_onboarding_unauthorized_user() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an editor user.
+		$editor_user = $this->factory()->user->create( [ 'role' => 'editor' ] );
+		wp_set_current_user( $editor_user );
+
+		$_REQUEST['_wpnonce'] = wp_create_nonce( 'wcpay-login' );
+
+		// Assert.
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to' );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_stripe_login_links_partially_onboarded_account() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-login']  = '1';
+		$_REQUEST['_wpnonce'] = wp_create_nonce( 'wcpay-login' );
+
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => false, // Hasn't finished initial KYC.
+			]
+		);
+
+		// Assert.
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_account_link' );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_stripe_login_links() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-login']  = '1';
+		$_REQUEST['_wpnonce'] = wp_create_nonce( 'wcpay-login' );
+
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => true, // Has finished initial KYC.
+			]
+		);
+
+		// Assert.
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_login' );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_wpcom_reconnection() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-reconnect-wpcom'] = '1';
+		$_REQUEST['_wpnonce']          = wp_create_nonce( 'wcpay-reconnect-wpcom' );
+
+		// Assert.
+		$this->mock_api_client->expects( $this->once() )->method( 'start_server_connection' );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_return_from_jetpack_connection_without_working_connection() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// This is the flag indicating the return URL of the Jetpack connection flow.
+		$_GET['wcpay-connect-jetpack-success'] = '1';
+		// Jetpack will return to the Connect page.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/connect';
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+
+		// It should not matter since the Jetpack connection takes precedence.
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => true, // Has finished initial KYC.
+			]
+		);
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( false );
+		$this->mock_api_client
+			->method( 'has_server_connection_owner' )
+			->willReturn( false );
+
+		// Assert.
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_connect_page' )
+			->with(
+				'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooPayments.',
+				'WPCOM_CONNECTION',
+				[ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE ]
+			);
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	/**
+	 * @dataProvider provider_onboarding_source
+	 */
+	public function test_maybe_handle_onboarding_connect_by_known_onboarding_source( $onboarding_source, $has_working_jetpack_connection, $is_stripe_connected, $expected_redirect ) {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user was in some bogus page.
+		$_GET['page']                   = 'wc-admin';
+		$_GET['path']                   = '/payments/some-bogus-page';
+		$_GET['source']                 = $onboarding_source;
+		$_GET['create_builder_account'] = '0';
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( $has_working_jetpack_connection );
+		$this->mock_api_client
+			->method( 'has_server_connection_owner' )
+			->willReturn( $has_working_jetpack_connection );
+
+		if ( $is_stripe_connected ) {
+			$this->cache_account_details(
+				[
+					'account_id'        => 'acc_test',
+					'is_live'           => true,
+					'details_submitted' => true, // Has finished initial KYC.
+				]
+			);
+
+			$this->mock_api_client
+				->method( 'get_onboarding_data' )
+				->willReturn( [ 'url' => false ] ); // This means that an account already exits on the platform.
+		}
+
+		// Assert.
+		switch ( $expected_redirect ) {
+			case 'start_jetpack_connection':
+				$this->mock_api_client
+					->expects( $this->once() )
+					->method( 'start_server_connection' )
+					->with(
+						$this->logicalAnd(
+							$this->logicalOr(
+								$this->stringContains( 'page=wc-admin&path=/payments/connect' ),
+								$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Fconnect' )
+							),
+							$this->stringContains( 'source=' . $onboarding_source )
+						)
+					);
+				break;
+			case 'onboarding_wizard':
+				$this->mock_redirect_service
+					->expects( $this->once() )
+					->method( 'redirect_to_onboarding_wizard' )
+					->with( 'connect-from', [ 'source' => $onboarding_source ] );
+				break;
+			case 'overview_page':
+				$this->mock_redirect_service
+					->expects( $this->once() )
+					->method( 'redirect_to' )
+					->with(
+						$this->logicalOr(
+							$this->stringContains( 'page=wc-admin&path=/payments/overview' ),
+							$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Foverview' )
+						)
+					);
+				break;
+			default:
+				$this->fail( 'Unexpected redirect type: ' . $expected_redirect );
+				break;
+		}
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	/**
+	 * Data provider for test_maybe_handle_onboarding_connect_by_known_onboarding_source
+	 */
+	public function provider_onboarding_source() {
+		return [
+			'Woo Payments task onboarding source - no Jetpack connection, Stripe connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
+				false,
+				true,
+				'start_jetpack_connection',
+			],
+			'Woo Payments task onboarding source - Jetpack connection, Stripe not connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
+				true,
+				false,
+				'onboarding_wizard',
+			],
+			'Woo Payments task onboarding source - Jetpack connection, Stripe connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
+				true,
+				true,
+				'overview_page',
+			],
+			'Connect page onboarding source - no Jetpack connection, Stripe connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
+				false,
+				true,
+				'start_jetpack_connection',
+			],
+			'Connect page onboarding source - Jetpack connection, Stripe not connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
+				true,
+				false,
+				'onboarding_wizard',
+			],
+			'Connect onboarding source - Jetpack connection, Stripe connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
+				true,
+				true,
+				'overview_page',
+			],
+			'Settings page onboarding source - no Jetpack connection, Stripe connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
+				false,
+				true,
+				'start_jetpack_connection',
+			],
+			'Settings page onboarding source - Jetpack connection, Stripe not connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
+				true,
+				false,
+				'onboarding_wizard',
+			],
+			'Settings page onboarding source - Jetpack connection, Stripe connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
+				true,
+				true,
+				'overview_page',
+			],
+			'Incentive page onboarding source - no Jetpack connection, Stripe connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				false,
+				true,
+				'start_jetpack_connection',
+			],
+			'Incentive page onboarding source - Jetpack connection, Stripe not connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				true,
+				false,
+				'onboarding_wizard',
+			],
+			'Incentive page onboarding source - Jetpack connection, Stripe connected' => [
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				true,
+				true,
+				'overview_page',
+			],
+		];
+	}
+
+	public function test_maybe_handle_onboarding_test_mode_to_live() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user was in some bogus page.
+		$_GET['page'] = 'wc-admin';
+		$_GET['path'] = '/payments/some-bogus-page';
+
+		$_GET['wcpay-disable-onboarding-test-mode'] = 'true';
+
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => true, // Has finished initial KYC.
+			]
+		);
+
+		// Assert.
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_onboarding_wizard' )
+			->with( 'connect-from', [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS ] );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_reset_account() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user was in some bogus page.
+		$_GET['page'] = 'wc-admin';
+		$_GET['path'] = '/payments/some-bogus-page';
+
+		$_GET['wcpay-reset-account'] = 'true';
+
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => true, // Has finished initial KYC.
+			]
+		);
+
+		// Assert.
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_onboarding_wizard' )
+			->with( 'connect-from', [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT ] );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_set_up_jetpack_connection() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user was in some bogus page.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/some-bogus-page';
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+		// Make sure important flags are carried over.
+		$_GET['promo']                  = 'incentive_id';
+		$_GET['progressive']            = 'true';
+		$_GET['create_builder_account'] = 'true';
+		$_GET['test_mode']              = '1'; // Some truthy value that will be carried over as `true`.
+
+		// Even if we have connected account data, the Jetpack connection takes precedence.
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => true, // Has finished initial KYC.
+			]
+		);
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( false );
+
+		// Assert.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'start_server_connection' )
+			->with(
+				$this->logicalAnd(
+					$this->logicalOr(
+						$this->stringContains( 'page=wc-admin&path=/payments/connect' ),
+						$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Fconnect' )
+					),
+					$this->stringContains( 'promo=incentive_id' ),
+					$this->stringContains( 'progressive=true' ),
+					$this->stringContains( 'create_builder_account=true' ),
+					$this->stringContains( 'test_mode=true' ),
+					$this->stringContains( 'source=' . WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE )
+				)
+			);
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_init_stripe_onboarding() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user was in some bogus page.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/some-bogus-page';
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+		// Make sure important flags are carried over.
+		$_GET['promo']       = 'incentive_id';
+		$_GET['progressive'] = 'true';
+
+		// There isn't another onboarding started.
+		delete_transient( WC_Payments_Account::ON_BOARDING_STARTED_TRANSIENT );
+
+		// The Jetpack connection is in working order.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_api_client
+			->method( 'has_server_connection_owner' )
+			->willReturn( true );
+
+		// Assert.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->with(
+				$this->logicalAnd(
+					$this->logicalOr(
+						$this->stringContains( 'page=wc-admin&path=/payments/overview' ),
+						$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Foverview' )
+					),
+					$this->stringContains( 'promo=incentive_id' ),
+					$this->stringContains( 'progressive=true' )
+				),
+				$this->isType( 'array' ), // Site data.
+				$this->isType( 'array' ), // User data.
+				$this->isType( 'array' ), // Account data.
+				$this->isType( 'array' ), // Actioned notes.
+				true, // Progressive onboarding.
+				false // Collect payout requirements.
+			)
+			->willReturn(
+				[
+					'url' => admin_url( 'admin.php' ), // This will pass the redirect validation.
+				]
+			);
+
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with( admin_url( 'admin.php' ) );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_init_stripe_onboarding_existing_account() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user was in some bogus page.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/some-bogus-page';
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+		// Make sure important flags are carried over.
+		$_GET['promo']       = 'incentive_id';
+		$_GET['progressive'] = 'true';
+
+		// There isn't another onboarding started.
+		delete_transient( WC_Payments_Account::ON_BOARDING_STARTED_TRANSIENT );
+
+		// The Jetpack connection is in working order.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_api_client
+			->method( 'has_server_connection_owner' )
+			->willReturn( true );
+
+		// Assert.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->with(
+				$this->logicalAnd(
+					$this->logicalOr(
+						$this->stringContains( 'page=wc-admin&path=/payments/overview' ),
+						$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Foverview' )
+					),
+					$this->stringContains( 'promo=incentive_id' ),
+					$this->stringContains( 'progressive=true' )
+				),
+				$this->isType( 'array' ), // Site data.
+				$this->isType( 'array' ), // User data.
+				$this->isType( 'array' ), // Account data.
+				$this->isType( 'array' ), // Actioned notes.
+				true, // Progressive onboarding.
+				false // Collect payout requirements.
+			)
+			->willReturn( [ 'url' => false ] ); // This means that an account already exits on the platform.
+
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with(
+				$this->logicalAnd(
+					$this->logicalOr(
+						$this->stringContains( 'page=wc-admin&path=/payments/overview' ),
+						$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Foverview' )
+					),
+					$this->stringContains( 'promo=incentive_id' ),
+					$this->stringContains( 'progressive=true' ),
+					$this->stringContains( 'wcpay-connection-success=1' )
+				)
+			);
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_init_stripe_onboarding_another_onboarding_started() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user was in some bogus page.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/some-bogus-page';
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+		// Make sure important flags are carried over.
+		$_GET['promo']       = 'incentive_id';
+		$_GET['progressive'] = 'true';
+
+		// There isn't another onboarding started.
+		set_transient( WC_Payments_Account::ON_BOARDING_STARTED_TRANSIENT, true, 10 );
+
+		// The Jetpack connection is in working order.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_api_client
+			->method( 'has_server_connection_owner' )
+			->willReturn( true );
+
+		// Assert.
+		$this->mock_redirect_service
+			->expects( $this->atLeastOnce() )
+			->method( 'redirect_to_connect_page' );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_onboarding_data' );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
 	}
 
 	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
@@ -1556,5 +2141,25 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					return $validator( $account ) ? $account : $generator();
 				}
 			);
+	}
+
+	/**
+	 * @param bool $is_admin
+	 */
+	private function set_is_admin( bool $is_admin ) {
+		global $current_screen;
+
+		if ( ! $is_admin ) {
+			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+
+			return;
+		}
+
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+		$current_screen = $this->getMockBuilder( \stdClass::class )
+			->setMethods( [ 'in_admin' ] )
+			->getMock();
+
+		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
 	}
 }
