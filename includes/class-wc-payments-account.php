@@ -821,30 +821,14 @@ class WC_Payments_Account {
 				);
 			}
 
-			// Determine the `from` GET param value based on the current onboarding source.
-			// This way we maintain the source as we redirect back to the Connect page.
-			switch ( $onboarding_source ) {
-				case WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK:
-					$from = 'WCADMIN_PAYMENT_TASK';
-					break;
-				case WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE:
-					$from = 'WCADMIN_PAYMENT_SETTINGS';
-					break;
-				case WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE:
-					$from = 'WCADMIN_PAYMENT_INCENTIVE';
-					break;
-				default:
-					$from = 'WCPAY_ONBOARDING_FLOW';
-					break;
-			}
-
 			$this->redirect_service->redirect_to_connect_page(
 				sprintf(
 				/* translators: %s: WooPayments */
 					__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
 					'WooPayments'
 				),
-				$from
+				'WCPAY_ONBOARDING_FLOW',
+				[ 'source' => $onboarding_source ]
 			);
 			return true;
 		}
