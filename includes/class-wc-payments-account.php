@@ -1304,12 +1304,11 @@ class WC_Payments_Account {
 	/**
 	 * Starts the Jetpack connection flow if it's not already fully connected.
 	 *
-	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
-	 * @param array  $additional_args    - additional query args to add to the return URL.
+	 * @param string $return_url Where to redirect the user back to.
 	 *
 	 * @throws API_Exception If there was an error when registering the site on WP.com.
 	 */
-	private function maybe_init_jetpack_connection( $wcpay_connect_from, $additional_args = [] ) {
+	private function maybe_init_jetpack_connection( string $return_url ) {
 		// Nothing to do if we already have a working Jetpack connection.
 		if ( $this->has_working_jetpack_connection() ) {
 			return;
@@ -1318,18 +1317,10 @@ class WC_Payments_Account {
 		// Track the Jetpack connection start.
 		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
 
-		$redirect = add_query_arg(
-			array_merge(
-				[
-					'wcpay-connect'                 => $wcpay_connect_from,
-					'wcpay-connect-jetpack-success' => '1',
-					'_wpnonce'                      => wp_create_nonce( 'wcpay-connect' ),
-				],
-				$additional_args
-			),
-			$this->get_onboarding_return_url( $wcpay_connect_from )
-		);
-		$this->payments_api_client->start_server_connection( $redirect );
+		// Ensure our success param is present.
+		$return_url = add_query_arg( [ 'wcpay-connect-jetpack-success' => '1' ], $return_url );
+
+		$this->payments_api_client->start_server_connection( $return_url );
 	}
 
 	/**
