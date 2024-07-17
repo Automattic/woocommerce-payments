@@ -1,7 +1,5 @@
-/**
- * External dependencies
- */
-import { Status } from '@wordpress/notices';
+// This type was imported from @wordpress/notices but it's not longer exported by the module.
+type Status = 'success' | 'info' | 'error' | 'warning';
 
 export interface CapabilityStatus {
 	status: Status;
