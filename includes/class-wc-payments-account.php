@@ -1077,7 +1077,9 @@ class WC_Payments_Account {
 						/* translators: %s: WooPayments */
 							__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
 							'WooPayments'
-						)
+						),
+						'WPCOM_CONNECTION',
+						[ 'source' => $onboarding_source ]
 					);
 
 					return;
@@ -1103,13 +1105,16 @@ class WC_Payments_Account {
 			} catch ( Exception $e ) {
 				$this->redirect_service->redirect_to_connect_page(
 				/* translators: error message. */
-					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() )
+					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() ),
+					'WPCOM_CONNECTION',
+					[ 'source' => $onboarding_source ]
 				);
 				return;
 			}
 
 			// Second, default/fallback handling of the Stripe account initialization and/or redirect to the Stripe KYC.
-			// This is used at the end of our onboarding wizard (MOX).
+			// This is used at the end of our onboarding wizard (MOX) and whenever the merchant needs to
+			// finish Stripe KYC verifications (like in the case of partially onboarded accounts).
 			// In case everything is already OK and there is no need for Stripe KYC,
 			// the merchant will get redirected to the Payments > Overview page.
 			try {
@@ -1124,7 +1129,9 @@ class WC_Payments_Account {
 				Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
 				$this->redirect_service->redirect_to_connect_page(
 				/* translators: error message. */
-					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
+					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' ),
+					null,
+					[ 'source' => $onboarding_source ]
 				);
 				return;
 			}
@@ -1134,7 +1141,7 @@ class WC_Payments_Account {
 			if ( $this->is_stripe_connected() && $this->has_working_jetpack_connection() ) {
 				$this->redirect_service->redirect_to_overview_page();
 			} else {
-				$this->redirect_service->redirect_to_connect_page();
+				$this->redirect_service->redirect_to_connect_page( '', null, [ 'source' => $onboarding_source ] );
 			}
 			return;
 		}
@@ -1191,6 +1198,11 @@ class WC_Payments_Account {
 		// Maintain the `from` param from the request URL, if present.
 		if ( isset( $_GET['from'] ) ) {
 			$url_params['from'] = sanitize_text_field( wp_unslash( $_GET['from'] ) );
+		}
+
+		// Maintain the `source` param from the request URL, if present.
+		if ( isset( $_GET['source'] ) ) {
+			$url_params['source'] = sanitize_text_field( wp_unslash( $_GET['source'] ) );
 		}
 
 		return wp_nonce_url( add_query_arg( $url_params, admin_url( 'admin.php' ) ), 'wcpay-connect' );
@@ -1966,7 +1978,7 @@ class WC_Payments_Account {
 	 * Redirects to the onboarding flow page.
 	 * Also checks if the server is connected and try to connect it otherwise.
 	 *
-	 * @param string $source The source of the redirect.
+	 * @param string $source The onboarding flow original source.
 	 *
 	 * @return void
 	 */

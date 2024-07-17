@@ -121,15 +121,12 @@ class WC_Payments_Redirect_Service {
 	 * Function to immediately redirect to the main "Welcome to WooPayments" connect page.
 	 * Note that this function immediately ends the execution.
 	 *
-	 * @param string|null $error_message Optional error message to show in a notice.
-	 * @param string|null $from Optional source of the redirect.
-	 *                     Will fall back to keeping the `from` parameter in the current request URL, if present.
+	 * @param string|null $error_message     Optional. Error message to show in a notice.
+	 * @param string|null $from              Optional. Source of the redirect.
+	 *                                       Will fall back to keeping the `from` parameter in the current request URL, if present.
+	 * @param array       $additional_params Optional. Additional URL params to add to the redirect URL.
 	 */
-	public function redirect_to_connect_page( ?string $error_message = null, ?string $from = null ): void {
-		if ( isset( $error_message ) ) {
-			set_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
-		}
-
+	public function redirect_to_connect_page( ?string $error_message = null, ?string $from = null, array $additional_params = [] ): void {
 		$params = [
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
@@ -140,7 +137,14 @@ class WC_Payments_Redirect_Service {
 			return;
 		}
 
-		// If we were not given a source, try to get it from the request URL.
+		// If we were given an error message, store it in a very short-lived transient to show it on the page.
+		if ( isset( $error_message ) ) {
+			set_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
+		}
+
+		$params = array_merge( $params, $additional_params );
+
+		// If we were not given a redirect source, try to get it from the request URL.
 		if ( ! isset( $from ) && isset( $_GET['from'] ) ) {
 			$from = sanitize_text_field( wp_unslash( $_GET['from'] ) );
 		}
