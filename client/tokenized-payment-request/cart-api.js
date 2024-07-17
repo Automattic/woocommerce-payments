@@ -37,7 +37,7 @@ export default class PaymentRequestCartApi {
 				).currency_code.toUpperCase(),
 			} ),
 			headers: {
-				// the Store API nonce, which could later be overwritten.
+				// the Store API nonce, which could later be overwritten in subsequent requests.
 				Nonce: getPaymentRequestData( 'nonce' ).store_api_nonce,
 				// needed for validation of address data, etc.
 				'X-WooPayments-Tokenized-Cart-Nonce':

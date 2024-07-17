@@ -12,8 +12,12 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 global.wcpayPaymentRequestParams = {};
 global.wcpayPaymentRequestParams.nonce = {};
+global.wcpayPaymentRequestParams.nonce.store_api_nonce =
+	'global_store_api_nonce';
 global.wcpayPaymentRequestParams.nonce.tokenized_cart_nonce =
 	'global_tokenized_cart_nonce';
+global.wcpayPaymentRequestParams.nonce.tokenized_cart_session_nonce =
+	'global_tokenized_cart_session_nonce';
 global.wcpayPaymentRequestParams.checkout = {};
 global.wcpayPaymentRequestParams.checkout.currency_code = 'USD';
 
@@ -29,6 +33,14 @@ describe( 'PaymentRequestCartApi', () => {
 			'X-WooPayments-Tokenized-Cart-Nonce',
 			'tokenized_cart_nonce'
 		);
+		headers.append(
+			'X-WooPayments-Tokenized-Cart-Session-Nonce',
+			'tokenized_cart_session_nonce'
+		);
+		headers.append(
+			'X-WooPayments-Tokenized-Cart-Session',
+			'tokenized_cart_session'
+		);
 		headers.append( 'Nonce', 'nonce-value' );
 		apiFetch.mockResolvedValue( {
 			headers: headers,
@@ -39,13 +51,20 @@ describe( 'PaymentRequestCartApi', () => {
 		const anotherApi = new PaymentRequestCartApi();
 
 		api.useSeparateCart();
-		api.getCart();
+		await api.getCart();
 
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'GET',
 				path: expect.stringContaining( '/wc/store/v1/cart' ),
-				parse: false,
+				headers: expect.objectContaining( {
+					'X-WooPayments-Tokenized-Cart-Session': '',
+					'X-WooPayments-Tokenized-Cart-Session-Nonce':
+						'global_tokenized_cart_session_nonce',
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						'global_tokenized_cart_nonce',
+					Nonce: 'global_store_api_nonce',
+				} ),
 			} )
 		);
 
@@ -58,7 +77,7 @@ describe( 'PaymentRequestCartApi', () => {
 		await api.updateCustomer( {
 			billing_address: { first_name: 'First' },
 		} );
-		expect( apiFetch ).toHaveBeenCalledWith(
+		expect( apiFetch ).toHaveBeenLastCalledWith(
 			expect.objectContaining( {
 				method: 'POST',
 				path: expect.stringContaining(
@@ -66,8 +85,12 @@ describe( 'PaymentRequestCartApi', () => {
 				),
 				headers: expect.objectContaining( {
 					'X-WooPayments-Tokenized-Cart': true,
+					'X-WooPayments-Tokenized-Cart-Session-Nonce':
+						'global_tokenized_cart_session_nonce',
 					'X-WooPayments-Tokenized-Cart-Nonce':
-						'tokenized_cart_nonce',
+						'global_tokenized_cart_nonce',
+					'X-WooPayments-Tokenized-Cart-Session':
+						'tokenized_cart_session',
 					Nonce: 'nonce-value',
 				} ),
 				data: expect.objectContaining( {
@@ -77,10 +100,14 @@ describe( 'PaymentRequestCartApi', () => {
 		);
 
 		apiFetch.mockClear();
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => ( {} ),
+		} );
 		await anotherApi.updateCustomer( {
 			billing_address: { last_name: 'Last' },
 		} );
-		expect( apiFetch ).toHaveBeenCalledWith(
+		expect( apiFetch ).toHaveBeenLastCalledWith(
 			expect.objectContaining( {
 				method: 'POST',
 				path: expect.stringContaining(
@@ -91,6 +118,7 @@ describe( 'PaymentRequestCartApi', () => {
 					'X-WooPayments-Tokenized-Cart': true,
 					'X-WooPayments-Tokenized-Cart-Nonce':
 						'global_tokenized_cart_nonce',
+					Nonce: 'global_store_api_nonce',
 				} ),
 				data: expect.objectContaining( {
 					billing_address: { last_name: 'Last' },
@@ -101,6 +129,10 @@ describe( 'PaymentRequestCartApi', () => {
 
 	it( 'should call `/cart/update-customer` with the global headers if the cart is not anonymous', async () => {
 		global.wcpayPaymentRequestParams.button_context = 'cart';
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => ( {} ),
+		} );
 		const api = new PaymentRequestCartApi();
 
 		await api.updateCustomer( {
