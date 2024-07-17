@@ -182,11 +182,14 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 	 * @return array
 	 */
 	public function update_product_price( $updated_prices, $cart_item, $prices ): array {
-		$price         = $this->multi_currency->get_price( $prices['price'], 'product' );
-		$regular_price = $this->multi_currency->get_price( $prices['regular_price'], 'product' );
-		$sale_price    = $this->multi_currency->get_price( $prices['sale_price'], 'product' );
-		$flat_fees     = 0;
-		$quantity      = $cart_item['quantity'];
+		$price                       = $this->multi_currency->get_price( $prices['price'], 'product' );
+		$regular_price               = $this->multi_currency->get_price( $prices['regular_price'], 'product' );
+		$sale_price                  = $this->multi_currency->get_price( $prices['sale_price'], 'product' );
+		$flat_fees                   = 0;
+		$quantity                    = $cart_item['quantity'];
+		$price_before_addons         = $price;
+		$regular_price_before_addons = $regular_price;
+		$sale_price_before_addons    = $sale_price;
 
 		// TODO: Check compat with Smart Coupons.
 		// Compatibility with Smart Coupons self declared gift amount purchase.
@@ -219,9 +222,9 @@ class WooCommerceProductAddOns extends BaseCompatibility {
 
 			switch ( $addon['price_type'] ) {
 				case 'percentage_based':
-					$price         += (float) ( $price * ( $addon_price / 100 ) );
-					$regular_price += (float) ( $regular_price * ( $addon_price / 100 ) );
-					$sale_price    += (float) ( $sale_price * ( $addon_price / 100 ) );
+					$price         += (float) ( $price_before_addons * ( $addon_price / 100 ) );
+					$regular_price += (float) ( $regular_price_before_addons * ( $addon_price / 100 ) );
+					$sale_price    += (float) ( $sale_price_before_addons * ( $addon_price / 100 ) );
 					break;
 				case 'flat_fee':
 					$flat_fee       = $quantity > 0 ? (float) ( $addon_price / $quantity ) : 0;
