@@ -30,7 +30,6 @@ describe( 'PaymentRequestCartApi', () => {
 			'tokenized_cart_nonce'
 		);
 		headers.append( 'Nonce', 'nonce-value' );
-		headers.append( 'Cart-Token', 'cart-token-value' );
 		apiFetch.mockResolvedValue( {
 			headers: headers,
 			json: () => ( {} ),
@@ -70,7 +69,6 @@ describe( 'PaymentRequestCartApi', () => {
 					'X-WooPayments-Tokenized-Cart-Nonce':
 						'tokenized_cart_nonce',
 					Nonce: 'nonce-value',
-					'Cart-Token': 'cart-token-value',
 				} ),
 				data: expect.objectContaining( {
 					billing_address: { first_name: 'First' },
