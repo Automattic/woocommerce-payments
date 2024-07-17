@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix store connection loop for onboarding flows started from the Woo > Settings > Payments page.
