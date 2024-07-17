@@ -25,6 +25,7 @@ class WC_Payments_Onboarding_Service {
 	const SOURCE_WCPAY_CONNECT_PAGE           = 'wcpay-connect-page';
 	const SOURCE_WCPAY_RESET_ACCOUNT          = 'wcpay-reset-account';
 	const SOURCE_WCPAY_SETUP_LIVE_PAYMENTS    = 'wcpay-setup-live-payments';
+	const SOURCE_UNKNOWN                      = 'unknown';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -303,6 +304,6 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		// Default to an unknown source.
-		return 'unknown';
+		return self::SOURCE_UNKNOWN;
 	}
 }
