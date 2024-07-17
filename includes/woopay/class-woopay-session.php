@@ -579,7 +579,6 @@ class WooPay_Session {
 
 		$body                 = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance );
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
-		$body['appearance']   = isset( $_REQUEST['appearance'] ) ? self::array_map_recursive( array( __CLASS__, 'sanitize_string' ), $_REQUEST['appearance'] ) : null; // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, Generic.Arrays.DisallowLongArraySyntax.Found
 
 		$args = [
 			'url'     => WooPay_Utilities::get_woopay_rest_url( 'init' ),
