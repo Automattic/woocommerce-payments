@@ -16,7 +16,7 @@ import { DocumentsFilters } from '../';
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
 jest.mock( '@woocommerce/settings', () => ( {
 	...jest.requireActual( '@woocommerce/settings' ),
-	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.7 : '' ) ),
+	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.8 : '' ) ),
 } ) );
 
 function addAdvancedFilter( filter: string ) {
@@ -49,6 +49,14 @@ describe( 'Documents filters', () => {
 	describe( 'when filtering by date', () => {
 		let ruleSelector: HTMLElement;
 
+		beforeAll( () => {
+			jest.useFakeTimers();
+		} );
+
+		afterAll( () => {
+			jest.useRealTimers();
+		} );
+
 		beforeEach( () => {
 			addAdvancedFilter( 'Date' );
 			ruleSelector = screen.getByRole( 'combobox', {
@@ -66,10 +74,6 @@ describe( 'Documents filters', () => {
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
-			expect( console ).toHaveWarnedWith(
-				// eslint-disable-next-line max-len
-				'Old interpolation string format `{{element}}...{{/element}}` or `{{element/}}` is deprecated since version 7.8. Please use new interpolation string format `<element>...</element>` or `<element/>` instead. See: https://github.com/woocommerce/woocommerce/tree/trunk/packages/js/components/src/advanced-filters/README.md'
-			);
 		} );
 
 		test( 'should filter by after', () => {

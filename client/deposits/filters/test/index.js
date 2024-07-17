@@ -15,10 +15,18 @@ import { DepositsFilters } from '../';
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
 jest.mock( '@woocommerce/settings', () => ( {
 	...jest.requireActual( '@woocommerce/settings' ),
-	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.7 : '' ) ),
+	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.8 : '' ) ),
 } ) );
 
 describe( 'Deposits filters', () => {
+	beforeAll( () => {
+		jest.useFakeTimers();
+	} );
+
+	afterAll( () => {
+		jest.useRealTimers();
+	} );
+
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
@@ -60,10 +68,6 @@ describe( 'Deposits filters', () => {
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
-			expect( console ).toHaveWarnedWith(
-				// eslint-disable-next-line max-len
-				'Old interpolation string format `{{element}}...{{/element}}` or `{{element/}}` is deprecated since version 7.8. Please use new interpolation string format `<element>...</element>` or `<element/>` instead. See: https://github.com/woocommerce/woocommerce/tree/trunk/packages/js/components/src/advanced-filters/README.md'
-			);
 		} );
 
 		test( 'should filter by after', () => {
