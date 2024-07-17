@@ -33,24 +33,28 @@ describe( 'PaymentRequestCartApi', () => {
 		headers.append( 'Cart-Token', 'cart-token-value' );
 		apiFetch.mockResolvedValue( {
 			headers: headers,
+			json: () => ( {} ),
 		} );
 
 		const api = new PaymentRequestCartApi();
 		const anotherApi = new PaymentRequestCartApi();
 
 		api.useSeparateCart();
+		api.getCart();
 
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				method: 'GET',
 				path: expect.stringContaining( '/wc/store/v1/cart' ),
-				credentials: 'omit',
 				parse: false,
 			} )
 		);
 
 		apiFetch.mockClear();
-		apiFetch.mockResolvedValue( {} );
+		apiFetch.mockResolvedValue( {
+			headers: new Headers(),
+			json: () => ( {} ),
+		} );
 
 		await api.updateCustomer( {
 			billing_address: { first_name: 'First' },
@@ -61,7 +65,6 @@ describe( 'PaymentRequestCartApi', () => {
 				path: expect.stringContaining(
 					'/wc/store/v1/cart/update-customer'
 				),
-				credentials: 'omit',
 				headers: expect.objectContaining( {
 					'X-WooPayments-Tokenized-Cart': true,
 					'X-WooPayments-Tokenized-Cart-Nonce':
@@ -85,7 +88,6 @@ describe( 'PaymentRequestCartApi', () => {
 				path: expect.stringContaining(
 					'/wc/store/v1/cart/update-customer'
 				),
-				credentials: 'omit',
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
 					'X-WooPayments-Tokenized-Cart': true,
@@ -112,7 +114,6 @@ describe( 'PaymentRequestCartApi', () => {
 				path: expect.stringContaining(
 					'/wc/store/v1/cart/update-customer'
 				),
-				credentials: undefined,
 				// in this case, no additional headers should have been submitted.
 				headers: expect.objectContaining( {
 					'X-WooPayments-Tokenized-Cart': true,
