@@ -197,13 +197,14 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		// Set the request as if the user is already on the Connect page.
 		$_GET = [
 			'page' => 'wc-admin',
-			'path' => '/payments/connect',
+			'path' => '/some-other-path',
 		];
 
 		// Assert.
 		$this->redirect_service
-			->expects( $this->never() )
-			->method( 'redirect_to' );
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/connect' ) );
 
 		// Act.
 		$this->redirect_service->redirect_to_connect_page( 'Error message' );
@@ -274,5 +275,16 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 
 		// Act.
 		$this->redirect_service->redirect_to_connect_page( null, '' );
+	}
+
+	public function test_redirect_to_connect_page_redirects_with_additional_params() {
+		// Assert.
+		$this->redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/connect&source=some-source' ) );
+
+		// Act.
+		$this->redirect_service->redirect_to_connect_page( null, null, [ 'source' => 'some-source' ] );
 	}
 }

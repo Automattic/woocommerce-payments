@@ -118,7 +118,8 @@ class WC_Payments_Redirect_Service {
 	}
 
 	/**
-	 * Function to immediately redirect to the main "Welcome to WooPayments" connect page.
+	 * Immediately redirect to the Connect page.
+	 *
 	 * Note that this function immediately ends the execution.
 	 *
 	 * @param string|null $error_message     Optional. Error message to show in a notice.
