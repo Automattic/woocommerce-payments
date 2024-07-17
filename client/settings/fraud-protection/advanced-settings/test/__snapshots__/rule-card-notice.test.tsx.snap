@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Fraud protection rule card notice tests renders error box correctly 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -175,7 +175,7 @@ Object {
 `;
 
 exports[`Fraud protection rule card notice tests renders info box correctly 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -347,7 +347,7 @@ Object {
 `;
 
 exports[`Fraud protection rule card notice tests renders warning box correctly 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p

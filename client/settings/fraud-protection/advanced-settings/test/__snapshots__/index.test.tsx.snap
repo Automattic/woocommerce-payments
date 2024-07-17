@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Advanced fraud protection settings doesn't save when there's a validation error 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -2093,7 +2093,7 @@ Object {
 `;
 
 exports[`Advanced fraud protection settings renders an error message when settings can not be fetched from the server 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -3899,7 +3899,7 @@ Object {
 `;
 
 exports[`Advanced fraud protection settings renders correctly 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -5631,7 +5631,7 @@ Object {
 `;
 
 exports[`Advanced fraud protection settings saves settings when there are no validation errors 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
