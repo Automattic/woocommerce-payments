@@ -159,7 +159,10 @@ describe( 'Payment details page', () => {
 	} );
 
 	afterAll( () => {
-		window.location = location;
+		Object.defineProperty( window, 'location', {
+			configurable: true,
+			value: location,
+		} );
 	} );
 
 	it( 'should match the snapshot - Payment Intent query param', () => {

@@ -23,9 +23,9 @@ jest.mock( 'utils/express-checkout', () => ( {
 } ) );
 
 jest.mock( '@stripe/react-stripe-js', () => ( {
-	PaymentRequestButtonElement: jest
-		.fn()
-		.mockReturnValue( <button type="submit">Stripe button mock</button> ),
+	PaymentRequestButtonElement: jest.fn( () => (
+		<button type="submit">Stripe button mock</button>
+	) ),
 	useStripe: jest.fn(),
 } ) );
 
@@ -76,7 +76,10 @@ describe( 'PaymentRequestButtonPreview', () => {
 
 	afterEach( () => {
 		jest.clearAllMocks();
-		window.location = location;
+		Object.defineProperty( window, 'location', {
+			configurable: true,
+			value: location,
+		} );
 	} );
 
 	it( 'displays Google Chrome and Google Pay when page is in Safari', async () => {
