@@ -1080,6 +1080,10 @@ class WC_Payments_Subscription_Service {
 	 * @return bool True if store has active WCPay subscriptions, otherwise false.
 	 */
 	public static function store_has_active_wcpay_subscriptions() {
+		if ( ! function_exists( 'wcs_get_subscriptions' ) ) {
+			return false;
+		}
+
 		$active_wcpay_subscriptions = wcs_get_subscriptions(
 			[
 				'subscriptions_per_page' => 1,
