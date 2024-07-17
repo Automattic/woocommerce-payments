@@ -1002,7 +1002,7 @@ class WC_Payments_Account {
 				true
 			) && ! $create_builder_account ) {
 
-				// Handle the state with no Stripe account.
+				// Handle the state with no connected Stripe account.
 				// We either need to redirect to the onboarding wizard (MOX)
 				// or first set up the Jetpack connection and redirect to the onboarding wizard after a successful connection.
 				if ( ! $this->is_stripe_connected() ) {
@@ -1015,27 +1015,6 @@ class WC_Payments_Account {
 					}
 
 					$this->redirect_to_onboarding_page_or_start_server_connection( $onboarding_source );
-				} elseif ( ! $this->is_details_submitted() && $this->has_working_jetpack_connection() ) {
-					// Handle the state where we have a connected Stripe account, but it is not fully onboarded.
-					// We redirect to the Stripe KYC for the merchant to finish verifications.
-					try {
-						$this->init_stripe_onboarding(
-							$wcpay_connect_param,
-							[
-								'promo'       => $incentive,
-								'progressive' => $progressive,
-							]
-						);
-					} catch ( Exception $e ) {
-						Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
-						$this->redirect_service->redirect_to_connect_page(
-							__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
-						);
-					}
-
-					// We should not reach this point as we either redirect to the Stripe KYC
-					// or to the Connect page with an error message.
-					return;
 				}
 			}
 
