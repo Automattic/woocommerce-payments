@@ -19,7 +19,6 @@ import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { recordUserEvent } from 'tracks';
 import './style.scss';
-import { getSetting } from '@woocommerce/settings';
 import { compare } from 'compare-versions';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -36,7 +35,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	);
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
-	const wooCommerceVersionString = getSetting( 'wcVersion' );
+	const wooCommerceVersionString = window.wcSettings?.wcVersion;
 	const wcVersionGreaterThan91 = compare(
 		wooCommerceVersionString,
 		'9.1',
