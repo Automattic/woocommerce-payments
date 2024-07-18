@@ -38,7 +38,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await page.waitForTimeout( 1000 );
 			await uiUnblocked();
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 		} );
 
 		it( 'Remove free coupon, then checkout with Classic Checkout', async () => {
@@ -48,7 +48,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await setupCheckout( billingDetails );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 		} );
 
 		afterAll( async () => {
@@ -74,7 +74,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await setupCheckout( billingDetails );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 		} );
 	} );
 } );

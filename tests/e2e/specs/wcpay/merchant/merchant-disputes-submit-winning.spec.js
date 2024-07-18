@@ -30,7 +30,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		const card = config.get( 'cards.disputed-fraudulent' );
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
-		await expect( page ).toMatch( 'Order received' );
+		await expect( page ).toMatchTextContent( 'Order received' );
 
 		// Get the order ID
 		const orderIdField = await page.$(

@@ -31,7 +31,7 @@ describe( 'Order > Status Change', () => {
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 
 			// Get the order ID so we can open it in the merchant view
 			const orderIdField = await page.$( orderIdSelector );
@@ -134,7 +134,7 @@ describe( 'Order > Status Change', () => {
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 
 			// Get the order ID so we can open it in the merchant view
 			const orderIdField = await page.$( orderIdSelector );

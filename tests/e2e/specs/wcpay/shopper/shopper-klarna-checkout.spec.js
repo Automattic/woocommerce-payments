@@ -151,6 +151,6 @@ describe( 'Klarna checkout', () => {
 
 		await page.waitForSelector( 'h1.entry-title' );
 
-		await expect( page ).toMatch( 'Order received' );
+		await expect( page ).toMatchTextContent( 'Order received' );
 	} );
 } );

@@ -69,7 +69,7 @@ describe.each( dataTable )(
 			);
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 
 			// Remember the order ID and order total. We will need them later.
 			orderId = await page.$eval(

@@ -30,7 +30,7 @@ const placeOrderWithCurrency = async ( currency ) => {
 		const card = config.get( 'cards.basic' );
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
-		await expect( page ).toMatch( 'Order received' );
+		await expect( page ).toMatchTextContent( 'Order received' );
 
 		const url = await page.url();
 		return url.match( /\/order-received\/(\d+)\// )[ 1 ];
@@ -109,7 +109,7 @@ describe( 'Shopper Multi-Currency checkout', () => {
 						ORDER_RECEIVED_ORDER_TOTAL_SELECTOR,
 						( el ) => el.textContent
 					)
-				).toMatch( new RegExp( testCurrency ) );
+				).toMatchTextContent( new RegExp( testCurrency ) );
 			} );
 		}
 	);
@@ -127,7 +127,7 @@ describe( 'Shopper Multi-Currency checkout', () => {
 						ORDER_DETAILS_ORDER_TOTAL_SELECTOR,
 						( el ) => el.textContent
 					)
-				).toMatch( new RegExp( testCurrency ) );
+				).toMatchTextContent( new RegExp( testCurrency ) );
 			} );
 		}
 	);
@@ -140,7 +140,9 @@ describe( 'Shopper Multi-Currency checkout', () => {
 				const orderTotalText = await getOrderTotalTextForOrder(
 					currenciesOrders[ currency ]
 				);
-				expect( orderTotalText ).toMatch( new RegExp( currency ) );
+				expect( orderTotalText ).toMatchTextContent(
+					new RegExp( currency )
+				);
 			}
 		} );
 	} );

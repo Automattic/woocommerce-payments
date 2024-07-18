@@ -203,7 +203,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				( el ) => el.innerText
 			);
-			await expect( page ).toMatch(
+			await expect( page ).toMatchTextContent(
 				declined3dsCardError,
 				'Your card was declined.'
 			);
