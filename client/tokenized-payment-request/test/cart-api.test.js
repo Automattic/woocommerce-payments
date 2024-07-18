@@ -30,14 +30,6 @@ describe( 'PaymentRequestCartApi', () => {
 		global.wcpayPaymentRequestParams.button_context = 'product';
 		const headers = new Headers();
 		headers.append(
-			'X-WooPayments-Tokenized-Cart-Nonce',
-			'tokenized_cart_nonce'
-		);
-		headers.append(
-			'X-WooPayments-Tokenized-Cart-Session-Nonce',
-			'tokenized_cart_session_nonce'
-		);
-		headers.append(
 			'X-WooPayments-Tokenized-Cart-Session',
 			'tokenized_cart_session'
 		);
@@ -152,6 +144,51 @@ describe( 'PaymentRequestCartApi', () => {
 				} ),
 				data: expect.objectContaining( {
 					billing_address: { last_name: 'Last' },
+				} ),
+			} )
+		);
+	} );
+
+	it( 'should store received header information for subsequent usage', async () => {
+		global.wcpayPaymentRequestParams.button_context = 'cart';
+		const headers = new Headers();
+		headers.append( 'Nonce', 'nonce-value' );
+		apiFetch.mockResolvedValue( {
+			headers,
+			json: () => Promise.resolve( {} ),
+		} );
+		const api = new PaymentRequestCartApi();
+
+		await api.getCart();
+
+		expect( apiFetch ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				method: 'GET',
+				path: expect.stringContaining( '/wc/store/v1/cart' ),
+				headers: expect.objectContaining( {
+					'X-WooPayments-Tokenized-Cart-Session-Nonce': undefined,
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						'global_tokenized_cart_nonce',
+				} ),
+			} )
+		);
+
+		await api.updateCustomer( {
+			billing_address: { last_name: 'Last' },
+		} );
+		expect( apiFetch ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				method: 'POST',
+				path: expect.stringContaining(
+					'/wc/store/v1/cart/update-customer'
+				),
+				// in this case, no additional headers should have been submitted.
+				headers: expect.objectContaining( {
+					'X-WooPayments-Tokenized-Cart-Session-Nonce': undefined,
+					'X-WooPayments-Tokenized-Cart': true,
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						'global_tokenized_cart_nonce',
+					Nonce: 'nonce-value',
 				} ),
 			} )
 		);
