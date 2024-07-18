@@ -692,7 +692,7 @@ class WC_Payments_Account {
 	 *
 	 * @return bool True if the redirection happened.
 	 */
-	public function maybe_redirect_after_plugin_activation() {
+	public function maybe_redirect_after_plugin_activation(): bool {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
@@ -723,18 +723,27 @@ class WC_Payments_Account {
 		}
 
 		if ( ! empty( $account ) ) {
-			// Do not redirect if connected.
+			// Do not redirect if we have a connected Stripe account.
 			return false;
 		}
 
-		// Redirect directly to onboarding page if come from WC Admin task.
-		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
-		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
-			$this->redirect_to_onboarding_page_or_start_server_connection( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK );
+		// Redirect directly to onboarding page if come from WC Admin task _and_ we have a working Jetpack connection.
+		if ( false !== strpos( wp_get_raw_referer(), 'task=payments' )
+			&& $this->has_working_jetpack_connection() ) {
+
+			$this->redirect_service->redirect_to_onboarding_wizard(
+				'WCADMIN_PAYMENT_TASK',
+				[ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK ]
+			);
 		}
 
-		// Redirect if not connected.
-		$this->redirect_service->redirect_to_connect_page();
+		// Redirect to Connect page.
+		$this->redirect_service->redirect_to_connect_page(
+			null,
+			null,
+			[ 'source' => WC_Payments_Onboarding_Service::get_source() ]
+		);
+
 		return true;
 	}
 
@@ -806,7 +815,7 @@ class WC_Payments_Account {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			$referer = sanitize_text_field( wp_get_raw_referer() );
 			// Determine the original source from where the merchant entered the onboarding flow.
-			$onboarding_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
+			$onboarding_source = WC_Payments_Onboarding_Service::get_source( $referer );
 
 			// Track unsuccessful Jetpack connection.
 			if ( strpos( $referer, 'wordpress.com' ) ) {
@@ -966,7 +975,7 @@ class WC_Payments_Account {
 			$should_onboard_in_test_mode = isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) );
 
 			// Determine the original source from where the merchant entered the onboarding flow.
-			$onboarding_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
+			$onboarding_source = WC_Payments_Onboarding_Service::get_source();
 
 			// Hide menu notification badge upon starting setup.
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
@@ -1093,7 +1102,7 @@ class WC_Payments_Account {
 			// First, default/fallback handling of the WPCOM/Jetpack connection.
 			try {
 				$this->maybe_init_jetpack_connection(
-					// Carry all the important GET params so we have then after the Jetpack connection setup.
+					// Carry all the important GET params, so we have then after the Jetpack connection setup.
 					add_query_arg(
 						[
 							'wcpay-connect'          => $wcpay_connect_param,
@@ -1488,8 +1497,11 @@ class WC_Payments_Account {
 
 		// We will only redirect if the URL is valid.
 		// Otherwise, we will let the calling logic deal with fallback redirects.
-		if ( isset( $onboarding_data['url'] ) && wp_validate_redirect( $onboarding_data['url'], false ) ) {
-			$this->redirect_service->redirect_to( $onboarding_data['url'] );
+		if ( isset( $onboarding_data['url'] ) ) {
+			$return_url = wp_validate_redirect( $onboarding_data['url'], '' );
+			if ( ! empty( $return_url ) ) {
+				$this->redirect_service->redirect_to( $return_url );
+			}
 		}
 	}
 
