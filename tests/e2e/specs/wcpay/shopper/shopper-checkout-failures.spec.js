@@ -124,7 +124,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
 			( el ) => el.innerText
 		);
-		await expect( page ).toMatch(
+		await expect( page ).toMatchTextContent(
 			declined3dsCardError,
 			'Your card has been declined.'
 		);

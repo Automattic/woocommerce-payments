@@ -16,7 +16,6 @@ const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
 
 const UPE_METHOD_CHECKBOXES = [
 	"//label[contains(text(), 'Bancontact')]/preceding-sibling::span/input[@type='checkbox']",
-	"//label[contains(text(), 'giropay')]/preceding-sibling::span/input[@type='checkbox']",
 ];
 const card = config.get( 'cards.basic' );
 const card2 = config.get( 'cards.basic2' );
@@ -57,26 +56,6 @@ describe.each( cardTestingPreventionStates )(
 		} );
 
 		describe( 'Enabled UPE with deferred intent creation', () => {
-			it( `should successfully place order with Giropay, carding prevention: ${ cardTestingPreventionEnabled }`, async () => {
-				await setupProductCheckout(
-					config.get( 'addresses.upe-customer.billing.de' )
-				);
-				page.waitForTimeout( 1000 );
-				if ( cardTestingPreventionEnabled ) {
-					const token = await page.evaluate( () => {
-						return window.wcpayFraudPreventionToken;
-					} );
-					expect( token ).not.toBeUndefined();
-				}
-				await selectOnCheckout( 'giropay', page );
-				await shopper.placeOrder();
-				await completeRedirectedPayment( page, 'success' );
-				await page.waitForNavigation( {
-					waitUntil: 'networkidle0',
-				} );
-				await expect( page ).toMatch( 'Order received' );
-			} );
-
 			it( `should successfully place order with Bancontact, carding prevention: ${ cardTestingPreventionEnabled }`, async () => {
 				await setupProductCheckout(
 					config.get( 'addresses.upe-customer.billing.be' )
@@ -94,7 +73,7 @@ describe.each( cardTestingPreventionStates )(
 				await page.waitForNavigation( {
 					waitUntil: 'networkidle0',
 				} );
-				await expect( page ).toMatch( 'Order received' );
+				await expect( page ).toMatchTextContent( 'Order received' );
 			} );
 		} );
 
@@ -111,13 +90,13 @@ describe.each( cardTestingPreventionStates )(
 					timeAdded = Date.now();
 
 					// Verify that the card was added
-					await expect( page ).not.toMatch(
+					await expect( page ).not.toMatchTextContent(
 						'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
 					);
-					await expect( page ).toMatch(
+					await expect( page ).toMatchTextContent(
 						'Payment method successfully added'
 					);
-					await expect( page ).toMatch(
+					await expect( page ).toMatchTextContent(
 						`${ card.expires.month }/${ card.expires.year }`
 					);
 					await waitTwentySecondsSinceLastCardAdded();
@@ -130,28 +109,32 @@ describe.each( cardTestingPreventionStates )(
 					timeAdded = Date.now();
 
 					// Verify that the card was added
-					await expect( page ).not.toMatch(
+					await expect( page ).not.toMatchTextContent(
 						'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
 					);
-					await expect( page ).toMatch(
+					await expect( page ).toMatchTextContent(
 						'Payment method successfully added'
 					);
-					await expect( page ).toMatch(
+					await expect( page ).toMatchTextContent(
 						`${ card2.expires.month }/${ card2.expires.year }`
 					);
 					await shopperWCP.setDefaultPaymentMethod( card2.label );
 					// Verify that the card was set as default
-					await expect( page ).toMatch(
+					await expect( page ).toMatchTextContent(
 						'This payment method was successfully set as your default.'
 					);
 				} );
 
 				it( 'should be able to delete cards', async () => {
 					await shopperWCP.deleteSavedPaymentMethod( card.label );
-					await expect( page ).toMatch( 'Payment method deleted.' );
+					await expect( page ).toMatchTextContent(
+						'Payment method deleted.'
+					);
 
 					await shopperWCP.deleteSavedPaymentMethod( card2.label );
-					await expect( page ).toMatch( 'Payment method deleted.' );
+					await expect( page ).toMatchTextContent(
+						'Payment method deleted.'
+					);
 				} );
 
 				afterAll( async () => {

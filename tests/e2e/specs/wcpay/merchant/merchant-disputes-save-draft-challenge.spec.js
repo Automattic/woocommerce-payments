@@ -24,7 +24,7 @@ describe( 'Disputes > Merchant can save and resume draft dispute challenge', () 
 		const card = config.get( 'cards.disputed-unreceived' );
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
-		await expect( page ).toMatch( 'Order received' );
+		await expect( page ).toMatchTextContent( 'Order received' );
 
 		// Get the order ID so we can open it in the merchant view
 		const orderIdField = await page.$(

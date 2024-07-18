@@ -56,13 +56,13 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 		);
 		await expect( page ).toClick( 'button', { text: 'Place Order' } );
 		await page.waitForSelector( 'div.woocommerce-order' );
-		await expect( page ).toMatch( 'p', {
+		await expect( page ).toMatchTextContent( 'p', {
 			text: 'Thank you. Your order has been received.',
 		} );
 
 		await shopperWCP.goToPaymentMethods();
-		await expect( page ).toMatch( card.label );
-		await expect( page ).toMatch(
+		await expect( page ).toMatchTextContent( card.label );
+		await expect( page ).toMatchTextContent(
 			`${ card.expires.month }/${ card.expires.year }`
 		);
 	} );
@@ -78,7 +78,7 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 		);
 		await expect( page ).toClick( 'button', { text: 'Place Order' } );
 		await page.waitForSelector( 'div.woocommerce-order' );
-		await expect( page ).toMatch( 'p', {
+		await expect( page ).toMatchTextContent( 'p', {
 			text: 'Thank you. Your order has been received.',
 		} );
 	} );
@@ -86,6 +86,6 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 	it( 'should delete the card', async () => {
 		await shopperWCP.goToPaymentMethods();
 		await shopperWCP.deleteSavedPaymentMethod( card.label );
-		await expect( page ).toMatch( 'Payment method deleted' );
+		await expect( page ).toMatchTextContent( 'Payment method deleted' );
 	} );
 } );

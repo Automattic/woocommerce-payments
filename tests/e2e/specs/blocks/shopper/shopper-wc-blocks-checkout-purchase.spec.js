@@ -59,7 +59,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 			await expect( page ).toClick( 'button', { text: 'Place Order' } );
 			await page.waitForSelector( 'div.woocommerce-order' );
-			await expect( page ).toMatch( 'p', {
+			await expect( page ).toMatchTextContent( 'p', {
 				text: 'Thank you. Your order has been received.',
 			} );
 		} );
@@ -82,7 +82,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				waitUntil: 'networkidle0',
 			} );
 			await page.waitForSelector( 'div.woocommerce-order' );
-			await expect( page ).toMatch( 'p', {
+			await expect( page ).toMatchTextContent( 'p', {
 				text: 'Thank you. Your order has been received.',
 			} );
 		} );
