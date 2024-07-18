@@ -125,7 +125,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               class="connect-account-page__payment-methods--logos-count"
             >
               + 
-              11
+              10
             </div>
           </div>
           <div
@@ -390,7 +390,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
               class="connect-account-page__payment-methods--logos-count"
             >
               + 
-              11
+              10
             </div>
           </div>
           <div
@@ -617,7 +617,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               class="connect-account-page__payment-methods--logos-count"
             >
               + 
-              11
+              10
             </div>
           </div>
           <div
