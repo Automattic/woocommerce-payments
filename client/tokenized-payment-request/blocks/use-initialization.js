@@ -14,12 +14,18 @@ import {
 } from '../../payment-request/event-handlers.js';
 
 import {
-	getPaymentRequest,
-	getPaymentRequestData,
-	updatePaymentRequest,
-	normalizeLineItems,
+	//getPaymentRequest,
+	//getPaymentRequestData,
+	//updatePaymentRequest,
 	displayLoginConfirmation,
 } from '../../payment-request/utils';
+
+import {
+	getPaymentRequest,
+	getPaymentRequestData,
+	transformCartDataForStoreAPI,
+	updatePaymentRequest,
+} from '../frontend-utils.js';
 
 export const useInitialization = ( {
 	api,
@@ -28,7 +34,14 @@ export const useInitialization = ( {
 	setExpressPaymentError,
 	onClick,
 	onClose,
+	cartData,
 } ) => {
+	cartData = transformCartDataForStoreAPI( null, {
+		...cartData,
+		...billing,
+		...shippingData,
+	} );
+
 	const stripe = useStripe();
 
 	const [ paymentRequest, setPaymentRequest ] = useState( null );
@@ -48,9 +61,7 @@ export const useInitialization = ( {
 
 		const pr = getPaymentRequest( {
 			stripe,
-			total: billing?.cartTotal?.value,
-			requestShipping: shippingData?.needsShipping,
-			displayItems: normalizeLineItems( billing?.cartTotalItems ),
+			cartData,
 		} );
 
 		pr.canMakePayment().then( ( result ) => {
@@ -70,8 +81,9 @@ export const useInitialization = ( {
 		paymentRequest,
 		billing?.cartTotal?.value,
 		isFinished,
-		shippingData?.needsShipping,
-		billing?.cartTotalItems,
+		shippingData.needsShipping,
+		billing.cartTotalItems,
+		cartData,
 	] );
 
 	// It's not possible to update the `requestShipping` property in the `paymentRequest`
@@ -94,8 +106,7 @@ export const useInitialization = ( {
 			setExpressPaymentError( '' );
 			updatePaymentRequest( {
 				paymentRequest,
-				total: billing?.cartTotal?.value,
-				displayItems: normalizeLineItems( billing?.cartTotalItems ),
+				cartData,
 			} );
 			onClick();
 
@@ -105,12 +116,11 @@ export const useInitialization = ( {
 			}
 		},
 		[
-			onClick,
-			paymentRequest,
-			paymentRequestType,
 			setExpressPaymentError,
-			billing.cartTotal,
-			billing.cartTotalItems,
+			paymentRequest,
+			cartData,
+			onClick,
+			paymentRequestType,
 		]
 	);
 

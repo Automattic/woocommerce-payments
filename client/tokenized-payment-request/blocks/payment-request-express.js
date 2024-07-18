@@ -28,6 +28,7 @@ const PaymentRequestExpressComponent = ( {
 	onClick,
 	onClose,
 	onPaymentRequestAvailable,
+	cartData,
 } ) => {
 	// TODO: Don't display custom button when result.requestType
 	// is `apple_pay` or `google_pay`.
@@ -42,6 +43,7 @@ const PaymentRequestExpressComponent = ( {
 		setExpressPaymentError,
 		onClick,
 		onClose,
+		cartData,
 	} );
 
 	const { type, theme, height } = getPaymentRequestData( 'button' );
