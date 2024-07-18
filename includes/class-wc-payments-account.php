@@ -901,10 +901,11 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
-			$wcpay_connect_param    = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
-			$incentive              = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
-			$progressive            = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
-			$create_builder_account = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
+			$wcpay_connect_param         = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+			$incentive                   = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+			$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+			$create_builder_account      = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
+			$should_onboard_in_test_mode = isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) );
 
 			// Determine the original source from where the merchant entered the onboarding flow.
 			$onboarding_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
@@ -914,10 +915,9 @@ class WC_Payments_Account {
 			// but somewhere in between.
 			// Exclude returns from the Jetpack/WPCOM connection screens.
 			if ( ! $this->is_stripe_connected() && ! isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
-				$test_mode        = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
 				$event_properties = [
 					'incentive' => $incentive,
-					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
+					'mode'      => $should_onboard_in_test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 					'source'    => $onboarding_source,
 				];
 				$this->tracks_event(
@@ -945,7 +945,6 @@ class WC_Payments_Account {
 				// We either need to redirect to the onboarding wizard (MOX)
 				// or first set up the Jetpack connection and redirect to the onboarding wizard after a successful connection.
 				if ( ! $this->is_stripe_connected() ) {
-					$should_onboard_in_test_mode = isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) );
 					if ( ! $should_onboard_in_test_mode && WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 						// If there is no test mode in the URL informing us to onboard in test mode,
 						// but the onboarding test mode is enabled in our DB, we should disable it.
@@ -953,7 +952,7 @@ class WC_Payments_Account {
 						WC_Payments_Onboarding_Service::set_test_mode( false );
 					}
 
-					$this->redirect_to_onboarding_page_or_start_server_connection( $onboarding_source );
+					$this->redirect_to_onboarding_page_or_start_server_connection( $onboarding_source, $should_onboard_in_test_mode );
 				} elseif ( ! $this->is_details_submitted() && $this->payments_api_client->is_server_connected() ) {
 					// Handle the state where we have a connected Stripe account, but it is not fully onboarded.
 					// We redirect to the Stripe KYC for the merchant to finish verifications.
@@ -1009,7 +1008,7 @@ class WC_Payments_Account {
 				// for the account update webhook to come from our platform.
 				$this->clear_cache();
 
-				$this->redirect_to_onboarding_page_or_start_server_connection( $onboarding_source );
+				$this->redirect_to_onboarding_page_or_start_server_connection( $onboarding_source, $test_mode );
 				return;
 			}
 
@@ -1017,10 +1016,9 @@ class WC_Payments_Account {
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
 			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
-				$test_mode        = isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) );
 				$event_properties = [
 					'incentive' => $incentive,
-					'mode'      => $test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
+					'mode'      => $should_onboard_in_test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
 				];
 
 				if ( ! $this->payments_api_client->is_server_connected() ) {
@@ -1052,8 +1050,11 @@ class WC_Payments_Account {
 				$this->maybe_init_jetpack_connection(
 					$wcpay_connect_param,
 					[
-						'promo'       => $incentive,
-						'progressive' => $progressive,
+						'promo'                  => $incentive,
+						'progressive'            => $progressive ? 'true' : false,
+						'create_builder_account' => $create_builder_account ? 'true' : false,
+						'test_mode'              => $should_onboard_in_test_mode ? 'true' : false,
+						'source'                 => $onboarding_source,
 					]
 				);
 			} catch ( Exception $e ) {
@@ -1890,17 +1891,21 @@ class WC_Payments_Account {
 	 * Redirects to the onboarding flow page.
 	 * Also checks if the server is connected and try to connect it otherwise.
 	 *
-	 * @param string $source The source of the redirect.
+	 * @param string $source    The source of the redirect.
+	 * @param bool   $test_mode Whether to start the onboarding flow in test mode.
 	 *
 	 * @return void
 	 */
-	private function redirect_to_onboarding_page_or_start_server_connection( string $source ) {
+	private function redirect_to_onboarding_page_or_start_server_connection( string $source, bool $test_mode = false ) {
 		if ( ! WC_Payments_Utils::should_use_new_onboarding_flow() ) {
 			return;
 		}
 
 		$onboarding_url = add_query_arg(
-			[ 'source' => $source ],
+			[
+				'test_mode' => $test_mode ? 'true' : false,
+				'source'    => $source,
+			],
 			admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' )
 		);
 
