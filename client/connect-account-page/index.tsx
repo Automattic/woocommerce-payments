@@ -164,8 +164,8 @@ const ConnectAccountPage: React.FC = () => {
 		trackConnectAccountClicked( true );
 
 		const url = addQueryArgs( connectUrl, {
-			test_mode: true,
-			create_builder_account: true,
+			test_mode: 'true',
+			create_builder_account: 'true',
 		} );
 		window.location.href = url;
 	};

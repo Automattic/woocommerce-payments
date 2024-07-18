@@ -21,7 +21,7 @@ interface Props {
 const SetupLivePaymentsModal: React.FC< Props > = ( { onClose }: Props ) => {
 	const handleSetup = () => {
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-			'wcpay-disable-onboarding-test-mode': true,
+			'wcpay-disable-onboarding-test-mode': 'true',
 		} );
 	};
 

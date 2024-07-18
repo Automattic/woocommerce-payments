@@ -24,7 +24,7 @@ const handleReset = () => {
 	trackAccountReset();
 
 	window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-		'wcpay-reset-account': true,
+		'wcpay-reset-account': 'true',
 	} );
 };
 
