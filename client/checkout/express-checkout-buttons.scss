@@ -8,6 +8,14 @@
 	}
 }
 
+// This fixes width calculation issues inside the iframe for blocks and shortcode pages.
+.wcpay-payment-request-wrapper,
+.wc-block-components-express-payment__event-buttons {
+	.StripeElement iframe {
+		max-width: unset;
+	}
+}
+
 .woocommerce-checkout .wcpay-payment-request-wrapper {
 	margin-bottom: 1.5em;
 }
