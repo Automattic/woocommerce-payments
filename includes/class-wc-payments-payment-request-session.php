@@ -181,7 +181,8 @@ class WC_Payments_Payment_Request_Session {
 
 		// ensures cart contents aren't merged across different sessions for the same customer.
 		add_filter( 'woocommerce_persistent_cart_enabled', '__return_false' );
-		add_filter( 'woocommerce_get_return_url', [ $this, 'store_api_order_received_return_url' ], 10, 1 );
+		// when an order is placed via the Store API on product pages, we need to slightly modify the "order received" URL.
+		add_filter( 'woocommerce_get_return_url', [ $this, 'store_api_order_received_return_url' ] );
 
 		require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session-handler.php';
 
