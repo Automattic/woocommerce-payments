@@ -44,7 +44,7 @@ describe( 'PaymentRequestCartApi', () => {
 		headers.append( 'Nonce', 'nonce-value' );
 		apiFetch.mockResolvedValue( {
 			headers: headers,
-			json: () => ( {} ),
+			json: () => Promise.resolve( {} ),
 		} );
 
 		const api = new PaymentRequestCartApi();
@@ -71,7 +71,7 @@ describe( 'PaymentRequestCartApi', () => {
 		apiFetch.mockClear();
 		apiFetch.mockResolvedValue( {
 			headers: new Headers(),
-			json: () => ( {} ),
+			json: () => Promise.resolve( {} ),
 		} );
 
 		await api.updateCustomer( {
@@ -102,7 +102,7 @@ describe( 'PaymentRequestCartApi', () => {
 		apiFetch.mockClear();
 		apiFetch.mockResolvedValue( {
 			headers: new Headers(),
-			json: () => ( {} ),
+			json: () => Promise.resolve( {} ),
 		} );
 		await anotherApi.updateCustomer( {
 			billing_address: { last_name: 'Last' },
@@ -131,7 +131,7 @@ describe( 'PaymentRequestCartApi', () => {
 		global.wcpayPaymentRequestParams.button_context = 'cart';
 		apiFetch.mockResolvedValue( {
 			headers: new Headers(),
-			json: () => ( {} ),
+			json: () => Promise.resolve( {} ),
 		} );
 		const api = new PaymentRequestCartApi();
 
