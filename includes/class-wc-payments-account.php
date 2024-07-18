@@ -905,7 +905,6 @@ class WC_Payments_Account {
 			$wcpay_connect_param       = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 			$incentive                 = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 			$progressive               = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
-			$create_builder_account    = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
 			$create_test_drive_account = ! empty( $_GET['test_drive'] ) && 'true' === $_GET['test_drive'];
 
 			// Track connection start.
@@ -925,7 +924,7 @@ class WC_Payments_Account {
 			$connect_page_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
 			// Redirect to the onboarding flow page if the account is not onboarded otherwise to the overview page.
 			// Builder accounts are handled below and redirected to Stripe KYC directly.
-			if ( ! $create_builder_account && ! $create_test_drive_account && in_array(
+			if ( ! $create_test_drive_account && in_array(
 				$connect_page_source,
 				[
 					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
@@ -1037,7 +1036,8 @@ class WC_Payments_Account {
 					[
 						'promo'       => $incentive,
 						'progressive' => $progressive,
-					]
+					],
+					$create_test_drive_account
 				);
 			} catch ( Exception $e ) {
 				$this->redirect_service->redirect_to_connect_page(
@@ -1205,10 +1205,11 @@ class WC_Payments_Account {
 	 *
 	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
 	 * @param array  $additional_args    - additional query args to add to the return URL.
+	 * @param bool   $test_drive_account - used to determine the redirection destination upon successful Jetpack connection.
 	 *
 	 * @throws API_Exception If there was an error when registering the site on WP.com.
 	 */
-	private function maybe_init_jetpack_connection( $wcpay_connect_from, $additional_args = [] ) {
+	private function maybe_init_jetpack_connection( $wcpay_connect_from, $additional_args = [], $test_drive_account = false ) {
 		$is_jetpack_fully_connected = $this->payments_api_client->is_server_connected() && $this->payments_api_client->has_server_connection_owner();
 		if ( $is_jetpack_fully_connected ) {
 			return;
@@ -1217,17 +1218,27 @@ class WC_Payments_Account {
 		// Track the Jetpack connection start.
 		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
 
-		$redirect = add_query_arg(
-			array_merge(
+		if ( $test_drive_account ) {
+			$redirect = add_query_arg(
 				[
-					'wcpay-connect'                 => $wcpay_connect_from,
-					'wcpay-connect-jetpack-success' => '1',
-					'_wpnonce'                      => wp_create_nonce( 'wcpay-connect' ),
+					'force-test-onboard' => true,
 				],
-				$additional_args
-			),
-			$this->get_onboarding_return_url( $wcpay_connect_from )
-		);
+				$this->get_connect_page_url()
+			);
+		} else {
+			$redirect = add_query_arg(
+				array_merge(
+					[
+						'wcpay-connect'                 => $wcpay_connect_from,
+						'wcpay-connect-jetpack-success' => '1',
+						'_wpnonce'                      => wp_create_nonce( 'wcpay-connect' ),
+					],
+					$additional_args
+				),
+				$this->get_onboarding_return_url( $wcpay_connect_from )
+			);
+		}
+
 		$this->payments_api_client->start_server_connection( $redirect );
 	}
 
