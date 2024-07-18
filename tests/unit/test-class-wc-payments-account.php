@@ -698,7 +698,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->maybe_handle_onboarding();
 	}
 
-	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
+	public function test_maybe_redirect_after_plugin_activation_stripe_disconnected_redirects() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -720,7 +720,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_maybe_redirect_to_onboarding_stripe_disconnected_and_on_boarding_disabled_redirects() {
+	public function test_maybe_redirect_after_plugin_activation_stripe_disconnected_and_on_boarding_disabled_redirects() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -746,7 +746,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_maybe_redirect_to_onboarding_account_error() {
+	public function test_maybe_redirect_after_plugin_activation_account_error() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -769,7 +769,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_maybe_redirect_to_onboarding_account_connected() {
+	public function test_maybe_redirect_after_plugin_activation_account_connected() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -799,7 +799,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_maybe_redirect_to_onboarding_with_non_admin_user() {
+	public function test_maybe_redirect_after_plugin_activation_with_non_admin_user() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -815,7 +815,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_maybe_redirect_to_onboarding_checks_the_account_once() {
+	public function test_maybe_redirect_after_plugin_activation_checks_the_account_once() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -847,7 +847,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_maybe_redirect_to_onboarding_returns_true_and_on_boarding_re_enabled() {
+	public function test_maybe_redirect_after_plugin_activation_returns_true_and_on_boarding_re_enabled() {
 		// We will call get_account_data twice. The first call will tell us no account is connected and that on-boarding
 		// is disabled. The second call will just tell us that no account is connected (i.e. on-boarding was
 		// re-enabled).
