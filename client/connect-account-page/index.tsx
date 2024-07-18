@@ -51,7 +51,6 @@ const ConnectAccountPage: React.FC = () => {
 		wcpaySettings.errorMessage
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
-	const [ isSandboxModeClicked, setSandboxModeClicked ] = useState( false );
 	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
 		false
 	);
@@ -82,6 +81,75 @@ const ConnectAccountPage: React.FC = () => {
 		return source;
 	};
 
+	const checkAccountStatus = () => {
+		// Fetch account status from the cache.
+		apiFetch( {
+			path: `/wc/v3/payments/accounts`,
+			method: 'GET',
+		} ).then( ( account ) => {
+			// If the account status is complete, redirect to the overview page.
+			// Otherwise, schedule another check after 5 seconds.
+			if ( ( account as AccountData ).status === 'complete' ) {
+				window.location.href = overviewUrl;
+			} else {
+				setTimeout( checkAccountStatus, 5000 );
+			}
+		} );
+	};
+
+	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
+		recordEvent( 'wcpay_connect_account_clicked', {
+			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
+			is_new_onboarding_flow: isNewFlowEnabled,
+			...( incentive && {
+				incentive_id: incentive.id,
+			} ),
+			sandbox_mode: sandboxMode,
+			path: 'payments_connect_v2',
+			source: determineTrackingSource(),
+		} );
+	};
+
+	const handleSetupTestDriveMode = async () => {
+		setTestDriveModeSubmitted( true );
+
+		trackConnectAccountClicked( true );
+
+		const url = addQueryArgs( connectUrl, {
+			test_mode: true,
+			test_drive: true,
+		} );
+
+		// If Jetpack is connected, we should proceed with AJAX onboarding.
+		// Otherwise, redirect to the Jetpack connect screen.
+		if ( wcpaySettings.isJetpackConnected ) {
+			fetch( url, {
+				method: 'GET',
+				redirect: 'follow',
+				credentials: 'same-origin',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			} ).then( () => {
+				// ToDo: In case of error, stop loader and display the error.
+				checkAccountStatus();
+			} );
+		} else {
+			window.location.href = url;
+		}
+	};
+
+	const forceOnboardTestDrive = () => {
+		const urlParams = new URLSearchParams( window.location.search );
+		const forceOnboard = urlParams.get( 'force-test-onboard' ) || false;
+
+		// If the force test onboard is present and Jetpack is connected
+		// we should start onboarding Test Drive account automatically.
+		if ( forceOnboard && wcpaySettings.isJetpackConnected ) {
+			handleSetupTestDriveMode();
+		}
+	};
+
 	useEffect( () => {
 		recordEvent( 'page_view', {
 			path: 'payments_connect_v2',
@@ -90,6 +158,8 @@ const ConnectAccountPage: React.FC = () => {
 			} ),
 			source: determineTrackingSource(),
 		} );
+
+		forceOnboardTestDrive();
 		// We only want to run this once.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
@@ -124,19 +194,6 @@ const ConnectAccountPage: React.FC = () => {
 		document.body.appendChild( container );
 	};
 
-	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
-		recordEvent( 'wcpay_connect_account_clicked', {
-			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
-			is_new_onboarding_flow: isNewFlowEnabled,
-			...( incentive && {
-				incentive_id: incentive.id,
-			} ),
-			sandbox_mode: sandboxMode,
-			path: 'payments_connect_v2',
-			source: determineTrackingSource(),
-		} );
-	};
-
 	const handleSetup = async () => {
 		setSubmitted( true );
 
@@ -164,53 +221,6 @@ const ConnectAccountPage: React.FC = () => {
 		}
 
 		window.location.href = connectUrl;
-	};
-
-	const handleEnableSandboxMode = async () => {
-		setSandboxModeClicked( true );
-
-		trackConnectAccountClicked( true );
-
-		const url = addQueryArgs( connectUrl, {
-			test_mode: true,
-			create_builder_account: true,
-		} );
-		window.location.href = url;
-	};
-
-	const checkAccountStatus = () => {
-		apiFetch( {
-			path: `/wc/v3/payments/accounts`,
-			method: 'GET',
-		} ).then( ( account ) => {
-			if ( ( account as AccountData ).status === 'complete' ) {
-				window.location.href = overviewUrl;
-			} else {
-				setTimeout( checkAccountStatus, 3000 );
-			}
-		} );
-	};
-
-	const handleSetupTestDriveMode = async () => {
-		setTestDriveModeSubmitted( true );
-
-		trackConnectAccountClicked( true );
-
-		const url = addQueryArgs( connectUrl, {
-			test_mode: true,
-			test_drive: true,
-		} );
-
-		fetch( url, {
-			method: 'GET',
-			credentials: 'same-origin',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		} ).then( ( response ) => {
-			// ToDo: In case of error, stop loader and display the error.
-			checkAccountStatus();
-		} );
 	};
 
 	return (
@@ -274,14 +284,6 @@ const ConnectAccountPage: React.FC = () => {
 									? strings.button.jetpack_connected
 									: strings.button.jetpack_not_connected }
 							</Button>
-							<Button
-								variant="secondary"
-								isBusy={ isTestDriveModeSubmitted }
-								disabled={ isTestDriveModeSubmitted }
-								onClick={ handleSetupTestDriveMode }
-							>
-								{ strings.button.test_drive }
-							</Button>
 						</div>
 					</Card>
 					{ incentive && <Incentive { ...incentive } /> }
@@ -299,9 +301,9 @@ const ConnectAccountPage: React.FC = () => {
 							</InlineNotice>
 							<Button
 								variant="secondary"
-								isBusy={ isSandboxModeClicked }
-								disabled={ isSandboxModeClicked }
-								onClick={ handleEnableSandboxMode }
+								isBusy={ isTestDriveModeSubmitted }
+								disabled={ isTestDriveModeSubmitted }
+								onClick={ handleSetupTestDriveMode }
 							>
 								{ strings.button.sandbox }
 							</Button>
