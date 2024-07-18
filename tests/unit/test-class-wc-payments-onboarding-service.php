@@ -212,13 +212,70 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, WC_Payments_Onboarding_Service::get_source( $referer, $get_params ) );
 	}
 
-	public function data_get_source() {
+	/**
+	 * Data provider for test_get_source.
+	 *
+	 * @return array[]
+	 */
+	public function data_get_source(): array {
 		return [
-			[ 'wcadmin-payment-task', 'any', [ 'wcpay-connect' => 'WCADMIN_PAYMENT_TASK' ] ],
-			[ 'wcadmin-settings-page', '/wp-admin/admin.php?page=wc-settings&tab=checkout', [ 'wcpay-connect' => '1' ] ],
-			[ 'wcadmin-incentive-page', '/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page', [ 'wcpay-connect' => '1' ] ],
-			[ 'wcpay-connect-page', '/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect', [ 'wcpay-connect' => '1' ] ],
-			[
+			'Valid source GET param trumps everything' => [
+				'wcpay-connect-page',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[
+					'source'                             => 'wcpay-connect-page',
+					'wcpay-connect'                      => 'WCADMIN_PAYMENT_TASK',
+					'wcpay-disable-onboarding-test-mode' => 'true',
+					'from'                               => 'WCADMIN_PAYMENT_INCENTIVE',
+				],
+			],
+			'Invalid source GET param is ignored'      => [
+				'wcadmin-payment-task',
+				'',
+				[
+					'source'        => 'bogus',
+					'wcpay-connect' => 'WCADMIN_PAYMENT_TASK',
+				],
+			],
+			'unknown source GET param is ignored'      => [
+				'wcadmin-payment-task',
+				'',
+				[
+					'source'        => 'unknown',
+					'wcpay-connect' => 'WCADMIN_PAYMENT_TASK',
+				],
+			],
+			'Unknown source'                           => [
+				'unknown',
+				'',
+				[],
+			],
+			'Via the wcpay-connect value'              => [
+				'wcadmin-payment-task',
+				'any',
+				[ 'wcpay-connect' => 'WCADMIN_PAYMENT_TASK' ],
+			],
+			'Via the referer URL - payments task'      => [
+				'wcadmin-payment-task',
+				'/wp-admin/admin.php?page=wc-admin&task=payments',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - settings page'      => [
+				'wcadmin-settings-page',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - incentive page'     => [
+				'wcadmin-incentive-page',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - Connect page'       => [
+				'wcpay-connect-page',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via test to live param'                   => [
 				'wcpay-setup-live-payments',
 				'any',
 				[
@@ -226,12 +283,46 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 					'wcpay-disable-onboarding-test-mode' => 'true',
 				],
 			],
-			[
+			'test to live param takes precedence'      => [
+				'wcpay-setup-live-payments',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[
+					'wcpay-connect'                      => 'WCADMIN_PAYMENT_TASK',
+					'wcpay-disable-onboarding-test-mode' => 'true',
+					'from'                               => 'WCADMIN_PAYMENT_INCENTIVE',
+				],
+			],
+			'Via reset account param'                  => [
 				'wcpay-reset-account',
 				'any',
 				[
 					'wcpay-connect'       => '1',
 					'wcpay-reset-account' => 'true',
+				],
+			],
+			'reset account param takes precedence'     => [
+				'wcpay-reset-account',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[
+					'wcpay-connect'       => 'WCADMIN_PAYMENT_TASK',
+					'wcpay-reset-account' => 'true',
+					'from'                => 'WCADMIN_PAYMENT_INCENTIVE',
+				],
+			],
+			'wcpay-connect value takes precedence over from and referer' => [
+				'wcadmin-payment-task',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[
+					'wcpay-connect' => 'WCADMIN_PAYMENT_TASK',
+					'from'          => 'WCADMIN_PAYMENT_INCENTIVE',
+				],
+			],
+			'from value takes precedence over referer' => [
+				'wcadmin-incentive-page',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[
+					'wcpay-connect' => 'bogus',
+					'from'          => 'WCADMIN_PAYMENT_INCENTIVE',
 				],
 			],
 		];
