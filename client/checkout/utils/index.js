@@ -13,3 +13,9 @@ export const normalizeCurrencyToMinorUnit = (
 ) => {
 	return parseInt( amount * Math.pow( 10, accuracy - minorUnit ), 10 );
 };
+
+export const getAppearanceType = () => {
+	if ( document.querySelector( '.wp-block-woocommerce-checkout' ) ) {
+		return 'blocks_checkout';
+	}
+};
