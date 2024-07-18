@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Send optional fields data to WooPay.

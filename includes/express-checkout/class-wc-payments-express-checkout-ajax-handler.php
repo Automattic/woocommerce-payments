@@ -9,6 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WCPay\Exceptions\Invalid_Price_Exception;
+use WCPay\Logger;
+
 /**
  * WC_Payments_Express_Checkout_Ajax_Handler class.
  */
@@ -40,30 +43,43 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
 		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
+		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
 	}
 
 	/**
 	 * Create order. Security is handled by WC.
+	 *
+	 * @throws Exception If cart is empty. That is handled within the method.
 	 */
 	public function ajax_create_order() {
-		if ( WC()->cart->is_empty() ) {
-			wp_send_json_error( __( 'Empty cart', 'woocommerce-payments' ), 400 );
+		try {
+			if ( WC()->cart->is_empty() ) {
+				throw new Exception( __( 'Empty cart', 'woocommerce-payments' ) );
+			}
+
+			if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+				define( 'WOOCOMMERCE_CHECKOUT', true );
+			}
+
+			if ( ! defined( 'WCPAY_ECE_CHECKOUT' ) ) {
+				define( 'WCPAY_ECE_CHECKOUT', true );
+			}
+
+			// In case the state is required, but is missing, add a more descriptive error notice.
+			$this->express_checkout_button_helper->validate_state();
+
+			$this->express_checkout_button_helper->normalize_state();
+
+			WC()->checkout()->process_checkout();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to process express checkout payment: ' . $e );
+
+			$response = [
+				'result'   => 'error',
+				'messages' => $e->getMessage(),
+			];
+			wp_send_json( $response, 400 );
 		}
-
-		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
-			define( 'WOOCOMMERCE_CHECKOUT', true );
-		}
-
-		if ( ! defined( 'WCPAY_ECE_CHECKOUT' ) ) {
-			define( 'WCPAY_ECE_CHECKOUT', true );
-		}
-
-		// In case the state is required, but is missing, add a more descriptive error notice.
-		$this->express_checkout_button_helper->validate_state();
-
-		$this->express_checkout_button_helper->normalize_state();
-
-		WC()->checkout()->process_checkout();
 
 		die( 0 );
 	}
@@ -76,22 +92,16 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	public function ajax_pay_for_order() {
 		check_ajax_referer( 'pay_for_order' );
 
-		if (
-			! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method']
-			|| ! isset( $_POST['order'] ) || ! intval( $_POST['order'] )
-			|| ! isset( $_POST['wcpay-payment-method'] ) || empty( $_POST['wcpay-payment-method'] )
-		) {
-			// Incomplete request.
-			$response = [
-				'result'   => 'error',
-				'messages' => __( 'Invalid request', 'woocommerce-payments' ),
-			];
-			wp_send_json( $response, 400 );
-
-			return;
-		}
-
 		try {
+			if (
+				! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method']
+				|| ! isset( $_POST['order'] ) || ! intval( $_POST['order'] )
+				|| ! isset( $_POST['wcpay-payment-method'] ) || empty( $_POST['wcpay-payment-method'] )
+			) {
+				// Incomplete request.
+				throw new Exception( __( 'Invalid request', 'woocommerce-payments' ) );
+			}
+
 			// Set up an environment, similar to core checkout.
 			wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
 			wc_set_time_limit( 0 );
@@ -108,7 +118,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 				throw new Exception( __( 'This order does not require payment!', 'woocommerce-payments' ) );
 			}
 
-			$this->add_order_meta( $order_id );
+			$this->express_checkout_button_helper->add_order_payment_method_title( $order_id );
 
 			// Load the gateway.
 			$all_gateways = WC()->payment_gateways->get_available_payment_gateways();
@@ -124,14 +134,18 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			$result['order_id'] = $order_id;
 
 			$result = apply_filters( 'woocommerce_payment_successful_result', $result, $order_id );
+
+			wp_send_json( $result );
 		} catch ( Exception $e ) {
+			$order_message = isset( $order_id ) ? "order #$order_id" : 'invalid order';
+			Logger::error( 'Failed to process express checkout payment for ' . $order_message . ': ' . $e );
+
 			$result = [
 				'result'   => 'error',
 				'messages' => $e->getMessage(),
 			];
+			wp_send_json( $result, 400 );
 		}
-
-		wp_send_json( $result );
 	}
 
 	/**
@@ -210,6 +224,109 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		$data['result'] = 'success';
 
 		wp_send_json( $data );
+	}
+
+	/**
+	 * Gets the selected product data.
+	 *
+	 * @throws Exception If product or stock is unavailable - caught inside function.
+	 */
+	public function ajax_get_selected_product_data() {
+		check_ajax_referer( 'wcpay-get-selected-product-data', 'security' );
+
+		try {
+			$product_id      = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
+			$qty             = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
+			$addon_value     = isset( $_POST['addon_value'] ) ? max( (float) $_POST['addon_value'], 0 ) : 0;
+			$product         = wc_get_product( $product_id );
+			$variation_id    = null;
+			$currency        = get_woocommerce_currency();
+			$is_deposit      = isset( $_POST['wc_deposit_option'] ) ? 'yes' === sanitize_text_field( wp_unslash( $_POST['wc_deposit_option'] ) ) : null;
+			$deposit_plan_id = isset( $_POST['wc_deposit_payment_plan'] ) ? absint( $_POST['wc_deposit_payment_plan'] ) : 0;
+
+			if ( ! is_a( $product, 'WC_Product' ) ) {
+				/* translators: product ID */
+				throw new Exception( sprintf( __( 'Product with the ID (%d) cannot be found.', 'woocommerce-payments' ), $product_id ) );
+			}
+
+			if ( ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) && isset( $_POST['attributes'] ) ) {
+				$attributes = wc_clean( wp_unslash( $_POST['attributes'] ) );
+
+				$data_store   = WC_Data_Store::load( 'product' );
+				$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
+
+				if ( ! empty( $variation_id ) ) {
+					$product = wc_get_product( $variation_id );
+				}
+			}
+
+			// Force quantity to 1 if sold individually and check for existing item in cart.
+			if ( $product->is_sold_individually() ) {
+				$qty = apply_filters( 'wcpay_payment_request_add_to_cart_sold_individually_quantity', 1, $qty, $product_id, $variation_id );
+			}
+
+			if ( ! $product->has_enough_stock( $qty ) ) {
+				/* translators: 1: product name 2: quantity in stock */
+				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
+			}
+
+			$price = $this->express_checkout_button_helper->get_product_price( $product, $is_deposit, $deposit_plan_id );
+			$total = $qty * $price + $addon_value;
+
+			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';
+
+			$data  = [];
+			$items = [];
+
+			$items[] = [
+				'label'  => $product->get_name() . $quantity_label,
+				'amount' => WC_Payments_Utils::prepare_amount( $total, $currency ),
+			];
+
+			$total_tax = 0;
+			foreach ( $this->express_checkout_button_helper->get_taxes_like_cart( $product, $price ) as $tax ) {
+				$total_tax += $tax;
+
+				$items[] = [
+					'label'   => __( 'Tax', 'woocommerce-payments' ),
+					'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
+					'pending' => 0 === $tax,
+				];
+			}
+
+			if ( wc_shipping_enabled() && $product->needs_shipping() ) {
+				$items[] = [
+					'label'   => __( 'Shipping', 'woocommerce-payments' ),
+					'amount'  => 0,
+					'pending' => true,
+				];
+
+				$data['shippingOptions'] = [
+					'id'     => 'pending',
+					'label'  => __( 'Pending', 'woocommerce-payments' ),
+					'detail' => '',
+					'amount' => 0,
+				];
+			}
+
+			$data['displayItems'] = $items;
+			$data['total']        = [
+				'label'   => $this->express_checkout_button_helper->get_total_label(),
+				'amount'  => WC_Payments_Utils::prepare_amount( $total + $total_tax, $currency ),
+				'pending' => true,
+			];
+
+			$data['needs_shipping'] = wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping();
+			$data['currency']       = strtolower( get_woocommerce_currency() );
+			$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+
+			wp_send_json( $data );
+		} catch ( Exception $e ) {
+			if ( is_a( $e, Invalid_Price_Exception::class ) ) {
+				Logger::log( $e->getMessage() );
+			}
+			wp_send_json( [ 'error' => wp_strip_all_tags( $e->getMessage() ) ], 500 );
+		}
 	}
 
 	/**
@@ -323,36 +440,5 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		wp_send_json( [ 'result' => 'success' ] );
-	}
-
-	/**
-	 * Add needed order meta
-	 *
-	 * @param integer $order_id The order ID.
-	 *
-	 * @return  void
-	 */
-	public function add_order_meta( $order_id ) {
-		if ( empty( $_POST['express_payment_type'] ) || ! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method'] ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		$order = wc_get_order( $order_id );
-
-		$express_payment_type = wc_clean( wp_unslash( $_POST['express_payment_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
-
-		$express_payment_titles = [
-			'apple_pay'  => 'Apple Pay',
-			'google_pay' => 'Google Pay',
-		];
-
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-		if ( ! empty( $suffix ) ) {
-			$suffix = " ($suffix)";
-		}
-
-		$payment_method_title = isset( $express_payment_titles[ $express_payment_type ] ) ? $express_payment_titles[ $express_payment_type ] : 'Express Payment';
-		$order->set_payment_method_title( $payment_method_title . $suffix );
-		$order->save();
 	}
 }
