@@ -96,7 +96,7 @@ describe( 'WooPaymentsPaymentRequest', () => {
 		jest.resetAllMocks();
 	} );
 
-	it.only( 'should initialize the Stripe payment request, fire initial tracking, and attach event listeners', async () => {
+	it( 'should initialize the Stripe payment request, fire initial tracking, and attach event listeners', async () => {
 		const headers = new Headers();
 		headers.append( 'Nonce', 'nonce-value' );
 
