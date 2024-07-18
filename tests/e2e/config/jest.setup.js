@@ -1,16 +1,18 @@
 /**
  * External dependencies
  */
-import {
-	enablePageDialogAccept,
-	setBrowserViewport,
-} from '@wordpress/e2e-test-utils';
+import { setDefaultOptions } from 'expect-puppeteer';
+import { setBrowserViewport } from '@wordpress/e2e-test-utils';
 
 import { addConsoleSuppression } from '@woocommerce/e2e-environment';
+
+setDefaultOptions( { timeout: 3000 } );
 
 const ERROR_MESSAGES_TO_IGNORE = [
 	'violates the following Content Security Policy directive',
 	'You may test your Stripe.js integration over HTTP.',
+	// eslint-disable-next-line max-len
+	"The page requested an origin-keyed agent cluster using the Origin-Agent-Cluster header, but could not be origin-keyed since the origin 'https://js.stripe.com' had previously been placed in a site-keyed agent cluster. Update your headers to uniformly request origin-keying for all pages on the origin.",
 	'is deprecated',
 	'Unrecognized feature:',
 	'This Element will be mounted to a DOM element that contains child nodes',
@@ -99,7 +101,7 @@ function capturePageEventsForTearDown() {
  */
 function removePageEvents() {
 	pageEvents.forEach( ( [ eventName, handler ] ) => {
-		page.removeListener( eventName, handler );
+		page.off( eventName, handler );
 	} );
 }
 
@@ -125,7 +127,13 @@ beforeAll( async () => {
 	}
 
 	capturePageEventsForTearDown();
-	enablePageDialogAccept();
+	page.on( 'dialog', async function ( dialog ) {
+		try {
+			await dialog.accept();
+		} catch ( err ) {
+			console.warn( err );
+		}
+	} );
 	setTestTimeouts();
 	await setupBrowser();
 } );

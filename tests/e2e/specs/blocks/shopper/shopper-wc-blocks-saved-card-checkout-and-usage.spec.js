@@ -42,7 +42,7 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 
 	it( 'should be able to save basic card on Blocks checkout', async () => {
 		await shopper.goToShop();
-		await shopper.addToCartFromShopPage( productName );
+		await shopperWCP.addToCartFromShopPage( productName );
 		await shopperWCP.openCheckoutWCB();
 		await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
@@ -69,7 +69,7 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 
 	it( 'should process a payment with the saved card from Blocks checkout', async () => {
 		await shopper.goToShop();
-		await shopper.addToCartFromShopPage( productName );
+		await shopperWCP.addToCartFromShopPage( productName );
 		await shopperWCP.openCheckoutWCB();
 		await shopperWCP.fillBillingDetailsWCB( billingDetails );
 

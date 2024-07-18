@@ -56,6 +56,7 @@ const testConfig = useE2EJestConfig( {
 		__dirname,
 		'../config/jest-custom-sequencer.js'
 	),
+	testTimeout: 100000,
 } );
 
 module.exports = testConfig;

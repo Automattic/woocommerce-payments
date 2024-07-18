@@ -61,7 +61,7 @@ describe.each( cardTestingPreventionStates )(
 				await setupProductCheckout(
 					config.get( 'addresses.upe-customer.billing.de' )
 				);
-				page.waitFor( 1000 );
+				page.waitForTimeout( 1000 );
 				if ( cardTestingPreventionEnabled ) {
 					const token = await page.evaluate( () => {
 						return window.wcpayFraudPreventionToken;
@@ -81,7 +81,7 @@ describe.each( cardTestingPreventionStates )(
 				await setupProductCheckout(
 					config.get( 'addresses.upe-customer.billing.be' )
 				);
-				page.waitFor( 1000 );
+				page.waitForTimeout( 1000 );
 				if ( cardTestingPreventionEnabled ) {
 					const token = await page.evaluate( () => {
 						return window.wcpayFraudPreventionToken;

@@ -83,7 +83,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				'Change payment method'
 			);
 
-			await page.waitFor( 1000 );
+			await page.waitForTimeout( 1000 );
 			await expect( page ).toMatchElement(
 				testSelectors.newPaymentMethodCheckbox
 			);
@@ -127,7 +127,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				'Change payment method'
 			);
 
-			await page.waitFor( 1000 );
+			await page.waitForTimeout( 1000 );
 
 			// Select a different payment method and save it
 			const checkboxes = await page.$$(

@@ -40,7 +40,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			}
 
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopperWCP.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 			await page.waitForSelector(
