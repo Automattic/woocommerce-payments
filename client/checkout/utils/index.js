@@ -18,4 +18,8 @@ export const getAppearanceType = () => {
 	if ( document.querySelector( '.wp-block-woocommerce-checkout' ) ) {
 		return 'blocks_checkout';
 	}
+
+	if ( document.querySelector( '.woocommerce-billing-fields' ) ) {
+		return 'shortcode_checkout';
+	}
 };
