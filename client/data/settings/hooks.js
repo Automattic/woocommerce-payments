@@ -30,19 +30,6 @@ export const useCardPresentEligible = () => {
 	return [ isCardPresentEligible, updateIsCardPresentEligible ];
 };
 
-export const useClientSecretEncryption = () => {
-	const { updateIsClientSecretEncryptionEnabled } = useDispatch( STORE_NAME );
-
-	const isClientSecretEncryptionEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsClientSecretEncryptionEnabled()
-	);
-
-	return [
-		isClientSecretEncryptionEnabled,
-		updateIsClientSecretEncryptionEnabled,
-	];
-};
-
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
@@ -400,6 +387,21 @@ export const usePaymentRequestButtonTheme = () => {
 	);
 
 	return [ paymentRequestButtonTheme, updatePaymentRequestButtonTheme ];
+};
+
+export const usePaymentRequestButtonBorderRadius = () => {
+	const { updatePaymentRequestButtonBorderRadius } = useDispatch(
+		STORE_NAME
+	);
+
+	const paymentRequestButtonBorderRadius = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonBorderRadius()
+	);
+
+	return [
+		paymentRequestButtonBorderRadius,
+		updatePaymentRequestButtonBorderRadius,
+	];
 };
 
 export const useGetSavingError = () => {

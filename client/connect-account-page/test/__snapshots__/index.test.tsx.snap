@@ -59,71 +59,74 @@ exports[`ConnectAccountPage should render correctly 1`] = `
           class="connect-account-page__payment-methods"
         >
           <div
-            class="connect-account-page__payment-methods__icons"
+            class="connect-account-page__payment-methods--logos"
           >
             <img
-              alt="Visa"
-              class="payment-method__icon"
-              src="assets/images/cards/visa.svg"
+              alt="visa"
+              height="24"
+              src="assets/images/payment-method-icons/visa.svg"
+              width="38"
             />
             <img
-              alt="Mastercard"
-              class="payment-method__icon"
-              src="assets/images/cards/mastercard.svg"
+              alt="mastercard"
+              height="24"
+              src="assets/images/payment-method-icons/mastercard.svg"
+              width="38"
             />
             <img
-              alt="American Express"
-              class="payment-method__icon"
-              src="assets/images/cards/amex.svg"
+              alt="amex"
+              height="24"
+              src="assets/images/payment-method-icons/amex.svg"
+              width="38"
             />
             <img
-              alt="Cartes Bancaires"
-              class="payment-method__icon"
-              src="assets/images/cards/cb.svg"
+              alt="discover"
+              height="24"
+              src="assets/images/payment-method-icons/discover.svg"
+              width="38"
             />
             <img
-              alt="Discover"
-              class="payment-method__icon"
-              src="assets/images/cards/discover.svg"
+              alt="woopay"
+              height="24"
+              src="assets/images/payment-method-icons/woopay.svg"
+              width="38"
             />
             <img
-              alt="iDEAL"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/ideal.svg"
+              alt="applepay"
+              height="24"
+              src="assets/images/payment-method-icons/applepay.svg"
+              width="38"
             />
             <img
-              alt="Apple Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/apple-pay.svg"
+              alt="googlepay"
+              height="24"
+              src="assets/images/payment-method-icons/gpay.svg"
+              width="38"
             />
             <img
-              alt="Google Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/google-pay.svg"
+              alt="afterpay"
+              height="24"
+              src="assets/images/payment-method-icons/afterpay.svg"
+              width="38"
             />
             <img
-              alt="WooPay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/woo.svg"
+              alt="affirm"
+              height="24"
+              src="assets/images/payment-method-icons/affirm.svg"
+              width="38"
             />
             <img
-              alt="Klarna"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/klarna.svg"
+              alt="klarna"
+              height="24"
+              src="assets/images/payment-method-icons/klarna.svg"
+              width="38"
             />
-            <img
-              alt="Affirm"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/affirm-badge.svg"
-            />
-            <img
-              alt="Afterpay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/afterpay-logo.svg"
-            />
-            <span>
-              & more
-            </span>
+            <div
+              class="connect-account-page__payment-methods--logos-count"
+            >
+              + 
+              10
+            </div>
           </div>
           <div
             class="connect-account-page__payment-methods__description"
@@ -321,71 +324,74 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
           class="connect-account-page__payment-methods"
         >
           <div
-            class="connect-account-page__payment-methods__icons"
+            class="connect-account-page__payment-methods--logos"
           >
             <img
-              alt="Visa"
-              class="payment-method__icon"
-              src="assets/images/cards/visa.svg"
+              alt="visa"
+              height="24"
+              src="assets/images/payment-method-icons/visa.svg"
+              width="38"
             />
             <img
-              alt="Mastercard"
-              class="payment-method__icon"
-              src="assets/images/cards/mastercard.svg"
+              alt="mastercard"
+              height="24"
+              src="assets/images/payment-method-icons/mastercard.svg"
+              width="38"
             />
             <img
-              alt="American Express"
-              class="payment-method__icon"
-              src="assets/images/cards/amex.svg"
+              alt="amex"
+              height="24"
+              src="assets/images/payment-method-icons/amex.svg"
+              width="38"
             />
             <img
-              alt="Cartes Bancaires"
-              class="payment-method__icon"
-              src="assets/images/cards/cb.svg"
+              alt="discover"
+              height="24"
+              src="assets/images/payment-method-icons/discover.svg"
+              width="38"
             />
             <img
-              alt="Discover"
-              class="payment-method__icon"
-              src="assets/images/cards/discover.svg"
+              alt="woopay"
+              height="24"
+              src="assets/images/payment-method-icons/woopay.svg"
+              width="38"
             />
             <img
-              alt="iDEAL"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/ideal.svg"
+              alt="applepay"
+              height="24"
+              src="assets/images/payment-method-icons/applepay.svg"
+              width="38"
             />
             <img
-              alt="Apple Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/apple-pay.svg"
+              alt="googlepay"
+              height="24"
+              src="assets/images/payment-method-icons/gpay.svg"
+              width="38"
             />
             <img
-              alt="Google Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/google-pay.svg"
+              alt="afterpay"
+              height="24"
+              src="assets/images/payment-method-icons/afterpay.svg"
+              width="38"
             />
             <img
-              alt="WooPay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/woo.svg"
+              alt="affirm"
+              height="24"
+              src="assets/images/payment-method-icons/affirm.svg"
+              width="38"
             />
             <img
-              alt="Klarna"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/klarna.svg"
+              alt="klarna"
+              height="24"
+              src="assets/images/payment-method-icons/klarna.svg"
+              width="38"
             />
-            <img
-              alt="Affirm"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/affirm-badge.svg"
-            />
-            <img
-              alt="Afterpay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/afterpay-logo.svg"
-            />
-            <span>
-              & more
-            </span>
+            <div
+              class="connect-account-page__payment-methods--logos-count"
+            >
+              + 
+              10
+            </div>
           </div>
           <div
             class="connect-account-page__payment-methods__description"
@@ -545,71 +551,74 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
           class="connect-account-page__payment-methods"
         >
           <div
-            class="connect-account-page__payment-methods__icons"
+            class="connect-account-page__payment-methods--logos"
           >
             <img
-              alt="Visa"
-              class="payment-method__icon"
-              src="assets/images/cards/visa.svg"
+              alt="visa"
+              height="24"
+              src="assets/images/payment-method-icons/visa.svg"
+              width="38"
             />
             <img
-              alt="Mastercard"
-              class="payment-method__icon"
-              src="assets/images/cards/mastercard.svg"
+              alt="mastercard"
+              height="24"
+              src="assets/images/payment-method-icons/mastercard.svg"
+              width="38"
             />
             <img
-              alt="American Express"
-              class="payment-method__icon"
-              src="assets/images/cards/amex.svg"
+              alt="amex"
+              height="24"
+              src="assets/images/payment-method-icons/amex.svg"
+              width="38"
             />
             <img
-              alt="Cartes Bancaires"
-              class="payment-method__icon"
-              src="assets/images/cards/cb.svg"
+              alt="discover"
+              height="24"
+              src="assets/images/payment-method-icons/discover.svg"
+              width="38"
             />
             <img
-              alt="Discover"
-              class="payment-method__icon"
-              src="assets/images/cards/discover.svg"
+              alt="woopay"
+              height="24"
+              src="assets/images/payment-method-icons/woopay.svg"
+              width="38"
             />
             <img
-              alt="iDEAL"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/ideal.svg"
+              alt="applepay"
+              height="24"
+              src="assets/images/payment-method-icons/applepay.svg"
+              width="38"
             />
             <img
-              alt="Apple Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/apple-pay.svg"
+              alt="googlepay"
+              height="24"
+              src="assets/images/payment-method-icons/gpay.svg"
+              width="38"
             />
             <img
-              alt="Google Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/google-pay.svg"
+              alt="afterpay"
+              height="24"
+              src="assets/images/payment-method-icons/afterpay.svg"
+              width="38"
             />
             <img
-              alt="WooPay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/woo.svg"
+              alt="affirm"
+              height="24"
+              src="assets/images/payment-method-icons/affirm.svg"
+              width="38"
             />
             <img
-              alt="Klarna"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/klarna.svg"
+              alt="klarna"
+              height="24"
+              src="assets/images/payment-method-icons/klarna.svg"
+              width="38"
             />
-            <img
-              alt="Affirm"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/affirm-badge.svg"
-            />
-            <img
-              alt="Afterpay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/afterpay-logo.svg"
-            />
-            <span>
-              & more
-            </span>
+            <div
+              class="connect-account-page__payment-methods--logos-count"
+            >
+              + 
+              10
+            </div>
           </div>
           <div
             class="connect-account-page__payment-methods__description"

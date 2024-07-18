@@ -143,21 +143,6 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Get the required verification information for the selected country/type/structure combination from the API.
-	 *
-	 * @param string      $country_code The currently selected country code.
-	 * @param string      $type         The currently selected business type.
-	 * @param string|null $structure    The currently selected business structure (optional).
-	 *
-	 * @return array
-	 *
-	 * @throws API_Exception
-	 */
-	public function get_required_verification_information( string $country_code, string $type, $structure = null ): array {
-		return $this->payments_api_client->get_onboarding_required_verification_information( $country_code, $type, $structure );
-	}
-
-	/**
 	 * Check whether the business types fetched from the cache are valid.
 	 *
 	 * @param array|bool|string $business_types The business types returned from the cache.
@@ -252,7 +237,10 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Gets the source from the referer and URL params.
+	 * Determine the initial onboarding source from the referer and URL params.
+	 *
+	 * NOTE: Avoid basing business logic on this since it is primarily intended for tracking purposes.
+	 *       It is greedy in determining the onboarding source and may not always be accurate.
 	 *
 	 * @param string $referer    The referer.
 	 * @param array  $get_params GET params.
@@ -260,27 +248,54 @@ class WC_Payments_Onboarding_Service {
 	 * @return string The source or empty string if the source is unsupported.
 	 */
 	public static function get_source( string $referer, array $get_params ): string {
-		$wcpay_connect_param = sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) );
-		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param ) {
-			return self::SOURCE_WCADMIN_PAYMENT_TASK;
+		$source_param = isset( $get_params['source'] ) ? sanitize_text_field( wp_unslash( $get_params['source'] ) ) : '';
+		// If the source param is already set and a valid value, use it.
+		if ( in_array(
+			$source_param,
+			[
+				self::SOURCE_WCADMIN_PAYMENT_TASK,
+				self::SOURCE_WCADMIN_SETTINGS_PAGE,
+				self::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				self::SOURCE_WCPAY_CONNECT_PAGE,
+				self::SOURCE_WCPAY_RESET_ACCOUNT,
+				self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
+			],
+			true
+		) ) {
+
+			return $source_param;
 		}
-		// Payments tab in Woo Admin Settings page.
-		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
-			return self::SOURCE_WCADMIN_SETTINGS_PAGE;
-		}
-		// Payments tab in the sidebar.
-		if ( false !== strpos( $referer, 'path=%2Fwc-pay-welcome-page' ) ) {
-			return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
-		}
-		if ( false !== strpos( $referer, 'path=%2Fpayments%2Fconnect' ) ) {
-			return self::SOURCE_WCPAY_CONNECT_PAGE;
-		}
+
+		// Action params take precedence.
 		if ( isset( $get_params['wcpay-disable-onboarding-test-mode'] ) ) {
 			return self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS;
 		}
 		if ( isset( $get_params['wcpay-reset-account'] ) ) {
 			return self::SOURCE_WCPAY_RESET_ACCOUNT;
 		}
+
+		$wcpay_connect_param = isset( $get_params['wcpay-connect'] ) ? sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) ) : '';
+		$from_param          = isset( $get_params['from'] ) ? sanitize_text_field( wp_unslash( $get_params['from'] ) ) : '';
+
+		// Sometimes we have it in the `wcpay-connect` param and other times in the `from` one.
+		if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param
+			|| 'WCADMIN_PAYMENT_TASK' === $from_param ) {
+			return self::SOURCE_WCADMIN_PAYMENT_TASK;
+		}
+		// Payments tab in Woo Admin Settings page.
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' )
+			|| 'WCADMIN_PAYMENT_SETTINGS' === $from_param ) {
+			return self::SOURCE_WCADMIN_SETTINGS_PAGE;
+		}
+		// Payments incentive page.
+		if ( false !== strpos( $referer, 'path=%2Fwc-pay-welcome-page' )
+			|| 'WCADMIN_PAYMENT_INCENTIVE' === $from_param ) {
+			return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
+		}
+		if ( false !== strpos( $referer, 'path=%2Fpayments%2Fconnect' ) ) {
+			return self::SOURCE_WCPAY_CONNECT_PAGE;
+		}
+
 		return '';
 	}
 }

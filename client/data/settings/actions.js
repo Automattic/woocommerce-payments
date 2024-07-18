@@ -28,12 +28,6 @@ export function updateIsCardPresentEligible( isEnabled ) {
 	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
 }
 
-export function updateIsClientSecretEncryptionEnabled( isEnabled ) {
-	return updateSettingsValues( {
-		is_client_secret_encryption_enabled: isEnabled,
-	} );
-}
-
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -44,6 +38,12 @@ export function updatePaymentRequestButtonSize( size ) {
 
 export function updatePaymentRequestButtonTheme( theme ) {
 	return updateSettingsValues( { payment_request_button_theme: theme } );
+}
+
+export function updatePaymentRequestButtonBorderRadius( radius ) {
+	return updateSettingsValues( {
+		payment_request_button_border_radius: radius,
+	} );
 }
 
 export function updateSettings( data ) {

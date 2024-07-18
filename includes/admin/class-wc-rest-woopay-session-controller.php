@@ -9,8 +9,6 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\WooPay\WooPay_Session;
 use Automattic\Jetpack\Connection\Rest_Authentication;
-use Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken;
-use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
 
 /**
@@ -43,6 +41,13 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'email' => [
+						'type'     => 'string',
+						'format'   => 'email',
+						'required' => true,
+					],
+				],
 			]
 		);
 	}
@@ -56,13 +61,6 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 */
 	public function get_session_data( WP_REST_Request $request ): WP_REST_Response {
 		try {
-			$payload = $this->validated_cart_token_payload( $request->get_header( 'cart_token' ) );
-			$user_id = (int) $payload->user_id ?? null;
-
-			if ( is_int( $user_id ) && $user_id > 0 ) {
-				wp_set_current_user( $user_id );
-			}
-
 			// phpcs:ignore
 			/**
 			 * @psalm-suppress UndefinedClass
@@ -70,10 +68,8 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 			$response = WooPay_Session::get_init_session_request( null, null, null, $request );
 
 			return rest_ensure_response( $response );
-		} catch ( Rest_Request_Exception $e ) {
-			$error_code = $e->getCode() === 400 ? 'rest_invalid_param' : 'wcpay_server_error';
-			$error      = new WP_Error( $error_code, $e->getMessage(), [ 'status' => $e->getCode() ] );
-
+		} catch ( Exception $e ) {
+			$error = new WP_Error( 'wcpay_server_error', $e->getMessage(), [ 'status' => 400 ] );
 			Logger::log( 'Error validating cart token from WooPay request: ' . $e->getMessage() );
 
 			return rest_convert_error_to_response( $error );
@@ -87,31 +83,6 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 */
 	public function check_permission() {
 		return $this->is_request_from_woopay() && $this->has_valid_request_signature();
-	}
-
-	/**
-	 * Validates the cart token and returns its payload.
-	 *
-	 * @param string|null $cart_token The cart token to validate.
-	 *
-	 * @return object The validated cart token.
-	 *
-	 * @throws Rest_Request_Exception If the cart token is invalid, missing, or cannot be validated.
-	 */
-	public function validated_cart_token_payload( $cart_token ): object {
-		if ( ! $cart_token ) {
-			throw new Rest_Request_Exception( 'Missing cart token.', 400 );
-		}
-
-		if ( ! class_exists( JsonWebToken::class ) ) {
-			throw new Rest_Request_Exception( 'Cannot validate cart token.', 500 );
-		}
-
-		if ( ! JsonWebToken::validate( $cart_token, '@' . wp_salt() ) ) {
-			throw new Rest_Request_Exception( 'Invalid cart token.', 400 );
-		}
-
-		return JsonWebToken::get_parts( $cart_token )->payload;
 	}
 
 	/**

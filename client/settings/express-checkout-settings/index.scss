@@ -292,12 +292,6 @@
 	}
 }
 
-.express-checkout__notice {
-	margin-left: 0;
-	margin-right: 0;
-	border: 0;
-}
-
 .payment-method-settings {
 	&__option-help-text {
 		color: #757575;
@@ -313,6 +307,8 @@
 		border-radius: 4px;
 		display: flex;
 		justify-content: center;
+		flex-direction: column;
+		gap: $gap-smaller;
 
 		.woopay-express-button,
 		.StripeElement {
@@ -334,9 +330,27 @@
 			}
 		}
 
-		&[data-theme='light'],
-		&[data-theme='light-outline'] {
+		&[data-theme='light'] {
 			background: #2b2b2b;
+		}
+		&[data-theme='light-outline'] {
+			background: #f0f0f0;
+		}
+	}
+
+	&__border-radius {
+		display: flex;
+		gap: $gap;
+		margin-block-end: 0;
+
+		&__slider {
+			flex-grow: 1;
+		}
+
+		&__number-control {
+			&__suffix {
+				padding-inline: $gap-smaller;
+			}
 		}
 	}
 }

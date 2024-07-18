@@ -16,7 +16,7 @@ import { useEffect, useRef } from 'react';
 /**
  * Internal dependencies
  */
-import { usePaymentCompleteHandler } from './hooks';
+import { usePaymentCompleteHandler, usePaymentFailHandler } from './hooks';
 import {
 	getStripeElementOptions,
 	blocksShowLinkButtonHandler,
@@ -49,21 +49,24 @@ const getFraudPreventionToken = () => {
 	return window.wcpayFraudPreventionToken ?? '';
 };
 
+const noop = () => null;
+
 const PaymentProcessor = ( {
 	api,
 	activePaymentMethod,
 	testingInstructions,
-	eventRegistration: { onPaymentSetup, onCheckoutSuccess },
+	eventRegistration: { onPaymentSetup, onCheckoutSuccess, onCheckoutFail },
 	emitResponse,
 	paymentMethodId,
 	upeMethods,
 	errorMessage,
 	shouldSavePayment,
 	fingerprint,
+	onLoadError = noop,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
-	const isPaymentElementCompleteRef = useRef( false );
+	const hasLoadErrorRef = useRef( false );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
@@ -137,11 +140,11 @@ const PaymentProcessor = ( {
 						return;
 					}
 
-					if ( ! isPaymentElementCompleteRef.current ) {
+					if ( hasLoadErrorRef.current ) {
 						return {
 							type: 'error',
 							message: __(
-								'Your payment information is incomplete.',
+								'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.',
 								'woocommerce-payments'
 							),
 						};
@@ -234,8 +237,11 @@ const PaymentProcessor = ( {
 		shouldSavePayment
 	);
 
-	const updatePaymentElementCompletionStatus = ( event ) => {
-		isPaymentElementCompleteRef.current = event.complete;
+	usePaymentFailHandler( onCheckoutFail, emitResponse );
+
+	const setHasLoadError = ( event ) => {
+		hasLoadErrorRef.current = true;
+		onLoadError( event );
 	};
 
 	return (
@@ -253,7 +259,7 @@ const PaymentProcessor = ( {
 					shouldSavePayment,
 					paymentMethodsConfig
 				) }
-				onChange={ updatePaymentElementCompletionStatus }
+				onLoadError={ setHasLoadError }
 				className="wcpay-payment-element"
 			/>
 		</>

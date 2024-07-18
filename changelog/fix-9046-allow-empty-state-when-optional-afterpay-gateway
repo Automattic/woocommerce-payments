@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Allow Afterpay gateway to process payments when the state/county is optional for GB and NZ addresses.

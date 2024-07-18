@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
+import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 
 declare global {
 	const wcpaySettings: {
@@ -41,7 +42,6 @@ declare global {
 				minimum_manual_deposit_amounts: Record< string, number >;
 				minimum_scheduled_deposit_amounts: Record< string, number >;
 			};
-			depositsStatus?: string;
 			currentDeadline?: bigint;
 			detailsSubmitted?: boolean;
 			pastDue?: boolean;
@@ -91,7 +91,7 @@ declare global {
 			isEligibilityModalDismissed: boolean;
 		};
 		enabledPaymentMethods: string[];
-		dismissedDuplicateNotices: string[];
+		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
@@ -118,6 +118,7 @@ declare global {
 		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
+		isInstantDepositNoticeDismissed: boolean;
 		reporting: {
 			exportModalDismissed?: boolean;
 		};
@@ -131,6 +132,7 @@ declare global {
 		};
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
+		defaultExpressCheckoutBorderRadius: string;
 	};
 
 	const wc: {
@@ -168,6 +170,11 @@ declare global {
 					woocommerce_specific_allowed_countries: string[];
 					woocommerce_default_country: string;
 				};
+			};
+			siteVisibilitySettings: {
+				woocommerce_share_key: string;
+				woocommerce_coming_soon: string;
+				woocommerce_private_link: string;
 			};
 		};
 		adminUrl: string;

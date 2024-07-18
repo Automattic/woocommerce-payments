@@ -192,10 +192,10 @@ class WC_Payments_Subscriptions_Event_Handler {
 		// Record the store's Stripe Billing environment context on the payment intent.
 		$invoice = $this->invoice_service->record_subscription_payment_context( $wcpay_invoice_id );
 
-		// Update charge and transaction metadata - add order id for Stripe Billing
+		// Update charge and transaction metadata - add order id for Stripe Billing.
 		$this->invoice_service->update_charge_details( $invoice, $order->get_id() );
 
-		// Update transaction customer details for Stripe Billing
+		// Update transaction customer details for Stripe Billing.
 		$this->invoice_service->update_transaction_details( $invoice, $order );
 	}
 
