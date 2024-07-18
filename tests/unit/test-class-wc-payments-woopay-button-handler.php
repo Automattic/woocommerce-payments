@@ -511,6 +511,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 				'height'  => '48',
 				'size'    => 'medium',
 				'context' => 'product',
+				'radius'  => '',
 			],
 			$this->mock_pr->get_button_settings()
 		);
