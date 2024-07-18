@@ -95,6 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 7.9.2 - 2024-07-18 =
+* Fix - Fix store connection loop for onboarding flows started from the Woo > Settings > Payments page.
 
 
 = 7.9.1 - 2024-07-11 =
