@@ -112,6 +112,17 @@ class Level3Service {
 			$level3_data['shipping_from_zip'] = $store_postcode;
 		}
 
+		/**
+		 * Filters the Level 3 data based on order.
+		 *
+		 * Example usage: Enables updating the discount based on the products in the order,
+		 * if any of the products are gift cards.
+		 *
+		 * @since 7.9.3
+		 *
+		 * @param array $level3_data Precalculated Level 3 data based on order.
+		 * @param WC_Order $order    The order object.
+		 */
 		return apply_filters( 'wcpay_payment_request_level3_data', $level3_data, $order );
 	}
 
