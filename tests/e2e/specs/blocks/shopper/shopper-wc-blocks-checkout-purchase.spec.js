@@ -47,7 +47,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'using a basic card', async () => {
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopperWCP.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
@@ -66,7 +66,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		it( 'using a 3DS card', async () => {
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopperWCP.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 

@@ -52,7 +52,7 @@ describe( 'Klarna checkout', () => {
 		}, 'a[aria-label="Open Learn More Modal"]' );
 
 		// Wait for the iframe to be added by Stripe JS after clicking on the element.
-		await page.waitFor( 1000 );
+		await page.waitForTimeout( 1000 );
 
 		const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
 			'iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]'
@@ -104,18 +104,18 @@ describe( 'Klarna checkout', () => {
 
 		await page.waitForSelector( '#phone' );
 
-		await page.waitFor( 2000 );
+		await page.waitForTimeout( 2000 );
 
 		await page
 			.waitForSelector( '#onContinue' )
 			.then( ( button ) => button.click() );
 
-		await page.waitFor( 2000 );
+		await page.waitForTimeout( 2000 );
 
 		// This is where the OTP code is entered.
 		await page.waitForSelector( '#phoneOtp' );
 
-		await page.waitFor( 2000 );
+		await page.waitForTimeout( 2000 );
 
 		await expect( page ).toFill( 'input#otp_field', '123456' );
 
@@ -124,20 +124,20 @@ describe( 'Klarna checkout', () => {
 			.waitForSelector( 'button#pay_over_time__label' )
 			.then( ( button ) => button.click() );
 
-		await page.waitFor( 2000 );
+		await page.waitForTimeout( 2000 );
 
 		await page
 			.waitForSelector( 'button[data-testid="select-payment-category"' )
 			.then( ( button ) => button.click() );
 
-		await page.waitFor( 2000 );
+		await page.waitForTimeout( 2000 );
 
 		// Payment summary page. Click continue.
 		await page
 			.waitForSelector( 'button[data-testid="pick-plan"]' )
 			.then( ( button ) => button.click() );
 
-		await page.waitFor( 2000 );
+		await page.waitForTimeout( 2000 );
 
 		// Confirm payment.
 		await page

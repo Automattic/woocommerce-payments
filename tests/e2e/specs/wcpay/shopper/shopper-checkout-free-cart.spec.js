@@ -25,7 +25,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 	describe( 'Classic Checkout', () => {
 		beforeEach( async () => {
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopperWCP.addToCartFromShopPage( productName );
 			await shopper.goToCart();
 			await clearAndFillInput( couponInputSelector, 'free' );
 			await expect( page ).toClick( applyCouponSelector );
@@ -35,7 +35,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 		it( 'Checkout with a free coupon', async () => {
 			await shopper.goToCheckout();
 			await shopper.fillBillingDetails( billingDetails );
-			await page.waitFor( 1000 );
+			await page.waitForTimeout( 1000 );
 			await uiUnblocked();
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
@@ -60,7 +60,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 	describe( 'UPE', () => {
 		beforeEach( async () => {
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopperWCP.addToCartFromShopPage( productName );
 			await shopper.goToCart();
 			await clearAndFillInput( couponInputSelector, 'free' );
 			await expect( page ).toClick( applyCouponSelector );

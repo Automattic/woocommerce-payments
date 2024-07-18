@@ -350,6 +350,25 @@ export const shopperWCP = {
 
 		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
 	},
+
+	// Copy of shopper.addToCartFromShopPage from `@woocommerce/e2e-utils` until it removes the deprecated `waitFor` function.
+	addToCartFromShopPage: async ( productIdOrTitle ) => {
+		if ( Number.isInteger( productIdOrTitle ) ) {
+			const addToCart = `a[data-product_id="${ productIdOrTitle }"]`;
+			await page.click( addToCart );
+			await expect( page ).toMatchElement( addToCart + '.added' );
+		} else {
+			const addToCartXPath =
+				`//li[contains(@class, "type-product") and a/h2[contains(text(), "${ productIdOrTitle }")]]` +
+				'//a[contains(@class, "add_to_cart_button") and contains(@class, "ajax_add_to_cart")';
+			const [ addToCartButton ] = await page.$x( addToCartXPath + ']' );
+			await addToCartButton.click();
+
+			await page.waitForXPath(
+				addToCartXPath + ' and contains(@class, "added")]'
+			);
+		}
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
@@ -701,7 +720,7 @@ export const merchantWCP = {
 		await expect( page ).toClick(
 			'button.editor-post-publish-panel__toggle'
 		);
-		await page.waitFor( 500 );
+		await page.waitForTimeout( 500 );
 		await expect( page ).toClick( 'button.editor-post-publish-button' );
 		await page.waitForSelector(
 			'.components-snackbar__content',
@@ -820,7 +839,7 @@ export const merchantWCP = {
 				timeout: 10000,
 			} );
 
-			await page.waitFor( 1000 );
+			await page.waitForTimeout( 1000 );
 		}
 	},
 
@@ -914,7 +933,7 @@ export const merchantWCP = {
 				}
 			);
 			await page.click( 'button.components-button[role="option"]' );
-			await page.waitFor( 2000 );
+			await page.waitForTimeout( 2000 );
 			await page.waitForSelector(
 				'.edit-widgets-header .edit-widgets-header__actions button.is-primary'
 			);
@@ -939,10 +958,10 @@ export const merchantWCP = {
 				delay: 20,
 			}
 		);
-		await page.waitFor( 2000 );
+		await page.waitForTimeout( 2000 );
 		await page.click( '.select2-results .select2-results__option' );
 		await page.click( '#btn-ok' );
-		await page.waitFor( 2000 );
+		await page.waitForTimeout( 2000 );
 		await page.click( 'button.save_order' );
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 	},
