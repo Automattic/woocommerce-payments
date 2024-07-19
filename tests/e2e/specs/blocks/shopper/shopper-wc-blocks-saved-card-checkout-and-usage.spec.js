@@ -44,6 +44,15 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 		await shopper.goToShop();
 		await shopperWCP.addToCartFromShopPage( productName );
 		await shopperWCP.openCheckoutWCB();
+
+		// Edit if address already exists
+		const editButton = await page.$(
+			'.wc-block-components-address-card__edit'
+		);
+		if ( editButton ) {
+			await editButton.click();
+		}
+
 		await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
 		// Fill CC details and save the card while purchasing the product
@@ -75,6 +84,14 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 		await shopper.goToShop();
 		await shopperWCP.addToCartFromShopPage( productName );
 		await shopperWCP.openCheckoutWCB();
+
+		// Edit if address already exists
+		const editButton = await page.$(
+			'.wc-block-components-address-card__edit'
+		);
+		if ( editButton ) {
+			await editButton.click();
+		}
 		await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
 		await shopperWCP.selectSavedPaymentMethod(
