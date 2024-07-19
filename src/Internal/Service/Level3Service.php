@@ -121,7 +121,7 @@ class Level3Service {
 			// If more than 200 items are present, bundle the last ones in a single item.
 			$items_to_send = array_merge(
 				array_slice( $level3_data['line_items'], 0, 199 ),
-				[ $this->bundle_level3_data_from_items( array_slice( $level3_data['line_items'], 200 ) ) ]
+				[ $this->bundle_level3_data_from_items( array_slice( $level3_data['line_items'], 199 ) ) ]
 			);
 
 			$level3_data['line_items'] = $items_to_send;
