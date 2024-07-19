@@ -184,7 +184,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		<Container isBlocksCheckout={ isBlocksCheckout }>
 			<div
 				className={ `save-details ${
-					wcVersionGreaterThan91 ? 'with-margin-bottom' : ''
+					wcVersionGreaterThan91 && isBlocksCheckout
+						? 'with-margin-bottom'
+						: ''
 				}` }
 			>
 				<div className="save-details-header">
