@@ -35,6 +35,7 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'[Stripe.js] The following payment method types are not activated',
 	'Failed to load resource: the server responded with a status of 400 (Bad Request)',
 	'No Amplitude API key provided',
+	'is registered with an invalid category',
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {
