@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
  * Internal dependencies
  */
 import { useInitialization } from './use-initialization';
-import { getPaymentRequestData } from '../../payment-request/utils';
+import { getPaymentRequestData } from '../frontend-utils';
 
 /**
  * PaymentRequestExpressComponent

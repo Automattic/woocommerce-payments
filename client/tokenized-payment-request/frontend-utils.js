@@ -127,6 +127,12 @@ export const displayLoginConfirmationDialog = ( paymentRequestType ) => {
 	}
 };
 
+export const getErrorMessageFromNotice = ( notice ) => {
+	const div = document.createElement( 'div' );
+	div.innerHTML = notice.trim();
+	return div.firstChild ? div.firstChild.textContent : '';
+};
+
 /**
  * Transforms the cartData object to the format expected by the Store API. cartData is coming to the blocks Payment Request method
  * in two different formats: from the canMakePayment function and from the content component. This function takes in either format
@@ -158,6 +164,7 @@ export const transformCartDataForStoreAPI = (
 			totals: constructCartDataContentTotals( cartDataContent ),
 			needs_shipping: cartDataContent.needsShipping,
 			shipping_rates: cartDataContent.shippingRates,
+			extensions: cartDataContent.extensions,
 		};
 	}
 

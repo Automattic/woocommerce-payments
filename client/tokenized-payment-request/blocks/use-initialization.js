@@ -11,20 +11,14 @@ import {
 	shippingAddressChangeHandler,
 	shippingOptionChangeHandler,
 	paymentMethodHandler,
-} from '../../payment-request/event-handlers.js';
-
-import {
-	//getPaymentRequest,
-	//getPaymentRequestData,
-	//updatePaymentRequest,
-	displayLoginConfirmation,
-} from '../../payment-request/utils';
+} from '../event-handlers.js';
 
 import {
 	getPaymentRequest,
 	getPaymentRequestData,
 	transformCartDataForStoreAPI,
 	updatePaymentRequest,
+	displayLoginConfirmationDialog,
 } from '../frontend-utils.js';
 
 export const useInitialization = ( {
@@ -98,7 +92,7 @@ export const useInitialization = ( {
 			// If login is required, display redirect confirmation dialog.
 			if ( getPaymentRequestData( 'login_confirmation' ) ) {
 				evt.preventDefault();
-				displayLoginConfirmation( paymentRequestType );
+				displayLoginConfirmationDialog( paymentRequestType );
 				return;
 			}
 
@@ -144,15 +138,21 @@ export const useInitialization = ( {
 		};
 
 		paymentRequest?.on( 'shippingaddresschange', ( event ) =>
-			shippingAddressChangeHandler( api, event )
+			shippingAddressChangeHandler( event )
 		);
 
 		paymentRequest?.on( 'shippingoptionchange', ( event ) =>
-			shippingOptionChangeHandler( api, event )
+			shippingOptionChangeHandler( event )
 		);
 
 		paymentRequest?.on( 'paymentmethod', ( event ) =>
-			paymentMethodHandler( api, completePayment, abortPayment, event )
+			paymentMethodHandler(
+				api,
+				cartData,
+				completePayment,
+				abortPayment,
+				event
+			)
 		);
 
 		paymentRequest?.on( 'cancel', cancelHandler );
@@ -167,6 +167,7 @@ export const useInitialization = ( {
 		setIsFinished,
 		setPaymentRequest,
 		onClose,
+		cartData,
 	] );
 
 	return {
