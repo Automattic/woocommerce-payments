@@ -207,6 +207,8 @@ export const WoopayExpressCheckoutButton = ( {
 			isLoadingRef.current = true;
 			setIsLoading( true );
 
+			const appearanceType = getAppearanceType();
+
 			if ( isProductPage ) {
 				const productData = getProductDataRef.current();
 
@@ -227,6 +229,7 @@ export const WoopayExpressCheckoutButton = ( {
 					}
 					WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
 						_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+						appearance: getAppearance( appearanceType ),
 					} )
 						.then( async ( response ) => {
 							if (
@@ -265,8 +268,6 @@ export const WoopayExpressCheckoutButton = ( {
 						} );
 				} );
 			} else {
-				const appearanceType = getAppearanceType();
-
 				WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
 					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
 					order_id: getConfig( 'order_id' ),

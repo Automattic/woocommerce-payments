@@ -30,4 +30,8 @@ export const getAppearanceType = () => {
 	if ( document.querySelector( '.woocommerce-cart-form' ) ) {
 		return 'bnpl_classic_cart';
 	}
+
+	if ( document.querySelector( '.wp-block-woocommerce-product-details' ) ) {
+		return 'bnpl_product_page';
+	}
 };
