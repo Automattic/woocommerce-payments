@@ -15,21 +15,23 @@ const UPE_METHOD_CHECKBOXES = [
 ];
 
 describe( 'Klarna checkout', () => {
+	let wasMulticurrencyEnabled;
 	beforeAll( async () => {
 		await merchant.login();
+		wasMulticurrencyEnabled = await merchantWCP.activateMulticurrency();
+		await merchantWCP.deactivateMulticurrency();
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
-		await shopperWCP.changeAccountCurrencyTo(
-			config.get( 'addresses.customer.billing' ),
-			'USD'
-		);
 	} );
 
 	afterAll( async () => {
 		await shopperWCP.emptyCart();
 		await shopperWCP.logout();
 		await merchant.login();
+		if ( wasMulticurrencyEnabled ) {
+			await merchantWCP.activateMulticurrency();
+		}
 		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 	} );
