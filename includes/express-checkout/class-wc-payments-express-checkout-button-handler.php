@@ -408,7 +408,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 
 
 	/**
-	 * Determine wether to filter the cart needs shipping address.
+	 * Determine whether to filter the cart needs shipping address.
 	 *
 	 * @param boolean $needs_shipping_address Whether the cart needs a shipping address.
 	 */
