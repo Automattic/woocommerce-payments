@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -84,8 +84,6 @@ describe( 'Order > Full refund', () => {
 
 		// Accept the refund
 		await refundDialog.accept();
-
-		await uiUnblocked();
 
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
