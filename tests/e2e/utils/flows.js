@@ -961,15 +961,18 @@ export const merchantWCP = {
 	createPayForOrder: async () => {
 		await merchant.openNewOrder();
 		await page.click( 'button.add-line-item' );
+		await page.waitForTimeout( 500 );
 		await page.click( 'button.add-order-item' );
-		await page.click( 'select[name="item_id"]' );
-		await page.type(
-			'.select2-search--dropdown > input',
-			config.get( 'products.simple.name' ),
-			{
-				delay: 20,
-			}
+		const selectItem = await page.waitForSelector(
+			'select[name="item_id"]'
 		);
+		await selectItem.click();
+		const dropdownInput = await page.waitForSelector(
+			'.select2-search--dropdown > input'
+		);
+		await dropdownInput.type( config.get( 'products.simple.name' ), {
+			delay: 20,
+		} );
 		await page.waitForTimeout( 2000 );
 		await page.click( '.select2-results .select2-results__option' );
 		await page.click( '#btn-ok' );

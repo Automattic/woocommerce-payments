@@ -98,6 +98,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 					timeout: 5000,
 				} );
 				await page.select( '.widget select[name=currency]', 'EUR' );
+				await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 				await expect( page.url() ).toContain(
 					`${ url }/?currency=EUR`
 				);
@@ -106,7 +107,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 				);
 				// Change it back to USD for the other tests.
 				await page.select( '.widget select[name=currency]', 'USD' );
-				await page.reload( { waitUntil: 'networkidle0' } );
+				await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 			} );
 		}
 	);
@@ -114,6 +115,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 	it( 'should not affect prices when currency switching on My account > Orders', async () => {
 		await shopper.login();
 		await page.select( '.widget select[name=currency]', 'USD' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
@@ -134,6 +136,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 
 		await shopperWCP.goToOrders();
 		await page.select( '.widget select[name=currency]', 'EUR' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 		await page.waitForSelector(
 			'.widget select[name=currency] option[value=EUR][selected]'
 		);
@@ -164,6 +167,7 @@ describe( 'Shopper Multi-Currency widget', () => {
 		);
 
 		await page.select( '.widget select[name=currency]', 'EUR' );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 		await page.waitForSelector(
 			'.widget select[name=currency] option[value=EUR][selected]'
 		);
