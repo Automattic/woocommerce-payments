@@ -286,8 +286,8 @@ class WC_Payments_Apple_Pay_Registration {
 				);
 
 				return;
-			} elseif ( isset( $registration_response['error']['message'] ) ) {
-				$error = $registration_response['error']['message'];
+			} elseif ( isset( $registration_response['apple_pay']['status_details']['error_message'] ) ) {
+				$error = $registration_response['apple_pay']['status_details']['error_message'];
 			}
 		} catch ( API_Exception $e ) {
 			$error = $e->getMessage();
@@ -312,9 +312,8 @@ class WC_Payments_Apple_Pay_Registration {
 	/**
 	 * Process the Apple Pay domain verification if proper settings are configured.
 	 */
-	// @TODO remove requirement for live account.
 	public function verify_domain_if_configured() {
-		// If Payment Request Buttons are not enabled, or account is not live,
+		// If Payment Request Buttons are not enabled,
 		// do not attempt to register domain.
 		if ( ! $this->is_enabled() ) {
 			return;
