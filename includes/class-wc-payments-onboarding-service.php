@@ -27,6 +27,21 @@ class WC_Payments_Onboarding_Service {
 	const SOURCE_WCPAY_SETUP_LIVE_PAYMENTS    = 'wcpay-setup-live-payments';
 	const SOURCE_UNKNOWN                      = 'unknown';
 
+	// Values for the `from` GET param to indicate what was the immediately previous step.
+	// Woo core places.
+	const FROM_WOO_PAYMENTS_TASK     = 'WCADMIN_PAYMENT_TASK';
+	const FROM_WOO_PAYMENTS_SETTINGS = 'WCADMIN_PAYMENT_SETTINGS';
+	const FROM_WOO_INCENTIVES_PAGE   = 'WCADMIN_PAYMENT_INCENTIVE';
+	// WooPayments places.
+	const FROM_CONNECT_PAGE      = 'WCPAY_CONNECT';
+	const FROM_ONBOARDING_WIZARD = 'WCPAY_ONBOARDING_WIZARD';
+	const FROM_TEST_TO_LIVE      = 'WCPAY_TEST_TO_LIVE';
+	const FROM_RESET_ACCOUNT     = 'WCPAY_RESET_ACCOUNT';
+	// External places.
+	const FROM_WPCOM            = 'WPCOM';
+	const FROM_WPCOM_CONNECTION = 'WPCOM_CONNECTION';
+	const FROM_STRIPE           = 'STRIPE';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -238,6 +253,107 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Determine what was the immediate previous step that landed us to the current request.
+	 *
+	 * We take into account the referer and GET params, with the referer having the lowest priority.
+	 * The primary intention of the from value is to inform the current step logic and allow it to customize the
+	 * behavior and/or UX based on the previous step.
+	 *
+	 * Note: Consider carefully when carrying over the from value to the next step.
+	 *       Doing so should mean that we didn't complete any step right now, but just moved the merchant around
+	 *       (probably through redirects).
+	 *
+	 * @param string|null $referer    Optional. The referer URL. Defaults to wp_get_raw_referer().
+	 * @param array|null  $get_params Optional. GET params. Defaults to $_GET.
+	 *
+	 * @return string The from value or empty string if we could not identify a known value.
+	 */
+	public static function get_from( ?string $referer = null, ?array $get_params = null ): string {
+		$referer = $referer ?? wp_get_raw_referer();
+		// Ensure we decode the referer URL in case it contains encoded characters in its GET parameters.
+		// This way we don't need to distinguish between `%2F` and `/`.
+		$referer    = urldecode( $referer );
+		$get_params = $get_params ?? $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		/**
+		 * =================
+		 * First, we check the `from` GET param.
+		 * If the `from` param is already set and not empty, use it.
+		 * =================
+		 */
+		$from_param = isset( $get_params['from'] ) ? sanitize_text_field( wp_unslash( $get_params['from'] ) ) : '';
+		if ( ! empty( $from_param ) ) {
+			return $from_param;
+		}
+
+		/**
+		 * =================
+		 * Next, we check the action-type GET params as they should only be set when the user takes a certain action.
+		 * This means they have higher priority than the other "clues" like `wcpay-connect`, `from`, referer.
+		 * =================
+		 */
+		if ( isset( $get_params['wcpay-disable-onboarding-test-mode'] ) && 'true' === $get_params['wcpay-disable-onboarding-test-mode'] ) {
+			return self::FROM_TEST_TO_LIVE;
+		}
+		if ( isset( $get_params['wcpay-reset-account'] ) && 'true' === $get_params['wcpay-reset-account'] ) {
+			return self::FROM_RESET_ACCOUNT;
+		}
+
+		/**
+		 * =================
+		 * Next, we check the `wcpay-connect` GET param.
+		 * If it has a known from value, use it.
+		 * =================
+		 */
+		$wcpay_connect_param = isset( $get_params['wcpay-connect'] ) ? sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) ) : '';
+		if ( in_array(
+			$wcpay_connect_param,
+			[
+				self::FROM_WOO_PAYMENTS_TASK,
+				self::FROM_WOO_PAYMENTS_SETTINGS,
+				self::FROM_WOO_INCENTIVES_PAGE,
+				self::FROM_CONNECT_PAGE,
+				self::FROM_ONBOARDING_WIZARD,
+				self::FROM_TEST_TO_LIVE,
+				self::FROM_RESET_ACCOUNT,
+				self::FROM_WPCOM,
+				self::FROM_WPCOM_CONNECTION,
+				self::FROM_STRIPE,
+			],
+			true
+		) ) {
+			return $wcpay_connect_param;
+		}
+
+		/**
+		 * =================
+		 * Finally, we check the referer URL as it has the lowest priority.
+		 * =================
+		 */
+		if ( false !== strpos( $referer, 'page=wc-admin&task=payments' ) ) {
+			return self::FROM_WOO_PAYMENTS_TASK;
+		}
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
+			return self::FROM_WOO_PAYMENTS_SETTINGS;
+		}
+		if ( false !== strpos( $referer, 'path=/wc-pay-welcome-page' ) ) {
+			return self::FROM_WOO_INCENTIVES_PAGE;
+		}
+		if ( false !== strpos( $referer, 'path=/payments/connect' ) ) {
+			return self::FROM_CONNECT_PAGE;
+		}
+		if ( false !== strpos( $referer, 'wordpress.com' ) ) {
+			return self::FROM_WPCOM;
+		}
+		if ( false !== strpos( $referer, 'stripe.com' ) ) {
+			return self::FROM_STRIPE;
+		}
+
+		// Default to empty string.
+		return '';
+	}
+
+	/**
 	 * Determine the initial onboarding source from the referer and URL params.
 	 *
 	 * NOTE: Avoid basing business logic on this since it is primarily intended for tracking purposes.
@@ -300,11 +416,11 @@ class WC_Payments_Onboarding_Service {
 		 * =================
 		 */
 		switch ( $wcpay_connect_param ) {
-			case 'WCADMIN_PAYMENT_TASK':
+			case self::FROM_WOO_PAYMENTS_TASK:
 				return self::SOURCE_WCADMIN_PAYMENT_TASK;
-			case 'WCADMIN_PAYMENT_SETTINGS':
+			case self::FROM_WOO_PAYMENTS_SETTINGS:
 				return self::SOURCE_WCADMIN_SETTINGS_PAGE;
-			case 'WCADMIN_PAYMENT_INCENTIVE':
+			case self::FROM_WOO_INCENTIVES_PAGE:
 				return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 			default:
 				break;
@@ -313,14 +429,16 @@ class WC_Payments_Onboarding_Service {
 		/**
 		 * =================
 		 * Next, we check the `from` GET param as it has a higher priority than the referer.
+		 *
+		 * Not all `from` values are taken into account (e.g. we ignore 'WCPAY_ONBOARDING_WIZARD').
 		 * =================
 		 */
 		switch ( $from_param ) {
-			case 'WCADMIN_PAYMENT_TASK':
+			case self::FROM_WOO_PAYMENTS_TASK:
 				return self::SOURCE_WCADMIN_PAYMENT_TASK;
-			case 'WCADMIN_PAYMENT_SETTINGS':
+			case self::FROM_WOO_PAYMENTS_SETTINGS:
 				return self::SOURCE_WCADMIN_SETTINGS_PAGE;
-			case 'WCADMIN_PAYMENT_INCENTIVE':
+			case self::FROM_WOO_INCENTIVES_PAGE:
 				return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 			default:
 				break;

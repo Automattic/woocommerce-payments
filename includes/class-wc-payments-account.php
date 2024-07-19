@@ -774,7 +774,11 @@ class WC_Payments_Account {
 
 		// Not able to establish Stripe connection, redirect to the Connect page.
 		if ( ! $this->is_stripe_connected() ) {
-			$this->redirect_service->redirect_to_connect_page( null, 'WCADMIN_PAYMENT_SETTINGS' );
+			$this->redirect_service->redirect_to_connect_page(
+				null,
+				WC_Payments_Onboarding_Service::FROM_WOO_PAYMENTS_SETTINGS,
+				[ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE ]
+			);
 			return true;
 		}
 
@@ -783,7 +787,7 @@ class WC_Payments_Account {
 			return false;
 		} else {
 			// Account not yet fully onboarded so redirect to overview page.
-			$this->redirect_service->redirect_to_overview_page( 'WCADMIN_PAYMENT_SETTINGS' );
+			$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_WOO_PAYMENTS_SETTINGS );
 			return true;
 		}
 	}
@@ -836,7 +840,7 @@ class WC_Payments_Account {
 					__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
 					'WooPayments'
 				),
-				'WCPAY_ONBOARDING_FLOW',
+				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
 				[ 'source' => $onboarding_source ]
 			);
 			return true;
@@ -855,7 +859,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		$this->redirect_service->redirect_to_overview_page( 'WCPAY_ONBOARDING_FLOW' );
+		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD );
 
 		return true;
 	}
@@ -1022,7 +1026,7 @@ class WC_Payments_Account {
 							__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
 							'WooPayments'
 						),
-						'WPCOM_CONNECTION',
+						WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 						[ 'source' => $onboarding_source ]
 					);
 
