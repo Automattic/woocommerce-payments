@@ -110,7 +110,7 @@ class Level3Service {
 		 * Example usage: Enables updating the discount based on the products in the order,
 		 * if any of the products are gift cards.
 		 *
-		 * @since 7.9.3
+		 * @since 8.0.0
 		 *
 		 * @param array $level3_data Precalculated Level 3 data based on order.
 		 * @param WC_Order $order    The order object.
