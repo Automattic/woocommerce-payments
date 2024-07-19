@@ -11,6 +11,7 @@ import {
 	getExpressCheckoutAjaxURL,
 	getExpressCheckoutConfig,
 } from 'utils/express-checkout';
+import { getAppearance } from 'checkout/upe-styles';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -459,8 +460,11 @@ export default class WCPayAPI {
 			this.isWooPayRequesting = true;
 			const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 			const nonce = getConfig( 'initWooPayNonce' );
+			const appearance = getAppearance( 'blocks_checkout' );
+
 			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
 				_wpnonce: nonce,
+				appearance: appearance,
 				email: userEmail,
 				user_session: woopayUserSession,
 				order_id: getConfig( 'order_id' ),
