@@ -30,7 +30,7 @@ describe( 'Saved cards ', () => {
 			} );
 
 			afterAll( async () => {
-				await shopperWCP.logout();
+				await shopperWCP.logout( true );
 			} );
 
 			it( 'should save the card', async () => {
