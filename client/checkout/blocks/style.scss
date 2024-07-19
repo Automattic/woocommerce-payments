@@ -86,6 +86,13 @@ button.wcpay-stripelink-modal-trigger:hover {
 	}
 }
 
+.is-mobile,
+.is-small {
+	#remember-me h2 {
+		margin-top: 36px;
+	}
+}
+
 #payment-method {
 	label.wc-block-components-radio-control__option-checked {
 		.StripeElement {
