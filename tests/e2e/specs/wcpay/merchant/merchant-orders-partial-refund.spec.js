@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -136,7 +136,6 @@ describe.each( dataTable )(
 				}
 			);
 			await refundDialog.accept();
-			await uiUnblocked();
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Verify each line item shows the refunded quantity and/or amount
