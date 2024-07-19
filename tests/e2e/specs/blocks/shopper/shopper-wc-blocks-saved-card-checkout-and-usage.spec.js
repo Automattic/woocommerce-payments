@@ -47,14 +47,18 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 		await shopperWCP.fillBillingDetailsWCB( billingDetails );
 
 		// Fill CC details and save the card while purchasing the product
-		const savePaymentMethodCheckbox = '#checkbox-control-0';
+		const savePaymentMethodCheckbox =
+			'.wc-block-components-payment-methods__save-card-info input[type="checkbox"]';
 		await fillCardDetailsWCB( page, card );
 		await expect( page ).toClick( savePaymentMethodCheckbox );
 
+		await page.waitForTimeout( 500 );
 		await page.waitForSelector(
-			'.wc-block-components-main button:not(:disabled)'
+			'.wc-block-checkout__actions button:not(:disabled)'
 		);
-		await expect( page ).toClick( 'button', { text: 'Place Order' } );
+		await expect( page ).toClick( '.wc-block-checkout__actions button', {
+			text: 'Place Order',
+		} );
 		await page.waitForSelector( 'div.woocommerce-order' );
 		await expect( page ).toMatchTextContent( 'p', {
 			text: 'Thank you. Your order has been received.',
@@ -76,8 +80,14 @@ describeif( RUN_WC_BLOCKS_TESTS )( 'WooCommerce Blocks > Saved cards', () => {
 		await shopperWCP.selectSavedPaymentMethod(
 			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 		);
-		await expect( page ).toClick( 'button', { text: 'Place Order' } );
-		await page.waitForSelector( 'div.woocommerce-order' );
+		await page.waitForTimeout( 500 );
+		await page.waitForSelector(
+			'.wc-block-checkout__actions button:not(:disabled)'
+		);
+		await expect( page ).toClick( '.wc-block-checkout__actions button', {
+			text: 'Place Order',
+		} );
+		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 		await expect( page ).toMatchTextContent( 'p', {
 			text: 'Thank you. Your order has been received.',
 		} );
