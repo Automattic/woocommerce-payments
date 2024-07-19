@@ -86,12 +86,24 @@ export const shopperWCP = {
 		} );
 	},
 
-	logout: async () => {
+	logout: async ( skipIfAlreadyLoggedOut = false ) => {
 		await page.goto( SHOP_MY_ACCOUNT_PAGE, {
 			waitUntil: 'networkidle0',
 		} );
 
 		await expect( page.title() ).resolves.toMatch( 'My account' );
+
+		const hasLoginButton = await page.$( 'button[name="login"]' );
+
+		if ( hasLoginButton ) {
+			if ( skipIfAlreadyLoggedOut ) {
+				return;
+			}
+			throw new Error(
+				'Cannot log out since the user is already logged out'
+			);
+		}
+
 		await Promise.all( [
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			page.click(
