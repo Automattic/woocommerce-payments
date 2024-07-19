@@ -127,7 +127,7 @@ abstract class Request {
 		WC_Payments_API_Client::CAPABILITIES_API           => 'accounts/capabilities',
 		WC_Payments_API_Client::WOOPAY_ACCOUNTS_API        => 'accounts/platform_checkout',
 		WC_Payments_API_Client::WOOPAY_COMPATIBILITY_API   => 'woopay/compatibility',
-		WC_Payments_API_Client::APPLE_PAY_API              => 'apple_pay',
+		WC_Payments_API_Client::DOMAIN_REGISTRATION_API    => 'payment_method_domains',
 		WC_Payments_API_Client::CHARGES_API                => 'charges',
 		WC_Payments_API_Client::CONN_TOKENS_API            => 'terminal/connection_tokens',
 		WC_Payments_API_Client::TERMINAL_LOCATIONS_API     => 'terminal/locations',

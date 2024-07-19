@@ -266,13 +266,14 @@ class WC_Payments_Apple_Pay_Registration {
 	/**
 	 * Processes the Apple Pay domain verification.
 	 */
-	public function register_domain_with_apple() {
+	// @todo rename register_domain_with_apple to register_domain.
+	public function register_domain() {
 		$error = null;
 
 		try {
-			$registration_response = $this->payments_api_client->register_domain_with_apple( $this->domain_name );
+			$registration_response = $this->payments_api_client->register_domain( $this->domain_name );
 
-			if ( isset( $registration_response['id'] ) ) {
+			if ( isset( $registration_response['id'] ) && ( isset( $registration_response['apple_pay'] ) && $registration_response['apple_pay']['status'] === 'active' ) ) {
 				$this->gateway->update_option( 'apple_pay_verified_domain', $this->domain_name );
 				$this->gateway->update_option( 'apple_pay_domain_set', 'yes' );
 
@@ -312,10 +313,11 @@ class WC_Payments_Apple_Pay_Registration {
 	/**
 	 * Process the Apple Pay domain verification if proper settings are configured.
 	 */
+	// @TODO remove requirement for live account.
 	public function verify_domain_if_configured() {
 		// If Payment Request Buttons are not enabled, or account is not live,
 		// do not attempt to register domain.
-		if ( ! $this->is_enabled() || ! $this->account->get_is_live() ) {
+		if ( ! $this->is_enabled() ) {
 			return;
 		}
 
@@ -326,8 +328,8 @@ class WC_Payments_Apple_Pay_Registration {
 		// Create/update domain association file by copying it from the plugin folder as a fallback.
 		$this->update_domain_association_file();
 
-		// Register the domain with Apple Pay.
-		$this->register_domain_with_apple();
+		// Register the domain.
+		$this->register_domain();
 	}
 
 	/**
