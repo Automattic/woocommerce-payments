@@ -69,6 +69,9 @@ const ConnectAccountPage: React.FC = () => {
 			case 'WCADMIN_PAYMENT_SETTINGS':
 				source = 'wcadmin-settings-page';
 				break;
+			case 'WCADMIN_PAYMENT_INCENTIVE':
+				source = 'wcadmin-incentive-page';
+				break;
 		}
 
 		return source;
@@ -93,7 +96,9 @@ const ConnectAccountPage: React.FC = () => {
 		};
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
-			window.location.href = connectUrl;
+			window.location.href = addQueryArgs( connectUrl, {
+				from: 'WCPAY_CONNECT',
+			} );
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
@@ -155,7 +160,9 @@ const ConnectAccountPage: React.FC = () => {
 			return handleLocationCheck();
 		}
 
-		window.location.href = connectUrl;
+		window.location.href = addQueryArgs( connectUrl, {
+			from: 'WCPAY_CONNECT',
+		} );
 	};
 
 	const handleEnableSandboxMode = async () => {
@@ -163,11 +170,11 @@ const ConnectAccountPage: React.FC = () => {
 
 		trackConnectAccountClicked( true );
 
-		const url = addQueryArgs( connectUrl, {
+		window.location.href = addQueryArgs( connectUrl, {
 			test_mode: 'true',
 			create_builder_account: 'true',
+			from: 'WCPAY_CONNECT',
 		} );
-		window.location.href = url;
 	};
 
 	return (
