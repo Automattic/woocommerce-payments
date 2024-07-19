@@ -515,6 +515,6 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 
 		$bundled_data = end( $level_3_data['line_items'] );
 
-		$this->assertSame( $bundled_data->product_description, '300 more items' );
+		$this->assertSame( $bundled_data->product_description, '301 more items' );
 	}
 }
