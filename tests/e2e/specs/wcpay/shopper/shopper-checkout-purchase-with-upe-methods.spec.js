@@ -29,8 +29,12 @@ const cardTestingPreventionStates = [
 describe.each( cardTestingPreventionStates )(
 	'Enabled UPE with deferred intent creation',
 	( { cardTestingPreventionEnabled } ) => {
+		let wasMulticurrencyEnabled;
+
 		beforeAll( async () => {
 			await merchant.login();
+			wasMulticurrencyEnabled = await merchantWCP.activateMulticurrency();
+			await merchantWCP.addCurrency( 'EUR' );
 			await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 			if ( cardTestingPreventionEnabled ) {
 				await merchantWCP.enableCardTestingProtection();
@@ -51,6 +55,9 @@ describe.each( cardTestingPreventionStates )(
 			await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
 			if ( cardTestingPreventionEnabled ) {
 				await merchantWCP.disableCardTestingProtection();
+			}
+			if ( ! wasMulticurrencyEnabled ) {
+				await merchantWCP.deactivateMulticurrency();
 			}
 			await merchant.logout();
 		} );
