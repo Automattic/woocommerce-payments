@@ -43,7 +43,7 @@ class WC_Payments_API_Client {
 	const CAPABILITIES_API             = 'accounts/capabilities';
 	const WOOPAY_ACCOUNTS_API          = 'accounts/platform_checkout';
 	const WOOPAY_COMPATIBILITY_API     = 'woopay/compatibility';
-	const DOMAIN_REGISTRATION_API	   = 'payment_method_domains';
+	const DOMAIN_REGISTRATION_API      = 'payment_method_domains';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
 	const TERMINAL_LOCATIONS_API       = 'terminal/locations';
@@ -1610,8 +1610,8 @@ class WC_Payments_API_Client {
 	 * @param string $domain_name Domain name which to register for the account.
 	 *
 	 * @return array An array containing an id and the bool property 'enabled' indicating
-	 * whether the domain is enabled for the account. Each Payment Method 
-	 * (apple_pay, google_pay, link, paypal) in the array have a 'status' 
+	 * whether the domain is enabled for the account. Each Payment Method
+	 * (apple_pay, google_pay, link, paypal) in the array have a 'status'
 	 * property with the possible values 'active' and 'inactive'.
 	 *
 	 * @throws API_Exception If an error occurs.
