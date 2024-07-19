@@ -264,9 +264,8 @@ class WC_Payments_Apple_Pay_Registration {
 
 
 	/**
-	 * Processes the Apple Pay domain verification.
+	 * Processes the Stripe domain registration.
 	 */
-	// @todo rename register_domain_with_apple to register_domain.
 	public function register_domain() {
 		$error = null;
 

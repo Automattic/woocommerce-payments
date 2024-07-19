@@ -1613,9 +1613,8 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	// @TODO: Create new endpoint for domain registration in the server
 	public function register_domain( $domain_name ) {
-e		return $this->request(
+		return $this->request(
 			[
 				'domain_name' => $domain_name,
 			],
