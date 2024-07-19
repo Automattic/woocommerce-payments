@@ -301,7 +301,7 @@ class WC_Payments_Onboarding_Service {
 
 		/**
 		 * =================
-		 * Next, we check the `wcpay-connect` GET param.
+		 * Next, we check the `wcpay-connect` GET param. This should hold valid from values.
 		 * If it has a known from value, use it.
 		 * =================
 		 */
@@ -341,6 +341,9 @@ class WC_Payments_Onboarding_Service {
 		}
 		if ( false !== strpos( $referer, 'path=/payments/connect' ) ) {
 			return self::FROM_CONNECT_PAGE;
+		}
+		if ( false !== strpos( $referer, 'path=/payments/onboarding' ) ) {
+			return self::FROM_ONBOARDING_WIZARD;
 		}
 		if ( false !== strpos( $referer, 'wordpress.com' ) ) {
 			return self::FROM_WPCOM;
@@ -440,6 +443,8 @@ class WC_Payments_Onboarding_Service {
 				return self::SOURCE_WCADMIN_SETTINGS_PAGE;
 			case self::FROM_WOO_INCENTIVES_PAGE:
 				return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
+			case self::FROM_CONNECT_PAGE:
+				return self::SOURCE_WCPAY_CONNECT_PAGE;
 			default:
 				break;
 		}
