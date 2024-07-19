@@ -121,20 +121,15 @@ describe( 'Klarna checkout', () => {
 
 		// Select Payment Plan - 4 weeks & click continue.
 		await page
-			.waitForSelector( 'button#pay_over_time__label' )
-			.then( ( button ) => button.click() );
+			.waitForSelector( '[id="payinparts_kp.0-ui"] input[type="radio"]' )
+			.then( ( radio ) => radio.click() );
 
 		await page.waitForTimeout( 2000 );
 
 		await page
-			.waitForSelector( 'button[data-testid="select-payment-category"' )
-			.then( ( button ) => button.click() );
-
-		await page.waitForTimeout( 2000 );
-
-		// Payment summary page. Click continue.
-		await page
-			.waitForSelector( 'button[data-testid="pick-plan"]' )
+			.waitForSelector(
+				'button[data-testid="select-payment-category-or-method-from-stacked-selector"'
+			)
 			.then( ( button ) => button.click() );
 
 		await page.waitForTimeout( 2000 );
