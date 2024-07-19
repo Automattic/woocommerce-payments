@@ -51,8 +51,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 		$this->init_session_cookie();
 
 		if ( $this->_customer_id !== $this->_data['token_customer_id'] ) {
-			// TODO ~FR: should this be handled differently?
-			throw new Exception( 'Invalid token: cookie and session customer mismatch' );
+			throw new Exception( __( 'Invalid token: cookie and session customer mismatch', 'woocommerce-payments' ) );
 		}
 
 		add_action( 'shutdown', [ $this, 'save_data' ], 20 );
