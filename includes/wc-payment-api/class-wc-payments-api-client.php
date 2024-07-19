@@ -1605,11 +1605,14 @@ class WC_Payments_API_Client {
 
 
 	/**
-	 * Registers a new domain with Apple Pay.
+	 * Registers a Payment Method Domain.
 	 *
-	 * @param string $domain_name Domain name which to register for Apple Pay.
+	 * @param string $domain_name Domain name which to register for the account.
 	 *
-	 * @return array An array containing an id in case it has succeeded, or an error message in case it has failed.
+	 * @return array An array containing an id and the bool property 'enabled' indicating
+	 * whether the domain is enabled for the account. Each Payment Method 
+	 * (apple_pay, google_pay, link, paypal) in the array have a 'status' 
+	 * property with the possible values 'active' and 'inactive'.
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
