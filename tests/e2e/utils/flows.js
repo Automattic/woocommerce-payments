@@ -714,11 +714,10 @@ export const merchantWCP = {
 		await page.type( 'h1.editor-post-title__input', 'Checkout WCB' );
 
 		// Insert new checkout by WCB (searching for Checkout block and pressing Enter)
-		await expect( page ).toClick(
-			'button.edit-post-header-toolbar__inserter-toggle'
-		);
+		await expect( page ).toClick( 'button.block-editor-inserter__toggle' );
+		await page.waitForTimeout( 500 );
 		await expect( page ).toFill(
-			'div.components-search-control__input-wrapper > input.components-search-control__input',
+			'div.components-search-control input.components-input-control__input',
 			'Checkout'
 		);
 		await page.keyboard.press( 'Tab' );
