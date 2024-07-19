@@ -124,7 +124,6 @@ class WC_Payments_Redirect_Service {
 	 *
 	 * @param string|null $error_message     Optional. Error message to show in a notice.
 	 * @param string|null $from              Optional. Source of the redirect.
-	 *                                       Will fall back to keeping the `from` parameter in the current request URL, if present.
 	 * @param array       $additional_params Optional. Additional URL params to add to the redirect URL.
 	 */
 	public function redirect_to_connect_page( ?string $error_message = null, ?string $from = null, array $additional_params = [] ): void {
@@ -162,10 +161,6 @@ class WC_Payments_Redirect_Service {
 	 * @param array       $additional_params Optional. Additional URL params to add to the redirect URL.
 	 */
 	public function redirect_to_onboarding_wizard( ?string $from = null, array $additional_params = [] ): void {
-		if ( ! WC_Payments_Utils::should_use_new_onboarding_flow() ) {
-			return;
-		}
-
 		$params = [
 			'page' => 'wc-admin',
 			'path' => '/payments/onboarding',
