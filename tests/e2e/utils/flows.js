@@ -715,14 +715,16 @@ export const merchantWCP = {
 
 		// Insert new checkout by WCB (searching for Checkout block and pressing Enter)
 		await expect( page ).toClick( 'button.block-editor-inserter__toggle' );
-		await page.waitForTimeout( 500 );
-		await expect( page ).toFill(
-			'div.components-search-control input.components-input-control__input',
-			'Checkout'
+		const searchInput = await page.waitForSelector(
+			'div.components-search-control input.components-input-control__input'
 		);
-		await page.keyboard.press( 'Tab' );
-		await page.keyboard.press( 'Tab' );
-		await page.keyboard.press( 'Enter' );
+		await searchInput.type( 'Checkout', { delay: 20 } );
+
+		await page.waitForSelector( 'button.components-button[role="option"]', {
+			visible: true,
+		} );
+		await page.click( 'button.components-button[role="option"]' );
+		await page.waitForTimeout( 500 );
 
 		// Dismiss dialog about potentially compatibility issues
 		await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
