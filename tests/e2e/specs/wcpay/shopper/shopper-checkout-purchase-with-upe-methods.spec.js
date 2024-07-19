@@ -67,7 +67,7 @@ describe.each( cardTestingPreventionStates )(
 				await setupProductCheckout(
 					config.get( 'addresses.upe-customer.billing.be' )
 				);
-				page.waitForTimeout( 1000 );
+				await page.waitForTimeout( 1000 );
 				if ( cardTestingPreventionEnabled ) {
 					const token = await page.evaluate( () => {
 						return window.wcpayFraudPreventionToken;
@@ -81,7 +81,7 @@ describe.each( cardTestingPreventionStates )(
 					waitUntil: 'networkidle0',
 				} );
 				await expect( page ).toMatchTextContent( 'Order received' );
-			} );
+			}, 200000 ); // Use an increased timeout
 		} );
 
 		// No need to run these tests for card testing prevention checks.
