@@ -145,11 +145,6 @@ class WC_Payments_Redirect_Service {
 
 		$params = array_merge( $params, $additional_params );
 
-		// If we were not given a redirect source, try to get it from the request URL.
-		if ( ! isset( $from ) && isset( $_GET['from'] ) ) {
-			$from = sanitize_text_field( wp_unslash( $_GET['from'] ) );
-		}
-
 		if ( ! empty( $from ) ) {
 			$params['from'] = $from;
 		}
