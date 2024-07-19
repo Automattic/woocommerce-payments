@@ -21,6 +21,7 @@ import {
 	deleteSkipWooPayCookie,
 } from 'wcpay/checkout/woopay/utils';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
+import { getAppearance } from 'wcpay/checkout/upe-styles';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -268,6 +269,7 @@ export const WoopayExpressCheckoutButton = ( {
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
+					appearance: getAppearance( 'blocks_checkout' ),
 				} )
 					.then( async ( response ) => {
 						if ( response?.blog_id && response?.data?.session ) {

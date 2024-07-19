@@ -106,5 +106,6 @@ export const transformCartDataForShippingOptions = ( cartData ) =>
 			)?.value,
 		]
 			.filter( Boolean )
+			.map( decodeEntities )
 			.join( ' - ' ),
 	} ) );
