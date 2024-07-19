@@ -272,7 +272,7 @@ class WC_Payments_Apple_Pay_Registration {
 		try {
 			$registration_response = $this->payments_api_client->register_domain( $this->domain_name );
 
-			if ( isset( $registration_response['id'] ) && ( isset( $registration_response['apple_pay'] ) && $registration_response['apple_pay']['status'] === 'active' ) ) {
+			if ( isset( $registration_response['id'] ) && ( isset( $registration_response['apple_pay']['status'] ) && 'active' === $registration_response['apple_pay']['status'] ) ) {
 				$this->gateway->update_option( 'apple_pay_verified_domain', $this->domain_name );
 				$this->gateway->update_option( 'apple_pay_domain_set', 'yes' );
 
