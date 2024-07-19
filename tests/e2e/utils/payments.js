@@ -150,10 +150,10 @@ export async function fillCardDetailsPayForOrder( page, card ) {
 export async function fillCardDetailsWCB( page, card ) {
 	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
-		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
+		'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
-	const inputs = await stripeFrame.$$( '.InputElement.Input' );
+	const inputs = await stripeFrame.$$( '.p-CardForm .p-Input-input' );
 
 	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
 	await cardNumberInput.type( card.number, { delay: 20 } );
