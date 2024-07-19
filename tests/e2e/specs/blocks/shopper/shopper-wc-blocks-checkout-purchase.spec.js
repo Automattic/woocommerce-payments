@@ -54,10 +54,16 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			// Fill CC details and purchase the product
 			const card = config.get( 'cards.basic' );
 			await fillCardDetailsWCB( page, card );
+			await page.waitForTimeout( 500 );
 			await page.waitForSelector(
-				'.wc-block-components-main button:not(:disabled)'
+				'.wc-block-checkout__actions button:not(:disabled)'
 			);
-			await expect( page ).toClick( 'button', { text: 'Place Order' } );
+			await expect( page ).toClick(
+				'.wc-block-checkout__actions button',
+				{
+					text: 'Place Order',
+				}
+			);
 			await page.waitForSelector( 'div.woocommerce-order' );
 			await expect( page ).toMatchTextContent( 'p', {
 				text: 'Thank you. Your order has been received.',
@@ -73,10 +79,16 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			// Fill CC details and purchase the product
 			const card = config.get( 'cards.3ds' );
 			await fillCardDetailsWCB( page, card );
+			await page.waitForTimeout( 500 );
 			await page.waitForSelector(
-				'.wc-block-components-main button:not(:disabled)'
+				'.wc-block-checkout__actions button:not(:disabled)'
 			);
-			await expect( page ).toClick( 'button', { text: 'Place Order' } );
+			await expect( page ).toClick(
+				'.wc-block-checkout__actions button',
+				{
+					text: 'Place Order',
+				}
+			);
 			await confirmCardAuthentication( page );
 			await page.waitForNavigation( {
 				waitUntil: 'networkidle0',
