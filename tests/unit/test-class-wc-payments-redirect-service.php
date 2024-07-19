@@ -247,25 +247,6 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		$this->redirect_service->redirect_to_connect_page( null, 'FROM_SOMEWHERE' );
 	}
 
-	public function test_redirect_to_connect_page_redirects_with_from_param_from_get() {
-		// Arrange.
-		$_GET = [
-			'from' => 'FROM_SOMEWHERE',
-		];
-
-		// Assert.
-		$this->redirect_service
-			->expects( $this->once() )
-			->method( 'redirect_to' )
-			->with( admin_url( 'admin.php?page=wc-admin&path=/payments/connect&from=FROM_SOMEWHERE' ) );
-
-		// Act.
-		$this->redirect_service->redirect_to_connect_page();
-
-		// Cleanup.
-		unset( $_GET );
-	}
-
 	public function test_redirect_to_connect_page_redirects_without_from_when_empty() {
 		// Assert.
 		$this->redirect_service
