@@ -92,7 +92,7 @@ const ConnectAccountPage: React.FC = () => {
 			if ( ( account as AccountData ).status === 'complete' ) {
 				window.location.href = overviewUrl;
 			} else {
-				setTimeout( checkAccountStatus, 5000 );
+				setTimeout( checkAccountStatus, 2000 );
 			}
 		} );
 	};
@@ -130,9 +130,22 @@ const ConnectAccountPage: React.FC = () => {
 				headers: {
 					'Content-Type': 'application/json',
 				},
-			} ).then( () => {
-				// ToDo: In case of error, stop loader and display the error.
-				checkAccountStatus();
+			} ).then( ( response ) => {
+				// Check the response url for the `wcpay-connection-success` parameter,
+				// indicating a successful connection.
+				const urlParams = new URLSearchParams( response.url );
+				const connected =
+					urlParams.get( 'wcpay-connection-success' ) || '';
+
+				// The account has been successfully onboarded.
+				// Start checking the account status every 2 seconds.
+				// Once the status is complete, redirect to the Overview page.
+				if ( connected === '1' ) {
+					checkAccountStatus();
+				} else {
+					// TODO: display error
+					window.location.href = overviewUrl;
+				}
 			} );
 		} else {
 			window.location.href = url;
