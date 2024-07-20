@@ -8,7 +8,7 @@ const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP } from '../../../utils';
+import { merchantWCP, takeScreenshot } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 const card = config.get( 'cards.basic' );
@@ -55,6 +55,7 @@ describe.each( dataTable )(
 		let orderTotal;
 
 		beforeAll( async () => {
+			await shopper.goToShop(); // For debugging purposes. Go to the shop before login.
 			// Disable multi-currency in the merchant settings. This step is important because local environment setups
 			// might have multi-currency enabled. We need to ensure a consistent
 			// environment for the test.
@@ -85,7 +86,13 @@ describe.each( dataTable )(
 			await merchant.login();
 		}, 200000 );
 
+		afterEach( async () => {
+			await takeScreenshot( expect.getState().currentTestName );
+		} );
+
 		afterAll( async () => {
+			await takeScreenshot( expect.getState().currentTestName );
+			await merchant.login();
 			await merchantWCP.activateMulticurrency();
 			await merchant.logout();
 		} );

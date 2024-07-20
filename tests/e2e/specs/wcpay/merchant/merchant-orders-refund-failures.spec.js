@@ -9,6 +9,7 @@ const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
+import { takeScreenshot } from '../../../utils';
 
 let orderId;
 const selectorQty = '.refund_order_item_qty';
@@ -54,7 +55,12 @@ describe( 'Order > Refund Failure', () => {
 		await merchant.login();
 	} );
 
+	afterEach( async () => {
+		await takeScreenshot( expect.getState().currentTestName );
+	} );
+
 	afterAll( async () => {
+		await takeScreenshot( expect.getState().currentTestName );
 		await merchant.logout();
 	} );
 
@@ -74,10 +80,13 @@ describe( 'Order > Refund Failure', () => {
 				// Verify the refund section shows
 				await page.waitForSelector( 'div.wc-order-refund-items', {
 					visible: true,
+					timeout: 5000,
 				} );
 
 				// Verify Refund via WooPayments button is displayed
-				await page.waitForSelector( 'button.do-api-refund' );
+				await page.waitForSelector( 'button.do-api-refund', {
+					timeout: 5000,
+				} );
 			} );
 
 			it( `should fail refund attempt when ${ fieldName } is ${ valueDescription }`, async () => {
