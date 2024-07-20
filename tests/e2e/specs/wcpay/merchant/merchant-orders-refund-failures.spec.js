@@ -9,7 +9,6 @@ const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-import { takeScreenshot } from '../../../utils';
 
 let orderId;
 const selectorQty = '.refund_order_item_qty';
@@ -55,16 +54,7 @@ describe( 'Order > Refund Failure', () => {
 		await merchant.login();
 	} );
 
-	afterEach( async () => {
-		await takeScreenshot(
-			expect.getState().currentTestName.replace( /[":<>\|*?]/g, '' )
-		);
-	} );
-
 	afterAll( async () => {
-		await takeScreenshot(
-			expect.getState().currentTestName.replace( /[":<>\|*?]/g, '' )
-		);
 		await merchant.logout();
 	} );
 
