@@ -87,11 +87,15 @@ describe.each( dataTable )(
 		}, 200000 );
 
 		afterEach( async () => {
-			await takeScreenshot( expect.getState().currentTestName );
+			await takeScreenshot(
+				expect.getState().currentTestName.replace( /[":<>\|*?]/g, '' )
+			);
 		} );
 
 		afterAll( async () => {
-			await takeScreenshot( expect.getState().currentTestName );
+			await takeScreenshot(
+				expect.getState().currentTestName.replace( /[":<>\|*?]/g, '' )
+			);
 			await merchant.login();
 			await merchantWCP.activateMulticurrency();
 			await merchant.logout();
