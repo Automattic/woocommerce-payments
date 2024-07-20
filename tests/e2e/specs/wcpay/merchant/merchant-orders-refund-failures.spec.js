@@ -56,11 +56,15 @@ describe( 'Order > Refund Failure', () => {
 	} );
 
 	afterEach( async () => {
-		await takeScreenshot( expect.getState().currentTestName );
+		await takeScreenshot(
+			expect.getState().currentTestName.replace( /[":<>\|*?]/g, '' )
+		);
 	} );
 
 	afterAll( async () => {
-		await takeScreenshot( expect.getState().currentTestName );
+		await takeScreenshot(
+			expect.getState().currentTestName.replace( /[":<>\|*?]/g, '' )
+		);
 		await merchant.logout();
 	} );
 
