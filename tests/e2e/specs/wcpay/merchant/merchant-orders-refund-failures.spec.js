@@ -83,6 +83,17 @@ describe( 'Order > Refund Failure', () => {
 				} );
 			} );
 
+			afterEach( () => {
+				page.removeAllListeners( 'dialog' );
+				page.on( 'dialog', async function ( dialog ) {
+					try {
+						await dialog.accept();
+					} catch ( err ) {
+						console.warn( err.message );
+					}
+				} );
+			} );
+
 			it( `should fail refund attempt when ${ fieldName } is ${ valueDescription }`, async () => {
 				// Initiate refund attempt
 				await expect( page ).toFill( selector, value );

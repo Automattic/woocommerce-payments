@@ -54,6 +54,14 @@ describe( 'Order > Full refund', () => {
 	} );
 
 	afterAll( async () => {
+		page.removeAllListeners( 'dialog' );
+		page.on( 'dialog', async function ( dialog ) {
+			try {
+				await dialog.accept();
+			} catch ( err ) {
+				console.warn( err.message );
+			}
+		} );
 		await merchant.logout();
 	} );
 

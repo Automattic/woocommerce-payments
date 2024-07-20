@@ -137,7 +137,7 @@ beforeAll( async () => {
 		try {
 			await dialog.accept();
 		} catch ( err ) {
-			console.warn( err );
+			console.warn( err.message );
 		}
 	} );
 	setTestTimeouts();
