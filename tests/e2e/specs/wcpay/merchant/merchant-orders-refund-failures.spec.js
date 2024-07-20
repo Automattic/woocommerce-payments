@@ -65,9 +65,6 @@ describe( 'Order > Refund Failure', () => {
 				// Open the order
 				await merchant.goToOrder( orderId );
 
-				// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
-				await page.removeAllListeners( 'dialog' );
-
 				// Click the Refund button
 				await expect( page ).toClick( 'button.refund-items' );
 
@@ -101,6 +98,9 @@ describe( 'Order > Refund Failure', () => {
 				await expect( page ).toMatchElement( '.do-api-refund', {
 					text: /Refund .* via WooPayments/,
 				} );
+
+				// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
+				await page.removeAllListeners( 'dialog' );
 
 				// Confirm the refund
 				const refundDialog = await expect( page ).toDisplayDialog(
