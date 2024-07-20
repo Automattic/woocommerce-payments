@@ -180,6 +180,9 @@ export const shopperWCP = {
 		await expect( page ).toClick( 'button', {
 			text: 'Save changes',
 		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
 	},
 
 	/**
