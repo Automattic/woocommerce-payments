@@ -101,13 +101,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			)
 			->getMock();
 
-		$this->mock_express_checkout_ece_button_handler = new WC_Payments_Express_Checkout_Button_Handler(
-			$this->mock_wcpay_account,
-			$this->mock_wcpay_gateway,
-			$this->mock_express_checkout_helper,
-			$this->mock_express_checkout_ajax_handler
-		);
-
 		$this->mock_ece_button_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs(
 				[
@@ -272,6 +265,17 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 	public function test_filter_cart_needs_shipping_address_returns_true() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->mock_ece_button_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->mock_express_checkout_ece_button_handler = new WC_Payments_Express_Checkout_Button_Handler(
+			$this->mock_wcpay_account,
+			$this->mock_wcpay_gateway,
+			$this->mock_ece_button_helper,
+			$this->mock_express_checkout_ajax_handler
+		);
 
 		$this->assertTrue( $this->mock_express_checkout_ece_button_handler->filter_cart_needs_shipping_address( true ) );
 	}
