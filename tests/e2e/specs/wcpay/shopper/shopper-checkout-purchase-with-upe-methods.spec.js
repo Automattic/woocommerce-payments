@@ -81,7 +81,7 @@ describe.each( cardTestingPreventionStates )(
 					waitUntil: 'networkidle0',
 				} );
 				await expect( page ).toMatchTextContent( 'Order received' );
-			}, 200000 ); // Use an increased timeout
+			} );
 		} );
 
 		// No need to run these tests for card testing prevention checks.
