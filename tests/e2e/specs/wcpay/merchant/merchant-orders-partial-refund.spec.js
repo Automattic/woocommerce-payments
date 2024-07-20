@@ -8,7 +8,7 @@ const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP, takeScreenshot } from '../../../utils';
+import { merchantWCP } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 
 const card = config.get( 'cards.basic' );
@@ -87,15 +87,17 @@ describe.each( dataTable )(
 		}, 200000 );
 
 		afterEach( async () => {
-			await takeScreenshot(
-				expect.getState().currentTestName.replace( /[":<>\|*?]/g, '' )
-			);
+			page.removeAllListeners( 'dialog' );
+			page.on( 'dialog', async function ( dialog ) {
+				try {
+					await dialog.accept();
+				} catch ( err ) {
+					console.warn( err.message );
+				}
+			} );
 		} );
 
 		afterAll( async () => {
-			await takeScreenshot(
-				expect.getState().currentTestName.replace( /[":<>\|*?]/g, '' )
-			);
 			await merchant.login();
 			await merchantWCP.activateMulticurrency();
 			await merchant.logout();
