@@ -181,14 +181,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	}
 
 	return (
-		<Container isBlocksCheckout={ isBlocksCheckout }>
-			<div
-				className={ `save-details ${
-					wcVersionGreaterThan91 && isBlocksCheckout
-						? 'with-margin-bottom'
-						: ''
-				}` }
-			>
+		<Container
+			isBlocksCheckout={ isBlocksCheckout }
+			wcVersionGreaterThan91={ wcVersionGreaterThan91 }
+		>
+			<div className="save-details">
 				<div className="save-details-header">
 					<div
 						className={

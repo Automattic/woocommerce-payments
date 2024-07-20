@@ -88,7 +88,7 @@ button.wcpay-stripelink-modal-trigger:hover {
 
 .is-mobile,
 .is-small {
-	#remember-me h2 {
+	#remember-me .wc-version-greater-than-91 h2 {
 		margin-top: 36px;
 	}
 }

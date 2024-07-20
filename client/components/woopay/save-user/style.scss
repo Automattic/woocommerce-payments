@@ -9,7 +9,7 @@
 
 .is-mobile,
 .is-small {
-	.woopay-save-new-user-container::after {
+	.woopay-save-new-user-container.wc-version-greater-than-91::after {
 		background: currentColor;
 		box-shadow: -50vw 0 0 0 currentColor, 50vw 0 0 0 currentColor;
 		content: '';
@@ -22,15 +22,17 @@
 
 .woopay-save-new-user-container {
 	.save-details {
-		@media ( min-width: 601px ),
-			( min-width: 566px ) and ( max-width: 568px ) {
-			&.with-margin-bottom {
-				margin-bottom: $gap-larger;
-			}
-		}
-
 		.wc-block-components-text-input input:-webkit-autofill {
 			padding: 1.5em 0.5em 1.5em 0.5em;
+		}
+	}
+
+	&.wc-version-greater-than-91 {
+		@media ( min-width: 601px ),
+			( min-width: 566px ) and ( max-width: 568px ) {
+			.save-details {
+				margin-bottom: $gap-larger;
+			}
 		}
 	}
 
