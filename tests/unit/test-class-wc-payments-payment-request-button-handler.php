@@ -820,6 +820,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 				'height'       => '48',
 				'locale'       => 'en',
 				'branded_type' => 'long',
+				'radius'       => '',
 			],
 			$this->pr->get_button_settings()
 		);
