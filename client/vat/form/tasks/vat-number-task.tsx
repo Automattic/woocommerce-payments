@@ -82,6 +82,11 @@ const getVatTaxIDValidationHint = () => {
 	}
 };
 
+/**
+ * A two-step "task" for obtaining merchant's tax details.
+ *
+ * @param {VatFormOnCompleted} props.onCompleted - Callback to provide tax details on submit.
+ */
 export const VatNumberTask = ( {
 	onCompleted,
 }: {
@@ -178,7 +183,6 @@ export const VatNumberTask = ( {
 					help={ getVatTaxIDRequirementHint() }
 				/>
 				{ isVatRegistered && (
-					// TODO: refactor this into a little component e.g. VATIdTextControl?
 					<TextControl
 						label={ getVatTaxIDName() }
 						help={ getVatTaxIDValidationHint() }
