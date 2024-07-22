@@ -9,6 +9,7 @@ const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
+import { takeScreenshot } from '../../../utils/helpers';
 
 let orderId;
 const selectorQty = '.refund_order_item_qty';
@@ -67,6 +68,10 @@ describe( 'Order > Refund Failure', () => {
 
 				// Click the Refund button
 				await expect( page ).toClick( 'button.refund-items' );
+
+				takeScreenshot(
+					'merchant-orders-refund-failures-before-timeout'
+				);
 
 				// Verify the refund section shows
 				await page.waitForSelector( 'div.wc-order-refund-items', {
