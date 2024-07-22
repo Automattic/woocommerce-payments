@@ -101,7 +101,7 @@ class WC_Payments_Apple_Pay_Registration {
 	}
 
 	/**
-	 * Whether the gateway and Payment Request Button (prerequisites for Apple Pay) are enabled.
+	 * Whether the gateway and Express Checkout Buttons (prerequisites for Apple Pay) are enabled.
 	 *
 	 * @return bool Whether Apple Pay required settings are enabled.
 	 */
@@ -110,7 +110,7 @@ class WC_Payments_Apple_Pay_Registration {
 	}
 
 	/**
-	 * Whether the gateway and Payment Request Button were enabled in previous settings.
+	 * Whether the gateway and Express Checkout Buttons were enabled in previous settings.
 	 *
 	 * @param array|null $prev_settings Gateway settings.
 	 *
@@ -313,7 +313,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Process the Apple Pay domain verification if proper settings are configured.
 	 */
 	public function verify_domain_if_configured() {
-		// If Payment Request Buttons are not enabled,
+		// If Express Checkout Buttons are not enabled,
 		// do not attempt to register domain.
 		if ( ! $this->is_enabled() ) {
 			return;
@@ -347,7 +347,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param array $settings      Settings after update.
 	 */
 	public function verify_domain_on_updated_settings( $prev_settings, $settings ) {
-		// If Gateway or Payment Request Button weren't enabled, then might need to verify now.
+		// If Gateway or Express Checkout Buttons weren't enabled, then might need to verify now.
 		if ( ! $this->was_enabled( $prev_settings ) ) {
 			$this->verify_domain_if_configured();
 		}
