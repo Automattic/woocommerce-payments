@@ -52,6 +52,7 @@ const testConfig = useE2EJestConfig( {
 	setupFiles: [ '<rootDir>/tests/e2e/config/env.setup.js' ],
 	rootDir: path.resolve( __dirname, '../../../' ),
 	roots: allowedPaths,
+	testEnvironment: '<rootDir>/tests/e2e/config/jest-custom-environment.js',
 	testSequencer: path.resolve(
 		__dirname,
 		'../config/jest-custom-sequencer.js'
