@@ -9,6 +9,7 @@ import {
 	dashedToCamelCase,
 	isColorLight,
 	getBackgroundColor,
+	getHeadingColor,
 } from './utils.js';
 
 export const appearanceSelectors = {
