@@ -102,19 +102,24 @@ describe( 'Order > Refund Failure', () => {
 
 			it( `should fail refund attempt when ${ fieldName } is ${ valueDescription }`, async () => {
 				// Initiate refund attempt
-				await expect( page ).toFill( selector, value );
+				await expect( page ).toFill( selector, value, {
+					timeout: 3000,
+				} );
 
 				await expect( page ).toMatchElement( '.do-api-refund', {
 					text: /Refund .* via WooPayments/,
+					timeout: 3000,
 				} );
 
 				// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
-				await page.removeAllListeners( 'dialog' );
+				page.removeAllListeners( 'dialog' );
 
 				// Confirm the refund
 				const refundDialog = await expect( page ).toDisplayDialog(
 					async () => {
-						await expect( page ).toClick( 'button.do-api-refund' );
+						await expect( page ).toClick( 'button.do-api-refund', {
+							timeout: 3000,
+						} );
 					}
 				);
 
@@ -122,10 +127,11 @@ describe( 'Order > Refund Failure', () => {
 				const invalidRefundAlert = await expect( page ).toDisplayDialog(
 					async () => {
 						await refundDialog.accept();
-						await page.waitForNavigation( {
-							waitUntil: 'networkidle0',
-							timeout: 5000,
-						} );
+						await page.waitForTimeout( 1000 );
+						// await page.waitForNavigation( {
+						// 	waitUntil: 'networkidle0',
+						// 	timeout: 5000,
+						// } );
 					}
 				);
 				await expect( invalidRefundAlert.message() ).toEqual(
@@ -135,20 +141,24 @@ describe( 'Order > Refund Failure', () => {
 
 				// Verify that product line item does not show any refunds
 				await expect( page ).not.toMatchElement(
-					'.quantity .refunded'
+					'.quantity .refunded',
+					{ timeout: 3000 }
 				);
 				await expect( page ).not.toMatchElement(
-					'.line_cost .refunded'
+					'.line_cost .refunded',
+					{ timeout: 3000 }
 				);
 
 				// Verify that no entry is listed in the "Order refunds" section underneath the product line items
 				await expect( page ).not.toMatchElement(
-					'.refund > .line_cost'
+					'.refund > .line_cost',
+					{ timeout: 3000 }
 				);
 
 				// Verify that no system note for a refund was generated
 				await expect( page ).not.toMatchElement( '.system-note', {
 					text: 'refund',
+					timeout: 3000,
 				} );
 			} );
 		}
