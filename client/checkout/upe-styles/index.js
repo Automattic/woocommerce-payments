@@ -9,6 +9,7 @@ import {
 	dashedToCamelCase,
 	isColorLight,
 	getBackgroundColor,
+	getHeadingColor,
 } from './utils.js';
 
 export const appearanceSelectors = {
@@ -36,6 +37,7 @@ export const appearanceSelectors = {
 			'form.checkout',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 	},
 	blocksCheckout: {
 		appendTarget: '#billing.wc-block-components-address-form',
@@ -58,6 +60,7 @@ export const appearanceSelectors = {
 			'.wc-block-checkout',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 	},
 	bnplProductPage: {
 		appendTarget: '.product .cart .quantity',
@@ -73,6 +76,7 @@ export const appearanceSelectors = {
 			'#main',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 	},
 	bnplClassicCart: {
 		appendTarget: '.cart .quantity',
@@ -88,6 +92,7 @@ export const appearanceSelectors = {
 			'#main',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 	},
 	bnplCartBlock: {
 		appendTarget: '.wc-block-cart .wc-block-components-quantity-selector',
@@ -107,6 +112,7 @@ export const appearanceSelectors = {
 			'.wp-block-woocommerce-cart',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 	},
 
 	/**
@@ -436,6 +442,7 @@ export const getAppearance = ( elementsLocation ) => {
 	};
 
 	const backgroundColor = getBackgroundColor( selectors.backgroundSelectors );
+	const headingColor = getHeadingColor( selectors.headingSelectors );
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
 		'.Block',
@@ -445,6 +452,7 @@ export const getAppearance = ( elementsLocation ) => {
 	const globalRules = {
 		colorBackground: backgroundColor,
 		colorText: labelRules.color,
+		colorHeading: headingColor,
 		fontFamily: labelRules.fontFamily,
 		fontSizeBase: labelRules.fontSize,
 	};
