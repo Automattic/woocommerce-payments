@@ -94,6 +94,30 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.0.0-test-2 - unreleased =
+* Add - Add ECE support for multiple product types.
+* Add - Add ECE support for WooCommerce Deposits.
+* Add - Add independent ECE instances in WC Blocks.
+* Add - Add the new payment method logos to the connect page.
+* Add - Pass Blocks checkout appearance on init WooPay
+* Add - Set ECE as Default for Express Checkout Buttons unless it was disabled.
+* Add - Use Stripe's Express Checkout Element (ECE) for express checkout button previews in the settings when ECE is enabled.
+* Fix - Allow Afterpay gateway to process payments when the state/county is optional for GB and NZ addresses.
+* Fix - Allow the purchase of physical subscriptions using ECE if no shipping options are defined.
+* Fix - Disable ECE for non shipping products if Tax is calculated on billing address.
+* Fix - Fix Express Checkout Element button width.
+* Fix - Fixing fatal errors when subscription classes are not available
+* Fix - Fix payment method title for Express Checkout Element orders.
+* Fix - Make Google Pay ECE compatible with WooPay.
+* Fix - Remove bullet from WooPay button on cart block in Safari
+* Fix - Send optional fields data to WooPay.
+* Fix - Use the customer id saved in the subscription to process renewal payments.
+* Update - Deprecate Giropay.
+* Update - Set express checkout max button height to 55px
+* Dev - Add error logging to ECE critical endpoints.
+* Dev - Avoid using deprecated hook for processed checkout order.
+* Dev - Bump WC tested up to version to 9.1.2
+
 = 7.9.2 - 2024-07-18 =
 * Fix - Fix store connection loop for onboarding flows started from the Woo > Settings > Payments page.
 
