@@ -9,7 +9,6 @@ const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-import { takeScreenshot } from '../../../utils/helpers';
 
 let orderId;
 const selectorQty = '.refund_order_item_qty';
@@ -36,6 +35,7 @@ const dataTable = [
 
 describe( 'Order > Refund Failure', () => {
 	beforeAll( async () => {
+		page.setDefaultTimeout( 10000 );
 		// Place an order to refund later
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
@@ -56,7 +56,16 @@ describe( 'Order > Refund Failure', () => {
 	} );
 
 	afterAll( async () => {
+		page.removeAllListeners( 'dialog' );
+		page.on( 'dialog', async function ( dialog ) {
+			try {
+				await dialog.accept();
+			} catch ( err ) {
+				console.warn( err.message );
+			}
+		} );
 		await merchant.logout();
+		page.setDefaultTimeout( 100000 );
 	} );
 
 	describe.each( dataTable )(
@@ -66,60 +75,31 @@ describe( 'Order > Refund Failure', () => {
 				// Open the order
 				await merchant.goToOrder( orderId );
 
-				await page
-					.waitForSelector( '.woocommerce_order_items' )
-					.then( ( el ) => el.scrollIntoView() );
+				// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
+				await page.removeAllListeners( 'dialog' );
 
 				// Click the Refund button
 				await expect( page ).toClick( 'button.refund-items' );
 
-				takeScreenshot(
-					`merchant-orders-refund-failures-before-timeout-${ fieldName }-${ valueDescription }`
-				);
-
 				// Verify the refund section shows
-				await page.waitForSelector( 'div.wc-order-refund-items', {
-					// visible: true,
-					timeout: 5000,
-				} );
+				await page.waitForSelector( 'div.wc-order-refund-items' );
 
 				// Verify Refund via WooPayments button is displayed
-				await page.waitForSelector( 'button.do-api-refund', {
-					timeout: 5000,
-				} );
-			} );
-
-			afterEach( () => {
-				page.removeAllListeners( 'dialog' );
-				page.on( 'dialog', async function ( dialog ) {
-					try {
-						await dialog.accept();
-					} catch ( err ) {
-						console.warn( err.message );
-					}
-				} );
+				await page.waitForSelector( 'button.do-api-refund' );
 			} );
 
 			it( `should fail refund attempt when ${ fieldName } is ${ valueDescription }`, async () => {
 				// Initiate refund attempt
-				await expect( page ).toFill( selector, value, {
-					timeout: 3000,
-				} );
+				await expect( page ).toFill( selector, value );
 
 				await expect( page ).toMatchElement( '.do-api-refund', {
 					text: /Refund .* via WooPayments/,
-					timeout: 3000,
 				} );
-
-				// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
-				page.removeAllListeners( 'dialog' );
 
 				// Confirm the refund
 				const refundDialog = await expect( page ).toDisplayDialog(
 					async () => {
-						await expect( page ).toClick( 'button.do-api-refund', {
-							timeout: 3000,
-						} );
+						await expect( page ).toClick( 'button.do-api-refund' );
 					}
 				);
 
@@ -127,10 +107,9 @@ describe( 'Order > Refund Failure', () => {
 				const invalidRefundAlert = await expect( page ).toDisplayDialog(
 					async () => {
 						await refundDialog.accept();
-						await page.waitForTimeout( 1000 );
+						// await uiUnblocked();
 						// await page.waitForNavigation( {
 						// 	waitUntil: 'networkidle0',
-						// 	timeout: 5000,
 						// } );
 					}
 				);
@@ -141,24 +120,20 @@ describe( 'Order > Refund Failure', () => {
 
 				// Verify that product line item does not show any refunds
 				await expect( page ).not.toMatchElement(
-					'.quantity .refunded',
-					{ timeout: 3000 }
+					'.quantity .refunded'
 				);
 				await expect( page ).not.toMatchElement(
-					'.line_cost .refunded',
-					{ timeout: 3000 }
+					'.line_cost .refunded'
 				);
 
 				// Verify that no entry is listed in the "Order refunds" section underneath the product line items
 				await expect( page ).not.toMatchElement(
-					'.refund > .line_cost',
-					{ timeout: 3000 }
+					'.refund > .line_cost'
 				);
 
 				// Verify that no system note for a refund was generated
 				await expect( page ).not.toMatchElement( '.system-note', {
 					text: 'refund',
-					timeout: 3000,
 				} );
 			} );
 		}
