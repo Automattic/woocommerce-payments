@@ -4,8 +4,12 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
-// eslint-disable-next-line import/no-unresolved
-import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import { useDispatch } from '@wordpress/data';
+import {
+	extensionCartUpdate,
+	ValidationInputError,
+} from '@woocommerce/blocks-checkout'; // eslint-disable-line import/no-unresolved
+import { VALIDATION_STORE_KEY } from '@woocommerce/block-data'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
@@ -22,6 +26,12 @@ import './style.scss';
 import { compare } from 'compare-versions';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
+	const { setValidationErrors, clearValidationError } = useDispatch(
+		VALIDATION_STORE_KEY
+	);
+
+	const errorId = 'invalid-woopay-phone-number';
+
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
 		window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO || false
 	);
@@ -135,7 +145,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 		const updateFormSubmitButton = () => {
 			if ( isSaveDetailsChecked && isPhoneValid ) {
-				formSubmitButton.removeAttribute( 'disabled' );
+				clearValidationError( errorId );
 
 				// Set extension data if checkbox is selected and phone number is valid in blocks checkout.
 				if ( isBlocksCheckout ) {
@@ -144,17 +154,23 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			}
 
 			if ( isSaveDetailsChecked && ! isPhoneValid ) {
-				formSubmitButton.setAttribute( 'disabled', 'disabled' );
+				setValidationErrors( {
+					[ errorId ]: {
+						message: 'First name is required.',
+						hidden: false,
+					},
+				} );
 			}
 		};
 
 		updateFormSubmitButton();
 
 		return () => {
-			// Clean up
-			formSubmitButton.removeAttribute( 'disabled' );
+			clearValidationError( errorId );
 		};
 	}, [
+		setValidationErrors,
+		clearValidationError,
 		isBlocksCheckout,
 		isPhoneValid,
 		isSaveDetailsChecked,
@@ -263,12 +279,14 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							isBlocksCheckout={ isBlocksCheckout }
 						/>
 						{ ! isPhoneValid && (
-							<p className="error-text">
-								{ __(
+							<ValidationInputError
+								className="error-text"
+								errorMessage={ __(
 									'Please enter a valid mobile phone number.',
 									'woocommerce-payments'
 								) }
-							</p>
+								propertyName={ errorId }
+							/>
 						) }
 						<AdditionalInformation />
 						<Agreement />
