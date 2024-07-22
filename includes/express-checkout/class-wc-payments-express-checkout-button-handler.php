@@ -92,6 +92,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		add_action( 'template_redirect', [ $this, 'handle_express_checkout_redirect' ] );
 		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_cart_needs_shipping_address', [ $this, 'filter_cart_needs_shipping_address' ], 11, 1 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
@@ -403,6 +404,20 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		wc_setcookie( 'wcpay_express_checkout_redirect_url', '' );
 
 		return $url;
+	}
+
+
+	/**
+	 * Determine whether to filter the cart needs shipping address.
+	 *
+	 * @param boolean $needs_shipping_address Whether the cart needs a shipping address.
+	 */
+	public function filter_cart_needs_shipping_address( $needs_shipping_address ) {
+		if ( $this->has_subscription_product() && wc_get_shipping_method_count( true, true ) === 0 ) {
+			return false;
+		}
+
+		return $needs_shipping_address;
 	}
 
 	/**
