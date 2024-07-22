@@ -209,6 +209,7 @@
 			top: 2px;
 			width: auto;
 			height: 27px;
+			min-width: 60px;
 		}
 
 		&[data-type='buy'],
@@ -240,6 +241,7 @@
 			top: 3px;
 			width: auto;
 			height: 32px;
+			min-width: 70px;
 		}
 
 		&[data-type='buy'],
