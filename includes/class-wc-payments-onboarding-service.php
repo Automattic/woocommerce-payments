@@ -237,7 +237,10 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Gets the source from the referer and URL params.
+	 * Determine the initial onboarding source from the referer and URL params.
+	 *
+	 * NOTE: Avoid basing business logic on this since it is primarily intended for tracking purposes.
+	 *       It is greedy in determining the onboarding source and may not always be accurate.
 	 *
 	 * @param string $referer    The referer.
 	 * @param array  $get_params GET params.
@@ -245,6 +248,32 @@ class WC_Payments_Onboarding_Service {
 	 * @return string The source or empty string if the source is unsupported.
 	 */
 	public static function get_source( string $referer, array $get_params ): string {
+		$source_param = isset( $get_params['source'] ) ? sanitize_text_field( wp_unslash( $get_params['source'] ) ) : '';
+		// If the source param is already set and a valid value, use it.
+		if ( in_array(
+			$source_param,
+			[
+				self::SOURCE_WCADMIN_PAYMENT_TASK,
+				self::SOURCE_WCADMIN_SETTINGS_PAGE,
+				self::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				self::SOURCE_WCPAY_CONNECT_PAGE,
+				self::SOURCE_WCPAY_RESET_ACCOUNT,
+				self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
+			],
+			true
+		) ) {
+
+			return $source_param;
+		}
+
+		// Action params take precedence.
+		if ( isset( $get_params['wcpay-disable-onboarding-test-mode'] ) ) {
+			return self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS;
+		}
+		if ( isset( $get_params['wcpay-reset-account'] ) ) {
+			return self::SOURCE_WCPAY_RESET_ACCOUNT;
+		}
+
 		$wcpay_connect_param = isset( $get_params['wcpay-connect'] ) ? sanitize_text_field( wp_unslash( $get_params['wcpay-connect'] ) ) : '';
 		$from_param          = isset( $get_params['from'] ) ? sanitize_text_field( wp_unslash( $get_params['from'] ) ) : '';
 
@@ -265,12 +294,6 @@ class WC_Payments_Onboarding_Service {
 		}
 		if ( false !== strpos( $referer, 'path=%2Fpayments%2Fconnect' ) ) {
 			return self::SOURCE_WCPAY_CONNECT_PAGE;
-		}
-		if ( isset( $get_params['wcpay-disable-onboarding-test-mode'] ) ) {
-			return self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS;
-		}
-		if ( isset( $get_params['wcpay-reset-account'] ) ) {
-			return self::SOURCE_WCPAY_RESET_ACCOUNT;
 		}
 
 		return '';
