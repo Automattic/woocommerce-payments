@@ -168,6 +168,8 @@
 	&[data-type='buy'],
 	&[data-type='book'],
 	&[data-type='donate'] {
+		min-width: 200px;
+
 		svg {
 			flex-shrink: 0.4;
 			margin-left: 6px;
@@ -214,6 +216,8 @@
 		&[data-type='buy'],
 		&[data-type='book'],
 		&[data-type='donate'] {
+			min-width: 240px;
+
 			svg {
 				flex-shrink: 0.6;
 				margin-left: 8px;
@@ -245,6 +249,8 @@
 		&[data-type='buy'],
 		&[data-type='book'],
 		&[data-type='donate'] {
+			min-width: 280px;
+
 			svg {
 				flex-shrink: 0.6;
 				margin-left: 10px;
