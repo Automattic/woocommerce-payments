@@ -177,49 +177,48 @@ function constructCartDataContentTotals( cartDataContent ) {
 			cartDataContent.cartTotalItems,
 			'total_items',
 			'value'
-		).toString(),
+		)?.toString(),
 		total_items_tax: getPropertyByKey(
 			cartDataContent.cartTotalItems,
 			'total_tax',
 			'value'
-		).toString(),
+		)?.toString(),
 		total_fees: getPropertyByKey(
 			cartDataContent.cartTotalItems,
 			'total_fees',
 			'value'
-		).toString(),
+		)?.toString(),
 		total_fees_tax: getPropertyByKey(
 			cartDataContent.cartTotalItems,
 			'total_fees',
 			'valueWithTax'
-		).toString(),
+		)?.toString(),
 		total_discount: getPropertyByKey(
 			cartDataContent.cartTotalItems,
 			'total_discount',
 			'value'
-		).toString(),
+		)?.toString(),
 		total_discount_tax: getPropertyByKey(
 			cartDataContent.cartTotalItems,
 			'total_discount',
 			'valueWithTax'
-		).toString(),
+		)?.toString(),
 		total_shipping: getPropertyByKey(
 			cartDataContent.cartTotalItems,
 			'total_shipping',
 			'value'
-		).toString(),
+		)?.toString(),
 		total_shipping_tax: getPropertyByKey(
 			cartDataContent.cartTotalItems,
 			'total_shipping',
 			'valueWithTax'
-		).toString(),
+		)?.toString(),
 		total_price: cartDataContent.cartTotal.value.toString(),
 		total_tax: getPropertyByKey(
 			cartDataContent.cartTotalItems,
 			'total_tax',
 			'value'
-		).toString(),
-		//tax_lines: [],
+		)?.toString(),
 		currency_code: cartDataContent.currency.code,
 		currency_symbol: cartDataContent.currency.symbol,
 		currency_minor_unit: cartDataContent.currency.minorUnit,
