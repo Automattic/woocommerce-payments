@@ -175,8 +175,6 @@
 	}
 
 	&[data-width-type='wide'] {
-		font-size: 16px;
-
 		svg {
 			flex-shrink: 1;
 			margin-left: 6px;
@@ -223,8 +221,6 @@
 		}
 
 		&[data-width-type='wide'] {
-			font-size: 18px;
-
 			&[data-type='buy'],
 			&[data-type='book'],
 			&[data-type='donate'] {
@@ -257,8 +253,6 @@
 		}
 
 		&[data-width-type='wide'] {
-			font-size: 20px;
-
 			&[data-type='buy'],
 			&[data-type='book'],
 			&[data-type='donate'] {
