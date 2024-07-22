@@ -170,14 +170,13 @@
 	&[data-type='donate'] {
 		svg {
 			flex-shrink: 0.4;
-			margin-left: 3px;
+			margin-left: 6px;
 		}
 	}
 
 	&[data-width-type='wide'] {
 		svg {
 			flex-shrink: 1;
-			margin-left: 6px;
 		}
 	}
 
@@ -217,7 +216,7 @@
 		&[data-type='donate'] {
 			svg {
 				flex-shrink: 0.6;
-				margin-left: 3px;
+				margin-left: 8px;
 			}
 		}
 
@@ -227,7 +226,6 @@
 			&[data-type='donate'] {
 				svg {
 					flex-shrink: 1;
-					margin-left: 6px;
 				}
 			}
 		}
@@ -249,7 +247,7 @@
 		&[data-type='donate'] {
 			svg {
 				flex-shrink: 0.6;
-				margin-left: 3px;
+				margin-left: 10px;
 				margin-bottom: 0.25rem;
 			}
 		}
@@ -260,7 +258,6 @@
 			&[data-type='donate'] {
 				svg {
 					flex-shrink: 1;
-					margin-left: 8px;
 					margin-bottom: 0;
 				}
 			}
