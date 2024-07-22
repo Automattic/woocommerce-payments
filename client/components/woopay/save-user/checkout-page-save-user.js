@@ -156,7 +156,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			if ( isSaveDetailsChecked && ! isPhoneValid ) {
 				setValidationErrors( {
 					[ errorId ]: {
-						message: 'First name is required.',
+						message: '',
 						hidden: false,
 					},
 				} );
@@ -278,9 +278,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							} }
 							isBlocksCheckout={ isBlocksCheckout }
 						/>
-						{ ! isPhoneValid && (
+						{ isPhoneValid === false && (
 							<ValidationInputError
-								className="error-text"
 								errorMessage={ __(
 									'Please enter a valid mobile phone number.',
 									'woocommerce-payments'
