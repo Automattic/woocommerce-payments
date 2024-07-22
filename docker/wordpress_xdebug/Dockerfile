@@ -2,7 +2,7 @@ FROM wordpress:php8.1
 ARG XDEBUG_REMOTE_PORT
 ARG XDEBUG_REMOTE_HOST=host.docker.internal
 RUN pecl install xdebug \
-    && echo 'xdebug.mode=debug' >> $PHP_INI_DIR/php.ini \
+    && echo 'xdebug.mode=coverage,debug' >> $PHP_INI_DIR/php.ini \
     && echo "xdebug.client_port=${XDEBUG_REMOTE_PORT}" >> $PHP_INI_DIR/php.ini \
     && echo "xdebug.client_host=${XDEBUG_REMOTE_HOST}" >> $PHP_INI_DIR/php.ini \
     && echo 'xdebug.start_with_request=trigger' >> $PHP_INI_DIR/php.ini \
