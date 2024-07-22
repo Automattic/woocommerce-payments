@@ -46,6 +46,17 @@ const PaymentRequestExpressComponent = ( {
 		cartData,
 	} );
 
+	useEffect( () => {
+		if ( paymentRequest ) {
+			const orderAttribution = window?.wc_order_attribution;
+			if ( orderAttribution ) {
+				orderAttribution.setOrderTracking(
+					orderAttribution.params.allowTracking
+				);
+			}
+		}
+	}, [ paymentRequest ] );
+
 	const { type, theme, height } = getPaymentRequestData( 'button' );
 
 	const paymentRequestButtonStyle = {
@@ -95,13 +106,16 @@ const PaymentRequestExpressComponent = ( {
 	};
 
 	return (
-		<PaymentRequestButtonElement
-			onClick={ onPaymentRequestButtonClick }
-			options={ {
-				style: paymentRequestButtonStyle,
-				paymentRequest,
-			} }
-		/>
+		<div>
+			<PaymentRequestButtonElement
+				onClick={ onPaymentRequestButtonClick }
+				options={ {
+					style: paymentRequestButtonStyle,
+					paymentRequest,
+				} }
+			/>
+			<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>
+		</div>
 	);
 };
 

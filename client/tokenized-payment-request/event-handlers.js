@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { applyFilters } from '@wordpress/hooks';
+
+/**
  * Internal dependencies
  */
 import {
@@ -70,7 +75,6 @@ export const shippingOptionChangeHandler = async ( event ) => {
 			displayItems: transformCartDataForDisplayItems( cartData ),
 		} );
 	} catch ( error ) {
-		console.error( error );
 		event.updateWith( { status: 'fail' } );
 	}
 };
@@ -121,7 +125,10 @@ export const paymentMethodHandler = async (
 		// adding extension data as a separate action,
 		// so that we make it harder for external plugins to modify or intercept checkout data.
 		...transformStripePaymentMethodForStoreApi( event ),
-		extensions: cartData.extensions,
+		extensions: applyFilters(
+			'wcpay.payment-request.cart-place-order-extension-data',
+			{}
+		),
 	} );
 
 	paymentResponseHandler(
