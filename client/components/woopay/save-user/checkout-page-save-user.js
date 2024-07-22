@@ -26,11 +26,11 @@ import './style.scss';
 import { compare } from 'compare-versions';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
+	const errorId = 'invalid-woopay-phone-number';
+
 	const { setValidationErrors, clearValidationError } = useDispatch(
 		VALIDATION_STORE_KEY
 	);
-
-	const errorId = 'invalid-woopay-phone-number';
 
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
 		window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO || false
@@ -156,8 +156,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			if ( isSaveDetailsChecked && ! isPhoneValid ) {
 				setValidationErrors( {
 					[ errorId ]: {
-						message: '',
-						hidden: false,
+						message: __(
+							'Please enter a valid mobile phone number.',
+							'woocommerce-payments'
+						),
+						// Hides errors when the number has not been typed yet but shows when trying to place the order.
+						hidden: isPhoneValid === null,
 					},
 				} );
 			}
@@ -170,6 +174,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		};
 	}, [
 		setValidationErrors,
+		errorId,
 		clearValidationError,
 		isBlocksCheckout,
 		isPhoneValid,
@@ -278,15 +283,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							} }
 							isBlocksCheckout={ isBlocksCheckout }
 						/>
-						{ isPhoneValid === false && (
-							<ValidationInputError
-								errorMessage={ __(
-									'Please enter a valid mobile phone number.',
-									'woocommerce-payments'
-								) }
-								propertyName={ errorId }
-							/>
-						) }
+						<ValidationInputError propertyName={ errorId } />
 						<AdditionalInformation />
 						<Agreement />
 					</div>
