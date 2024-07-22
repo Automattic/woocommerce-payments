@@ -149,6 +149,8 @@ export const VatNumberTask = ( {
 	};
 
 	return (
+		// Note: the VAT ID name is parameterised in strings below.
+		// Long term, it might be better to implement a dedicated WizardTaskItem component for each tax region.
 		<WizardTaskItem
 			index={ 1 }
 			title={ sprintf(
@@ -183,6 +185,8 @@ export const VatNumberTask = ( {
 					help={ getVatTaxIDRequirementHint() }
 				/>
 				{ isVatRegistered && (
+					// Note: this TextControl is heavily parameterised to support different regions (VAT vs GST vs Corporate Number).
+					// Long term, if we implement a dedicated WizardTaskItem component for each tax region, then this component will be simpler.
 					<TextControl
 						label={ getVatTaxIDName() }
 						help={ getVatTaxIDValidationHint() }
