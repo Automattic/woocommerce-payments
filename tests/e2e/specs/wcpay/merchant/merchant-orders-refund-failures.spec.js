@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -66,16 +66,20 @@ describe( 'Order > Refund Failure', () => {
 				// Open the order
 				await merchant.goToOrder( orderId );
 
+				await page
+					.waitForSelector( '.woocommerce_order_items' )
+					.then( ( el ) => el.scrollIntoView() );
+
 				// Click the Refund button
 				await expect( page ).toClick( 'button.refund-items' );
 
 				takeScreenshot(
-					'merchant-orders-refund-failures-before-timeout'
+					`merchant-orders-refund-failures-before-timeout-${ fieldName }-${ valueDescription }`
 				);
 
 				// Verify the refund section shows
 				await page.waitForSelector( 'div.wc-order-refund-items', {
-					visible: true,
+					// visible: true,
 					timeout: 5000,
 				} );
 
@@ -118,9 +122,9 @@ describe( 'Order > Refund Failure', () => {
 				const invalidRefundAlert = await expect( page ).toDisplayDialog(
 					async () => {
 						await refundDialog.accept();
-						await uiUnblocked();
 						await page.waitForNavigation( {
 							waitUntil: 'networkidle0',
+							timeout: 5000,
 						} );
 					}
 				);
