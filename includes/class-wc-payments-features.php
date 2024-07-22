@@ -266,6 +266,12 @@ class WC_Payments_Features {
 	 * @return bool True if Direct Checkout is enabled, false otherwise.
 	 */
 	public static function is_woopay_direct_checkout_enabled() {
+		// If WooPayments is not enabled then disable Direct checkout.
+		$enabled_gateways = WC()->payment_gateways->get_available_payment_gateways();
+		if ( ! isset( $enabled_gateways['woocommerce_payments'] ) ) {
+			return false;
+		}
+
 		$account_cache                   = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
 		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
