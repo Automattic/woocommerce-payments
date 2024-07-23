@@ -107,6 +107,8 @@ function wcpay_jetpack_init() {
 	];
 	if ( class_exists( 'WC_Site_Tracking' ) && WC_Site_Tracking::is_tracking_enabled() ) {
 		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce';
+		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\Posts';
+		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\Meta';
 		if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
 			try {
 				$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class );
