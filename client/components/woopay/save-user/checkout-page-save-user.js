@@ -6,11 +6,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import { validatePhoneNumber } from '@woocommerce/components/build/phone-number-input/validation';
 
 /**
  * Internal dependencies
  */
-import PhoneNumberInput from 'settings/phone-input';
+import PhoneInput from 'settings/phone-input';
 import { getConfig } from 'utils/checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
@@ -19,7 +20,6 @@ import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { recordUserEvent } from 'tracks';
 import './style.scss';
-import { compare } from 'compare-versions';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
@@ -35,12 +35,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	);
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
-	const wooCommerceVersionString = window.wcSettings?.wcVersion;
-	const wcVersionGreaterThan91 = compare(
-		wooCommerceVersionString,
-		'9.1',
-		'>='
-	);
 
 	const getPhoneFieldValue = () => {
 		let phoneFieldValue = '';
@@ -99,9 +93,14 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const handleCheckboxClick = ( e ) => {
 		const isChecked = e.target.checked;
 		if ( isChecked ) {
-			setPhoneNumber( getPhoneFieldValue() );
+			const phoneFieldValue = getPhoneFieldValue();
+			setPhoneNumber( phoneFieldValue );
+			onPhoneValidationChange(
+				validatePhoneNumber( phoneFieldValue, '' )
+			);
 		} else {
 			setPhoneNumber( '' );
+			onPhoneValidationChange( null );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
@@ -181,10 +180,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	}
 
 	return (
-		<Container
-			isBlocksCheckout={ isBlocksCheckout }
-			wcVersionGreaterThan91={ wcVersionGreaterThan91 }
-		>
+		<Container isBlocksCheckout={ isBlocksCheckout }>
 			<div className="save-details">
 				<div className="save-details-header">
 					<div
@@ -203,10 +199,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								id="save_user_in_woopay"
 								value="true"
 								className={ `save-details-checkbox ${
-									wcVersionGreaterThan91
-										? 'without-margin-right'
-										: ''
-								} ${
 									isBlocksCheckout
 										? 'wc-block-components-checkbox__input'
 										: ''
@@ -249,7 +241,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							name="woopay_viewport"
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
-						<PhoneNumberInput
+						<PhoneInput
 							value={ phoneNumber }
 							onValueChange={ setPhoneNumber }
 							onValidationChange={ onPhoneValidationChange }
@@ -259,6 +251,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							inputProps={ {
 								name:
 									'woopay_user_phone_field[no-country-code]',
+								id: 'woopay_user_phone_field_no_country_code',
 							} }
 							isBlocksCheckout={ isBlocksCheckout }
 						/>

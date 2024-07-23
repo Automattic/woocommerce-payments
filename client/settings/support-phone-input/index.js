@@ -1,9 +1,10 @@
 /**
  * External dependencies
  */
+import { validatePhoneNumber } from '@woocommerce/components/build/phone-number-input/validation';
 import { BaseControl, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 
 /**
  * Internal dependencies
@@ -13,7 +14,7 @@ import {
 	useGetSavingError,
 	useDevMode,
 } from 'wcpay/data';
-import PhoneNumberInput from 'wcpay/settings/phone-input';
+import PhoneInput from 'wcpay/settings/phone-input';
 
 const SupportPhoneInput = ( { setInputVallid } ) => {
 	const [ supportPhone, setSupportPhone ] = useAccountBusinessSupportPhone();
@@ -22,12 +23,16 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 		?.account_business_support_phone?.message;
 
 	const currentPhone = useRef( supportPhone ).current;
+	const currentPhoneValid = useMemo(
+		() => validatePhoneNumber( currentPhone ),
+		[ currentPhone ]
+	);
 	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
 	const isDevModeEnabled = useDevMode();
 	const isTestPhoneValid =
 		isDevModeEnabled && supportPhone === '+10000000000';
 
-	const [ isPhoneValid, setPhoneValidity ] = useState( true );
+	const [ isPhoneValid, setPhoneValidity ] = useState( currentPhoneValid );
 	if ( ! isTestPhoneValid && ! isPhoneValid && ! isEmptyPhoneValid ) {
 		supportPhoneError = __(
 			'Please enter a valid phone number.',
@@ -71,11 +76,12 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 				label={ labelText }
 				id="account-business-support-phone-input"
 			>
-				<PhoneNumberInput
+				<PhoneInput
 					onValueChange={ setSupportPhone }
 					value={ supportPhone }
 					onValidationChange={ setPhoneValidity }
 					inputProps={ {
+						id: 'account-business-support-phone-input',
 						ariaLabel: labelText,
 					} }
 				/>

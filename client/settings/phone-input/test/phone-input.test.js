@@ -2,16 +2,22 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import {
+	render,
+	screen,
+	fireEvent,
+	queryByAttribute,
+} from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import PhoneNumberInput from '../';
+import PhoneInput from '../';
 
-describe( 'PhoneNumberInput', () => {
+describe( 'PhoneInput', () => {
 	const handlePhoneNumberChangeMock = jest.fn();
 	const handlePhoneValidationChangeMock = jest.fn();
+	const phoneInputId = 'phone-input-id';
 
 	beforeEach( () => {
 		window.wcpaySettings = {
@@ -22,58 +28,59 @@ describe( 'PhoneNumberInput', () => {
 	} );
 
 	it( 'should render phone number input', () => {
-		render(
-			<PhoneNumberInput
+		const { container } = render(
+			<PhoneInput
 				onValueChange={ handlePhoneNumberChangeMock }
 				onValidationChange={ handlePhoneValidationChangeMock }
+				id={ phoneInputId }
 				value="123"
 			/>
 		);
 		expect(
-			screen.queryByLabelText( 'Mobile phone number' )
+			queryByAttribute( 'id', container, phoneInputId )
 		).toBeInTheDocument();
 	} );
 
 	it( 'should render the default selected country with code', () => {
 		render(
-			<PhoneNumberInput
+			<PhoneInput
 				onValueChange={ handlePhoneNumberChangeMock }
 				onValidationChange={ handlePhoneValidationChangeMock }
 				value="123"
 			/>
 		);
-		expect(
-			screen.queryByRole( 'combobox', { name: 'United States: +1' } )
-		).toBeInTheDocument();
+		expect( screen.queryByText( '+1' ) ).toBeInTheDocument();
 	} );
 
 	it( 'should call the onValueChange with phone number including country code', () => {
-		render(
-			<PhoneNumberInput
+		const { container } = render(
+			<PhoneInput
 				onValueChange={ handlePhoneNumberChangeMock }
 				onValidationChange={ handlePhoneValidationChangeMock }
+				id={ phoneInputId }
 				value="123"
 			/>
 		);
 
 		expect( handlePhoneNumberChangeMock ).not.toHaveBeenCalled();
 
-		const input = screen.queryByLabelText( 'Mobile phone number' ); // The label text for our input.
+		const input = queryByAttribute( 'id', container, phoneInputId );
 		fireEvent.change( input, { target: { value: '201' } } );
 
 		expect( handlePhoneNumberChangeMock ).toHaveBeenCalledWith( '+1201' );
 	} );
 
 	it( 'should call the onValidationChange with true if value is valid', () => {
-		render(
-			<PhoneNumberInput
+		const { container } = render(
+			<PhoneInput
 				onValueChange={ handlePhoneNumberChangeMock }
 				onValidationChange={ handlePhoneValidationChangeMock }
+				id={ phoneInputId }
 				value="123"
 			/>
 		);
 
-		const input = screen.queryByLabelText( 'Mobile phone number' ); // The label text for our input.
+		const input = queryByAttribute( 'id', container, phoneInputId );
 
 		expect( handlePhoneValidationChangeMock ).toHaveBeenLastCalledWith(
 			false
