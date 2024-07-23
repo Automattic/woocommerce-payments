@@ -859,6 +859,12 @@ class WC_Payments_Account {
 	 * Redirects connect page (payments/connect) to the overview page for stores that
 	 * have a working Jetpack connection and a connected Stripe account.
 	 *
+	 * Note: Connect _page_ links are not the same as connect links.
+	 *       Connect links are used to start/re-start/continue the onboarding flow and they are independent of
+	 *       the WP dashboard page (based solely on request params).
+	 *
+	 * @see self::maybe_handle_onboarding() for connect links handling.
+	 *
 	 * @return bool True if the redirection happened, false otherwise.
 	 */
 	public function maybe_redirect_from_connect_page(): bool {
