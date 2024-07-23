@@ -258,7 +258,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_woopay_direct_checkout_enabled_returns_false_when_woopayments_is_disabled() {
-		add_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
+		remove_all_filters( 'woocommerce_available_payment_gateways' );
 
 		$this->assertFalse( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 	}
