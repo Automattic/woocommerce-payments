@@ -21,7 +21,6 @@ jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
-
 jest.mock(
 	'@woocommerce/blocks-checkout',
 	() => ( {
@@ -91,6 +90,7 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		useWooPayUser.mockImplementation( () => false );
 		extensionCartUpdate.mockResolvedValue( {} );
+		extensionCartUpdate.mockClear();
 
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: true,
