@@ -1,3 +1,8 @@
+/* global jQuery */
+/**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
@@ -13,7 +18,6 @@ import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
-import { __ } from '@wordpress/i18n';
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
@@ -136,9 +140,36 @@ export const onReadyHandler = async function ( { availablePaymentMethods } ) {
 	}
 };
 
+const blockUI = () => {
+	jQuery.blockUI( {
+		message: null,
+		overlayCSS: {
+			background: '#fff',
+			opacity: 0.6,
+		},
+	} );
+};
+
+const unblockUI = () => {
+	jQuery.unblockUI();
+};
+
 export const onClickHandler = async function ( { expressPaymentType } ) {
+	blockUI();
 	trackExpressCheckoutButtonClick(
 		expressPaymentType,
 		getExpressCheckoutData( 'button_context' )
 	);
+};
+
+export const onAbortPaymentHandler = () => {
+	unblockUI();
+};
+
+export const onCompletePaymentHandler = () => {
+	blockUI();
+};
+
+export const onCancelHandler = () => {
+	unblockUI();
 };
