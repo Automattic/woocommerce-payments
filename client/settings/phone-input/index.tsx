@@ -1,9 +1,10 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { PhoneNumberInput } from '@woocommerce/components';
+// TODO: Remove full path once we find a way to enqueue wc-components in pages other than admin.
+import PhoneNumberInput from '@woocommerce/components/build/phone-number-input';
 import { validatePhoneNumber } from '@woocommerce/components/build/phone-number-input/validation';
 import './style.scss';
 
@@ -58,7 +59,7 @@ const PhoneInput = ( {
 				onChange={ handlePhoneInputChange }
 				name={ inputProps.name }
 				id={ inputProps.id }
-				className="phone-input input-text"
+				className="phone-input"
 				{ ...props }
 			/>
 		</div>

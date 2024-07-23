@@ -7,7 +7,7 @@ declare module '@woocommerce/components/build/phone-number-input/validation' {
 	const validatePhoneNumber: ( e164: string, country: string ) => boolean;
 }
 
-declare module '@woocommerce/components' {
+declare module '@woocommerce/components/build/phone-number-input' {
 	const PhoneNumberInput: ( props: {
 		value: string;
 		onChange: ( value: string, e164: string, country: string ) => void;
@@ -20,6 +20,10 @@ declare module '@woocommerce/components' {
 		arrowRender?: () => React.ReactNode;
 	} ) => JSX.Element;
 
+	export = PhoneNumberInput;
+}
+
+declare module '@woocommerce/components' {
 	const SummaryListPlaceholder: ( props: {
 		numberOfItems: number;
 	} ) => JSX.Element;
