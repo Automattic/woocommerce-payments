@@ -30,7 +30,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		const card = config.get( 'cards.disputed-fraudulent' );
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
-		await expect( page ).toMatch( 'Order received' );
+		await expect( page ).toMatchTextContent( 'Order received' );
 
 		// Get the order ID
 		const orderIdField = await page.$(
@@ -62,6 +62,14 @@ describe( 'Disputes > Submit winning dispute', () => {
 	} );
 
 	afterAll( async () => {
+		page.removeAllListeners( 'dialog' );
+		page.on( 'dialog', async function ( dialog ) {
+			try {
+				await dialog.accept();
+			} catch ( err ) {
+				console.warn( err.message );
+			}
+		} );
 		await merchant.logout();
 	} );
 
