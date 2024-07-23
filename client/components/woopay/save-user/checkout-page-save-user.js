@@ -283,7 +283,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							} }
 							isBlocksCheckout={ isBlocksCheckout }
 						/>
-						<ValidationInputError propertyName={ errorId } />
+						<ValidationInputError
+							elementId={ errorId }
+							propertyName={ errorId }
+						/>
 						<AdditionalInformation />
 						<Agreement />
 					</div>
