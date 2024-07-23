@@ -221,6 +221,12 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_woopay_enabled() );
 	}
 
+	public function test_is_woopay_enabled_returns_false_when_woopayments_is_disabled() {
+		remove_all_filters( 'woocommerce_available_payment_gateways' );
+
+		$this->assertFalse( WC_Payments_Features::is_woopay_enabled() );
+	}
+
 	public function test_is_woopay_express_checkout_enabled_returns_true() {
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
