@@ -129,9 +129,7 @@ describe( 'Klarna checkout', () => {
 		await page.waitForTimeout( 2000 );
 
 		await page
-			.waitForSelector(
-				'button[data-testid="select-payment-category-or-method-from-stacked-selector"'
-			)
+			.waitForSelector( 'button[data-testid="pick-plan"]' )
 			.then( ( button ) => button.click() );
 
 		await page.waitForTimeout( 2000 );
