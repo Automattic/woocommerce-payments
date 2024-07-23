@@ -63,8 +63,15 @@ class WC_Payments_Features {
 	 */
 	public static function is_woopay_enabled() {
 		// If WooPayments is not enabled then disable Direct checkout.
-		$enabled_gateways = WC()->payment_gateways->get_available_payment_gateways();
-		if ( ! isset( $enabled_gateways['woocommerce_payments'] ) ) {
+		// TODO: Change to WC()->payment_gateways->get_available_payment_gateways() once issue with WC Subscriptions is sorted out.
+		$wc_payment_gateways = WC_Payment_Gateways::instance();
+		$wc_payment_gateways->init();
+		$enabled_gateways = $wc_payment_gateways->payment_gateways();
+
+		// Only used for tests.
+		$enabled_gateways = apply_filters( 'woocommerce_payments_enabled_gateways_for_woopay', $enabled_gateways );
+
+		if ( ! isset( $enabled_gateways['woocommerce_payments'] ) || ! $enabled_gateways['woocommerce_payments']->is_available() ) {
 			return false;
 		}
 
