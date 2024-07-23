@@ -1007,6 +1007,9 @@ class WC_Payments_Account {
 		 * This logic is so complex because we use connect links as a catch-all place to
 		 * handle everything and anything related to the WooPayments account setup. It reduces the complexity on the
 		 * "outer-edges" of our ecosystem (e.g. Woo core, emails, etc.) and centralizes the handling in one place.
+		 *
+		 * IMPORTANT: Whenever we decide to change the business logic we should UPDATE THE COMMENT ABOVE!!!
+		 *            Do NOT let this comment become stale/out-of-sync!!!
 		 * ==================
 		 */
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
