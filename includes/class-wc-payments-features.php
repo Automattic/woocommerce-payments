@@ -62,7 +62,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_woopay_enabled() {
-		// If WooPayments is not enabled then disable Direct checkout.
+		// If WooPayments is not enabled then disable WooPay.
 		$enabled_gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( ! isset( $enabled_gateways['woocommerce_payments'] ) ) {
 			return false;
