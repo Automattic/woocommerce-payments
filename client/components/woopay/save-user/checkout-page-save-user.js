@@ -7,8 +7,6 @@ import { __ } from '@wordpress/i18n';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 import { validatePhoneNumber } from '@woocommerce/components/build/phone-number-input/validation';
-// Import styles directly for bundling since wc-components is not enqueued in checkout
-import '@woocommerce/components/build-style/style.css';
 
 /**
  * Internal dependencies
