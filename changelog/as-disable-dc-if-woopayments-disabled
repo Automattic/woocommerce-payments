@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Disable WooPay if WooPayments is not enabled as payment gateway.

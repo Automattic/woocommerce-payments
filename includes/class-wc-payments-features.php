@@ -62,12 +62,6 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_woopay_enabled() {
-		// If WooPayments is not enabled then disable WooPay.
-		$enabled_gateways = WC()->payment_gateways->get_available_payment_gateways();
-		if ( ! isset( $enabled_gateways['woocommerce_payments'] ) ) {
-			return false;
-		}
-
 		$is_woopay_eligible               = self::is_woopay_eligible(); // Feature flag.
 		$is_woopay_enabled                = 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout' );
 		$is_woopay_express_button_enabled = self::is_woopay_express_checkout_enabled();

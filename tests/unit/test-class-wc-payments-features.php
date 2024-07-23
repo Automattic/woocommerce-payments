@@ -48,16 +48,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 			->willReturn( false );
 
 		WC_Payments::set_account_service( $this->mock_wcpay_account );
-
-		add_filter(
-			'woocommerce_available_payment_gateways',
-			function () {
-				return [
-					'woocommerce_payments' => new class() extends WC_Payment_Gateway {
-					},
-				];
-			}
-		);
 	}
 
 	public function tear_down() {
@@ -76,9 +66,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
-
-		remove_all_filters( 'woocommerce_available_payment_gateways' );
-
 		parent::tear_down();
 	}
 
@@ -221,12 +208,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_woopay_enabled() );
 	}
 
-	public function test_is_woopay_enabled_returns_false_when_woopayments_is_disabled() {
-		remove_all_filters( 'woocommerce_available_payment_gateways' );
-
-		$this->assertFalse( WC_Payments_Features::is_woopay_enabled() );
-	}
-
 	public function test_is_woopay_express_checkout_enabled_returns_true() {
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
@@ -255,12 +236,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 			]
 		);
 		$this->assertTrue( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
-	}
-
-	public function test_is_woopay_direct_checkout_enabled_returns_false_when_woopayments_is_disabled() {
-		remove_all_filters( 'woocommerce_available_payment_gateways' );
-
-		$this->assertFalse( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 	}
 
 	public function test_is_woopay_direct_checkout_enabled_returns_false_when_flag_is_false() {
