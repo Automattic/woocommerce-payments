@@ -47,5 +47,13 @@ module.exports = {
 	transformIgnorePatterns: [
 		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/|@automattic/material-design-icons/)',
 	],
+	watchPathIgnorePatterns: [
+		'/node_modules/',
+		'/vendor/',
+		'<rootDir>/.*/build/',
+		'<rootDir>/.*/build-module/',
+		'<rootDir>/docker/',
+		'<rootDir>/tests/e2e',
+	],
 	verbose: true,
 };
