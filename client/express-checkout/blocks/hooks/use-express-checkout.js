@@ -13,7 +13,10 @@ import {
 	normalizeLineItems,
 } from 'wcpay/express-checkout/utils';
 import {
+	onAbortPaymentHandler,
+	onCancelHandler,
 	onClickHandler,
+	onCompletePaymentHandler,
 	onConfirmHandler,
 	onReadyHandler,
 } from 'wcpay/express-checkout/event-handlers';
@@ -32,16 +35,19 @@ export const useExpressCheckout = ( {
 	const buttonOptions = getExpressCheckoutButtonStyleSettings();
 
 	const onCancel = () => {
+		onCancelHandler();
 		onClose();
 	};
 
 	const completePayment = ( redirectUrl ) => {
+		onCompletePaymentHandler( redirectUrl );
 		window.location = redirectUrl;
 	};
 
 	const abortPayment = ( onConfirmEvent, message ) => {
 		onConfirmEvent.paymentFailed( { reason: 'fail' } );
 		setExpressPaymentError( message );
+		onAbortPaymentHandler( onConfirmEvent, message );
 	};
 
 	const onButtonClick = useCallback(
@@ -68,7 +74,6 @@ export const useExpressCheckout = ( {
 			onClick();
 			// Global click event handler from WooPayments to ECE.
 			onClickHandler( event );
-
 			event.resolve( options );
 		},
 		[
