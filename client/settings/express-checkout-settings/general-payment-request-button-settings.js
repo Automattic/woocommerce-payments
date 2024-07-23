@@ -66,7 +66,7 @@ const buttonSizeOptions = [
 	{
 		label: makeButtonSizeText(
 			__(
-				'Large {{helpText}}(56 px){{/helpText}}',
+				'Large {{helpText}}(55 px){{/helpText}}',
 				'woocommerce-payments'
 			)
 		),
