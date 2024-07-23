@@ -21,13 +21,18 @@ jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
+
 jest.mock(
 	'@woocommerce/blocks-checkout',
 	() => ( {
 		extensionCartUpdate: jest.fn(),
+		ValidationInputError: () => {
+			return <div>Dummy error element</div>;
+		},
 	} ),
 	{ virtual: true }
 );
+
 jest.mock( '@wordpress/data' );
 
 jest.mock( 'tracks', () => ( {
