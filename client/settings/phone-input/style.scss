@@ -48,6 +48,7 @@
 		font-size: 1rem;
 		line-height: 1.25rem;
 		font-weight: 400;
+		gap: $gap;
 		transition: max-height 0.5s ease-in-out;
 		margin: 0 !important;
 		padding: 0 !important;
@@ -69,7 +70,6 @@
 			line-height: 21px;
 			text-align: left;
 			color: #000;
-			margin: $gap 0;
 		}
 
 		.tos {
@@ -78,6 +78,14 @@
 			:link {
 				color: #6d6d6d;
 			}
+		}
+
+		#validate-error-invalid-woopay-phone-number {
+			// Using rems to base this on the theme styles.
+			font-size: 0.875rem;
+			line-height: 1.5rem;
+			margin-bottom: 0;
+			color: $alert-red;
 		}
 
 		.line {
