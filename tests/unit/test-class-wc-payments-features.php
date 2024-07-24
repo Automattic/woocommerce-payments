@@ -327,7 +327,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		return array_map(
 			function ( $gateway ) {
 				if ( is_a( $gateway, 'WC_Payment_Gateway' ) && 'woocommerce_payments' === $gateway->id ) {
-					// Simple class to replace the WooPayments instance. With this the `is_available` method will return `true` enabling WooPayments.
+					// Simple class to replace the WC_Payment_Gateway_WCPay instance. With this the `is_available` method will return `true` enabling the payment gateway.
 					return new class() extends WC_Payment_Gateway_WCPay {
 						public function __construct() {
 						}
