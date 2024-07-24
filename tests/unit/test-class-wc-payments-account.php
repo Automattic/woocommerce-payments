@@ -76,6 +76,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'path' => '/payments/connect',
 		];
 
+		// Always start off with live mode. If you want another mode, you should set it in the test.
+		WC_Payments::mode()->live();
+
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
 			->getMock();
@@ -92,6 +95,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		delete_transient( WC_Payments_Account::ONBOARDING_DISABLED_TRANSIENT );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 		unset( $_GET );
 		unset( $_REQUEST );
 		parent::tear_down();
@@ -262,7 +266,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$has_working_jetpack_connection,
 		$is_stripe_connected,
 		$create_builder_account,
-		$use_new_onboarding_flow,
 		$expected_next_step
 	) {
 
@@ -303,6 +306,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'details_submitted' => true, // Has finished initial KYC.
 				]
 			);
+			// This should be in sync with the current account mode.
+			WC_Payments_Onboarding_Service::set_test_mode( false );
 
 			$this->mock_api_client
 				->expects( $this->any() )
@@ -313,10 +318,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				->expects( $this->any() )
 				->method( 'get_onboarding_data' )
 				->willReturn( [ 'url' => 'https://connect.stripe.com/something' ] );
-		}
-
-		if ( ! $use_new_onboarding_flow ) {
-			add_filter( 'wcpay_disable_new_onboarding', '__return_true' );
 		}
 
 		// Assert.
@@ -404,9 +405,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Act.
 		$wcpay_account->maybe_handle_onboarding();
-
-		// Cleanup.
-		remove_filter( 'wcpay_disable_new_onboarding', '__return_true' );
 	}
 
 	/**
@@ -420,7 +418,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
-				true,
 				'connect_page',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe not connected' => [
@@ -429,7 +426,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
-				true,
 				'connect_page',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe connected' => [
@@ -438,7 +434,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
-				true,
 				'overview_page',
 			],
 			'From Connect page - no Jetpack connection, Stripe connected' => [
@@ -447,7 +442,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
-				true,
 				'start_jetpack_connection',
 			],
 			'From Connect page - Jetpack connection, Stripe not connected' => [
@@ -456,17 +450,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
-				true,
 				'onboarding_wizard',
-			],
-			'From Connect page - Jetpack connection, Stripe not connected - disabled onboarding wizard' => [
-				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
-				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE, // Some other original source.
-				true,
-				false,
-				false,
-				false,
-				'init_stripe_onboarding',
 			],
 			'From Connect page - Jetpack connection, Stripe connected' => [
 				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
@@ -474,14 +458,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
-				true,
 				'overview_page',
 			],
 			'From Connect page - no Jetpack connection, Stripe connected - sandbox' => [
 				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
 				WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
 				false,
-				true,
 				true,
 				true,
 				'start_jetpack_connection',
@@ -492,13 +474,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				true,
-				true,
 				'init_stripe_onboarding',
 			],
 			'From Connect page - Jetpack connection, Stripe connected - sandbox' => [
 				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE, // Some other original source.
-				true,
 				true,
 				true,
 				true,
@@ -510,7 +490,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
-				true,
 				'connect_page',
 			],
 			'From Woo Payments Settings - Jetpack connection, Stripe not connected' => [
@@ -519,7 +498,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
-				true,
 				'connect_page',
 			],
 			'From Woo Payments Settings - Jetpack connection, Stripe connected' => [
@@ -528,7 +506,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
-				true,
 				'overview_page',
 			],
 			'From Incentive page - no Jetpack connection, Stripe connected' => [
@@ -537,7 +514,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
-				true,
 				'start_jetpack_connection',
 			],
 			'From Incentive page - Jetpack connection, Stripe not connected' => [
@@ -546,17 +522,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
-				true,
 				'onboarding_wizard',
-			],
-			'From Incentive page - Jetpack connection, Stripe not connected - disabled onboarding wizard' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_INCENTIVES_PAGE,
-				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
-				true,
-				false,
-				false,
-				false,
-				'init_stripe_onboarding',
 			],
 			'From Incentive page - Jetpack connection, Stripe connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_INCENTIVE,
@@ -564,7 +530,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
-				true,
 				'overview_page',
 			],
 			// This is a weird scenario that should not happen under normal circumstances.
@@ -574,7 +539,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				false,
 				false,
-				true,
 				'connect_page',
 			],
 			'From Onboarding wizard - Jetpack connection, Stripe not connected' => [
@@ -583,7 +547,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
-				true,
 				'init_stripe_onboarding',
 			],
 			'From Onboarding wizard - Jetpack connection, Stripe connected' => [
@@ -592,7 +555,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
-				true,
 				'overview_page',
 			],
 		];
@@ -610,19 +572,42 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Set the request as if the user is on some bogus page. It doesn't matter.
 		$_GET['page'] = 'wc-admin';
 		$_GET['path'] = '/payments/some-bogus-page';
+		// This should be ignored since we are moving from test to live.
+		$_GET['test_mode'] = 'true';
 
 		// This is the flag indicating the account should be switched from test to live mode.
 		$_GET['wcpay-disable-onboarding-test-mode'] = 'true';
 
+		// The Jetpack connection is in working order.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+		$this->mock_api_client
+			->method( 'has_server_connection_owner' )
+			->willReturn( true );
+
 		$this->cache_account_details(
 			[
 				'account_id'        => 'acc_test',
-				'is_live'           => true,
+				'is_live'           => false,
 				'details_submitted' => true, // Has finished initial KYC.
 			]
 		);
+		// This should be in sync with the current account mode.
+		WC_Payments_Onboarding_Service::set_test_mode( true );
+
+		// We will use this so we can proceed after the account deletion step and
+		// avoid ending up in the "everything OK" scenario.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( false );
 
 		// Assert.
+		// Test mode accounts get deleted.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'delete_account' )
+			->with( true );
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_onboarding_wizard' )
@@ -630,6 +615,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Act.
 		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert more.
+		// We should be in live mode now.
+		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
 	}
 
 	public function test_maybe_handle_onboarding_reset_account() {
@@ -655,12 +644,18 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'details_submitted' => true, // Has finished initial KYC.
 			]
 		);
+		// This should be in sync with the current account mode.
+		WC_Payments_Onboarding_Service::set_test_mode( false );
 
 		// Assert.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'delete_account' )
+			->with( false );
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_connect_page' )
-			->with( 'connect-from', WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT, [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT ] );
+			->with( null, WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT, [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT ] );
 
 		// Act.
 		$this->wcpay_account->maybe_handle_onboarding();
@@ -737,9 +732,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Make sure important flags are carried over.
 		$_GET['promo']       = 'incentive_id';
 		$_GET['progressive'] = 'true';
-
-		// There isn't another onboarding started.
-		delete_transient( WC_Payments_Account::ON_BOARDING_STARTED_TRANSIENT );
+		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
 		$this->mock_api_client
@@ -769,6 +762,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_onboarding_data' )
 			->with(
+				true, // Whether to onboard in live mode or not.
 				$this->logicalAnd(
 					$this->logicalOr(
 						$this->stringContains( 'page=wc-admin&path=/payments/overview' ),
@@ -813,9 +807,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Make sure important flags are carried over.
 		$_GET['promo']       = 'incentive_id';
 		$_GET['progressive'] = 'true';
-
-		// There isn't another onboarding started.
-		delete_transient( WC_Payments_Account::ON_BOARDING_STARTED_TRANSIENT );
+		// There is no `test_mode` param and no test mode is set.
+		// It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
 		$this->mock_api_client
@@ -845,6 +838,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_onboarding_data' )
 			->with(
+				true, // Whether to onboard in live mode or not.
 				$this->logicalAnd(
 					$this->logicalOr(
 						$this->stringContains( 'page=wc-admin&path=/payments/overview' ),
@@ -1808,8 +1802,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_request( Get_Account::class, 0 );
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
-
-		WC_Payments::mode()->live();
 	}
 
 	public function test_try_is_stripe_connected_returns_false_when_connected_with_dev_account_in_live_mode() {
@@ -1837,8 +1829,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
-
-		WC_Payments::mode()->live();
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_live_account_in_dev_mode() {
@@ -1861,8 +1851,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_request( Get_Account::class, 0 );
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
-
-		WC_Payments::mode()->live();
 	}
 
 	public function test_is_account_rejected_returns_true() {
