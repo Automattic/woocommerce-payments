@@ -67,8 +67,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
 
-		remove_filter( 'woocommerce_payments_enabled_gateways_for_woopay', [ $this, 'enable_woopayments' ] );
-		remove_filter( 'woocommerce_payments_enabled_gateways_for_woopay', [ $this, 'disable_woopayments' ] );
+		remove_all_filters( 'woocommerce_payments_enabled_gateways_for_woopay' );
 
 		parent::tear_down();
 	}
@@ -202,7 +201,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
-		$this->assertFalse( WC_Payments_Features::is_woopay_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_woopay_enabled() );
 	}
 
 	public function test_is_woopay_enabled_returns_false_when_express_checkout_flag_is_false() {
@@ -327,13 +326,13 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 			function ( $gateway ) {
 				if ( is_a( $gateway, 'WC_Payment_Gateway' ) && 'woocommerce_payments' === $gateway->id ) {
 					// Simple class to replace the WooPayments instance. With this the `is_available` method will return `true` enabling WooPayments.
-					return new class() extends WC_Payment_Gateway {
-						/**
-						 * Payment Gateway ID.
-						 *
-						 * @var string
-						 */
-						public $id = 'woocommerce_payments';
+					return new class() extends WC_Payment_Gateway_WCPay {
+						public function __construct() {
+						}
+
+						public function is_available() {
+							return true;
+						}
 					};
 				}
 				return $gateway;
