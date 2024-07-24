@@ -53,6 +53,7 @@ const countries = [
 	[ 'DE', 'DE' ],
 	[ 'GR', 'EL' ],
 	[ 'CH', 'CHE' ],
+	[ 'JP', '' ],
 ];
 
 describe( 'VAT form', () => {
@@ -66,7 +67,7 @@ describe( 'VAT form', () => {
 			render( <VatForm onCompleted={ mockOnCompleted } /> );
 
 			user.click(
-				screen.getByLabelText( 'I’m registered for a VAT number' )
+				screen.getByLabelText( "I'm registered for a VAT number" )
 			);
 
 			expect(
@@ -205,7 +206,7 @@ describe( 'VAT form', () => {
 	describe( 'when registered for VAT', () => {
 		beforeEach( () => {
 			user.click(
-				screen.getByLabelText( 'I’m registered for a VAT number' )
+				screen.getByLabelText( "I'm registered for a VAT number" )
 			);
 		} );
 
