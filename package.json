@@ -81,6 +81,7 @@
     "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "2.3.0",
     "@woocommerce/number": "2.4.0",
+    "@woocommerce/onboarding": "3.5.0",
     "canvas-confetti": "1.9.2",
     "compare-versions": "6.1.1",
     "debug": "4.3.5",
