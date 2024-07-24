@@ -4,7 +4,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
@@ -41,7 +40,7 @@ const countries = [
 	},
 ];
 
-mocked( getAvailableCountries ).mockReturnValue( countries );
+jest.mocked( getAvailableCountries ).mockReturnValue( countries );
 
 const businessTypes = [
 	{
@@ -97,7 +96,7 @@ const businessTypes = [
 	},
 ];
 
-mocked( getBusinessTypes ).mockReturnValue( businessTypes );
+jest.mocked( getBusinessTypes ).mockReturnValue( businessTypes );
 
 const mccsFlatList = [
 	{
@@ -168,7 +167,7 @@ const mccsFlatList = [
 	},
 ];
 
-mocked( getMccsFlatList ).mockReturnValue( mccsFlatList );
+jest.mocked( getMccsFlatList ).mockReturnValue( mccsFlatList );
 
 describe( 'BusinessDetails', () => {
 	it( 'renders and updates fields data when they are changed', async () => {

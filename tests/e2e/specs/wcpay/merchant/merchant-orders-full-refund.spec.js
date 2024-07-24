@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -31,7 +31,7 @@ describe( 'Order > Full refund', () => {
 		const card = config.get( 'cards.basic' );
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
-		await expect( page ).toMatch( 'Order received' );
+		await expect( page ).toMatchTextContent( 'Order received' );
 
 		// Get the order ID so we can open it in the merchant view
 		const ORDER_RECEIVED_ID_SELECTOR =
@@ -54,6 +54,14 @@ describe( 'Order > Full refund', () => {
 	} );
 
 	afterAll( async () => {
+		page.removeAllListeners( 'dialog' );
+		page.on( 'dialog', async function ( dialog ) {
+			try {
+				await dialog.accept();
+			} catch ( err ) {
+				console.warn( err.message );
+			}
+		} );
 		await merchant.logout();
 	} );
 
@@ -84,8 +92,6 @@ describe( 'Order > Full refund', () => {
 
 		// Accept the refund
 		await refundDialog.accept();
-
-		await uiUnblocked();
 
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
