@@ -126,7 +126,10 @@ const ConnectAccountPage: React.FC = () => {
 			// If the account status is complete, redirect to the overview page.
 			// Otherwise, schedule another check after 5 seconds.
 			if ( ( account as AccountData ).status === 'complete' ) {
-				window.location.href = overviewUrl;
+				const redirectUrl = addQueryArgs( overviewUrl, {
+					'sandbox-onboarded': true,
+				} );
+				window.location.href = redirectUrl;
 			} else {
 				setTimeout( checkAccountStatus, 2000 );
 			}
@@ -148,8 +151,12 @@ const ConnectAccountPage: React.FC = () => {
 
 	const handleSetupTestDriveMode = async () => {
 		setTestDriveModeSubmitted( true );
-
 		trackConnectAccountClicked( true );
+
+		// Scroll the page to the top to ensure the logo is visible.
+		window.scrollTo( {
+			top: 0,
+		} );
 
 		const url = addQueryArgs( connectUrl, {
 			test_mode: true,
@@ -181,8 +188,21 @@ const ConnectAccountPage: React.FC = () => {
 				if ( connected === '1' ) {
 					checkAccountStatus();
 				} else {
-					// TODO: display error
-					window.location.href = overviewUrl;
+					// Set the error message.
+					setErrorMessage(
+						__(
+							'An error occurred while creating a sandbox account. Please try again!',
+							'woocommerce-payments'
+						)
+					);
+
+					// Scroll window to the top
+					window.scrollTo( {
+						top: 0,
+					} );
+
+					// Hide loader.
+					setTestDriveModeSubmitted( false );
 				}
 			} );
 		} else {
