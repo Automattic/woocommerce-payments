@@ -1,4 +1,4 @@
 Significance: minor
 Type: add
 
-Support adding tax details for Japan merchants (so can generate tax documents).
+Support adding tax details (corporate number) for Japan merchants (so can generate tax documents for consumption tax, aka VAT).
