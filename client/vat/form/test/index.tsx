@@ -205,9 +205,7 @@ describe( 'VAT form', () => {
 
 	describe( 'when registered for VAT', () => {
 		beforeEach( () => {
-			user.click(
-				screen.getByLabelText( "I'm registered for a VAT number" )
-			);
+			user.click( screen.getByLabelText( "I'm registered for a" ) );
 		} );
 
 		it( 'should disable the Continue button', () => {
