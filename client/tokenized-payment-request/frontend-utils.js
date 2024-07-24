@@ -134,44 +134,25 @@ export const getErrorMessageFromNotice = ( notice ) => {
 };
 
 /**
- * Transforms the cartData object to the format expected by the Store API. cartData is coming to the blocks Payment Request method
- * in two different formats: from the canMakePayment function and from the content component. This function takes in either format
- * and transforms it into the format expected by the Store API.
+ * Searches object for matching key and returns corresponding property value from matched item.
  *
- * @param {Object|null} cartDataCanMakePayment cartData from canMakePayment function.
- * @param {Object|null} cartDataContent cartData from content component.
- * @return {Object} Cart totals object.
+ * @param {Object} obj Object to search for key.
+ * @param {string} key Key to match in object.
+ * @param {string} property Property in object to return correct value.
+ * @return {int|null} Value to return
  */
-export const transformCartDataForStoreAPI = (
-	cartDataCanMakePayment,
-	cartDataContent
-) => {
-	let mappedCartData = {};
-
-	if ( cartDataCanMakePayment ) {
-		mappedCartData = {
-			...cartDataCanMakePayment,
-			items: cartDataCanMakePayment.cart.cartItems,
-			totals: cartDataCanMakePayment.cartTotals,
-			needs_shipping: cartDataCanMakePayment.cartNeedsShipping,
-			shipping_rates: cartDataCanMakePayment.cart.shippingRates,
-		};
-	}
-
-	if ( cartDataContent ) {
-		mappedCartData = {
-			items: cartDataContent.cartItems,
-			totals: constructCartDataContentTotals( cartDataContent ),
-			needs_shipping: cartDataContent.needsShipping,
-			shipping_rates: cartDataContent.shippingRates,
-			extensions: cartDataContent.extensions,
-		};
-	}
-
-	return mappedCartData;
+const getPropertyByKey = ( obj, key, property ) => {
+	const foundItem = obj.find( ( item ) => item.key === key );
+	return foundItem ? foundItem[ property ] : null;
 };
 
-function constructCartDataContentTotals( cartDataContent ) {
+/**
+ * Transforms totals from cartDataContent into format expected by the Store API.
+ *
+ * @param {Object} cartDataContent cartData from content component
+ * @return {Object} Cart totals object for Store API
+ */
+const constructCartDataContentTotals = ( cartDataContent ) => {
 	const totals = {
 		total_items: getPropertyByKey(
 			cartDataContent.cartTotalItems,
@@ -229,9 +210,42 @@ function constructCartDataContentTotals( cartDataContent ) {
 	};
 
 	return totals;
-}
+};
 
-function getPropertyByKey( obj, key, property ) {
-	const foundItem = obj.find( ( item ) => item.key === key );
-	return foundItem ? foundItem[ property ] : null;
-}
+/**
+ * Transforms the cartData object to the format expected by the Store API. cartData is coming to the blocks Payment Request method
+ * in two different formats: from the canMakePayment function and from the content component. This function takes in either format
+ * and transforms it into the format expected by the Store API.
+ *
+ * @param {Object|null} cartDataCanMakePayment cartData from canMakePayment function.
+ * @param {Object|null} cartDataContent cartData from content component.
+ * @return {Object} Cart totals object.
+ */
+export const transformCartDataForStoreAPI = (
+	cartDataCanMakePayment,
+	cartDataContent
+) => {
+	let mappedCartData = {};
+
+	if ( cartDataCanMakePayment ) {
+		mappedCartData = {
+			...cartDataCanMakePayment,
+			items: cartDataCanMakePayment.cart.cartItems,
+			totals: cartDataCanMakePayment.cartTotals,
+			needs_shipping: cartDataCanMakePayment.cartNeedsShipping,
+			shipping_rates: cartDataCanMakePayment.cart.shippingRates,
+		};
+	}
+
+	if ( cartDataContent ) {
+		mappedCartData = {
+			items: cartDataContent.cartItems,
+			totals: constructCartDataContentTotals( cartDataContent ),
+			needs_shipping: cartDataContent.needsShipping,
+			shipping_rates: cartDataContent.shippingRates,
+			extensions: cartDataContent.extensions,
+		};
+	}
+
+	return mappedCartData;
+};
