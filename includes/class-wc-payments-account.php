@@ -1021,10 +1021,11 @@ class WC_Payments_Account {
 		 * ==================
 		 */
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
-			$wcpay_connect_param    = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
-			$incentive_id           = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
-			$progressive            = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
-			$create_builder_account = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
+			$wcpay_connect_param         = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+			$incentive_id                = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+			$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+			$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
+			$create_builder_account      = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
 			// We will onboard in test mode if the test_mode GET param is set or if we are in dev mode.
 			$should_onboard_in_test_mode = ( isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) || WC_Payments::mode()->is_dev();
 
@@ -1152,7 +1153,9 @@ class WC_Payments_Account {
 			// Handle the "everything OK" scenario.
 			// Handle this _after_ we've handled the actions that make things "not OK" (e.g. resetting account or
 			// moving from test to live).
-			if ( $this->has_working_jetpack_connection()
+			// Payout requirement collection needs to bypass the "everything OK" scenario.
+			if ( ! $collect_payout_requirements
+				&& $this->has_working_jetpack_connection()
 				&& $this->is_stripe_connected()
 				&& $this->is_details_submitted() ) {
 
@@ -1197,12 +1200,13 @@ class WC_Payments_Account {
 					// Carry over all the important GET params, so we have them after the Jetpack connection setup.
 					add_query_arg(
 						[
-							'promo'                  => ! empty( $incentive_id ) ? $incentive_id : false,
-							'progressive'            => $progressive ? 'true' : false,
-							'create_builder_account' => $create_builder_account ? 'true' : false,
-							'test_mode'              => $should_onboard_in_test_mode ? 'true' : false,
-							'from'                   => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
-							'source'                 => $onboarding_source,
+							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
+							'progressive'                 => $progressive ? 'true' : false,
+							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
+							'create_builder_account'      => $create_builder_account ? 'true' : false,
+							'test_mode'                   => $should_onboard_in_test_mode ? 'true' : false,
+							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
+							'source'                      => $onboarding_source,
 
 						],
 						self::get_connect_url( $wcpay_connect_param ) // Instruct Jetpack to return here (connect link).
@@ -1256,12 +1260,13 @@ class WC_Payments_Account {
 					// automatically discard any ongoing onboarding.
 					$confirmation_url = add_query_arg(
 						[
-							'promo'                  => ! empty( $incentive_id ) ? $incentive_id : false,
-							'progressive'            => $progressive ? 'true' : false,
-							'create_builder_account' => $create_builder_account ? 'true' : false,
-							'test_mode'              => ( isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
-							'from'                   => $from, // Use the same from.
-							'source'                 => $onboarding_source,
+							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
+							'progressive'                 => $progressive ? 'true' : false,
+							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
+							'create_builder_account'      => $create_builder_account ? 'true' : false,
+							'test_mode'                   => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
+							'from'                        => $from, // Use the same from.
+							'source'                      => $onboarding_source,
 							'wcpay-discard-started-onboarding' => 'true',
 
 						],
