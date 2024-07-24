@@ -95,7 +95,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			extensionCartUpdate( {
 				namespace: 'woopay',
 				data: data,
-			} ).then( () => {
+			} )?.then( () => {
 				setUserDataSent( ! shouldClearData );
 			} );
 		},
