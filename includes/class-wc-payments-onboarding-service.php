@@ -29,9 +29,9 @@ class WC_Payments_Onboarding_Service {
 
 	// Values for the `from` GET param to indicate what was the immediately previous step.
 	// Woo core places.
-	const FROM_WOO_PAYMENTS_TASK     = 'WCADMIN_PAYMENT_TASK';
-	const FROM_WOO_PAYMENTS_SETTINGS = 'WCADMIN_PAYMENT_SETTINGS';
-	const FROM_WOO_INCENTIVES_PAGE   = 'WCADMIN_PAYMENT_INCENTIVE';
+	const FROM_WCADMIN_PAYMENTS_TASK     = 'WCADMIN_PAYMENT_TASK';
+	const FROM_WCADMIN_PAYMENTS_SETTINGS = 'WCADMIN_PAYMENT_SETTINGS';
+	const FROM_WCADMIN_INCENTIVE         = 'WCADMIN_PAYMENT_INCENTIVE';
 	// WooPayments places.
 	const FROM_CONNECT_PAGE      = 'WCPAY_CONNECT';
 	const FROM_ONBOARDING_WIZARD = 'WCPAY_ONBOARDING_WIZARD';

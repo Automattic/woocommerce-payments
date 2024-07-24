@@ -415,7 +415,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function provider_onboarding_known_froms() {
 		return [
 			'From Woo Payments task - no Jetpack connection, Stripe connected' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_PAYMENTS_TASK,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 				false,
 				true,
@@ -424,7 +424,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'connect_page',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe not connected' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_PAYMENTS_TASK,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 				true,
 				false,
@@ -433,7 +433,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'connect_page',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe connected' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_PAYMENTS_TASK,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 				true,
 				true,
@@ -505,7 +505,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'overview_page',
 			],
 			'From Woo Payments Settings - no Jetpack connection, Stripe connected' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_PAYMENTS_SETTINGS,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
 				false,
 				true,
@@ -514,7 +514,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'connect_page',
 			],
 			'From Woo Payments Settings - Jetpack connection, Stripe not connected' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_PAYMENTS_SETTINGS,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
 				true,
 				false,
@@ -523,7 +523,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'connect_page',
 			],
 			'From Woo Payments Settings - Jetpack connection, Stripe connected' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_PAYMENTS_SETTINGS,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
 				true,
 				true,
@@ -532,7 +532,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'overview_page',
 			],
 			'From Incentive page - no Jetpack connection, Stripe connected' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_INCENTIVES_PAGE,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_INCENTIVE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				false,
 				true,
@@ -541,7 +541,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'start_jetpack_connection',
 			],
 			'From Incentive page - Jetpack connection, Stripe not connected' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_INCENTIVES_PAGE,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_INCENTIVE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				true,
 				false,
@@ -559,7 +559,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'init_stripe_onboarding',
 			],
 			'From Incentive page - Jetpack connection, Stripe connected' => [
-				WC_Payments_Onboarding_Service::FROM_WOO_INCENTIVES_PAGE,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_INCENTIVE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				true,
 				true,
