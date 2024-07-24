@@ -150,34 +150,6 @@ export const getBackgroundColor = ( selectors ) => {
 };
 
 /**
- * Searches through array of CSS selectors and returns first visible heading color.
- *
- * @param {Array} selectors List of CSS selectors to check.
- * @return {string} CSS color value.
- */
-export const getHeadingColor = ( selectors ) => {
-	const defaultColor = '#ffffff';
-	let color = null;
-	let i = 0;
-	while ( ! color && i < selectors.length ) {
-		const element = document.querySelector( selectors[ i ] );
-		if ( ! element ) {
-			i++;
-			continue;
-		}
-
-		const headingColor = window.getComputedStyle( element ).color;
-
-		// If headingColor property present and alpha > 0.
-		if ( headingColor && tinycolor( headingColor ).getAlpha() > 0 ) {
-			color = headingColor;
-		}
-		i++;
-	}
-	return color || defaultColor;
-};
-
-/**
  * Determines whether background color is light or dark.
  *
  * @param {string} color CSS color value.
