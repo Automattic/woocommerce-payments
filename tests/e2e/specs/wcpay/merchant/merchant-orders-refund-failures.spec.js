@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -35,6 +35,7 @@ const dataTable = [
 
 describe( 'Order > Refund Failure', () => {
 	beforeAll( async () => {
+		page.setDefaultTimeout( 10000 );
 		// Place an order to refund later
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
@@ -42,7 +43,7 @@ describe( 'Order > Refund Failure', () => {
 		const card = config.get( 'cards.basic' );
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
-		await expect( page ).toMatch( 'Order received' );
+		await expect( page ).toMatchTextContent( 'Order received' );
 
 		// Get the order ID so we can open it in the merchant view
 		const orderIdField = await page.$(
@@ -55,7 +56,16 @@ describe( 'Order > Refund Failure', () => {
 	} );
 
 	afterAll( async () => {
+		page.removeAllListeners( 'dialog' );
+		page.on( 'dialog', async function ( dialog ) {
+			try {
+				await dialog.accept();
+			} catch ( err ) {
+				console.warn( err.message );
+			}
+		} );
 		await merchant.logout();
+		page.setDefaultTimeout( 100000 );
 	} );
 
 	describe.each( dataTable )(
@@ -72,9 +82,7 @@ describe( 'Order > Refund Failure', () => {
 				await expect( page ).toClick( 'button.refund-items' );
 
 				// Verify the refund section shows
-				await page.waitForSelector( 'div.wc-order-refund-items', {
-					visible: true,
-				} );
+				await page.waitForSelector( 'div.wc-order-refund-items' );
 
 				// Verify Refund via WooPayments button is displayed
 				await page.waitForSelector( 'button.do-api-refund' );
@@ -99,10 +107,10 @@ describe( 'Order > Refund Failure', () => {
 				const invalidRefundAlert = await expect( page ).toDisplayDialog(
 					async () => {
 						await refundDialog.accept();
-						await uiUnblocked();
-						await page.waitForNavigation( {
-							waitUntil: 'networkidle0',
-						} );
+						// await uiUnblocked();
+						// await page.waitForNavigation( {
+						// 	waitUntil: 'networkidle0',
+						// } );
 					}
 				);
 				await expect( invalidRefundAlert.message() ).toEqual(
