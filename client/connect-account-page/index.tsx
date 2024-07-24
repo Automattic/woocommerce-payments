@@ -79,8 +79,11 @@ const ConnectAccountPage: React.FC = () => {
 	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
 		false
 	);
+	const [ isTestDriveModeModalShown, setTestDriveModeModalShown ] = useState(
+		false
+	);
 	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] = useState(
-		20
+		5
 	);
 
 	//creating a reference object
@@ -114,14 +117,21 @@ const ConnectAccountPage: React.FC = () => {
 		return source;
 	};
 
+	const updateLoaderProgress = ( maxPercent: number, step: number ) => {
+		if ( loaderProgressRef.current < maxPercent ) {
+			const newProgress = loaderProgressRef.current + step;
+			setTestDriveLoaderProgress( newProgress );
+		}
+	};
+
 	const checkAccountStatus = () => {
 		// Fetch account status from the cache.
 		apiFetch( {
 			path: `/wc/v3/payments/accounts`,
 			method: 'GET',
 		} ).then( ( account ) => {
-			const newProgress = loaderProgressRef.current + 5;
-			setTestDriveLoaderProgress( newProgress );
+			// Fake update loader progress bar percentage.
+			updateLoaderProgress( 100, 5 );
 
 			// If the account status is complete, redirect to the overview page.
 			// Otherwise, schedule another check after 5 seconds.
@@ -163,9 +173,12 @@ const ConnectAccountPage: React.FC = () => {
 			test_drive: true,
 		} );
 
+		const updateProgress = setInterval( updateLoaderProgress, 2500, 40, 5 );
+
 		// If Jetpack is connected, we should proceed with AJAX onboarding.
 		// Otherwise, redirect to the Jetpack connect screen.
 		if ( wcpaySettings.isJetpackConnected ) {
+			setTestDriveModeModalShown( true );
 			fetch( url, {
 				method: 'GET',
 				redirect: 'follow',
@@ -174,6 +187,7 @@ const ConnectAccountPage: React.FC = () => {
 					'Content-Type': 'application/json',
 				},
 			} ).then( ( response ) => {
+				clearInterval( updateProgress );
 				setTestDriveLoaderProgress( 40 );
 
 				// Check the response url for the `wcpay-connection-success` parameter,
@@ -202,6 +216,7 @@ const ConnectAccountPage: React.FC = () => {
 					} );
 
 					// Hide loader.
+					setTestDriveModeModalShown( false );
 					setTestDriveModeSubmitted( false );
 				}
 			} );
@@ -382,7 +397,7 @@ const ConnectAccountPage: React.FC = () => {
 					</Panel>
 				</>
 			) }
-			{ isTestDriveModeSubmitted && (
+			{ isTestDriveModeModalShown && (
 				<TestDriveLoader progress={ testDriveLoaderProgress } />
 			) }
 		</Page>
