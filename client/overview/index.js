@@ -229,7 +229,13 @@ const OverviewPage = () => {
 			) }
 			{ isDevMode ? (
 				<OverviewSandboxModeNotice
-					ctaAction={ () => setLivePaymentsModalVisible( true ) }
+					ctaAction={ () => {
+						recordEvent( 'wcpay_setup_live_payments_modal_open', {
+							source: 'wcpay-overview-page',
+						} );
+
+						setLivePaymentsModalVisible( true );
+					} }
 				/>
 			) : (
 				<TestModeNotice

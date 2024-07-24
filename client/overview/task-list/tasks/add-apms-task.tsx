@@ -8,9 +8,15 @@
 import type { TaskItemProps } from '../types';
 import strings from '../strings';
 import { getAdminUrl } from 'wcpay/utils';
+import { recordEvent } from 'wcpay/tracks';
 
 export const getAddApmsTask = (): TaskItemProps | null => {
 	const handleClick = () => {
+		recordEvent( 'wcpay_overview_task_click', {
+			task: 'add-apms',
+			source: 'wcpay-add-apms-task',
+		} );
+
 		window.location.href = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/additional-payment-methods',

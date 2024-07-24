@@ -10,6 +10,7 @@ import ReactDOM from 'react-dom';
 import type { TaskItemProps } from '../types';
 import strings from '../strings';
 import SetupLivePaymentsModal from '../../modal/setup-live-payments';
+import { recordEvent } from 'wcpay/tracks';
 
 const SetupLivePaymentsModalWrapper: React.FC = () => {
 	const [ modalVisible, setModalVisible ] = useState( true );
@@ -27,6 +28,11 @@ const SetupLivePaymentsModalWrapper: React.FC = () => {
 
 export const getGoLiveTask = (): TaskItemProps | null => {
 	const handleClick = () => {
+		recordEvent( 'wcpay_overview_task_click', {
+			task: 'go-live',
+			source: 'wcpay-go-live-task',
+		} );
+
 		const container = document.createElement( 'div' );
 		container.id = 'wcpay-golivemodal-container';
 		document.body.appendChild( container );

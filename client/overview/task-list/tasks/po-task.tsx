@@ -28,13 +28,14 @@ export const getVerifyBankAccountTask = (): any => {
 	} = wcpaySettings.accountStatus;
 
 	const handleClick = () => {
-		recordEvent( 'wcpay_account_details_link_clicked', {
-			source: 'overview-page__po-verify-bank-account-task',
+		recordEvent( 'wcpay_overview_task_click', {
+			task: 'po-bank-account',
+			source: 'wcpay-po-bank-account-task',
 		} );
 
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			collect_payout_requirements: true,
-			source: 'overview-page__po-verify-bank-account-task',
+			source: 'wcpay-po-bank-account-task',
 		} );
 	};
 

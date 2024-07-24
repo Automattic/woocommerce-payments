@@ -15,6 +15,7 @@ import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
 import EnableWooPaymentsCheckbox from './enable-woopayments-checkbox';
+import { recordEvent } from 'wcpay/tracks';
 
 const GeneralSettings = () => {
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
@@ -38,9 +39,14 @@ const GeneralSettings = () => {
 									if ( enableTestMode ) {
 										setTestModeModalVisible( true );
 									} else {
-										updateIsTestModeEnabled(
-											enableTestMode
+										recordEvent(
+											'wcpay_test_mode_disabled',
+											{
+												source: 'wcadmin-settings-page',
+											}
 										);
+
+										updateIsTestModeEnabled( false );
 									}
 								} }
 								label={ __(
@@ -88,6 +94,13 @@ const GeneralSettings = () => {
 									),
 									variant: 'secondary',
 									onClick: () => {
+										recordEvent(
+											'wcpay_settings_setup_live_payments_click',
+											{
+												source: 'wcadmin-settings-page',
+											}
+										);
+
 										setModalVisible( true );
 									},
 								},
@@ -125,17 +138,31 @@ const GeneralSettings = () => {
 			</Card>
 			{ modalVisible && (
 				<SetupLivePaymentsModal
-					onClose={ () => setModalVisible( false ) }
 					from="WCPAY_SETTINGS"
 					source="wcadmin-settings-page"
+					onClose={ () => {
+						recordEvent( 'wcpay_setup_live_payments_modal_exit', {
+							source: 'wcadmin-settings-page',
+						} );
+
+						setModalVisible( false );
+					} }
 				/>
 			) }
 			{ testModeModalVisible && (
 				<TestModeConfirmationModal
 					onClose={ () => {
+						recordEvent( 'wcpay_test_mode_modal_exit', {
+							source: 'wcadmin-settings-page',
+						} );
+
 						setTestModeModalVisible( false );
 					} }
 					onConfirm={ () => {
+						recordEvent( 'wcpay_test_mode_enabled', {
+							source: 'wcadmin-settings-page',
+						} );
+
 						updateIsTestModeEnabled( true );
 						setTestModeModalVisible( false );
 					} }
