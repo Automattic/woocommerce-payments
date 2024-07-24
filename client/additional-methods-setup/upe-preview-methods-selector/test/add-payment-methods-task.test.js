@@ -270,10 +270,13 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		userEvent.click( screen.getByText( 'Continue' ) );
 
+		await jest.runAllTimersAsync();
+
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
 			'p24',
 		] );
+
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
 				{ initialMethods: [ 'card' ] },
@@ -334,6 +337,8 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 
 		userEvent.click( screen.getByText( 'Continue' ) );
+
+		await jest.runAllTimersAsync();
 
 		// Methods are removed.
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
