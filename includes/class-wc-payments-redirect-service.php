@@ -138,7 +138,7 @@ class WC_Payments_Redirect_Service {
 		}
 
 		// If we were given an error message, store it in a very short-lived transient to show it on the page.
-		if ( isset( $error_message ) ) {
+		if ( ! empty( $error_message ) ) {
 			set_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
 
@@ -183,13 +183,18 @@ class WC_Payments_Redirect_Service {
 	/**
 	 * Redirect to the overview page.
 	 *
-	 * @param string $from Source of the redirect.
+	 * @param string $from Source of the redirect, if any.
+	 * @param string $onboarding_source Source of the onboarding flow, if any.
 	 */
-	public function redirect_to_overview_page( string $from = '' ): void {
+	public function redirect_to_overview_page( string $from = '', string $onboarding_source = '' ): void {
 		$overview_page_url = WC_Payments_Account::get_overview_page_url();
 		if ( '' !== $from ) {
 			$overview_page_url = add_query_arg( 'from', $from, $overview_page_url );
 		}
+		if ( '' !== $onboarding_source ) {
+			$overview_page_url = add_query_arg( 'source', $onboarding_source, $overview_page_url );
+		}
+
 		$this->redirect_to( $overview_page_url );
 	}
 
