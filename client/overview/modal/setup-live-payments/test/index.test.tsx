@@ -63,7 +63,7 @@ describe( 'Setup Live Payments Modal', () => {
 		);
 
 		expect( window.location.href ).toBe(
-			`https://wcpay.test/connect?wcpay-disable-onboarding-test-mode=true`
+			`https://wcpay.test/connect?wcpay-disable-onboarding-test-mode=true&from=bogus&source=wcpay-setup-live-payments`
 		);
 	} );
 } );
