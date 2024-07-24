@@ -1184,10 +1184,9 @@ class WC_Payments_Account {
 
 			// Handle the scenarios that need to point to the onboarding wizard before initializing the Stripe onboarding.
 			// All other more specific scenarios should have been handled by this point.
-			if ( WC_Payments_Utils::should_use_new_onboarding_flow()
+			if ( ! $create_builder_account
 				// When we come from the onboarding wizard we obviously don't want to go back to it!
 				&& WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD !== $from
-				&& ! $create_builder_account
 				&& ! $this->is_stripe_connected() ) {
 
 				if ( ! $should_onboard_in_test_mode && WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {

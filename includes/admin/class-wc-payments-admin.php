@@ -336,21 +336,19 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $this->account->is_stripe_connected() ) {
-			if ( WC_Payments_Utils::should_use_new_onboarding_flow() ) {
-				wc_admin_register_page(
-					[
-						'id'         => 'wc-payments-onboarding',
-						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
-						'parent'     => 'wc-payments',
-						'path'       => '/payments/onboarding',
-						'capability' => 'manage_woocommerce',
-						'nav_args'   => [
-							'parent' => 'wc-payments',
-						],
-					]
-				);
-				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
-			}
+			wc_admin_register_page(
+				[
+					'id'         => 'wc-payments-onboarding',
+					'title'      => __( 'Onboarding', 'woocommerce-payments' ),
+					'parent'     => 'wc-payments',
+					'path'       => '/payments/onboarding',
+					'capability' => 'manage_woocommerce',
+					'nav_args'   => [
+						'parent' => 'wc-payments',
+					],
+				]
+			);
+			remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
 		}
 
 		if ( $should_render_full_menu ) {

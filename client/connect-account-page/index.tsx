@@ -40,8 +40,6 @@ const SandboxModeNotice = () => (
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
-	const isNewFlowEnabled =
-		wcpaySettings.progressiveOnboarding?.isNewFlowEnabled;
 
 	const [ errorMessage, setErrorMessage ] = useState< string >(
 		wcpaySettings.errorMessage
@@ -124,7 +122,6 @@ const ConnectAccountPage: React.FC = () => {
 	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
 		recordEvent( 'wcpay_connect_account_clicked', {
 			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
-			is_new_onboarding_flow: isNewFlowEnabled,
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),

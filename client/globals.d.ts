@@ -85,7 +85,6 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		progressiveOnboarding?: {
-			isNewFlowEnabled: boolean;
 			isEnabled: boolean;
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
