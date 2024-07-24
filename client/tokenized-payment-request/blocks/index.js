@@ -23,8 +23,6 @@ const tokenizedCartPaymentRequestPaymentMethod = ( api ) => ( {
 	),
 	edit: <ApplePayPreview />,
 	canMakePayment: ( cartData ) => {
-		cartData = transformCartDataForStoreAPI( cartData, null );
-
 		// If in the editor context, always return true to display the `edit` prop preview.
 		// https://github.com/woocommerce/woocommerce-gutenberg-products-block/issues/4101.
 		if ( getConfig( 'is_admin' ) ) {
@@ -46,6 +44,7 @@ const tokenizedCartPaymentRequestPaymentMethod = ( api ) => ( {
 			// Create a payment request and check if we can make a payment to determine whether to
 			// show the Payment Request Button or not. This is necessary because a browser might be
 			// able to load the Stripe JS object, but not support Payment Requests.
+			cartData = transformCartDataForStoreAPI( cartData, null );
 			const pr = getPaymentRequest( {
 				stripe,
 				cartData,
