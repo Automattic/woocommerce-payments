@@ -75,8 +75,8 @@ export const useInitialization = ( {
 		paymentRequest,
 		billing?.cartTotal?.value,
 		isFinished,
-		shippingData.needsShipping,
-		billing.cartTotalItems,
+		shippingData?.needsShipping,
+		billing?.cartTotalItems,
 		cartData,
 	] );
 
