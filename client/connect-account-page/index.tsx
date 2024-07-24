@@ -22,7 +22,6 @@ import { addQueryArgs } from '@wordpress/url';
 import { recordEvent } from 'tracks';
 import Page from 'components/page';
 import BannerNotice from 'components/banner-notice';
-import PaymentMethods from './payment-methods';
 import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
@@ -30,6 +29,7 @@ import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
+import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
 
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
@@ -202,7 +202,7 @@ const ConnectAccountPage: React.FC = () => {
 							<InfoNotice />
 						</div>
 						<div className="connect-account-page__payment-methods">
-							<PaymentMethods />
+							<WooPaymentMethodsLogos maxElements={ 10 } />
 							<div className="connect-account-page__payment-methods__description">
 								<div>
 									<p>Deposits</p>

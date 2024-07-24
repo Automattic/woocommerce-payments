@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Allow the purchase of physical subscriptions using ECE if no shipping options are defined.

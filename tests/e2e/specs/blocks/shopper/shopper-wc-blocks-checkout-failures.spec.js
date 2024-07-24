@@ -40,7 +40,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			}
 
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopperWCP.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
 			await shopperWCP.fillBillingDetailsWCB( billingDetails );
 			await page.waitForSelector(
@@ -64,9 +64,11 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector(
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content'
+			);
 			await expect( page ).toMatchElement(
-				'div.wc-block-components-notices > div > div.components-notice__content',
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content',
 				{
 					text: 'Your card was declined.',
 				}
@@ -80,9 +82,11 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector(
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content'
+			);
 			await expect( page ).toMatchElement(
-				'div.wc-block-components-notices > div > div.components-notice__content',
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content',
 				{
 					text: "Your card's expiration year is in the past.",
 				}
@@ -96,11 +100,13 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector(
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content'
+			);
 			await expect(
 				page
 			).toMatchElement(
-				'div.wc-block-components-notices > div > div.components-notice__content',
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content',
 				{ text: "Your card's security code is incomplete." }
 			);
 		} );
@@ -112,9 +118,11 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector(
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content'
+			);
 			await expect( page ).toMatchElement(
-				'div.wc-block-components-notices > div > div.components-notice__content',
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content',
 				{
 					text: 'Your card has insufficient funds.',
 				}
@@ -128,9 +136,11 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector(
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content'
+			);
 			await expect( page ).toMatchElement(
-				'div.wc-block-components-notices > div > div.components-notice__content',
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content',
 				{
 					text: 'Your card has expired.',
 				}
@@ -144,9 +154,11 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector(
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content'
+			);
 			await expect( page ).toMatchElement(
-				'div.wc-block-components-notices > div > div.components-notice__content',
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content',
 				{
 					text: "Your card's security code is incorrect.",
 				}
@@ -162,9 +174,11 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector(
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content'
+			);
 			await expect( page ).toMatchElement(
-				'div.wc-block-components-notices > div > div.components-notice__content',
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content',
 				{
 					text:
 						'An error occurred while processing your card. Try again in a little bit.',
@@ -181,10 +195,12 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector(
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content'
+			);
 			// Verify the error message
 			await expect( page ).toMatchElement(
-				'div.wc-block-components-notices > div > div.components-notice__content',
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content',
 				{
 					text: 'Your card number is invalid.',
 				}
@@ -198,12 +214,14 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await confirmCardAuthentication( page );
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector(
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content'
+			);
 			const declined3dsCardError = await page.$eval(
-				'div.wc-block-components-notices > div > div.components-notice__content',
+				'div.wc-block-components-notices > .wc-block-store-notice > .wc-block-components-notice-banner__content',
 				( el ) => el.innerText
 			);
-			await expect( page ).toMatch(
+			await expect( page ).toMatchTextContent(
 				declined3dsCardError,
 				'Your card was declined.'
 			);

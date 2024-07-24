@@ -16,7 +16,7 @@ import { DocumentsFilters } from '../';
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
 jest.mock( '@woocommerce/settings', () => ( {
 	...jest.requireActual( '@woocommerce/settings' ),
-	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.7 : '' ) ),
+	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.8 : '' ) ),
 } ) );
 
 function addAdvancedFilter( filter: string ) {
@@ -48,6 +48,14 @@ describe( 'Documents filters', () => {
 
 	describe( 'when filtering by date', () => {
 		let ruleSelector: HTMLElement;
+
+		beforeAll( () => {
+			jest.useFakeTimers();
+		} );
+
+		afterAll( () => {
+			jest.useRealTimers();
+		} );
 
 		beforeEach( () => {
 			addAdvancedFilter( 'Date' );

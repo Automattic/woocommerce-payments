@@ -299,7 +299,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		if ( 'large' === $height ) {
-			return '56';
+			return '55';
 		}
 
 		// for the "default"/"small" and "catch-all" scenarios.
@@ -807,20 +807,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// If WooCommerce Deposits is active, we need to get the correct price for the product.
 		if ( class_exists( 'WC_Deposits_Product_Manager' ) && class_exists( 'WC_Deposits_Plans_Manager' ) && WC_Deposits_Product_Manager::deposits_enabled( $product->get_id() ) ) {
+			// If is_deposit is null, we use the default deposit type for the product.
 			if ( is_null( $is_deposit ) ) {
-				/**
-				 * If is_deposit is null, we use the default deposit type for the product.
-				 *
-				 * @psalm-suppress UndefinedClass
-				 */
 				$is_deposit = 'deposit' === WC_Deposits_Product_Manager::get_deposit_selected_type( $product->get_id() );
 			}
 			if ( $is_deposit ) {
-				/**
-				 * Ignore undefined classes from 3rd party plugins.
-				 *
-				 * @psalm-suppress UndefinedClass
-				 */
 				$deposit_type       = WC_Deposits_Product_Manager::get_deposit_type( $product->get_id() );
 				$available_plan_ids = WC_Deposits_Plans_Manager::get_plan_ids_for_product( $product->get_id() );
 				// Default to first (default) plan if no plan is specified.

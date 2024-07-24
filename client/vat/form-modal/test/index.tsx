@@ -6,7 +6,6 @@
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import React from 'react';
-import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
@@ -18,7 +17,7 @@ jest.mock( '../../form', () => jest.fn() );
 
 describe( 'VAT form modal', () => {
 	beforeEach( () => {
-		mocked( VatForm ).mockReturnValue( <p>VAT Form</p> );
+		jest.mocked( VatForm ).mockReturnValue( <p>VAT Form</p> );
 	} );
 
 	it( 'should render when isModalOpen is true', () => {

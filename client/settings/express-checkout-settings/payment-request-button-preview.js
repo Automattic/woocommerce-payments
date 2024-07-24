@@ -29,7 +29,7 @@ import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/blocks/c
 const buttonSizeToPxMap = {
 	small: 40,
 	medium: 48,
-	large: 56,
+	large: 55,
 };
 
 const WooPayButtonPreview = ( { size, buttonType, theme, radius } ) => (

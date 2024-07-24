@@ -88,7 +88,7 @@ describe.each( cardTestingPreventionStates )(
 					await page.waitForNavigation( {
 						waitUntil: 'networkidle0',
 					} );
-					await expect( page ).toMatch( 'Order received' );
+					await expect( page ).toMatchTextContent( 'Order received' );
 				} );
 			}
 		);

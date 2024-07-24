@@ -34,10 +34,10 @@ describe( 'Saved cards ', () => {
 			it( 'should save the card', async () => {
 				await shopperWCP.goToPaymentMethods();
 				await shopperWCP.addNewPaymentMethod( cardType, card );
-				await expect( page ).toMatch(
+				await expect( page ).toMatchTextContent(
 					'Payment method successfully added'
 				);
-				await expect( page ).toMatch(
+				await expect( page ).toMatchTextContent(
 					`${ card.expires.month }/${ card.expires.year }`
 				);
 			} );
@@ -60,13 +60,15 @@ describe( 'Saved cards ', () => {
 					} );
 				}
 
-				await expect( page ).toMatch( 'Order received' );
+				await expect( page ).toMatchTextContent( 'Order received' );
 			} );
 
 			it( 'should delete the card', async () => {
 				await shopperWCP.goToPaymentMethods();
 				await shopperWCP.deleteSavedPaymentMethod( card.label );
-				await expect( page ).toMatch( 'Payment method deleted' );
+				await expect( page ).toMatchTextContent(
+					'Payment method deleted'
+				);
 			} );
 		}
 	);
