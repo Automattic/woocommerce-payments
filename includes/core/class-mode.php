@@ -48,8 +48,6 @@ class Mode {
 
 	/**
 	 * Initializes the working mode of WooPayments.
-	 *
-	 * @throws Exception In case the class has not been initialized yet.
 	 */
 	private function maybe_init() {
 		// The object is only initialized once.
@@ -114,7 +112,6 @@ class Mode {
 	/**
 	 * Checks if dev is enabled.
 	 *
-	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
 	 */
 	public function is_dev(): bool {
