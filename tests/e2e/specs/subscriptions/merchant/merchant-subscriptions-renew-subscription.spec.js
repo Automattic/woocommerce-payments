@@ -47,7 +47,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 
 			// Get the subscription ID
 			const subscriptionIdField = await page.$(
@@ -60,6 +60,14 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await shopper.logout();
 		} );
 		afterAll( async () => {
+			page.removeAllListeners( 'dialog' );
+			page.on( 'dialog', async function ( dialog ) {
+				try {
+					await dialog.accept();
+				} catch ( err ) {
+					console.warn( err.message );
+				}
+			} );
 			await merchant.logout();
 		} );
 
@@ -83,7 +91,11 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				page.removeAllListeners( 'dialog' ),
 				evalAndClick( 'button.save_order' ),
 				page.on( 'dialog', async ( dialog ) => {
-					await dialog.accept();
+					try {
+						await dialog.accept();
+					} catch ( err ) {
+						console.warn( err.message );
+					}
 				} ),
 				uiUnblocked(),
 				page.waitForNavigation( { waitUntil: 'networkidle0' } ),

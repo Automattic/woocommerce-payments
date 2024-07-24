@@ -83,6 +83,15 @@ describe( 'CheckoutPageSaveUser', () => {
 			( setting ) => setting === 'forceNetworkSavedCards'
 		);
 
+		window.wcSettings = {
+			wcVersion: '9.1.2',
+			storePages: {
+				checkout: {
+					permalink: 'http://localhost/',
+				},
+			},
+		};
+
 		window.wcpaySettings = {
 			accountStatus: {
 				country: 'US',
