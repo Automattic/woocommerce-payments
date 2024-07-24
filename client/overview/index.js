@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { Button, Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies.
@@ -138,11 +139,17 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 	} = wcpaySettings;
 
+	const { createSuccessNotice } = useDispatch( 'core/notices' );
+
 	const isDevMode = wcpaySettings.devMode;
 	const { isLoading: settingsIsLoading } = useSettings();
 	const [ livePaymentsModalVisible, setLivePaymentsModalVisible ] = useState(
 		false
 	);
+	const [
+		isTestDriveSuccessDisplayed,
+		setTestDriveSuccessDisplayed,
+	] = useState( false );
 	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {
@@ -166,6 +173,8 @@ const OverviewPage = () => {
 
 	const showConnectionSuccess =
 		queryParams[ 'wcpay-connection-success' ] === '1';
+	const isSandboxOnboardedSuccessful =
+		queryParams[ 'sandbox-onboarded' ] === 'true';
 
 	const showLoanOfferError = queryParams[ 'wcpay-loan-offer-error' ] === '1';
 	const showServerLinkError =
@@ -196,6 +205,18 @@ const OverviewPage = () => {
 			return { payment_method: key, fee: value };
 		} )
 		.filter( ( e ) => e && e.fee !== undefined );
+
+	if ( ! isTestDriveSuccessDisplayed && isSandboxOnboardedSuccessful ) {
+		createSuccessNotice(
+			__(
+				'Success! You can start using WooPayments in sandbox mode.',
+				'woocommerce-payments'
+			)
+		);
+
+		// Ensure the success message is displayed only once.
+		setTestDriveSuccessDisplayed( true );
+	}
 
 	return (
 		<Page isNarrow className="wcpay-overview">
