@@ -237,4 +237,23 @@
 			}
 		}
 	}
+
+	&__preloader {
+		position: absolute;
+		width: calc( 100% + 160px );
+		height: calc( 100% + 100px );
+		background: #fff;
+		left: -160px;
+		top: -95px;
+		z-index: 99999;
+		text-align: center;
+
+		img {
+			position: absolute;
+			height: 44px;
+			width: 167px;
+			top: 18px;
+			left: calc( 50% - 84px );
+		}
+	}
 }

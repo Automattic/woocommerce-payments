@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { render } from '@wordpress/element';
 import {
 	Button,
@@ -15,6 +15,7 @@ import {
 } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
+import { Loader } from '@woocommerce/onboarding';
 
 /**
  * Internal dependencies
@@ -30,6 +31,8 @@ import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
+import WooPaymentsLogo from 'assets/images/logo.svg?asset';
+import { __ } from '@wordpress/i18n';
 
 interface AccountData {
 	status: string;
@@ -39,6 +42,28 @@ const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
 		{ strings.sandboxModeNotice }
 	</BannerNotice>
+);
+
+const TestDriveLoader: React.FunctionComponent< {
+	progress: number;
+} > = ( { progress } ) => (
+	<Loader className="connect-account-page__preloader">
+		<img src={ WooPaymentsLogo } alt="" />
+		<Loader.Layout>
+			<Loader.Title>
+				{ __(
+					'Creating your sandbox account',
+					'woocommerce-payments'
+				) }
+			</Loader.Title>
+			<Loader.ProgressBar progress={ progress ?? 0 } />
+			<Loader.Sequence interval={ 0 }>
+				{ __(
+					'In just a few moments, you will be ready to test payments on your store.'
+				) }
+			</Loader.Sequence>
+		</Loader.Layout>
+	</Loader>
 );
 
 const ConnectAccountPage: React.FC = () => {
@@ -54,6 +79,14 @@ const ConnectAccountPage: React.FC = () => {
 	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
 		false
 	);
+	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] = useState(
+		20
+	);
+
+	//creating a reference object
+	const loaderProgressRef = useRef( testDriveLoaderProgress );
+	loaderProgressRef.current = testDriveLoaderProgress;
+
 	const {
 		connectUrl,
 		overviewUrl,
@@ -87,6 +120,9 @@ const ConnectAccountPage: React.FC = () => {
 			path: `/wc/v3/payments/accounts`,
 			method: 'GET',
 		} ).then( ( account ) => {
+			const newProgress = loaderProgressRef.current + 5;
+			setTestDriveLoaderProgress( newProgress );
+
 			// If the account status is complete, redirect to the overview page.
 			// Otherwise, schedule another check after 5 seconds.
 			if ( ( account as AccountData ).status === 'complete' ) {
@@ -131,6 +167,8 @@ const ConnectAccountPage: React.FC = () => {
 					'Content-Type': 'application/json',
 				},
 			} ).then( ( response ) => {
+				setTestDriveLoaderProgress( 40 );
+
 				// Check the response url for the `wcpay-connection-success` parameter,
 				// indicating a successful connection.
 				const urlParams = new URLSearchParams( response.url );
@@ -323,6 +361,9 @@ const ConnectAccountPage: React.FC = () => {
 						</PanelBody>
 					</Panel>
 				</>
+			) }
+			{ isTestDriveModeSubmitted && (
+				<TestDriveLoader progress={ testDriveLoaderProgress } />
 			) }
 		</Page>
 	);
