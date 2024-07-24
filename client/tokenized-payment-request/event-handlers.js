@@ -128,7 +128,6 @@ const paymentResponseHandler = async (
 
 export const paymentMethodHandler = async (
 	api,
-	cartData,
 	completePayment,
 	abortPayment,
 	event
