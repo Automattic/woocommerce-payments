@@ -146,13 +146,7 @@ export const useInitialization = ( {
 		);
 
 		paymentRequest?.on( 'paymentmethod', ( event ) =>
-			paymentMethodHandler(
-				api,
-				cartData,
-				completePayment,
-				abortPayment,
-				event
-			)
+			paymentMethodHandler( api, completePayment, abortPayment, event )
 		);
 
 		paymentRequest?.on( 'cancel', cancelHandler );
