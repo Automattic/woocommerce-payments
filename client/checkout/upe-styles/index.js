@@ -9,7 +9,6 @@ import {
 	dashedToCamelCase,
 	isColorLight,
 	getBackgroundColor,
-	getHeadingColor,
 } from './utils.js';
 
 export const appearanceSelectors = {
@@ -442,7 +441,7 @@ export const getAppearance = ( elementsLocation ) => {
 	};
 
 	const backgroundColor = getBackgroundColor( selectors.backgroundSelectors );
-	const headingColor = getHeadingColor( selectors.headingSelectors );
+	const headingRules = getFieldStyles( selectors.headingSelectors, '.Label' );
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
 		'.Block',
@@ -452,7 +451,6 @@ export const getAppearance = ( elementsLocation ) => {
 	const globalRules = {
 		colorBackground: backgroundColor,
 		colorText: labelRules.color,
-		colorHeading: headingColor,
 		fontFamily: labelRules.fontFamily,
 		fontSizeBase: labelRules.fontSize,
 	};
@@ -472,6 +470,7 @@ export const getAppearance = ( elementsLocation ) => {
 			'.TabIcon--selected': selectedTabIconRules,
 			'.Text': labelRules,
 			'.Text--redirect': labelRules,
+			'.Heading': headingRules,
 		},
 	};
 	// Remove hidden fields from DOM.
