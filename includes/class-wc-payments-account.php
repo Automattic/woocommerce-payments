@@ -27,8 +27,8 @@ class WC_Payments_Account {
 
 	// ACCOUNT_OPTION is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
 	const ACCOUNT_OPTION                                        = 'wcpay_account_data';
-	const ON_BOARDING_DISABLED_TRANSIENT                        = 'wcpay_on_boarding_disabled';
-	const ON_BOARDING_STARTED_TRANSIENT                         = 'wcpay_on_boarding_started';
+	const ONBOARDING_DISABLED_TRANSIENT                         = 'wcpay_on_boarding_disabled';
+	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
@@ -1385,24 +1385,25 @@ class WC_Payments_Account {
 	public static function is_on_boarding_disabled() {
 		// If the transient isn't set at all, we'll get false indicating that the server hasn't informed us that
 		// on-boarding has been disabled (i.e. it's enabled as far as we know).
-		return get_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+		return get_transient( self::ONBOARDING_DISABLED_TRANSIENT );
 	}
 
 	/**
 	 * Starts the Jetpack connection flow if it's not already fully connected.
 	 *
 	 * @param string $return_url Where to redirect the user back to.
+	 * @param array  $tracks_props Additional properties to attach to the Tracks event.
 	 *
 	 * @throws API_Exception If there was an error when registering the site on WP.com.
 	 */
-	private function maybe_init_jetpack_connection( string $return_url ) {
+	private function maybe_init_jetpack_connection( string $return_url, array $tracks_props ) {
 		// Nothing to do if we already have a working Jetpack connection.
 		if ( $this->has_working_jetpack_connection() ) {
 			return;
 		}
 
 		// Track the Jetpack connection start.
-		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
+		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START, $tracks_props );
 
 		// Ensure our success param is present.
 		$return_url = add_query_arg( [ 'wcpay-connect-jetpack-success' => '1' ], $return_url );
@@ -1675,7 +1676,7 @@ class WC_Payments_Account {
 				try {
 					// Since we're about to call the server again, clear out the on-boarding disabled flag. We can let the code
 					// below re-create it if the server tells us on-boarding is still disabled.
-					delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+					delete_transient( self::ONBOARDING_DISABLED_TRANSIENT );
 
 					$request  = Get_Account::create();
 					$response = $request->send();
@@ -1690,7 +1691,7 @@ class WC_Payments_Account {
 						// next time we call the server for account information, but just in case we set the expiry time for
 						// this setting an hour longer than the account details transient.
 						$account = [];
-						set_transient( self::ON_BOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
+						set_transient( self::ONBOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
 					} else {
 						// Return false to signal account retrieval error.
 						return false;

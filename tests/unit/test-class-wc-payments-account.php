@@ -91,7 +91,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
-		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
+		delete_transient( WC_Payments_Account::ONBOARDING_DISABLED_TRANSIENT );
 		unset( $_GET );
 		unset( $_REQUEST );
 		parent::tear_down();
@@ -901,7 +901,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['progressive'] = 'true';
 
 		// There isn't another onboarding started.
-		set_transient( WC_Payments_Account::ON_BOARDING_STARTED_TRANSIENT, true, 10 );
+		set_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT, true, 10 );
 
 		// The Jetpack connection is in working order.
 		$this->mock_api_client
