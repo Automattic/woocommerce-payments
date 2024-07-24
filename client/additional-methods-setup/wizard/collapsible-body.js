@@ -10,7 +10,7 @@ import classNames from 'classnames';
 import WizardTaskContext from './task/context';
 import './collapsible-body.scss';
 
-const CollapsibleBody = ( { className, ...restProps } ) => {
+const CollapsibleBody = ( { className = null, ...restProps } ) => {
 	const { isActive } = useContext( WizardTaskContext );
 
 	return (
