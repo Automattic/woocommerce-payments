@@ -242,7 +242,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return bool
 	 */
 	public static function is_test_mode_enabled(): bool {
-		return get_option( self::TEST_MODE_OPTION );
+		return get_option( self::TEST_MODE_OPTION, false );
 	}
 
 	/**
