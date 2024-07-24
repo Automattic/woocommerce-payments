@@ -1622,7 +1622,7 @@ class WC_Payments_API_Client {
 				'domain_name' => $domain_name,
 				// The value needs to be a string.
 				// If it's a boolean, it gets serialized as an integer (1), causing an invalid request error.
-				'enabled'	  => 'true',
+				'enabled'     => 'true',
 			],
 			self::DOMAIN_REGISTRATION_API,
 			self::POST
