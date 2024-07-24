@@ -300,7 +300,7 @@ class WC_Payments_Incentives_Service {
 				)
 			),
 			// Whether the store has at least one payment gateway enabled.
-			'has_payments' => ! empty( WC()->payment_gateways()->get_available_payment_gateways() ),
+			'has_payments' => @ ! empty( WC()->payment_gateways()->get_available_payment_gateways() ), // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 			'has_wcpay'    => $this->has_wcpay(),
 		];
 	}
