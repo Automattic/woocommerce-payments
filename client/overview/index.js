@@ -170,6 +170,8 @@ const OverviewPage = () => {
 	const showLoanOfferError = queryParams[ 'wcpay-loan-offer-error' ] === '1';
 	const showServerLinkError =
 		queryParams[ 'wcpay-server-link-error' ] === '1';
+	const showResetAccountError =
+		queryParams[ 'wcpay-reset-account-error' ] === '1';
 	const showProgressiveOnboardingEligibilityModal =
 		showConnectionSuccess &&
 		progressiveOnboarding.isEnabled &&
@@ -213,6 +215,14 @@ const OverviewPage = () => {
 				<Notice status="error" isDismissible={ false }>
 					{ __(
 						'There was a problem redirecting you to the requested link. Please check that it is valid and try again.',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+			{ showResetAccountError && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'There was a problem resetting your account. Please wait a few seconds and try again.',
 						'woocommerce-payments'
 					) }
 				</Notice>
