@@ -54,25 +54,30 @@ const ConnectAccountPage: React.FC = () => {
 
 	const isCountrySupported = !! availableCountries[ country ];
 
-	const determineTrackingSource = () => {
-		const urlParams = new URLSearchParams( window.location.search );
-		const from = urlParams.get( 'from' ) || '';
+	const urlParams = new URLSearchParams( window.location.search );
+	const urlSource = urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' );
+	const urlFrom = urlParams.get( 'from' ) || '';
 
-		// Determine where the user came from.
-		let source = 'wcadmin';
-		switch ( from ) {
+	const determineTrackingSource = () => {
+		// If we have a source query param, use that.
+		if ( !! urlSource && 'unknown' !== urlSource ) {
+			return urlSource;
+		}
+		// Determine what source to use for the onboarding process.
+		let sourceGuess = 'wcpay-connect-page';
+		switch ( urlFrom ) {
 			case 'WCADMIN_PAYMENT_TASK':
-				source = 'wcadmin-payment-task';
+				sourceGuess = 'wcadmin-payment-task';
 				break;
 			case 'WCADMIN_PAYMENT_SETTINGS':
-				source = 'wcadmin-settings-page';
+				sourceGuess = 'wcadmin-settings-page';
 				break;
 			case 'WCADMIN_PAYMENT_INCENTIVE':
-				source = 'wcadmin-incentive-page';
+				sourceGuess = 'wcadmin-incentive-page';
 				break;
 		}
 
-		return source;
+		return sourceGuess;
 	};
 
 	useEffect( () => {
@@ -95,6 +100,7 @@ const ConnectAccountPage: React.FC = () => {
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
 			window.location.href = addQueryArgs( connectUrl, {
+				source: determineTrackingSource(),
 				from: 'WCPAY_CONNECT',
 			} );
 		};
@@ -158,6 +164,7 @@ const ConnectAccountPage: React.FC = () => {
 		}
 
 		window.location.href = addQueryArgs( connectUrl, {
+			source: determineTrackingSource(),
 			from: 'WCPAY_CONNECT',
 		} );
 	};
@@ -170,6 +177,7 @@ const ConnectAccountPage: React.FC = () => {
 		window.location.href = addQueryArgs( connectUrl, {
 			test_mode: 'true',
 			create_builder_account: 'true',
+			source: determineTrackingSource(),
 			from: 'WCPAY_CONNECT',
 		} );
 	};

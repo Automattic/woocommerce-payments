@@ -15,13 +15,21 @@ import BlockPostAuthorIcon from 'components/icons/block-post-author';
 import './style.scss';
 
 interface Props {
+	from: string;
+	source: string;
 	onClose: () => void;
 }
 
-const SetupLivePaymentsModal: React.FC< Props > = ( { onClose }: Props ) => {
+const SetupLivePaymentsModal: React.FC< Props > = ( {
+	from,
+	source,
+	onClose,
+}: Props ) => {
 	const handleSetup = () => {
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			'wcpay-disable-onboarding-test-mode': 'true',
+			from,
+			source: 'wcpay-setup-live-payments', // Overwrite any existing source because we are starting over.
 		} );
 	};
 

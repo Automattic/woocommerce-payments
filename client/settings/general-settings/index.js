@@ -126,6 +126,8 @@ const GeneralSettings = () => {
 			{ modalVisible && (
 				<SetupLivePaymentsModal
 					onClose={ () => setModalVisible( false ) }
+					from="WCPAY_SETTINGS"
+					source="wcadmin-settings-page"
 				/>
 			) }
 			{ testModeModalVisible && (

@@ -25,12 +25,14 @@ const handleReset = () => {
 
 	window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 		'wcpay-reset-account': 'true',
+		source: 'wcpay-reset-account', // Overwrite any existing source because we are starting over.
 	} );
 };
 
 export const AccountTools: React.FC< Props > = ( props: Props ) => {
+	const source = 'wcpay-finish-setup-tool';
 	const accountLink = addQueryArgs( props.accountLink, {
-		source: 'account-tools__finish-setup-button',
+		source,
 	} );
 	const detailsSubmitted = props.detailsSubmitted;
 	const [ modalVisible, setModalVisible ] = useState( false );
@@ -50,8 +52,7 @@ export const AccountTools: React.FC< Props > = ( props: Props ) => {
 								recordEvent(
 									'wcpay_account_details_link_clicked',
 									{
-										source:
-											'account-tools__finish-setup-button',
+										source,
 									}
 								)
 							}

@@ -15,7 +15,11 @@ const SetupLivePaymentsModalWrapper: React.FC = () => {
 	const [ modalVisible, setModalVisible ] = useState( true );
 
 	return modalVisible ? (
-		<SetupLivePaymentsModal onClose={ () => setModalVisible( false ) } />
+		<SetupLivePaymentsModal
+			from="WCPAY_GO_LIVE_TASK"
+			source="wcpay-go-live-task"
+			onClose={ () => setModalVisible( false ) }
+		/>
 	) : (
 		<></>
 	);

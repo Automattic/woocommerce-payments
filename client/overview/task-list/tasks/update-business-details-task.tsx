@@ -111,14 +111,20 @@ export const getUpdateBusinessDetailsTask = (
 		if ( hasMultipleErrors ) {
 			renderModal();
 		} else {
+			let source = 'wcpay-update-business-details-task';
+			if ( ! detailsSubmitted ) {
+				source = 'wcpay-finish-setup-task';
+			}
 			recordEvent( 'wcpay_account_details_link_clicked', {
-				source: 'overview-page__update-business-details-task',
+				source,
 			} );
 
 			// If the onboarding isn't complete use the connectUrl instead,
 			// as the accountLink doesn't handle redirecting back to the overview page.
 			if ( ! detailsSubmitted ) {
-				window.location.href = connectUrl;
+				window.location.href = addQueryArgs( connectUrl, {
+					source: 'wcpay-finish-setup-task',
+				} );
 			} else {
 				window.open( accountLinkWithSource, '_blank' );
 			}

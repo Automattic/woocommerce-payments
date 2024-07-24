@@ -7,12 +7,16 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import type { TaskItemProps } from '../types';
+import { addQueryArgs } from '@wordpress/url';
 
 export const getReconnectWpcomTask = (
 	wpcomReconnectUrl: string
 ): TaskItemProps | null => {
 	const handleClick = () => {
-		window.location.href = wpcomReconnectUrl;
+		window.location.href = addQueryArgs( wpcomReconnectUrl, {
+			from: 'WCPAY_OVERVIEW',
+			source: 'wcpay-reconnect-wpcom-user-task',
+		} );
 	};
 
 	return {

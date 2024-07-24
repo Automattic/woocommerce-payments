@@ -14,6 +14,8 @@ export const getAddApmsTask = (): TaskItemProps | null => {
 		window.location.href = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/additional-payment-methods',
+			from: 'WCPAY_OVERVIEW',
+			source: 'wcpay-add-apms-task',
 		} );
 	};
 

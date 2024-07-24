@@ -26,7 +26,13 @@ describe( 'Setup Live Payments Modal', () => {
 	};
 
 	it( 'modal is open by default', () => {
-		render( <SetupLivePaymentsModal onClose={ () => jest.fn() } /> );
+		render(
+			<SetupLivePaymentsModal
+				from="bogus"
+				source="bogus-again"
+				onClose={ () => jest.fn() }
+			/>
+		);
 
 		expect(
 			screen.queryByText(
@@ -42,7 +48,13 @@ describe( 'Setup Live Payments Modal', () => {
 			value: new URL( window.location.href ),
 		} );
 
-		render( <SetupLivePaymentsModal onClose={ () => jest.fn() } /> );
+		render(
+			<SetupLivePaymentsModal
+				from="bogus"
+				source="bogus-again"
+				onClose={ () => jest.fn() }
+			/>
+		);
 
 		user.click(
 			screen.getByRole( 'button', {

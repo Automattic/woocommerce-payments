@@ -291,6 +291,8 @@ const OverviewPage = () => {
 			{ livePaymentsModalVisible && (
 				<ErrorBoundary>
 					<SetupLivePaymentsModal
+						from="WCPAY_OVERVIEW"
+						source="wcpay-overview-page"
 						onClose={ () => setLivePaymentsModalVisible( false ) }
 					/>
 				</ErrorBoundary>
