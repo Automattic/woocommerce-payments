@@ -21,7 +21,7 @@ describe( 'Admin Order Analytics', () => {
 		const card = config.get( 'cards.basic' );
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
-		await expect( page ).toMatch( 'Order received' );
+		await expect( page ).toMatchTextContent( 'Order received' );
 		const orderCell = await page.$(
 			'.woocommerce-order-overview__order > strong'
 		);

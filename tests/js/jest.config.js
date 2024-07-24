@@ -13,6 +13,7 @@ module.exports = {
 		'^assets(.*?)(\\?.*)?$': '<rootDir>/assets$1',
 		'^@woocommerce/blocks-registry$':
 			'<rootDir>/tests/js/woocommerce-blocks-registry',
+		'^uuid$': require.resolve( 'uuid' ),
 	},
 	globalSetup: '<rootDir>/tests/js/jest-global-setup.js',
 	setupFiles: [
@@ -45,7 +46,7 @@ module.exports = {
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
 	transformIgnorePatterns: [
-		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/)',
+		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/|@automattic/material-design-icons/)',
 	],
 	verbose: true,
 };
