@@ -196,7 +196,9 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_woopay_enabled() );
 	}
 
-	public function test_is_woopay_enabled_returns_false_if_woopayments_is_disabled_and_woopay_is_enabled() {
+	// We are disabling only DC for now. We should disable WooPay if WooPayments is disabled though.
+	// Leaving this test case so we can catch that later.
+	public function test_is_woopay_enabled_returns_true_if_woopayments_is_disabled_and_woopay_is_enabled() {
 		add_filter( 'woocommerce_payments_enabled_gateways_for_woopay', [ $this, 'disable_woopayments' ] );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
