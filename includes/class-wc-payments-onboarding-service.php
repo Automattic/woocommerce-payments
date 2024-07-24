@@ -19,13 +19,27 @@ class WC_Payments_Onboarding_Service {
 
 	const TEST_MODE_OPTION                    = 'wcpay_onboarding_test_mode';
 	const ONBOARDING_ELIGIBILITY_MODAL_OPTION = 'wcpay_onboarding_eligibility_modal_dismissed';
-	const SOURCE_WCADMIN_PAYMENT_TASK         = 'wcadmin-payment-task';
-	const SOURCE_WCADMIN_SETTINGS_PAGE        = 'wcadmin-settings-page';
-	const SOURCE_WCADMIN_INCENTIVE_PAGE       = 'wcadmin-incentive-page';
-	const SOURCE_WCPAY_CONNECT_PAGE           = 'wcpay-connect-page';
-	const SOURCE_WCPAY_RESET_ACCOUNT          = 'wcpay-reset-account';
-	const SOURCE_WCPAY_SETUP_LIVE_PAYMENTS    = 'wcpay-setup-live-payments';
-	const SOURCE_UNKNOWN                      = 'unknown';
+
+	// Onboarding flow sources.
+	// We use these to identify the originating place for the current onboarding flow.
+	// This should be very sticky as opposed to the `from` value which is meant to represent the immediately previous step.
+	const SOURCE_WCADMIN_PAYMENT_TASK               = 'wcadmin-payment-task';
+	const SOURCE_WCADMIN_SETTINGS_PAGE              = 'wcadmin-settings-page';
+	const SOURCE_WCADMIN_INCENTIVE_PAGE             = 'wcadmin-incentive-page';
+	const SOURCE_WCPAY_CONNECT_PAGE                 = 'wcpay-connect-page';
+	const SOURCE_WCPAY_OVERVIEW_PAGE                = 'wcpay-overview-page';
+	const SOURCE_WCPAY_PAYOUTS_PAGE                 = 'wcpay-payouts-page';
+	const SOURCE_WCPAY_RESET_ACCOUNT                = 'wcpay-reset-account';
+	const SOURCE_WCPAY_SETUP_LIVE_PAYMENTS          = 'wcpay-setup-live-payments';
+	const SOURCE_WCPAY_FINISH_SETUP_TASK            = 'wcpay-finish-setup-task';
+	const SOURCE_WCPAY_UPDATE_BUSINESS_DETAILS_TASK = 'wcpay-update-business-details-task';
+	const SOURCE_WCPAY_PO_BANK_ACCOUNT_TASK         = 'wcpay-po-bank-account-task';
+	const SOURCE_WCPAY_RECONNECT_WPCOM_TASK         = 'wcpay-reconnect-wpcom-task';
+	const SOURCE_WCPAY_ADD_APMS_TASK                = 'wcpay-add-apms-task';
+	const SOURCE_WCPAY_GO_LIVE_TASK                 = 'wcpay-go-live-task';
+	const SOURCE_WCPAY_FINISH_SETUP_TOOL            = 'wcpay-finish-setup-tool';
+	const SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE        = 'wcpay-payout-failure-notice';
+	const SOURCE_UNKNOWN                            = 'unknown';
 
 	// Values for the `from` GET param to indicate what was the immediately previous step.
 	// Woo core places.
@@ -34,9 +48,14 @@ class WC_Payments_Onboarding_Service {
 	const FROM_WCADMIN_INCENTIVE         = 'WCADMIN_PAYMENT_INCENTIVE';
 	// WooPayments places.
 	const FROM_CONNECT_PAGE      = 'WCPAY_CONNECT';
+	const FROM_OVERVIEW_PAGE     = 'WCPAY_OVERVIEW';
 	const FROM_ONBOARDING_WIZARD = 'WCPAY_ONBOARDING_WIZARD';
+	const FROM_SETTINGS          = 'WCPAY_SETTINGS';
+	const FROM_PAYOUTS           = 'WCPAY_PAYOUTS';
 	const FROM_TEST_TO_LIVE      = 'WCPAY_TEST_TO_LIVE';
+	const FROM_GO_LIVE_TASK      = 'WCPAY_GO_LIVE_TASK';
 	const FROM_RESET_ACCOUNT     = 'WCPAY_RESET_ACCOUNT';
+	const FROM_PLUGIN_ACTIVATION = 'WCPAY_ACTIVE';
 	// External places.
 	const FROM_WPCOM            = 'WPCOM';
 	const FROM_WPCOM_CONNECTION = 'WPCOM_CONNECTION';
@@ -302,10 +321,11 @@ class WC_Payments_Onboarding_Service {
 		if ( in_array(
 			$wcpay_connect_param,
 			[
-				self::FROM_WOO_PAYMENTS_TASK,
-				self::FROM_WOO_PAYMENTS_SETTINGS,
-				self::FROM_WOO_INCENTIVES_PAGE,
+				self::FROM_WCADMIN_PAYMENTS_TASK,
+				self::FROM_WCADMIN_PAYMENTS_SETTINGS,
+				self::FROM_WCADMIN_INCENTIVE,
 				self::FROM_CONNECT_PAGE,
+				self::FROM_OVERVIEW_PAGE,
 				self::FROM_ONBOARDING_WIZARD,
 				self::FROM_TEST_TO_LIVE,
 				self::FROM_RESET_ACCOUNT,
@@ -324,19 +344,25 @@ class WC_Payments_Onboarding_Service {
 		 * =================
 		 */
 		if ( false !== strpos( $referer, 'page=wc-admin&task=payments' ) ) {
-			return self::FROM_WOO_PAYMENTS_TASK;
+			return self::FROM_WCADMIN_PAYMENTS_TASK;
 		}
 		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
-			return self::FROM_WOO_PAYMENTS_SETTINGS;
+			return self::FROM_WCADMIN_PAYMENTS_SETTINGS;
 		}
 		if ( false !== strpos( $referer, 'path=/wc-pay-welcome-page' ) ) {
-			return self::FROM_WOO_INCENTIVES_PAGE;
+			return self::FROM_WCADMIN_INCENTIVE;
 		}
 		if ( false !== strpos( $referer, 'path=/payments/connect' ) ) {
 			return self::FROM_CONNECT_PAGE;
 		}
+		if ( false !== strpos( $referer, 'path=/payments/overview' ) ) {
+			return self::FROM_OVERVIEW_PAGE;
+		}
 		if ( false !== strpos( $referer, 'path=/payments/onboarding' ) ) {
 			return self::FROM_ONBOARDING_WIZARD;
+		}
+		if ( false !== strpos( $referer, 'path=/payments/deposits' ) ) {
+			return self::FROM_PAYOUTS;
 		}
 		if ( false !== strpos( $referer, 'wordpress.com' ) ) {
 			return self::FROM_WPCOM;
@@ -367,6 +393,25 @@ class WC_Payments_Onboarding_Service {
 		$referer    = urldecode( $referer );
 		$get_params = $get_params ?? $_GET; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
+		$valid_sources = [
+			self::SOURCE_WCADMIN_PAYMENT_TASK,
+			self::SOURCE_WCADMIN_SETTINGS_PAGE,
+			self::SOURCE_WCADMIN_INCENTIVE_PAGE,
+			self::SOURCE_WCPAY_CONNECT_PAGE,
+			self::SOURCE_WCPAY_OVERVIEW_PAGE,
+			self::SOURCE_WCPAY_PAYOUTS_PAGE,
+			self::SOURCE_WCPAY_RESET_ACCOUNT,
+			self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
+			self::SOURCE_WCPAY_FINISH_SETUP_TASK,
+			self::SOURCE_WCPAY_UPDATE_BUSINESS_DETAILS_TASK,
+			self::SOURCE_WCPAY_PO_BANK_ACCOUNT_TASK,
+			self::SOURCE_WCPAY_RECONNECT_WPCOM_TASK,
+			self::SOURCE_WCPAY_ADD_APMS_TASK,
+			self::SOURCE_WCPAY_GO_LIVE_TASK,
+			self::SOURCE_WCPAY_FINISH_SETUP_TOOL,
+			self::SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE,
+		];
+
 		/**
 		 * =================
 		 * First, we check the `source` GET param.
@@ -374,19 +419,7 @@ class WC_Payments_Onboarding_Service {
 		 * =================
 		 */
 		$source_param = isset( $get_params['source'] ) ? sanitize_text_field( wp_unslash( $get_params['source'] ) ) : '';
-		if ( in_array(
-			$source_param,
-			[
-				self::SOURCE_WCADMIN_PAYMENT_TASK,
-				self::SOURCE_WCADMIN_SETTINGS_PAGE,
-				self::SOURCE_WCADMIN_INCENTIVE_PAGE,
-				self::SOURCE_WCPAY_CONNECT_PAGE,
-				self::SOURCE_WCPAY_RESET_ACCOUNT,
-				self::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
-			],
-			true
-		) ) {
-
+		if ( in_array( $source_param, $valid_sources, true ) ) {
 			return $source_param;
 		}
 
@@ -412,11 +445,11 @@ class WC_Payments_Onboarding_Service {
 		 * =================
 		 */
 		switch ( $wcpay_connect_param ) {
-			case self::FROM_WOO_PAYMENTS_TASK:
+			case self::FROM_WCADMIN_PAYMENTS_TASK:
 				return self::SOURCE_WCADMIN_PAYMENT_TASK;
-			case self::FROM_WOO_PAYMENTS_SETTINGS:
+			case self::FROM_WCADMIN_PAYMENTS_SETTINGS:
 				return self::SOURCE_WCADMIN_SETTINGS_PAGE;
-			case self::FROM_WOO_INCENTIVES_PAGE:
+			case self::FROM_WCADMIN_INCENTIVE:
 				return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 			default:
 				break;
@@ -430,34 +463,105 @@ class WC_Payments_Onboarding_Service {
 		 * =================
 		 */
 		switch ( $from_param ) {
-			case self::FROM_WOO_PAYMENTS_TASK:
+			case self::FROM_WCADMIN_PAYMENTS_TASK:
 				return self::SOURCE_WCADMIN_PAYMENT_TASK;
-			case self::FROM_WOO_PAYMENTS_SETTINGS:
+			case self::FROM_SETTINGS:
+			case self::FROM_WCADMIN_PAYMENTS_SETTINGS:
 				return self::SOURCE_WCADMIN_SETTINGS_PAGE;
-			case self::FROM_WOO_INCENTIVES_PAGE:
+			case self::FROM_WCADMIN_INCENTIVE:
 				return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 			case self::FROM_CONNECT_PAGE:
 				return self::SOURCE_WCPAY_CONNECT_PAGE;
+			case self::FROM_PAYOUTS:
+				return self::SOURCE_WCPAY_PAYOUTS_PAGE;
+			case self::FROM_GO_LIVE_TASK:
+				return self::SOURCE_WCPAY_GO_LIVE_TASK;
 			default:
 				break;
 		}
 
+		$referer_params = [];
+		wp_parse_str( wp_parse_url( $referer, PHP_URL_QUERY ), $referer_params );
+
 		/**
 		 * =================
-		 * Finally, we check the referer URL as it has the lowest priority.
+		 * Use the source from the referer URL, if present and valid.
+		 */
+		$source_param = isset( $referer_params['source'] ) ? sanitize_text_field( wp_unslash( $referer_params['source'] ) ) : '';
+		if ( ! empty( $source_param ) && in_array( $source_param, $valid_sources, true ) ) {
+			return $source_param;
+		}
+
+		/**
+		 * =================
+		 * Finally, we try to determine the source by what page the request came from.
 		 * =================
 		 */
-		if ( false !== strpos( $referer, 'page=wc-admin&task=payments' ) ) {
+		if ( 2 === count(
+			array_intersect_assoc(
+				$referer_params,
+				[
+					'page' => 'wc-admin',
+					'task' => 'payments',
+				]
+			)
+		) ) {
 			return self::SOURCE_WCADMIN_PAYMENT_TASK;
 		}
-		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
+		if ( 2 === count(
+			array_intersect_assoc(
+				$referer_params,
+				[
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				]
+			)
+		) ) {
 			return self::SOURCE_WCADMIN_SETTINGS_PAGE;
 		}
-		if ( false !== strpos( $referer, 'path=/wc-pay-welcome-page' ) ) {
+		if ( 2 === count(
+			array_intersect_assoc(
+				$referer_params,
+				[
+					'page' => 'wc-admin',
+					'path' => '/wc-pay-welcome-page',
+				]
+			)
+		) ) {
 			return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		}
-		if ( false !== strpos( $referer, 'path=/payments/connect' ) ) {
+		if ( 2 === count(
+			array_intersect_assoc(
+				$referer_params,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/connect',
+				]
+			)
+		) ) {
 			return self::SOURCE_WCPAY_CONNECT_PAGE;
+		}
+		if ( 2 === count(
+			array_intersect_assoc(
+				$referer_params,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				]
+			)
+		) ) {
+			return self::SOURCE_WCPAY_OVERVIEW_PAGE;
+		}
+		if ( 2 === count(
+			array_intersect_assoc(
+				$referer_params,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/deposits',
+				]
+			)
+		) ) {
+			return self::SOURCE_WCPAY_PAYOUTS_PAGE;
 		}
 
 		// Default to an unknown source.
