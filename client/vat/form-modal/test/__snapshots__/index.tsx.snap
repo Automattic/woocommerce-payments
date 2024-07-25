@@ -1,5 +1,55 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Tax details modal should render the VAT Form 1`] = `
+<div
+  aria-labelledby="components-modal-header-1"
+  class="components-modal__frame"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    role="document"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-1"
+        >
+          Set your tax details
+        </h1>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="components-button has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+          />
+        </svg>
+      </button>
+    </div>
+    <p>
+      VAT Form
+    </p>
+  </div>
+</div>
+`;
+
 exports[`VAT form modal should render the VAT Form 1`] = `
 <div
   aria-labelledby="components-modal-header-1"
