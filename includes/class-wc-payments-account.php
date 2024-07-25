@@ -740,8 +740,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects WooPayments settings to the overview page for partially
-	 * onboarded accounts, and the connect page when there is no account.
+	 * Redirects WooPayments settings to the connect page when there is no account or an invalid account.
 	 *
 	 * Every WooPayments page except connect are already hidden, but merchants can still access
 	 * it through WooCommerce settings.
@@ -765,7 +764,7 @@ class WC_Payments_Account {
 		}
 
 		// There is no Stripe account connected, redirect to the Connect page.
-		if ( ! $this->is_stripe_connected() ) {
+		if ( ! $this->is_stripe_account_valid() ) {
 			$this->redirect_service->redirect_to_connect_page(
 				null,
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
@@ -774,21 +773,15 @@ class WC_Payments_Account {
 			return true;
 		}
 
-		if ( ! $this->is_details_submitted() ) {
-			// Account not yet fully onboarded so redirect to overview page.
-			$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS );
-			return true;
-		}
-
 		// Account fully onboarded, don't redirect.
 		return false;
 	}
 
 	/**
-	 * Redirects onboarding wizard page (payments/onboarding) to the overview page for accounts that have Stripe connected.
+	 * Redirects onboarding wizard page (payments/onboarding) to the overview page for accounts that have a valid Stripe account.
 	 *
-	 * Payments onboarding wizard page is already hidden for those who has Stripe account connected, but merchants can still access
-	 * it by clicking back in the browser tab.
+	 * Payments onboarding wizard page is already hidden for those who have a Stripe account connected,
+	 * but merchants can still access it by clicking back in the browser tab.
 	 *
 	 * @return bool True if the redirection happened, false otherwise.
 	 */
