@@ -140,19 +140,32 @@ export const initializeBnplSiteMessaging = async () => {
 		}
 
 		// Set the `--wc-bnpl-margin-bottom` CSS variable to the computed bottom margin of the price element.
-		document
-			.getElementById( 'payment-method-message' )
-			.style.setProperty( '--wc-bnpl-margin-bottom', bottomMargin );
+		const paymentMessageContainer = document.getElementById(
+			'payment-method-message'
+		);
+		paymentMessageContainer.style.setProperty(
+			'--wc-bnpl-margin-bottom',
+			bottomMargin
+		);
+
+		let paymentMessageLoading;
+		if ( ! isCart ) {
+			paymentMessageContainer.style.display = 'none';
+			paymentMessageLoading = document.createElement( 'div' );
+			paymentMessageLoading.classList.add( 'pmme-loading' );
+			const paymentMessageParent = paymentMessageContainer.parentNode;
+			paymentMessageParent.insertBefore(
+				paymentMessageLoading,
+				paymentMessageContainer
+			);
+		}
 
 		// When the payment message element is ready, add the `ready` class so the necessary CSS rules are applied.
 		paymentMessageElement.on( 'ready', () => {
-			document
-				.getElementById( 'payment-method-message' )
-				.classList.add( 'ready' );
-
 			// On the cart page, get the height of the PMME after it's rendered and store it in a CSS variable. This helps
 			// prevent layout shifts when the PMME is loaded asynchronously upon cart total update.
 			if ( isCart ) {
+				paymentMessageContainer.classList.add( 'ready' );
 				// An element that won't be removed with the cart total update.
 				const cartCollaterals = document.querySelector(
 					'.cart-collaterals'
@@ -200,6 +213,12 @@ export const initializeBnplSiteMessaging = async () => {
 
 					pmme.style.setProperty( '--wc-bnpl-margin-bottom', '-4px' );
 				}, 2000 );
+			} else {
+				setTimeout( () => {
+					paymentMessageLoading.remove();
+					paymentMessageContainer.classList.add( 'ready' );
+					paymentMessageContainer.style.display = 'block';
+				}, 1000 );
 			}
 		} );
 	}
