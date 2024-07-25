@@ -841,18 +841,31 @@ class WC_Payments_Account {
 		}
 
 		// Don't redirect merchants that have no Stripe account connected.
-		if ( ! $this->is_stripe_connected() || ! $this->is_details_submitted() ) {
+		if ( ! $this->is_stripe_connected() ) {
 			return false;
 		}
 
-		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD );
+		// Merchants with a partially onboarded Stripe account, need to go to the Stripe KYC, not our onboarding wizard.
+		if ( ! $this->is_stripe_account_valid() ) {
+			$this->redirect_service->redirect_to_connect_page(
+				sprintf(
+				/* translators: %s: WooPayments */
+					__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
+					'WooPayments'
+				),
+				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
+				[ 'source' => $onboarding_source ]
+			);
+			return true;
+		}
 
+		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD );
 		return true;
 	}
 
 	/**
 	 * Redirects connect page (payments/connect) to the overview page for stores that
-	 * have a working Jetpack connection and a connected Stripe account.
+	 * have a working Jetpack connection and a valid Stripe account.
 	 *
 	 * Note: Connect _page_ links are not the same as connect links.
 	 *       Connect links are used to start/re-start/continue the onboarding flow and they are independent of
