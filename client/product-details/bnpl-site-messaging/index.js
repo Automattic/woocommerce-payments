@@ -160,7 +160,6 @@ export const initializeBnplSiteMessaging = async () => {
 			);
 		}
 
-		// When the payment message element is ready, add the `ready` class so the necessary CSS rules are applied.
 		paymentMessageElement.on( 'ready', () => {
 			// On the cart page, get the height of the PMME after it's rendered and store it in a CSS variable. This helps
 			// prevent layout shifts when the PMME is loaded asynchronously upon cart total update.
@@ -216,7 +215,6 @@ export const initializeBnplSiteMessaging = async () => {
 			} else {
 				setTimeout( () => {
 					paymentMessageLoading.remove();
-					paymentMessageContainer.classList.add( 'ready' );
 					paymentMessageContainer.style.display = 'block';
 				}, 1000 );
 			}
