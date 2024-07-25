@@ -14,7 +14,7 @@ import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../../checkout/api';
 import request from '../../checkout/utils/request';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 import './style.scss';
 
@@ -87,6 +87,26 @@ const ProductDetail = ( { cart, context } ) => {
 		}
 	}, [ cart.cartTotals.total_price, loaderHeightRef ] );
 
+	const updateLoaderHeight = useCallback( () => {
+		// Wait 500ms before getting the height of the element to account for the animation
+		setTimeout( () => {
+			const pmmeContainer = wrapperRef.current.querySelector(
+				'.__PrivateStripeElement'
+			);
+			if ( pmmeContainer ) {
+				setLoaderHeight( pmmeContainer.offsetHeight );
+				setLoaderMargin( pmmeContainer.style.margin );
+			}
+		}, 500 );
+	}, [ wrapperRef ] );
+
+	useEffect( () => {
+		window.addEventListener( 'resize', updateLoaderHeight );
+		return () => {
+			window.removeEventListener( 'resize', updateLoaderHeight );
+		};
+	}, [ updateLoaderHeight ] );
+
 	if ( Object.keys( appearance ).length === 0 ) {
 		return null;
 	}
@@ -117,20 +137,6 @@ const ProductDetail = ( { cart, context } ) => {
 
 	const stripe = api.getStripe();
 
-	const onReadyHandler = () => {
-		// Update height and margin on element ready
-		// Wait 500ms before getting the height of the element to account for the animation
-		setTimeout( () => {
-			const pmmeContainer = wrapperRef.current.querySelector(
-				'.__PrivateStripeElement'
-			);
-			if ( pmmeContainer && loaderHeight === null ) {
-				setLoaderHeight( pmmeContainer.offsetHeight );
-				setLoaderMargin( pmmeContainer.style.margin );
-			}
-		}, 500 );
-	};
-
 	return (
 		<div className="wc-block-components-bnpl-wrapper">
 			{ showLoader ? (
@@ -152,7 +158,7 @@ const ProductDetail = ( { cart, context } ) => {
 				>
 					<PaymentMethodMessagingElement
 						options={ options }
-						onReady={ onReadyHandler }
+						onReady={ updateLoaderHeight }
 					/>
 				</Elements>
 			</div>
