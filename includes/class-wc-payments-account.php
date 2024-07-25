@@ -171,6 +171,15 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Determine if the store has a working Jetpack connection.
+	 *
+	 * @return bool Whether the Jetpack connection is established and working or not.
+	 */
+	public function has_working_jetpack_connection(): bool {
+		return $this->payments_api_client->is_server_connected() && $this->payments_api_client->has_server_connection_owner();
+	}
+
+	/**
 	 * Checks if the account is connected, assumes the value of $on_error on server error.
 	 *
 	 * @param bool $on_error Value to return on server error, defaults to false.
@@ -1592,15 +1601,6 @@ class WC_Payments_Account {
 		$return_url = add_query_arg( [ 'wcpay-connect-jetpack-success' => '1' ], $return_url );
 
 		$this->payments_api_client->start_server_connection( $return_url );
-	}
-
-	/**
-	 * Determine if the store has a working Jetpack connection.
-	 *
-	 * @return bool Whether the Jetpack connection is established and working or not.
-	 */
-	private function has_working_jetpack_connection(): bool {
-		return $this->payments_api_client->is_server_connected() && $this->payments_api_client->has_server_connection_owner();
 	}
 
 	/**
