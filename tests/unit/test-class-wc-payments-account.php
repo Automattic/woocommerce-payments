@@ -113,6 +113,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'maybe_redirect_from_onboarding_page action does not exist.'
 		);
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_connect_page' ] ), 'maybe_redirect_from_connect_page action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_overview_page' ] ), 'maybe_redirect_from_overview_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_activate_woopay' ] ), 'maybe_activate_woopay action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_instant_deposits_inbox_note' ] ), 'handle_instant_deposits_inbox_note action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_loan_approved_inbox_note' ] ), 'handle_loan_approved_inbox_note action does not exist.' );
@@ -646,6 +647,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'redirect_to_connect_page' )
 			->with( null, WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT, [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT ] );
+		// We should be in live mode now.
+		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
 
 		// Act.
 		$this->wcpay_account->maybe_handle_onboarding();
@@ -1183,6 +1186,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider data_maybe_redirect_from_onboarding_page
 	 */
 	public function test_maybe_redirect_from_onboarding_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params, $details_submitted = true ) {
+		// Arrange.
 		wp_set_current_user( 1 );
 		$_GET = $get_params;
 
@@ -1198,16 +1202,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			);
 		}
 
-		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
-			->disableOriginalConstructor()
-			->getMock();
-
 		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
-
+		// Assert.
 		$this->mock_redirect_service->expects( $this->exactly( $expected_redirect_to_count ) )->method( $expected_method );
 
+		// Act.
 		$this->wcpay_account->maybe_redirect_from_onboarding_wizard_page();
 	}
 
@@ -1308,99 +1308,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider data_maybe_redirect_from_settings_page
 	 */
-	public function test_maybe_redirect_from_settings_page( $expected_redirect_to_count, $expected_method, $details_submitted, $get_params, $no_account = false ) {
-		wp_set_current_user( 1 );
-		$_GET = $get_params;
-
-		// The Jetpack connection is in working order.
-		$this->mock_jetpack_connection();
-
-		if ( ! $no_account ) {
-			$this->cache_account_details(
-				[
-					'account_id'        => 'acc_test',
-					'is_live'           => true,
-					'details_submitted' => $details_submitted,
-					'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
-				]
-			);
-		}
-		$this->mock_redirect_service
-			->expects( $this->exactly( $expected_redirect_to_count ) )
-			->method( $expected_method );
-
-		$this->wcpay_account->maybe_redirect_from_settings_page();
-	}
-
-	/**
-	 * Data provider for test_maybe_redirect_from_settings_page
-	 */
-	public function data_maybe_redirect_from_settings_page(): array {
-		return [
-			'no_get_params'               => [
-				0,
-				'redirect_to_connect_page',
-				false,
-				[],
-			],
-			'missing_param'               => [
-				0,
-				'redirect_to_connect_page',
-				false,
-				[
-					'page' => 'wc-settings',
-					'tab'  => 'checkout',
-				],
-			],
-			'incorrect_param'             => [
-				0,
-				'redirect_to_connect_page',
-				false,
-				[
-					'page'    => 'wc-admin',
-					'tab'     => 'checkout',
-					'section' => 'woocommerce_payments',
-				],
-			],
-			'no_account'                  => [
-				1,
-				'redirect_to_connect_page',
-				false,
-				[
-					'page'    => 'wc-settings',
-					'tab'     => 'checkout',
-					'section' => 'woocommerce_payments',
-				],
-				true,
-			],
-			'account_partially_onboarded' => [
-				1,
-				'redirect_to_connect_page',
-				false,
-				[
-					'page'    => 'wc-settings',
-					'tab'     => 'checkout',
-					'section' => 'woocommerce_payments',
-				],
-				false,
-			],
-			'account_fully_onboarded'     => [
-				0,
-				'redirect_to_connect_page',
-				true,
-				[
-					'page'    => 'wc-settings',
-					'tab'     => 'checkout',
-					'section' => 'woocommerce_payments',
-				],
-			],
-		];
-	}
-
-	/**
-	 * @dataProvider data_maybe_redirect_from_connect_page
-	 */
-	public function test_maybe_redirect_from_connect_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params, $details_submitted = true ) {
+	public function test_maybe_redirect_from_settings_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params, $details_submitted = true ) {
+		// Arrange.
 		wp_set_current_user( 1 );
 		$_GET = $get_params;
 
@@ -1415,16 +1324,121 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			);
 		}
 
-		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
-			->disableOriginalConstructor()
-			->getMock();
+		$this->mock_jetpack_connection( $has_working_jetpack_connection );
+
+		// Assert.
+		$this->mock_redirect_service->expects( $this->exactly( $expected_redirect_to_count ) )->method( $expected_method );
+
+		// Act.
+		$this->wcpay_account->maybe_redirect_from_settings_page();
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_from_settings_page
+	 */
+	public function data_maybe_redirect_from_settings_page() {
+		return [
+			'no_get_params'                            => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[],
+			],
+			'missing_param'                            => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+			],
+			'incorrect_param'                          => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'wrong_section',
+				],
+			],
+			'server_not_connected'                     => [
+				1,
+				'redirect_to_connect_page',
+				true,
+				false,
+				[
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+			],
+			'stripe_not_connected'                     => [
+				1,
+				'redirect_to_connect_page',
+				false,
+				true,
+				[
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+			],
+			'stripe_connected_but_partially_onboarded' => [
+				1,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+				false,
+			],
+			'happy_path'                               => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider data_maybe_redirect_from_connect_page
+	 */
+	public function test_maybe_redirect_from_connect_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params, $details_submitted = true ) {
+		// Arrange.
+		wp_set_current_user( 1 );
+		$_GET = $get_params;
+
+		if ( $stripe_account_connected ) {
+			$this->cache_account_details(
+				[
+					'account_id'        => 'acc_test',
+					'is_live'           => true,
+					'details_submitted' => $details_submitted, // Whether it finished the initial KYC or not.
+					'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
+				]
+			);
+		}
 
 		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
-
+		// Assert.
 		$this->mock_redirect_service->expects( $this->exactly( $expected_redirect_to_count ) )->method( $expected_method );
 
+		// Act.
 		$this->wcpay_account->maybe_redirect_from_connect_page();
 	}
 
@@ -1517,6 +1531,128 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				[
 					'page' => 'wc-admin',
 					'path' => '/payments/connect',
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider data_maybe_redirect_from_overview_page
+	 */
+	public function test_maybe_redirect_from_overview_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params, $details_submitted = true ) {
+		// Arrange.
+		wp_set_current_user( 1 );
+		$_GET = $get_params;
+
+		if ( $stripe_account_connected ) {
+			$this->cache_account_details(
+				[
+					'account_id'        => 'acc_test',
+					'is_live'           => true,
+					'details_submitted' => $details_submitted, // Whether it finished the initial KYC or not.
+					'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
+				]
+			);
+		}
+
+		$this->mock_jetpack_connection( $has_working_jetpack_connection );
+
+		// Assert.
+		$this->mock_redirect_service->expects( $this->exactly( $expected_redirect_to_count ) )->method( $expected_method );
+
+		// Act.
+		$this->wcpay_account->maybe_redirect_from_overview_page();
+	}
+
+	/**
+	 * Data provider for test_maybe_redirect_from_overview_page
+	 */
+	public function data_maybe_redirect_from_overview_page() {
+		return [
+			'no_get_params'                            => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[],
+			],
+			'missing_param'                            => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_param'                          => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page' => 'wc-settings',
+					'path' => '/payments/connect',
+				],
+			],
+			'empty_path_param'                         => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+				],
+			],
+			'incorrect_path_param'                     => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/does-not-exist',
+				],
+			],
+			'server_not_connected'                     => [
+				1,
+				'redirect_to_connect_page',
+				true,
+				false,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+			],
+			'stripe_not_connected'                     => [
+				1,
+				'redirect_to_connect_page',
+				false,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+			],
+			'stripe_connected_but_partially_onboarded' => [
+				1,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
+				],
+				false,
+			],
+			'happy_path'                               => [
+				0,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/overview',
 				],
 			],
 		];
