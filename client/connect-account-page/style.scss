@@ -248,6 +248,20 @@
 		z-index: 99999;
 		text-align: center;
 
+		@media screen and ( max-width: $break-large ) {
+			width: calc( 100% + 36px );
+			height: calc( 100% + 60px );
+			left: -36px;
+			top: -60px;
+		}
+
+		@media screen and ( max-width: $break-medium ) {
+			width: 100%;
+			height: calc( 100% + 60px );
+			left: 0;
+			top: -60px;
+		}
+
 		img {
 			position: absolute;
 			height: 44px;
