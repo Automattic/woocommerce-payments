@@ -209,7 +209,7 @@ const ConnectAccountPage: React.FC = () => {
 		<Page isNarrow className="connect-account-page">
 			{ errorMessage && (
 				<Notice
-					className="wcpay-connect-error-notice"
+					className="wcpay-banner-notice is-error"
 					status="error"
 					isDismissible={ false }
 				>
