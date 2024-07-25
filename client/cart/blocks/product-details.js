@@ -47,7 +47,9 @@ const ProductDetail = ( { cart, context } ) => {
 		getUPEConfig( 'upeBnplCartBlockAppearance' ) || {}
 	);
 	const [ fontRules ] = useState( getFontRulesFromPage() );
-	const [ wrapperHeight, setWrapperHeight ] = useState( null );
+	const [ loaderHeight, setLoaderHeight ] = useState( null );
+	const [ loaderMargin, setLoaderMargin ] = useState( null );
+	const loaderHeightRef = useRef( loaderHeight );
 	const [ showLoader, setShowLoader ] = useState( false );
 	const wrapperRef = useRef( null );
 
@@ -68,15 +70,22 @@ const ProductDetail = ( { cart, context } ) => {
 	}, [ appearance ] );
 
 	useEffect( () => {
+		loaderHeightRef.current = loaderHeight;
+	}, [ loaderHeight ] );
+
+	useEffect( () => {
 		// Show loader when cart total is updated and it is greater than 0.
-		if ( cart.cartTotals.total_price > 0 ) {
+		if (
+			cart.cartTotals.total_price > 0 &&
+			loaderHeightRef.current !== null
+		) {
 			setShowLoader( true );
 			const timer = setTimeout( () => {
 				setShowLoader( false );
 			}, 1000 );
 			return () => clearTimeout( timer );
 		}
-	}, [ cart.cartTotals.total_price ] );
+	}, [ cart.cartTotals.total_price, loaderHeightRef ] );
 
 	if ( Object.keys( appearance ).length === 0 ) {
 		return null;
@@ -109,20 +118,34 @@ const ProductDetail = ( { cart, context } ) => {
 	const stripe = api.getStripe();
 
 	const onReadyHandler = () => {
-		if ( wrapperRef.current && wrapperHeight === null ) {
-			setWrapperHeight( wrapperRef.current.offsetHeight ); // Update height on element ready TODO: Fix to get correct height
-		}
+		// Update height and margin on element ready
+		// Wait 500ms before getting the height of the element to account for the animation
+		setTimeout( () => {
+			const pmmeContainer = wrapperRef.current.querySelector(
+				'.__PrivateStripeElement'
+			);
+			if ( pmmeContainer && loaderHeight === null ) {
+				setLoaderHeight( pmmeContainer.offsetHeight );
+				setLoaderMargin( pmmeContainer.style.margin );
+			}
+		}, 500 );
 	};
 
 	return (
-		<div className="wc-block-components-bnpl-wrapper" ref={ wrapperRef }>
+		<div className="wc-block-components-bnpl-wrapper">
 			{ showLoader ? (
 				<div
 					className="pmme-loading"
-					style={ { height: `${ wrapperHeight }px` } }
+					style={ {
+						height: `${ loaderHeight }px`,
+						margin: loaderMargin,
+					} }
 				></div>
 			) : null }
-			<div style={ { display: showLoader ? 'none' : 'block' } }>
+			<div
+				style={ { display: showLoader ? 'none' : 'block' } }
+				ref={ wrapperRef }
+			>
 				<Elements
 					stripe={ stripe }
 					options={ { appearance, fonts: fontRules } }
