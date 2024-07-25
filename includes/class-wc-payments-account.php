@@ -1149,9 +1149,6 @@ class WC_Payments_Account {
 				try {
 					// Delete the currently Stripe connected account, in the onboarding mode we are currently in.
 					$this->payments_api_client->delete_account( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
-					// Make sure we clear the cached account data as it may take a while
-					// for the account update webhook to come from our platform.
-					$this->clear_cache();
 				} catch ( API_Exception $e ) {
 					// In case we fail to delete the account, log and redirect to the Overview page.
 					Logger::error( 'Failed to delete account: ' . $e->getMessage() );
@@ -1160,8 +1157,7 @@ class WC_Payments_Account {
 					return;
 				}
 
-				// Discard any ongoing onboarding session.
-				delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+				$this->cleanup_on_account_reset();
 
 				// When we reset the account we want to always go the Connect page. Redirect immediately!
 				$this->redirect_service->redirect_to_connect_page(
@@ -1178,9 +1174,8 @@ class WC_Payments_Account {
 					try {
 						// Delete the currently connected Stripe account.
 						$this->payments_api_client->delete_account( true );
-						// Make sure we clear the cached account data as it may take a while
-						// for the account update webhook to come from our platform.
-						$this->clear_cache();
+
+						$this->cleanup_on_account_reset();
 					} catch ( API_Exception $e ) {
 						// In case we fail to delete the account, log and carry on.
 						Logger::error( 'Failed to delete account in test mode: ' . $e->getMessage() );
@@ -1189,7 +1184,6 @@ class WC_Payments_Account {
 
 				// If dev mode is not active, we should not onboard in test mode since we are moving from test to live.
 				if ( ! WC_Payments::mode()->is_dev() ) {
-					WC_Payments_Onboarding_Service::set_test_mode( false );
 					$should_onboard_in_test_mode = false;
 				}
 
@@ -1207,9 +1201,6 @@ class WC_Payments_Account {
 				} else {
 					$next_step_from = WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE;
 				}
-
-				// Discard any ongoing onboarding session.
-				delete_transient( self::ONBOARDING_STATE_TRANSIENT );
 			}
 
 			// Handle the return from the WPCOM/Jetpack connection screens.
@@ -1378,7 +1369,7 @@ class WC_Payments_Account {
 					$this->redirect_service->redirect_to_connect_page(
 						sprintf(
 						/* translators: 1: anchor opening markup 2: closing anchor markup */
-							__( 'There is already an ongoing account setup session (probably in a different browser tab). Please finish it or %1$sclick here if you wish to start a new one%2$s.', 'woocommerce-payments' ),
+							__( 'There is already an ongoing account setup session (probably in a different browser tab). Please finish it or %1$sclick here to start again%2$s.', 'woocommerce-payments' ),
 							'<a href="' . esc_url( $confirmation_url ) . '">',
 							'</a>'
 						)
@@ -1463,6 +1454,28 @@ class WC_Payments_Account {
 
 			return;
 		}
+	}
+
+	/**
+	 * Sets things up for a fresh onboarding flow.
+	 *
+	 * @return void
+	 */
+	private function cleanup_on_account_reset() {
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', 'no' );
+		$gateway->update_option( 'test_mode', 'no' );
+
+		delete_option( '_wcpay_onboarding_stripe_connected' );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+
+		// Discard any ongoing onboarding session.
+		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+		delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+		delete_transient( 'woopay_enabled_by_default' );
+
+		// Clear the cache to avoid stale data.
+		$this->clear_cache();
 	}
 
 	/**
