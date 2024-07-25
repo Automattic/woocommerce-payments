@@ -30,6 +30,7 @@ import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
+import { sanitizeHTML } from 'wcpay/utils/sanitize';
 
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
@@ -190,7 +191,10 @@ const ConnectAccountPage: React.FC = () => {
 					status="error"
 					isDismissible={ false }
 				>
-					{ errorMessage }
+					<div
+						// eslint-disable-next-line react/no-danger
+						dangerouslySetInnerHTML={ sanitizeHTML( errorMessage ) }
+					></div>
 				</Notice>
 			) }
 			{ wcpaySettings.onBoardingDisabled ? (
