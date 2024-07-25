@@ -1102,8 +1102,23 @@ class WC_Payments_Account {
 				'source'    => $onboarding_source,
 			];
 
+			// Handle the return from Stripe KYC flow (via a connect link).
+			if ( isset( $_GET['wcpay-state'] ) && isset( $_GET['wcpay-mode'] ) ) {
+				$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
+				$mode  = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
+
+				$this->finalize_connection(
+					$state,
+					$mode,
+					[
+						'from'   => $from,
+						'source' => $onboarding_source,
+					]
+				);
+			}
+
 			// Remove the previously stored onboarding state if the merchant wants to start a new onboarding session
-			// or if we came back from Stripe with an error.
+			// or if we came back from Stripe with an error but no state.
 			// This will allow us to avoid errors when finalizing the account connection.
 			if ( ( ! empty( $_GET['wcpay-discard-started-onboarding'] ) && 'true' === $_GET['wcpay-discard-started-onboarding'] )
 				|| ( WC_Payments_Onboarding_Service::FROM_STRIPE === $from && ! empty( $_GET['wcpay-connection-error'] ) ) ) {
@@ -1210,21 +1225,6 @@ class WC_Payments_Account {
 
 				// Track successful Jetpack connection.
 				$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS, $tracks_props );
-			}
-
-			// Handle the return from Stripe KYC flow (via a connect link).
-			if ( isset( $_GET['wcpay-state'] ) && isset( $_GET['wcpay-mode'] ) ) {
-				$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
-				$mode  = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
-
-				$this->finalize_connection(
-					$state,
-					$mode,
-					[
-						'from'   => $from,
-						'source' => $onboarding_source,
-					]
-				);
 			}
 
 			// Handle the "everything OK" scenario.
