@@ -1,0 +1,13 @@
+.pmme-loading {
+	animation: pmme-loading 1s linear infinite alternate;
+	background: #afafaf;
+}
+
+@keyframes pmme-loading {
+	0% {
+		background-color: hsl( 204, 10%, 90% );
+	}
+	100% {
+		background-color: hsl( 200, 20%, 95% );
+	}
+}

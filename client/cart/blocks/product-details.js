@@ -14,7 +14,9 @@ import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../../checkout/api';
 import request from '../../checkout/utils/request';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import './style.scss';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -44,8 +46,10 @@ const ProductDetail = ( { cart, context } ) => {
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'upeBnplCartBlockAppearance' ) || {}
 	);
-
 	const [ fontRules ] = useState( getFontRulesFromPage() );
+	const [ wrapperHeight, setWrapperHeight ] = useState( null );
+	const [ showLoader, setShowLoader ] = useState( false );
+	const wrapperRef = useRef( null );
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
@@ -62,6 +66,17 @@ const ProductDetail = ( { cart, context } ) => {
 			generateUPEAppearance();
 		}
 	}, [ appearance ] );
+
+	useEffect( () => {
+		// Show loader when cart total is updated and it is greater than 0.
+		if ( cart.cartTotals.total_price > 0 ) {
+			setShowLoader( true );
+			const timer = setTimeout( () => {
+				setShowLoader( false );
+			}, 1000 );
+			return () => clearTimeout( timer );
+		}
+	}, [ cart.cartTotals.total_price ] );
 
 	if ( Object.keys( appearance ).length === 0 ) {
 		return null;
@@ -93,14 +108,31 @@ const ProductDetail = ( { cart, context } ) => {
 
 	const stripe = api.getStripe();
 
+	const onReadyHandler = () => {
+		if ( wrapperRef.current && wrapperHeight === null ) {
+			setWrapperHeight( wrapperRef.current.offsetHeight ); // Update height on element ready TODO: Fix to get correct height
+		}
+	};
+
 	return (
-		<div className="wc-block-components-bnpl-wrapper">
-			<Elements
-				stripe={ stripe }
-				options={ { appearance, fonts: fontRules } }
-			>
-				<PaymentMethodMessagingElement options={ options } />
-			</Elements>
+		<div className="wc-block-components-bnpl-wrapper" ref={ wrapperRef }>
+			{ showLoader ? (
+				<div
+					className="pmme-loading"
+					style={ { height: `${ wrapperHeight }px` } }
+				></div>
+			) : null }
+			<div style={ { display: showLoader ? 'none' : 'block' } }>
+				<Elements
+					stripe={ stripe }
+					options={ { appearance, fonts: fontRules } }
+				>
+					<PaymentMethodMessagingElement
+						options={ options }
+						onReady={ onReadyHandler }
+					/>
+				</Elements>
+			</div>
 		</div>
 	);
 };

@@ -1779,6 +1779,13 @@ class WC_Payments {
 			return;
 		}
 
+		wp_enqueue_style(
+			'wcpay-cart-block',
+			plugins_url( 'dist/cart-block.css', WCPAY_PLUGIN_FILE ),
+			[],
+			self::get_file_version( 'dist/product-details.css' )
+		);
+
 		self::register_script_with_dependencies( 'WCPAY_CART', 'dist/cart' );
 		wp_enqueue_script( 'WCPAY_CART' );
 
