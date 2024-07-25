@@ -40,6 +40,7 @@ test.describe(
 						);
 
 						// Match the total balance value to the USD format $1*
+						// Intentionally not expecting a specific value to allow for different values in different environments.
 						await expect( totalBalanceValue ).toHaveText( /\$\d+/ );
 
 						/**
