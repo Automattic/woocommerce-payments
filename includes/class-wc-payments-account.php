@@ -713,7 +713,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
+	 * Checks if everything is in working order and redirects to the connect page if not.
 	 *
 	 * @return bool True if the redirection happened.
 	 */
@@ -735,20 +735,13 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		$account = $this->get_cached_account_data();
-		if ( false === $account ) {
-			// Failed to retrieve account data. Exception is logged in http client.
-			return false;
-		}
-
 		if ( $should_redirect_to_onboarding ) {
-			// Update the option. If there's an account connected, we won't need to redirect in the future.
-			// If not, we will redirect once and will not want to redirect again.
+			// Update the option. We try to redirect once and will not attempt to redirect again.
 			update_option( 'wcpay_should_redirect_to_onboarding', false );
 		}
 
-		if ( ! empty( $account ) ) {
-			// Do not redirect if we have a connected Stripe account.
+		// If everything is in working order, don't redirect.
+		if ( $this->has_working_jetpack_connection() && $this->is_stripe_account_valid() ) {
 			return false;
 		}
 
