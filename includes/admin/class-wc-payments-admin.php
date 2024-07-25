@@ -851,8 +851,10 @@ class WC_Payments_Admin {
 			// Used in the settings page by the AccountFees component.
 			'zeroDecimalCurrencies'              => WC_Payments_Utils::zero_decimal_currencies(),
 			'fraudServices'                      => $this->fraud_service->get_fraud_services_config(),
-			'isJetpackConnected'                 => $this->payments_api_client->is_server_connected(),
+			'isJetpackConnected'                 => $this->account->has_working_jetpack_connection(),
 			'isJetpackIdcActive'                 => Jetpack_Identity_Crisis::has_identity_crisis(),
+			'isAccountConnected'                 => $this->account->is_stripe_connected(),
+			'isAccountValid'                     => $this->account->is_stripe_account_valid(),
 			'accountStatus'                      => $account_status_data,
 			'accountFees'                        => $this->account->get_fees(),
 			'accountLoans'                       => $this->account->get_capital(),

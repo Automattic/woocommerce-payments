@@ -21,6 +21,8 @@ declare global {
 		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
+		isAccountConnected: boolean;
+		isAccountValid: boolean;
 		accountStatus: {
 			email?: string;
 			created: string;
