@@ -226,17 +226,25 @@ class WC_Payments_Account {
 	 * @return bool True if the account have valid stripe account, false otherwise.
 	 */
 	public function is_stripe_account_valid(): bool {
-		if ( ! $this->is_stripe_connected() || ! $this->is_details_submitted() ) {
-			return false;
-		}
-
 		$account = $this->get_cached_account_data();
-
-		if ( ! isset( $account['capabilities']['card_payments'] ) ) {
+		// The account is disconnected or we failed to get the account data.
+		if ( empty( $account ) ) {
 			return false;
 		}
 
-		return 'unrequested' !== $account['capabilities']['card_payments'];
+		// The account is partially onboarded.
+		if ( empty( $account['details_submitted'] ) ) {
+			return false;
+		}
+
+		// The account doesn't have the minimum required capabilities.
+		if ( ! isset( $account['capabilities']['card_payments'] )
+			|| 'unrequested' === $account['capabilities']['card_payments'] ) {
+			return false;
+		}
+
+		// The account is valid.
+		return true;
 	}
 
 	/**
