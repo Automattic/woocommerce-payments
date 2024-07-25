@@ -268,6 +268,12 @@
 				}
 			}
 		}
+
+		// For this width range, the button's text is too large to fit
+		// in the button. The text is reduced to 22px to fit.
+		@media screen and ( min-width: 785px ) and ( max-width: 850px ) {
+			font-size: 22px;
+		}
 	}
 }
 
