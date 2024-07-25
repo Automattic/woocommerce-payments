@@ -79,11 +79,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Always start off with live mode. If you want another mode, you should set it in the test.
 		WC_Payments::mode()->live();
 
-		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
-			->disableOriginalConstructor()
-			->getMock();
-		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
-
+		$this->mock_api_client               = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
@@ -154,6 +150,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-login']  = '1';
 		$_REQUEST['_wpnonce'] = wp_create_nonce( 'wcpay-login' );
 
+		// The WPCOM/Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->cache_account_details(
 			[
 				'account_id'        => 'acc_test',
@@ -178,6 +177,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$_GET['wcpay-login']  = '1';
 		$_REQUEST['_wpnonce'] = wp_create_nonce( 'wcpay-login' );
+
+		// The WPCOM/Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
 
 		$this->cache_account_details(
 			[
@@ -236,12 +238,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( false );
-		$this->mock_api_client
-			->method( 'has_server_connection_owner' )
-			->willReturn( false );
+		$this->mock_jetpack_connection( false );
 
 		// Assert.
 		$this->mock_redirect_service
@@ -291,12 +288,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['source']                 = $onboarding_source;
 		$_GET['create_builder_account'] = $create_builder_account ? 'true' : null;
 
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( $has_working_jetpack_connection );
-		$this->mock_api_client
-			->method( 'has_server_connection_owner' )
-			->willReturn( $has_working_jetpack_connection );
+		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
 		if ( $is_stripe_connected ) {
 			$this->cache_account_details(
@@ -580,12 +572,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-disable-onboarding-test-mode'] = 'true';
 
 		// The Jetpack connection is in working order.
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( true );
-		$this->mock_api_client
-			->method( 'has_server_connection_owner' )
-			->willReturn( true );
+		$this->mock_jetpack_connection();
 
 		$this->cache_account_details(
 			[
@@ -739,12 +726,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( true );
-		$this->mock_api_client
-			->method( 'has_server_connection_owner' )
-			->willReturn( true );
+		$this->mock_jetpack_connection();
 
 		$this->mock_database_cache
 			->expects( $this->any() )
@@ -816,12 +798,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( true );
-		$this->mock_api_client
-			->method( 'has_server_connection_owner' )
-			->willReturn( true );
+		$this->mock_jetpack_connection();
 
 		$this->mock_database_cache
 			->expects( $this->any() )
@@ -906,12 +883,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		set_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT, true, 10 );
 
 		// The Jetpack connection is in working order.
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( true );
-		$this->mock_api_client
-			->method( 'has_server_connection_owner' )
-			->willReturn( true );
+		$this->mock_jetpack_connection();
 
 		// Assert.
 		$this->mock_redirect_service
@@ -927,6 +899,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_stripe_disconnected_redirects() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -948,7 +923,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_maybe_redirect_after_plugin_activation_stripe_disconnected_and_on_boarding_disabled_redirects() {
+	public function test_maybe_redirect_after_plugin_activation_stripe_disconnected_and_onboarding_disabled_redirects() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -975,6 +953,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_account_error() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -998,6 +979,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_account_connected() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -1028,6 +1012,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_with_non_admin_user() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -1044,6 +1031,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_checks_the_account_once() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
@@ -1075,7 +1065,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_maybe_redirect_after_plugin_activation_returns_true_and_on_boarding_re_enabled() {
+	public function test_maybe_redirect_after_plugin_activation_returns_true_and_onboarding_re_enabled() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// We will call get_account_data twice. The first call will tell us no account is connected and that on-boarding
 		// is disabled. The second call will just tell us that no account is connected (i.e. on-boarding was
 		// re-enabled).
@@ -1185,7 +1178,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider data_maybe_redirect_from_onboarding_page
 	 */
-	public function test_maybe_redirect_from_onboarding_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params ) {
+	public function test_maybe_redirect_from_onboarding_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params, $details_submitted = true ) {
 		wp_set_current_user( 1 );
 		$_GET = $get_params;
 
@@ -1194,7 +1187,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				[
 					'account_id'        => 'acc_test',
 					'is_live'           => true,
-					'details_submitted' => true, // Has finished initial KYC.
+					'details_submitted' => $details_submitted, // Whether it has finished initial KYC or not.
 					'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 
 				]
@@ -1205,12 +1198,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( $has_working_jetpack_connection );
-		$this->mock_api_client
-			->method( 'has_server_connection_owner' )
-			->willReturn( $has_working_jetpack_connection );
+		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
 		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
 
@@ -1224,14 +1212,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 */
 	public function data_maybe_redirect_from_onboarding_page() {
 		return [
-			'no_get_params'        => [
+			'no_get_params'                             => [
 				0,
 				'redirect_to_connect_page',
 				false,
 				true,
 				[],
 			],
-			'missing_param'        => [
+			'missing_param'                             => [
 				0,
 				'redirect_to_connect_page',
 				false,
@@ -1240,7 +1228,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'page' => 'wc-admin',
 				],
 			],
-			'incorrect_param'      => [
+			'incorrect_param'                           => [
 				0,
 				'redirect_to_connect_page',
 				false,
@@ -1250,7 +1238,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'path' => '/payments/onboarding',
 				],
 			],
-			'empty_path_param'     => [
+			'empty_path_param'                          => [
 				0,
 				'redirect_to_connect_page',
 				false,
@@ -1259,7 +1247,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'page' => 'wc-admin',
 				],
 			],
-			'incorrect_path_param' => [
+			'incorrect_path_param'                      => [
 				0,
 				'redirect_to_connect_page',
 				false,
@@ -1269,7 +1257,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'path' => '/payments/does-not-exist',
 				],
 			],
-			'server_not_connected' => [
+			'server_not_connected'                      => [
 				1,
 				'redirect_to_connect_page',
 				false,
@@ -1279,7 +1267,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'path' => '/payments/onboarding',
 				],
 			],
-			'stripe not connected' => [
+			'stripe not connected'                      => [
 				0,
 				'redirect_to_connect_page',
 				false,
@@ -1289,7 +1277,18 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'path' => '/payments/onboarding',
 				],
 			],
-			'happy_path'           => [
+			'stripe connected, but partially onboarded' => [
+				1,
+				'redirect_to_connect_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/onboarding',
+				],
+				false,
+			],
+			'happy_path'                                => [
 				1,
 				'redirect_to_overview_page',
 				true,
@@ -1309,16 +1308,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 1 );
 		$_GET = $get_params;
 
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		if ( ! $no_account ) {
 			$this->cache_account_details(
 				[
 					'account_id'        => 'acc_test',
 					'is_live'           => true,
 					'details_submitted' => $details_submitted,
+					'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 				]
 			);
 		}
-		$this->mock_redirect_service->expects( $this->exactly( $expected_redirect_to_count ) )
+		$this->mock_redirect_service
+			->expects( $this->exactly( $expected_redirect_to_count ) )
 			->method( $expected_method );
 
 		$this->wcpay_account->maybe_redirect_from_settings_page();
@@ -1327,7 +1331,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Data provider for test_maybe_redirect_from_settings_page
 	 */
-	public function data_maybe_redirect_from_settings_page() {
+	public function data_maybe_redirect_from_settings_page(): array {
 		return [
 			'no_get_params'               => [
 				0,
@@ -1367,7 +1371,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'account_partially_onboarded' => [
 				1,
-				'redirect_to_overview_page',
+				'redirect_to_connect_page',
 				false,
 				[
 					'page'    => 'wc-settings',
@@ -1392,7 +1396,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider data_maybe_redirect_from_connect_page
 	 */
-	public function test_maybe_redirect_from_connect_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params ) {
+	public function test_maybe_redirect_from_connect_page( $expected_redirect_to_count, $expected_method, $stripe_account_connected, $has_working_jetpack_connection, $get_params, $details_submitted = true ) {
 		wp_set_current_user( 1 );
 		$_GET = $get_params;
 
@@ -1401,7 +1405,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				[
 					'account_id'        => 'acc_test',
 					'is_live'           => true,
-					'details_submitted' => true, // Has finished initial KYC.
+					'details_submitted' => $details_submitted, // Whether it finished the initial KYC or not.
 					'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 				]
 			);
@@ -1411,12 +1415,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( $has_working_jetpack_connection );
-		$this->mock_api_client
-			->method( 'has_server_connection_owner' )
-			->willReturn( $has_working_jetpack_connection );
+		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
 		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
 
@@ -1430,14 +1429,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 */
 	public function data_maybe_redirect_from_connect_page() {
 		return [
-			'no_get_params'        => [
+			'no_get_params'                            => [
 				0,
 				'redirect_to_overview_page',
 				true,
 				true,
 				[],
 			],
-			'missing_param'        => [
+			'missing_param'                            => [
 				0,
 				'redirect_to_overview_page',
 				true,
@@ -1446,7 +1445,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'page' => 'wc-admin',
 				],
 			],
-			'incorrect_param'      => [
+			'incorrect_param'                          => [
 				0,
 				'redirect_to_overview_page',
 				true,
@@ -1456,7 +1455,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'path' => '/payments/connect',
 				],
 			],
-			'empty_path_param'     => [
+			'empty_path_param'                         => [
 				0,
 				'redirect_to_overview_page',
 				true,
@@ -1465,7 +1464,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'page' => 'wc-admin',
 				],
 			],
-			'incorrect_path_param' => [
+			'incorrect_path_param'                     => [
 				0,
 				'redirect_to_overview_page',
 				true,
@@ -1475,7 +1474,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'path' => '/payments/does-not-exist',
 				],
 			],
-			'server_not_connected' => [
+			'server_not_connected'                     => [
 				0,
 				'redirect_to_overview_page',
 				true,
@@ -1485,7 +1484,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'path' => '/payments/connect',
 				],
 			],
-			'stripe_not_connected' => [
+			'stripe_not_connected'                     => [
 				0,
 				'redirect_to_overview_page',
 				false,
@@ -1495,7 +1494,18 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'path' => '/payments/connect',
 				],
 			],
-			'happy_path'           => [
+			'stripe_connected_but_partially_onboarded' => [
+				0,
+				'redirect_to_overview_page',
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/connect',
+				],
+				false,
+			],
+			'happy_path'                               => [
 				1,
 				'redirect_to_overview_page',
 				true,
@@ -1509,6 +1519,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected() {
+		// The WPCOM/Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1530,7 +1543,51 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 	}
 
+	/**
+	 * @dataProvider data_has_working_jetpack_connection
+
+	 */
+	public function test_has_working_jetpack_connection( $server_connected, $has_owner, $expected ) {
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( $server_connected );
+
+		$this->mock_api_client
+			->method( 'has_server_connection_owner' )
+			->willReturn( $has_owner );
+
+		$this->assertEquals( $expected, $this->wcpay_account->has_working_jetpack_connection() );
+	}
+
+	/**
+	 * Data provider for test_has_working_jetpack_connection.
+	 *
+	 * @return array
+	 */
+	public function data_has_working_jetpack_connection(): array {
+		return [
+			'Not connected'                     => [
+				false,
+				true,
+				false,
+			],
+			'Connected but no connection owner' => [
+				true,
+				false,
+				false,
+			],
+			'Working connection'                => [
+				true,
+				true,
+				true,
+			],
+		];
+	}
+
 	public function test_try_is_stripe_connected_throws() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1547,6 +1604,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_try_is_stripe_connected_returns_false() {
+		// The WPCOM/Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1560,6 +1620,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_connected_returns_true_when_connected() {
+		// The WPCOM/Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1582,6 +1645,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_connected_returns_false_on_error() {
+		// The WPCOM/Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1595,6 +1661,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_connected_returns_false_when_not_connected() {
+		// The WPCOM/Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1608,6 +1677,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_account_valid_when_not_connected() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1619,6 +1691,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_account_valid_when_empty_account_data() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1632,6 +1707,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_account_valid_when_details_not_submitted() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_database_cache
 			->expects( $this->any() )
 			->method( 'get_or_add' )
@@ -1651,6 +1729,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_account_valid_when_capability_unrequested() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_database_cache
 			->expects( $this->any() )
 			->method( 'get_or_add' )
@@ -1673,6 +1754,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_account_valid_when_capability_requested() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_database_cache
 			->expects( $this->any() )
 			->method( 'get_or_add' )
@@ -1695,6 +1779,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_account_valid_when_capability_active() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_database_cache
 			->expects( $this->any() )
 			->method( 'get_or_add' )
@@ -1717,6 +1804,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_stripe_account_valid_when_capability_pending_verification() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_database_cache
 			->expects( $this->any() )
 			->method( 'get_or_add' )
@@ -1739,6 +1829,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_publishable_key_returns_for_live() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1761,6 +1854,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_publishable_key_returns_for_test() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1783,6 +1879,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_publishable_key_throws() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1796,6 +1895,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_stripe_account_id() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1818,6 +1920,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_stripe_account_id_throws() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1831,6 +1936,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_dev_account_in_dev_mode() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// enable dev mode.
 		WC_Payments::mode()->dev();
 
@@ -1853,6 +1961,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_try_is_stripe_connected_returns_false_when_connected_with_dev_account_in_live_mode() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// disable dev mode.
 		WC_Payments::mode()->live();
 
@@ -1880,6 +1991,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_live_account_in_dev_mode() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		// enable dev mode.
 		WC_Payments::mode()->dev();
 
@@ -1902,38 +2016,53 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_account_rejected_returns_true() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_test_',
-				'test_publishable_key'     => 'pk_live_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'status'                   => 'rejected.tos',
-			]
-		);
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+					'status'                   => 'rejected.tos',
+				]
+			);
 
 		$this->assertTrue( $this->wcpay_account->is_account_rejected() );
 	}
 
 	public function test_is_account_rejected_returns_false_when_not_rejected() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_test_',
-				'test_publishable_key'     => 'pk_live_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'status'                   => 'complete',
-			]
-		);
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_test_',
+					'test_publishable_key'     => 'pk_live_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+					'status'                   => 'complete',
+				]
+			);
 
 		$this->assertFalse( $this->wcpay_account->is_account_rejected() );
 	}
 
 	public function test_is_account_rejected_returns_false_on_error() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$this->mock_empty_cache();
 
 		$this->mock_wcpay_request( Get_Account::class )
@@ -1954,7 +2083,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider is_details_submitted_provider
 	 */
 	public function test_is_details_submitted( bool $details_submitted ): void {
-		$this->mock_database_cache->expects( $this->once() )
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_database_cache
+			->expects( $this->once() )
 			->method( 'get_or_add' )
 			->willReturn(
 				[
@@ -1980,14 +2113,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_account_partially_onboarded_returns_false_if_account_not_connected() {
-		$expected_account = [
-			'account_id'               => 'acc_test',
-			'live_publishable_key'     => 'pk_test_',
-			'test_publishable_key'     => 'pk_live_',
-			'has_pending_requirements' => true,
-			'current_deadline'         => 12345,
-			'is_live'                  => true,
-		];
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
 
 		$this->mock_database_cache
 			->expects( $this->once() )
@@ -2167,6 +2294,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			return;
 		}
 
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$account = [
 			'is_live'                   => true,
 			'instant_deposits_eligible' => true,
@@ -2191,6 +2321,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
 		}
+
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
 
 		$account = [
 			'is_live'                   => true,
@@ -2354,6 +2487,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_tracking_info() {
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
 		$expected = [
 			'hosting-provider' => 'test',
 		];
@@ -2378,6 +2514,20 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					return $validator( $res ) ? $res : null;
 				}
 			);
+	}
+
+	/**
+	 * Sets up the mocked WPCOM/Jetpack connection.
+	 *
+	 * @param bool $working_connection Whether the connection should be mocked as working or not.
+	 */
+	private function mock_jetpack_connection( bool $working_connection = true ) {
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( $working_connection );
+		$this->mock_api_client
+			->method( 'has_server_connection_owner' )
+			->willReturn( $working_connection );
 	}
 
 	/**

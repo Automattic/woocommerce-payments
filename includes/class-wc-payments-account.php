@@ -211,7 +211,13 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account is valid: which means it's connected and has valid card_payments capability status (requested, pending_verification, active and other valid ones).
+	 * Checks if the account is valid.
+	 *
+	 * This means:
+	 * - it's connected
+	 * - has submitted details
+	 * - has valid card_payments capability status (requested, pending_verification, active and other valid ones).
+	 *
 	 * Card_payments capability is crucial for account to function properly. If it is unrequested, we shouldn't show
 	 * any other options for the merchants since it'll lead to various errors.
 	 *
@@ -809,12 +815,13 @@ class WC_Payments_Account {
 			return false;
 		}
 
+		// Determine the original source from where the merchant entered the onboarding flow.
+		$onboarding_source = WC_Payments_Onboarding_Service::get_source();
+
 		// Prevent access to onboarding wizard if we don't have a working WPCOM/Jetpack connection.
 		// Redirect back to the connect page with an error message.
 		if ( ! $this->has_working_jetpack_connection() ) {
 			$referer = sanitize_text_field( wp_get_raw_referer() );
-			// Determine the original source from where the merchant entered the onboarding flow.
-			$onboarding_source = WC_Payments_Onboarding_Service::get_source( $referer );
 
 			// Track unsuccessful Jetpack connection.
 			if ( strpos( $referer, 'wordpress.com' ) ) {
