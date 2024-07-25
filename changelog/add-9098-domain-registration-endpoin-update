@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Use new payment_method_domains endpoint for domain registration.

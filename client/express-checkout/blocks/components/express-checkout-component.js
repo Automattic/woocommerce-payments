@@ -21,16 +21,10 @@ const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
 		paypal: 'never',
 	};
 
-	const enabledParam = [ 'applePay', 'googlePay' ].includes(
-		enabledPaymentMethod
-	)
-		? 'always'
-		: 'auto';
-
 	return {
 		paymentMethods: {
 			...allDisabled,
-			[ enabledPaymentMethod ]: enabledParam,
+			[ enabledPaymentMethod ]: 'auto',
 		},
 	};
 };
