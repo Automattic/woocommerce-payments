@@ -67,7 +67,7 @@ describe( 'VAT form', () => {
 			render( <VatForm onCompleted={ mockOnCompleted } /> );
 
 			user.click(
-				screen.getByLabelText( "I'm registered for a VAT number" )
+				screen.getByLabelText( "I'm registered for a VAT Number" )
 			);
 
 			expect(
@@ -205,7 +205,9 @@ describe( 'VAT form', () => {
 
 	describe( 'when registered for VAT', () => {
 		beforeEach( () => {
-			user.click( screen.getByLabelText( "I'm registered for a" ) );
+			user.click(
+				screen.getByLabelText( "I'm registered for a VAT Number" )
+			);
 		} );
 
 		it( 'should disable the Continue button', () => {
