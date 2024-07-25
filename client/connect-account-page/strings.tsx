@@ -26,6 +26,7 @@ export default {
 			'woocommerce-payments'
 		),
 		sandbox: __( 'Enable sandbox mode', 'woocommerce-payments' ),
+		reset: __( 'Reset account', 'woocommerce-payments' ),
 	},
 	heading: ( firstName?: string ): string =>
 		sprintf(

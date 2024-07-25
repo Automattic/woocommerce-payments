@@ -31,6 +31,9 @@ import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
+import { isInDevMode } from 'wcpay/utils';
+import ResetAccountModal from 'wcpay/overview/modal/reset-account';
+import { trackAccountReset } from 'wcpay/onboarding/tracking';
 
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
@@ -41,6 +44,7 @@ const SandboxModeNotice = () => (
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
+	const [ modalVisible, setModalVisible ] = useState( false );
 
 	const [ errorMessage, setErrorMessage ] = useState< string >(
 		wcpaySettings.errorMessage
@@ -183,6 +187,15 @@ const ConnectAccountPage: React.FC = () => {
 		} );
 	};
 
+	const handleReset = () => {
+		trackAccountReset();
+
+		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
+			'wcpay-reset-account': 'true',
+			source: 'wcpay-reset-account', // Overwrite any existing source because we are starting over.
+		} );
+	};
+
 	let ctaLabel = strings.button.jetpack_not_connected;
 	if ( wcpaySettings.isJetpackConnected ) {
 		if ( ! wcpaySettings.isAccountConnected ) {
@@ -254,31 +267,62 @@ const ConnectAccountPage: React.FC = () => {
 							>
 								{ ctaLabel }
 							</Button>
+							{
+								// Only show the reset button if an account is connected and didn't complete KYC, or if we are in dev mode.
+								wcpaySettings.isAccountConnected &&
+									( ! wcpaySettings.accountStatus
+										.detailsSubmitted ||
+										isInDevMode() ) && (
+										<Button
+											variant={ 'tertiary' }
+											onClick={ () =>
+												setModalVisible( true )
+											}
+										>
+											{ strings.button.reset }
+										</Button>
+									)
+							}
 						</div>
 					</Card>
-					{ incentive && <Incentive { ...incentive } /> }
-					<Panel className="connect-account-page__sandbox-mode-panel">
-						<PanelBody
-							title={ strings.sandboxMode.title }
-							initialOpen={ false }
-						>
-							<InlineNotice
-								icon
-								status="info"
-								isDismissible={ false }
-							>
-								{ strings.sandboxMode.description }
-							</InlineNotice>
-							<Button
-								variant="secondary"
-								isBusy={ isSandboxModeClicked }
-								disabled={ isSandboxModeClicked }
-								onClick={ handleEnableSandboxMode }
-							>
-								{ strings.button.sandbox }
-							</Button>
-						</PanelBody>
-					</Panel>
+					{
+						// Only show the incentive if an account is NOT connected.
+						! wcpaySettings.isAccountConnected && incentive && (
+							<Incentive { ...incentive } />
+						)
+					}
+					{
+						// Only show the sandbox mode panel if an account is NOT connected.
+						! wcpaySettings.isAccountConnected && (
+							<Panel className="connect-account-page__sandbox-mode-panel">
+								<PanelBody
+									title={ strings.sandboxMode.title }
+									initialOpen={ false }
+								>
+									<InlineNotice
+										icon
+										status="info"
+										isDismissible={ false }
+									>
+										{ strings.sandboxMode.description }
+									</InlineNotice>
+									<Button
+										variant="secondary"
+										isBusy={ isSandboxModeClicked }
+										disabled={ isSandboxModeClicked }
+										onClick={ handleEnableSandboxMode }
+									>
+										{ strings.button.sandbox }
+									</Button>
+								</PanelBody>
+							</Panel>
+						)
+					}
+					<ResetAccountModal
+						isVisible={ modalVisible }
+						onDismiss={ () => setModalVisible( false ) }
+						onSubmit={ handleReset }
+					/>
 				</>
 			) }
 		</Page>
