@@ -25,7 +25,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 	describe( 'Classic Checkout', () => {
 		beforeEach( async () => {
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopperWCP.addToCartFromShopPage( productName );
 			await shopper.goToCart();
 			await clearAndFillInput( couponInputSelector, 'free' );
 			await expect( page ).toClick( applyCouponSelector );
@@ -35,10 +35,10 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 		it( 'Checkout with a free coupon', async () => {
 			await shopper.goToCheckout();
 			await shopper.fillBillingDetails( billingDetails );
-			await page.waitFor( 1000 );
+			await page.waitForTimeout( 1000 );
 			await uiUnblocked();
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 		} );
 
 		it( 'Remove free coupon, then checkout with Classic Checkout', async () => {
@@ -48,7 +48,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await setupCheckout( billingDetails );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 		} );
 
 		afterAll( async () => {
@@ -60,7 +60,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 	describe( 'UPE', () => {
 		beforeEach( async () => {
 			await shopper.goToShop();
-			await shopper.addToCartFromShopPage( productName );
+			await shopperWCP.addToCartFromShopPage( productName );
 			await shopper.goToCart();
 			await clearAndFillInput( couponInputSelector, 'free' );
 			await expect( page ).toClick( applyCouponSelector );
@@ -74,7 +74,7 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await setupCheckout( billingDetails );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 		} );
 	} );
 } );

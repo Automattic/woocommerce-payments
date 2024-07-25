@@ -39,6 +39,8 @@ const renderSaveUserSection = () => {
 				paymentOptions.nextSibling
 			);
 
+			paymentOptions.classList.add( 'is-woopay' );
+
 			ReactDOM.render(
 				<CheckoutPageSaveUser isBlocksCheckout={ true } />,
 				checkoutPageSaveUserContainer

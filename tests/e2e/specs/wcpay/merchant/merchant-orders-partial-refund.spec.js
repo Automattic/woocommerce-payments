@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -55,6 +55,7 @@ describe.each( dataTable )(
 		let orderTotal;
 
 		beforeAll( async () => {
+			await shopper.goToShop(); // For debugging purposes. Go to the shop before login.
 			// Disable multi-currency in the merchant settings. This step is important because local environment setups
 			// might have multi-currency enabled. We need to ensure a consistent
 			// environment for the test.
@@ -69,7 +70,7 @@ describe.each( dataTable )(
 			);
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 
 			// Remember the order ID and order total. We will need them later.
 			orderId = await page.$eval(
@@ -85,7 +86,19 @@ describe.each( dataTable )(
 			await merchant.login();
 		}, 200000 );
 
+		afterEach( async () => {
+			page.removeAllListeners( 'dialog' );
+			page.on( 'dialog', async function ( dialog ) {
+				try {
+					await dialog.accept();
+				} catch ( err ) {
+					console.warn( err.message );
+				}
+			} );
+		} );
+
 		afterAll( async () => {
+			await merchant.login();
 			await merchantWCP.activateMulticurrency();
 			await merchant.logout();
 		} );
@@ -136,7 +149,6 @@ describe.each( dataTable )(
 				}
 			);
 			await refundDialog.accept();
-			await uiUnblocked();
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Verify each line item shows the refunded quantity and/or amount
