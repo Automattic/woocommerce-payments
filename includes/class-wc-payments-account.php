@@ -111,6 +111,7 @@ class WC_Payments_Account {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_settings_page' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_wizard_page' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_connect_page' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_overview_page' ] );
 
 		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
 
@@ -210,7 +211,7 @@ class WC_Payments_Account {
 	 * @return bool True if the account have valid stripe account, false otherwise.
 	 */
 	public function is_stripe_account_valid(): bool {
-		if ( ! $this->is_stripe_connected() ) {
+		if ( ! $this->is_stripe_connected() || ! $this->is_details_submitted() ) {
 			return false;
 		}
 
@@ -847,7 +848,7 @@ class WC_Payments_Account {
 		}
 
 		// Don't redirect merchants that have no Stripe account connected.
-		if ( ! $this->is_stripe_connected() ) {
+		if ( ! $this->is_stripe_connected() || ! $this->is_details_submitted() ) {
 			return false;
 		}
 
@@ -864,6 +865,9 @@ class WC_Payments_Account {
 	 *       Connect links are used to start/re-start/continue the onboarding flow and they are independent of
 	 *       the WP dashboard page (based solely on request params).
 	 *
+	 * IMPORTANT: The logic should be kept in sync with the one in maybe_redirect_from_overview_page to avoid loops.
+	 *
+	 * @see self::maybe_redirect_from_overview_page() for the opposite redirection.
 	 * @see self::maybe_handle_onboarding() for connect links handling.
 	 *
 	 * @return bool True if the redirection happened, false otherwise.
@@ -884,9 +888,58 @@ class WC_Payments_Account {
 		}
 
 		// If everything is in good working condition, redirect to Payments Overview page.
-		if ( $this->has_working_jetpack_connection() && $this->is_stripe_connected() ) {
-			$this->redirect_service->redirect_to_overview_page( 'WCPAY_CONNECT' );
+		if ( $this->has_working_jetpack_connection() && $this->is_stripe_account_valid() ) {
+			$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE );
+			return true;
+		}
 
+		return false;
+	}
+
+	/**
+	 * Redirects overview page (payments/overview) to the connect page for stores that
+	 * don't have a working Jetpack connection or a valid connected Stripe account.
+	 *
+	 * IMPORTANT: The logic should be kept in sync with the one in maybe_redirect_from_connect_page to avoid loops.
+	 *
+	 * @see self::maybe_redirect_from_connect_page() for the opposite redirection.
+	 * @see self::maybe_handle_onboarding() for connect links handling.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_from_overview_page(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/overview',
+		];
+
+		// We're not on the Overview page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		// If everything is NOT in good working condition, redirect to Payments Connect page.
+		if ( ! $this->has_working_jetpack_connection() || ! $this->is_stripe_account_valid() ) {
+			$this->redirect_service->redirect_to_connect_page(
+				sprintf(
+				/* translators: 1: WooPayments. */
+					__( 'To start enjoying all that %1$s has to offer, please <b>complete</b> your %1$s account setup process first.', 'woocommerce-payments' ),
+					'WooPayments'
+				),
+				WC_Payments_Onboarding_Service::FROM_OVERVIEW_PAGE,
+				[
+					'promo'                       => ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : false,
+					'progressive'                 => ( ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'] ) ? 'true' : false,
+					'collect_payout_requirements' => ( ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'] ) ? 'true' : false,
+					'create_builder_account'      => ( ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'] ) ? 'true' : false,
+					'test_mode'                   => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
+					'source'                      => WC_Payments_Onboarding_Service::get_source(),
+				]
+			);
 			return true;
 		}
 
