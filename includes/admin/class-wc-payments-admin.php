@@ -1109,7 +1109,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( $this->account->is_stripe_connected( true ) ) {
+		if ( $this->account->is_stripe_connected( true, true ) ) {
 			return;
 		}
 

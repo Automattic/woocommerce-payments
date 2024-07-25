@@ -171,12 +171,13 @@ class WC_Payments_Account {
 	 * Checks if the account is connected, assumes the value of $on_error on server error.
 	 *
 	 * @param bool $on_error Value to return on server error, defaults to false.
+	 * @param bool $force_refresh Force refresh account data cache.
 	 *
 	 * @return bool True if the account is connected, false otherwise, $on_error on error.
 	 */
-	public function is_stripe_connected( bool $on_error = false ): bool {
+	public function is_stripe_connected( bool $on_error = false, bool $force_refresh = false ): bool {
 		try {
-			return $this->try_is_stripe_connected();
+			return $this->try_is_stripe_connected( $force_refresh );
 		} catch ( Exception $e ) {
 			return $on_error;
 		}
@@ -185,11 +186,13 @@ class WC_Payments_Account {
 	/**
 	 * Checks if the account is connected, throws on server error.
 	 *
+	 * @param bool $force_refresh Force refresh account data cache.
+	 *
 	 * @return bool      True if the account is connected, false otherwise.
 	 * @throws Exception Throws exception when unable to detect connection status.
 	 */
-	public function try_is_stripe_connected(): bool {
-		$account = $this->get_cached_account_data();
+	public function try_is_stripe_connected( bool $force_refresh = false ): bool {
+		$account = $this->get_cached_account_data( $force_refresh );
 		if ( false === $account ) {
 			throw new Exception( esc_html__( 'Failed to detect connection status', 'woocommerce-payments' ) );
 		}
