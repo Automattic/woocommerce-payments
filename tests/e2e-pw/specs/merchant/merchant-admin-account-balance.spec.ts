@@ -35,37 +35,13 @@ test.describe(
 						const totalBalanceValue = page.getByLabel(
 							'Total balance',
 							{
-								exact: true, // true without exact:true to test debugging
+								exact: true,
 							}
 						);
 
 						// Match the total balance value to the USD format $1*
 						// Intentionally not expecting a specific value to allow for different values in different environments.
 						await expect( totalBalanceValue ).toHaveText( /\$\d+/ );
-
-						/**
-						 * Example of what to avoid: awaiting the page/element/value rather than the assertion (expect)
-						 * https://playwright.dev/docs/best-practices#use-web-first-assertions
-						 */
-						// const totalBalanceValue = await page
-						// 	.getByLabel( 'Total balance', {
-						// 		exact: true, // true without exact:true to test debugging
-						// 	} )
-						// 	.textContent();
-						// expect( totalBalanceValue ).toMatch( /\$\d+/ );
-
-						/**
-						 * Example of what to avoid: using a class name (non-user-facing implementation detail) to find the total balance value element
-						 * https://playwright.dev/docs/best-practices#prefer-user-facing-attributes-to-xpath-or-css-selectors
-						 */
-						// const totalBalanceValueWithClassname = page
-						// 	.locator(
-						// 		'.wcpay-account-balances__balances__item__amount'
-						// 	)
-						// 	.first();
-						// await expect( totalBalanceValueWithClassname ).toHaveText(
-						// 	/\$\d+/
-						// );
 					}
 				);
 
