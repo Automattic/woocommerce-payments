@@ -973,12 +973,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->expectException( Exception::class );
 
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
-		// Should not update the option.
-		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+		$this->assertTrue( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
+		// The option should be updated.
+		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
-	public function test_maybe_redirect_after_plugin_activation_account_connected() {
+	public function test_maybe_redirect_after_plugin_activation_account_valid() {
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
@@ -1002,6 +1002,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 						'has_pending_requirements' => true,
 						'current_deadline'         => 12345,
 						'is_live'                  => true,
+						'details_submitted'        => true, // Has finished initial KYC.
+						'capabilities'             => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 					]
 				)
 			);
@@ -1026,7 +1028,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_request( Get_Account::class, 0 );
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
-		// The option should be updated.
+		// The option should NOT be updated.
 		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
@@ -1054,12 +1056,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 						'has_pending_requirements' => true,
 						'current_deadline'         => 12345,
 						'is_live'                  => true,
+						'details_submitted'        => true, // Has finished initial KYC.
+						'capabilities'             => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 					]
 				)
 			);
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
-		// call the method twice but use the mock_api_client to make sure the account has been retrieved only once.
+		// call the method twice but use the mock_wcpay_request to make sure the account has been retrieved only once.
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
