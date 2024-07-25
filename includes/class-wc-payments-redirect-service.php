@@ -157,7 +157,6 @@ class WC_Payments_Redirect_Service {
 	 * Note that this function immediately ends the execution.
 	 *
 	 * @param string|null $from              Optional. Source of the redirect.
-	 *                                       Will fall back to keeping the `from` parameter in the current request URL, if present.
 	 * @param array       $additional_params Optional. Additional URL params to add to the redirect URL.
 	 */
 	public function redirect_to_onboarding_wizard( ?string $from = null, array $additional_params = [] ): void {
@@ -183,19 +182,16 @@ class WC_Payments_Redirect_Service {
 	/**
 	 * Redirect to the overview page.
 	 *
-	 * @param string $from Source of the redirect, if any.
-	 * @param string $onboarding_source Source of the onboarding flow, if any.
-	 */
-	public function redirect_to_overview_page( string $from = '', string $onboarding_source = '' ): void {
-		$overview_page_url = WC_Payments_Account::get_overview_page_url();
+	 * @param string $from              Optional. Source of the redirect.
+	 * @param array  $additional_params Optional. Additional URL params to add to the redirect URL.
+	 * */
+	public function redirect_to_overview_page( string $from = '', array $additional_params = [] ): void {
+		$params = $additional_params;
 		if ( '' !== $from ) {
-			$overview_page_url = add_query_arg( 'from', $from, $overview_page_url );
-		}
-		if ( '' !== $onboarding_source ) {
-			$overview_page_url = add_query_arg( 'source', $onboarding_source, $overview_page_url );
+			$params['from'] = $from;
 		}
 
-		$this->redirect_to( $overview_page_url );
+		$this->redirect_to( add_query_arg( $params, WC_Payments_Account::get_overview_page_url() ) );
 	}
 
 	/**
