@@ -779,17 +779,21 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// There is no valid Stripe account connected, redirect to the Connect page.
-		if ( ! $this->is_stripe_account_valid() ) {
+		// If everything is NOT in good working condition, redirect to Payments Connect page.
+		if ( ! $this->has_working_jetpack_connection() || ! $this->is_stripe_account_valid() ) {
 			$this->redirect_service->redirect_to_connect_page(
-				null,
+				sprintf(
+				/* translators: 1: WooPayments. */
+					__( 'To start enjoying all that %1$s has to offer, please <b>complete</b> your %1$s account setup process first.', 'woocommerce-payments' ),
+					'WooPayments'
+				),
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
 				[ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE ]
 			);
 			return true;
 		}
 
-		// Account fully onboarded, don't redirect.
+		// Everything is OK, don't redirect.
 		return false;
 	}
 
