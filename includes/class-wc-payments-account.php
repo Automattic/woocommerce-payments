@@ -779,7 +779,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// There is no Stripe account connected, redirect to the Connect page.
+		// There is no valid Stripe account connected, redirect to the Connect page.
 		if ( ! $this->is_stripe_account_valid() ) {
 			$this->redirect_service->redirect_to_connect_page(
 				null,
@@ -862,14 +862,10 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Merchants with a partially onboarded Stripe account, need to go to the Stripe KYC, not our onboarding wizard.
+		// Merchants with an invalid Stripe account, need to go to the Stripe KYC, not our onboarding wizard.
 		if ( ! $this->is_stripe_account_valid() ) {
 			$this->redirect_service->redirect_to_connect_page(
-				sprintf(
-				/* translators: %s: WooPayments */
-					__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
-					'WooPayments'
-				),
+				null,
 				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
 				[ 'source' => $onboarding_source ]
 			);
@@ -972,9 +968,9 @@ class WC_Payments_Account {
 	/**
 	 * Filter function to add Stripe to the list of allowed redirect hosts
 	 *
-	 * @param array $hosts - array of allowed hosts.
+	 * @param array $hosts Array of allowed hosts.
 	 *
-	 * @return array allowed hosts
+	 * @return array Filtered allowed hosts
 	 */
 	public function allowed_redirect_hosts( $hosts ) {
 		$hosts[] = 'connect.stripe.com';
