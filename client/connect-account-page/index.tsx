@@ -183,6 +183,15 @@ const ConnectAccountPage: React.FC = () => {
 		} );
 	};
 
+	let ctaLabel = strings.button.jetpack_not_connected;
+	if ( wcpaySettings.isJetpackConnected ) {
+		if ( ! wcpaySettings.isAccountConnected ) {
+			ctaLabel = strings.button.account_not_connected;
+		} else if ( ! wcpaySettings.isAccountValid ) {
+			ctaLabel = strings.button.account_invalid;
+		}
+	}
+
 	return (
 		<Page isNarrow className="connect-account-page">
 			{ errorMessage && (
@@ -243,9 +252,7 @@ const ConnectAccountPage: React.FC = () => {
 								disabled={ isSubmitted }
 								onClick={ handleSetup }
 							>
-								{ wcpaySettings.isJetpackConnected
-									? strings.button.jetpack_connected
-									: strings.button.jetpack_not_connected }
+								{ ctaLabel }
 							</Button>
 						</div>
 					</Card>
