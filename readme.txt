@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
 Requires at least: 6.0
-Tested up to: 6.5
+Tested up to: 6.6
 Requires PHP: 7.3
-Stable tag: 7.9.1
+Stable tag: 7.9.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,10 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.9.2 - 2024-07-18 =
+* Fix - Fix store connection loop for onboarding flows started from the Woo > Settings > Payments page.
+
 
 = 7.9.1 - 2024-07-11 =
 * Fix - Fix Documents API regex to allow documents with dashes in name to be viewed.

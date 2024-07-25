@@ -164,7 +164,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 
 		if ( $basket_size > 1 ) {
 			// Keep the formely created item/fee and add duplicated items to the basket.
-			$mock_items = array_merge( $mock_items, array_fill( 0, $basket_size - 1, $mock_items[0] ) );
+			$mock_items = array_merge( $mock_items, array_fill( 0, $basket_size - count( $mock_items ), $mock_items[0] ) );
 		}
 
 		// Setup the order.

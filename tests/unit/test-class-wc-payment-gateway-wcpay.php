@@ -13,6 +13,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
+use WCPay\Constants\Country_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -21,6 +22,7 @@ use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Fraud_Prevention_Enabled_Exception;
+use WCPay\Exceptions\Invalid_Address_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Exceptions\Order_ID_Mismatch_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -189,6 +191,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $mock_duplicates_detection_service;
 
 	/**
+	 * Backup of WC locale data
+	 *
+	 * @var array
+	 */
+	private $locale_backup;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -269,6 +278,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_payment_metadata' )
 			->willReturn( [] );
 		wcpay_get_test_container()->replace( OrderService::class, $mock_order_service );
+
+		$this->locale_backup = WC()->countries->get_country_locale();
 	}
 
 	/**
@@ -305,6 +316,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		wcpay_get_test_container()->reset_all_replacements();
 		WC()->session->set( 'wc_notices', [] );
+		WC()->countries->locale = $this->locale_backup;
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -2823,6 +2835,120 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
 
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	/**
+	 * @dataProvider process_payment_for_order_afterpay_clearpay_provider
+	 */
+	public function test_process_payment_for_order_afterpay_clearpay( array $address, array $locale_data, ?string $expected_exception ) {
+		$payment_method                              = 'woocommerce_payments_afterpay_clearpay';
+		$expected_upe_payment_method_for_pi_creation = 'afterpay_clearpay';
+		$order                                       = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->set_billing_city( $address['city'] );
+		$order->set_billing_state( $address['state'] );
+		$order->set_billing_postcode( $address['postcode'] );
+		$order->set_billing_country( $address['country'] );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'afterpay_clearpay' );
+
+		if ( $expected_exception ) {
+			$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0, null, null, null, null, true );
+			$this->expectException( $expected_exception );
+		} else {
+			$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+			$request->expects( $this->once() )
+				->method( 'set_payment_methods' )
+				->with( [ $expected_upe_payment_method_for_pi_creation ] );
+			$request->expects( $this->once() )
+				->method( 'format_response' )
+				->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+		}
+
+		WC()->countries->locale = $locale_data;
+
+		$afterpay_gateway = current(
+			array_filter(
+				$this->gateways,
+				function ( $gateway ) {
+					return $gateway->get_payment_method()->get_id() === 'afterpay_clearpay';
+				}
+			)
+		);
+
+		$afterpay_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function process_payment_for_order_afterpay_clearpay_provider() {
+		return [
+			'with valid full address'         => [
+				'address'            => [
+					'city'     => 'WooCity',
+					'state'    => 'NY',
+					'postcode' => '12345',
+					'country'  => Country_Code::UNITED_STATES,
+				],
+				// An empty locale data means all fields should be required.
+				'locale_data'        => [],
+				'expected_exception' => null,
+			],
+			'with incomplete address'         => [
+				'address'            => [
+					'city'     => 'WooCity',
+					'state'    => '',
+					'postcode' => '12345',
+					'country'  => Country_Code::UNITED_STATES,
+				],
+				'locale_data'        => [
+					// A missing `required` attribute means that the field will be required.
+					Country_Code::UNITED_STATES => [ 'state' => [ 'label' => 'State' ] ],
+				],
+				'expected_exception' => Invalid_Address_Exception::class,
+			],
+			'optional state'                  => [
+				'address'            => [
+					'city'     => 'London',
+					'state'    => '',
+					'postcode' => 'HA9 9LY',
+					'country'  => Country_Code::UNITED_KINGDOM,
+				],
+				'locale_data'        => [
+					Country_Code::UNITED_KINGDOM => [ 'state' => [ 'required' => false ] ],
+				],
+				'expected_exception' => null,
+			],
+			'optional state and postcode'     => [
+				'address'            => [
+					'city'     => 'London',
+					'state'    => '',
+					'postcode' => '',
+					'country'  => Country_Code::UNITED_KINGDOM,
+				],
+				'locale_data'        => [
+					Country_Code::UNITED_KINGDOM => [
+						'state'    => [ 'required' => false ],
+						'postcode' => [ 'required' => false ],
+					],
+				],
+				'expected_exception' => null,
+			],
+			'optional state, invalid address' => [
+				'address'            => [
+					'city'     => '',
+					'state'    => 'London',
+					'postcode' => 'HA9 9LY',
+					'country'  => Country_Code::UNITED_KINGDOM,
+				],
+				'locale_data'        => [
+					Country_Code::UNITED_KINGDOM => [ 'state' => [ 'required' => false ] ],
+				],
+				'expected_exception' => Invalid_Address_Exception::class,
+			],
+		];
 	}
 
 	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {

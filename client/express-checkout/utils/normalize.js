@@ -87,6 +87,7 @@ export const normalizePayForOrderData = ( event, paymentMethodId ) => {
 		payment_method: 'woocommerce_payments',
 		'wcpay-payment-method': paymentMethodId,
 		express_payment_type: event?.expressPaymentType,
+		'wcpay-fraud-prevention-token': window.wcpayFraudPreventionToken ?? '',
 	};
 };
 

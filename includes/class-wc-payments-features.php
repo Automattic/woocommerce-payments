@@ -351,7 +351,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_stripe_ece_enabled(): bool {
-		return '1' === get_option( self::STRIPE_ECE_FLAG_NAME, '0' );
+		return '1' === get_option( self::STRIPE_ECE_FLAG_NAME, '1' );
 	}
 
 	/**

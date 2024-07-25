@@ -85,14 +85,6 @@ class Level3Service {
 		};
 		$items_to_send = array_map( $process_item, $order_items );
 
-		if ( count( $items_to_send ) > 200 ) {
-			// If more than 200 items are present, bundle the last ones in a single item.
-			$items_to_send = array_merge(
-				array_slice( $items_to_send, 0, 199 ),
-				[ $this->bundle_level3_data_from_items( array_slice( $items_to_send, 200 ) ) ]
-			);
-		}
-
 		$level3_data = [
 			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
 			'customer_reference' => (string) $order->get_id(),
@@ -110,6 +102,29 @@ class Level3Service {
 		$store_postcode = $this->legacy_proxy->call_function( 'get_option', 'woocommerce_store_postcode' );
 		if ( WC_Payments_Utils::is_valid_us_zip_code( $store_postcode ) ) {
 			$level3_data['shipping_from_zip'] = $store_postcode;
+		}
+
+		/**
+		 * Filters the Level 3 data based on order.
+		 *
+		 * Example usage: Enables updating the discount based on the products in the order,
+		 * if any of the products are gift cards.
+		 *
+		 * @since 8.0.0
+		 *
+		 * @param array $level3_data Precalculated Level 3 data based on order.
+		 * @param WC_Order $order    The order object.
+		 */
+		$level3_data = apply_filters( 'wcpay_payment_request_level3_data', $level3_data, $order );
+
+		if ( count( $level3_data['line_items'] ) > 200 ) {
+			// If more than 200 items are present, bundle the last ones in a single item.
+			$items_to_send = array_merge(
+				array_slice( $level3_data['line_items'], 0, 199 ),
+				[ $this->bundle_level3_data_from_items( array_slice( $level3_data['line_items'], 199 ) ) ]
+			);
+
+			$level3_data['line_items'] = $items_to_send;
 		}
 
 		return $level3_data;
