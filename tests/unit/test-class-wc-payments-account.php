@@ -304,6 +304,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'account_id'        => 'acc_test',
 					'is_live'           => true,
 					'details_submitted' => true, // Has finished initial KYC.
+					'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 				]
 			);
 			// This should be in sync with the current account mode.
@@ -591,6 +592,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'account_id'        => 'acc_test',
 				'is_live'           => false,
 				'details_submitted' => true, // Has finished initial KYC.
+				'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 			]
 		);
 		// This should be in sync with the current account mode.
@@ -642,6 +644,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'account_id'        => 'acc_test',
 				'is_live'           => true,
 				'details_submitted' => true, // Has finished initial KYC.
+				'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 			]
 		);
 		// This should be in sync with the current account mode.
@@ -686,6 +689,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'account_id'        => 'acc_test',
 				'is_live'           => true,
 				'details_submitted' => true, // Has finished initial KYC.
+				'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 			]
 		);
 
@@ -764,10 +768,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->with(
 				true, // Whether to onboard in live mode or not.
 				$this->logicalAnd(
-					$this->logicalOr(
-						$this->stringContains( 'page=wc-admin&path=/payments/overview' ),
-						$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Foverview' )
-					),
+					// It should be a connect link.
+					$this->stringContains( 'wcpay-connect=' ),
+					// It should have the correct from.
+					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
+					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
 					$this->stringContains( 'progressive=true' )
 				),
@@ -840,10 +845,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->with(
 				true, // Whether to onboard in live mode or not.
 				$this->logicalAnd(
-					$this->logicalOr(
-						$this->stringContains( 'page=wc-admin&path=/payments/overview' ),
-						$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Foverview' )
-					),
+				// It should be a connect link.
+					$this->stringContains( 'wcpay-connect=' ),
+					// It should have the correct from.
+					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
+					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
 					$this->stringContains( 'progressive=true' )
 				),
@@ -861,12 +867,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->method( 'redirect_to' )
 			->with(
 				$this->logicalAnd(
-					$this->logicalOr(
-						$this->stringContains( 'page=wc-admin&path=/payments/overview' ),
-						$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Foverview' )
-					),
+				// It should be a connect link.
+					$this->stringContains( 'wcpay-connect=' ),
+					// It should have the correct from.
+					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
+					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
 					$this->stringContains( 'progressive=true' ),
+					// It should have the connection success flag.
 					$this->stringContains( 'wcpay-connection-success=1' )
 				)
 			);
@@ -1184,8 +1192,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		if ( $stripe_account_connected ) {
 			$this->cache_account_details(
 				[
-					'account_id' => 'acc_test',
-					'is_live'    => true,
+					'account_id'        => 'acc_test',
+					'is_live'           => true,
+					'details_submitted' => true, // Has finished initial KYC.
+					'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
+
 				]
 			);
 		}
@@ -1388,8 +1399,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		if ( $stripe_account_connected ) {
 			$this->cache_account_details(
 				[
-					'account_id' => 'acc_test',
-					'is_live'    => true,
+					'account_id'        => 'acc_test',
+					'is_live'           => true,
+					'details_submitted' => true, // Has finished initial KYC.
+					'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
 				]
 			);
 		}
@@ -1618,74 +1631,109 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
 	}
 
+	public function test_is_stripe_account_valid_when_details_not_submitted() {
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+					'details_submitted'        => false, // Has NOT finished initial KYC.
+				]
+			);
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
 	public function test_is_stripe_account_valid_when_capability_unrequested() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_live_',
-				'test_publishable_key'     => 'pk_test_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'capabilities'             => [
-					'card_payments' => 'unrequested',
-				],
-			]
-		);
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+					'details_submitted'        => true, // Has finished initial KYC.
+					'capabilities'             => [
+						'card_payments' => 'unrequested',
+					],
+				]
+			);
 
 		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
 	}
 
 	public function test_is_stripe_account_valid_when_capability_requested() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_live_',
-				'test_publishable_key'     => 'pk_test_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'capabilities'             => [
-					'card_payments' => 'requested',
-				],
-			]
-		);
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+					'details_submitted'        => true, // Has finished initial KYC.
+					'capabilities'             => [
+						'card_payments' => 'requested',
+					],
+				]
+			);
 
 		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
 	}
 
 	public function test_is_stripe_account_valid_when_capability_active() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_live_',
-				'test_publishable_key'     => 'pk_test_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'capabilities'             => [
-					'card_payments' => 'active',
-				],
-			]
-		);
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+					'details_submitted'        => true, // Has finished initial KYC.
+					'capabilities'             => [
+						'card_payments' => 'active',
+					],
+				]
+			);
 
 		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
 	}
 
 	public function test_is_stripe_account_valid_when_capability_pending_verification() {
-		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
-			[
-				'account_id'               => 'acc_test',
-				'live_publishable_key'     => 'pk_live_',
-				'test_publishable_key'     => 'pk_test_',
-				'has_pending_requirements' => true,
-				'current_deadline'         => 12345,
-				'is_live'                  => true,
-				'capabilities'             => [
-					'card_payments' => 'pending_verification',
-				],
-			]
-		);
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'account_id'               => 'acc_test',
+					'live_publishable_key'     => 'pk_live_',
+					'test_publishable_key'     => 'pk_test_',
+					'has_pending_requirements' => true,
+					'current_deadline'         => 12345,
+					'is_live'                  => true,
+					'details_submitted'        => true, // Has finished initial KYC.
+					'capabilities'             => [
+						'card_payments' => 'pending_verification',
+					],
+				]
+			);
 
 		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
 	}

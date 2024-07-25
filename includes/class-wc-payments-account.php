@@ -1419,7 +1419,8 @@ class WC_Payments_Account {
 
 		/**
 		 * ==================
-		 * Handle the redirect back from the Stripe KYC (proxied through our platform).
+		 * Handle the redirect back from the Stripe KYC (proxied through our platform)
+		 * when it didn't come through a connect link.
 		 *
 		 * @see self::finalize_connection()
 		 * ==================
