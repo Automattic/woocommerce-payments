@@ -486,6 +486,7 @@ class WC_Payments_Onboarding_Service {
 		/**
 		 * =================
 		 * Use the source from the referer URL, if present and valid.
+		 * =================
 		 */
 		$source_param = isset( $referer_params['source'] ) ? sanitize_text_field( wp_unslash( $referer_params['source'] ) ) : '';
 		if ( ! empty( $source_param ) && in_array( $source_param, $valid_sources, true ) ) {
