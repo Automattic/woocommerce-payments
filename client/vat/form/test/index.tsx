@@ -56,7 +56,7 @@ const countryTaxNumberInfo = [
 	[ 'DE', 'DE', 'VAT Number' ],
 	[ 'GR', 'EL', 'VAT Number' ],
 	[ 'CH', 'CHE', 'VAT Number' ],
-	[ 'JP', 'Corporate Number' ],
+	[ 'JP', '', 'Corporate Number' ],
 ];
 
 describe( 'VAT form', () => {
@@ -75,9 +75,20 @@ describe( 'VAT form', () => {
 				)
 			);
 
-			expect(
-				screen.getByRole( 'textbox', { name: expectedTaxIdName } )
-			).toHaveValue( `${ expectedPrefix } ` );
+			if ( expectedPrefix ) {
+				expect(
+					screen.getByRole( 'textbox', {
+						name: `${ expectedTaxIdName }`,
+					} )
+				).toHaveValue( `${ expectedPrefix } ` );
+			} else {
+				// Special case no prefix (JP) – the value is not necessarily empty string.
+				expect(
+					screen.getByRole( 'textbox', {
+						name: `${ expectedTaxIdName }`,
+					} )
+				).toBeEmptyDOMElement();
+			}
 		}
 	);
 } );
