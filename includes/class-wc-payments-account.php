@@ -1187,6 +1187,7 @@ class WC_Payments_Account {
 					$should_onboard_in_test_mode = false;
 				}
 
+				$next_step_from = WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE;
 				// These from values are allowed to be passed through, when going from test to live.
 				if ( in_array(
 					$from,
@@ -1198,8 +1199,6 @@ class WC_Payments_Account {
 					true
 				) ) {
 					$next_step_from = $from;
-				} else {
-					$next_step_from = WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE;
 				}
 			}
 
@@ -1326,7 +1325,9 @@ class WC_Payments_Account {
 				&& ! $this->is_stripe_connected() ) {
 
 				$this->redirect_service->redirect_to_onboarding_wizard(
-					$next_step_from,
+					// When we redirect to the onboarding wizard, we carry over the `from`, if we have it.
+					// This is because there is no interim step between the user clicking the connect link and the onboarding wizard.
+					! empty( $from ) ? $from : $next_step_from,
 					[ 'source' => $onboarding_source ]
 				);
 				return;
