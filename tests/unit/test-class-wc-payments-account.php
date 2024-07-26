@@ -1658,6 +1658,116 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_maybe_redirect_from_connect_page_redirects_and_maybe_redirect_from_overview_page_doesnt() {
+		// Arrange.
+		wp_set_current_user( 1 );
+
+		// The account is valid.
+		$this->cache_account_details(
+			[
+				'account_id'        => 'acc_test',
+				'is_live'           => true,
+				'details_submitted' => true, // Whether it finished the initial KYC or not.
+				'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
+			]
+		);
+
+		// The WPCOM/Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		// Assert.
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_overview_page' );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_connect_page' );
+
+		// Act.
+		$_GET = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		];
+		$this->wcpay_account->maybe_redirect_from_connect_page();
+		$_GET = [
+			'page' => 'wc-admin',
+			'path' => '/payments/overview',
+		];
+		$this->wcpay_account->maybe_redirect_from_overview_page();
+	}
+
+	/**
+	 * Test that maybe_redirect_from_connect_page redirects and maybe_redirect_from_overview_page doesn't when
+	 * either the WPCOM/Jetpack connection is not working or the account is not valid.
+	 *
+	 * @dataProvider data_test_maybe_redirect_from_overview_page_redirects_and_maybe_redirect_from_connect_page_doesnt
+	 */
+	public function test_maybe_redirect_from_overview_page_redirects_and_maybe_redirect_from_connect_page_doesnt( $has_working_jetpack_connection, $is_stripe_connected, $details_submitted, $required_capabilities ) {
+		// Arrange.
+		wp_set_current_user( 1 );
+
+		if ( $is_stripe_connected ) {
+			$this->cache_account_details(
+				[
+					'account_id'        => 'acc_test',
+					'is_live'           => true,
+					'details_submitted' => $details_submitted, // Whether it finished the initial KYC or not.
+					'capabilities'      => $required_capabilities ? [ 'card_payments' => 'requested' ] : [],
+				]
+			);
+		} else {
+			$this->cache_account_details( [] );
+		}
+
+		$this->mock_jetpack_connection( $has_working_jetpack_connection );
+
+		// Assert.
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_overview_page' );
+
+		// Act.
+		$_GET = [
+			'page' => 'wc-admin',
+			'path' => '/payments/overview',
+		];
+		$this->wcpay_account->maybe_redirect_from_overview_page();
+		$_GET = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		];
+		$this->wcpay_account->maybe_redirect_from_connect_page();
+	}
+
+	/**
+	 * Data provider for data_test_maybe_redirect_from_overview_page_redirects_and_maybe_redirect_from_connect_page_doesnt.
+	 *
+	 * @return array[]
+	 */
+	public function data_test_maybe_redirect_from_overview_page_redirects_and_maybe_redirect_from_connect_page_doesnt() {
+		return [
+			'no_jetpack_connection'                      => [
+				false,
+				true,
+				true,
+				true,
+			],
+			'no_stripe_account'                          => [
+				true,
+				false,
+				true,
+				true,
+			],
+			'partially_onboarded_account'                => [
+				true,
+				true,
+				false,
+				true,
+			],
+			'account_with_missing_required_capabilities' => [
+				true,
+				true,
+				true,
+				false,
+			],
+		];
+	}
+
 	public function test_try_is_stripe_connected_returns_true_when_connected() {
 		// The WPCOM/Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
