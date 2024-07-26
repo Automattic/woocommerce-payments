@@ -39,6 +39,7 @@ class WC_Payments_Onboarding_Service {
 	const SOURCE_WCPAY_GO_LIVE_TASK                 = 'wcpay-go-live-task';
 	const SOURCE_WCPAY_FINISH_SETUP_TOOL            = 'wcpay-finish-setup-tool';
 	const SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE        = 'wcpay-payout-failure-notice';
+	const SOURCE_WCPAY_ACCOUNT_DETAILS              = 'wcpay-account-details';
 	const SOURCE_UNKNOWN                            = 'unknown';
 
 	// Values for the `from` GET param to indicate what was the immediately previous step.
@@ -49,6 +50,7 @@ class WC_Payments_Onboarding_Service {
 	// WooPayments places.
 	const FROM_CONNECT_PAGE      = 'WCPAY_CONNECT';
 	const FROM_OVERVIEW_PAGE     = 'WCPAY_OVERVIEW';
+	const FROM_ACCOUNT_DETAILS   = 'WCPAY_ACCOUNT_DETAILS';
 	const FROM_ONBOARDING_WIZARD = 'WCPAY_ONBOARDING_WIZARD';
 	const FROM_SETTINGS          = 'WCPAY_SETTINGS';
 	const FROM_PAYOUTS           = 'WCPAY_PAYOUTS';
@@ -326,6 +328,7 @@ class WC_Payments_Onboarding_Service {
 				self::FROM_WCADMIN_INCENTIVE,
 				self::FROM_CONNECT_PAGE,
 				self::FROM_OVERVIEW_PAGE,
+				self::FROM_ACCOUNT_DETAILS,
 				self::FROM_ONBOARDING_WIZARD,
 				self::FROM_TEST_TO_LIVE,
 				self::FROM_RESET_ACCOUNT,
@@ -410,6 +413,7 @@ class WC_Payments_Onboarding_Service {
 			self::SOURCE_WCPAY_GO_LIVE_TASK,
 			self::SOURCE_WCPAY_FINISH_SETUP_TOOL,
 			self::SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE,
+			self::SOURCE_WCPAY_ACCOUNT_DETAILS,
 		];
 
 		/**
@@ -476,6 +480,8 @@ class WC_Payments_Onboarding_Service {
 				return self::SOURCE_WCPAY_PAYOUTS_PAGE;
 			case self::FROM_GO_LIVE_TASK:
 				return self::SOURCE_WCPAY_GO_LIVE_TASK;
+			case self::FROM_ACCOUNT_DETAILS:
+				return self::SOURCE_WCPAY_ACCOUNT_DETAILS;
 			default:
 				break;
 		}

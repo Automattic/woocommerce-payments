@@ -61,7 +61,8 @@ const AccountStatusError = () => {
 const AccountStatusDetails = ( props ) => {
 	const { accountStatus, accountFees } = props;
 	const accountLink = addQueryArgs( accountStatus.accountLink, {
-		source: 'account-details',
+		from: 'WCPAY_ACCOUNT_DETAILS',
+		source: 'wcpay-account-details',
 	} );
 	const cardTitle = (
 		<>
@@ -82,7 +83,8 @@ const AccountStatusDetails = ( props ) => {
 					variant={ 'link' }
 					onClick={ () =>
 						recordEvent( 'wcpay_account_details_link_clicked', {
-							source: 'account-details',
+							from: 'WCPAY_ACCOUNT_DETAILS',
+							source: 'wcpay-account-details',
 						} )
 					}
 					href={ accountLink }

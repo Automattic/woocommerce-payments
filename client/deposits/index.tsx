@@ -124,7 +124,10 @@ const DepositFailureNotice: React.FC = () => {
 							onClick={ () =>
 								recordEvent(
 									'wcpay_account_details_link_clicked',
-									{ source: 'wcpay-payout-failure-notice' }
+									{
+										from: 'WCPAY_PAYOUTS',
+										source: 'wcpay-payout-failure-notice',
+									}
 								)
 							}
 							href={ accountLink }

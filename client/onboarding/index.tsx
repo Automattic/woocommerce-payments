@@ -22,12 +22,13 @@ import './style.scss';
 const OnboardingStepper = () => {
 	const handleExit = () => {
 		const urlParams = new URLSearchParams( window.location.search );
-		const source =
-			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
+
 		window.location.href = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/connect',
-			source,
+			source:
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown',
 			from: 'WCPAY_ONBOARDING_WIZARD',
 		} );
 	};
