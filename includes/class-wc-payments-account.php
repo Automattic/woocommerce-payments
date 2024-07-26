@@ -1980,6 +1980,14 @@ class WC_Payments_Account {
 			return true;
 		}
 
+		// Fix test mode enabled DB state starting with the account data.
+		// These two should be in sync when in dev mode.
+		// This is a weird case that shouldn't happen under normal circumstances.
+		if ( ! $account['is_live'] && ! WC_Payments_Onboarding_Service::is_test_mode_enabled() && WC_Payments::mode()->is_dev() ) {
+			Logger::warning( 'Test mode account, account onboarding is NOT in test mode, but the plugin is in dev mode. Enabling test mode onboarding.' );
+			WC_Payments_Onboarding_Service::set_test_mode( true );
+		}
+
 		// Test accounts are valid only when onboarding in test mode.
 		if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 			return true;
