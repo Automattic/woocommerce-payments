@@ -37,7 +37,7 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
-		buttonSelectors: [ '#place_order', '.wp-element-button' ],
+		buttonSelectors: [ '#place_order' ],
 	},
 	blocksCheckout: {
 		appendTarget: '#billing.wc-block-components-address-form',
@@ -61,10 +61,7 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
-		buttonSelectors: [
-			'.wc-block-components-checkout-place-order-button',
-			'.wp-element-button',
-		],
+		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
 	},
 	bnplProductPage: {
 		appendTarget: '.product .cart .quantity',
@@ -81,12 +78,7 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
-		buttonSelectors: [
-			'.single_add_to_cart_button',
-			'.add_to_cart_button',
-			'#submit',
-			'.wp-element-button',
-		],
+		buttonSelectors: [ '.single_add_to_cart_button' ],
 	},
 	bnplClassicCart: {
 		appendTarget: '.cart .quantity',
@@ -103,11 +95,7 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
-		buttonSelectors: [
-			'.checkout-button',
-			'.wp-element-button',
-			'.button',
-		],
+		buttonSelectors: [ '.checkout-button' ],
 	},
 	bnplCartBlock: {
 		appendTarget: '.wc-block-cart .wc-block-components-quantity-selector',
@@ -128,10 +116,7 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
-		buttonSelectors: [
-			'.wc-block-cart__submit-button',
-			'.wp-element-button',
-		],
+		buttonSelectors: [ '.wc-block-cart__submit-button' ],
 	},
 
 	/**
