@@ -784,7 +784,7 @@ class WC_Payments_Account {
 			$this->redirect_service->redirect_to_connect_page(
 				sprintf(
 				/* translators: 1: WooPayments. */
-					__( 'To start enjoying all that %1$s has to offer, please <b>complete</b> your %1$s account setup process first.', 'woocommerce-payments' ),
+					__( 'Please <b>complete your %1$s setup</b> to process transactions.', 'woocommerce-payments' ),
 					'WooPayments'
 				),
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
@@ -950,7 +950,7 @@ class WC_Payments_Account {
 			$this->redirect_service->redirect_to_connect_page(
 				sprintf(
 				/* translators: 1: WooPayments. */
-					__( 'To start enjoying all that %1$s has to offer, please <b>complete</b> your %1$s account setup process first.', 'woocommerce-payments' ),
+					__( 'Please <b>complete your %1$s setup</b> to process transactions.', 'woocommerce-payments' ),
 					'WooPayments'
 				),
 				WC_Payments_Onboarding_Service::FROM_OVERVIEW_PAGE,
@@ -1263,7 +1263,7 @@ class WC_Payments_Account {
 				$this->redirect_service->redirect_to_connect_page(
 					! empty( $_GET['wcpay-connection-error'] ) ? sprintf(
 					/* translators: 1: WooPayments. */
-						__( 'To start enjoying all that %1$s has to offer, please <b>complete</b> your %1$s account setup process first.', 'woocommerce-payments' ),
+						__( 'Please <b>complete your %1$s setup</b> to process transactions.', 'woocommerce-payments' ),
 						'WooPayments'
 					) : null,
 					null, // Do not carry over the `from` value to avoid redirect loops.
