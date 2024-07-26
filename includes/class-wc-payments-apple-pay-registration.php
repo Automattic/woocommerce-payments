@@ -101,7 +101,7 @@ class WC_Payments_Apple_Pay_Registration {
 	}
 
 	/**
-	 * Whether the gateway and Payment Request Button (prerequisites for Apple Pay) are enabled.
+	 * Whether the gateway and Express Checkout Buttons (prerequisites for Apple Pay) are enabled.
 	 *
 	 * @return bool Whether Apple Pay required settings are enabled.
 	 */
@@ -110,7 +110,7 @@ class WC_Payments_Apple_Pay_Registration {
 	}
 
 	/**
-	 * Whether the gateway and Payment Request Button were enabled in previous settings.
+	 * Whether the gateway and Express Checkout Buttons were enabled in previous settings.
 	 *
 	 * @param array|null $prev_settings Gateway settings.
 	 *
@@ -264,15 +264,15 @@ class WC_Payments_Apple_Pay_Registration {
 
 
 	/**
-	 * Processes the Apple Pay domain verification.
+	 * Processes the Stripe domain registration.
 	 */
-	public function register_domain_with_apple() {
+	public function register_domain() {
 		$error = null;
 
 		try {
-			$registration_response = $this->payments_api_client->register_domain_with_apple( $this->domain_name );
+			$registration_response = $this->payments_api_client->register_domain( $this->domain_name );
 
-			if ( isset( $registration_response['id'] ) ) {
+			if ( isset( $registration_response['id'] ) && ( isset( $registration_response['apple_pay']['status'] ) && 'active' === $registration_response['apple_pay']['status'] ) ) {
 				$this->gateway->update_option( 'apple_pay_verified_domain', $this->domain_name );
 				$this->gateway->update_option( 'apple_pay_domain_set', 'yes' );
 
@@ -286,8 +286,8 @@ class WC_Payments_Apple_Pay_Registration {
 				);
 
 				return;
-			} elseif ( isset( $registration_response['error']['message'] ) ) {
-				$error = $registration_response['error']['message'];
+			} elseif ( isset( $registration_response['apple_pay']['status_details']['error_message'] ) ) {
+				$error = $registration_response['apple_pay']['status_details']['error_message'];
 			}
 		} catch ( API_Exception $e ) {
 			$error = $e->getMessage();
@@ -313,9 +313,9 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Process the Apple Pay domain verification if proper settings are configured.
 	 */
 	public function verify_domain_if_configured() {
-		// If Payment Request Buttons are not enabled, or account is not live,
+		// If Express Checkout Buttons are not enabled,
 		// do not attempt to register domain.
-		if ( ! $this->is_enabled() || ! $this->account->get_is_live() ) {
+		if ( ! $this->is_enabled() ) {
 			return;
 		}
 
@@ -326,8 +326,8 @@ class WC_Payments_Apple_Pay_Registration {
 		// Create/update domain association file by copying it from the plugin folder as a fallback.
 		$this->update_domain_association_file();
 
-		// Register the domain with Apple Pay.
-		$this->register_domain_with_apple();
+		// Register the domain.
+		$this->register_domain();
 	}
 
 	/**
@@ -347,7 +347,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param array $settings      Settings after update.
 	 */
 	public function verify_domain_on_updated_settings( $prev_settings, $settings ) {
-		// If Gateway or Payment Request Button weren't enabled, then might need to verify now.
+		// If Gateway or Express Checkout Buttons weren't enabled, then might need to verify now.
 		if ( ! $this->was_enabled( $prev_settings ) ) {
 			$this->verify_domain_if_configured();
 		}
