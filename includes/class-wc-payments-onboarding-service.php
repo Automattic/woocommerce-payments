@@ -94,7 +94,6 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_filter( 'wcpay_dev_mode', [ $this, 'maybe_enable_dev_mode' ], 100 );
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
 	}
 
@@ -197,17 +196,6 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Enable dev mode if onboarding test mode is enabled.
-	 *
-	 * @param bool $dev_mode Current dev mode value.
-	 *
-	 * @return bool
-	 */
-	public function maybe_enable_dev_mode( bool $dev_mode ): bool {
-		return self::is_test_mode_enabled() || $dev_mode;
 	}
 
 	/**
