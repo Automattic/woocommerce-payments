@@ -12,11 +12,9 @@ import strings from './strings';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { trackAccountReset } from 'wcpay/onboarding/tracking';
-import { recordEvent } from 'wcpay/tracks';
+import { isInDevMode } from 'wcpay/utils';
 
 interface Props {
-	accountLink: string;
-	detailsSubmitted: boolean;
 	openModal: () => void;
 }
 
@@ -29,13 +27,13 @@ const handleReset = () => {
 	} );
 };
 
-export const AccountTools: React.FC< Props > = ( props: Props ) => {
-	const source = 'wcpay-finish-setup-tool';
-	const accountLink = addQueryArgs( props.accountLink, {
-		source,
-	} );
-	const detailsSubmitted = props.detailsSubmitted;
+export const AccountTools: React.FC< Props > = () => {
 	const [ modalVisible, setModalVisible ] = useState( false );
+
+	// Only render when in dev/sandbox mode.
+	if ( ! isInDevMode() ) {
+		return null;
+	}
 
 	return (
 		<>
@@ -45,24 +43,8 @@ export const AccountTools: React.FC< Props > = ( props: Props ) => {
 				<p>{ strings.description }</p>
 				{ /* Use wrapping div to keep buttons grouped together. */ }
 				<div className="account-tools__actions">
-					{ ! detailsSubmitted && (
-						<Button
-							variant={ 'secondary' }
-							onClick={ () =>
-								recordEvent(
-									'wcpay_account_details_link_clicked',
-									{
-										source,
-									}
-								)
-							}
-							href={ accountLink }
-						>
-							{ strings.finish }
-						</Button>
-					) }
 					<Button
-						variant={ detailsSubmitted ? 'secondary' : 'tertiary' }
+						variant={ 'secondary' }
 						onClick={ () => setModalVisible( true ) }
 					>
 						{ strings.reset }
