@@ -269,10 +269,11 @@ const ConnectAccountPage: React.FC = () => {
 						! isAccountConnected && devMode ? (
 							<SandboxModeNotice />
 						) : (
-							// If we already have a sandbox account connected (but in a bad state) and
+							// If we already have a sandbox account connected (but in an invalid state) and
 							// a working Jetpack connection (to be able to delete the current account)
 							// show the switch to live sandbox notice.
 							isAccountConnected &&
+							! isAccountValid &&
 							onboardingTestMode &&
 							isJetpackConnected && (
 								<SandboxModeSwitchToLiveNotice
