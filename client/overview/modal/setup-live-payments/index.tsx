@@ -82,10 +82,10 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 				) }
 			</div>
 			<div className="wcpay-setup-real-payments-modal__footer">
-				<Button isTertiary onClick={ trackAndClose }>
+				<Button variant="tertiary" onClick={ trackAndClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
-				<Button isPrimary onClick={ handleSetup }>
+				<Button variant="primary" onClick={ handleSetup }>
 					{ __( 'Continue setup', 'woocommerce-payments' ) }
 				</Button>
 			</div>
