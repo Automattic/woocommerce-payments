@@ -825,6 +825,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
+		if ( ! $this->payment_method ) {
+			return false;
+		}
+
 		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
 		if ( ! $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) ) {
 			return false;
@@ -904,7 +908,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$supported_currencies = $this->account->get_account_customer_supported_currencies();
 		$current_currency     = strtolower( get_woocommerce_currency() );
 
-		if ( count( $supported_currencies ) === 0 ) {
+		if ( is_null( $supported_currencies ) || ( is_array( $supported_currencies ) && count( $supported_currencies ) === 0 ) ) {
 			// If we don't have info related to the supported currencies
 			// of the country, we won't disable the gateway.
 			return true;
@@ -1475,10 +1479,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount   = $order->get_total();
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
-		$customer_details_options   = [
+		$customer_details_options = [
 			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
 		];
-		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
+
+		if ( $payment_information->get_customer_id() ) {
+			$user        = $order->get_user();
+			$customer_id = $payment_information->get_customer_id();
+		} else {
+			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
+		}
 
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
@@ -4495,7 +4505,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
-		$check_if_usable = function ( array $address ): bool {
+		$wc_locale_data = WC()->countries->get_country_locale();
+
+		$check_if_usable = function ( array $address ) use ( $wc_locale_data ): bool {
+			if ( $address['country'] && isset( $wc_locale_data[ $address['country'] ] ) ) {
+				$country_locale_data = $wc_locale_data[ $address['country'] ];
+				$fields_to_check     = [
+					'state'     => 'state',
+					'city'      => 'city',
+					'postcode'  => 'postal_code',
+					'address_1' => 'line1',
+				];
+
+				foreach ( $fields_to_check as $locale_field => $address_field ) {
+					$is_field_required = (
+						! isset( $country_locale_data[ $locale_field ] ) ||
+						! isset( $country_locale_data[ $locale_field ]['required'] ) ||
+						$country_locale_data[ $locale_field ]['required']
+					);
+
+					if ( $is_field_required && ! $address[ $address_field ] ) {
+						return false;
+					}
+				}
+
+				return true;
+			}
+
 			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 

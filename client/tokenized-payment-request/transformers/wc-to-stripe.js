@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies
@@ -94,7 +95,17 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 export const transformCartDataForShippingOptions = ( cartData ) =>
 	cartData.shipping_rates[ 0 ].shipping_rates.map( ( rate ) => ( {
 		id: rate.rate_id,
-		label: rate.name,
+		label: decodeEntities( rate.name ),
 		amount: transformPrice( parseInt( rate.price, 10 ), rate ),
-		detail: '',
+		detail: [
+			rate.meta_data.find(
+				( metadata ) => metadata.key === 'pickup_address'
+			)?.value,
+			rate.meta_data.find(
+				( metadata ) => metadata.key === 'pickup_details'
+			)?.value,
+		]
+			.filter( Boolean )
+			.map( decodeEntities )
+			.join( ' - ' ),
 	} ) );

@@ -22,6 +22,33 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 
+const mockAppearance = {
+	rules: {
+		'.Block': {},
+		'.Input': {},
+		'.Input--invalid': {},
+		'.Label': {},
+		'.Tab': {},
+		'.Tab--selected': {},
+		'.Tab:hover': {},
+		'.TabIcon--selected': {
+			color: undefined,
+		},
+		'.TabIcon:hover': {
+			color: undefined,
+		},
+		'.Text': {},
+		'.Text--redirect': {},
+	},
+	theme: 'stripe',
+	variables: {
+		colorBackground: '#ffffff',
+		colorText: undefined,
+		fontFamily: undefined,
+		fontSizeBase: undefined,
+	},
+};
+
 describe( 'WCPayAPI', () => {
 	test( 'does not initialize woopay if already requesting', async () => {
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
@@ -48,6 +75,7 @@ describe( 'WCPayAPI', () => {
 		getConfig.mockImplementation( ( key ) => {
 			const mockProperties = {
 				initWooPayNonce: 'foo',
+				appearance: mockAppearance,
 				order_id: 1,
 				key: 'testkey',
 				billing_email: 'test@example.com',
@@ -60,6 +88,7 @@ describe( 'WCPayAPI', () => {
 
 		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
 			_wpnonce: 'foo',
+			appearance: mockAppearance,
 			email: 'foo@bar.com',
 			user_session: 'qwerty123',
 			order_id: 1,

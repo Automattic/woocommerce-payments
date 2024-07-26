@@ -114,14 +114,15 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 * @param  mixed                  $response                     The expected response.
 	 * @param  WC_Payments_API_Client $api_client_mock              Specific API client mock if necessary.
 	 * @param  WC_Payments_Http       $http_mock                    Specific HTTP mock if necessary.
+	 * @param  bool                   $force_request_mock           When true, a request will be mocked even if $total_api_calls is 0.
 	 *
 	 * @return Request|MockObject                                   The mocked request.
 	 */
-	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null ) {
+	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null, $force_request_mock = false ) {
 		$http_mock       = $http_mock ? $http_mock : $this->createMock( WC_Payments_Http::class );
 		$api_client_mock = $api_client_mock ? $api_client_mock : $this->createMock( WC_Payments_API_Client::class );
 
-		if ( 1 > $total_api_calls ) {
+		if ( 1 > $total_api_calls && ! $force_request_mock ) {
 			$api_client_mock->expects( $this->never() )->method( 'send_request' );
 
 			// No expectation for calls, return here.

@@ -14,7 +14,6 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { DocumentsList } from '../';
 import { useDocuments, useDocumentsSummary } from 'data/index';
 import type { Document } from 'data/documents/hooks';
-import { mocked } from 'ts-jest/utils';
 import VatForm from 'wcpay/vat/form';
 
 jest.mock( 'data/index', () => ( {
@@ -182,7 +181,7 @@ describe( 'Document download button', () => {
 				documentsError: undefined,
 			} );
 
-			mocked( VatForm ).mockImplementation( ( { onCompleted } ) => (
+			jest.mocked( VatForm ).mockImplementation( ( { onCompleted } ) => (
 				<button
 					onClick={ () =>
 						onCompleted(
@@ -239,20 +238,24 @@ describe( 'Document download button', () => {
 				expect( window.open ).not.toHaveBeenCalled();
 			} );
 
-			it( 'should open the VAT form modal', () => {
+			it( 'should open the tax details modal', () => {
 				// Make sure the modal is not opened before clicking on the button.
 				expect(
-					screen.queryByRole( 'dialog', { name: 'VAT details' } )
+					screen.queryByRole( 'dialog', {
+						name: 'Set your tax details',
+					} )
 				).toBeNull();
 
 				user.click( downloadButton );
 
 				expect(
-					screen.getByRole( 'dialog', { name: 'VAT details' } )
+					screen.getByRole( 'dialog', {
+						name: 'Set your tax details',
+					} )
 				).toBeVisible();
 			} );
 
-			describe( 'after the VAT details are submitted', () => {
+			describe( 'after the tax details are submitted', () => {
 				beforeEach( () => {
 					user.click( downloadButton );
 
@@ -261,7 +264,9 @@ describe( 'Document download button', () => {
 
 				it( 'should close the modal', () => {
 					expect(
-						screen.queryByRole( 'dialog', { name: 'VAT details' } )
+						screen.queryByRole( 'dialog', {
+							name: 'Set your tax details',
+						} )
 					).toBeNull();
 				} );
 

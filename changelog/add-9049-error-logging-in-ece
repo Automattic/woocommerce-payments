@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add error logging to ECE critical endpoints.

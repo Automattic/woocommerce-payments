@@ -302,6 +302,7 @@ describe( 'Express checkout normalization', () => {
 			expect( normalizePayForOrderData( event, 'pm_123456' ) ).toEqual( {
 				payment_method: 'woocommerce_payments',
 				'wcpay-payment-method': 'pm_123456',
+				'wcpay-fraud-prevention-token': 'token123',
 				express_payment_type: 'express',
 			} );
 		} );
@@ -315,6 +316,7 @@ describe( 'Express checkout normalization', () => {
 			).toEqual( {
 				payment_method: 'woocommerce_payments',
 				'wcpay-payment-method': '',
+				'wcpay-fraud-prevention-token': 'token123',
 				express_payment_type: undefined,
 			} );
 		} );

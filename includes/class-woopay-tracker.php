@@ -71,7 +71,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'blocks_checkout_start' ] );
 		add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ $this, 'blocks_cart_page_view' ] );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
-		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
+		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
 		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );

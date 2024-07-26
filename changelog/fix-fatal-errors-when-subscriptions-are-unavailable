@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixing fatal errors when subscription classes are not available

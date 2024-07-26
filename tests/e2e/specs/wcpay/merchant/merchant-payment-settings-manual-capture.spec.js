@@ -29,7 +29,7 @@ describe( 'As a merchant, I should be prompted a confirmation modal when I try t
 		const confirmationModal = await expect( page ).toMatchElement(
 			confirmationModalClass
 		);
-		await expect( confirmationModal ).toMatch(
+		await expect( confirmationModal ).toMatchTextContent(
 			'Payments must be captured within 7 days or the authorization will expire and money will be returned to the shopper'
 		);
 	} );
@@ -59,7 +59,7 @@ describe( 'As a merchant, I should be prompted a confirmation modal when I try t
 		const paymentMethodWarningIconElement = await page.$(
 			`[data-testid="${ paymentMethodWarningIconId }"]`
 		);
-		await expect( paymentMethodWarningIconElement ).toMatch(
+		await expect( paymentMethodWarningIconElement ).toMatchTextContent(
 			'cannot be enabled at checkout. Click to expand.'
 		);
 	} );

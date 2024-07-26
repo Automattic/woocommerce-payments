@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Set ECE as Default for Express Checkout Buttons unless it was disabled.

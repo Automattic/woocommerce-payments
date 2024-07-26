@@ -121,7 +121,7 @@ describe( 'Merchant On-boarding', () => {
 				false
 			);
 
-			await page.waitFor( 1000 );
+			await page.waitForTimeout( 1000 );
 
 			const button = await page.$( SUBMIT_STEP_BTN_SELECTOR );
 			expect( button ).not.toBeNull();

@@ -33,13 +33,13 @@ export async function fillCardDetails( page, card ) {
 		await cardDateInput.type( card.expires.month + card.expires.year, {
 			delay: 20,
 		} );
-		await page.waitFor( 1000 );
+		await page.waitForTimeout( 1000 );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
 			'[name="cvc"]'
 		);
 		await cardCvcInput.type( card.cvc, { delay: 20 } );
-		await page.waitFor( 1000 );
+		await page.waitForTimeout( 1000 );
 
 		const zip = await stripeFrame.$( '[name="postalCode"]' );
 		if ( zip !== null ) {
@@ -59,53 +59,60 @@ export async function clearCardDetails() {
 		const cardNumberInput = await stripeFrame.waitForSelector(
 			'[name="cardnumber"]'
 		);
-		await cardNumberInput.click();
-		await page.waitFor( 1000 );
-		await cardNumberInput.click( { clickCount: 3 } );
+		await cardNumberInput.click( { clickCount: 3, delay: 100 } );
 		await page.keyboard.press( 'Backspace' );
 
 		const cardDateInput = await stripeFrame.waitForSelector(
 			'[name="exp-date"]'
 		);
-		await page.waitFor( 1000 );
-		await cardDateInput.click( { clickCount: 3 } );
+		await page.waitForTimeout( 1000 );
+		await cardDateInput.click( { clickCount: 3, delay: 100 } );
 		await page.keyboard.press( 'Backspace' );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
 			'[name="cvc"]'
 		);
-		await page.waitFor( 1000 );
-		await cardCvcInput.click( { clickCount: 3 } );
+		await page.waitForTimeout( 1000 );
+		await cardCvcInput.click( { clickCount: 3, delay: 100 } );
 		await page.keyboard.press( 'Backspace' );
 
-		await page.waitFor( 1000 );
+		await page.waitForTimeout( 1000 );
 	} else {
 		// Handling Stripe UPE element
 		const frameHandle = await page.waitForSelector(
 			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe[name^="__privateStripeFrame"]'
 		);
+
+		await page.waitForTimeout( 1000 );
+
+		await page.evaluate( ( selector ) => {
+			document.querySelector( selector ).scrollIntoView();
+		}, '#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe[name^="__privateStripeFrame"]' );
+
+		await page.waitForTimeout( 500 );
+
 		const stripeFrame = await frameHandle.contentFrame();
 		const cardNumberInput = await stripeFrame.waitForSelector(
 			'[name="number"]',
 			{ timeout: 30000 }
 		);
-		await cardNumberInput.click( { clickCount: 3 } );
+		await cardNumberInput.click( { clickCount: 3, delay: 50 } );
 		await page.keyboard.press( 'Backspace' );
 
 		const cardDateInput = await stripeFrame.waitForSelector(
 			'[name="expiry"]',
 			{ timeout: 30000 }
 		);
-		await cardDateInput.click( { clickCount: 3 } );
+		await cardDateInput.click( { clickCount: 3, delay: 50 } );
 		await page.keyboard.press( 'Backspace' );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
 			'[name="cvc"]',
 			{ timeout: 30000 }
 		);
-		await cardCvcInput.click( { clickCount: 3 } );
+		await cardCvcInput.click( { clickCount: 3, delay: 50 } );
 		await page.keyboard.press( 'Backspace' );
-		await page.waitFor( 1000 );
+		await page.waitForTimeout( 1000 );
 	}
 }
 export async function fillCardDetailsPayForOrder( page, card ) {
@@ -131,7 +138,7 @@ export async function fillCardDetailsPayForOrder( page, card ) {
 
 	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
 	await cardCvcInput.type( card.cvc, { delay: 20 } );
-	await page.waitFor( 1000 );
+	await page.waitForTimeout( 1000 );
 
 	const zip = await stripeFrame.$( '[name="postalCode"]' );
 	if ( zip !== null ) {
@@ -143,10 +150,10 @@ export async function fillCardDetailsPayForOrder( page, card ) {
 export async function fillCardDetailsWCB( page, card ) {
 	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
-		'#payment-method .wcpay-card-mounted iframe[name^="__privateStripeFrame"]'
+		'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
-	const inputs = await stripeFrame.$$( '.InputElement.Input' );
+	const inputs = await stripeFrame.$$( '.p-CardForm .p-Input-input' );
 
 	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
 	await cardNumberInput.type( card.number, { delay: 20 } );
@@ -165,16 +172,16 @@ export async function clearWCBCardDetails() {
 	const inputs = await stripeFrame.$$( '.InputElement.Input' );
 	const [ cardNumberInput, cardDateInput, cardCvcInput ] = inputs;
 
-	await page.waitFor( 1000 );
-	await cardNumberInput.click( { clickCount: 3 } );
+	await page.waitForTimeout( 1000 );
+	await cardNumberInput.click( { clickCount: 3, delay: 50 } );
 	await page.keyboard.press( 'Backspace' );
 
-	await page.waitFor( 1000 );
-	await cardDateInput.click( { clickCount: 3 } );
+	await page.waitForTimeout( 1000 );
+	await cardDateInput.click( { clickCount: 3, delay: 50 } );
 	await page.keyboard.press( 'Backspace' );
 
-	await page.waitFor( 1000 );
-	await cardCvcInput.click( { clickCount: 3 } );
+	await page.waitForTimeout( 1000 );
+	await cardCvcInput.click( { clickCount: 3, delay: 50 } );
 	await page.keyboard.press( 'Backspace' );
 }
 
@@ -194,7 +201,7 @@ export async function confirmCardAuthentication( page, authorize = true ) {
 	);
 	const challengeFrame = await challengeFrameHandle.contentFrame();
 	// Need to wait for the CSS animations to complete.
-	await page.waitFor( 500 );
+	await page.waitForTimeout( 500 );
 	const button = await challengeFrame.waitForSelector( target );
 	await button.click();
 }
@@ -229,7 +236,7 @@ export async function setupProductCheckout(
 		let [ productTitle, qty ] = line;
 
 		while ( qty-- ) {
-			await shopper.addToCartFromShopPage( productTitle );
+			await shopperWCP.addToCartFromShopPage( productTitle );
 
 			// Make sure that the number of items in the cart is incremented first before adding another item.
 			await expect( page ).toMatchElement( cartItemsCounter, {
@@ -268,7 +275,7 @@ export async function setupCheckout( billingDetails ) {
 
 	// Woo core blocks and refreshes the UI after 1s after each key press in a text field or immediately after a select
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
-	await page.waitFor( 1000 );
+	await page.waitForTimeout( 1000 );
 	await uiUnblocked();
 	await expect( page ).toClick(
 		'.wc_payment_method.payment_method_woocommerce_payments'
@@ -340,7 +347,7 @@ export async function selectOnCheckout( paymentMethod, page ) {
 			' label'
 	);
 	radioLabel.click();
-	await page.waitFor( 1000 );
+	await page.waitForTimeout( 1000 );
 }
 
 /**
@@ -355,5 +362,5 @@ export async function completeRedirectedPayment( page, action ) {
 		`.actions .common-ButtonGroup a[name=${ action }]`
 	);
 	actionButton.click();
-	await page.waitFor( 1000 );
+	await page.waitForTimeout( 1000 );
 }
