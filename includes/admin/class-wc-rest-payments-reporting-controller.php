@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Get_Reporting_Payment_Activity;
 use WCPay\Core\Server\Request\Request_Utils;
 
