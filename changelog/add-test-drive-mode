@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Introduce test-drive mode into the onboarding process, replacing the existing Sandbox mode.
