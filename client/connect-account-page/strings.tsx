@@ -78,6 +78,14 @@ export default {
 			),
 		},
 	} ),
+	setupErrorNotice: sprintf(
+		/* translators: 1: WooPayments. */
+		__(
+			'Please <b>complete your %1$s setup</b> to process transactions.',
+			'woocommerce-payments'
+		),
+		'WooPayments'
+	),
 	infoNotice: {
 		description: {
 			jetpack_connected: __(

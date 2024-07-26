@@ -227,6 +227,18 @@ const ConnectAccountPage: React.FC = () => {
 		}
 	}
 
+	// If there is no error message from elsewhere, but we have:
+	// - a broken Jetpack connection and a connected account;
+	// - or working Jetpack connection and a connected but invalid account.
+	// show a generic error message.
+	if (
+		! errorMessage &&
+		( ( ! isJetpackConnected && isAccountConnected ) ||
+			( isJetpackConnected && isAccountConnected && ! isAccountValid ) )
+	) {
+		setErrorMessage( strings.setupErrorNotice );
+	}
+
 	return (
 		<Page isNarrow className="connect-account-page">
 			{ errorMessage && (
