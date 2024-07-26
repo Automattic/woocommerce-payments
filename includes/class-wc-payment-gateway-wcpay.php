@@ -825,6 +825,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
+		if ( ! $this->payment_method ) {
+			return false;
+		}
+
 		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
 		if ( ! $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) ) {
 			return false;
@@ -904,7 +908,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$supported_currencies = $this->account->get_account_customer_supported_currencies();
 		$current_currency     = strtolower( get_woocommerce_currency() );
 
-		if ( count( $supported_currencies ) === 0 ) {
+		if ( is_null( $supported_currencies ) || ( is_array( $supported_currencies ) && count( $supported_currencies ) === 0 ) ) {
 			// If we don't have info related to the supported currencies
 			// of the country, we won't disable the gateway.
 			return true;
