@@ -60,15 +60,25 @@ const ConnectAccountPage: React.FC = () => {
 	const isCountrySupported = !! availableCountries[ country ];
 
 	const urlParams = new URLSearchParams( window.location.search );
-	const urlSource = urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' );
-	const urlFrom = urlParams.get( 'from' ) || '';
 
 	const determineTrackingSource = () => {
-		// If we have a source query param, use that.
+		// If we have a source query param in the current request, use that.
+		const urlSource = urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' );
 		if ( !! urlSource && 'unknown' !== urlSource ) {
 			return urlSource;
 		}
-		// Determine what source to use for the onboarding process.
+
+		// Next, search for a source in the Connect URL as that is determined server-side and it is reliable.
+		if ( connectUrl.includes( 'source=' ) ) {
+			const url = new URL( connectUrl );
+			const source = url.searchParams.get( 'source' );
+			if ( !! source && 'unknown' !== source ) {
+				return source;
+			}
+		}
+		// Finally, make some guesses based on the 'from' query param.
+		// We generally should not reach this step, but it's a fallback with reliable guesses.
+		const urlFrom = urlParams.get( 'from' ) || '';
 		let sourceGuess = 'wcpay-connect-page';
 		switch ( urlFrom ) {
 			case 'WCADMIN_PAYMENT_TASK':
@@ -85,12 +95,17 @@ const ConnectAccountPage: React.FC = () => {
 		return sourceGuess;
 	};
 
+	const determineTrackingFrom = () => {
+		return urlParams.get( 'from' )?.replace( /[^\w-]+/g, '' ) || '';
+	};
+
 	useEffect( () => {
 		recordEvent( 'page_view', {
 			path: 'payments_connect_v2',
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
+			from: determineTrackingFrom(),
 			source: determineTrackingSource(),
 		} );
 		// We only want to run this once.
@@ -138,6 +153,7 @@ const ConnectAccountPage: React.FC = () => {
 			} ),
 			sandbox_mode: sandboxMode,
 			path: 'payments_connect_v2',
+			from: determineTrackingFrom(),
 			source: determineTrackingSource(),
 		} );
 	};
@@ -192,7 +208,8 @@ const ConnectAccountPage: React.FC = () => {
 
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			'wcpay-reset-account': 'true',
-			source: 'wcpay-reset-account', // Overwrite any existing source because we are starting over.
+			from: 'WCPAY_CONNECT',
+			source: determineTrackingSource(),
 		} );
 	};
 
