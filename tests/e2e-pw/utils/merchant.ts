@@ -4,6 +4,16 @@
 import { Page, expect } from 'playwright/test';
 import * as navigation from './merchant-navigation';
 
+/**
+ * Checks if the data has loaded on the page.
+ * This check only applies to WooPayments settings pages.
+ *
+ * @param {Page} page The page object.
+ */
+export const dataHasLoaded = async ( page: Page ) => {
+	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
+};
+
 export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expect(
