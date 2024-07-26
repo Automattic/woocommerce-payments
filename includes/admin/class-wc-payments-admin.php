@@ -1002,9 +1002,6 @@ class WC_Payments_Admin {
 	 */
 	public function add_menu_notification_badge() {
 		global $menu;
-		if ( 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' ) ) {
-			return;
-		}
 
 		// If plugin activation date is less than 3 days, do not show the badge.
 		$past_3_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= ( 3 * DAY_IN_SECONDS );
@@ -1012,8 +1009,24 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( $this->account->is_stripe_connected() ) {
-			update_option( 'wcpay_menu_badge_hidden', 'yes' );
+		// First, lets see what the DB option says.
+		$hide_badge = 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' );
+
+		// There are situations where we need to force show the badge.
+		// If we have:
+		// - a broken Jetpack connection and a connected account;
+		// - or working Jetpack connection and a connected but invalid account.
+		// show the badge since the merchant needs to take action.
+		if ( ( ! $this->account->has_working_jetpack_connection() && $this->account->has_account_data() )
+			|| ( $this->account->has_working_jetpack_connection() && $this->account->has_account_data() && ! $this->account->is_stripe_account_valid() ) ) {
+
+			$hide_badge = false;
+		} elseif ( $this->account->has_working_jetpack_connection() && $this->account->is_stripe_account_valid() ) {
+			// If everything is working fine, hide the badge regardless of the DB option.
+			$hide_badge = true;
+		}
+
+		if ( $hide_badge ) {
 			return;
 		}
 
