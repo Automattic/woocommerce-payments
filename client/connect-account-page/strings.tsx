@@ -81,7 +81,7 @@ export default {
 	setupErrorNotice: sprintf(
 		/* translators: 1: WooPayments. */
 		__(
-			'Please <b>complete your %1$s setup</b> to process transactions.',
+			'Please <b>complete your %1$s setup</b> to process payments.',
 			'woocommerce-payments'
 		),
 		'WooPayments'

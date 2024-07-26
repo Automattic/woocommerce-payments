@@ -1386,7 +1386,7 @@ class WC_Payments_Account {
 					$this->redirect_service->redirect_to_connect_page(
 						sprintf(
 						/* translators: 1: anchor opening markup 2: closing anchor markup */
-							__( 'There is already an ongoing account setup session (probably in a different browser tab). Please finish it or %1$sclick here to start again%2$s.', 'woocommerce-payments' ),
+							__( 'Another account setup session is already in progress. Please finish it or %1$sclick here to start again%2$s.', 'woocommerce-payments' ),
 							'<a href="' . esc_url( $confirmation_url ) . '">',
 							'</a>'
 						)
@@ -1981,7 +1981,7 @@ class WC_Payments_Account {
 		}
 
 		// Fix test mode enabled DB state starting with the account data.
-		// These two should be in sync when in dev mode.
+		// These two should be in sync when in test mode onboarding.
 		// This is a weird case that shouldn't happen under normal circumstances.
 		if ( ! $account['is_live'] && ! WC_Payments_Onboarding_Service::is_test_mode_enabled() && WC_Payments::mode()->is_dev() ) {
 			Logger::warning( 'Test mode account, account onboarding is NOT in test mode, but the plugin is in dev mode. Enabling test mode onboarding.' );

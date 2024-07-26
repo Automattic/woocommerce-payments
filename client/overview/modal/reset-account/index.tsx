@@ -9,7 +9,6 @@ import { Button, CardDivider, Modal } from '@wordpress/components';
  */
 import './style.scss';
 import strings from './strings';
-import { __ } from '@wordpress/i18n';
 
 interface Props {
 	isVisible: boolean;
