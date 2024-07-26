@@ -302,20 +302,27 @@ class WooPayDirectCheckout {
 		 * @param {Element} element The element to add the loading spinner to.
 		 */
 		const addLoadingSpinner = ( element ) => {
+			const elementCss = window.getComputedStyle( element, null );
+			const originalColor = elementCss.getPropertyValue( 'color' );
+
 			// Create a spinner to show when the user clicks the button.
 			const spinner = document.createElement( 'span' );
 			spinner.classList.add( 'wc-block-components-spinner' );
-			spinner.style.position = 'relative';
+			spinner.style.position = 'absolute';
+			spinner.style.top = '0';
+			spinner.style.left = '0';
+			spinner.style.width = '100%';
+			spinner.style.height = '100%';
+			spinner.style.color = originalColor;
 			spinner.style.fontSize = 'unset';
 			spinner.style.display = 'inline';
 			spinner.style.lineHeight = '0';
 			spinner.style.margin = '0';
 			spinner.style.border = '0';
 			spinner.style.padding = '0';
-			// Remove the existing content of the button.
-			// Set innerHTML to '&nbsp;' to keep the button's height.
-			element.innerHTML = '&nbsp;';
-			element.classList.remove( 'wc-forward' );
+			// Hide the existing content of the button.
+			element.style.color = 'rgba( 0, 0, 0, 0 )';
+			element.style.position = 'relative';
 			// Add the spinner to the button.
 			element.appendChild( spinner );
 		};
