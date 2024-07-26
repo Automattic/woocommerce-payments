@@ -971,12 +971,8 @@ class WC_Payments_Account {
 				),
 				WC_Payments_Onboarding_Service::FROM_OVERVIEW_PAGE,
 				[
-					'promo'                       => ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : false,
-					'progressive'                 => ( ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'] ) ? 'true' : false,
-					'collect_payout_requirements' => ( ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'] ) ? 'true' : false,
-					'create_builder_account'      => ( ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'] ) ? 'true' : false,
-					'test_mode'                   => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
-					'source'                      => WC_Payments_Onboarding_Service::get_source(),
+					'test_mode' => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
+					'source'    => WC_Payments_Onboarding_Service::get_source(),
 				]
 			);
 			return true;
