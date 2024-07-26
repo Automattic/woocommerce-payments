@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Updates payments settings copy to support pay now with klarna.

@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Reorder onboarding wizard business types to always have Company as the first option.
