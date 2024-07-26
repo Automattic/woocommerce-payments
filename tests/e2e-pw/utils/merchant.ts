@@ -73,3 +73,83 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 		).toBeVisible();
 	}
 };
+
+export const getActiveThemeSlug = async ( page: Page ): Promise< string > => {
+	await navigation.goToThemes( page );
+
+	const activeTheme = await page.locator( '.theme.active' );
+
+	return ( await activeTheme.getAttribute( 'data-slug' ) ) ?? '';
+};
+
+export const activateTheme = async ( page: Page, slug: string ) => {
+	await navigation.goToThemes( page );
+
+	const isThemeActive = ( await getActiveThemeSlug( page ) ) === slug;
+
+	if ( ! isThemeActive ) {
+		await page
+			.locator( `.theme[data-slug="${ slug }"] .button.activate` )
+			.click();
+		await page.waitForURL( `**/wp-admin/themes.php?activated=true` );
+	}
+};
+
+export const disableAllEnabledCurrencies = async ( page: Page ) => {
+	await navigation.goToMultiCurrencySettings( page );
+	await expect(
+		await page.locator( '.enabled-currencies-list li' )
+	).toBeVisible();
+
+	const deleteButtons = await page
+		.locator( '.enabled-currency .enabled-currency__action.delete' )
+		.all();
+
+	for ( const button of deleteButtons ) {
+		await button.click();
+		await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
+			timeout: 10000,
+		} );
+	}
+};
+
+export const addCurrency = async ( page: Page, currencyCode: string ) => {
+	// Default currency.
+	if ( currencyCode === 'USD' ) {
+		return;
+	}
+
+	await navigation.goToMultiCurrencySettings( page );
+	await page.getByTestId( 'enabled-currencies-add-button' ).click();
+
+	const checkbox = await page.locator(
+		`input[type="checkbox"][code="${ currencyCode }"]`
+	);
+
+	if ( ! ( await checkbox.isChecked() ) ) {
+		await checkbox.check();
+	}
+
+	await page.getByRole( 'button', { name: 'Update selected' } ).click();
+	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
+		timeout: 10000,
+	} );
+	await expect(
+		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
+	).toBeVisible();
+};
+
+export const removeCurrency = async ( page: Page, currencyCode: string ) => {
+	await navigation.goToMultiCurrencySettings( page );
+	await page
+		.locator(
+			`li.enabled-currency.${ currencyCode.toLowerCase() } .enabled-currency__action.delete`
+		)
+		.click();
+	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
+		timeout: 10000,
+	} );
+	await expect(
+		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
+	).toBeHidden();
+};
