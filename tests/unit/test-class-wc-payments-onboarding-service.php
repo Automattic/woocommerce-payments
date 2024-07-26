@@ -137,7 +137,6 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_filters_registered_properly() {
-		$this->assertNotFalse( has_filter( 'wcpay_dev_mode', [ $this->onboarding_service, 'maybe_enable_dev_mode' ] ) );
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
 	}
 

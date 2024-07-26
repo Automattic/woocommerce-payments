@@ -2185,7 +2185,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->wcpay_account->get_stripe_account_id() );
 	}
 
-	public function test_try_is_stripe_connected_returns_true_when_connected_with_dev_account_in_dev_mode() {
+	public function test_try_is_stripe_connected_returns_true_when_connected_with_test_account_in_dev_mode() {
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
