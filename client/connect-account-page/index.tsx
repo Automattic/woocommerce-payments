@@ -227,7 +227,11 @@ const ConnectAccountPage: React.FC = () => {
 	if ( isJetpackConnected ) {
 		ctaLabel = strings.button.account_not_connected;
 		// If we have the account setup session error, best not to push too much with the CTA copy.
-		if ( ! isAccountValid && ! isAccountSetupSessionError ) {
+		if (
+			! isAccountSetupSessionError &&
+			isAccountConnected &&
+			! isAccountValid
+		) {
 			ctaLabel = strings.button.account_invalid;
 		}
 	}
