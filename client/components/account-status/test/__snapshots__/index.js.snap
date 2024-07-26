@@ -40,7 +40,7 @@ exports[`AccountStatus renders account tools 1`] = `
         >
           <a
             class="components-button is-link"
-            href="?source=account-details"
+            href="?from=WCPAY_ACCOUNT_DETAILS&source=wcpay-account-details"
             target="_blank"
           >
             Edit details
@@ -276,7 +276,7 @@ exports[`AccountStatus renders normal status 1`] = `
         >
           <a
             class="components-button is-link"
-            href="?source=account-details"
+            href="?from=WCPAY_ACCOUNT_DETAILS&source=wcpay-account-details"
             target="_blank"
           >
             Edit details
