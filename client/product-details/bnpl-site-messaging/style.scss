@@ -1,7 +1,6 @@
 // Add the margin-bottom variable so we can set the value with JS based on the computed style of the price element.
 #payment-method-message {
 	--wc-bnpl-margin-bottom: 0;
-	min-height: 60px;
 }
 
 .pmme-loading {
@@ -9,16 +8,27 @@
 	background: #afafaf;
 }
 
-.price,
-.wp-block-woocommerce-product-price {
-	margin: 0.5rem 0 0 0 !important;
-}
-
 .summary,
 .wp-block-woocommerce-product-price + {
+	#payment-method-message {
+		height: 4rem;
+		position: relative;
+		overflow: hidden;
+
+		div,
+		iframe {
+			height: 100% !important;
+		}
+	}
+
 	.pmme-loading {
-		height: 50px;
-		margin: 0.5rem 0 0;
+		position: absolute;
+		padding: 0;
+		margin: 0;
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: 100%;
 	}
 }
 

@@ -150,14 +150,9 @@ export const initializeBnplSiteMessaging = async () => {
 
 		let paymentMessageLoading;
 		if ( ! isCart ) {
-			paymentMessageContainer.style.display = 'none';
 			paymentMessageLoading = document.createElement( 'div' );
 			paymentMessageLoading.classList.add( 'pmme-loading' );
-			const paymentMessageParent = paymentMessageContainer.parentNode;
-			paymentMessageParent.insertBefore(
-				paymentMessageLoading,
-				paymentMessageContainer
-			);
+			paymentMessageContainer.prepend( paymentMessageLoading );
 		}
 
 		paymentMessageElement.on( 'ready', () => {
@@ -213,10 +208,7 @@ export const initializeBnplSiteMessaging = async () => {
 					pmme.style.setProperty( '--wc-bnpl-margin-bottom', '-4px' );
 				}, 2000 );
 			} else {
-				setTimeout( () => {
-					paymentMessageLoading.remove();
-					paymentMessageContainer.style.display = 'block';
-				}, 1000 );
+				paymentMessageLoading.remove();
 			}
 		} );
 	}
