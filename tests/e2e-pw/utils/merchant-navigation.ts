@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { Page } from 'playwright/test';
+import { dataHasLoaded } from './merchant';
 
 export const goToOrder = async ( page: Page, orderId: string ) => {
 	await page.goto( `/wp-admin/post.php?post=${ orderId }&action=edit` );
@@ -18,6 +19,7 @@ export const goToMultiCurrencySettings = async ( page: Page ) => {
 		'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency',
 		{ waitUntil: 'load' }
 	);
+	await dataHasLoaded( page );
 };
 
 export const goToWidgets = async ( page: Page ) => {
@@ -30,4 +32,34 @@ export const goToNewPost = async ( page: Page ) => {
 	await page.goto( '/wp-admin/post-new.php', {
 		waitUntil: 'load',
 	} );
+};
+
+export const goToThemes = async ( page: Page ) => {
+	await page.goto( '/wp-admin/themes.php', {
+		waitUntil: 'load',
+	} );
+};
+
+export const goToMultiCurrencyOnboarding = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+
+	// This is the task reminder bar that may appear on the top of the page.
+	// We need to dismiss it so it doesn't mess with the snapshots.
+	if (
+		await page
+			.locator(
+				'.woocommerce-layout__header-tasks-reminder-bar > button'
+			)
+			.isVisible()
+	) {
+		await page
+			.locator(
+				'.woocommerce-layout__header-tasks-reminder-bar > button'
+			)
+			.click();
+	}
 };
