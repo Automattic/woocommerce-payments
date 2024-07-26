@@ -849,7 +849,7 @@ class WC_Payments_Admin {
 			'fraudServices'                      => $this->fraud_service->get_fraud_services_config(),
 			'isJetpackConnected'                 => $this->account->has_working_jetpack_connection(),
 			'isJetpackIdcActive'                 => Jetpack_Identity_Crisis::has_identity_crisis(),
-			'isAccountConnected'                 => $this->account->is_stripe_connected(),
+			'isAccountConnected'                 => $this->account->has_account_data(),
 			'isAccountValid'                     => $this->account->is_stripe_account_valid(),
 			'accountStatus'                      => $account_status_data,
 			'accountFees'                        => $this->account->get_fees(),

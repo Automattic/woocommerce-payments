@@ -180,6 +180,22 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Check if there is meaningful data in the WooPayments account cache.
+	 *
+	 * It bypasses WPCOM/Jetpack connection check, the cache expiry check and only checks if the account_id is present.
+	 *
+	 * @return boolean Whether there is account data.
+	 */
+	public function has_account_data(): bool {
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+		if ( ! empty( $account_data['account_id'] ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Checks if the account is connected, assumes the value of $on_error on server error.
 	 *
 	 * @param bool $on_error Value to return on server error, defaults to false.
@@ -1954,18 +1970,18 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// empty array - special value to indicate that there's no account connected.
+		// Empty array - special value to indicate that there's no account connected.
 		if ( empty( $account ) ) {
 			return true;
 		}
 
-		// live accounts are always valid.
+		// Live accounts are always valid.
 		if ( $account['is_live'] ) {
 			return true;
 		}
 
-		// test accounts are valid only when in dev mode.
-		if ( WC_Payments::mode()->is_dev() ) {
+		// Test accounts are valid only when onboarding in test mode.
+		if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 			return true;
 		}
 
