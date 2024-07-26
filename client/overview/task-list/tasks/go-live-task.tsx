@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
  */
 import type { TaskItemProps } from '../types';
 import strings from '../strings';
-import SetupLivePaymentsModal from '../../modal/setup-live-payments';
+import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';
 import { recordEvent } from 'wcpay/tracks';
 
 const SetupLivePaymentsModalWrapper: React.FC = () => {

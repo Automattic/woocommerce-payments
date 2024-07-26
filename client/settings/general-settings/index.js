@@ -12,7 +12,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { useDevMode, useTestMode } from 'wcpay/data';
 import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
-import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
+import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
 import EnableWooPaymentsCheckbox from './enable-woopayments-checkbox';
 import { recordEvent } from 'wcpay/tracks';

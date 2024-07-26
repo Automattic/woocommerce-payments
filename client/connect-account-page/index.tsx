@@ -34,6 +34,7 @@ import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInDevMode } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { trackAccountReset } from 'wcpay/onboarding/tracking';
+import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
@@ -55,6 +56,10 @@ const ConnectAccountPage: React.FC = () => {
 		connectUrl,
 		connect: { availableCountries, country },
 		devMode,
+		onboardingTestMode,
+		isJetpackConnected,
+		isAccountConnected,
+		isAccountValid,
 	} = wcpaySettings;
 
 	const isCountrySupported = !! availableCountries[ country ];
@@ -147,7 +152,7 @@ const ConnectAccountPage: React.FC = () => {
 
 	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
 		recordEvent( 'wcpay_connect_account_clicked', {
-			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
+			wpcom_connection: isJetpackConnected ? 'Yes' : 'No',
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
@@ -214,10 +219,10 @@ const ConnectAccountPage: React.FC = () => {
 	};
 
 	let ctaLabel = strings.button.jetpack_not_connected;
-	if ( wcpaySettings.isJetpackConnected ) {
-		if ( ! wcpaySettings.isAccountConnected ) {
+	if ( isJetpackConnected ) {
+		if ( ! isAccountConnected ) {
 			ctaLabel = strings.button.account_not_connected;
-		} else if ( ! wcpaySettings.isAccountValid ) {
+		} else if ( ! isAccountValid ) {
 			ctaLabel = strings.button.account_invalid;
 		}
 	}
@@ -225,16 +230,16 @@ const ConnectAccountPage: React.FC = () => {
 	return (
 		<Page isNarrow className="connect-account-page">
 			{ errorMessage && (
-				<Notice
-					className="wcpay-banner-notice is-error"
+				<BannerNotice
 					status="error"
+					icon={ true }
 					isDismissible={ false }
 				>
 					<div
 						// eslint-disable-next-line react/no-danger
 						dangerouslySetInnerHTML={ sanitizeHTML( errorMessage ) }
 					></div>
-				</Notice>
+				</BannerNotice>
 			) }
 			{ wcpaySettings.onBoardingDisabled ? (
 				<Card>
@@ -247,7 +252,24 @@ const ConnectAccountPage: React.FC = () => {
 							{ strings.nonSupportedCountry }
 						</BannerNotice>
 					) }
-					{ devMode && <SandboxModeNotice /> }
+					{
+						// Show general sandbox notice when no account is connected but sandbox mode is active.
+						! isAccountConnected && devMode ? (
+							<SandboxModeNotice />
+						) : (
+							// If we already have a sandbox account connected (but in a bad state) and
+							// a working Jetpack connection (to be able to delete the current account)
+							// show the switch to live sandbox notice.
+							isAccountConnected &&
+							onboardingTestMode &&
+							isJetpackConnected && (
+								<SandboxModeSwitchToLiveNotice
+									from="WCPAY_CONNECT"
+									source="wcpay-connect-page"
+								/>
+							)
+						)
+					}
 					<Card>
 						<div className="connect-account-page__heading">
 							<img src={ LogoImg } alt="logo" />
@@ -286,7 +308,7 @@ const ConnectAccountPage: React.FC = () => {
 							</Button>
 							{
 								// Only show the reset button if an account is connected and didn't complete KYC, or if we are in dev mode.
-								wcpaySettings.isAccountConnected &&
+								isAccountConnected &&
 									( ! wcpaySettings.accountStatus
 										.detailsSubmitted ||
 										isInDevMode() ) && (
@@ -304,13 +326,13 @@ const ConnectAccountPage: React.FC = () => {
 					</Card>
 					{
 						// Only show the incentive if an account is NOT connected.
-						! wcpaySettings.isAccountConnected && incentive && (
+						! isAccountConnected && incentive && (
 							<Incentive { ...incentive } />
 						)
 					}
 					{
 						// Only show the sandbox mode panel if an account is NOT connected.
-						! wcpaySettings.isAccountConnected && (
+						! isAccountConnected && (
 							<Panel className="connect-account-page__sandbox-mode-panel">
 								<PanelBody
 									title={ strings.sandboxMode.title }
