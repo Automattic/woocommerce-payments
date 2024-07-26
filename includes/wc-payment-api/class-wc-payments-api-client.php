@@ -889,7 +889,7 @@ class WC_Payments_API_Client {
 	public function get_woopay_eligibility() {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+				'test_mode' => WC_Payments::mode()->is_test_mode_onboarding(), // only send a test mode request if in test mode onboarding.
 			],
 			self::WOOPAY_ACCOUNTS_API,
 			self::GET
@@ -908,7 +908,7 @@ class WC_Payments_API_Client {
 	public function update_woopay( $data ) {
 		return $this->request(
 			array_merge(
-				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
+				[ 'test_mode' => WC_Payments::mode()->is_test_mode_onboarding() ],
 				$data
 			),
 			self::WOOPAY_ACCOUNTS_API,

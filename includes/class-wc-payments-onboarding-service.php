@@ -243,6 +243,9 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public static function set_test_mode( bool $test_mode ): void {
 		update_option( self::TEST_MODE_OPTION, $test_mode );
+
+		// Switch WC_Payments onboarding mode immediately.
+		\WC_Payments::mode()->set_test_mode_onboarding( $test_mode );
 	}
 
 	/**
