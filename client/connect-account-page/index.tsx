@@ -9,7 +9,6 @@ import {
 	Button,
 	Card,
 	CardBody,
-	Notice,
 	Panel,
 	PanelBody,
 } from '@wordpress/components';
@@ -218,11 +217,17 @@ const ConnectAccountPage: React.FC = () => {
 		} );
 	};
 
+	// Determine if we have the account session error message since we want to customize the UX a little bit.
+	let isAccountSetupSessionError = false;
+	if ( errorMessage && errorMessage.includes( 'account setup session' ) ) {
+		isAccountSetupSessionError = true;
+	}
+
 	let ctaLabel = strings.button.jetpack_not_connected;
 	if ( isJetpackConnected ) {
-		if ( ! isAccountConnected ) {
-			ctaLabel = strings.button.account_not_connected;
-		} else if ( ! isAccountValid ) {
+		ctaLabel = strings.button.account_not_connected;
+		// If we have the account setup session error, best not to push too much with the CTA copy.
+		if ( ! isAccountValid && ! isAccountSetupSessionError ) {
 			ctaLabel = strings.button.account_invalid;
 		}
 	}
@@ -314,7 +319,9 @@ const ConnectAccountPage: React.FC = () => {
 							<Button
 								variant="primary"
 								isBusy={ isSubmitted }
-								disabled={ isSubmitted }
+								disabled={
+									isSubmitted || isAccountSetupSessionError
+								}
 								onClick={ handleSetup }
 							>
 								{ ctaLabel }
