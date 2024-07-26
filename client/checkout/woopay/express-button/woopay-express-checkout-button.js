@@ -23,6 +23,7 @@ import {
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
+import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -344,12 +345,20 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [] );
 
+	const handleClick = () => {
+		WooPayDirectCheckout.forwardToWooPay(
+			false,
+			'http://woopaymerchant.test/checkout/',
+			true
+		);
+	};
+
 	return (
 		<button
 			ref={ buttonRef }
 			key={ `${ buttonType }-${ theme }-${ size }` }
 			aria-label={ buttonText }
-			onClick={ ( e ) => onClickCallbackRef.current( e ) }
+			onClick={ handleClick }
 			className={ classNames( 'woopay-express-button', {
 				'is-loading': isLoading,
 			} ) }
