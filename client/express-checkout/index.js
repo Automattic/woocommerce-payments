@@ -14,7 +14,10 @@ import {
 	normalizeLineItems,
 } from './utils/index';
 import {
+	onAbortPaymentHandler,
+	onCancelHandler,
 	onClickHandler,
+	onCompletePaymentHandler,
 	onConfirmHandler,
 	onReadyHandler,
 	shippingAddressChangeHandler,
@@ -98,7 +101,7 @@ jQuery( ( $ ) => {
 		 */
 		abortPayment: ( payment, message ) => {
 			payment.paymentFailed( { reason: 'fail' } );
-			wcpayECE.unblock();
+			onAbortPaymentHandler( payment, message );
 
 			$( '.woocommerce-error' ).remove();
 
@@ -126,22 +129,8 @@ jQuery( ( $ ) => {
 		 * @param {string} url Order thank you page URL.
 		 */
 		completePayment: ( url ) => {
-			wcpayECE.block();
+			onCompletePaymentHandler( url );
 			window.location = url;
-		},
-
-		block: () => {
-			$.blockUI( {
-				message: null,
-				overlayCSS: {
-					background: '#fff',
-					opacity: 0.6,
-				},
-			} );
-		},
-
-		unblock: () => {
-			$.unblockUI();
 		},
 
 		/**
@@ -308,7 +297,7 @@ jQuery( ( $ ) => {
 					phoneNumberRequired: options.requestPhone,
 					shippingRates,
 				};
-				wcpayECE.block();
+
 				onClickHandler( event );
 				event.resolve( clickOptions );
 			} );
@@ -337,7 +326,7 @@ jQuery( ( $ ) => {
 
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.paymentAborted = true;
-				wcpayECE.unblock();
+				onCancelHandler();
 			} );
 
 			eceButton.on( 'ready', onReadyHandler );
