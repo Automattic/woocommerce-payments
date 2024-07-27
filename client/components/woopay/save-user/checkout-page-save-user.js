@@ -270,19 +270,25 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							name="woopay_viewport"
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
-						<PhoneNumberInput
-							value={ phoneNumber }
-							onValueChange={ setPhoneNumber }
-							onValidationChange={ onPhoneValidationChange }
-							onCountryDropdownClick={
-								handleCountryDropdownClick
+						<div
+							className={
+								isPhoneValid === false ? 'has-error' : ''
 							}
-							inputProps={ {
-								name:
-									'woopay_user_phone_field[no-country-code]',
-							} }
-							isBlocksCheckout={ isBlocksCheckout }
-						/>
+						>
+							<PhoneNumberInput
+								value={ phoneNumber }
+								onValueChange={ setPhoneNumber }
+								onValidationChange={ onPhoneValidationChange }
+								onCountryDropdownClick={
+									handleCountryDropdownClick
+								}
+								inputProps={ {
+									name:
+										'woopay_user_phone_field[no-country-code]',
+								} }
+								isBlocksCheckout={ isBlocksCheckout }
+							/>
+						</div>
 						<ValidationInputError
 							elementId={ errorId }
 							propertyName={ errorId }
