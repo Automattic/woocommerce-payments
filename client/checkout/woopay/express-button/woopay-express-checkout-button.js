@@ -186,6 +186,27 @@ export const WoopayExpressCheckoutButton = ( {
 		]
 	);
 
+	const addProductToCart = useCallback( () => {
+		const productData = getProductDataRef.current();
+
+		if ( ! productData ) {
+			return;
+		}
+
+		if ( typeof listenForCartChanges?.stop === 'function' ) {
+			// Temporarily stop listening for cart changes to prevent
+			// rendering a new button + iFrame when the cart is updated.
+			listenForCartChanges.stop();
+		}
+
+		return addToCartRef.current( productData ).then( () => {
+			if ( typeof listenForCartChanges?.start === 'function' ) {
+				// Start listening for cart changes, again.
+				listenForCartChanges.start();
+			}
+		} );
+	}, [ listenForCartChanges, getProductDataRef, addToCartRef ] );
+
 	const onClickFirstPartyAuthFlow = useCallback(
 		( e ) => {
 			e.preventDefault();
@@ -211,23 +232,7 @@ export const WoopayExpressCheckoutButton = ( {
 			const appearanceType = getAppearanceType();
 
 			if ( isProductPage ) {
-				const productData = getProductDataRef.current();
-
-				if ( ! productData ) {
-					return;
-				}
-
-				if ( typeof listenForCartChanges?.stop === 'function' ) {
-					// Temporarily stop listening for cart changes to prevent
-					// rendering a new button + iFrame when the cart is updated.
-					listenForCartChanges.stop();
-				}
-
-				addToCartRef.current( productData ).then( () => {
-					if ( typeof listenForCartChanges?.start === 'function' ) {
-						// Start listening for cart changes, again.
-						listenForCartChanges.start();
-					}
+				addProductToCart().then( () => {
 					WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
 						_ajax_nonce: getConfig( 'woopaySessionNonce' ),
 						appearance: getAppearance( appearanceType ),
@@ -311,23 +316,43 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 		},
 		[
+			addProductToCart,
 			canAddProductToCart,
 			context,
 			isPreview,
 			isProductPage,
-			listenForCartChanges,
 			onClickOtpFlow,
 		]
 	);
 
+	const directCheckoutFlow = useCallback( () => {
+		if ( isProductPage ) {
+			addProductToCart().then( () => {
+				WooPayDirectCheckout.forwardToWooPay(
+					false,
+					getConfig( 'checkoutPageUrl' ),
+					true
+				);
+			} );
+		} else {
+			WooPayDirectCheckout.forwardToWooPay(
+				false,
+				getConfig( 'checkoutPageUrl' ),
+				true
+			);
+		}
+	}, [ addProductToCart, isProductPage ] );
+
 	useEffect( () => {
-		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
+		if ( WooPayDirectCheckout.isWooPayDirectCheckoutEnabled() ) {
+			onClickCallbackRef.current = directCheckoutFlow;
+		} else if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			onClickCallbackRef.current = onClickFirstPartyAuthFlow;
 			WooPayFirstPartyAuth.init();
 		} else {
 			onClickCallbackRef.current = onClickOtpFlow;
 		}
-	}, [ onClickFirstPartyAuthFlow, onClickOtpFlow ] );
+	}, [ directCheckoutFlow, onClickFirstPartyAuthFlow, onClickOtpFlow ] );
 
 	useEffect( () => {
 		const handlePageShow = ( event ) => {
@@ -345,20 +370,12 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [] );
 
-	const handleClick = () => {
-		WooPayDirectCheckout.forwardToWooPay(
-			false,
-			'http://woopaymerchant.test/checkout/',
-			true
-		);
-	};
-
 	return (
 		<button
 			ref={ buttonRef }
 			key={ `${ buttonType }-${ theme }-${ size }` }
 			aria-label={ buttonText }
-			onClick={ handleClick }
+			onClick={ ( e ) => onClickCallbackRef.current( e ) }
 			className={ classNames( 'woopay-express-button', {
 				'is-loading': isLoading,
 			} ) }

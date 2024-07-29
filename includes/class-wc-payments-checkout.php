@@ -208,6 +208,7 @@ class WC_Payments_Checkout {
 			'woopayMerchantId'                => Jetpack_Options::get_option( 'id' ),
 			'icon'                            => $this->gateway->get_icon_url(),
 			'woopayMinimumSessionData'        => WooPay_Session::get_woopay_minimum_session_data(),
+			'checkoutPageUrl'                 => wc_get_page_permalink( 'checkout' ),
 		];
 
 		/**
