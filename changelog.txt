@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 8.0.0-test-3 - 2024-xx-xx =
+* Dev - Update bundle size checker workflow to support node v20
+
 = 8.0.0 - 2024-07-31 =
 * Add - Add ECE support for multiple product types.
 * Add - Add ECE support for WooCommerce Deposits.

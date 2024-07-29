@@ -94,6 +94,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.0.0-test-3 - unreleased =
+* Dev - Update bundle size checker workflow to support node v20
+
 = 8.0.0 - 2024-07-31 =
 * Add - Add ECE support for multiple product types.
 * Add - Add ECE support for WooCommerce Deposits.
