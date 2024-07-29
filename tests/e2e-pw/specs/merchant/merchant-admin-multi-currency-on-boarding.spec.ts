@@ -17,18 +17,15 @@ import {
 } from '../../utils/merchant';
 import * as navigation from '../../utils/merchant-navigation';
 
-const GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR =
-	'input[data-testid="enable_auto_currency"]';
-const PREVIEW_STORE_BTN_SELECTOR = '.multi-currency-setup-preview-button';
-const PREVIEW_STORE_IFRAME_SELECTOR =
-	'.multi-currency-store-settings-preview-iframe';
-const STOREFRONT_SWITCH_CHECKBOX_SELECTOR =
-	'input[data-testid="enable_storefront_switcher"]';
-
 test.describe( 'Merchant On-boarding', () => {
 	let page: Page;
 	let wasMulticurrencyEnabled: boolean;
 	let activeThemeSlug: string;
+	const goToNextOnboardingStep = async ( currentPage: Page ) => {
+		await currentPage
+			.locator( '.wcpay-wizard-task.is-active button.is-primary' )
+			.click();
+	};
 
 	useMerchant();
 
@@ -135,9 +132,7 @@ test.describe( 'Merchant On-boarding', () => {
 					.check();
 			}
 
-			await page
-				.getByRole( 'button', { name: /Add \d currenc(y|ies)/ } )
-				.click();
+			await goToNextOnboardingStep( page );
 			await navigation.goToMultiCurrencySettings( page );
 
 			// Ensure the currencies are enabled.
@@ -152,19 +147,9 @@ test.describe( 'Merchant On-boarding', () => {
 	} );
 
 	test.describe( 'Geolocation Features', () => {
-		test.beforeAll( async () => {
-			await disableAllEnabledCurrencies( page );
-		} );
-
-		test.beforeEach( async () => {
-			await navigation.goToMultiCurrencyOnboarding( page );
-		} );
-
 		test( 'should offer currency switch by geolocation', async () => {
-			await page
-				.getByRole( 'button', { name: /Add \d currenc(y|ies)/ } )
-				.click();
-
+			await navigation.goToMultiCurrencyOnboarding( page );
+			await goToNextOnboardingStep( page );
 			await page.getByTestId( 'enable_auto_currency' ).check();
 			await expect(
 				page.getByTestId( 'enable_auto_currency' )
@@ -172,91 +157,61 @@ test.describe( 'Merchant On-boarding', () => {
 		} );
 
 		test( 'should preview currency switch by geolocation correctly with USD and GBP', async () => {
+			await addCurrency( page, 'GBP' );
+			await navigation.goToMultiCurrencyOnboarding( page );
 			// To take a better screenshot of the iframe preview.
-			page.setViewportSize( { width: 1280, height: 1280 } );
+			await page.setViewportSize( { width: 1280, height: 1280 } );
+			await goToNextOnboardingStep( page );
+			await expect(
+				page.locator( '.wcpay-wizard-task.is-active' )
+			).toHaveScreenshot();
+			await page.getByTestId( 'enable_auto_currency' ).check();
+			await page.getByRole( 'button', { name: 'Preview' } ).click();
 
-			// await goToNextOnboardingStep();
+			const previewIframe = await page.locator(
+				'.multi-currency-store-settings-preview-iframe'
+			);
 
-			// await takeScreenshot(
-			// 	'merchant-on-boarding-multicurrency-screen-2'
-			// );
+			await expect( previewIframe ).toBeVisible();
 
-			// // Enable feature.
-			// await setCheckboxState(
-			// 	GEO_CURRENCY_SWITCH_CHECKBOX_SELECTOR,
-			// 	true
-			// );
+			const previewPage = previewIframe.contentFrame();
 
-			// // Click preview button.
-			// await page.click( PREVIEW_STORE_BTN_SELECTOR );
+			await expect(
+				await previewPage.locator( '.woocommerce-store-notice' )
+			).toBeVisible();
+			await expect(
+				page.locator( '.multi-currency-store-settings-preview-iframe' )
+			).toHaveScreenshot();
 
-			// await page.waitForSelector( PREVIEW_STORE_IFRAME_SELECTOR, {
-			// 	timeout: 3000,
-			// } );
+			const noticeText = await previewPage
+				.locator( '.woocommerce-store-notice' )
+				.innerText();
 
-			// const iframeElement = await page.$( PREVIEW_STORE_IFRAME_SELECTOR );
-			// const iframe = await iframeElement.contentFrame();
-
-			// await iframe.waitForSelector( '.woocommerce-store-notice', {
-			// 	timeout: 3000,
-			// } );
-
-			// await takeScreenshot(
-			// 	'merchant-on-boarding-multicurrency-geolocation-switcher-preview'
-			// );
-
-			// const noticeText = await iframe.$eval(
-			// 	'.woocommerce-store-notice',
-			// 	( element ) => element.innerText
-			// );
-			// expect( noticeText ).toContain(
-			// 	// eslint-disable-next-line max-len
-			// 	"We noticed you're visiting from United Kingdom (UK). We've updated our prices to Pound sterling for your shopping convenience."
-			// );
+			expect( noticeText ).toContain(
+				"We noticed you're visiting from United Kingdom (UK). We've updated our prices to Pound sterling for your shopping convenience."
+			);
 		} );
 	} );
 
 	test.describe( 'Currency Switcher Widget', () => {
-		// it( 'Should offer the currency switcher widget while Storefront theme is active', async () => {
-		// 	await activateTheme( 'storefront' );
+		test( 'should offer the currency switcher widget while Storefront theme is active', async () => {
+			await activateTheme( page, 'storefront' );
+			await navigation.goToMultiCurrencyOnboarding( page );
+			await goToNextOnboardingStep( page );
+			await page.getByTestId( 'enable_storefront_switcher' ).check();
+			await expect(
+				page.getByTestId( 'enable_storefront_switcher' )
+			).toBeChecked();
+		} );
 
-		// 	await goToOnboardingPage();
-		// 	await goToNextOnboardingStep();
-
-		// 	const checkbox = await page.$(
-		// 		STOREFRONT_SWITCH_CHECKBOX_SELECTOR
-		// 	);
-
-		// 	// Check if exists and not disabled.
-		// 	expect( checkbox ).not.toBeNull();
-		// 	const isDisabled = await (
-		// 		await checkbox.getProperty( 'disabled' )
-		// 	 ).jsonValue();
-		// 	expect( isDisabled ).toBe( false );
-
-		// 	// Click the checkbox to select it.
-		// 	await page.click( STOREFRONT_SWITCH_CHECKBOX_SELECTOR );
-
-		// 	// Check if the checkbox is selected.
-		// 	const isChecked = await (
-		// 		await checkbox.getProperty( 'checked' )
-		// 	 ).jsonValue();
-		// 	expect( isChecked ).toBe( true );
-		// } );
-
-		// it( 'Should not offer the currency switcher widget when an unsupported theme is active', async () => {
-		// 	await activateTheme( 'twentytwentyfour' );
-
-		// 	await goToOnboardingPage();
-		// 	await goToNextOnboardingStep();
-
-		// 	const checkbox = await page.$(
-		// 		STOREFRONT_SWITCH_CHECKBOX_SELECTOR
-		// 	);
-
-		// 	expect( checkbox ).toBeNull();
-
-		// 	await activateTheme( 'storefront' );
-		// } );
+		test( 'should not offer the currency switcher widget when an unsupported theme is active', async () => {
+			await activateTheme( page, 'twentytwentyfour' );
+			await navigation.goToMultiCurrencyOnboarding( page );
+			await goToNextOnboardingStep( page );
+			await expect(
+				page.getByTestId( 'enable_storefront_switcher' )
+			).toBeHidden();
+			await activateTheme( page, 'storefront' );
+		} );
 	} );
 } );
