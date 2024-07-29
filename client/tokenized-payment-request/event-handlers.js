@@ -132,22 +132,26 @@ export const paymentMethodHandler = async (
 	abortPayment,
 	event
 ) => {
-	// Kick off checkout processing step.
-	const response = await cartApi.placeOrder( {
-		// adding extension data as a separate action,
-		// so that we make it harder for external plugins to modify or intercept checkout data.
-		...transformStripePaymentMethodForStoreApi( event ),
-		extensions: applyFilters(
-			'wcpay.payment-request.cart-place-order-extension-data',
-			{}
-		),
-	} );
+	try {
+		// Kick off checkout processing step.
+		const response = await cartApi.placeOrder( {
+			// adding extension data as a separate action,
+			// so that we make it harder for external plugins to modify or intercept checkout data.
+			...transformStripePaymentMethodForStoreApi( event ),
+			extensions: applyFilters(
+				'wcpay.payment-request.cart-place-order-extension-data',
+				{}
+			),
+		} );
 
-	paymentResponseHandler(
-		api,
-		response,
-		completePayment,
-		abortPayment,
-		event
-	);
+		paymentResponseHandler(
+			api,
+			response,
+			completePayment,
+			abortPayment,
+			event
+		);
+	} catch ( error ) {
+		abortPayment( event, error.message );
+	}
 };
