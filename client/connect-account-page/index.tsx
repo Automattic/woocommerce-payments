@@ -165,6 +165,7 @@ const ConnectAccountPage: React.FC = () => {
 	};
 
 	const handleSetupTestDriveMode = async () => {
+		setTestDriveLoaderProgress( 5 );
 		setTestDriveModeSubmitted( true );
 		trackConnectAccountClicked( true );
 
