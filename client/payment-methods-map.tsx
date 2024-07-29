@@ -237,7 +237,7 @@ const PaymentMethodInformationObject: Record<
 		label: __( 'Klarna', 'woocommerce-payments' ),
 		description: __(
 			// translators: %s is the store currency.
-			'Allow customers to pay over time with Klarna. Available to all customers paying in %s.',
+			'Allow customers to pay over time or pay now with Klarna. Available to all customers paying in %s.',
 			'woocommerce-payments'
 		),
 		icon: KlarnaIcon,
