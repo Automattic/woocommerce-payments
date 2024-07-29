@@ -103,11 +103,16 @@ describe( 'Order > Refund Failure', () => {
 						try {
 							await refundButton.click();
 						} catch ( err ) {
-							// Trigger the event directly in case button is not clickable. This is a known error in WC 7.7.0 in CI.
-							console.warn( err );
-							await page
-								.$( '.do-api-refund' )
-								.then( ( el ) => el.click() );
+							// Sometimes the element is not clickable due to the header getting on the way. This seems to
+							// only happen in CI for WC 7.7.0 so the workaround is to remove those elements.
+							console.log( err );
+							await page.evaluate( ( sel ) => {
+								document.querySelector( sel ).outerHTML = '';
+							}, '.woocommerce-layout__header' );
+							await page.evaluate( ( sel ) => {
+								document.querySelector( sel ).outerHTML = '';
+							}, '#wpadminbar' );
+							await refundButton.click();
 						}
 					}
 				);
