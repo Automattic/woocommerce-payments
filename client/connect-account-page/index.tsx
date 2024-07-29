@@ -130,12 +130,17 @@ const ConnectAccountPage: React.FC = () => {
 			path: `/wc/v3/payments/accounts`,
 			method: 'GET',
 		} ).then( ( account ) => {
-			// Fake update loader progress bar percentage.
-			updateLoaderProgress( 100, 5 );
+			// Simulate the update of the loader progress bar by 4% per check.
+			// Limit to a maximum of 15 checks or 30 seconds.
+			updateLoaderProgress( 100, 4 );
 
-			// If the account status is complete, redirect to the overview page.
-			// Otherwise, schedule another check after 5 seconds.
-			if ( ( account as AccountData ).status === 'complete' ) {
+			// If the account status is complete or progress percentage is above 95, redirect to the overview page.
+			// Otherwise, schedule another check after 2 seconds.
+			if (
+				( account as AccountData ).status === 'complete' ||
+				loaderProgressRef.current > 95
+			) {
+				setTestDriveLoaderProgress( 100 );
 				const redirectUrl = addQueryArgs( overviewUrl, {
 					'sandbox-onboarded': true,
 				} );
