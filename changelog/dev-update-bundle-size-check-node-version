@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update bundle size checker workflow to support node v20
