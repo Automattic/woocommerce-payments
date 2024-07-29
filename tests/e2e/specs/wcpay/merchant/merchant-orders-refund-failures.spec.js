@@ -100,7 +100,15 @@ describe( 'Order > Refund Failure', () => {
 				// Confirm the refund
 				const refundDialog = await expect( page ).toDisplayDialog(
 					async () => {
-						await refundButton.click();
+						try {
+							await refundButton.click();
+						} catch ( err ) {
+							// Trigger the event directly in case button is not clickable. This is a known error in WC 7.7.0 in CI.
+							console.warn( err );
+							await page
+								.$( '.do-api-refund' )
+								.then( ( el ) => el.click() );
+						}
 					}
 				);
 
@@ -108,10 +116,6 @@ describe( 'Order > Refund Failure', () => {
 				const invalidRefundAlert = await expect( page ).toDisplayDialog(
 					async () => {
 						await refundDialog.accept();
-						// await uiUnblocked();
-						// await page.waitForNavigation( {
-						// 	waitUntil: 'networkidle0',
-						// } );
 					}
 				);
 				await expect( invalidRefundAlert.message() ).toEqual(
