@@ -45,7 +45,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 					'email' => [
 						'type'     => 'string',
 						'format'   => 'email',
-						'required' => true,
+						'required' => false,
 					],
 				],
 			]
