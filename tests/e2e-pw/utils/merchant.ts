@@ -102,18 +102,28 @@ export const activateTheme = async ( page: Page, slug: string ) => {
 export const disableAllEnabledCurrencies = async ( page: Page ) => {
 	await navigation.goToMultiCurrencySettings( page );
 	await expect(
-		await page.locator( '.enabled-currencies-list li' )
+		await page.locator( '.enabled-currencies-list li' ).first()
 	).toBeVisible();
 
 	const deleteButtons = await page
 		.locator( '.enabled-currency .enabled-currency__action.delete' )
 		.all();
 
-	for ( const button of deleteButtons ) {
-		await button.click();
-		await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-			timeout: 10000,
-		} );
+	if ( deleteButtons.length === 0 ) {
+		return;
+	}
+
+	for ( let i = 0; i < deleteButtons.length; i++ ) {
+		await page
+			.locator( '.enabled-currency .enabled-currency__action.delete' )
+			.first()
+			.click();
+
+		const snackbar = await page.getByLabel( 'Dismiss this notice' );
+
+		await expect( snackbar ).toBeVisible( { timeout: 10000 } );
+		await snackbar.click();
+		await expect( snackbar ).toBeHidden( { timeout: 10000 } );
 	}
 };
 
