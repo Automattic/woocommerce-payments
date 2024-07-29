@@ -413,7 +413,7 @@ class WooPayDirectCheckout {
 
 			const url = new URL( woopayRedirectUrl );
 			// const redirectParams = new URLSearchParams( url );
-			url.searchParams.append( 'force_login', forceLogin );
+			url.searchParams.append( 'allow_login', forceLogin );
 
 			this.teardown();
 			// TODO: Add telemetry as to _how long_ it took to get to this step.
