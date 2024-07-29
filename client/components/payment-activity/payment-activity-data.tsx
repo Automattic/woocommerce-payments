@@ -159,10 +159,14 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
-						).format( 'YYYY-MM-DD' ),
+						)
+							.utc()
+							.format( 'YYYY-MM-DD HH:mm:ss' ),
 						'date_between[1]': moment(
 							paymentActivityData?.date_end
-						).format( 'YYYY-MM-DD' ),
+						)
+							.utc()
+							.format( 'YYYY-MM-DD HH:mm:ss' ),
 						...getSearchParams(
 							searchTermsForViewReportLink.charge
 						),
