@@ -15,7 +15,7 @@ import VatForm from '../../form';
 
 jest.mock( '../../form', () => jest.fn() );
 
-describe( 'VAT form modal', () => {
+describe( 'Tax details modal', () => {
 	beforeEach( () => {
 		jest.mocked( VatForm ).mockReturnValue( <p>VAT Form</p> );
 	} );
@@ -29,7 +29,7 @@ describe( 'VAT form modal', () => {
 			/>
 		);
 		expect(
-			screen.getByRole( 'dialog', { name: 'VAT details' } )
+			screen.getByRole( 'dialog', { name: 'Set your tax details' } )
 		).toBeVisible();
 	} );
 
@@ -42,7 +42,7 @@ describe( 'VAT form modal', () => {
 			/>
 		);
 		expect(
-			screen.queryByRole( 'dialog', { name: 'VAT details' } )
+			screen.queryByRole( 'dialog', { name: 'Set your tax details' } )
 		).toBeNull();
 	} );
 
@@ -55,7 +55,7 @@ describe( 'VAT form modal', () => {
 			/>
 		);
 		expect(
-			screen.getByRole( 'dialog', { name: 'VAT details' } )
+			screen.getByRole( 'dialog', { name: 'Set your tax details' } )
 		).toMatchSnapshot();
 	} );
 
@@ -82,7 +82,7 @@ describe( 'VAT form modal', () => {
 		);
 
 		expect(
-			screen.queryByRole( 'dialog', { name: 'VAT details' } )
+			screen.queryByRole( 'dialog', { name: 'Set your tax details' } )
 		).toBeNull();
 	} );
 } );
