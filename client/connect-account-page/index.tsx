@@ -29,7 +29,7 @@ import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
-import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
+import { WooPaymentMethodsLogos } from '@woocommerce/onboarding';
 
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
@@ -202,7 +202,10 @@ const ConnectAccountPage: React.FC = () => {
 							<InfoNotice />
 						</div>
 						<div className="connect-account-page__payment-methods">
-							<WooPaymentMethodsLogos maxElements={ 10 } />
+							<WooPaymentMethodsLogos
+								maxElements={ 10 }
+								isWooPayEligible={ true }
+							/>
 							<div className="connect-account-page__payment-methods__description">
 								<div>
 									<p>Deposits</p>
