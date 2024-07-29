@@ -76,8 +76,28 @@ describe( 'Order > Refund Failure', () => {
 				// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
 				await page.removeAllListeners( 'dialog' );
 
+				// Sometimes the element is not clickable due to the header getting on the way. This seems to
+				// only happen in CI for WC 7.7.0 so the workaround is to remove those elements.
+				const hideElementIfExists = ( sel ) => {
+					const element = document.querySelector( sel );
+					if ( element ) {
+						element.outerHTML = '';
+					}
+				};
+				await page.evaluate(
+					hideElementIfExists,
+					'.woocommerce-layout__header'
+				);
+				await page.evaluate( hideElementIfExists, '#wpadminbar' );
+
 				// Click the Refund button
-				await expect( page ).toClick( 'button.refund-items' );
+				const refundItemsButton = await expect( page ).toMatchElement(
+					'button.refund-items',
+					{
+						visible: true,
+					}
+				);
+				await refundItemsButton.click();
 
 				// Verify the refund section shows
 				await page.waitForSelector( 'div.wc-order-refund-items' );
@@ -101,21 +121,7 @@ describe( 'Order > Refund Failure', () => {
 				// Confirm the refund
 				const refundDialog = await expect( page ).toDisplayDialog(
 					async () => {
-						try {
-							await refundButton.click();
-						} catch ( err ) {
-							// Sometimes the element is not clickable due to the header getting on the way. This seems to
-							// only happen in CI for WC 7.7.0 so the workaround is to remove those elements.
-							console.log( err );
-							await page.waitForTimeout( 1000 ); // Wait for animations if any.
-							await page.evaluate( ( sel ) => {
-								document.querySelector( sel ).outerHTML = '';
-							}, '.woocommerce-layout__header' );
-							await page.evaluate( ( sel ) => {
-								document.querySelector( sel ).outerHTML = '';
-							}, '#wpadminbar' );
-							await refundButton.click();
-						}
+						await refundButton.click();
 					}
 				);
 
