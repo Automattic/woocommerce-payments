@@ -30,6 +30,13 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		wp_set_current_user( $this->previous_user_id );
+		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] );
+		unset( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION'] );
+		unset( $_SERVER['REQUEST_URI'] );
+		unset( $_REQUEST['rest_route'] );
+		// we need to manually unset the session, otherwise it'll linger between test cases.
+		WC()->session = null;
+		WC()->initialize_session();
 
 		parent::tear_down();
 	}
