@@ -95,7 +95,9 @@ export const activateTheme = async ( page: Page, slug: string ) => {
 		await page
 			.locator( `.theme[data-slug="${ slug }"] .button.activate` )
 			.click();
-		await page.waitForURL( `**/wp-admin/themes.php?activated=true` );
+		await expect(
+			await page.locator( '.notice.updated' ).innerText()
+		).toContain( 'New theme activated.' );
 	}
 };
 
