@@ -37,6 +37,7 @@ const PhoneNumberInput = ( {
 	isBlocksCheckout,
 	...props
 }: PhoneNumberInputProps ): JSX.Element => {
+	const [ focusLost, setFocusLost ] = useState< boolean >( false );
 	const [
 		inputInstance,
 		setInputInstance,
@@ -66,7 +67,7 @@ const PhoneNumberInput = ( {
 		const currentRef = inputRef.current;
 
 		const handleCountryChange = () => {
-			if ( iti ) {
+			if ( iti && ( focusLost || iti.getNumber() ) ) {
 				onValueChange( iti.getNumber() );
 				onValidationChange( iti.isValidNumber() );
 			}
@@ -135,13 +136,22 @@ const PhoneNumberInput = ( {
 				}
 			}
 		};
-	}, [ onValueChange, onValidationChange, onCountryDropdownClick ] );
+	}, [
+		onValueChange,
+		onValidationChange,
+		onCountryDropdownClick,
+		focusLost,
+	] );
 
 	useEffect( () => {
-		if ( inputInstance && inputRef.current ) {
+		if (
+			inputInstance &&
+			inputRef.current &&
+			( focusLost || inputInstance.getNumber() )
+		) {
 			onValidationChange( inputInstance.isValidNumber() );
 		}
-	}, [ value, inputInstance, inputRef, onValidationChange ] );
+	}, [ value, inputInstance, inputRef, onValidationChange, focusLost ] );
 
 	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
 	// alters the DOM and we'll get warnings about "removing content without using React."
@@ -155,6 +165,9 @@ const PhoneNumberInput = ( {
 				type="tel"
 				ref={ inputRef }
 				value={ removeInternationalPrefix( value ) }
+				onBlur={ () => {
+					setFocusLost( true );
+				} }
 				onChange={ handlePhoneNumberInputChange }
 				placeholder={ __( 'Mobile number', 'woocommerce-payments' ) }
 				aria-label={
