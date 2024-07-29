@@ -93,6 +93,7 @@ describe( 'Order > Refund Failure', () => {
 				const refundButton = await expect( page ).toMatchElement(
 					'.do-api-refund',
 					{
+						visible: true,
 						text: /Refund .* via WooPayments/,
 					}
 				);
@@ -106,6 +107,7 @@ describe( 'Order > Refund Failure', () => {
 							// Sometimes the element is not clickable due to the header getting on the way. This seems to
 							// only happen in CI for WC 7.7.0 so the workaround is to remove those elements.
 							console.log( err );
+							await page.waitForTimeout( 1000 ); // Wait for animations if any.
 							await page.evaluate( ( sel ) => {
 								document.querySelector( sel ).outerHTML = '';
 							}, '.woocommerce-layout__header' );
