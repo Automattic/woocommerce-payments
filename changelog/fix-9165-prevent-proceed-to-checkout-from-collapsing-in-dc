@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure the 'Proceed to Checkout' button does not collapse when adding a loading spinner, in the Direct Checkout flow.
