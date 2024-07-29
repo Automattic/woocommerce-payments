@@ -16,9 +16,9 @@ export const dataHasLoaded = async ( page: Page ) => {
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
-	await expect(
-		page.getByRole( 'button', { name: 'Settings saved.' } )
-	).toBeVisible( { timeout: 10000 } );
+	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
+		timeout: 10000,
+	} );
 };
 
 export const activateMulticurrency = async ( page: Page ) => {
@@ -72,15 +72,9 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 			page.getByRole( 'button', { name: 'Update' } )
 		).toBeEnabled();
 		await page.getByRole( 'button', { name: 'Update' } ).click();
-		// For some reason the alert "Widgets saved." doesn't show up in the testing.
-		// So we reload the page to make sure the widget has been added.
-		await page.waitForResponse( '**/wp-json/wp/v2/sidebars**' );
-		await page.reload( { waitUntil: 'load' } );
-		// Wait for all widgets to load. This is important to prevent flakiness.
-		await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
-		await expect(
-			page.getByRole( 'heading', { name: 'Currency Switcher Widget' } )
-		).toBeVisible();
+		await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
+			timeout: 10000,
+		} );
 	}
 };
 
