@@ -99,6 +99,10 @@ export const confirmCardAuthentication = async (
 ): Promise< void > => {
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
 	// appears at the top of the DOM.
+	await page.waitForSelector(
+		'body > div > iframe[name^="__privateStripeFrame"]'
+	);
+
 	const stripeFrame = page.frameLocator(
 		'body>div>iframe[name^="__privateStripeFrame"]'
 	);
