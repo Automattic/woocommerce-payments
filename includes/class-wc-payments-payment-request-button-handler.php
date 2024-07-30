@@ -120,13 +120,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				2
 			);
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
-			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_nonce_overwrite' ], 10, 3 );
-			add_filter(
-				'rest_post_dispatch',
-				[ $this, 'tokenized_cart_store_api_nonce_headers' ],
-				10,
-				3
-			);
 		}
 	}
 
@@ -171,29 +164,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * The nonce supplied by the frontend can be overwritten in this middleware:
-	 * https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce-blocks/assets/js/middleware/store-api-nonce.js
-	 *
-	 * This is a workaround to use instead a different nonce key, when supplied.
-	 *
-	 * @param mixed            $response Response to replace the requested version with.
-	 * @param \WP_REST_Server  $server Server instance.
-	 * @param \WP_REST_Request $request Request used to generate the response.
-	 *
-	 * @return mixed
-	 */
-	public function tokenized_cart_store_api_nonce_overwrite( $response, $server, $request ) {
-		$nonce = $request->get_header( 'X-WooPayments-Store-Api-Nonce' );
-		if ( empty( $nonce ) ) {
-			return $response;
-		}
-
-		$request->set_header( 'Nonce', $nonce );
-
-		return $response;
-	}
-
-	/**
 	 * Google Pay/Apple Pay parameters for address data might need some massaging for some of the countries.
 	 * Ensuring that the Store API doesn't throw a `rest_invalid_param` error message for some of those scenarios.
 	 *
@@ -204,12 +174,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return mixed
 	 */
 	public function tokenized_cart_store_api_address_normalization( $response, $server, $request ) {
-		if ( 'true' !== $request->get_header( 'X-WooPayments-Express-Payment-Request' ) ) {
+		if ( 'true' !== $request->get_header( 'X-WooPayments-Tokenized-Cart' ) ) {
 			return $response;
 		}
 
 		// header added as additional layer of security.
-		$nonce = $request->get_header( 'X-WooPayments-Express-Payment-Request-Nonce' );
+		$nonce = $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
 		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
 			return $response;
 		}
@@ -238,25 +208,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 			if ( $is_update_customer_route ) {
 				$request->set_param( 'billing_address', $this->transform_prb_address_postcode_data( $request_data['billing_address'] ) );
 			}
-		}
-
-		return $response;
-	}
-
-	/**
-	 * In order to create an additional layer of security, we're adding a custom nonce to the Store API REST responses.
-	 * This nonce is added as a response header on the Store API, because nonces are tied to user sessions,
-	 * and anonymous carts count as separate user sessions.
-	 *
-	 * @param \WP_HTTP_Response $response Response to replace the requested version with.
-	 * @param \WP_REST_Server   $server Server instance.
-	 * @param \WP_REST_Request  $request Request used to generate the response.
-	 *
-	 * @return \WP_HTTP_Response
-	 */
-	public function tokenized_cart_store_api_nonce_headers( $response, $server, $request ) {
-		if ( $request->get_route() === '/wc/store/v1/cart' ) {
-			$response->header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
 		}
 
 		return $response;
@@ -956,17 +907,18 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],
 			'nonce'              => [
-				'get_cart_details'          => wp_create_nonce( 'wcpay-get-cart-details' ),
-				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
-				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
-				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
-				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
-				'empty_cart'                => wp_create_nonce( 'wcpay-empty-cart' ),
-				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
-				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
-				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
-				'tokenized_cart_nonce'      => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
-				'tokenized_order_nonce'     => wp_create_nonce( 'wc_store_api' ),
+				'get_cart_details'             => wp_create_nonce( 'wcpay-get-cart-details' ),
+				'shipping'                     => wp_create_nonce( 'wcpay-payment-request-shipping' ),
+				'update_shipping'              => wp_create_nonce( 'wcpay-update-shipping-method' ),
+				'checkout'                     => wp_create_nonce( 'woocommerce-process_checkout' ),
+				'add_to_cart'                  => wp_create_nonce( 'wcpay-add-to-cart' ),
+				'empty_cart'                   => wp_create_nonce( 'wcpay-empty-cart' ),
+				'get_selected_product_data'    => wp_create_nonce( 'wcpay-get-selected-product-data' ),
+				'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
+				'pay_for_order'                => wp_create_nonce( 'pay_for_order' ),
+				'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
+				'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
+				'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
 			],
 			'checkout'           => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
