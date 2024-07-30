@@ -7,10 +7,10 @@
 
 namespace WCPay\MultiCurrency\Helpers;
 
-use WC_Payments_API_Client;
 use WC_Payments_Utils;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,7 +21,7 @@ class OrderMetaHelper {
 	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
-	 * @var WC_Payments_API_Client
+	 * @var MultiCurrencyApiClientInterface
 	 */
 	private $payments_api_client;
 
@@ -35,9 +35,9 @@ class OrderMetaHelper {
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
+	 * @param MultiCurrencyApiClientInterface $payments_api_client Payments API client.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( MultiCurrencyApiClientInterface $payments_api_client ) {
 		$this->payments_api_client = $payments_api_client;
 	}
 

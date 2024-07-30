@@ -10,7 +10,6 @@ namespace WCPay\MultiCurrency;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Utils;
-use WC_Payments_API_Client;
 use WC_Payments_Localization_Service;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
@@ -20,6 +19,7 @@ use WCPay\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -140,9 +140,9 @@ class MultiCurrency {
 	protected $enabled_currencies;
 
 	/**
-	 * Client for making requests to the WooCommerce Payments API
+	 * Client for making requests to the API
 	 *
-	 * @var WC_Payments_API_Client
+	 * @var MultiCurrencyApiClientInterface
 	 */
 	private $payments_api_client;
 
@@ -207,13 +207,13 @@ class MultiCurrency {
 	/**
 	 * Class constructor.
 	 *
-	 * @param WC_Payments_API_Client           $payments_api_client  Payments API client.
+	 * @param MultiCurrencyApiClientInterface  $payments_api_client  Payments API client.
 	 * @param WC_Payments_Account              $payments_account     Payments Account instance.
 	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
 	 * @param Database_Cache                   $database_cache       Database Cache instance.
 	 * @param Utils|null                       $utils                Optional Utils instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
+	public function __construct( MultiCurrencyApiClientInterface $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
 		$this->localization_service = $localization_service;
