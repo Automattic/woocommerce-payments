@@ -230,7 +230,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( $wcpay_account_connected );
+		$this->mock_account->method( 'is_provider_connected' )->willReturn( $wcpay_account_connected );
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 
