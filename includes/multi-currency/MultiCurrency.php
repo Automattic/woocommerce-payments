@@ -332,7 +332,7 @@ class MultiCurrency {
 			return;
 		}
 
-		$api_controller = new RestController( \WC_Payments::create_api_client() );
+		$api_controller = new RestController();
 		$api_controller->register_routes();
 	}
 
