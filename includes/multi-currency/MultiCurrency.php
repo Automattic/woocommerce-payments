@@ -287,7 +287,7 @@ class MultiCurrency {
 		}
 
 		if ( is_admin() ) {
-			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
+			add_action( 'admin_init', [ $this, 'add_woo_admin_notes' ] );
 		}
 
 		// Update the customer currencies option after an order status change.
@@ -1057,14 +1057,14 @@ class MultiCurrency {
 	 *
 	 * @return void
 	 */
-	public static function add_woo_admin_notes() {
+	public function add_woo_admin_notes() {
 		// Do not try to add notes on ajax requests to improve their performance.
 		if ( wp_doing_ajax() ) {
 			return;
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			NoteMultiCurrencyAvailable::set_account( WC_Payments::get_account_service() );
+			NoteMultiCurrencyAvailable::set_account( $this->payments_account );
 			NoteMultiCurrencyAvailable::possibly_add_note();
 		}
 	}
