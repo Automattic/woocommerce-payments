@@ -1164,21 +1164,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Get Connect page url.
-	 *
-	 * @return string
-	 */
-	public static function get_connect_page_url(): string {
-		return add_query_arg(
-			[
-				'page' => 'wc-admin',
-				'path' => '/payments/connect',
-			],
-			admin_url( 'admin.php' )
-		);
-	}
-
-	/**
 	 * Get overview page url
 	 *
 	 * @return string overview page url
