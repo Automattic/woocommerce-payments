@@ -133,6 +133,7 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Add error logging to ECE critical endpoints.
 * Dev - Avoid using deprecated hook for processed checkout order.
 * Dev - Bump WC tested up to version to 9.1.2
+* Dev - Update bundle size checker workflow to support node v20
 * Dev - Update node to v20
 
 = 7.9.2 - 2024-07-18 =
