@@ -14,7 +14,7 @@ import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../../checkout/api';
 import request from '../../checkout/utils/request';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import './style.scss';
 
@@ -47,11 +47,8 @@ const ProductDetail = ( { cart, context } ) => {
 		getUPEConfig( 'upeBnplCartBlockAppearance' ) || {}
 	);
 	const [ fontRules ] = useState( getFontRulesFromPage() );
-	const [ loaderHeight, setLoaderHeight ] = useState( null );
-	const [ loaderMargin, setLoaderMargin ] = useState( null );
-	const loaderHeightRef = useRef( loaderHeight );
-	const [ showLoader, setShowLoader ] = useState( false );
-	const wrapperRef = useRef( null );
+	const [ showLoader, setShowLoader ] = useState( true );
+	const isPmmeReadyRef = useRef( false );
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
@@ -70,14 +67,10 @@ const ProductDetail = ( { cart, context } ) => {
 	}, [ appearance ] );
 
 	useEffect( () => {
-		loaderHeightRef.current = loaderHeight;
-	}, [ loaderHeight ] );
-
-	useEffect( () => {
 		// Show loader when cart total is updated and it is greater than 0.
 		if (
 			cart.cartTotals.total_price > 0 &&
-			loaderHeightRef.current !== null
+			isPmmeReadyRef.current === true
 		) {
 			setShowLoader( true );
 			const timer = setTimeout( () => {
@@ -85,27 +78,12 @@ const ProductDetail = ( { cart, context } ) => {
 			}, 1000 );
 			return () => clearTimeout( timer );
 		}
-	}, [ cart.cartTotals.total_price, loaderHeightRef ] );
+	}, [ cart.cartTotals.total_price, isPmmeReadyRef ] );
 
-	const updateLoaderHeight = useCallback( () => {
-		// Wait 500ms before getting the height of the element to account for the animation
-		setTimeout( () => {
-			const pmmeContainer = wrapperRef.current.querySelector(
-				'.__PrivateStripeElement'
-			);
-			if ( pmmeContainer ) {
-				setLoaderHeight( pmmeContainer.offsetHeight );
-				setLoaderMargin( pmmeContainer.style.margin );
-			}
-		}, 500 );
-	}, [ wrapperRef ] );
-
-	useEffect( () => {
-		window.addEventListener( 'resize', updateLoaderHeight );
-		return () => {
-			window.removeEventListener( 'resize', updateLoaderHeight );
-		};
-	}, [ updateLoaderHeight ] );
+	const onReadyHandler = () => {
+		isPmmeReadyRef.current = true;
+		setShowLoader( false );
+	};
 
 	if ( Object.keys( appearance ).length === 0 ) {
 		return null;
@@ -139,28 +117,19 @@ const ProductDetail = ( { cart, context } ) => {
 
 	return (
 		<div className="wc-block-components-bnpl-wrapper">
-			{ showLoader ? (
-				<div
-					className="pmme-loading"
-					style={ {
-						height: `${ loaderHeight }px`,
-						margin: loaderMargin,
-					} }
-				></div>
-			) : null }
-			<div
-				style={ { display: showLoader ? 'none' : 'block' } }
-				ref={ wrapperRef }
-			>
-				<Elements
-					stripe={ stripe }
-					options={ { appearance, fonts: fontRules } }
-				>
-					<PaymentMethodMessagingElement
-						options={ options }
-						onReady={ updateLoaderHeight }
-					/>
-				</Elements>
+			<div className="pmme-container">
+				{ showLoader ? <div className="pmme-loading"></div> : null }
+				<div style={ { display: showLoader ? 'none' : 'block' } }>
+					<Elements
+						stripe={ stripe }
+						options={ { appearance, fonts: fontRules } }
+					>
+						<PaymentMethodMessagingElement
+							options={ options }
+							onReady={ onReadyHandler }
+						/>
+					</Elements>
+				</div>
 			</div>
 		</div>
 	);

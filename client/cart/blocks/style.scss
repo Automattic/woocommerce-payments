@@ -1,6 +1,18 @@
-.pmme-loading {
-	animation: pmme-loading 1s linear infinite alternate;
-	background: #afafaf;
+.wc-block-components-bnpl-wrapper {
+	height: calc( 4em + 32px );
+	.pmme-container {
+		height: 4em;
+		position: relative;
+
+		.pmme-loading {
+			position: absolute;
+			max-width: 20em;
+			width: 100%;
+			height: 100%;
+			animation: pmme-loading 1s linear infinite alternate;
+			background: #afafaf;
+		}
+	}
 }
 
 @keyframes pmme-loading {
