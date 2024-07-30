@@ -67,7 +67,7 @@ test.describe(
 test.describe(
 	'Merchant account balance overview for multiple deposit currency accounts',
 	{
-		tag: '@critical @todo',
+		tag: [ '@critical', '@todo' ],
 	},
 	() => {
 		/**
