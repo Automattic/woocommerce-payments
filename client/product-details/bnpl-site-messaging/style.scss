@@ -11,24 +11,15 @@
 .summary,
 .wp-block-woocommerce-product-price + {
 	#payment-method-message {
-		height: 4rem;
+		height: 4em;
 		position: relative;
-		overflow: hidden;
 
-		div,
-		iframe {
-			height: 100% !important;
+		.pmme-loading {
+			position: absolute;
+			width: 100%;
+			max-width: 20em;
+			height: 100%;
 		}
-	}
-
-	.pmme-loading {
-		position: absolute;
-		padding: 0;
-		margin: 0;
-		top: 0;
-		left: 0;
-		height: 100%;
-		width: 100%;
 	}
 }
 
