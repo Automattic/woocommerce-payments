@@ -100,7 +100,12 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 	beforeEach( () => {
 		expressCheckoutIframe.mockImplementation( () => jest.fn() );
-		getConfig.mockReturnValue( 'foo' );
+		getConfig.mockImplementation( ( name ) => {
+			if ( name === 'isWooPayDirectCheckoutEnabled' ) {
+				return false;
+			}
+			return 'foo';
+		} );
 		useExpressCheckoutProductHandler.mockImplementation( () => ( {
 			addToCart: mockAddToCart,
 		} ) );
@@ -174,6 +179,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					return 1;
 				case 'appearance':
 					return mockAppearance;
+				case 'isWooPayDirectCheckoutEnabled':
+					return false;
 				default:
 					return 'foo';
 			}
@@ -207,7 +214,13 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 	test( 'call `expressCheckoutIframe` on button click when `isPreview` is false', () => {
 		getConfig.mockImplementation( ( v ) => {
-			return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
+			switch ( v ) {
+				case 'isWoopayFirstPartyAuthEnabled':
+				case 'isWooPayDirectCheckoutEnabled':
+					return false;
+				default:
+					return 'foo';
+			}
 		} );
 		render(
 			<WoopayExpressCheckoutButton
@@ -272,7 +285,13 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 		test( 'should show an alert when clicking the button when add to cart button is disabled', () => {
 			getConfig.mockImplementation( ( v ) => {
-				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
+				switch ( v ) {
+					case 'isWoopayFirstPartyAuthEnabled':
+					case 'isWooPayDirectCheckoutEnabled':
+						return false;
+					default:
+						return 'foo';
+				}
 			} );
 			useExpressCheckoutProductHandler.mockImplementation( () => ( {
 				addToCart: mockAddToCart,
@@ -310,7 +329,13 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 		test( 'call `addToCart` and `expressCheckoutIframe` on express button click on product page', async () => {
 			getConfig.mockImplementation( ( v ) => {
-				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
+				switch ( v ) {
+					case 'isWoopayFirstPartyAuthEnabled':
+					case 'isWooPayDirectCheckoutEnabled':
+						return false;
+					default:
+						return 'foo';
+				}
 			} );
 			useExpressCheckoutProductHandler.mockImplementation( () => ( {
 				addToCart: mockAddToCart,
@@ -345,7 +370,13 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 		test( 'do not call `addToCart` on express button click on product page when validation fails', async () => {
 			getConfig.mockImplementation( ( v ) => {
-				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
+				switch ( v ) {
+					case 'isWoopayFirstPartyAuthEnabled':
+					case 'isWooPayDirectCheckoutEnabled':
+						return false;
+					default:
+						return 'foo';
+				}
 			} );
 			useExpressCheckoutProductHandler.mockImplementation( () => ( {
 				addToCart: mockAddToCart,
