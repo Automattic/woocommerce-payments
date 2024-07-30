@@ -71,7 +71,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		// Take out any non-digit characters, except +.
 		phoneFieldValue = phoneFieldValue.replace( /[^\d+]*/g, '' );
 
-		if ( ! phoneFieldValue.startsWith( '+' ) ) {
+		if ( phoneFieldValue && ! phoneFieldValue.startsWith( '+' ) ) {
 			phoneFieldValue = '+1' + phoneFieldValue;
 		}
 
