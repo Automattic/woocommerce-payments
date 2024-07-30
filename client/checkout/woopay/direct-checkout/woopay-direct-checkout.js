@@ -397,7 +397,11 @@ class WooPayDirectCheckout {
 		} );
 	}
 
-	static async forwardToWooPay( userIsLoggedIn, onFailUrl, forceLogin ) {
+	static async forwardToWooPay(
+		userIsLoggedIn,
+		onFailUrl,
+		allowLogin = false
+	) {
 		try {
 			let woopayRedirectUrl = '';
 			if ( userIsLoggedIn ) {
@@ -411,13 +415,16 @@ class WooPayDirectCheckout {
 				woopayRedirectUrl = await this.getWooPayMinimumSessionUrl();
 			}
 
-			const url = new URL( woopayRedirectUrl );
-			// const redirectParams = new URLSearchParams( url );
-			url.searchParams.append( 'allow_login', forceLogin );
+			if ( allowLogin ) {
+				const url = new URL( woopayRedirectUrl );
+				// const redirectParams = new URLSearchParams( url );
+				url.searchParams.append( 'allow_login', allowLogin );
+				woopayRedirectUrl = url.toString();
+			}
 
 			this.teardown();
 			// TODO: Add telemetry as to _how long_ it took to get to this step.
-			window.location.href = url.toString();
+			window.location.href = woopayRedirectUrl;
 		} catch ( error ) {
 			// TODO: Add telemetry as to _why_ we've short-circuited the WooPay checkout flow.
 			console.warn( error ); // eslint-disable-line no-console
