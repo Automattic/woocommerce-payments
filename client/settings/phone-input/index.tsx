@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 // TODO: Remove full path once we find a way to enqueue wc-components in pages other than admin.
 import PhoneNumberInput from '@woocommerce/components/build/phone-number-input';
@@ -48,6 +48,8 @@ const PhoneInput = ( {
 		onValidationChange( validatePhoneNumber( e164, country ) );
 	};
 
+	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
+	// alters the DOM and we'll get warnings about "removing content without using React."
 	return (
 		<div
 			className={

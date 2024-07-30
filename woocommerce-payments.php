@@ -101,30 +101,18 @@ function wcpay_jetpack_init() {
 	);
 
 	// When only WooPayments is active, minimize the data to send back to WPCOM, tied to merchant's privacy settings.
-	$sync_modules = [
-		'Automattic\\Jetpack\\Sync\\Modules\\Options',
-		'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
-	];
-	if ( class_exists( 'WC_Site_Tracking' ) && WC_Site_Tracking::is_tracking_enabled() ) {
-		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce';
-		if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
-			try {
-				$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class );
-				if ( $cot_controller->custom_orders_table_usage_is_enabled() ) {
-					$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce_HPOS_Orders';
-				}
-			} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-				// Do nothing.
-			}
-		}
-	}
-
 	$jetpack_config->ensure(
 		'sync',
 		array_merge_recursive(
 			\Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS,
 			[
-				'jetpack_sync_modules'           => $sync_modules,
+				'jetpack_sync_modules'           =>
+					[
+						'Automattic\Jetpack\Sync\Modules\Full_Sync_Immediately',
+						'Automattic\Jetpack\Sync\Modules\Options',
+						'Automattic\Jetpack\Sync\Modules\Posts',
+						'Automattic\Jetpack\Sync\Modules\Meta',
+					],
 				'jetpack_sync_options_whitelist' =>
 					[
 						'active_plugins',
@@ -162,12 +150,16 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
  */
 function wcpay_init() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
+	require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session.php';
 	WC_Payments::init();
 	/**
 	 * Needs to be loaded as soon as possible
 	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
+	if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
+		( new WC_Payments_Payment_Request_Session() )->init();
+	}
 }
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.

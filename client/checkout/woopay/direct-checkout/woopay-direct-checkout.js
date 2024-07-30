@@ -22,6 +22,8 @@ class WooPayDirectCheckout {
 			'.wp-block-woocommerce-proceed-to-checkout-block',
 		BLOCKS_MINI_CART_PROCEED_BUTTON:
 			'a.wp-block-woocommerce-mini-cart-checkout-button-block',
+		BLOCKS_FOOTER_MINI_CART_PROCEED_BUTTON:
+			'a.wc-block-mini-cart__footer-checkout',
 		CLASSIC_MINI_CART_PROCEED_BUTTON:
 			'.widget_shopping_cart a.button.checkout',
 	};
@@ -274,6 +276,17 @@ class WooPayDirectCheckout {
 	}
 
 	/**
+	 * Gets the footer mini cart 'Proceed to checkout' button.
+	 *
+	 * @return {Element} The footer mini cart 'Proceed to checkout' button.
+	 */
+	static getFooterMiniCartProceedToCheckoutButton() {
+		return document.querySelector(
+			this.redirectElements.BLOCKS_FOOTER_MINI_CART_PROCEED_BUTTON
+		);
+	}
+
+	/**
 	 * Adds a click-event listener to the given elements that redirects to the WooPay checkout page.
 	 *
 	 * @param {*[]} elements The elements to add a click-event listener to.
@@ -289,20 +302,27 @@ class WooPayDirectCheckout {
 		 * @param {Element} element The element to add the loading spinner to.
 		 */
 		const addLoadingSpinner = ( element ) => {
+			const elementCss = window.getComputedStyle( element, null );
+			const originalColor = elementCss.getPropertyValue( 'color' );
+
 			// Create a spinner to show when the user clicks the button.
 			const spinner = document.createElement( 'span' );
 			spinner.classList.add( 'wc-block-components-spinner' );
-			spinner.style.position = 'relative';
+			spinner.style.position = 'absolute';
+			spinner.style.top = '0';
+			spinner.style.left = '0';
+			spinner.style.width = '100%';
+			spinner.style.height = '100%';
+			spinner.style.color = originalColor;
 			spinner.style.fontSize = 'unset';
 			spinner.style.display = 'inline';
 			spinner.style.lineHeight = '0';
 			spinner.style.margin = '0';
 			spinner.style.border = '0';
 			spinner.style.padding = '0';
-			// Remove the existing content of the button.
-			// Set innerHTML to '&nbsp;' to keep the button's height.
-			element.innerHTML = '&nbsp;';
-			element.classList.remove( 'wc-forward' );
+			// Hide the existing content of the button.
+			element.style.color = 'rgba( 0, 0, 0, 0 )';
+			element.style.position = 'relative';
 			// Add the spinner to the button.
 			element.appendChild( spinner );
 		};
@@ -319,6 +339,9 @@ class WooPayDirectCheckout {
 			if (
 				element.classList.contains(
 					'wp-block-woocommerce-mini-cart-checkout-button-block'
+				) ||
+				element.classList.contains(
+					'wc-block-mini-cart__footer-checkout'
 				)
 			) {
 				return true;

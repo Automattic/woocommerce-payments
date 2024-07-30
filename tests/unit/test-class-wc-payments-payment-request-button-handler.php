@@ -274,31 +274,9 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		return $method->get_rate_id();
 	}
 
-	public function test_tokenized_cart_nonce_overwrite_when_header_not_present() {
-		$request = new WP_REST_Request();
-		$request->set_header( 'X-WooPayments-Store-Api-Nonce', null );
-		$request->set_header( 'Nonce', 'original-nonce-value' );
-		$request->set_header( 'Content-Type', 'application/json' );
-
-		$this->pr->tokenized_cart_store_api_nonce_overwrite( null, null, $request );
-
-		$this->assertSame( 'original-nonce-value', $request->get_header( 'Nonce' ) );
-	}
-
-	public function test_tokenized_cart_nonce_overwrite_when_header_is_present() {
-		$request = new WP_REST_Request();
-		$request->set_header( 'X-WooPayments-Store-Api-Nonce', 'new-nonce-value' );
-		$request->set_header( 'Nonce', 'original-nonce-value' );
-		$request->set_header( 'Content-Type', 'application/json' );
-
-		$this->pr->tokenized_cart_store_api_nonce_overwrite( null, null, $request );
-
-		$this->assertSame( 'new-nonce-value', $request->get_header( 'Nonce' ) );
-	}
-
 	public function test_tokenized_cart_address_avoid_normalization_when_missing_header() {
 		$request = new WP_REST_Request();
-		$request->set_header( 'X-WooPayments-Express-Payment-Request', null );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', null );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
@@ -317,8 +295,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_tokenized_cart_address_avoid_normalization_when_wrong_nonce() {
 		$request = new WP_REST_Request();
-		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
-		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', 'invalid-nonce' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', 'invalid-nonce' );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
@@ -337,8 +315,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 	public function test_tokenized_cart_address_state_normalization() {
 		$request = new WP_REST_Request();
-		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
-		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
@@ -367,8 +345,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	public function test_tokenized_cart_address_postcode_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_route( '/wc/store/v1/cart/update-customer' );
-		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
-		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
@@ -399,8 +377,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	public function test_tokenized_cart_avoid_address_postcode_normalization_if_route_incorrect() {
 		$request = new WP_REST_Request();
 		$request->set_route( '/wc/store/v1/checkout' );
-		$request->set_header( 'X-WooPayments-Express-Payment-Request', 'true' );
-		$request->set_header( 'X-WooPayments-Express-Payment-Request-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
 		$request->set_header( 'Content-Type', 'application/json' );
 		$request->set_param(
 			'shipping_address',
