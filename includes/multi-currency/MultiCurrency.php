@@ -8,7 +8,6 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Payments;
-use WC_Payments_Account;
 use WC_Payments_Utils;
 use WC_Payments_Localization_Service;
 use WCPay\Constants\Country_Code;
@@ -20,6 +19,7 @@ use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -147,9 +147,9 @@ class MultiCurrency {
 	private $payments_api_client;
 
 	/**
-	 * Instance of WC_Payments_Account.
+	 * Instance of MultiCurrencyAccountInterface.
 	 *
-	 * @var WC_Payments_Account
+	 * @var MultiCurrencyAccountInterface
 	 */
 	private $payments_account;
 
@@ -208,12 +208,12 @@ class MultiCurrency {
 	 * Class constructor.
 	 *
 	 * @param MultiCurrencyApiClientInterface  $payments_api_client  Payments API client.
-	 * @param WC_Payments_Account              $payments_account     Payments Account instance.
+	 * @param MultiCurrencyAccountInterface    $payments_account     Payments Account instance.
 	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
 	 * @param Database_Cache                   $database_cache       Database Cache instance.
 	 * @param Utils|null                       $utils                Optional Utils instance.
 	 */
-	public function __construct( MultiCurrencyApiClientInterface $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
+	public function __construct( MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
 		$this->localization_service = $localization_service;
@@ -355,13 +355,13 @@ class MultiCurrency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
-		// We don't need to check if Stripe is connected for the
+		// We don't need to check if the payment provider is connected for the
 		// Settings page generation on the incoming CLI and async job calls.
 		if ( ( defined( 'WP_CLI' ) && WP_CLI ) || ( defined( 'WPCOM_JOBS' ) && WPCOM_JOBS ) ) {
 			return $settings_pages;
 		}
 
-		if ( $this->payments_account->is_stripe_connected() ) {
+		if ( $this->payments_account->is_provider_connected() ) {
 			$settings = new Settings( $this );
 			$settings->init_hooks();
 
@@ -427,8 +427,8 @@ class MultiCurrency {
 	 */
 	public function get_cached_currencies() {
 		$cached_data = $this->database_cache->get( Database_Cache::CURRENCIES_KEY );
-		// If connection to server cannot be established, or if Stripe is not connected, or if the account is rejected, return expired data or null.
-		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() || $this->payments_account->is_account_rejected() ) {
+		// If connection to server cannot be established, or if payment provider is not connected, or if the account is rejected, return expired data or null.
+		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
 			return $cached_data ?? null;
 		}
 
@@ -1245,7 +1245,7 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Returns the currencies enabled for the Stripe account that are
+	 * Returns the currencies enabled for the payment provider account that are
 	 * also available in WC.
 	 *
 	 * Can be filtered with the 'wcpay_multi_currency_available_currencies' hook.
@@ -1253,8 +1253,8 @@ class MultiCurrency {
 	 * @return array Array with the available currencies' codes.
 	 */
 	private function get_account_available_currencies(): array {
-		// If Stripe is not connected, return an empty array. This prevents using MC without being connected to Stripe.
-		if ( ! $this->payments_account->is_stripe_connected() ) {
+		// If the payment provider is not connected, return an empty array. This prevents using MC without being connected to the payment provider.
+		if ( ! $this->payments_account->is_provider_connected() ) {
 			return [];
 		}
 
