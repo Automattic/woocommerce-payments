@@ -36,22 +36,64 @@ const PhoneInput = ( {
 	isBlocksCheckout,
 	...props
 }: PhoneInputProps ): JSX.Element => {
+	const [ focusLost, setFocusLost ] = useState< boolean >( false );
+	const divRef = useRef< HTMLInputElement >( null );
+
 	const handlePhoneInputChange = (
 		newValue: string,
 		e164: string,
 		country: string
 	) => {
-		if ( onCountryDropdownClick ) {
-			onCountryDropdownClick();
+		const nationalNumber = newValue.replace( /\+\d+\s/, '' );
+
+		if ( nationalNumber ) {
+			onValueChange( e164 );
+		} else {
+			onValueChange( '' );
 		}
-		onValueChange( e164 );
-		onValidationChange( validatePhoneNumber( e164, country ) );
+		if ( focusLost ) {
+			onValidationChange( validatePhoneNumber( e164, country ) );
+		}
 	};
+
+	// TODO: ideally PhoneNumberInput should provide a way to forward these listeners.
+	useEffect( () => {
+		const cleanupCallbacks: ( () => void )[] = [];
+		const inputNode = divRef.current?.querySelector( 'input' );
+		if ( inputNode ) {
+			const onBlur = () => {
+				setFocusLost( true );
+				onValidationChange( validatePhoneNumber( value, '' ) );
+			};
+			inputNode.addEventListener( 'blur', onBlur );
+			cleanupCallbacks.push( () => {
+				inputNode.removeEventListener( 'blur', onBlur );
+			} );
+		}
+
+		const buttonNode = divRef.current?.querySelector( 'button' );
+		if ( buttonNode ) {
+			const onClick = () => {
+				if ( onCountryDropdownClick ) {
+					onCountryDropdownClick();
+				}
+			};
+			buttonNode.addEventListener( 'click', onClick );
+			cleanupCallbacks.push( () => {
+				buttonNode.removeEventListener( 'click', onClick );
+			} );
+		}
+
+		return () => {
+			cleanupCallbacks.forEach( ( cb ) => cb() );
+		};
+	}, [ divRef, onCountryDropdownClick, onValidationChange, value ] );
 
 	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
 	// alters the DOM and we'll get warnings about "removing content without using React."
 	return (
 		<div
+			ref={ divRef }
 			className={
 				isBlocksCheckout ? 'wc-block-components-text-input' : ''
 			}

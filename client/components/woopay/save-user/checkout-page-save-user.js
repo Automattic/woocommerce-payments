@@ -112,9 +112,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		if ( isChecked ) {
 			const phoneFieldValue = getPhoneFieldValue();
 			setPhoneNumber( phoneFieldValue );
-			onPhoneValidationChange(
-				validatePhoneNumber( phoneFieldValue, '' )
-			);
+			if ( phoneFieldValue ) {
+				onPhoneValidationChange(
+					validatePhoneNumber( phoneFieldValue, '' )
+				);
+			}
 		} else {
 			setPhoneNumber( '' );
 			onPhoneValidationChange( null );

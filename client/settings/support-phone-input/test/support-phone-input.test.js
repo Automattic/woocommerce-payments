@@ -72,16 +72,15 @@ describe( 'SupportPhoneInput', () => {
 		// Mock that the phone number input is set to empty.
 		useAccountBusinessSupportPhone.mockReturnValue( [ '', jest.fn() ] );
 
-		fireEvent.change(
-			queryByAttribute(
-				'id',
-				container,
-				'account-business-support-phone-input'
-			),
-			{
-				target: { value: '' },
-			}
+		const phoneInput = queryByAttribute(
+			'id',
+			container,
+			'account-business-support-phone-input'
 		);
+		fireEvent.blur( phoneInput );
+		fireEvent.change( phoneInput, {
+			target: { value: '' },
+		} );
 
 		// The error message is displayed.
 		expect(

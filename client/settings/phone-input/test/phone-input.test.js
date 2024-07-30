@@ -27,6 +27,10 @@ describe( 'PhoneInput', () => {
 		};
 	} );
 
+	afterEach( () => {
+		jest.clearAllMocks();
+	} );
+
 	it( 'should render phone number input', () => {
 		const { container } = render(
 			<PhoneInput
@@ -70,24 +74,60 @@ describe( 'PhoneInput', () => {
 		expect( handlePhoneNumberChangeMock ).toHaveBeenCalledWith( '+1201' );
 	} );
 
-	it( 'should call the onValidationChange with true if value is valid', () => {
+	it( 'should call the onValidationChange depending on the value', () => {
 		const { container } = render(
 			<PhoneInput
 				onValueChange={ handlePhoneNumberChangeMock }
 				onValidationChange={ handlePhoneValidationChangeMock }
 				id={ phoneInputId }
-				value="123"
+				value=""
 			/>
 		);
 
 		const input = queryByAttribute( 'id', container, phoneInputId );
 
+		expect( handlePhoneValidationChangeMock ).not.toHaveBeenCalled();
+
+		fireEvent.blur( input ); // Only emits validation changes once the input has been touched
+		fireEvent.change( input, { target: { value: '2345678901' } } );
+
+		expect( handlePhoneValidationChangeMock ).toHaveBeenLastCalledWith(
+			true
+		);
+
+		fireEvent.change( input, { target: { value: '234567890' } } );
+
 		expect( handlePhoneValidationChangeMock ).toHaveBeenLastCalledWith(
 			false
 		);
+	} );
+
+	it( 'should call the onValidationChange until the field is touched for the first time', () => {
+		const { container, rerender } = render(
+			<PhoneInput
+				onValueChange={ handlePhoneNumberChangeMock }
+				onValidationChange={ handlePhoneValidationChangeMock }
+				id={ phoneInputId }
+				value=""
+			/>
+		);
+
+		const input = queryByAttribute( 'id', container, phoneInputId );
 
 		fireEvent.change( input, { target: { value: '2345678901' } } );
+		expect( handlePhoneValidationChangeMock ).not.toHaveBeenCalled();
+		// Re-render to update callbacks
+		rerender(
+			<PhoneInput
+				onValueChange={ handlePhoneNumberChangeMock }
+				onValidationChange={ handlePhoneValidationChangeMock }
+				id={ phoneInputId }
+				value="+12345678901"
+			/>
+		);
+		expect( handlePhoneValidationChangeMock ).not.toHaveBeenCalled();
 
+		fireEvent.blur( input ); // Only emits validation changes once the input has been touched
 		expect( handlePhoneValidationChangeMock ).toHaveBeenLastCalledWith(
 			true
 		);
