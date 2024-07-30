@@ -38,6 +38,8 @@ class WC_Payments_Utils {
 	 */
 	const STORE_API_ROUTE_PATTERNS = [
 		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/add-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-item$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
