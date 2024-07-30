@@ -42,13 +42,6 @@ class MultiCurrency {
 	public $id = 'wcpay_multi_currency';
 
 	/**
-	 * The single instance of the class.
-	 *
-	 * @var ?MultiCurrency
-	 */
-	protected static $instance = null;
-
-	/**
 	 * Static flag to show if the currencies initialization has been completed
 	 *
 	 * @var bool
@@ -187,22 +180,6 @@ class MultiCurrency {
 	 * @var OrderMetaHelper
 	 */
 	private $order_meta_helper;
-
-	/**
-	 * Main MultiCurrency Instance.
-	 *
-	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
-	 *
-	 * @static
-	 * @return MultiCurrency - Main instance.
-	 */
-	public static function instance() {
-		if ( is_null( self::$instance ) ) {
-			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service(), WC_Payments::get_localization_service(), WC_Payments::get_database_cache() );
-			self::$instance->init_hooks();
-		}
-		return self::$instance;
-	}
 
 	/**
 	 * Class constructor.
