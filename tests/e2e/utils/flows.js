@@ -86,12 +86,24 @@ export const shopperWCP = {
 		} );
 	},
 
-	logout: async () => {
+	logout: async ( skipIfAlreadyLoggedOut = false ) => {
 		await page.goto( SHOP_MY_ACCOUNT_PAGE, {
 			waitUntil: 'networkidle0',
 		} );
 
 		await expect( page.title() ).resolves.toMatch( 'My account' );
+
+		const hasLoginButton = await page.$( 'button[name="login"]' );
+
+		if ( hasLoginButton ) {
+			if ( skipIfAlreadyLoggedOut ) {
+				return;
+			}
+			throw new Error(
+				'Cannot log out since the user is already logged out'
+			);
+		}
+
 		await Promise.all( [
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			page.click(
@@ -167,6 +179,9 @@ export const shopperWCP = {
 		await page.select( '#wcpay_selected_currency', currencyToSet );
 		await expect( page ).toClick( 'button', {
 			text: 'Save changes',
+		} );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
 		} );
 	},
 
@@ -349,6 +364,25 @@ export const shopperWCP = {
 		} )();
 
 		await Promise.race( [ errorBannerToCheck, oldErrorBannerToCheck ] );
+	},
+
+	// Copy of shopper.addToCartFromShopPage from `@woocommerce/e2e-utils` until it removes the deprecated `waitFor` function.
+	addToCartFromShopPage: async ( productIdOrTitle ) => {
+		if ( Number.isInteger( productIdOrTitle ) ) {
+			const addToCart = `a[data-product_id="${ productIdOrTitle }"]`;
+			await page.click( addToCart );
+			await expect( page ).toMatchElement( addToCart + '.added' );
+		} else {
+			const addToCartXPath =
+				`//li[contains(@class, "type-product") and a/h2[contains(text(), "${ productIdOrTitle }")]]` +
+				'//a[contains(@class, "add_to_cart_button") and contains(@class, "ajax_add_to_cart")';
+			const [ addToCartButton ] = await page.$x( addToCartXPath + ']' );
+			await addToCartButton.click();
+
+			await page.waitForXPath(
+				addToCartXPath + ' and contains(@class, "added")]'
+			);
+		}
 	},
 };
 
@@ -683,16 +717,17 @@ export const merchantWCP = {
 		await page.type( 'h1.editor-post-title__input', 'Checkout WCB' );
 
 		// Insert new checkout by WCB (searching for Checkout block and pressing Enter)
-		await expect( page ).toClick(
-			'button.edit-post-header-toolbar__inserter-toggle'
+		await expect( page ).toClick( 'button.block-editor-inserter__toggle' );
+		const searchInput = await page.waitForSelector(
+			'div.components-search-control input.components-input-control__input'
 		);
-		await expect( page ).toFill(
-			'div.components-search-control__input-wrapper > input.components-search-control__input',
-			'Checkout'
-		);
-		await page.keyboard.press( 'Tab' );
-		await page.keyboard.press( 'Tab' );
-		await page.keyboard.press( 'Enter' );
+		await searchInput.type( 'Checkout', { delay: 20 } );
+
+		await page.waitForSelector( 'button.components-button[role="option"]', {
+			visible: true,
+		} );
+		await page.click( 'button.components-button[role="option"]' );
+		await page.waitForTimeout( 500 );
 
 		// Dismiss dialog about potentially compatibility issues
 		await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
@@ -701,7 +736,7 @@ export const merchantWCP = {
 		await expect( page ).toClick(
 			'button.editor-post-publish-panel__toggle'
 		);
-		await page.waitFor( 500 );
+		await page.waitForTimeout( 500 );
 		await expect( page ).toClick( 'button.editor-post-publish-button' );
 		await page.waitForSelector(
 			'.components-snackbar__content',
@@ -820,7 +855,7 @@ export const merchantWCP = {
 				timeout: 10000,
 			} );
 
-			await page.waitFor( 1000 );
+			await page.waitForTimeout( 1000 );
 		}
 	},
 
@@ -914,7 +949,7 @@ export const merchantWCP = {
 				}
 			);
 			await page.click( 'button.components-button[role="option"]' );
-			await page.waitFor( 2000 );
+			await page.waitForTimeout( 2000 );
 			await page.waitForSelector(
 				'.edit-widgets-header .edit-widgets-header__actions button.is-primary'
 			);
@@ -930,19 +965,22 @@ export const merchantWCP = {
 	createPayForOrder: async () => {
 		await merchant.openNewOrder();
 		await page.click( 'button.add-line-item' );
+		await page.waitForTimeout( 500 );
 		await page.click( 'button.add-order-item' );
-		await page.click( 'select[name="item_id"]' );
-		await page.type(
-			'.select2-search--dropdown > input',
-			config.get( 'products.simple.name' ),
-			{
-				delay: 20,
-			}
+		const selectItem = await page.waitForSelector(
+			'select[name="item_id"]'
 		);
-		await page.waitFor( 2000 );
+		await selectItem.click();
+		const dropdownInput = await page.waitForSelector(
+			'.select2-search--dropdown > input'
+		);
+		await dropdownInput.type( config.get( 'products.simple.name' ), {
+			delay: 20,
+		} );
+		await page.waitForTimeout( 2000 );
 		await page.click( '.select2-results .select2-results__option' );
 		await page.click( '#btn-ok' );
-		await page.waitFor( 2000 );
+		await page.waitForTimeout( 2000 );
 		await page.click( 'button.save_order' );
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 	},

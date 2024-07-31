@@ -19,7 +19,10 @@ import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
-import expressCheckoutElementPaymentMethod from '../../express-checkout/blocks';
+import {
+	expressCheckoutElementApplePay,
+	expressCheckoutElementGooglePay,
+} from '../../express-checkout/blocks';
 import tokenizedCartPaymentRequestPaymentMethod from '../../tokenized-payment-request/blocks';
 
 import {
@@ -161,7 +164,8 @@ if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
 		tokenizedCartPaymentRequestPaymentMethod( api )
 	);
 } else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
-	registerExpressPaymentMethod( expressCheckoutElementPaymentMethod( api ) );
+	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
+	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
 } else {
 	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 }

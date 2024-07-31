@@ -223,7 +223,7 @@ describe( 'PaymentRequestSettings', () => {
 			expect.anything()
 		);
 
-		userEvent.click( screen.getByLabelText( 'Large (56 px)' ) );
+		userEvent.click( screen.getByLabelText( 'Large (55 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
 	} );
 

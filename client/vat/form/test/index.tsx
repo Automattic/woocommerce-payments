@@ -48,17 +48,21 @@ declare const global: {
 	};
 };
 
-const countries = [
-	[ 'GB', 'GB' ],
-	[ 'DE', 'DE' ],
-	[ 'GR', 'EL' ],
-	[ 'CH', 'CHE' ],
+/**
+ * Expected prefix and tax ID name for each supported country.
+ */
+const countryTaxNumberInfo = [
+	[ 'GB', 'GB', 'VAT Number' ],
+	[ 'DE', 'DE', 'VAT Number' ],
+	[ 'GR', 'EL', 'VAT Number' ],
+	[ 'CH', 'CHE', 'VAT Number' ],
+	[ 'JP', '', 'Corporate Number' ],
 ];
 
 describe( 'VAT form', () => {
-	it.each( countries )(
+	it.each( countryTaxNumberInfo )(
 		'should display the right prefix for country %s',
-		( country, expectedPrefix ) => {
+		( country, expectedPrefix, expectedTaxIdName ) => {
 			global.wcpaySettings = {
 				accountStatus: { country: country },
 			};
@@ -66,12 +70,25 @@ describe( 'VAT form', () => {
 			render( <VatForm onCompleted={ mockOnCompleted } /> );
 
 			user.click(
-				screen.getByLabelText( 'I’m registered for a VAT number' )
+				screen.getByLabelText(
+					`I'm registered for a ${ expectedTaxIdName }`
+				)
 			);
 
-			expect(
-				screen.getByRole( 'textbox', { name: 'VAT Number' } )
-			).toHaveValue( `${ expectedPrefix } ` );
+			if ( expectedPrefix ) {
+				expect(
+					screen.getByRole( 'textbox', {
+						name: `${ expectedTaxIdName }`,
+					} )
+				).toHaveValue( `${ expectedPrefix } ` );
+			} else {
+				// Special case no prefix (JP) – the value is not necessarily empty string.
+				expect(
+					screen.getByRole( 'textbox', {
+						name: `${ expectedTaxIdName }`,
+					} )
+				).toBeEmptyDOMElement();
+			}
 		}
 	);
 } );
@@ -205,7 +222,7 @@ describe( 'VAT form', () => {
 	describe( 'when registered for VAT', () => {
 		beforeEach( () => {
 			user.click(
-				screen.getByLabelText( 'I’m registered for a VAT number' )
+				screen.getByLabelText( "I'm registered for a VAT Number" )
 			);
 		} );
 

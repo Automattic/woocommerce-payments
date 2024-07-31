@@ -123,10 +123,10 @@
 }
 
 .woopay-express-button {
-	font-size: 11px;
+	font-size: 18px;
 	font-weight: 500;
-	font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial',
-		sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
+		'Helvetica', 'Roboto', 'Arial', sans-serif;
 	letter-spacing: 0.8px;
 	height: 40px;
 	background: $white !important;
@@ -168,18 +168,17 @@
 	&[data-type='buy'],
 	&[data-type='book'],
 	&[data-type='donate'] {
+		min-width: 200px;
+
 		svg {
 			flex-shrink: 0.4;
-			margin-left: 3px;
+			margin-left: 6px;
 		}
 	}
 
 	&[data-width-type='wide'] {
-		font-size: 13px;
-
 		svg {
 			flex-shrink: 1;
-			margin-left: 6px;
 		}
 	}
 
@@ -204,70 +203,76 @@
 	}
 
 	&[data-size='medium'] {
-		font-size: 12px;
+		font-size: 22px;
 		height: 48px;
 
 		svg {
 			top: 2px;
 			width: auto;
 			height: 27px;
+			min-width: 60px;
 		}
 
 		&[data-type='buy'],
 		&[data-type='book'],
 		&[data-type='donate'] {
+			min-width: 229px;
+
 			svg {
 				flex-shrink: 0.6;
-				margin-left: 3px;
+				margin-left: 8px;
 			}
 		}
 
 		&[data-width-type='wide'] {
-			font-size: 14px;
-
 			&[data-type='buy'],
 			&[data-type='book'],
 			&[data-type='donate'] {
 				svg {
 					flex-shrink: 1;
-					margin-left: 6px;
 				}
 			}
 		}
 	}
 
 	&[data-size='large'] {
-		font-size: 13px;
-		height: 56px;
+		font-size: 26px;
+		height: 55px;
 
 		svg {
 			top: 3px;
 			width: auto;
 			height: 32px;
+			min-width: 70px;
 		}
 
 		&[data-type='buy'],
 		&[data-type='book'],
 		&[data-type='donate'] {
+			min-width: 229px;
+
 			svg {
 				flex-shrink: 0.6;
-				margin-left: 3px;
+				margin-left: 10px;
 				margin-bottom: 0.25rem;
 			}
 		}
 
 		&[data-width-type='wide'] {
-			font-size: 16px;
-
 			&[data-type='buy'],
 			&[data-type='book'],
 			&[data-type='donate'] {
 				svg {
 					flex-shrink: 1;
-					margin-left: 8px;
 					margin-bottom: 0;
 				}
 			}
+		}
+
+		// For this width range, the button's text is too large to fit
+		// in the button. The text is reduced to 22px to fit.
+		@media screen and ( min-width: 785px ) and ( max-width: 850px ) {
+			font-size: 22px;
 		}
 	}
 }

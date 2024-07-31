@@ -4,8 +4,12 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
-// eslint-disable-next-line import/no-unresolved
-import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import { useDispatch } from '@wordpress/data';
+import {
+	extensionCartUpdate,
+	ValidationInputError,
+} from '@woocommerce/blocks-checkout'; // eslint-disable-line import/no-unresolved
+import { VALIDATION_STORE_KEY } from '@woocommerce/block-data'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
@@ -19,8 +23,15 @@ import useWooPayUser from '../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { recordUserEvent } from 'tracks';
 import './style.scss';
+import { compare } from 'compare-versions';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
+	const errorId = 'invalid-woopay-phone-number';
+
+	const { setValidationErrors, clearValidationError } = useDispatch(
+		VALIDATION_STORE_KEY
+	);
+
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
 		window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO || false
 	);
@@ -34,6 +45,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	);
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
+	const wooCommerceVersionString = window.wcSettings?.wcVersion;
+	const wcVersionGreaterThan91 = compare(
+		wooCommerceVersionString,
+		'9.1',
+		'>='
+	);
 
 	const getPhoneFieldValue = () => {
 		let phoneFieldValue = '';
@@ -78,7 +95,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			extensionCartUpdate( {
 				namespace: 'woopay',
 				data: data,
-			} ).then( () => {
+			} )?.then( () => {
 				setUserDataSent( ! shouldClearData );
 			} );
 		},
@@ -128,7 +145,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 		const updateFormSubmitButton = () => {
 			if ( isSaveDetailsChecked && isPhoneValid ) {
-				formSubmitButton.removeAttribute( 'disabled' );
+				clearValidationError( errorId );
 
 				// Set extension data if checkbox is selected and phone number is valid in blocks checkout.
 				if ( isBlocksCheckout ) {
@@ -137,17 +154,28 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			}
 
 			if ( isSaveDetailsChecked && ! isPhoneValid ) {
-				formSubmitButton.setAttribute( 'disabled', 'disabled' );
+				setValidationErrors( {
+					[ errorId ]: {
+						message: __(
+							'Please enter a valid mobile phone number.',
+							'woocommerce-payments'
+						),
+						// Hides errors when the number has not been typed yet but shows when trying to place the order.
+						hidden: isPhoneValid === null,
+					},
+				} );
 			}
 		};
 
 		updateFormSubmitButton();
 
 		return () => {
-			// Clean up
-			formSubmitButton.removeAttribute( 'disabled' );
+			clearValidationError( errorId );
 		};
 	}, [
+		setValidationErrors,
+		errorId,
+		clearValidationError,
 		isBlocksCheckout,
 		isPhoneValid,
 		isSaveDetailsChecked,
@@ -174,7 +202,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	}
 
 	return (
-		<Container isBlocksCheckout={ isBlocksCheckout }>
+		<Container
+			isBlocksCheckout={ isBlocksCheckout }
+			wcVersionGreaterThan91={ wcVersionGreaterThan91 }
+		>
 			<div className="save-details">
 				<div className="save-details-header">
 					<div
@@ -193,6 +224,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								id="save_user_in_woopay"
 								value="true"
 								className={ `save-details-checkbox ${
+									wcVersionGreaterThan91
+										? 'without-margin-right'
+										: ''
+								} ${
 									isBlocksCheckout
 										? 'wc-block-components-checkbox__input'
 										: ''
@@ -235,27 +270,29 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							name="woopay_viewport"
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
-						<PhoneNumberInput
-							value={ phoneNumber }
-							onValueChange={ setPhoneNumber }
-							onValidationChange={ onPhoneValidationChange }
-							onCountryDropdownClick={
-								handleCountryDropdownClick
+						<div
+							className={
+								isPhoneValid === false ? 'has-error' : ''
 							}
-							inputProps={ {
-								name:
-									'woopay_user_phone_field[no-country-code]',
-							} }
-							isBlocksCheckout={ isBlocksCheckout }
+						>
+							<PhoneNumberInput
+								value={ phoneNumber }
+								onValueChange={ setPhoneNumber }
+								onValidationChange={ onPhoneValidationChange }
+								onCountryDropdownClick={
+									handleCountryDropdownClick
+								}
+								inputProps={ {
+									name:
+										'woopay_user_phone_field[no-country-code]',
+								} }
+								isBlocksCheckout={ isBlocksCheckout }
+							/>
+						</div>
+						<ValidationInputError
+							elementId={ errorId }
+							propertyName={ errorId }
 						/>
-						{ ! isPhoneValid && (
-							<p className="error-text">
-								{ __(
-									'Please enter a valid mobile phone number.',
-									'woocommerce-payments'
-								) }
-							</p>
-						) }
 						<AdditionalInformation />
 						<Agreement />
 					</div>

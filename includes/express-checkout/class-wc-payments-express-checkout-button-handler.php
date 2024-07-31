@@ -88,8 +88,15 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
+		add_action( 'template_redirect', [ $this, 'set_session' ] );
+		add_action( 'template_redirect', [ $this, 'handle_express_checkout_redirect' ] );
+		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
+		add_filter( 'woocommerce_cart_needs_shipping_address', [ $this, 'filter_cart_needs_shipping_address' ], 11, 1 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
+		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
+		add_action( 'woocommerce_checkout_order_processed', [ $this->express_checkout_helper, 'add_order_payment_method_title' ], 10, 2 );
 
 		$this->express_checkout_ajax_handler->init();
 	}
@@ -109,6 +116,99 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		];
 
 		return array_merge( $common_settings, $payment_request_button_settings );
+	}
+
+	/**
+	 * Settings array for the user authentication dialog and redirection.
+	 *
+	 * @return array|false
+	 */
+	public function get_login_confirmation_settings() {
+		if ( is_user_logged_in() || ! $this->is_authentication_required() ) {
+			return false;
+		}
+
+		/* translators: The text encapsulated in `**` can be replaced with "Apple Pay" or "Google Pay". Please translate this text, but don't remove the `**`. */
+		$message      = __( 'To complete your transaction with **the selected payment method**, you must log in or create an account with our site.', 'woocommerce-payments' );
+		$redirect_url = add_query_arg(
+			[
+				'_wpnonce'                            => wp_create_nonce( 'wcpay-set-redirect-url' ),
+				'wcpay_express_checkout_redirect_url' => rawurlencode( home_url( add_query_arg( [] ) ) ),
+				// Current URL to redirect to after login.
+			],
+			home_url()
+		);
+
+		return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- home_url passed in to add_query_arg.
+			'message'      => $message,
+			'redirect_url' => $redirect_url,
+		];
+	}
+
+	/**
+	 * Checks whether authentication is required for checkout.
+	 *
+	 * @return bool
+	 */
+	public function is_authentication_required() {
+		// If guest checkout is disabled and account creation is not possible, authentication is required.
+		if ( 'no' === get_option( 'woocommerce_enable_guest_checkout', 'yes' ) && ! $this->is_account_creation_possible() ) {
+			return true;
+		}
+		// If cart contains subscription and account creation is not posible, authentication is required.
+		if ( $this->has_subscription_product() && ! $this->is_account_creation_possible() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @return boolean
+	 */
+	public function has_subscription_product() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( $this->express_checkout_helper->is_product() ) {
+			$product = $this->express_checkout_helper->get_product();
+			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+				return true;
+			}
+		}
+
+		if ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) {
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether account creation is possible during checkout.
+	 *
+	 * @return bool
+	 */
+	public function is_account_creation_possible() {
+		$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
+
+		// If a subscription is being purchased, check if account creation is allowed for subscriptions.
+		if ( ! $is_signup_from_checkout_allowed && $this->has_subscription_product() ) {
+			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
+		}
+
+		// If automatically generate username/password are disabled, the Payment Request API
+		// can't include any of those fields, so account creation is not possible.
+		return (
+			$is_signup_from_checkout_allowed &&
+			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
+			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
+		);
 	}
 
 	/**
@@ -147,7 +247,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 			],
 			'button'             => $this->get_button_settings(),
-			'login_confirmation' => '',
+			'login_confirmation' => $this->get_login_confirmation_settings(),
 			'is_product_page'    => $this->express_checkout_helper->is_product(),
 			'button_context'     => $this->express_checkout_helper->get_button_context(),
 			'is_pay_for_order'   => $this->express_checkout_helper->is_pay_for_order_page(),
@@ -249,5 +349,101 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		];
 
 		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayECEPayForOrderParams', $data );
+	}
+
+	/**
+	 * Sets the WC customer session if one is not set.
+	 * This is needed so nonces can be verified by AJAX Request.
+	 *
+	 * @return void
+	 */
+	public function set_session() {
+		// Don't set session cookies on product pages to allow for caching when express checkout
+		// buttons are disabled. But keep cookies if there is already an active WC session in place.
+		if (
+			! ( $this->express_checkout_helper->is_product() && $this->express_checkout_helper->should_show_express_checkout_button() )
+			|| ( isset( WC()->session ) && WC()->session->has_session() )
+		) {
+			return;
+		}
+
+		WC()->session->set_customer_session_cookie( true );
+	}
+
+	/**
+	 * Handles express checkout redirect when the redirect dialog "Continue" button is clicked.
+	 */
+	public function handle_express_checkout_redirect() {
+		if (
+			! empty( $_GET['wcpay_express_checkout_redirect_url'] )
+			&& ! empty( $_GET['_wpnonce'] )
+			&& wp_verify_nonce( $_GET['_wpnonce'], 'wcpay-set-redirect-url' ) // @codingStandardsIgnoreLine
+		) {
+			$url = rawurldecode( esc_url_raw( wp_unslash( $_GET['wcpay_express_checkout_redirect_url'] ) ) );
+			// Sets a redirect URL cookie for 10 minutes, which we will redirect to after authentication.
+			// Users will have a 10 minute timeout to login/create account, otherwise redirect URL expires.
+			wc_setcookie( 'wcpay_express_checkout_redirect_url', $url, time() + MINUTE_IN_SECONDS * 10 );
+			// Redirects to "my-account" page.
+			wp_safe_redirect( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ) );
+		}
+	}
+
+	/**
+	 * Returns the login redirect URL.
+	 *
+	 * @param string $redirect Default redirect URL.
+	 *
+	 * @return string Redirect URL.
+	 */
+	public function get_login_redirect_url( $redirect ) {
+		$url = esc_url_raw( wp_unslash( $_COOKIE['wcpay_express_checkout_redirect_url'] ?? '' ) );
+
+		if ( empty( $url ) ) {
+			return $redirect;
+		}
+		wc_setcookie( 'wcpay_express_checkout_redirect_url', '' );
+
+		return $url;
+	}
+
+
+	/**
+	 * Determine whether to filter the cart needs shipping address.
+	 *
+	 * @param boolean $needs_shipping_address Whether the cart needs a shipping address.
+	 */
+	public function filter_cart_needs_shipping_address( $needs_shipping_address ) {
+		if ( $this->has_subscription_product() && wc_get_shipping_method_count( true, true ) === 0 ) {
+			return false;
+		}
+
+		return $needs_shipping_address;
+	}
+
+	/**
+	 * Filters the gateway title to reflect the button type used.
+	 *
+	 * @param string $title Gateway title.
+	 * @param string $id Gateway ID.
+	 */
+	public function filter_gateway_title( $title, $id ) {
+		if ( 'woocommerce_payments' !== $id || ! is_admin() ) {
+			return $title;
+		}
+
+		$order        = $this->express_checkout_helper->get_current_order();
+		$method_title = is_object( $order ) ? $order->get_payment_method_title() : '';
+
+		if ( ! empty( $method_title ) ) {
+			if (
+				strpos( $method_title, 'Apple Pay' ) === 0
+				|| strpos( $method_title, 'Google Pay' ) === 0
+				|| strpos( $method_title, 'Payment Request' ) === 0 // Legacy PRB title.
+			) {
+				return $method_title;
+			}
+		}
+
+		return $title;
 	}
 }

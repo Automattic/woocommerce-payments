@@ -1,16 +1,22 @@
 /**
  * External dependencies
  */
+import { useMemo } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
-import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
 
 /**
  * Internal dependencies
  */
 import ExpressCheckoutComponent from './express-checkout-component';
+import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
+import '../express-checkout-element.scss';
 
 const ExpressCheckoutContainer = ( props ) => {
-	const { stripe, billing } = props;
+	const { api, billing } = props;
+
+	const stripePromise = useMemo( () => {
+		return api.loadStripe( true );
+	}, [ api ] );
 
 	const options = {
 		mode: 'payment',
@@ -22,7 +28,7 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	return (
 		<div style={ { minHeight: '50px' } }>
-			<Elements stripe={ stripe } options={ options }>
+			<Elements stripe={ stripePromise } options={ options }>
 				<ExpressCheckoutComponent { ...props } />
 			</Elements>
 		</div>

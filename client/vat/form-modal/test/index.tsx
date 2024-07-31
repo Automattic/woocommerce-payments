@@ -6,7 +6,6 @@
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import React from 'react';
-import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
@@ -16,9 +15,9 @@ import VatForm from '../../form';
 
 jest.mock( '../../form', () => jest.fn() );
 
-describe( 'VAT form modal', () => {
+describe( 'Tax details modal', () => {
 	beforeEach( () => {
-		mocked( VatForm ).mockReturnValue( <p>VAT Form</p> );
+		jest.mocked( VatForm ).mockReturnValue( <p>VAT Form</p> );
 	} );
 
 	it( 'should render when isModalOpen is true', () => {
@@ -30,7 +29,7 @@ describe( 'VAT form modal', () => {
 			/>
 		);
 		expect(
-			screen.getByRole( 'dialog', { name: 'VAT details' } )
+			screen.getByRole( 'dialog', { name: 'Set your tax details' } )
 		).toBeVisible();
 	} );
 
@@ -43,7 +42,7 @@ describe( 'VAT form modal', () => {
 			/>
 		);
 		expect(
-			screen.queryByRole( 'dialog', { name: 'VAT details' } )
+			screen.queryByRole( 'dialog', { name: 'Set your tax details' } )
 		).toBeNull();
 	} );
 
@@ -56,7 +55,7 @@ describe( 'VAT form modal', () => {
 			/>
 		);
 		expect(
-			screen.getByRole( 'dialog', { name: 'VAT details' } )
+			screen.getByRole( 'dialog', { name: 'Set your tax details' } )
 		).toMatchSnapshot();
 	} );
 
@@ -83,7 +82,7 @@ describe( 'VAT form modal', () => {
 		);
 
 		expect(
-			screen.queryByRole( 'dialog', { name: 'VAT details' } )
+			screen.queryByRole( 'dialog', { name: 'Set your tax details' } )
 		).toBeNull();
 	} );
 } );

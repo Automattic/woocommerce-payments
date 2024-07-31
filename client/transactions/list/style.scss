@@ -125,6 +125,25 @@ $gap-small: 12px;
 				&.woocommerce-select-control__control {
 					min-height: 38px;
 					height: auto;
+					button.woocommerce-select-control__clear {
+						background-color: #fff;
+
+						&::before {
+							content: '';
+							position: absolute;
+							left: -30px;
+							top: -2px;
+							bottom: 0;
+							width: 30px;
+							height: 100%;
+							background: linear-gradient(
+								to right,
+								rgba( 255, 255, 255, 0 ),
+								rgba( 255, 255, 255, 1 ) 90%
+							);
+							pointer-events: none;
+						}
+					}
 				}
 			}
 		}
@@ -171,20 +190,12 @@ $gap-small: 12px;
 				white-space: nowrap;
 				scrollbar-width: none;
 				margin-right: 25px;
+			}
 
-				&::after {
-					content: '';
-					position: absolute;
-					top: 0;
-					right: 0;
-					width: 25px;
-					height: 100%;
-					background: linear-gradient(
-						to right,
-						rgba( 255, 255, 255, 0 ),
-						rgba( 255, 255, 255, 1 ) 90%
-					);
-				}
+			.woocommerce-select-control.is-focused
+				.components-base-control
+				.components-base-control__field {
+				flex-basis: 45%;
 			}
 
 			@include breakpoint( '<960px' ) {

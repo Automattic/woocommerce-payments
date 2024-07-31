@@ -150,12 +150,27 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			} else {
 				$this->payment_request_button_handler->display_payment_request_button_html();
 			}
+
+			if ( is_cart() ) {
+				add_action( 'woocommerce_after_cart', [ $this, 'add_order_attribution_inputs' ], 1 );
+			} else {
+				$this->add_order_attribution_inputs();
+			}
+
 			?>
-			<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>
 			</div >
 			<?php
 			$this->display_express_checkout_separator_if_necessary( $separator_starts_hidden );
 		}
+	}
+
+	/**
+	 * Add order attribution inputs to the page.
+	 *
+	 * @return void
+	 */
+	public function add_order_attribution_inputs() {
+		echo '<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>';
 	}
 
 	/**

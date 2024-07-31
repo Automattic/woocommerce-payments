@@ -38,17 +38,21 @@ describe( 'Payment Methods', () => {
 			timeAdded = Date.now();
 
 			// Verify that the card was added
-			await expect( page ).not.toMatch(
+			await expect( page ).not.toMatchTextContent(
 				'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
 			);
-			await expect( page ).toMatch( 'Payment method successfully added' );
-			await expect( page ).toMatch( label );
-			await expect( page ).toMatch( `${ month }/${ year }` );
+			await expect( page ).toMatchTextContent(
+				'Payment method successfully added'
+			);
+			await expect( page ).toMatchTextContent( label );
+			await expect( page ).toMatchTextContent( `${ month }/${ year }` );
 		} );
 
 		it( 'should be able to delete the card', async () => {
 			await shopperWCP.deleteSavedPaymentMethod( label );
-			await expect( page ).toMatch( 'Payment method deleted.' );
+			await expect( page ).toMatchTextContent(
+				'Payment method deleted.'
+			);
 		} );
 
 		afterAll( async () => {

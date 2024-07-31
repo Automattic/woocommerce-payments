@@ -102,7 +102,7 @@ export const averageMetrics = ( metrics ) => {
  * @return {Object} The averaged results.
  */
 export const measureCheckoutMetrics = async ( selector ) => {
-	await expect( page ).toMatch( 'Checkout' );
+	await expect( page ).toMatchTextContent( 'Checkout' );
 
 	// Run performance tests a few times, then take the average.
 	const results = {

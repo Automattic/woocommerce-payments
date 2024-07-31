@@ -266,6 +266,19 @@ class WC_Payments_Features {
 	 * @return bool True if Direct Checkout is enabled, false otherwise.
 	 */
 	public static function is_woopay_direct_checkout_enabled() {
+		// If WooPayments is not enabled then disable Direct checkout.
+		// TODO: Change to WC()->payment_gateways->get_available_payment_gateways() once issue with WC Subscriptions is sorted out.
+		$wc_payment_gateways = WC_Payment_Gateways::instance();
+		$wc_payment_gateways->init();
+		$enabled_gateways = $wc_payment_gateways->payment_gateways();
+
+		// Only used for tests.
+		$enabled_gateways = apply_filters( 'woocommerce_payments_enabled_gateways_for_woopay', $enabled_gateways );
+
+		if ( ! isset( $enabled_gateways['woocommerce_payments'] ) || ! $enabled_gateways['woocommerce_payments']->is_available() ) {
+			return false;
+		}
+
 		$account_cache                   = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
 		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
@@ -351,7 +364,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_stripe_ece_enabled(): bool {
-		return '1' === get_option( self::STRIPE_ECE_FLAG_NAME, '0' );
+		return '1' === get_option( self::STRIPE_ECE_FLAG_NAME, '1' );
 	}
 
 	/**

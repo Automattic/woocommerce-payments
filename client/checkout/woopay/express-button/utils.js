@@ -11,7 +11,9 @@ import { getConfig } from 'wcpay/utils/checkout';
  */
 export const showErrorMessage = ( context, errorMessage ) => {
 	// Handle Blocks Cart and Checkout notices.
-	if ( wcSettings.wcBlocksConfig && context !== 'product' ) {
+	const isBlocksCartOrCheckout =
+		'wcSettings' in window && wcSettings.wcBlocksConfig;
+	if ( isBlocksCartOrCheckout && context !== 'product' ) {
 		// This handles adding the error notice to the cart page.
 		wp.data
 			.dispatch( 'core/notices' )

@@ -1,5 +1,6 @@
 /* global jQuery, wcpayExpressCheckoutParams, wcpayECEPayForOrderParams */
 import { __ } from '@wordpress/i18n';
+import { debounce } from 'lodash';
 
 /**
  * Internal dependencies
@@ -13,12 +14,16 @@ import {
 	normalizeLineItems,
 } from './utils/index';
 import {
+	onAbortPaymentHandler,
+	onCancelHandler,
 	onClickHandler,
+	onCompletePaymentHandler,
 	onConfirmHandler,
 	onReadyHandler,
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
+import { displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -30,6 +35,7 @@ jQuery( ( $ ) => {
 	}
 
 	const publishableKey = wcpayExpressCheckoutParams.stripe.publishableKey;
+	const quantityInputSelector = '.quantity .qty[type=number]';
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -48,6 +54,12 @@ jQuery( ( $ ) => {
 				jQuery.post( url, args ).then( resolve ).fail( reject );
 			} );
 		}
+	);
+
+	let wcPayECEError = '';
+	const defaultErrorMessage = __(
+		'There was an error getting the product information.',
+		'woocommerce-payments'
 	);
 
 	/**
@@ -89,7 +101,7 @@ jQuery( ( $ ) => {
 		 */
 		abortPayment: ( payment, message ) => {
 			payment.paymentFailed( { reason: 'fail' } );
-			wcpayECE.unblock();
+			onAbortPaymentHandler( payment, message );
 
 			$( '.woocommerce-error' ).remove();
 
@@ -117,22 +129,8 @@ jQuery( ( $ ) => {
 		 * @param {string} url Order thank you page URL.
 		 */
 		completePayment: ( url ) => {
-			wcpayECE.block();
+			onCompletePaymentHandler( url );
 			window.location = url;
-		},
-
-		block: () => {
-			$.blockUI( {
-				message: null,
-				overlayCSS: {
-					background: '#fff',
-					opacity: 0.6,
-				},
-			} );
-		},
-
-		unblock: () => {
-			$.unblockUI();
 		},
 
 		/**
@@ -156,7 +154,7 @@ jQuery( ( $ ) => {
 
 			const data = {
 				product_id: productId,
-				qty: $( '.quantity .qty' ).val(),
+				qty: $( quantityInputSelector ).val(),
 				attributes: $( '.variations_form' ).length
 					? wcpayECE.getAttributes().data
 					: [],
@@ -250,9 +248,45 @@ jQuery( ( $ ) => {
 			wcpayECE.showButton( eceButton );
 
 			eceButton.on( 'click', function ( event ) {
-				// TODO: handle cases where we need login confirmation.
+				// If login is required for checkout, display redirect confirmation dialog.
+				if ( getExpressCheckoutData( 'login_confirmation' ) ) {
+					displayLoginConfirmation( event.expressPaymentType );
+					return;
+				}
 
 				if ( getExpressCheckoutData( 'is_product_page' ) ) {
+					const addToCartButton = $( '.single_add_to_cart_button' );
+
+					// First check if product can be added to cart.
+					if ( addToCartButton.is( '.disabled' ) ) {
+						if (
+							addToCartButton.is( '.wc-variation-is-unavailable' )
+						) {
+							window.alert(
+								window?.wc_add_to_cart_variation_params
+									?.i18n_unavailable_text ||
+									__(
+										'Sorry, this product is unavailable. Please choose a different combination.',
+										'woocommerce-payments'
+									)
+							);
+						} else {
+							window.alert(
+								__(
+									'Please select your product options before proceeding.',
+									'woocommerce-payments'
+								)
+							);
+						}
+						return;
+					}
+
+					if ( wcPayECEError ) {
+						window.alert( wcPayECEError );
+						return;
+					}
+
+					// Add products to the cart if everything is right.
 					wcpayECE.addToCart();
 				}
 
@@ -263,7 +297,7 @@ jQuery( ( $ ) => {
 					phoneNumberRequired: options.requestPhone,
 					shippingRates,
 				};
-				wcpayECE.block();
+
 				onClickHandler( event );
 				event.resolve( clickOptions );
 			} );
@@ -291,10 +325,15 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'cancel', async () => {
-				wcpayECE.unblock();
+				wcpayECE.paymentAborted = true;
+				onCancelHandler();
 			} );
 
 			eceButton.on( 'ready', onReadyHandler );
+
+			if ( getExpressCheckoutData( 'is_product_page' ) ) {
+				wcpayECE.attachProductPageEventListeners( elements );
+			}
 		},
 
 		getSelectedProductData: () => {
@@ -333,7 +372,7 @@ jQuery( ( $ ) => {
 
 			const data = {
 				product_id: productId,
-				qty: $( '.quantity .qty' ).val(),
+				qty: $( quantityInputSelector ).val(),
 				attributes: $( '.variations_form' ).length
 					? wcpayECE.getAttributes().data
 					: [],
@@ -356,14 +395,137 @@ jQuery( ( $ ) => {
 			return elements.create( 'expressCheckout', options );
 		},
 
+		attachProductPageEventListeners: ( elements ) => {
+			// WooCommerce Deposits support.
+			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
+			// Needs to be defined before the `woocommerce_variation_has_changed` event handler is set.
+			$(
+				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
+			)
+				.off( 'change' )
+				.on( 'change', () => {
+					$( 'form' )
+						.has(
+							'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
+						)
+						.trigger( 'woocommerce_variation_has_changed' );
+				} );
+
+			$( document.body )
+				.off( 'woocommerce_variation_has_changed' )
+				.on( 'woocommerce_variation_has_changed', () => {
+					wcpayECE.blockExpressCheckoutButton();
+
+					$.when( wcpayECE.getSelectedProductData() )
+						.then( ( response ) => {
+							const isDeposits = wcpayECE.productHasDepositOption();
+							/**
+							 * If the customer aborted the express checkout,
+							 * we need to re init the express checkout button to ensure the shipping
+							 * options are refetched. If the customer didn't abort the express checkout,
+							 * and the product's shipping status is consistent,
+							 * we can simply update the express checkout button with the new total and display items.
+							 */
+							const needsShipping =
+								! wcpayECE.paymentAborted &&
+								getExpressCheckoutData( 'product' )
+									.needs_shipping === response.needs_shipping;
+
+							if ( ! isDeposits && needsShipping ) {
+								elements.update( {
+									amount: response.total.amount,
+								} );
+							} else {
+								wcpayECE.reInitExpressCheckoutElement(
+									response
+								);
+							}
+						} )
+						.catch( () => {
+							wcpayECE.hide();
+						} )
+						.always( () => {
+							wcpayECE.unblockExpressCheckoutButton();
+						} );
+				} );
+
+			$( '.quantity' )
+				.off( 'input', '.qty' )
+				.on(
+					'input',
+					'.qty',
+					debounce( () => {
+						wcpayECE.blockExpressCheckoutButton();
+						wcPayECEError = '';
+
+						$.when( wcpayECE.getSelectedProductData() )
+							.then(
+								( response ) => {
+									// In case the server returns an unexpected response
+									if ( typeof response !== 'object' ) {
+										wcPayECEError = defaultErrorMessage;
+									}
+
+									if (
+										! wcpayECE.paymentAborted &&
+										getExpressCheckoutData( 'product' )
+											.needs_shipping ===
+											response.needs_shipping
+									) {
+										elements.update( {
+											amount: response.total.amount,
+										} );
+									} else {
+										wcpayECE.reInitExpressCheckoutElement(
+											response
+										);
+									}
+								},
+								( response ) => {
+									wcPayECEError =
+										response.responseJSON?.error ??
+										defaultErrorMessage;
+								}
+							)
+							.always( function () {
+								wcpayECE.unblockExpressCheckoutButton();
+							} );
+					}, 250 )
+				);
+		},
+
+		reInitExpressCheckoutElement: ( response ) => {
+			wcpayExpressCheckoutParams.product.needs_shipping =
+				response.needs_shipping;
+			wcpayExpressCheckoutParams.product.total = response.total;
+			wcpayExpressCheckoutParams.product.displayItems =
+				response.displayItems;
+			wcpayECE.init();
+		},
+
+		blockExpressCheckoutButton: () => {
+			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
+			// blockUI.isBlocked is either undefined or 0 when element is not blocked
+			if (
+				$( '#wcpay-express-checkout-element' ).data(
+					'blockUI.isBlocked'
+				)
+			) {
+				return;
+			}
+
+			$( '#wcpay-express-checkout-element' ).block( { message: null } );
+		},
+
+		unblockExpressCheckoutButton: () => {
+			wcpayECE.show();
+			$( '#wcpay-express-checkout-element' ).unblock();
+		},
+
 		getElements: () => {
 			return $(
 				'.wcpay-payment-request-wrapper,#wcpay-express-checkout-button-separator'
 			);
-		},
-
-		hide: () => {
-			wcpayECE.getElements().hide();
 		},
 
 		show: () => {
@@ -377,23 +539,10 @@ jQuery( ( $ ) => {
 			}
 		},
 
-		blockButton: () => {
-			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
-			// blockUI.isBlocked is either undefined or 0 when element is not blocked
-			if (
-				$( '#wcpay-express-checkout-button' ).data(
-					'blockUI.isBlocked'
-				)
-			) {
-				return;
-			}
-
-			$( '#wcpay-express-checkout-button' ).block( { message: null } );
-		},
-
-		unblockButton: () => {
-			wcpayECE.show();
-			$( '#wcpay-express-checkout-button' ).unblock();
+		productHasDepositOption() {
+			return !! $( 'form' ).has(
+				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
+			).length;
 		},
 
 		/**
@@ -454,6 +603,9 @@ jQuery( ( $ ) => {
 					} );
 				} );
 			}
+
+			// After initializing a new express checkout button, we need to reset the paymentAborted flag.
+			wcpayECE.paymentAborted = false;
 		},
 	};
 
