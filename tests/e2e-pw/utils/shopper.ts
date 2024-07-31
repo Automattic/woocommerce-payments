@@ -99,6 +99,10 @@ export const confirmCardAuthentication = async (
 ): Promise< void > => {
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
 	// appears at the top of the DOM.
+	await page.waitForSelector(
+		'body > div > iframe[name^="__privateStripeFrame"]'
+	);
+
 	const stripeFrame = page.frameLocator(
 		'body>div>iframe[name^="__privateStripeFrame"]'
 	);
@@ -112,5 +116,9 @@ export const confirmCardAuthentication = async (
 	const button = challengeFrame.getByRole( 'button', {
 		name: authorize ? 'Complete' : 'Fail',
 	} );
+
+	// Not ideal, but we need to wait for the loading animation to finish before we can click the button.
+	await page.waitForTimeout( 1000 );
+
 	await button.click();
 };
