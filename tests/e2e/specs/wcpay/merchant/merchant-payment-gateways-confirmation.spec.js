@@ -93,12 +93,15 @@ describe( 'payment gateways disable confirmation', () => {
 		);
 
 		// and refreshing the page should show WCPay become disabled
-		await expect( page ).toClick( 'button', {
-			text: 'Save changes',
-		} );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		await Promise.all( [
+			expect( page ).toClick( 'button', {
+				text: 'Save changes',
+			} ),
+			page.waitForNavigation( {
+				waitUntil: 'networkidle0',
+			} ),
+		] );
+
 		await expect(
 			page
 		).toMatchElement(
