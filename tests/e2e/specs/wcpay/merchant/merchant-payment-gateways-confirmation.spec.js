@@ -50,12 +50,14 @@ describe( 'payment gateways disable confirmation', () => {
 
 		// After clicking "Cancel", the modal should close and WCPay should still be enabled, even after refresh
 		await expect( page ).not.toMatchTextContent( 'Disable WooPayments' );
-		await expect( page ).toClick( 'button', {
-			text: 'Save changes',
-		} );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		await Promise.all( [
+			expect( page ).toClick( 'button', {
+				text: 'Save changes',
+			} ),
+			page.waitForNavigation( {
+				waitUntil: 'networkidle0',
+			} ),
+		] );
 		await expect(
 			page
 		).toMatchElement(
@@ -116,12 +118,14 @@ describe( 'payment gateways disable confirmation', () => {
 		await page.waitForSelector(
 			`${ WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE } .woocommerce-input-toggle:not(.woocommerce-input-toggle--loading)`
 		);
-		await expect( page ).toClick( 'button', {
-			text: 'Save changes',
-		} );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		await Promise.all( [
+			expect( page ).toClick( 'button', {
+				text: 'Save changes',
+			} ),
+			page.waitForNavigation( {
+				waitUntil: 'networkidle0',
+			} ),
+		] );
 		await expect(
 			page
 		).toMatchElement(
