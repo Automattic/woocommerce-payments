@@ -154,6 +154,12 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'charge.refunded':
 				$this->process_webhook_refund_triggered_externally( $event_body );
 				break;
+			case 'charge.failed':
+				// TODO: Implement this. During manual tests with a physical card reader, we found that this event can also be triggered:
+				// https://dashboard.stripe.com/test/connect/accounts/acct_1KBG7y2HCBWb6DsL/payments/ch_3PicUz2HCBWb6DsL1hY7VS3F
+				// https://dashboard.stripe.com/test/connect/accounts/acct_1KBG7y2HCBWb6DsL/payments/ch_3PicVR2HCBWb6DsL1sXHsjfa
+				// Can we just call $this->process_webhook_payment_intent_failed( $event_body ); ?
+				break;
 			case 'charge.refund.updated':
 				$this->process_webhook_refund_updated( $event_body );
 				break;
