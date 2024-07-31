@@ -37,6 +37,7 @@ const PhoneInput = ( {
 	...props
 }: PhoneInputProps ): JSX.Element => {
 	const [ focusLost, setFocusLost ] = useState< boolean >( false );
+	const [ countryCode, setCountryCode ] = useState< string >( '' );
 	const divRef = useRef< HTMLInputElement >( null );
 
 	const handlePhoneInputChange = (
@@ -45,6 +46,8 @@ const PhoneInput = ( {
 		country: string
 	) => {
 		const nationalNumber = newValue.replace( /\+\d+\s/, '' );
+
+		setCountryCode( country );
 
 		if ( nationalNumber ) {
 			onValueChange( e164 );
@@ -63,7 +66,7 @@ const PhoneInput = ( {
 		if ( inputNode ) {
 			const onBlur = () => {
 				setFocusLost( true );
-				onValidationChange( validatePhoneNumber( value, '' ) );
+				onValidationChange( validatePhoneNumber( value, countryCode ) );
 			};
 			inputNode.addEventListener( 'blur', onBlur );
 			cleanupCallbacks.push( () => {
@@ -87,7 +90,13 @@ const PhoneInput = ( {
 		return () => {
 			cleanupCallbacks.forEach( ( cb ) => cb() );
 		};
-	}, [ divRef, onCountryDropdownClick, onValidationChange, value ] );
+	}, [
+		divRef,
+		onCountryDropdownClick,
+		onValidationChange,
+		value,
+		countryCode,
+	] );
 
 	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
 	// alters the DOM and we'll get warnings about "removing content without using React."
