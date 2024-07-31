@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Pass product, blocks cart, classic cart and checkout on get WooPay session

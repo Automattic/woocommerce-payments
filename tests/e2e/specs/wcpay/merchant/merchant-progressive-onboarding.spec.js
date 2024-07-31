@@ -37,10 +37,14 @@ describe( 'Admin merchant progressive onboarding', () => {
 		// pick Individual business entity
 		await expect( page ).toClick( '[name="business_type"]' );
 		await page.waitForSelector(
-			'[name="business_type"] ~ ul li.components-custom-select-control__item'
+			'[name="business_type"] ~ ul li.components-custom-select-control__item',
+			{ text: /Individual/ }
 		);
-		await expect( page ).toClick(
-			'[name="business_type"] ~ ul li.components-custom-select-control__item'
+		await expect(
+			page
+		).toClick(
+			'[name="business_type"] ~ ul li.components-custom-select-control__item',
+			{ text: /Individual/ }
 		);
 		// pick Software type of goods (MCC)
 		await expect( page ).toClick( '[name="mcc"]' );
