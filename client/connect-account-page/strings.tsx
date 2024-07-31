@@ -26,6 +26,20 @@ export default {
 			firstName ? ` ${ firstName }` : '',
 			'WooPayments'
 		),
+	paymentMethods: {
+		deposits: {
+			title: __( 'Deposits', 'woocommerce-payments' ),
+			value: __( 'Automatic - Daily', 'woocommerce-payments' ),
+		},
+		capture: {
+			title: __( 'Payments capture', 'woocommerce-payments' ),
+			value: __( 'Capture on order', 'woocommerce-payments' ),
+		},
+		recurring: {
+			title: __( 'Recurring payments', 'woocommerce-payments' ),
+			value: __( 'Supported', 'woocommerce-payments' ),
+		},
+	},
 	usp1: __(
 		'Offer card payments, Apple Pay, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
 		'woocommerce-payments'
