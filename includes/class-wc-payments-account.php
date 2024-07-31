@@ -1121,6 +1121,21 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Get provider onboarding page url.
+	 *
+	 * @return string
+	 */
+	public function get_provider_onboarding_page_url(): string {
+		return add_query_arg(
+			[
+				'page' => 'wc-admin',
+				'path' => '/payments/connect',
+			],
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
 	 * Get connect url.
 	 *
 	 * @see WC_Payments_Account::get_onboarding_return_url(). The $wcpay_connect_from param relies on this function returning the corresponding URL.

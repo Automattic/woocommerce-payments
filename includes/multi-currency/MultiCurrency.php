@@ -344,7 +344,7 @@ class MultiCurrency {
 
 			$settings_pages[] = $settings;
 		} else {
-			$settings_onboard_cta = new SettingsOnboardCta( $this );
+			$settings_onboard_cta = new SettingsOnboardCta( $this, $this->payments_account );
 			$settings_onboard_cta->init_hooks();
 
 			$settings_pages[] = $settings_onboard_cta;

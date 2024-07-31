@@ -21,6 +21,17 @@ interface MultiCurrencyAccountInterface {
 	public function is_provider_connected( bool $on_error = false ): bool;
 
 	/**
+	 * Checks if the account has been rejected, assumes the value of false on any account retrieval error.
+	 * Returns false if the account is not connected.
+	 *
+	 * Note: We might want to use a more generic method to check if the account is in an enabled or
+	 * disabled state for better compatibility between V1 and V2.
+	 *
+	 * @return bool True if the account is connected and rejected, false otherwise or on error.
+	 */
+	public function is_account_rejected(): bool;
+
+	/**
 	 * Gets and caches the data for the account connected to this site.
 	 *
 	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
@@ -37,13 +48,9 @@ interface MultiCurrencyAccountInterface {
 	public function get_account_customer_supported_currencies(): array;
 
 	/**
-	 * Checks if the account has been rejected, assumes the value of false on any account retrieval error.
-	 * Returns false if the account is not connected.
+	 * Get provider onboarding page url.
 	 *
-	 * Note: We might want to use a more generic method to check if the account is in an enabled or
-	 * disabled state for better compatibility between V1 and V2.
-	 *
-	 * @return bool True if the account is connected and rejected, false otherwise or on error.
+	 * @return string
 	 */
-	public function is_account_rejected(): bool;
+	public function get_provider_onboarding_page_url(): string;
 }
