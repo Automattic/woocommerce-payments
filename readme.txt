@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.3
-Stable tag: 8.0.0
+Stable tag: 8.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,10 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 8.0.1 - 2024-07-31 =
+* Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
+
 
 = 8.0.0 - 2024-07-31 =
 * Add - Add ECE support for multiple product types.
