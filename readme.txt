@@ -95,6 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 8.0.1 - 2024-07-31 =
+* Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
 
 
 = 8.0.0 - 2024-07-31 =
