@@ -97,8 +97,10 @@ describe( 'Shopper Multi-Currency widget', () => {
 					visible: true,
 					timeout: 5000,
 				} );
-				await page.select( '.widget select[name=currency]', 'EUR' );
-				await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+				await Promise.all( [
+					page.select( '.widget select[name=currency]', 'EUR' ),
+					page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+				] );
 				await expect( page.url() ).toContain(
 					`${ url }/?currency=EUR`
 				);
@@ -106,16 +108,20 @@ describe( 'Shopper Multi-Currency widget', () => {
 					'.widget select[name=currency] option[value=EUR][selected]'
 				);
 				// Change it back to USD for the other tests.
-				await page.select( '.widget select[name=currency]', 'USD' );
-				await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+				await Promise.all( [
+					page.select( '.widget select[name=currency]', 'USD' ),
+					page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+				] );
 			} );
 		}
 	);
 
 	it( 'should not affect prices when currency switching on My account > Orders', async () => {
 		await shopper.login();
-		await page.select( '.widget select[name=currency]', 'USD' );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await Promise.all( [
+			page.select( '.widget select[name=currency]', 'USD' ),
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+		] );
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
@@ -135,8 +141,10 @@ describe( 'Shopper Multi-Currency widget', () => {
 		);
 
 		await shopperWCP.goToOrders();
-		await page.select( '.widget select[name=currency]', 'EUR' );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await Promise.all( [
+			page.select( '.widget select[name=currency]', 'EUR' ),
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+		] );
 		await page.waitForSelector(
 			'.widget select[name=currency] option[value=EUR][selected]'
 		);
@@ -166,8 +174,10 @@ describe( 'Shopper Multi-Currency widget', () => {
 			)
 		);
 
-		await page.select( '.widget select[name=currency]', 'EUR' );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		await Promise.all( [
+			page.select( '.widget select[name=currency]', 'EUR' ),
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+		] );
 		await page.waitForSelector(
 			'.widget select[name=currency] option[value=EUR][selected]'
 		);
