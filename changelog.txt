@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 8.0.1 - 2024-07-31 =
+
 = 8.0.0 - 2024-07-31 =
 * Add - Add ECE support for multiple product types.
 * Add - Add ECE support for WooCommerce Deposits.
