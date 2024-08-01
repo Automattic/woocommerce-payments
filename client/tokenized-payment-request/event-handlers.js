@@ -102,7 +102,12 @@ const paymentResponseHandler = async (
 	if ( response.payment_result.payment_status !== 'success' ) {
 		return abortPayment(
 			event,
-			getErrorMessageFromNotice( response.message )
+			getErrorMessageFromNotice(
+				response.message ||
+					response.payment_result?.payment_details.find(
+						( detail ) => detail.key === 'errorMessage'
+					)?.value
+			)
 		);
 	}
 
@@ -122,7 +127,15 @@ const paymentResponseHandler = async (
 			completePayment( redirectUrl );
 		}
 	} catch ( error ) {
-		abortPayment( event, error.message );
+		abortPayment(
+			event,
+			getErrorMessageFromNotice(
+				error.message ||
+					error.payment_result?.payment_details.find(
+						( detail ) => detail.key === 'errorMessage'
+					)?.value
+			)
+		);
 	}
 };
 
@@ -152,6 +165,14 @@ export const paymentMethodHandler = async (
 			event
 		);
 	} catch ( error ) {
-		abortPayment( event, error.message );
+		abortPayment(
+			event,
+			getErrorMessageFromNotice(
+				error.message ||
+					error.payment_result?.payment_details.find(
+						( detail ) => detail.key === 'errorMessage'
+					)?.value
+			)
+		);
 	}
 };
