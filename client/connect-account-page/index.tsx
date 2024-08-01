@@ -205,18 +205,42 @@ const ConnectAccountPage: React.FC = () => {
 							<WooPaymentMethodsLogos maxElements={ 10 } />
 							<div className="connect-account-page__payment-methods__description">
 								<div>
-									<p>Deposits</p>
-									<span>Automatic - Daily</span>
+									<p>
+										{
+											strings.paymentMethods.deposits
+												.title
+										}
+									</p>
+									<span>
+										{
+											strings.paymentMethods.deposits
+												.value
+										}
+									</span>
 								</div>
 								<div className="connect-account-page__payment-methods__description__divider"></div>
 								<div>
-									<p>Payments capture</p>
-									<span>Capture on order</span>
+									<p>
+										{ strings.paymentMethods.capture.title }
+									</p>
+									<span>
+										{ strings.paymentMethods.capture.value }
+									</span>
 								</div>
 								<div className="connect-account-page__payment-methods__description__divider"></div>
 								<div>
-									<p>Recurring payments</p>
-									<span>Supported</span>
+									<p>
+										{
+											strings.paymentMethods.recurring
+												.title
+										}
+									</p>
+									<span>
+										{
+											strings.paymentMethods.recurring
+												.value
+										}
+									</span>
 								</div>
 							</div>
 						</div>

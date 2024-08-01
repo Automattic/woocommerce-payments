@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix WooPay opt-in blocks field on WooCommerce 9.1+.
