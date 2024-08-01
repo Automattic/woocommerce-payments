@@ -6,7 +6,7 @@ import { Page } from 'playwright/test';
 /**
  * Internal dependencies
  */
-
+import * as navigation from './shopper-navigation';
 import { config, CustomerAddress } from '../config/default';
 
 export const fillBillingAddress = async (
@@ -113,4 +113,23 @@ export const confirmCardAuthentication = async (
 		name: authorize ? 'Complete' : 'Fail',
 	} );
 	await button.click();
+};
+
+/**
+ * Retrieves the product price from the current product page.
+ *
+ * This function assumes that the page object has already navigated to a product page.
+ */
+export const getPriceFromProduct = async (
+	page: Page,
+	slug: string
+): Promise< string > => {
+	await navigation.goToProductPageBySlug( page, slug );
+
+	const priceText = await page
+		.locator( 'ins .woocommerce-Price-amount.amount' )
+		.first()
+		.textContent();
+
+	return priceText?.replace( /[^0-9.,]/g, '' ) ?? '';
 };
