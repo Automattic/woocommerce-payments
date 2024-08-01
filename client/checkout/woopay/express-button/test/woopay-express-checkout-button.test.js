@@ -13,6 +13,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
+import WooPayDirectCheckout from 'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout';
 
 jest.mock( 'wcpay/checkout/utils/request', () => ( {
 	__esModule: true,
@@ -53,6 +54,24 @@ jest.mock( 'tracks', () => ( {
 			'checkout_save_my_info_tooltip_learn_more_click',
 	},
 } ) );
+
+// Mocks the WooPayDirectCheckout class.
+jest.mock(
+	'wcpay/checkout/woopay/direct-checkout/woopay-direct-checkout',
+	() => ( {
+		init: jest.fn(),
+		isWooPayThirdPartyCookiesEnabled: jest.fn(),
+		isWooPayDirectCheckoutEnabled: jest.fn().mockReturnValue( false ),
+		initPostMessageTimeout: jest.fn(),
+		getCheckoutButtonElements: jest.fn(),
+		isUserLoggedIn: jest.fn(),
+		maybePrefetchEncryptedSessionData: jest.fn(),
+		getClassicProceedToCheckoutButton: jest.fn(),
+		addRedirectToWooPayEventListener: jest.fn(),
+		setEncryptedSessionDataAsNotPrefetched: jest.fn(),
+		forwardToWooPay: jest.fn(),
+	} )
+);
 
 jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
 
@@ -402,6 +421,72 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 			await waitFor( () => {
 				expect( expressCheckoutIframe ).not.toHaveBeenCalled();
+			} );
+		} );
+
+		test( 'Use Direct Checkout when on cart and checkout pages', async () => {
+			// Enables Direct Checkout
+			WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
+				true
+			);
+
+			WooPayDirectCheckout.forwardToWooPay.mockResolvedValue( true );
+
+			useExpressCheckoutProductHandler.mockImplementation( () => ( {
+				addToCart: mockAddToCart,
+				getProductData: jest.fn().mockReturnValue( {} ),
+			} ) );
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ false } // Mocks a cart or checkout page
+					emailSelector="#email"
+				/>
+			);
+
+			const expressButton = screen.queryByRole( 'button', {
+				name: 'WooPay',
+			} );
+
+			userEvent.click( expressButton );
+
+			expect( WooPayDirectCheckout.forwardToWooPay ).toHaveBeenCalled();
+		} );
+
+		test( 'Use Direct Checkout when on product page', async () => {
+			// Enables Direct Checkout
+			WooPayDirectCheckout.isWooPayDirectCheckoutEnabled.mockReturnValue(
+				true
+			);
+
+			WooPayDirectCheckout.forwardToWooPay.mockResolvedValue( true );
+
+			useExpressCheckoutProductHandler.mockImplementation( () => ( {
+				addToCart: mockAddToCart,
+				getProductData: jest.fn().mockReturnValue( {} ),
+			} ) );
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ true }
+					emailSelector="#email"
+				/>
+			);
+
+			const expressButton = screen.queryByRole( 'button', {
+				name: 'WooPay',
+			} );
+
+			userEvent.click( expressButton );
+
+			await waitFor( () => {
+				expect(
+					WooPayDirectCheckout.forwardToWooPay
+				).toHaveBeenCalled();
 			} );
 		} );
 	} );
