@@ -3,16 +3,23 @@
 	--wc-bnpl-margin-bottom: 0;
 }
 
-// Only apply the adjusted margins on the bnpl element when it immediately follows .price or .wp-block-woocommerce-product-price and the `ready` class has been added.
-.price,
-.wp-block-woocommerce-product-price {
-	&:has( + #payment-method-message.ready ) {
-		margin-bottom: 0;
-	}
+.pmme-loading {
+	animation: pmme-loading 1s linear infinite alternate;
+	background: #afafaf;
+}
 
-	+ #payment-method-message.ready {
-		margin-top: 0.5rem;
-		margin-bottom: var( --wc-bnpl-margin-bottom );
+.summary,
+.wp-block-woocommerce-product-price + {
+	#payment-method-message {
+		height: 4em;
+		position: relative;
+
+		.pmme-loading {
+			position: absolute;
+			width: 100%;
+			max-width: 20em;
+			height: 100%;
+		}
 	}
 }
 
@@ -35,8 +42,6 @@
 	}
 
 	.pmme-loading {
-		animation: pmme-loading 1s linear infinite alternate;
-		background: #afafaf;
 		height: var( --wc-bnpl-container-height );
 		margin: -4px 1em var( --wc-bnpl-loader-margin ) 1em;
 	}
