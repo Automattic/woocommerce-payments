@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Ensure that 'wcSettings' exists before attempting to use 'wcSettings.wcBlocksConfig'.

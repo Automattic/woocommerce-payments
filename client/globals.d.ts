@@ -177,6 +177,7 @@ declare global {
 				woocommerce_coming_soon: string;
 				woocommerce_private_link: string;
 			};
+			timeZone: string;
 		};
 		adminUrl: string;
 		countries: Record< string, string >;

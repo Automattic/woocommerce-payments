@@ -68,6 +68,8 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 	const disputes = paymentActivityData?.disputes ?? 0;
 	const refunds = paymentActivityData?.refunds ?? 0;
 	const currency = paymentActivityData?.currency;
+	const siteTimeZone = wcSettings.admin.timeZone;
+	// We need to add a time offset to the date range to ensure the correct dates are passed on to the transactions report via the view report link.
 
 	return (
 		<div className="wcpay-payment-activity-data">
@@ -114,12 +116,12 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 					path: '/payments/transactions',
 					filter: 'advanced',
 					store_currency_is: currency,
-					'date_between[0]': moment(
-						paymentActivityData?.date_start
-					).format( 'YYYY-MM-DD' ),
-					'date_between[1]': moment(
-						paymentActivityData?.date_end
-					).format( 'YYYY-MM-DD' ),
+					'date_between[0]': moment( paymentActivityData?.date_start )
+						.add( siteTimeZone )
+						.format( 'YYYY-MM-DD' ),
+					'date_between[1]': moment( paymentActivityData?.date_end )
+						.add( siteTimeZone )
+						.format( 'YYYY-MM-DD' ),
 					...getSearchParams(
 						searchTermsForViewReportLink.totalPaymentVolume
 					),
@@ -159,10 +161,14 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
-						).format( 'YYYY-MM-DD' ),
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
 							paymentActivityData?.date_end
-						).format( 'YYYY-MM-DD' ),
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
 						...getSearchParams(
 							searchTermsForViewReportLink.charge
 						),
@@ -182,10 +188,14 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
-						).format( 'YYYY-MM-DD' ),
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
 							paymentActivityData?.date_end
-						).format( 'YYYY-MM-DD' ),
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
 						...getSearchParams(
 							searchTermsForViewReportLink.refunds
 						),
@@ -232,10 +242,14 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						store_currency_is: currency,
 						'date_between[0]': moment(
 							paymentActivityData?.date_start
-						).format( 'YYYY-MM-DD' ),
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
 							paymentActivityData?.date_end
-						).format( 'YYYY-MM-DD' ),
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
 						...getSearchParams(
 							searchTermsForViewReportLink.dispute
 						),
