@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Match the Node version in nvm with the minimum version in package.json.
