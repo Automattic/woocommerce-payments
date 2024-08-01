@@ -190,7 +190,7 @@ export const WoopayExpressCheckoutButton = ( {
 		const productData = getProductDataRef.current();
 
 		if ( ! productData ) {
-			return Promise.reject( 'asdf' );
+			return Promise.reject();
 		}
 
 		if ( typeof listenForCartChanges?.stop === 'function' ) {
