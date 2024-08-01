@@ -38,6 +38,7 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '#place_order' ],
+		linkSelectors: [ 'a' ],
 	},
 	blocksCheckout: {
 		appendTarget: '#billing.wc-block-components-address-form',
@@ -62,6 +63,7 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplProductPage: {
 		appendTarget: '.product .cart .quantity',
@@ -79,6 +81,7 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.single_add_to_cart_button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplClassicCart: {
 		appendTarget: '.cart .quantity',
@@ -96,6 +99,7 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.checkout-button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplCartBlock: {
 		appendTarget: '.wc-block-cart .wc-block-components-quantity-selector',
@@ -117,6 +121,7 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.wc-block-cart__submit-button' ],
+		linkSelectors: [ 'a' ],
 	},
 
 	/**
@@ -453,6 +458,7 @@ export const getAppearance = ( elementsLocation ) => {
 		backgroundColor
 	);
 	const buttonRules = getFieldStyles( selectors.buttonSelectors, '.Input' );
+	const linkRules = getFieldStyles( selectors.linkSelectors, '.Label' );
 	const globalRules = {
 		colorBackground: backgroundColor,
 		colorText: labelRules.color,
@@ -477,6 +483,7 @@ export const getAppearance = ( elementsLocation ) => {
 			'.Text--redirect': labelRules,
 			'.Heading': headingRules,
 			'.Button': buttonRules,
+			'.Link': linkRules,
 		},
 	};
 	// Remove hidden fields from DOM.

@@ -212,6 +212,13 @@ describe( 'Getting styles for automated theming', () => {
 					outline: '1px solid rgb(150, 88, 138)',
 					padding: '10px',
 				},
+				'.Link': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
 			},
 		} );
 	} );
