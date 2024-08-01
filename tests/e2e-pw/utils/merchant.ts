@@ -169,3 +169,46 @@ export const removeCurrency = async ( page: Page, currencyCode: string ) => {
 		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
 	).toBeHidden();
 };
+
+export const editCurrency = async ( page: Page, currencyCode: string ) => {
+	await navigation.goToMultiCurrencySettings( page );
+	await page
+		.locator(
+			`.enabled-currency.${ currencyCode.toLowerCase() } .enabled-currency__action.edit`
+		)
+		.click();
+	await dataHasLoaded( page );
+};
+
+export const setCurrencyRate = async (
+	page: Page,
+	currencyCode: string,
+	rate: string
+) => {
+	await editCurrency( page, currencyCode );
+	await page
+		.locator( '#single-currency-settings__manual_rate_radio' )
+		.click();
+	await page.getByTestId( 'manual_rate_input' ).fill( rate );
+	await saveWooPaymentsSettings( page );
+};
+
+export const setCurrencyPriceRounding = async (
+	page: Page,
+	currencyCode: string,
+	rounding: string
+) => {
+	await editCurrency( page, currencyCode );
+	await page.getByTestId( 'price_rounding' ).selectOption( rounding );
+	await saveWooPaymentsSettings( page );
+};
+
+export const setCurrencyCharmPricing = async (
+	page: Page,
+	currencyCode: string,
+	charmPricing: string
+) => {
+	await editCurrency( page, currencyCode );
+	await page.getByTestId( 'price_charm' ).selectOption( charmPricing );
+	await saveWooPaymentsSettings( page );
+};
