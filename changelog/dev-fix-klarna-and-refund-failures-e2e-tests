@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix Klarna and Refund Failures E2E tests

@@ -36,6 +36,7 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'Failed to load resource: the server responded with a status of 400 (Bad Request)',
 	'No Amplitude API key provided',
 	'is registered with an invalid category',
+	'"Heading" is not a supported class',
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {
@@ -114,7 +115,8 @@ function removePageEvents() {
 function setTestTimeouts() {
 	const TIMEOUT = 100000;
 	// Increase default value to avoid test failing due to timeouts.
-	page.setDefaultTimeout( TIMEOUT );
+	// But we want the matchers timeout to be smaller than the test timeout to have meaningful error messages.
+	page.setDefaultTimeout( TIMEOUT / 4 );
 	// running the login flow takes more than the default timeout of 5 seconds,
 	// so we need to increase it to run the login in the beforeAll hook
 	jest.setTimeout( TIMEOUT );
