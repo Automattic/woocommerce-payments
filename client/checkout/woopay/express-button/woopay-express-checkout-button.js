@@ -341,6 +341,8 @@ export const WoopayExpressCheckoutButton = ( {
 
 	const directCheckoutFlow = useCallback(
 		( e ) => {
+			isLoadingRef.current = true;
+			setIsLoading( true );
 			if ( isProductPage ) {
 				maybeAddProductToCart()
 					.catch( () => {} )
@@ -349,12 +351,16 @@ export const WoopayExpressCheckoutButton = ( {
 							false,
 							true
 						).catch( () => {
+							isLoadingRef.current = false;
+							setIsLoading( false );
 							directCheckoutFallbackMethods( e );
 						} );
 					} );
 			} else {
 				WooPayDirectCheckout.forwardToWooPay( false, true ).catch(
 					() => {
+						isLoadingRef.current = false;
+						setIsLoading( false );
 						directCheckoutFallbackMethods( e );
 					}
 				);
