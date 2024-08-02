@@ -732,10 +732,19 @@ class WC_Payments_Webhook_Processing_Service {
 
 			if ( isset( $metadata['order_id'] ) ) {
 				$order_id = $metadata['order_id'];
-				$order    = $this->wcpay_db->order_from_order_id( $order_id );
 			} elseif ( ! empty( $event_object['invoice'] ) ) {
 				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
 				return false;
+			} else {
+				$charges  = $this->read_webhook_property( $event_object, 'charges' );
+				$charge   = $charges[0] ?? [];
+				$order_id = $charge['metadata']['order_id'] ?? null;
+			}
+
+			if ( ! $order_id ) {
+				// Fetch the order using the obtained order ID, if available.
+				$order = wc_get_order( $order_id );
+				// Handle the order logic here.
 			}
 		}
 
