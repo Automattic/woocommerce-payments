@@ -7,6 +7,7 @@
 
 use WCPay\MultiCurrency\Compatibility;
 use WCPay\MultiCurrency\Currency;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
@@ -36,9 +37,9 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 	private $mock_utils;
 
 	/**
-	 * WC_Payments_Localization_Service.
+	 * MultiCurrencyLocalizationInterface.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var MultiCurrencyLocalizationInterface
 	 */
 	private $localization_service;
 
@@ -51,7 +52,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 		$this->mock_multi_currency  = $this->createMock( MultiCurrency::class );
 		$this->mock_utils           = $this->createMock( Utils::class );
 		$this->compatibility        = new Compatibility( $this->mock_multi_currency, $this->mock_utils );
-		$this->localization_service = new WC_Payments_Localization_Service();
+		$this->localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
 	}
 
 	public function test_init_compatibility_classes_does_not_add_classes_if_one_enabled_currencies() {

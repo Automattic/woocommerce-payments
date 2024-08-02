@@ -10,6 +10,7 @@ use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\MultiCurrency\Analytics;
 use WCPay\MultiCurrency\Currency;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -54,7 +55,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * The localization service.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var MultiCurrencyLocalizationInterface
 	 */
 	private $localization_service;
 
@@ -66,7 +67,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 
 		$this->add_mock_order_with_meta();
 		$this->set_is_admin( true );
-		$this->set_is_rest_request( true );
+		$this->set_is_rest_request();
 		add_filter(
 			'woocommerce_is_rest_api_request',
 			function () {
@@ -89,7 +90,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 
 		$this->analytics = new Analytics( $this->mock_multi_currency );
 
-		$this->localization_service = new WC_Payments_Localization_Service();
+		$this->localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		$this->localization_service->expects( $this->any() )
+			->method( 'get_currency_format' )
+			->willReturn( [ 'num_decimals' => 2 ] );
 
 		remove_filter( 'user_has_cap', $cb );
 	}
@@ -575,7 +579,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	}
 
 	private function get_mock_available_currencies() {
-		$this->localization_service = new WC_Payments_Localization_Service();
+		$this->localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
 		if ( empty( $this->mock_available_currencies ) ) {
 			$this->mock_available_currencies = [
 				'GBP' => new Currency( $this->localization_service, 'GBP', 1.2 ),

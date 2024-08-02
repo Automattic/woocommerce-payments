@@ -6,6 +6,7 @@
  */
 
 use WCPay\MultiCurrency\BackendCurrencies;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -13,9 +14,9 @@ use WCPay\MultiCurrency\MultiCurrency;
  */
 class WCPay_Multi_Currency_Backend_Currencies_Tests extends WCPAY_UnitTestCase {
 	/**
-	 * Mock WC_Payments_Localization_Service.
+	 * Mock MultiCurrencyLocalizationInterface.
 	 *
-	 * @var WC_Payments_Localization_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var MultiCurrencyLocalizationInterface|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_localization_service;
 
@@ -36,7 +37,7 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
 		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
 
 		// Mock admin part.
