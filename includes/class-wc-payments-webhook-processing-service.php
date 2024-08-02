@@ -742,9 +742,7 @@ class WC_Payments_Webhook_Processing_Service {
 			}
 
 			if ( ! $order_id ) {
-				// Fetch the order using the obtained order ID, if available.
 				$order = wc_get_order( $order_id );
-				// Handle the order logic here.
 			}
 		}
 
