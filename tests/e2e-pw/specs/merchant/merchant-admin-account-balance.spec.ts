@@ -72,13 +72,20 @@ test.describe(
 	'Merchant account balance overview for multiple deposit currency accounts',
 	{
 		tag: [ '@critical', '@todo' ],
+		annotation: [
+			{
+				type: 'issue',
+				description:
+					'https://github.com/Automattic/woocommerce-payments/issues/9188',
+			},
+			{
+				type: 'description',
+				description:
+					'Test requirements not yet met: A merchant account with multiple deposit currencies must be available in our e2e environment',
+			},
+		],
 	},
 	() => {
-		/**
-		 * Test requirements not yet met:
-		 * - A merchant account with multiple deposit currencies must be available in our e2e environment
-		 */
-
 		useMerchant();
 
 		test( 'Select multiple deposit currencies and view the total and available account balance for each', async () => {
