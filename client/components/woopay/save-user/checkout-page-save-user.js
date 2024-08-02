@@ -130,6 +130,37 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		}
 	}, [ isPhoneValid ] );
 
+	const updateFormSubmitButton = useCallback( () => {
+		if ( isSaveDetailsChecked && isPhoneValid ) {
+			clearValidationError( errorId );
+
+			// Set extension data if checkbox is selected and phone number is valid in blocks checkout.
+			if ( isBlocksCheckout ) {
+				sendExtensionData( false );
+			}
+		}
+
+		if ( isSaveDetailsChecked && ! isPhoneValid ) {
+			setValidationErrors( {
+				[ errorId ]: {
+					message: __(
+						'Please enter a valid mobile phone number.',
+						'woocommerce-payments'
+					),
+					// Hides errors when the number has not been typed yet but shows when trying to place the order.
+					hidden: isPhoneValid === null,
+				},
+			} );
+		}
+	}, [
+		clearValidationError,
+		isBlocksCheckout,
+		isPhoneValid,
+		isSaveDetailsChecked,
+		sendExtensionData,
+		setValidationErrors,
+	] );
+
 	useEffect( () => {
 		const formSubmitButton = isBlocksCheckout
 			? document.querySelector(
@@ -142,30 +173,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		if ( ! formSubmitButton ) {
 			return;
 		}
-
-		const updateFormSubmitButton = () => {
-			if ( isSaveDetailsChecked && isPhoneValid ) {
-				clearValidationError( errorId );
-
-				// Set extension data if checkbox is selected and phone number is valid in blocks checkout.
-				if ( isBlocksCheckout ) {
-					sendExtensionData( false );
-				}
-			}
-
-			if ( isSaveDetailsChecked && ! isPhoneValid ) {
-				setValidationErrors( {
-					[ errorId ]: {
-						message: __(
-							'Please enter a valid mobile phone number.',
-							'woocommerce-payments'
-						),
-						// Hides errors when the number has not been typed yet but shows when trying to place the order.
-						hidden: isPhoneValid === null,
-					},
-				} );
-			}
-		};
 
 		updateFormSubmitButton();
 
@@ -180,6 +187,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		isPhoneValid,
 		isSaveDetailsChecked,
 		sendExtensionData,
+		updateFormSubmitButton,
 	] );
 
 	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
@@ -198,8 +206,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		if ( isBlocksCheckout && userDataSent ) {
 			sendExtensionData( true );
 		}
+		clearValidationError( errorId );
 		return null;
 	}
+
+	updateFormSubmitButton();
 
 	return (
 		<Container
