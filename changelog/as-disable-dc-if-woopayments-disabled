@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Disable WooPay’s Direct Checkout feature if WooPayments is not enabled as payment gateway.
