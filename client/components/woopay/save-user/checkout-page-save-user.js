@@ -130,7 +130,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		}
 	}, [ isPhoneValid ] );
 
-	const updateFormSubmitButton = useCallback( () => {
+	const updatePhoneNumberValidationError = useCallback( () => {
 		if ( isSaveDetailsChecked && isPhoneValid ) {
 			clearValidationError( errorId );
 
@@ -161,35 +161,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		setValidationErrors,
 	] );
 
-	useEffect( () => {
-		const formSubmitButton = isBlocksCheckout
-			? document.querySelector(
-					'button.wc-block-components-checkout-place-order-button'
-			  )
-			: document.querySelector(
-					'form.woocommerce-checkout button[type="submit"]'
-			  );
-
-		if ( ! formSubmitButton ) {
-			return;
-		}
-
-		updateFormSubmitButton();
-
-		return () => {
-			clearValidationError( errorId );
-		};
-	}, [
-		setValidationErrors,
-		errorId,
-		clearValidationError,
-		isBlocksCheckout,
-		isPhoneValid,
-		isSaveDetailsChecked,
-		sendExtensionData,
-		updateFormSubmitButton,
-	] );
-
 	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
 	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
 	const isWCPayWithNewTokenChosen = isBlocksCheckout
@@ -210,7 +181,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		return null;
 	}
 
-	updateFormSubmitButton();
+	updatePhoneNumberValidationError();
 
 	return (
 		<Container
