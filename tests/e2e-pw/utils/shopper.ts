@@ -1,13 +1,16 @@
 /**
  * External dependencies
  */
-import { Page } from 'playwright/test';
-
+import { Page, expect } from 'playwright/test';
 /**
  * Internal dependencies
  */
 import * as navigation from './shopper-navigation';
 import { config, CustomerAddress } from '../config/default';
+
+export const isUIUnblocked = async ( page: Page ) => {
+	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
+};
 
 export const fillBillingAddress = async (
 	page: Page,
@@ -140,4 +143,113 @@ export const getPriceFromProduct = async (
 		.textContent();
 
 	return priceText?.replace( /[^0-9.,]/g, '' ) ?? '';
+};
+
+/**
+ * Adds a product to the cart from the shop page.
+ *
+ * @param {Page} page The Playwright page object.
+ * @param {string|number} product The product ID or title to add to the cart.
+ */
+export const addToCartFromShopPage = async (
+	page: Page,
+	product: string | number
+) => {
+	if ( Number.isInteger( product ) ) {
+		const addToCartSelector = `a[data-product_id="${ product }"]`;
+
+		await page.locator( addToCartSelector ).click();
+		await expect(
+			page.locator( `${ addToCartSelector }.added` )
+		).toBeVisible();
+	} else {
+		// These unicode characters are the smart (or curly) quotes: “ ”.
+		const addToCartRegex = new RegExp(
+			`Add to cart: \u201C${ product }\u201D`
+		);
+
+		await page.getByLabel( addToCartRegex ).click();
+		await expect( page.getByLabel( addToCartRegex ) ).toHaveAttribute(
+			'class',
+			/added/
+		);
+	}
+};
+
+export const setupCheckout = async (
+	page: Page,
+	billingAddress: CustomerAddress
+) => {
+	await navigation.goToCheckout( page );
+	await fillBillingAddress( page, billingAddress );
+	// Woo core blocks and refreshes the UI after 1s after each key press
+	// in a text field or immediately after a select field changes.
+	// We need to wait to make sure that all key presses were processed by that mechanism.
+	await page.waitForTimeout( 1000 );
+	await isUIUnblocked( page );
+	await page
+		.locator( '.wc_payment_method.payment_method_woocommerce_payments' )
+		.click();
+};
+
+/**
+ * Sets up checkout with any number of products.
+ *
+ * @param {CustomerAddress} billingAddress The billing address to use for the checkout.
+ * @param {Array<[string, number]>} lineItems A 2D array of line items where each line item is an array
+ * that contains the product title as the first element, and the quantity as the second.
+ * For example, if you want to checkout x2 "Hoodie" and x3 "Belt" then set this parameter like this:
+ *
+ * `[ [ "Hoodie", 2 ], [ "Belt", 3 ] ]`.
+ */
+export async function setupProductCheckout(
+	page: Page,
+	billingAddress: CustomerAddress,
+	lineItems: Array< [ string, number ] > = [
+		[ config.products.simple.name, 1 ],
+	]
+) {
+	const cartSizeText = await page
+		.locator( '.cart-contents .count' )
+		.textContent();
+	let cartSize = Number( cartSizeText?.replace( /\D/g, '' ) ?? '0' );
+
+	for ( const line of lineItems ) {
+		let [ productTitle, qty ] = line;
+
+		while ( qty-- ) {
+			await addToCartFromShopPage( page, productTitle );
+			// Make sure the number of items in the cart is incremented before adding another item.
+			await expect( page.locator( '.cart-contents .count' ) ).toHaveText(
+				new RegExp( `${ ++cartSize } items?` )
+			);
+		}
+	}
+
+	await setupCheckout( page, billingAddress );
+}
+
+/**
+ * Places an order with a specified currency.
+ *
+ * @param {Page} page The Playwright page object.
+ * @param {string} currency The currency code to use for the order.
+ * @return {Promise<string>} The order ID.
+ */
+export const placeOrderWithCurrency = async (
+	page: Page,
+	currency: string
+): Promise< string > => {
+	await navigation.goToShopWithCurrency( page, currency );
+	await setupProductCheckout( page, config.addresses.customer.billing, [
+		[ config.products.simple.name, 1 ],
+	] );
+	await fillCardDetails( page, config.cards.basic );
+	await placeOrder( page );
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
+
+	const url = await page.url();
+	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
 };
