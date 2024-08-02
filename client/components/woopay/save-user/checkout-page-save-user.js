@@ -131,6 +131,14 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	}, [ isPhoneValid ] );
 
 	const updatePhoneNumberValidationError = useCallback( () => {
+		if ( ! isSaveDetailsChecked ) {
+			clearValidationError( errorId );
+			if ( isPhoneValid !== null ) {
+				onPhoneValidationChange( null );
+			}
+			return;
+		}
+
 		if ( isSaveDetailsChecked && isPhoneValid ) {
 			clearValidationError( errorId );
 
@@ -138,6 +146,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			if ( isBlocksCheckout ) {
 				sendExtensionData( false );
 			}
+			return;
 		}
 
 		if ( isSaveDetailsChecked && ! isPhoneValid ) {
