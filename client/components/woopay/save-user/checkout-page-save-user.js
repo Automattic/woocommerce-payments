@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -129,6 +130,14 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			recordUserEvent( 'checkout_woopay_save_my_info_mobile_enter' );
 		}
 	}, [ isPhoneValid ] );
+
+	useEffect( () => {
+		const checkoutForm = jQuery( 'form.woocommerce-checkout' );
+
+		checkoutForm.on( 'checkout_place_order', function () {
+			jQuery( '#validate-error-invalid-woopay-phone-number' ).show();
+		} );
+	}, [] );
 
 	const updatePhoneNumberValidationError = useCallback( () => {
 		if ( ! isSaveDetailsChecked ) {
@@ -276,10 +285,23 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								isBlocksCheckout={ isBlocksCheckout }
 							/>
 						</div>
-						<ValidationInputError
-							elementId={ errorId }
-							propertyName={ errorId }
-						/>
+						{ isBlocksCheckout && (
+							<ValidationInputError
+								elementId={ errorId }
+								propertyName={ errorId }
+							/>
+						) }
+						{ ! isBlocksCheckout && ! isPhoneValid && (
+							<p
+								id="validate-error-invalid-woopay-phone-number"
+								hidden={ isPhoneValid !== false }
+							>
+								{ __(
+									'Please enter a valid mobile phone number.',
+									'woocommerce-payments'
+								) }
+							</p>
+						) }
 						<AdditionalInformation />
 						<Agreement />
 					</div>
