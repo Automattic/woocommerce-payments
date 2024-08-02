@@ -8,6 +8,9 @@ import { test, expect } from '@playwright/test';
  */
 import { useMerchant } from '../../utils/helpers';
 
+// Optional currency symbol, followed by one or more digits, decimal separator, or comma.
+const formattedCurrencyRegex = /[^\d.,]*[\d.,]+/;
+
 test.describe(
 	'Merchant account balance overview for single deposit currency accounts',
 	() => {
@@ -15,7 +18,7 @@ test.describe(
 		useMerchant();
 
 		test(
-			'View the total and available account balance for a single deposit currency (USD)',
+			'View the total and available account balance for a single deposit currency',
 			{
 				tag: '@critical',
 			},
@@ -30,7 +33,7 @@ test.describe(
 				);
 
 				await test.step(
-					'Observe the total account balance, ensuring it has a dollar value with the correct currency formatting',
+					'Observe the total account balance, ensuring it has a formatted currency value',
 					async () => {
 						const totalBalanceValue = page.getByLabel(
 							'Total balance',
@@ -39,14 +42,14 @@ test.describe(
 							}
 						);
 
-						// Match the total balance value to the USD format $1*
-						// Intentionally not expecting a specific value to allow for different values in different environments.
-						await expect( totalBalanceValue ).toHaveText( /\$\d+/ );
+						await expect( totalBalanceValue ).toHaveText(
+							formattedCurrencyRegex
+						);
 					}
 				);
 
 				await test.step(
-					'Observe the available account balance, ensuring it has a dollar value with the correct currency formatting',
+					'Observe the available account balance, ensuring it has a formatted currency value',
 					async () => {
 						const availableFundsValue = page.getByLabel(
 							'Available funds',
@@ -54,8 +57,9 @@ test.describe(
 								exact: true,
 							}
 						);
+
 						await expect( availableFundsValue ).toHaveText(
-							/\$\d+/
+							formattedCurrencyRegex
 						);
 					}
 				);
