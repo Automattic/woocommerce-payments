@@ -261,11 +261,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							name="woopay_viewport"
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
-						<div
-							className={
-								isPhoneValid === false ? 'has-error' : ''
-							}
-						>
+						<div className={ isPhoneValid ? '' : 'has-error' }>
 							<PhoneNumberInput
 								value={ phoneNumber }
 								onValueChange={ setPhoneNumber }
