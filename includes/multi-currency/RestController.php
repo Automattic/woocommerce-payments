@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_REST_Controller
+ * Class RestController
  *
  * @package WooCommerce\Payments\MultiCurrency
  */
@@ -15,7 +15,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * REST controller for multi-currency.
  */
-class RestController extends \WC_Payments_REST_Controller {
+class RestController extends \WP_REST_Controller {
+
+	/**
+	 * Endpoint namespace.
+	 *
+	 * @var string
+	 */
+	protected $namespace = 'wc/v3';
 
 	/**
 	 * Endpoint path.
@@ -228,5 +235,12 @@ class RestController extends \WC_Payments_REST_Controller {
 		$params = $request->get_params();
 		WC_Payments_Multi_Currency()->update_settings( $params );
 		return rest_ensure_response( WC_Payments_Multi_Currency()->get_settings() );
+	}
+
+	/**
+	 * Verify access.
+	 */
+	public function check_permission() {
+		return current_user_can( 'manage_woocommerce' );
 	}
 }

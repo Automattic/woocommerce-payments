@@ -10,6 +10,8 @@ use WCPay\MultiCurrency\Utils;
 use WCPay\Database_Cache;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Settings;
 use WCPay\MultiCurrency\SettingsOnboardCta;
@@ -65,14 +67,14 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Mock of the API client.
 	 *
-	 * @var WC_Payments_API_Client
+	 * @var MultiCurrencyApiClientInterface
 	 */
 	private $mock_api_client;
 
 	/**
-	 * Mock of the WC_Payments_Account.
+	 * Mock of the MultiCurrencyAccountInterface.
 	 *
-	 * @var WC_Payments_Account
+	 * @var MultiCurrencyAccountInterface
 	 */
 	private $mock_account;
 
@@ -721,7 +723,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	public function test_get_cached_currencies_with_no_server_connection() {
 		// Need to create a new instance of MultiCurrency with a different $mock_api_client
 		// Because the mock return value of 'is_server_connected' cannot be overridden.
-		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client = $this->createMock( MultiCurrencyApiClientInterface::class );
 
 		$mock_api_client->method( 'is_server_connected' )->willReturn( false );
 
@@ -1415,10 +1417,10 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_database_cache = null ) {
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_api_client = $this->createMock( MultiCurrencyApiClientInterface::class );
 
-		$this->mock_account = $mock_account ?? $this->createMock( WC_Payments_Account::class );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( $wcpay_account_connected );
+		$this->mock_account = $mock_account ?? $this->createMock( MultiCurrencyAccountInterface::class );
+		$this->mock_account->method( 'is_provider_connected' )->willReturn( $wcpay_account_connected );
 
 		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
 

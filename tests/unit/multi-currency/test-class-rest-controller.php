@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\RestController;
 
 /**
@@ -33,7 +34,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
-		$mock_api_client  = $this->getMockBuilder( WC_Payments_API_Client::class )->disableOriginalConstructor()->getMock();
+		$mock_api_client  = $this->getMockBuilder( MultiCurrencyApiClientInterface::class )->disableOriginalConstructor()->getMock();
 		$this->controller = new RestController( $mock_api_client );
 	}
 

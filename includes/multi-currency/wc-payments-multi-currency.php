@@ -27,12 +27,24 @@ if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() && ! wcpay_mul
 }
 
 /**
- * Returns the main instance of MultiCurrency.
+ * Returns the MultiCurrency singleton.
  *
  * @return WCPay\MultiCurrency\MultiCurrency
  */
 function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.FunctionNameInvalid
-	return WCPay\MultiCurrency\MultiCurrency::instance();
+	static $instance = null;
+
+	if ( is_null( $instance ) ) {
+		$instance = new WCPay\MultiCurrency\MultiCurrency(
+			WC_Payments::get_payments_api_client(),
+			WC_Payments::get_account_service(),
+			WC_Payments::get_localization_service(),
+			WC_Payments::get_database_cache()
+		);
+		$instance->init_hooks();
+	}
+
+	return $instance;
 }
 
 add_action( 'plugins_loaded', 'WC_Payments_Multi_Currency', 12 );

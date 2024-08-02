@@ -8,9 +8,7 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Payments;
-use WC_Payments_Account;
 use WC_Payments_Utils;
-use WC_Payments_API_Client;
 use WC_Payments_Localization_Service;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
@@ -20,6 +18,8 @@ use WCPay\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -40,13 +40,6 @@ class MultiCurrency {
 	 * @var string
 	 */
 	public $id = 'wcpay_multi_currency';
-
-	/**
-	 * The single instance of the class.
-	 *
-	 * @var ?MultiCurrency
-	 */
-	protected static $instance = null;
 
 	/**
 	 * Static flag to show if the currencies initialization has been completed
@@ -140,16 +133,16 @@ class MultiCurrency {
 	protected $enabled_currencies;
 
 	/**
-	 * Client for making requests to the WooCommerce Payments API
+	 * Client for making requests to the API
 	 *
-	 * @var WC_Payments_API_Client
+	 * @var MultiCurrencyApiClientInterface
 	 */
 	private $payments_api_client;
 
 	/**
-	 * Instance of WC_Payments_Account.
+	 * Instance of MultiCurrencyAccountInterface.
 	 *
-	 * @var WC_Payments_Account
+	 * @var MultiCurrencyAccountInterface
 	 */
 	private $payments_account;
 
@@ -189,31 +182,15 @@ class MultiCurrency {
 	private $order_meta_helper;
 
 	/**
-	 * Main MultiCurrency Instance.
-	 *
-	 * Ensures only one instance of MultiCurrency is loaded or can be loaded.
-	 *
-	 * @static
-	 * @return MultiCurrency - Main instance.
-	 */
-	public static function instance() {
-		if ( is_null( self::$instance ) ) {
-			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service(), WC_Payments::get_localization_service(), WC_Payments::get_database_cache() );
-			self::$instance->init_hooks();
-		}
-		return self::$instance;
-	}
-
-	/**
 	 * Class constructor.
 	 *
-	 * @param WC_Payments_API_Client           $payments_api_client  Payments API client.
-	 * @param WC_Payments_Account              $payments_account     Payments Account instance.
+	 * @param MultiCurrencyApiClientInterface  $payments_api_client  Payments API client.
+	 * @param MultiCurrencyAccountInterface    $payments_account     Payments Account instance.
 	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
 	 * @param Database_Cache                   $database_cache       Database Cache instance.
 	 * @param Utils|null                       $utils                Optional Utils instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
+	public function __construct( MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
 		$this->localization_service = $localization_service;
@@ -310,7 +287,7 @@ class MultiCurrency {
 		}
 
 		if ( is_admin() ) {
-			add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
+			add_action( 'admin_init', [ $this, 'add_woo_admin_notes' ] );
 		}
 
 		// Update the customer currencies option after an order status change.
@@ -332,7 +309,7 @@ class MultiCurrency {
 			return;
 		}
 
-		$api_controller = new RestController( \WC_Payments::create_api_client() );
+		$api_controller = new RestController();
 		$api_controller->register_routes();
 	}
 
@@ -355,19 +332,19 @@ class MultiCurrency {
 	 * @return array The new settings pages.
 	 */
 	public function init_settings_pages( $settings_pages ): array {
-		// We don't need to check if Stripe is connected for the
+		// We don't need to check if the payment provider is connected for the
 		// Settings page generation on the incoming CLI and async job calls.
 		if ( ( defined( 'WP_CLI' ) && WP_CLI ) || ( defined( 'WPCOM_JOBS' ) && WPCOM_JOBS ) ) {
 			return $settings_pages;
 		}
 
-		if ( $this->payments_account->is_stripe_connected() ) {
+		if ( $this->payments_account->is_provider_connected() ) {
 			$settings = new Settings( $this );
 			$settings->init_hooks();
 
 			$settings_pages[] = $settings;
 		} else {
-			$settings_onboard_cta = new SettingsOnboardCta( $this );
+			$settings_onboard_cta = new SettingsOnboardCta( $this, $this->payments_account );
 			$settings_onboard_cta->init_hooks();
 
 			$settings_pages[] = $settings_onboard_cta;
@@ -427,8 +404,8 @@ class MultiCurrency {
 	 */
 	public function get_cached_currencies() {
 		$cached_data = $this->database_cache->get( Database_Cache::CURRENCIES_KEY );
-		// If connection to server cannot be established, or if Stripe is not connected, or if the account is rejected, return expired data or null.
-		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() || $this->payments_account->is_account_rejected() ) {
+		// If connection to server cannot be established, or if payment provider is not connected, or if the account is rejected, return expired data or null.
+		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
 			return $cached_data ?? null;
 		}
 
@@ -1080,14 +1057,14 @@ class MultiCurrency {
 	 *
 	 * @return void
 	 */
-	public static function add_woo_admin_notes() {
+	public function add_woo_admin_notes() {
 		// Do not try to add notes on ajax requests to improve their performance.
 		if ( wp_doing_ajax() ) {
 			return;
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			NoteMultiCurrencyAvailable::set_account( WC_Payments::get_account_service() );
+			NoteMultiCurrencyAvailable::set_account( $this->payments_account );
 			NoteMultiCurrencyAvailable::possibly_add_note();
 		}
 	}
@@ -1245,7 +1222,7 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Returns the currencies enabled for the Stripe account that are
+	 * Returns the currencies enabled for the payment provider account that are
 	 * also available in WC.
 	 *
 	 * Can be filtered with the 'wcpay_multi_currency_available_currencies' hook.
@@ -1253,8 +1230,8 @@ class MultiCurrency {
 	 * @return array Array with the available currencies' codes.
 	 */
 	private function get_account_available_currencies(): array {
-		// If Stripe is not connected, return an empty array. This prevents using MC without being connected to Stripe.
-		if ( ! $this->payments_account->is_stripe_connected() ) {
+		// If the payment provider is not connected, return an empty array. This prevents using MC without being connected to the payment provider.
+		if ( ! $this->payments_account->is_provider_connected() ) {
 			return [];
 		}
 
