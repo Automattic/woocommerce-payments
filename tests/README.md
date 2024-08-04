@@ -4,7 +4,7 @@ This guide follows the [WooCommerce guide to unit tests](https://github.com/wooc
 
 ## Setup for running tests in the docker containers
 
-1. From the plugin directory, run `npm run up` or `docker-compose up -d`
+1. From the plugin directory, run `npm run up` or `docker compose up -d`
 2. Once the containers are up, run the tests from the plugin root directory using `npm test`
   - Tests can be run in watch mode using `npm run test:watch` and `npm run test:php-watch` for JavaScript and PHP unit tests respectively
 
