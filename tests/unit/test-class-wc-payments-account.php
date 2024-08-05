@@ -892,6 +892,286 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->maybe_handle_onboarding();
 	}
 
+	public function test_maybe_handle_onboarding_finalize_connection_via_connect_link_success_live_account() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Make it a connect request.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Make it a return from the Stripe KYC flow.
+		$_GET['wcpay-state'] = 'bogus_state';
+		$_GET['wcpay-mode']  = 'live';
+
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/some-bogus-page';
+		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_STRIPE; // This should not matter.
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+
+		// The state of Jetpack connection should not matter.
+		$this->mock_jetpack_connection( false );
+
+		// The onboarding state should match.
+		set_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT, 'bogus_state', 100 );
+
+		// The gateway starts off with no enabled or test mode value.
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', '' );
+		$gateway->update_option( 'test_mode', '' );
+
+		// Assert.
+		// We should redirect to the Overview page, not the Connect page.
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_overview_page' )
+			->with( WC_Payments_Onboarding_Service::FROM_STRIPE, $this->arrayHasKey( 'wcpay-connection-success' ) );
+
+		// The account cache should be cleared.
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'delete' )
+			->with( Database_Cache::ACCOUNT_KEY );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		// The gateway is enabled and in the proper mode.
+		$gateway = WC_Payments::get_gateway();
+		$this->assertEquals( 'yes', $gateway->get_option( 'enabled' ) );
+		$this->assertEquals( 'no', $gateway->get_option( 'test_mode' ) );
+
+		// The state transient is deleted.
+		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT ) );
+	}
+
+	public function test_maybe_handle_onboarding_finalize_connection_via_non_connect_link_success_live_account() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// This is a non-connect request (i.e. don't set `wcpay-connect`).
+		// Make it a return from the Stripe KYC flow.
+		$_GET['wcpay-state'] = 'bogus_state';
+		$_GET['wcpay-mode']  = 'live';
+
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/some-bogus-page';
+		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_STRIPE; // This should not matter.
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+
+		// The state of Jetpack connection should not matter.
+		$this->mock_jetpack_connection( false );
+
+		// The onboarding state should match.
+		set_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT, 'bogus_state', 100 );
+
+		// The gateway starts off with no enabled or test mode value.
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', '' );
+		$gateway->update_option( 'test_mode', '' );
+
+		// Assert.
+		// We should redirect to the Overview page, not the Connect page.
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_overview_page' )
+			->with( WC_Payments_Onboarding_Service::FROM_STRIPE, $this->arrayHasKey( 'wcpay-connection-success' ) );
+
+		// The account cache should be cleared.
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'delete' )
+			->with( Database_Cache::ACCOUNT_KEY );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		// The gateway is enabled and in the proper mode.
+		$gateway = WC_Payments::get_gateway();
+		$this->assertEquals( 'yes', $gateway->get_option( 'enabled' ) );
+		$this->assertEquals( 'no', $gateway->get_option( 'test_mode' ) );
+
+		// The state transient is deleted.
+		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT ) );
+	}
+
+	public function test_maybe_handle_onboarding_finalize_connection_via_connect_link_success_test_account() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Make it a connect request.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Make it a return from the Stripe KYC flow.
+		$_GET['wcpay-state'] = 'bogus_state';
+		$_GET['wcpay-mode']  = 'test';
+
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/some-bogus-page';
+		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_STRIPE; // This should not matter.
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+
+		// The state of Jetpack connection should not matter.
+		$this->mock_jetpack_connection( false );
+
+		// The onboarding state should match.
+		set_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT, 'bogus_state', 100 );
+
+		// The gateway starts off with no enabled or test mode value.
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', '' );
+		$gateway->update_option( 'test_mode', '' );
+
+		// Assert.
+		// We should redirect to the Overview page, not the Connect page.
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_overview_page' )
+			->with( WC_Payments_Onboarding_Service::FROM_STRIPE, $this->arrayHasKey( 'wcpay-connection-success' ) );
+
+		// The account cache should be cleared.
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'delete' )
+			->with( Database_Cache::ACCOUNT_KEY );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		// The gateway is enabled and in the proper mode.
+		$gateway = WC_Payments::get_gateway();
+		$this->assertEquals( 'yes', $gateway->get_option( 'enabled' ) );
+		$this->assertEquals( 'yes', $gateway->get_option( 'test_mode' ) );
+
+		// The state transient is deleted.
+		$this->assertFalse( get_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT ) );
+	}
+
+	public function test_maybe_handle_onboarding_finalize_connection_via_connect_link_error_state_mismatch() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Make it a connect request.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Make it a return from the Stripe KYC flow.
+		$_GET['wcpay-state'] = 'bogus_state';
+		$_GET['wcpay-mode']  = 'live';
+
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/some-bogus-page';
+		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_STRIPE; // This should not matter.
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+
+		// The state of Jetpack connection should not matter.
+		$this->mock_jetpack_connection( false );
+
+		// The onboarding state should NOT match.
+		set_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT, 'bogus_state_mismatch', 100 );
+
+		// The gateway starts off with no enabled or test mode value.
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', '' );
+		$gateway->update_option( 'test_mode', '' );
+
+		// Assert.
+		// We should redirect to the Connect page with an error, not the Overview page.
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_connect_page' )
+			->with( 'There was a problem processing your account data. Please try again.' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_overview_page' );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		// The gateway is NOT enabled.
+		$this->assertEquals( '', $gateway->get_option( 'enabled' ) );
+		$this->assertEquals( '', $gateway->get_option( 'test_mode' ) );
+	}
+
+	public function test_maybe_handle_onboarding_finalize_connection_via_connect_link_connection_error() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Make it a connect request.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Make it a return from the Stripe KYC flow.
+		$_GET['wcpay-state'] = 'bogus_state';
+		$_GET['wcpay-mode']  = 'live';
+		// Put in the connection error param.
+		$_GET['wcpay-connection-error'] = '1';
+
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page']   = 'wc-admin';
+		$_GET['path']   = '/payments/some-bogus-page';
+		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_STRIPE; // This should not matter.
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
+
+		// The state of Jetpack connection should not matter.
+		$this->mock_jetpack_connection( false );
+
+		// The onboarding state should match.
+		set_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT, 'bogus_state', 100 );
+
+		// The gateway starts off with no enabled or test mode value.
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', '' );
+		$gateway->update_option( 'test_mode', '' );
+
+		// Assert.
+		// We should redirect to the Connect page with an error parameter, not the Overview page.
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_connect_page' )
+			->with( '', WC_Payments_Onboarding_Service::FROM_STRIPE, $this->arrayHasKey( 'wcpay-connection-error' ) );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_overview_page' );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		// The gateway is enabled in the proper mode.
+		$this->assertEquals( 'yes', $gateway->get_option( 'enabled' ) );
+		$this->assertEquals( 'no', $gateway->get_option( 'test_mode' ) );
+	}
+
 	public function test_maybe_redirect_after_plugin_activation_stripe_disconnected_redirects() {
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
