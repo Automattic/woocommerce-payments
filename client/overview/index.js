@@ -67,7 +67,7 @@ const OverviewSandboxModeNotice = ( { ctaAction = () => {} } ) => {
 					/* translators: %1$s: WooPayments */
 					__(
 						// eslint-disable-next-line max-len
-						'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real transactions, {{switchToLiveLink}}set up a live %1$s account.{{/switchToLiveLink}} {{learnMoreIcon/}}',
+						'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real payments, {{switchToLiveLink}}set up a live %1$s account.{{/switchToLiveLink}} {{learnMoreIcon/}}',
 						'woocommerce-payments'
 					),
 					'WooPayments'
