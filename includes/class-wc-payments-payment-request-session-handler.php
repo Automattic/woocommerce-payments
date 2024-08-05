@@ -66,10 +66,13 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 		// If an account has been created after the session has been initialized, update the session.
 		// This method is called directly by WC blocks when an account is created right before placing an order.
 		$previous_session_data = null;
+		parent::init_session_cookie();
+
 		if ( is_user_logged_in() && strval( get_current_user_id() ) !== $this->_customer_id ) {
 			$previous_session_data = $this->_data;
+			$this->_customer_id    = strval( get_current_user_id() );
 		}
-		parent::init_session_cookie();
+
 		$this->init_session_from_token();
 		if ( ! empty( $previous_session_data ) ) {
 			$this->_data = $previous_session_data;
