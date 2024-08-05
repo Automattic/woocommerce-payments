@@ -102,16 +102,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_after_plugin_activation' ] ), 'maybe_redirect_after_plugin_activation action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_by_get_param' ] ), 'maybe_redirect_by_get_param action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_settings_page' ] ), 'maybe_redirect_from_settings_page action does not exist.' );
-		$this->assertNotFalse(
-			has_action(
-				'admin_init',
-				[
-					$this->wcpay_account,
-					'maybe_redirect_from_onboarding_wizard_page',
-				]
-			),
-			'maybe_redirect_from_onboarding_page action does not exist.'
-		);
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_onboarding_wizard_page' ] ), 'maybe_redirect_from_onboarding_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_connect_page' ] ), 'maybe_redirect_from_connect_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_overview_page' ] ), 'maybe_redirect_from_overview_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_activate_woopay' ] ), 'maybe_activate_woopay action does not exist.' );
