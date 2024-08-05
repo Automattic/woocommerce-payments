@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 8.0.2 - 2024-08-06 =
+
 = 8.0.1 - 2024-07-31 =
 * Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
 
