@@ -86,7 +86,7 @@ const ConnectAccountPage: React.FC = () => {
 		5
 	);
 
-	//creating a reference object
+	// Create a reference object.
 	const loaderProgressRef = useRef( testDriveLoaderProgress );
 	loaderProgressRef.current = testDriveLoaderProgress;
 
