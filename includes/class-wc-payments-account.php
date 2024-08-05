@@ -1133,6 +1133,8 @@ class WC_Payments_Account {
 			];
 
 			// Handle the return from Stripe KYC flow (via a connect link).
+			// The state of the WPCOM/Jetpack connection should not matter - if we received the state data,
+			// we need to try and capture it.
 			if ( isset( $_GET['wcpay-state'] ) && isset( $_GET['wcpay-mode'] ) ) {
 				$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
 				$mode  = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
@@ -1145,6 +1147,7 @@ class WC_Payments_Account {
 						'source' => $onboarding_source,
 					]
 				);
+				return;
 			}
 
 			// Remove the previously stored onboarding state if the merchant wants to start a new onboarding session
@@ -1814,16 +1817,21 @@ class WC_Payments_Account {
 	 */
 	private function finalize_connection( string $state, string $mode, array $additional_args = [] ) {
 		// If the state is not the same as the one we stored, something went wrong.
+		// Reject the connection and redirect to the Connect page for another try (this doesn't mean the merchant will
+		// need to set up a new account, just that it will need to do another round trip of server requests,
+		// with a new secret, etc.).
 		if ( get_transient( self::ONBOARDING_STATE_TRANSIENT ) !== $state ) {
 			$this->redirect_service->redirect_to_connect_page(
 				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ),
-				null,
+				null, // No need to specify any from as we will carry over the once in the additional args, if present.
 				$additional_args
 			);
 			return;
 		}
 		// The states match, so we can delete the stored one.
 		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+
+		// Clear the account cache.
 		$this->clear_cache();
 
 		$gateway = WC_Payments::get_gateway();
@@ -1849,9 +1857,12 @@ class WC_Payments_Account {
 
 		$params = $additional_args;
 		if ( ! empty( $_GET['wcpay-connection-error'] ) ) {
+			// If we get this parameter, but we have a valid state, it means the merchant left KYC early and didn't finish it.
+			// While we do have an account, it is not yet valid. We need to redirect them back to the connect page.
 			$params['wcpay-connection-error'] = '1';
 
 			$this->redirect_service->redirect_to_connect_page( '', WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
+			return;
 		}
 
 		$params['wcpay-connection-success'] = '1';
