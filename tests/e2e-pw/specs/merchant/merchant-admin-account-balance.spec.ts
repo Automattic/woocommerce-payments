@@ -11,84 +11,77 @@ import { useMerchant } from '../../utils/helpers';
 // Optional currency symbol, followed by one or more digits, decimal separator, or comma.
 const formattedCurrencyRegex = /[^\d.,]*[\d.,]+/;
 
-test.describe(
-	'Merchant account balance overview for single deposit currency accounts',
-	() => {
-		// Use the merchant user for this test suite.
-		useMerchant();
+test.describe( 'Merchant account balance overview', () => {
+	// Use the merchant user for this test suite.
+	useMerchant();
 
-		test(
-			'View the total and available account balance for a single deposit currency',
-			{
-				tag: '@critical',
-			},
-			async ( { page } ) => {
-				await test.step(
-					'Navigate to the Payments Overview screen',
-					async () => {
-						await page.goto(
-							'/wp-admin/admin.php?page=wc-admin&path=/payments/overview'
-						);
-					}
-				);
+	test(
+		'View the total and available account balance for a single deposit currency',
+		{
+			tag: '@critical',
+		},
+		async ( { page } ) => {
+			await test.step(
+				'Navigate to the Payments Overview screen',
+				async () => {
+					await page.goto(
+						'/wp-admin/admin.php?page=wc-admin&path=/payments/overview'
+					);
+				}
+			);
 
-				await test.step(
-					'Observe the total account balance, ensuring it has a formatted currency value',
-					async () => {
-						const totalBalanceValue = page.getByLabel(
-							'Total balance',
-							{
-								exact: true,
-							}
-						);
+			await test.step(
+				'Observe the total account balance, ensuring it has a formatted currency value',
+				async () => {
+					const totalBalanceValue = page.getByLabel(
+						'Total balance',
+						{
+							exact: true,
+						}
+					);
 
-						await expect( totalBalanceValue ).toHaveText(
-							formattedCurrencyRegex
-						);
-					}
-				);
+					await expect( totalBalanceValue ).toHaveText(
+						formattedCurrencyRegex
+					);
+				}
+			);
 
-				await test.step(
-					'Observe the available account balance, ensuring it has a formatted currency value',
-					async () => {
-						const availableFundsValue = page.getByLabel(
-							'Available funds',
-							{
-								exact: true,
-							}
-						);
+			await test.step(
+				'Observe the available account balance, ensuring it has a formatted currency value',
+				async () => {
+					const availableFundsValue = page.getByLabel(
+						'Available funds',
+						{
+							exact: true,
+						}
+					);
 
-						await expect( availableFundsValue ).toHaveText(
-							formattedCurrencyRegex
-						);
-					}
-				);
-			}
-		);
-	}
-);
+					await expect( availableFundsValue ).toHaveText(
+						formattedCurrencyRegex
+					);
+				}
+			);
+		}
+	);
 
-test.describe(
-	'Merchant account balance overview for multiple deposit currency accounts',
-	{
-		tag: [ '@critical', '@todo' ],
-		annotation: [
-			{
-				type: 'issue',
-				description:
-					'https://github.com/Automattic/woocommerce-payments/issues/9188',
-			},
-			{
-				type: 'description',
-				description:
-					'Test requirements not yet met: A merchant account with multiple deposit currencies must be available in our e2e environment',
-			},
-		],
-	},
-	() => {
-		useMerchant();
-
-		test( 'Select multiple deposit currencies and view the total and available account balance for each', async () => {
+	test(
+		'View the total and available account balance for multiple deposit currencies',
+		{
+			tag: [ '@critical', '@todo' ],
+			annotation: [
+				{
+					type: 'issue',
+					description:
+						'https://github.com/Automattic/woocommerce-payments/issues/9188',
+				},
+				{
+					type: 'description',
+					description:
+						'Test requirements not yet met: A merchant account with multiple deposit currencies must be available in our e2e environment',
+				},
+			],
+		},
+		async () => {
 			await test.step( 'Navigate to the Payments Overview screen', () => {
 				// @todo
 			} );
@@ -134,6 +127,6 @@ test.describe(
 					// @todo
 				}
 			);
-		} );
-	}
-);
+		}
+	);
+} );
