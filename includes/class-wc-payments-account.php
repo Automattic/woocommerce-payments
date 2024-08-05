@@ -230,8 +230,8 @@ class WC_Payments_Account {
 	 * Checks if the account is valid.
 	 *
 	 * This means:
-	 * - it's connected
-	 * - has submitted details
+	 * - it's connected (i.e. we have account data)
+	 * - has submitted details (i.e. is not partially onboarded)
 	 * - has valid card_payments capability status (requested, pending_verification, active and other valid ones).
 	 *
 	 * Card_payments capability is crucial for account to function properly. If it is unrequested, we shouldn't show
@@ -239,7 +239,7 @@ class WC_Payments_Account {
 	 *
 	 * @see https://github.com/Automattic/woocommerce-payments/issues/5275
 	 *
-	 * @return bool True if the account have valid stripe account, false otherwise.
+	 * @return bool True if the account is a valid Stripe account, false otherwise.
 	 */
 	public function is_stripe_account_valid(): bool {
 		$account = $this->get_cached_account_data();
