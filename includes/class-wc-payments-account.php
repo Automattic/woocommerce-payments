@@ -104,16 +104,17 @@ class WC_Payments_Account {
 	 */
 	public function init_hooks() {
 		// Add admin init hooks.
+		// Our onboarding handling comes first.
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
-
+		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
+		// Second, handle redirections based on context.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_after_plugin_activation' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_by_get_param' ], 12 ); // Run this after the redirect to onboarding logic.
-		add_action( 'admin_init', [ $this, 'maybe_redirect_from_settings_page' ] );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_wizard_page' ] );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_from_connect_page' ] );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_from_overview_page' ] );
-
-		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
+		// Third, handle page redirections.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_settings_page' ], 15 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_wizard_page' ], 15 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_connect_page' ], 15 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_overview_page' ], 15 );
 
 		// Add handlers for inbox notes and reminders.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
