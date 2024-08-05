@@ -112,32 +112,49 @@ describe( 'Klarna checkout', () => {
 			.waitForSelector( '#onContinue' )
 			.then( ( button ) => button.click() );
 
-		await page.waitForTimeout( 2000 );
-
 		// This is where the OTP code is entered.
 		await page.waitForSelector( '#phoneOtp' );
 
-		await page.waitForTimeout( 2000 );
+		await page.waitForTimeout( 2000 ); // Wait for animations
 
 		await expect( page ).toFill( 'input#otp_field', '123456' );
 
-		// Select Payment Plan - 4 weeks & click continue.
-		await page
-			.waitForSelector( '[id="payinparts_kp.0-ui"] input[type="radio"]' )
-			.then( ( radio ) => radio.click() );
+		await page.waitForSelector( '[role="heading"]', {
+			visible: true,
+			text: /(Confirm and pay)|(Choose how to pay)/i,
+		} );
 
-		await page.waitForTimeout( 2000 );
+		let readyToBuy;
+		try {
+			await page.waitForSelector( 'button#buy_button', {
+				visible: true,
+				timeout: 10000,
+			} );
+			readyToBuy = true;
+		} catch ( err ) {
+			console.warn( err );
+			readyToBuy = false;
+		}
 
-		await page
-			.waitForSelector( 'button[data-testid="pick-plan"]' )
-			.then( ( button ) => button.click() );
+		if ( ! readyToBuy ) {
+			// Select Payment Plan - 4 weeks & click continue.
+			await page
+				.waitForSelector(
+					'[id="payinparts_kp.0-ui"] input[type="radio"]'
+				)
+				.then( ( radio ) => radio.click() );
 
-		await page.waitForTimeout( 2000 );
+			await page.waitForTimeout( 2000 );
+
+			await expect( page ).toClick( 'button', {
+				text: 'Continue',
+			} );
+		}
 
 		// Confirm payment.
-		await page
-			.waitForSelector( 'button#buy_button' )
-			.then( ( button ) => button.click() );
+		await page.waitForSelector( 'button#buy_button' );
+		await page.waitForTimeout( 2000 ); // We need to wait a bit for the button to become clickable.
+		await expect( page ).toClick( 'button#buy_button' );
 
 		// Wait for the order confirmation page to load.
 		await page.waitForNavigation( {
