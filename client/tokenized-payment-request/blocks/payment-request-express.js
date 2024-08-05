@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
  * Internal dependencies
  */
 import { useInitialization } from './use-initialization';
-import { getPaymentRequestData } from '../../payment-request/utils';
+import { getPaymentRequestData } from '../frontend-utils';
 
 /**
  * PaymentRequestExpressComponent
@@ -28,6 +28,7 @@ const PaymentRequestExpressComponent = ( {
 	onClick,
 	onClose,
 	onPaymentRequestAvailable,
+	cartData,
 } ) => {
 	// TODO: Don't display custom button when result.requestType
 	// is `apple_pay` or `google_pay`.
@@ -42,7 +43,19 @@ const PaymentRequestExpressComponent = ( {
 		setExpressPaymentError,
 		onClick,
 		onClose,
+		cartData,
 	} );
+
+	useEffect( () => {
+		if ( paymentRequest ) {
+			const orderAttribution = window?.wc_order_attribution;
+			if ( orderAttribution ) {
+				orderAttribution.setOrderTracking(
+					orderAttribution.params.allowTracking
+				);
+			}
+		}
+	}, [ paymentRequest ] );
 
 	const { type, theme, height } = getPaymentRequestData( 'button' );
 
@@ -93,13 +106,16 @@ const PaymentRequestExpressComponent = ( {
 	};
 
 	return (
-		<PaymentRequestButtonElement
-			onClick={ onPaymentRequestButtonClick }
-			options={ {
-				style: paymentRequestButtonStyle,
-				paymentRequest,
-			} }
-		/>
+		<div>
+			<PaymentRequestButtonElement
+				onClick={ onPaymentRequestButtonClick }
+				options={ {
+					style: paymentRequestButtonStyle,
+					paymentRequest,
+				} }
+			/>
+			<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>
+		</div>
 	);
 };
 
