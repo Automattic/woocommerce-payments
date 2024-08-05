@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Use Stripe's Express Checkout Element (ECE) for express checkout button previews in the settings when ECE is enabled.
