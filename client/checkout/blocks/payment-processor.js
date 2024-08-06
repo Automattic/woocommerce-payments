@@ -193,8 +193,24 @@ const PaymentProcessor = ( {
 
 					if ( result.error ) {
 						return {
-							type: 'error',
-							message: result.error.message,
+							type: 'success',
+							meta: {
+								paymentMethodData: {
+									payment_method:
+										upeMethods[ paymentMethodId ],
+									'wcpay-payment-method': 'ERROR',
+									'wcpay-payment-method-error-code':
+										result.error.code,
+									'wcpay-payment-method-error-decline-code':
+										result.error.decline_code,
+									'wcpay-payment-method-error-message':
+										result.error.message,
+									'wcpay-payment-method-error-type':
+										result.error.type,
+									'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+									'wcpay-fingerprint': fingerprint,
+								},
+							},
 						};
 					}
 

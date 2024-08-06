@@ -113,6 +113,13 @@ class Payment_Information {
 	private $customer_id;
 
 	/**
+	 * Will be set if there was an error during setup.
+	 *
+	 * @var ?\Exception
+	 */
+	private $error = null;
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
@@ -260,7 +267,16 @@ class Payment_Information {
 			$order->add_meta_data( 'is_woopay', true, true );
 			$order->save_meta_data();
 		}
-		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
+		$pi = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
+
+		if ( 'ERROR' === $payment_method ) {
+			$error_message = $request['wcpay-payment-method-error-message'] ?? __( 'Invalid Payment Method', 'woocommerce-payments' );
+			$error_code    = $request['wcpay-payment-method-error-code'] ?? 'unknown-error';
+			$error         = new Invalid_Payment_Method_Exception( $error_message, $error_code );
+			$pi->set_error( $error );
+		}
+
+		return $pi;
 	}
 
 	/**
@@ -454,5 +470,34 @@ class Payment_Information {
 	 */
 	public function get_customer_id() {
 		return $this->customer_id;
+	}
+
+
+	/**
+	 * Sets the error data.
+	 *
+	 * @param \Exception $error The error to be set.
+	 * @return void
+	 */
+	public function set_error( \Exception $error ) {
+		$this->error = $error;
+	}
+
+	/**
+	 * True if an error is set.
+	 *
+	 * @return boolean
+	 */
+	public function has_error() {
+		return $this->error && $this->error instanceof \Exception;
+	}
+
+	/**
+	 * Returns the error data.
+	 *
+	 * @return ?\Exception
+	 */
+	public function get_error() {
+		return $this->error;
 	}
 }

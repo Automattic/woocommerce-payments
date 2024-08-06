@@ -17,6 +17,7 @@ import {
 import {
 	appendFraudPreventionTokenInputToForm,
 	appendPaymentMethodIdToForm,
+	appendPaymentMethodErrorDataToForm,
 	getPaymentMethodTypes,
 	getSelectedUPEGatewayPaymentMethod,
 	getTerms,
@@ -192,14 +193,7 @@ function createStripePaymentMethod(
 
 	return api
 		.getStripeForUPE( paymentMethodType )
-		.createPaymentMethod( { elements, params: params } )
-		.then( ( paymentMethod ) => {
-			if ( paymentMethod.error ) {
-				throw paymentMethod.error;
-			}
-
-			return paymentMethod;
-		} );
+		.createPaymentMethod( { elements, params: params } );
 }
 
 /**
@@ -563,11 +557,20 @@ export const processPayment = (
 				$form,
 				paymentMethodType
 			);
+
+			if ( paymentMethodObject.error ) {
+				appendPaymentMethodIdToForm( $form, 'ERROR' );
+				appendPaymentMethodErrorDataToForm(
+					$form,
+					paymentMethodObject.error
+				);
+			} else {
+				appendPaymentMethodIdToForm(
+					$form,
+					paymentMethodObject.paymentMethod.id
+				);
+			}
 			appendFingerprintInputToForm( $form, fingerprint );
-			appendPaymentMethodIdToForm(
-				$form,
-				paymentMethodObject.paymentMethod.id
-			);
 			appendFraudPreventionTokenInputToForm( $form );
 			await additionalActionsHandler(
 				paymentMethodObject.paymentMethod,
