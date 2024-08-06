@@ -426,13 +426,16 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		// Get the order and make sure it is an order and the payment methods match.
-		$order             = $this->get_order_from_event_body_intent_id( $event_body );
+		$order             = $this->get_order_from_event_body( $event_body );
 		$payment_method_id = $payment_method['id'] ?? null;
 
-		if ( ! $order
-			|| empty( $payment_method_id )
-			|| $payment_method_id !== $order->get_meta( '_payment_method_id' ) ) {
-			Logger::debug( 'Ignoring payment intent failed. Order not found or payment method ID does not match:' . $payment_method_id );
+		if ( ! $order || empty( $payment_method_id ) ) {
+			Logger::debug( 'Order not found from event body.' );
+			return;
+		}
+
+		if ( Payment_Method::CARD_PRESENT !== $payment_method_type && $payment_method_id !== $order->get_meta( '_payment_method_id' ) ) {
+			Logger::debug( 'Payment method ID does not match order payment method ID.' );
 			return;
 		}
 
@@ -456,7 +459,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object  = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$currency      = $this->read_webhook_property( $event_object, 'currency' );
-		$order         = $this->get_order_from_event_body_intent_id( $event_body );
+		$order         = $this->get_order_from_event_body( $event_body );
 		$intent_status = $this->read_webhook_property( $event_object, 'status' );
 		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
@@ -708,7 +711,7 @@ class WC_Payments_Webhook_Processing_Service {
 	}
 
 	/**
-	 * Gets the order related to the event intent id.
+	 * Gets the order related to the event.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
@@ -717,7 +720,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @return boolean|WC_Order|WC_Order_Refund
 	 */
-	private function get_order_from_event_body_intent_id( $event_body ) {
+	private function get_order_from_event_body( $event_body ) {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id    = $this->read_webhook_property( $event_object, 'id' );
@@ -729,20 +732,19 @@ class WC_Payments_Webhook_Processing_Service {
 			// Retrieving order with order_id in case intent_id was not properly set.
 			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
 			$metadata = $this->read_webhook_property( $event_object, 'metadata' );
-
-			if ( isset( $metadata['order_id'] ) ) {
-				$order_id = $metadata['order_id'];
-			} elseif ( ! empty( $event_object['invoice'] ) ) {
-				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
-				return false;
-			} else {
+			$order_id = $metadata['order_id'] ?? null;
+			// If metadata order id is null, try to read from the charges metadata.
+			if ( null === $order_id ) {
 				$charges  = $this->read_webhook_property( $event_object, 'charges' );
 				$charge   = $charges[0] ?? [];
 				$order_id = $charge['metadata']['order_id'] ?? null;
 			}
 
-			if ( ! $order_id ) {
+			if ( $order_id ) {
 				$order = wc_get_order( $order_id );
+			} elseif ( ! empty( $event_object['invoice'] ) ) {
+				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
+				return false;
 			}
 		}
 
