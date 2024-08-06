@@ -44,7 +44,7 @@ const Dialog = () => {
 							);
 							setIsHidden( true );
 						} }
-						href="https://woo.com/document/woopayments/payment-methods/buy-now-pay-later/"
+						href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/"
 					>
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 					</ExternalLink>
