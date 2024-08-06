@@ -19,7 +19,7 @@ import {
 import * as navigation from '../../utils/shopper-navigation';
 import { getPriceFromProduct } from '../../utils/shopper';
 
-test.describe( 'Merchant Multi-Currency Settings', () => {
+test.describe( 'Multi-currency setup', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
 	let wasMulticurrencyEnabled: boolean;

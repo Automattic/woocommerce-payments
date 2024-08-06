@@ -17,7 +17,7 @@ import {
 } from '../../utils/merchant';
 import * as navigation from '../../utils/merchant-navigation';
 
-test.describe( 'Merchant On-boarding', () => {
+test.describe( 'Multi-currency on-boarding', () => {
 	let page: Page;
 	let wasMulticurrencyEnabled: boolean;
 	let activeThemeSlug: string;
@@ -146,7 +146,7 @@ test.describe( 'Merchant On-boarding', () => {
 		} );
 	} );
 
-	test.describe( 'Geolocation Features', () => {
+	test.describe( 'Geolocation features', () => {
 		test( 'should offer currency switch by geolocation', async () => {
 			await navigation.goToMultiCurrencyOnboarding( page );
 			await goToNextOnboardingStep( page );
@@ -193,7 +193,7 @@ test.describe( 'Merchant On-boarding', () => {
 		} );
 	} );
 
-	test.describe( 'Currency Switcher Widget', () => {
+	test.describe( 'Currency Switcher widget', () => {
 		test( 'should offer the currency switcher widget while Storefront theme is active', async () => {
 			await activateTheme( page, 'storefront' );
 			await navigation.goToMultiCurrencyOnboarding( page );

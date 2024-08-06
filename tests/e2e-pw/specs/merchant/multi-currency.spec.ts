@@ -14,7 +14,7 @@ import {
 } from '../../utils/merchant';
 import * as navigation from '../../utils/merchant-navigation';
 
-test.describe( 'Merchant Multi-Currency', () => {
+test.describe( 'Multi-currency', () => {
 	let wasMulticurrencyEnabled: boolean;
 	let page: Page;
 
