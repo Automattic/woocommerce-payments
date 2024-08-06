@@ -1,0 +1,13 @@
+services:
+  k6:
+    image: grafana/k6
+    working_dir: /woopayments
+    volumes:
+      - $PWD:/woopayments
+    environment:
+      - "BASE_URL=http://host.docker.internal:8088"
+      - "K6_WEB_DASHBOARD=true"
+      - "K6_WEB_DASHBOARD_PERIOD=1s"
+    ports:
+      - "5665:5665"
+    ipc: host
