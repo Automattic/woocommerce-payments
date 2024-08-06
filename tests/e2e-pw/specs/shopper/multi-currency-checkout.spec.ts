@@ -15,7 +15,7 @@ import {
 import { placeOrderWithCurrency } from '../../utils/shopper';
 import * as navigation from '../../utils/shopper-navigation';
 
-test.describe( 'Shopper Multi-Currency checkout', () => {
+test.describe( 'Multi-currency checkout', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
 	let wasMulticurrencyEnabled: boolean;
