@@ -406,7 +406,6 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve charge ID to order.
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
-		Logger::debug( 'Processing payment intent failed event.' );
 		// Check to make sure we should process this according to the payment method.
 		$charge_id           = $event_body['data']['object']['charges']['data'][0]['id'] ?? '';
 		$last_payment_error  = $event_body['data']['object']['last_payment_error'] ?? null;
@@ -421,7 +420,6 @@ class WC_Payments_Webhook_Processing_Service {
 		];
 
 		if ( empty( $payment_method_type ) || ! in_array( $payment_method_type, $actionable_methods, true ) ) {
-			Logger::debug( 'Ignoring payment intent failed event for payment method type: ' . $payment_method_type );
 			return;
 		}
 
@@ -430,12 +428,10 @@ class WC_Payments_Webhook_Processing_Service {
 		$payment_method_id = $payment_method['id'] ?? null;
 
 		if ( ! $order || empty( $payment_method_id ) ) {
-			Logger::debug( 'Order not found from event body.' );
 			return;
 		}
 
 		if ( Payment_Method::CARD_PRESENT !== $payment_method_type && $payment_method_id !== $order->get_meta( '_payment_method_id' ) ) {
-			Logger::debug( 'Payment method ID does not match order payment method ID.' );
 			return;
 		}
 
