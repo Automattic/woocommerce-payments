@@ -741,7 +741,7 @@ class WC_Payments_Webhook_Processing_Service {
 			}
 
 			if ( $order_id ) {
-				$order = wc_get_order( $order_id );
+				$order = $this->wcpay_db->order_from_order_id( $order_id );
 			} elseif ( ! empty( $event_object['invoice'] ) ) {
 				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
 				return false;
