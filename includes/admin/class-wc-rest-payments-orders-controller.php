@@ -395,7 +395,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * Use-cases: Mobile apps using it for `card_present` payment types. (`interac_present` is handled by the apps via Stripe SDK).
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
+	 *
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @throws \WCPay\Exceptions\Order_Not_Found_Exception
 	 */
 	public function create_terminal_intent( $request ) {
 		// Do not process non-existing orders.
@@ -403,6 +405,12 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		if ( false === $order ) {
 			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 		}
+		$intent_id = $this->order_service->get_intent_id_for_order( $order );
+
+		if ( ! empty( $intent_id ) ) {
+			return new WP_Error( 'wcpay_server_error', __( 'Payment intent already exist for this order.', 'woocommerce-payments' ), [ 'status' => 400 ] );
+		}
+
 		try {
 			$currency                 = strtolower( $order->get_currency() );
 			$customer_id              = $request->get_param( 'customer_id' );
@@ -419,11 +427,16 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$wcpay_server_request->set_payment_method_types( $this->get_terminal_intent_payment_method( $request ) );
 			$wcpay_server_request->set_capture_method( 'manual' === $this->get_terminal_intent_capture_method( $request ) );
 			$wcpay_server_request->set_hook_args( $order );
-			$intent = $wcpay_server_request->send();
+			$intent    = $wcpay_server_request->send();
+			$intent_id = ! empty( $intent ) ? $intent->get_id() : null;
+
+			if ( $intent_id ) {
+				$this->order_service->set_intent_id_for_order( $order, $intent_id );
+			}
 
 			return rest_ensure_response(
 				[
-					'id' => ! empty( $intent ) ? $intent->get_id() : null,
+					'id' => $intent_id,
 				]
 			);
 		} catch ( \Throwable $e ) {

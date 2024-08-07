@@ -81,7 +81,13 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_token_service    = $this->createMock( WC_Payments_Token_Service::class );
 		$this->order_service         = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->mock_api_client ] )
-			->setMethods( [ 'attach_intent_info_to_order' ] )
+			->setMethods(
+				[
+					'attach_intent_info_to_order',
+					'get_intent_id_for_order',
+					'set_intent_id_for_order',
+				]
+			)
 			->getMock();
 
 		$this->original_token_service = WC_Payments::get_token_service();
@@ -1185,6 +1191,27 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( '' );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'set_intent_id_for_order' )
+			->with(
+				$this->callback(
+					function ( $received_order ) use ( $order ) {
+						// Order data is updated in the controller, so we can't pass the $order.
+						// Instead, we will compare is the order id same.
+						$this->assertInstanceOf( WC_Order::class, $received_order );
+						$this->assertEquals( $order->get_id(), $received_order->get_id() );
+						return true;
+					}
+				),
+				$intent->get_id()
+			);
+
 		$request = $this->mock_wcpay_request( Create_Intention::class );
 
 		$request->expects( $this->once() )
@@ -1244,6 +1271,15 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_create_terminal_intent_will_return_error_response_if_server_request_fails() {
 		$order = $this->create_mock_order();
 
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( '' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'set_intent_id_for_order' );
+
 		$request = $this->mock_wcpay_request( Create_Intention::class );
 
 		$request->expects( $this->once() )
@@ -1277,6 +1313,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'get_intent_id_for_order' );
+
 		$response = $this->controller->create_terminal_intent( $request );
 
 		$this->assertInstanceOf( 'WP_Error', $response );
@@ -1295,6 +1335,16 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 		$request->set_param( 'payment_methods', 'not_an_array' );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( '' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'set_intent_id_for_order' );
+
 		$response = $this->controller->create_terminal_intent( $request );
 
 		$this->assertInstanceOf( 'WP_Error', $response );
@@ -1315,6 +1365,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'payment_methods', [ 'invalid_payment_method' ] );
 		$response = $this->controller->create_terminal_intent( $request );
 
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'get_intent_id_for_order' );
+
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
@@ -1331,6 +1385,15 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 		$request->set_param( 'capture_method', 'invalid_payment_method' );
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( '' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'set_intent_id_for_order' );
+
 		$response = $this->controller->create_terminal_intent( $request );
 
 		$this->assertInstanceOf( 'WP_Error', $response );
