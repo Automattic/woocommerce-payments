@@ -1325,6 +1325,33 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 404, $data['status'] );
 	}
 
+	public function test_create_terminal_intent_error_when_intent_id_exists() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_123' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'set_intent_id_for_order' );
+
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 400, $data['status'] );
+	}
+
 	public function test_create_terminal_intent_invalid_payment_method_format() {
 		$order = $this->create_mock_order();
 
