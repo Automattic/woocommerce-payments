@@ -147,44 +147,28 @@ class WC_Payments_Admin {
 
 		$this->admin_child_pages = [
 			'wc-payments-overview'     => [
-				'id'       => 'wc-payments-overview',
-				'title'    => __( 'Overview', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/overview',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 10,
-				],
+				'id'     => 'wc-payments-overview',
+				'title'  => __( 'Overview', 'woocommerce-payments' ),
+				'parent' => 'wc-payments',
+				'path'   => '/payments/overview',
 			],
 			'wc-payments-deposits'     => [
-				'id'       => 'wc-payments-deposits',
-				'title'    => __( 'Deposits', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/deposits',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 20,
-				],
+				'id'     => 'wc-payments-deposits',
+				'title'  => __( 'Deposits', 'woocommerce-payments' ),
+				'parent' => 'wc-payments',
+				'path'   => '/payments/deposits',
 			],
 			'wc-payments-transactions' => [
-				'id'       => 'wc-payments-transactions',
-				'title'    => __( 'Transactions', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/transactions',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 30,
-				],
+				'id'     => 'wc-payments-transactions',
+				'title'  => __( 'Transactions', 'woocommerce-payments' ),
+				'parent' => 'wc-payments',
+				'path'   => '/payments/transactions',
 			],
 			'wc-payments-disputes'     => [
-				'id'       => 'wc-payments-disputes',
-				'title'    => __( 'Disputes', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/disputes',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 40,
-				],
+				'id'     => 'wc-payments-disputes',
+				'title'  => __( 'Disputes', 'woocommerce-payments' ),
+				'parent' => 'wc-payments',
+				'path'   => '/payments/disputes',
 			],
 		];
 	}
@@ -317,12 +301,6 @@ class WC_Payments_Admin {
 				'path'       => $top_level_link,
 				'position'   => '55.7', // After WooCommerce & Product menu items.
 				'icon'       => $menu_icon,
-				'nav_args'   => [
-					'title'        => 'WooPayments',
-					'is_category'  => $should_render_full_menu,
-					'menuId'       => 'plugins',
-					'is_top_level' => true,
-				],
 			]
 		);
 
@@ -344,9 +322,6 @@ class WC_Payments_Admin {
 						'parent'     => 'wc-payments',
 						'path'       => '/payments/onboarding',
 						'capability' => 'manage_woocommerce',
-						'nav_args'   => [
-							'parent' => 'wc-payments',
-						],
 					]
 				);
 				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
@@ -356,40 +331,28 @@ class WC_Payments_Admin {
 		if ( $should_render_full_menu ) {
 			if ( $this->account->is_card_present_eligible() && $this->account->has_card_readers_available() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
-					'id'       => 'wc-payments-card-readers',
-					'title'    => __( 'Card Readers', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/card-readers',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 50,
-					],
+					'id'     => 'wc-payments-card-readers',
+					'title'  => __( 'Card Readers', 'woocommerce-payments' ),
+					'parent' => 'wc-payments',
+					'path'   => '/payments/card-readers',
 				];
 			}
 
 			if ( $this->account->get_capital()['has_previous_loans'] ) {
 				$this->admin_child_pages['wc-payments-capital'] = [
-					'id'       => 'wc-payments-capital',
-					'title'    => __( 'Capital Loans', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/loans',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 60,
-					],
+					'id'     => 'wc-payments-capital',
+					'title'  => __( 'Capital Loans', 'woocommerce-payments' ),
+					'parent' => 'wc-payments',
+					'path'   => '/payments/loans',
 				];
 			}
 
 			if ( WC_Payments_Features::is_documents_section_enabled() ) {
 				$this->admin_child_pages['wc-payments-documents'] = [
-					'id'       => 'wc-payments-documents',
-					'title'    => __( 'Documents', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/documents',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 50,
-					],
+					'id'     => 'wc-payments-documents',
+					'title'  => __( 'Documents', 'woocommerce-payments' ),
+					'parent' => 'wc-payments',
+					'path'   => '/payments/documents',
 				];
 			}
 
@@ -409,12 +372,6 @@ class WC_Payments_Admin {
 					'parent'    => 'woocommerce-settings-payments',
 					'screen_id' => 'woocommerce_page_wc-settings-checkout-woocommerce_payments',
 					'title'     => 'WooPayments',
-					'nav_args'  => [
-						'parent' => 'wc-payments',
-						'title'  => __( 'Settings', 'woocommerce-payments' ),
-						'url'    => 'wc-settings&tab=checkout&section=woocommerce_payments',
-						'order'  => 99,
-					],
 				]
 			);
 			// Add the Settings submenu directly to the array, it's the only way to make it link to an absolute URL.
