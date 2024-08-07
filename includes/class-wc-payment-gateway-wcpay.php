@@ -1495,8 +1495,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
-		if ( $payment_information->has_error() ) {
-			throw $payment_information->get_error();
+		// If an error happened during the payment setup in the client it will be saved in the payment information so we can throw
+		// the error here and follow the standard failed order flow.
+		$error = $payment_information->get_error();
+		if ( ! is_null( $error ) ) {
+			throw $error;
 		}
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
