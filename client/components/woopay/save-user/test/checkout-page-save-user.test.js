@@ -2,7 +2,12 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import {
+	render,
+	screen,
+	waitFor,
+	queryByAttribute,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
@@ -32,7 +37,16 @@ jest.mock(
 	{ virtual: true }
 );
 
-jest.mock( '@wordpress/data' );
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn().mockReturnValue( {
+		setBillingAddress: jest.fn(),
+		setShippingAddress: jest.fn(),
+	} ),
+	dispatch: jest.fn().mockReturnValue( {
+		onLoad: jest.fn(),
+	} ),
+	registerStore: jest.fn(),
+} ) );
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn().mockReturnValue( true ),
@@ -271,9 +285,19 @@ describe( 'CheckoutPageSaveUser', () => {
 	} );
 
 	it( 'fills the phone input on blocks checkout with phone number field fallback', async () => {
-		render( <CheckoutPageSaveUser isBlocksCheckout={ true } />, {
-			wrapper: BlocksCheckoutEnvironmentMock,
-		} );
+		const { container } = render(
+			<CheckoutPageSaveUser isBlocksCheckout={ true } />,
+			{
+				wrapper: BlocksCheckoutEnvironmentMock,
+			}
+		);
+
+		const getPhoneInput = () =>
+			queryByAttribute(
+				'id',
+				container,
+				'woopay_user_phone_field_no_country_code'
+			);
 
 		const saveMyInfoCheckbox = screen.getByLabelText(
 			'Securely save my information for 1-click checkout'
@@ -284,9 +308,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		// click on the checkbox to show the phone field, input should be filled with the first phone input field
 		userEvent.click( saveMyInfoCheckbox );
 		expect( saveMyInfoCheckbox ).toBeChecked();
-		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
-			'2015555551'
-		);
+		expect( getPhoneInput().value ).toEqual( '2015555551' );
 
 		// click on the checkbox to hide/show it again (and reset the previously entered values)
 		userEvent.click( saveMyInfoCheckbox );
@@ -295,9 +317,7 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		userEvent.click( saveMyInfoCheckbox );
 		expect( saveMyInfoCheckbox ).toBeChecked();
-		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
-			'2015555552'
-		);
+		expect( getPhoneInput().value ).toEqual( '2015555552' );
 
 		// click on the checkbox to hide/show it again (and reset the previously entered values)
 		userEvent.click( saveMyInfoCheckbox );
@@ -306,9 +326,7 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		userEvent.click( saveMyInfoCheckbox );
 		expect( saveMyInfoCheckbox ).toBeChecked();
-		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
-			'2015555553'
-		);
+		expect( getPhoneInput().value ).toEqual( '2015555553' );
 
 		// click on the checkbox to hide/show it again (and reset the previously entered values)
 		userEvent.click( saveMyInfoCheckbox );
@@ -317,9 +335,7 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		userEvent.click( saveMyInfoCheckbox );
 		expect( saveMyInfoCheckbox ).toBeChecked();
-		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
-			''
-		);
+		expect( getPhoneInput().value ).toEqual( '' );
 		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
 	} );
 

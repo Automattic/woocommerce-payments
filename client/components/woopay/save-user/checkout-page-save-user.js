@@ -10,11 +10,12 @@ import {
 	ValidationInputError,
 } from '@woocommerce/blocks-checkout'; // eslint-disable-line import/no-unresolved
 import { VALIDATION_STORE_KEY } from '@woocommerce/block-data'; // eslint-disable-line import/no-unresolved
+import { validatePhoneNumber } from '@woocommerce/components/build/phone-number-input/validation';
 
 /**
  * Internal dependencies
  */
-import PhoneNumberInput from 'settings/phone-input';
+import PhoneInput from 'settings/phone-input';
 import { getConfig } from 'utils/checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
@@ -70,7 +71,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		// Take out any non-digit characters, except +.
 		phoneFieldValue = phoneFieldValue.replace( /[^\d+]*/g, '' );
 
-		if ( ! phoneFieldValue.startsWith( '+' ) ) {
+		if ( phoneFieldValue && ! phoneFieldValue.startsWith( '+' ) ) {
 			phoneFieldValue = '+1' + phoneFieldValue;
 		}
 
@@ -109,9 +110,16 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const handleCheckboxClick = ( e ) => {
 		const isChecked = e.target.checked;
 		if ( isChecked ) {
-			setPhoneNumber( getPhoneFieldValue() );
+			const phoneFieldValue = getPhoneFieldValue();
+			setPhoneNumber( phoneFieldValue );
+			if ( phoneFieldValue ) {
+				onPhoneValidationChange(
+					validatePhoneNumber( phoneFieldValue, '' )
+				);
+			}
 		} else {
 			setPhoneNumber( '' );
+			onPhoneValidationChange( null );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
@@ -275,7 +283,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								isPhoneValid === false ? 'has-error' : ''
 							}
 						>
-							<PhoneNumberInput
+							<PhoneInput
 								value={ phoneNumber }
 								onValueChange={ setPhoneNumber }
 								onValidationChange={ onPhoneValidationChange }
@@ -285,6 +293,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								inputProps={ {
 									name:
 										'woopay_user_phone_field[no-country-code]',
+									id:
+										'woopay_user_phone_field_no_country_code',
 								} }
 								isBlocksCheckout={ isBlocksCheckout }
 							/>

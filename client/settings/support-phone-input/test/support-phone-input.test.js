@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, queryByAttribute } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -39,14 +39,22 @@ describe( 'SupportPhoneInput', () => {
 			'+12345678901',
 			setSupportPhone,
 		] );
-		render( <SupportPhoneInput /> );
+		const { container } = render( <SupportPhoneInput /> );
 
-		const newPhone = '+12377778888';
-		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
-			target: { value: newPhone },
-		} );
+		const expectedNewPhone = '+12377778888';
+		const newPhone = expectedNewPhone.replace( '+1', '' );
+		fireEvent.change(
+			queryByAttribute(
+				'id',
+				container,
+				'account-business-support-phone-input'
+			),
+			{
+				target: { value: newPhone },
+			}
+		);
 
-		expect( setSupportPhone ).toHaveBeenCalledWith( newPhone );
+		expect( setSupportPhone ).toHaveBeenCalledWith( expectedNewPhone );
 	} );
 
 	it( 'displays error message for empty phone input when it has been set', async () => {
@@ -64,7 +72,13 @@ describe( 'SupportPhoneInput', () => {
 		// Mock that the phone number input is set to empty.
 		useAccountBusinessSupportPhone.mockReturnValue( [ '', jest.fn() ] );
 
-		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+		const phoneInput = queryByAttribute(
+			'id',
+			container,
+			'account-business-support-phone-input'
+		);
+		fireEvent.blur( phoneInput );
+		fireEvent.change( phoneInput, {
 			target: { value: '' },
 		} );
 

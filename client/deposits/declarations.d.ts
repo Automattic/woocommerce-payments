@@ -3,6 +3,26 @@
  * because it does not have its own types (as of version 5.1.2).
  * We should remove this file once we've updated to a version of `@woocommerce/components` with type defs.
  */
+declare module '@woocommerce/components/build/phone-number-input/validation' {
+	const validatePhoneNumber: ( e164: string, country: string ) => boolean;
+}
+
+declare module '@woocommerce/components/build/phone-number-input' {
+	const PhoneNumberInput: ( props: {
+		value: string;
+		onChange: ( value: string, e164: string, country: string ) => void;
+		id?: string;
+		className?: string;
+		placeholder?: string;
+		name?: string;
+		selectedRender?: ( country: Country ) => React.ReactNode;
+		itemRender?: ( country: Country ) => React.ReactNode;
+		arrowRender?: () => React.ReactNode;
+	} ) => JSX.Element;
+
+	export = PhoneNumberInput;
+}
+
 declare module '@woocommerce/components' {
 	const SummaryListPlaceholder: ( props: {
 		numberOfItems: number;
