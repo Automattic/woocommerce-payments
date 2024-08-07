@@ -484,15 +484,6 @@ class Payment_Information {
 	}
 
 	/**
-	 * True if an error is set.
-	 *
-	 * @return boolean
-	 */
-	public function has_error() {
-		return $this->error && $this->error instanceof \Exception;
-	}
-
-	/**
 	 * Returns the error data.
 	 *
 	 * @return ?\Exception
