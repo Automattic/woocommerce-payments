@@ -118,7 +118,12 @@ const ProductDetail = ( { cart, context } ) => {
 	return (
 		<div className="wc-block-components-bnpl-wrapper">
 			<div className="pmme-container">
-				{ showLoader ? <div className="pmme-loading"></div> : null }
+				{ showLoader ? (
+					<div className="pmme-loading">
+						<div className="pmme-loading--line pmme-loading--header"></div>
+						<div className="pmme-loading--line pmme-loading--body"></div>
+					</div>
+				) : null }
 				<div style={ { display: showLoader ? 'none' : 'block' } }>
 					<Elements
 						stripe={ stripe }
