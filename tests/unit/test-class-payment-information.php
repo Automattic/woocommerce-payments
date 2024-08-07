@@ -9,6 +9,7 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
+use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
@@ -203,6 +204,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $payment_information->is_using_saved_payment_method() );
 		$this->assertEquals( $this->card_token, $payment_information->get_payment_token() );
 		$this->assertTrue( $payment_information->is_merchant_initiated() );
+		$this->assertNull( $payment_information->get_error() );
 	}
 
 	public function test_from_payment_request_without_token() {
@@ -212,6 +214,26 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( self::PAYMENT_METHOD, $payment_information->get_payment_method() );
 		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
 		$this->assertFalse( $payment_information->is_merchant_initiated() );
+		$this->assertNull( $payment_information->get_error() );
+	}
+
+	public function test_from_payment_request_with_error() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                     => CC_Payment_Gateway::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY     => 'ERROR',
+				'wcpay-payment-method-error-message' => 'Invalid Card',
+				'wcpay-payment-method-error-code'    => 'invalid_card',
+			]
+		);
+		$this->assertEquals( 'ERROR', $payment_information->get_payment_method() );
+		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
+		$this->assertFalse( $payment_information->is_merchant_initiated() );
+
+		$error = $payment_information->get_error();
+		$this->assertInstanceOf( Invalid_Payment_Method_Exception::class, $error );
+		$this->assertEquals( 'Invalid Card', $error->getMessage() );
+		$this->assertEquals( 'invalid_card', $error->get_error_code() );
 	}
 
 	public function test_get_cvc_confirmation_from_request_returns_null_if_payment_method_is_empty() {
