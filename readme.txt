@@ -94,7 +94,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.0.2 - 2024-08-06 =
+= 8.0.2 - 2024-08-07 =
+* Fix - Only enable Direct Checkout when WooPayments gateway is enabled.
+* Fix - opt-in checks to prevent blocking customers using other payment methods
 
 
 = 8.0.1 - 2024-07-31 =
