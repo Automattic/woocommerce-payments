@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.3
-Stable tag: 8.0.1
+Stable tag: 8.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,12 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 8.0.2 - 2024-08-07 =
+* Fix - Add opt-in checks to prevent blocking customers using other payment methods.
+* Fix - Fix error in Express Checkout Element use with coupons.
+* Fix - Only enable Direct Checkout when WooPayments gateway is enabled.
+
 
 = 8.0.1 - 2024-07-31 =
 * Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
