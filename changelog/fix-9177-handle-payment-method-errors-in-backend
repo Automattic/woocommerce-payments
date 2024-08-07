@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+If a payment method fails to be created in the frontend during checkout, forward the errors to the server so it can be recorded in an order.
