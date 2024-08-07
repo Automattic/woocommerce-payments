@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix uncaught error on the block based Cart page when WooPayments is disabled.
