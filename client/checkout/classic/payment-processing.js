@@ -591,6 +591,15 @@ export const processPayment = (
 };
 
 /**
+ * Used only for testing, resets the hasCheckoutCompleted value.
+ *
+ * @return {void}
+ */
+export function __resetHasCheckoutCompleted() {
+	hasCheckoutCompleted = false;
+}
+
+/**
  * Used only for testing, resets the gatewayUPEComponents internal cache of elements for a given property.
  *
  * @param {string} paymentMethodType The paymentMethodType we want to remove the upeElement from.
