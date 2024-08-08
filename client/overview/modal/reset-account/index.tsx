@@ -26,31 +26,25 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 			className="wcpay-reset-account-modal"
 			onRequestClose={ onDismiss }
 		>
+			<p className="wcpay-reset-account-modal__headline">
+				{ strings.description }
+			</p>
 			<div className="wcpay-reset-account-modal__content">
-				<p>{ strings.description }</p>
-				<p>
-					<b>{ strings.beforeContinue }</b>
-				</p>
+				<b>{ strings.beforeContinue }</b>
 				<ol>
 					<li>{ strings.step1 }</li>
-				</ol>
-				<CardDivider />
-				<ol start={ 2 }>
 					<li>{ strings.step2 }</li>
-				</ol>
-				<CardDivider />
-				<ol start={ 3 }>
 					<li>{ strings.step3 }</li>
 				</ol>
 				<CardDivider />
-				<p>{ strings.confirmation }</p>
+				<b>{ strings.confirmation }</b>
 			</div>
 			<div className="wcpay-reset-account-modal__footer">
-				<Button variant={ 'tertiary' } onClick={ onDismiss }>
+				<Button variant="tertiary" onClick={ onDismiss }>
 					{ strings.cancel }
 				</Button>
 				<Button
-					variant={ 'primary' }
+					variant="primary"
 					isDestructive={ true }
 					onClick={ onSubmit }
 				>

@@ -13,16 +13,39 @@ import { Icon, currencyDollar } from '@wordpress/icons';
 import BlockEmbedIcon from 'components/icons/block-embed';
 import BlockPostAuthorIcon from 'components/icons/block-post-author';
 import './style.scss';
+import { recordEvent } from 'wcpay/tracks';
 
 interface Props {
+	from: string;
+	source: string;
 	onClose: () => void;
 }
 
-const SetupLivePaymentsModal: React.FC< Props > = ( { onClose }: Props ) => {
+const SetupLivePaymentsModal: React.FC< Props > = ( {
+	from,
+	source,
+	onClose,
+}: Props ) => {
 	const handleSetup = () => {
-		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-			'wcpay-disable-onboarding-test-mode': true,
+		recordEvent( 'wcpay_onboarding_flow_setup_live_payments', {
+			from,
+			source,
 		} );
+
+		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
+			'wcpay-disable-onboarding-test-mode': 'true',
+			from,
+			source: 'wcpay-setup-live-payments', // Overwrite any existing source because we are starting over.
+		} );
+	};
+
+	const trackAndClose = () => {
+		recordEvent( 'wcpay_setup_live_payments_modal_exit', {
+			from,
+			source,
+		} );
+
+		onClose();
 	};
 
 	return (
@@ -33,7 +56,7 @@ const SetupLivePaymentsModal: React.FC< Props > = ( { onClose }: Props ) => {
 			) }
 			className="wcpay-setup-real-payments-modal"
 			isDismissible={ true }
-			onRequestClose={ onClose }
+			onRequestClose={ trackAndClose }
 		>
 			<p className="wcpay-setup-real-payments-modal__headline">
 				{ __(
@@ -59,10 +82,10 @@ const SetupLivePaymentsModal: React.FC< Props > = ( { onClose }: Props ) => {
 				) }
 			</div>
 			<div className="wcpay-setup-real-payments-modal__footer">
-				<Button isTertiary onClick={ onClose }>
+				<Button variant="tertiary" onClick={ trackAndClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
-				<Button isPrimary onClick={ handleSetup }>
+				<Button variant="primary" onClick={ handleSetup }>
 					{ __( 'Continue setup', 'woocommerce-payments' ) }
 				</Button>
 			</div>

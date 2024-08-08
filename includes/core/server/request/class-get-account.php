@@ -14,7 +14,7 @@ use WC_Payments_API_Client;
  * Request class for getting account data.
  */
 class Get_Account extends Request {
-	use Use_Test_Mode_Only_When_Dev_Mode;
+	use Use_Test_Mode_Only_When_Test_Mode_Onboarding;
 
 	/**
 	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
