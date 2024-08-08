@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Replace the payment method logos component with the shared component from @woocommerce/onboarding.

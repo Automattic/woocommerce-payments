@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { render } from '@wordpress/element';
 import {
 	Button,
@@ -29,7 +29,12 @@ import LogoImg from 'assets/images/woopayments.svg?asset';
 import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
-import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
+
+const WooPaymentMethodsLogos = React.lazy( () =>
+	import( '@woocommerce/onboarding' ).then( ( module ) => {
+		return { default: module.WooPaymentMethodsLogos };
+	} )
+);
 
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
@@ -202,7 +207,12 @@ const ConnectAccountPage: React.FC = () => {
 							<InfoNotice />
 						</div>
 						<div className="connect-account-page__payment-methods">
-							<WooPaymentMethodsLogos maxElements={ 10 } />
+							<Suspense fallback={ <></> }>
+								<WooPaymentMethodsLogos
+									maxElements={ 10 }
+									isWooPayEligible={ true }
+								/>
+							</Suspense>
 							<div className="connect-account-page__payment-methods__description">
 								<div>
 									<p>
