@@ -22,6 +22,7 @@ import {
 	appendPaymentMethodIdToForm,
 	getSelectedUPEGatewayPaymentMethod,
 } from 'wcpay/checkout/utils/upe';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( '../../upe-styles' );
 
@@ -743,7 +744,7 @@ describe( 'Payment processing', () => {
 
 		expect( appendPaymentMethodIdToForm ).toHaveBeenCalledWith(
 			checkoutForm,
-			'ERROR'
+			PAYMENT_METHOD_ERROR
 		);
 
 		expect( appendPaymentMethodErrorDataToForm ).toHaveBeenCalledWith(

@@ -22,6 +22,13 @@ use WCPay\Payment_Methods\CC_Payment_Gateway;
  */
 class Payment_Information {
 	/**
+	 * Key used to indicate that an error occurred during the payment method creation in the client.
+	 *
+	 * @type string
+	 */
+	const PAYMENT_METHOD_ERROR = 'ERROR';
+
+	/**
 	 * The ID of the payment method used for this payment.
 	 *
 	 * @var string
@@ -269,7 +276,7 @@ class Payment_Information {
 		}
 		$pi = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
 
-		if ( 'ERROR' === $payment_method ) {
+		if ( self::PAYMENT_METHOD_ERROR === $payment_method ) {
 			$error_message = $request['wcpay-payment-method-error-message'] ?? __( 'Invalid Payment Method', 'woocommerce-payments' );
 			$error_code    = $request['wcpay-payment-method-error-code'] ?? 'unknown-error';
 			$error         = new \WP_Error( $error_code, $error_message );

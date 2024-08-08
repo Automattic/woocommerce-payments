@@ -220,12 +220,12 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$payment_information = Payment_Information::from_payment_request(
 			[
 				'payment_method'                     => CC_Payment_Gateway::GATEWAY_ID,
-				self::PAYMENT_METHOD_REQUEST_KEY     => 'ERROR',
+				self::PAYMENT_METHOD_REQUEST_KEY     => Payment_Information::PAYMENT_METHOD_ERROR,
 				'wcpay-payment-method-error-message' => 'Invalid Card',
 				'wcpay-payment-method-error-code'    => 'invalid_card',
 			]
 		);
-		$this->assertEquals( 'ERROR', $payment_information->get_payment_method() );
+		$this->assertEquals( Payment_Information::PAYMENT_METHOD_ERROR, $payment_information->get_payment_method() );
 		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
 		$this->assertFalse( $payment_information->is_merchant_initiated() );
 

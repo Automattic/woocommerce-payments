@@ -8,6 +8,7 @@ import { useEffect } from 'react';
  */
 import PaymentProcessor from '../payment-processor';
 import { PaymentElement } from '@stripe/react-stripe-js';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
 	validateElements: jest.fn().mockResolvedValue(),
@@ -188,7 +189,7 @@ describe( 'PaymentProcessor', () => {
 			meta: {
 				paymentMethodData: {
 					payment_method: 'woocommerce_payments',
-					'wcpay-payment-method': 'ERROR',
+					'wcpay-payment-method': PAYMENT_METHOD_ERROR,
 					'wcpay-payment-method-error-code': 'code',
 					'wcpay-payment-method-error-decline-code': 'decline_code',
 					'wcpay-payment-method-error-message':

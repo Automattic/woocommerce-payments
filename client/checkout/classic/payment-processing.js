@@ -30,7 +30,8 @@ import enableStripeLinkPaymentMethod, {
 import {
 	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
-} from '../constants';
+	PAYMENT_METHOD_ERROR,
+} from 'wcpay/checkout/constants';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
@@ -559,7 +560,7 @@ export const processPayment = (
 			);
 
 			if ( paymentMethodObject.error ) {
-				appendPaymentMethodIdToForm( $form, 'ERROR' );
+				appendPaymentMethodIdToForm( $form, PAYMENT_METHOD_ERROR );
 				appendPaymentMethodErrorDataToForm(
 					$form,
 					paymentMethodObject.error

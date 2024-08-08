@@ -27,6 +27,7 @@ import { useCustomerData } from './utils';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/classic/payment-processing';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -198,7 +199,7 @@ const PaymentProcessor = ( {
 								paymentMethodData: {
 									payment_method:
 										upeMethods[ paymentMethodId ],
-									'wcpay-payment-method': 'ERROR',
+									'wcpay-payment-method': PAYMENT_METHOD_ERROR,
 									'wcpay-payment-method-error-code':
 										result.error.code,
 									'wcpay-payment-method-error-decline-code':
