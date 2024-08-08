@@ -6,6 +6,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import { addAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -15,6 +16,30 @@ import useWooPayUser from '../../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../../hooks/use-selected-payment-method';
 import { getConfig } from 'utils/checkout';
 import { useDispatch } from '@wordpress/data';
+
+const jQueryMock = ( selector ) => {
+	if ( typeof selector === 'function' ) {
+		return selector( jQueryMock );
+	}
+
+	return {
+		on: ( event, callbackOrSelector, callback2 ) =>
+			addAction(
+				`payment-request-test.jquery-event.${ selector }${
+					typeof callbackOrSelector === 'string'
+						? `.${ callbackOrSelector }`
+						: ''
+				}.${ event }`,
+				'tests',
+				typeof callbackOrSelector === 'string'
+					? callback2
+					: callbackOrSelector
+			),
+		val: () => null,
+		is: () => null,
+		remove: () => null,
+	};
+};
 
 jest.mock( '../../hooks/use-woopay-user', () => jest.fn() );
 jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
@@ -79,6 +104,8 @@ const BlocksCheckoutEnvironmentMock = ( { children } ) => (
 
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
+		global.$ = jQueryMock;
+		global.jQuery = jQueryMock;
 		useDispatch.mockImplementation( () => {
 			return {
 				setValidationErrors: jest.fn(),

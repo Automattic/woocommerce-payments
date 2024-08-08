@@ -1799,6 +1799,7 @@ class WC_Payments {
 			// Update email field location.
 			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'woopay_fields_before_billing_details' ], -50 );
 			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_woopay_email' ], 20, 4 );
+			add_action( 'woocommerce_checkout_process', [ __CLASS__, 'maybe_show_woopay_phone_number_error' ] );
 
 			include_once __DIR__ . '/woopay-user/class-woopay-save-user.php';
 
@@ -2025,6 +2026,19 @@ class WC_Payments {
 	public static function maybe_disable_wcpay_subscriptions_on_update() {
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ( class_exists( 'WC_Subscriptions' ) || ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) ) {
 			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		}
+	}
+
+	/**
+	 * Show error when WooPay opt-in is checked but no phone number was typed.
+	 */
+	public static function maybe_show_woopay_phone_number_error() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['save_user_in_woopay'] ) && 'true' === $_POST['save_user_in_woopay'] ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( ! isset( $_POST['woopay_user_phone_field'] ) || ! isset( $_POST['woopay_user_phone_field']['no-country-code'] ) || empty( $_POST['woopay_user_phone_field']['no-country-code'] ) ) {
+				wc_add_notice( '<strong>' . __( 'Mobile Number', 'woocommerce-payments' ) . '</strong> ' . __( 'is required to create an WooPay account.', 'woocommerce-payments' ), 'error' );
+			}
 		}
 	}
 }
