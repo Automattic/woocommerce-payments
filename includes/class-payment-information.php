@@ -115,7 +115,7 @@ class Payment_Information {
 	/**
 	 * Will be set if there was an error during setup.
 	 *
-	 * @var ?\Exception
+	 * @var ?\WP_Error
 	 */
 	private $error = null;
 
