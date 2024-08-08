@@ -29,7 +29,8 @@ export const getUpdateBusinessDetailsTask = (
 	const hasSingleError = 1 === errorMessages.length;
 	const connectUrl = wcpaySettings.connectUrl;
 	const accountLinkWithSource = addQueryArgs( accountLink, {
-		source: 'overview-page__update-business-details-task',
+		from: 'WCPAY_OVERVIEW',
+		source: 'wcpay-update-business-details-task',
 	} );
 
 	let accountDetailsTaskDescription: React.ReactElement | string = '',
@@ -111,14 +112,21 @@ export const getUpdateBusinessDetailsTask = (
 		if ( hasMultipleErrors ) {
 			renderModal();
 		} else {
+			let source = 'wcpay-update-business-details-task';
+			if ( ! detailsSubmitted ) {
+				source = 'wcpay-finish-setup-task';
+			}
 			recordEvent( 'wcpay_account_details_link_clicked', {
-				source: 'overview-page__update-business-details-task',
+				source,
 			} );
 
 			// If the onboarding isn't complete use the connectUrl instead,
 			// as the accountLink doesn't handle redirecting back to the overview page.
 			if ( ! detailsSubmitted ) {
-				window.location.href = connectUrl;
+				window.location.href = addQueryArgs( connectUrl, {
+					from: 'WCPAY_OVERVIEW',
+					source: 'wcpay-finish-setup-task',
+				} );
 			} else {
 				window.open( accountLinkWithSource, '_blank' );
 			}

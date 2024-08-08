@@ -17,7 +17,7 @@ import {
 } from '../utils';
 import { getTracksIdentity } from 'tracks';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
-import getAppearanceType from 'wcpay/checkout/utils';
+import { getAppearanceType } from 'wcpay/checkout/utils';
 
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	const woopayEmailInput = await getTargetElement( emailSelector );
