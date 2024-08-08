@@ -1499,7 +1499,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// the error here and follow the standard failed order flow.
 		$error = $payment_information->get_error();
 		if ( ! is_null( $error ) ) {
-			throw $error;
+			throw new \Exception( $error->get_error_message() );
 		}
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.

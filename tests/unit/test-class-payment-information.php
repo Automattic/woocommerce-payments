@@ -9,7 +9,6 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
-use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
@@ -231,8 +230,8 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $payment_information->is_merchant_initiated() );
 
 		$error = $payment_information->get_error();
-		$this->assertInstanceOf( Invalid_Payment_Method_Exception::class, $error );
-		$this->assertEquals( 'Invalid Card', $error->getMessage() );
+		$this->assertInstanceOf( \WP_Error::class, $error );
+		$this->assertEquals( 'Invalid Card', $error->get_error_message() );
 		$this->assertEquals( 'invalid_card', $error->get_error_code() );
 	}
 

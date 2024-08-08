@@ -272,7 +272,7 @@ class Payment_Information {
 		if ( 'ERROR' === $payment_method ) {
 			$error_message = $request['wcpay-payment-method-error-message'] ?? __( 'Invalid Payment Method', 'woocommerce-payments' );
 			$error_code    = $request['wcpay-payment-method-error-code'] ?? 'unknown-error';
-			$error         = new Invalid_Payment_Method_Exception( $error_message, $error_code );
+			$error         = new \WP_Error( $error_code, $error_message );
 			$pi->set_error( $error );
 		}
 
@@ -476,17 +476,17 @@ class Payment_Information {
 	/**
 	 * Sets the error data.
 	 *
-	 * @param \Exception $error The error to be set.
+	 * @param \WP_Error $error The error to be set.
 	 * @return void
 	 */
-	public function set_error( \Exception $error ) {
+	public function set_error( \WP_Error $error ) {
 		$this->error = $error;
 	}
 
 	/**
 	 * Returns the error data.
 	 *
-	 * @return ?\Exception
+	 * @return ?\WP_Error
 	 */
 	public function get_error() {
 		return $this->error;

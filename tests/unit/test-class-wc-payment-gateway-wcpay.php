@@ -2577,7 +2577,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 		$pi    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
-		$pi->set_error( new \Exception( 'Invalid Card' ) );
+		$pi->set_error( new \WP_Error( 'invalid_card', 'Invalid Card' ) );
 
 		$this->expectException( \Exception::class );
 		$this->expectExceptionMessage( 'Invalid Card' );
