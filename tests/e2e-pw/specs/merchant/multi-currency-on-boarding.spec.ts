@@ -56,9 +56,15 @@ test.describe( 'Multi-currency on-boarding', () => {
 		} );
 
 		test( 'should disable the submit button when no currencies are selected', async () => {
+			// To take a better screenshot.
+			await page.setViewportSize( { width: 1280, height: 2000 } );
 			await expect(
-				page.locator( '.multi-currency-setup-wizard' )
+				page.locator(
+					'.multi-currency-setup-wizard > div > .components-card-body'
+				)
 			).toHaveScreenshot();
+			// Set the viewport back to the default size.
+			await page.setViewportSize( { width: 1280, height: 720 } );
 
 			const checkboxes = await page
 				.locator(

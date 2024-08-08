@@ -46,20 +46,4 @@ export const goToMultiCurrencyOnboarding = async ( page: Page ) => {
 		{ waitUntil: 'load' }
 	);
 	await dataHasLoaded( page );
-
-	// This is the task reminder bar that may appear on the top of the page.
-	// We need to dismiss it so it doesn't mess with the snapshots.
-	if (
-		await page
-			.locator(
-				'.woocommerce-layout__header-tasks-reminder-bar > button'
-			)
-			.isVisible()
-	) {
-		await page
-			.locator(
-				'.woocommerce-layout__header-tasks-reminder-bar > button'
-			)
-			.click();
-	}
 };
