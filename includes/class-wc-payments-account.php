@@ -1813,7 +1813,7 @@ class WC_Payments_Account {
 			$collect_payout_requirements
 		);
 
-		// If an account already exists for this site and there is no need for KYC verifications, we're done.
+		// If an account already exists for this site and/or there is no need for KYC verifications, we're done.
 		// Our platform will respond with a `false` URL in this case.
 		if ( isset( $onboarding_data['url'] ) && false === $onboarding_data['url'] ) {
 			// Clear the account cache.
