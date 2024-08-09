@@ -62,11 +62,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		afterAll( async () => {
 			page.removeAllListeners( 'dialog' );
 			page.on( 'dialog', async function ( dialog ) {
-				try {
-					await dialog.accept();
-				} catch ( err ) {
-					console.warn( err.message );
-				}
+				await dialog.accept();
 			} );
 			await merchant.logout();
 		} );
@@ -91,11 +87,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				page.removeAllListeners( 'dialog' ),
 				evalAndClick( 'button.save_order' ),
 				page.on( 'dialog', async ( dialog ) => {
-					try {
-						await dialog.accept();
-					} catch ( err ) {
-						console.warn( err.message );
-					}
+					await dialog.accept();
 				} ),
 				uiUnblocked(),
 				page.waitForNavigation( { waitUntil: 'networkidle0' } ),

@@ -136,11 +136,7 @@ beforeAll( async () => {
 
 	capturePageEventsForTearDown();
 	page.on( 'dialog', async function ( dialog ) {
-		try {
-			await dialog.accept();
-		} catch ( err ) {
-			console.warn( err.message );
-		}
+		await dialog.accept();
 	} );
 	setTestTimeouts();
 	await setupBrowser();

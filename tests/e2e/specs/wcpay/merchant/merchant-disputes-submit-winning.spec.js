@@ -64,11 +64,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 	afterAll( async () => {
 		page.removeAllListeners( 'dialog' );
 		page.on( 'dialog', async function ( dialog ) {
-			try {
-				await dialog.accept();
-			} catch ( err ) {
-				console.warn( err.message );
-			}
+			await dialog.accept();
 		} );
 		await merchant.logout();
 	} );
