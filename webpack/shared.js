@@ -10,7 +10,6 @@ module.exports = {
 	entry: mapValues(
 		{
 			index: './client/index.js',
-			'bnpl-announcement': './client/bnpl-announcement/index.js',
 			settings: './client/settings/index.js',
 			'blocks-checkout': './client/checkout/blocks/index.js',
 			woopay: './client/checkout/woopay/index.js',
