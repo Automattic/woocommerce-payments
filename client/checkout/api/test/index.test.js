@@ -40,6 +40,7 @@ const mockAppearance = {
 		'.Text': {},
 		'.Text--redirect': {},
 		'.Heading': {},
+		'.Button': {},
 	},
 	theme: 'stripe',
 	variables: {

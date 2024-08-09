@@ -88,6 +88,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			'.Text': {},
 			'.Text--redirect': {},
 			'.Heading': {},
+			'.Button': {},
 		},
 		theme: 'stripe',
 		variables: {
