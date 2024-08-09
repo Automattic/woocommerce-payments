@@ -452,6 +452,67 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Merge arrays recursively like array_merge.
+	 *
+	 * This method merges any number of arrays recursively, replacing entries with string keys with values from latter arrays.
+	 * If the entry or the next value to be assigned is an array, then it automagically treats both arguments as an array.
+	 * Numeric entries are appended, not replaced, but only if they are unique.
+	 * If the entry or the next value to be assigned is null, it will not overwrite non-null entries.
+	 *
+	 * Note that this does not work the same as array_merge_recursive:
+	 * array_merge_recursive has a behavior that is not quite helpful, especially around overwriting values
+	 * with the same string keys (it will not overwrite, but gather them in an array).
+	 *
+	 * @link http://www.php.net/manual/en/function.array-merge-recursive.php#96201 (initial source)
+	 *
+	 * @return array
+	 */
+	public static function array_merge_recursive_distinct(): array {
+		$arrays = func_get_args();
+		$base   = array_shift( $arrays );
+
+		// Make sure the base is an array.
+		if ( ! is_array( $base ) ) {
+			$base = empty( $base ) ? [] : [ $base ];
+		}
+
+		foreach ( $arrays as $append ) {
+			// Coerce single values to array.
+			if ( ! is_array( $append ) ) {
+				$append = [ $append ];
+			}
+
+			foreach ( $append as $key => $value ) {
+				if ( ! array_key_exists( $key, $base ) && ! is_numeric( $key ) ) {
+					$base[ $key ] = $value;
+					continue;
+				}
+
+				// We include null values only when using string keys that don't exist in the base.
+				// For the rest of the scenarios, null entries are ignored.
+				if ( is_null( $value ) ) {
+					continue;
+				}
+
+				if ( is_array( $value ) || ( array_key_exists( $key, $base ) && is_array( $base[ $key ] ) ) ) {
+					if ( ! isset( $base[ $key ] ) ) {
+						$base[ $key ] = [];
+					}
+					$base[ $key ] = self::array_merge_recursive_distinct( $base[ $key ], $value );
+				} elseif ( is_numeric( $key ) ) {
+					if ( ! in_array( $value, $base, true ) ) {
+						$base[] = $value;
+					}
+				} else {
+					$base[ $key ] = $value;
+				}
+			}
+		}
+
+		return $base;
+	}
+
+	/**
 	 * Gets order intent currency from meta data or order currency.
 	 *
 	 * @param WC_Order $order The order whose intent currency we want to get.
