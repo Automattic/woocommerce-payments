@@ -175,17 +175,19 @@ const ConnectAccountPage: React.FC = () => {
 			// Limit to a maximum of 15 checks or 30 seconds.
 			updateLoaderProgress( 100, 4 );
 
-			// If the account status is complete or progress percentage is above 95, redirect to the overview page.
+			// If the account status is not a pending one or progress percentage is above 95,
+			// consider our work done and redirect the merchant.
 			// Otherwise, schedule another check after 2 seconds.
 			if (
-				( account as AccountData ).status === 'complete' ||
+				! ( account as AccountData ).status.includes( 'pending' ) ||
 				loaderProgressRef.current > 95
 			) {
 				setTestDriveLoaderProgress( 100 );
 
+				// Redirect to the Connect URL and let it figure it out where to point the merchant.
 				window.location.href = addQueryArgs( connectUrl, {
 					test_drive: 'true',
-					'sandbox-onboarded': 'true',
+					'wcpay-sandbox-success': 'true',
 					source: determineTrackingSource(),
 					from: 'WCPAY_CONNECT',
 				} );
