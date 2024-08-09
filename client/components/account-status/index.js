@@ -108,7 +108,7 @@ const AccountStatusDetails = ( props ) => {
 				<PaymentsStatus
 					paymentsEnabled={ accountStatus.paymentsEnabled }
 					accountStatus={ accountStatus.status }
-					iconSize={ 20 }
+					iconSize={ 24 }
 				/>
 			</AccountStatusItem>
 			<AccountStatusItem
@@ -122,7 +122,7 @@ const AccountStatusDetails = ( props ) => {
 					poComplete={
 						accountStatus.progressiveOnboarding.isComplete
 					}
-					iconSize={ 20 }
+					iconSize={ 24 }
 				/>
 			</AccountStatusItem>
 			<AccountTools />
