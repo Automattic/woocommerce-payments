@@ -40,7 +40,12 @@ const OverviewPageError = () => {
 		return null;
 	}
 	return (
-		<BannerNotice status="error" icon={ true } isDismissible={ false }>
+		<BannerNotice
+			className={ showLoginError ? 'wcpay-login-error' : '' }
+			status="error"
+			icon={ true }
+			isDismissible={ false }
+		>
 			{ wcpaySettings.errorMessage ||
 				__(
 					'There was a problem redirecting you to the account dashboard. Please try again.',
