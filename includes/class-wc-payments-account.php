@@ -1263,7 +1263,15 @@ class WC_Payments_Account {
 				&& $this->has_working_jetpack_connection()
 				&& $this->is_stripe_account_valid() ) {
 
-				$this->redirect_service->redirect_to_overview_page( $from, [ 'source' => $onboarding_source ] );
+				$this->redirect_service->redirect_to_overview_page(
+					$from,
+					[
+						'source'                   => $onboarding_source,
+						// Carry over some parameters as they may be used by our frontend logic.
+						'wcpay-connection-success' => ! empty( $_GET['wcpay-connection-success'] ) ? '1' : false,
+						'wcpay-sandbox-success'    => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
+					]
+				);
 				return;
 			}
 
