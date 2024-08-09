@@ -208,8 +208,8 @@ const ConnectAccountPage: React.FC = () => {
 		} );
 
 		const url = addQueryArgs( connectUrl, {
-			test_mode: true,
-			test_drive: true,
+			test_mode: 'true',
+			test_drive: 'true',
 		} );
 
 		const updateProgress = setInterval( updateLoaderProgress, 2500, 40, 5 );
@@ -226,37 +226,28 @@ const ConnectAccountPage: React.FC = () => {
 					'Content-Type': 'application/json',
 				},
 			} ).then( ( response ) => {
+				// Please bear in mind that the fetch request will be redirected and the response we will get is from
+				// the final URL in the redirect chain.
+
 				clearInterval( updateProgress );
 				setTestDriveLoaderProgress( 40 );
 
 				// Check the response url for the `wcpay-connection-success` parameter,
 				// indicating a successful connection.
 				const responseUrlParams = new URLSearchParams( response.url );
-				const connected =
+				const connectionSuccess =
 					responseUrlParams.get( 'wcpay-connection-success' ) || '';
 
 				// The account has been successfully onboarded.
-				// Start checking the account status every 2 seconds.
-				// Once the status is complete, redirect to the Overview page.
-				if ( connected === '1' ) {
+				if ( !! connectionSuccess ) {
+					// Start checking the account status in a loop.
 					checkAccountStatus();
 				} else {
-					// Set the error message.
-					setErrorMessage(
-						__(
-							'An error occurred while creating a sandbox account. Please try again!',
-							'woocommerce-payments'
-						)
-					);
-
-					// Scroll window to the top
-					window.scrollTo( {
-						top: 0,
+					// Redirect to the response URL, but attach our test drive flags.
+					window.location.href = addQueryArgs( response.url, {
+						test_drive: 'true',
+						test_drive_error: 'true',
 					} );
-
-					// Hide loader.
-					setTestDriveModeModalShown( false );
-					setTestDriveModeSubmitted( false );
 				}
 			} );
 		} else {
