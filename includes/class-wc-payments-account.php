@@ -346,6 +346,7 @@ class WC_Payments_Account {
 			'currentDeadline'       => $account['current_deadline'] ?? false,
 			'pastDue'               => $account['has_overdue_requirements'] ?? false,
 			'accountLink'           => $this->get_login_url(),
+			// Test-drive accounts don't have access to the Stripe dashboard.
 			'hasSubmittedVatData'   => $account['has_submitted_vat_data'] ?? false,
 			'requirements'          => [
 				'errors' => $account['requirements']['errors'] ?? [],
