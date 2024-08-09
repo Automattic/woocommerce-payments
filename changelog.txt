@@ -1,5 +1,10 @@
 *** WooPayments Changelog ***
 
+= 8.0.2 - 2024-08-07 =
+* Fix - Add opt-in checks to prevent blocking customers using other payment methods.
+* Fix - Fix error in Express Checkout Element use with coupons.
+* Fix - Only enable Direct Checkout when WooPayments gateway is enabled.
+
 = 8.0.1 - 2024-07-31 =
 * Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
 

@@ -743,7 +743,7 @@ class WC_Payments_Utils {
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
-		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
+		if ( apply_filters( 'wcpay_disable_new_onboarding', defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) ) {
 			return false;
 		}
 

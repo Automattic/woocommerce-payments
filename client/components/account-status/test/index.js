@@ -13,6 +13,7 @@ import StatusChip from '../status-chip';
 describe( 'AccountStatus', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
+			devMode: false,
 			zeroDecimalCurrencies: [],
 			connect: {
 				country: 'FR',
@@ -39,6 +40,48 @@ describe( 'AccountStatus', () => {
 	} );
 
 	test( 'renders normal status', () => {
+		const { container: accountStatus } = renderAccountStatus(
+			{
+				status: 'complete',
+				paymentsEnabled: 1,
+				deposits: {
+					status: 'enabled',
+					interval: 'weekly',
+				},
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+				},
+			},
+			[
+				{
+					payment_method: 'card',
+					fee: {
+						base: {
+							currency: 'EUR',
+							percentage_rate: 0.029,
+							fixed_rate: 0.3,
+						},
+						discount: [
+							{
+								end_time: null,
+								volume_allowance: null,
+								volume_currency: null,
+								current_volume: null,
+								percentage_rate: 0.029,
+								fixed_rate: 30,
+							},
+						],
+					},
+				},
+			]
+		);
+		expect( accountStatus ).toMatchSnapshot();
+	} );
+
+	test( 'renders account tools', () => {
+		global.wcpaySettings.devMode = true;
+
 		const { container: accountStatus } = renderAccountStatus(
 			{
 				status: 'complete',
