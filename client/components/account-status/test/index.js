@@ -43,6 +43,48 @@ describe( 'AccountStatus', () => {
 		const { container: accountStatus } = renderAccountStatus(
 			{
 				status: 'complete',
+				accountLink: 'https://stripe.example.com/account',
+				paymentsEnabled: 1,
+				deposits: {
+					status: 'enabled',
+					interval: 'weekly',
+				},
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+				},
+			},
+			[
+				{
+					payment_method: 'card',
+					fee: {
+						base: {
+							currency: 'EUR',
+							percentage_rate: 0.029,
+							fixed_rate: 0.3,
+						},
+						discount: [
+							{
+								end_time: null,
+								volume_allowance: null,
+								volume_currency: null,
+								current_volume: null,
+								percentage_rate: 0.029,
+								fixed_rate: 30,
+							},
+						],
+					},
+				},
+			]
+		);
+		expect( accountStatus ).toMatchSnapshot();
+	} );
+
+	test( 'does not render edit details when no account link', () => {
+		const { container: accountStatus } = renderAccountStatus(
+			{
+				status: 'complete',
+				accountLink: false,
 				paymentsEnabled: 1,
 				deposits: {
 					status: 'enabled',
@@ -85,6 +127,7 @@ describe( 'AccountStatus', () => {
 		const { container: accountStatus } = renderAccountStatus(
 			{
 				status: 'complete',
+				accountLink: 'https://stripe.example.com/account',
 				paymentsEnabled: 1,
 				deposits: {
 					status: 'enabled',
