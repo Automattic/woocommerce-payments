@@ -9,15 +9,24 @@ import interpolateComponents from '@automattic/interpolate-components';
 
 export default {
 	button: {
+		// CTA label to use when there isn't a working WPCOM/Jetpack connection.
 		jetpack_not_connected: __(
 			'Connect your store',
 			'woocommerce-payments'
 		),
-		jetpack_connected: __(
+		// CTA label to use when there is a working WPCOM/Jetpack connection but no Stripe account connected.
+		account_not_connected: __(
 			'Verify business details',
 			'woocommerce-payments'
 		),
+		// CTA label to use when there is a working WPCOM/Jetpack connection and a Stripe account connected,
+		// but only partially onboarded (not valid).
+		account_invalid: __(
+			'Finish business details verifications',
+			'woocommerce-payments'
+		),
 		sandbox: __( 'Enable sandbox mode', 'woocommerce-payments' ),
+		reset: __( 'Reset account', 'woocommerce-payments' ),
 	},
 	heading: ( firstName?: string ): string =>
 		sprintf(
@@ -83,6 +92,14 @@ export default {
 			),
 		},
 	} ),
+	setupErrorNotice: sprintf(
+		/* translators: 1: WooPayments. */
+		__(
+			'Please <b>complete your %1$s setup</b> to process payments.',
+			'woocommerce-payments'
+		),
+		'WooPayments'
+	),
 	infoNotice: {
 		description: {
 			jetpack_connected: __(

@@ -24,7 +24,6 @@ import StatusChip from './status-chip';
 import './style.scss';
 import './shared.scss';
 import { AccountTools } from './account-tools';
-import { isInDevMode } from 'wcpay/utils';
 import { recordEvent } from 'wcpay/tracks';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -62,7 +61,8 @@ const AccountStatusError = () => {
 const AccountStatusDetails = ( props ) => {
 	const { accountStatus, accountFees } = props;
 	const accountLink = addQueryArgs( accountStatus.accountLink, {
-		source: 'account-details',
+		from: 'WCPAY_ACCOUNT_DETAILS',
+		source: 'wcpay-account-details',
 	} );
 	const cardTitle = (
 		<>
@@ -83,7 +83,8 @@ const AccountStatusDetails = ( props ) => {
 					variant={ 'link' }
 					onClick={ () =>
 						recordEvent( 'wcpay_account_details_link_clicked', {
-							source: 'account-details',
+							from: 'WCPAY_ACCOUNT_DETAILS',
+							source: 'wcpay-account-details',
 						} )
 					}
 					href={ accountLink }
@@ -118,12 +119,7 @@ const AccountStatusDetails = ( props ) => {
 					}
 				/>
 			</AccountStatusItem>
-			{ ( ! accountStatus.detailsSubmitted || isInDevMode() ) && (
-				<AccountTools
-					accountLink={ wcpaySettings.connectUrl }
-					detailsSubmitted={ accountStatus.detailsSubmitted }
-				/>
-			) }
+			<AccountTools />
 			{ accountFees.length > 0 && (
 				<AccountFees accountFees={ accountFees } />
 			) }
