@@ -56,7 +56,7 @@ test.describe( 'Multi-currency on-boarding', () => {
 		} );
 
 		test( 'should disable the submit button when no currencies are selected', async () => {
-			// To take a better screenshot.
+			// To take a better screenshot of the component.
 			await page.setViewportSize( { width: 1280, height: 2000 } );
 			await expect(
 				page.locator(
