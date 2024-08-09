@@ -364,10 +364,23 @@ const ConnectAccountPage: React.FC = () => {
 		} );
 	};
 
-	// Determine if we have the account session error message since we want to customize the UX a little bit.
 	let isAccountSetupSessionError = false;
+	// Determine if we have the account session error message since we want to customize the UX a little bit.
 	if ( errorMessage && errorMessage.includes( 'account setup session' ) ) {
 		isAccountSetupSessionError = true;
+	}
+
+	const isAccountTestDriveError =
+		'true' === urlParams.get( 'test_drive_error' );
+	if ( ! errorMessage && isAccountTestDriveError ) {
+		// If there isn't an error message from elsewhere, but we have a test drive error,
+		// show the test drive error message.
+		setErrorMessage(
+			__(
+				'An error occurred while setting up your sandbox account. Please try again!',
+				'woocommerce-payments'
+			)
+		);
 	}
 
 	let ctaLabel = strings.button.jetpack_not_connected;
