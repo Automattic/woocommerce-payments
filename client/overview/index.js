@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
-import { useDispatch } from '@wordpress/data';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies.
@@ -31,6 +31,7 @@ import { getTasks, taskSort } from './task-list/tasks';
 import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
+import BannerNotice from 'wcpay/components/banner-notice';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -39,17 +40,13 @@ const OverviewPageError = () => {
 		return null;
 	}
 	return (
-		<Notice
-			status="error"
-			isDismissible={ false }
-			className="wcpay-login-error"
-		>
+		<BannerNotice status="error" icon={ true } isDismissible={ false }>
 			{ wcpaySettings.errorMessage ||
 				__(
 					'There was a problem redirecting you to the account dashboard. Please try again.',
 					'woocommerce-payments'
 				) }
-		</Notice>
+		</BannerNotice>
 	);
 };
 
@@ -64,8 +61,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 	} = wcpaySettings;
-
-	const { createSuccessNotice } = useDispatch( 'core/notices' );
 
 	const isOnboardingTestMode = wcpaySettings.onboardingTestMode;
 	const { isLoading: settingsIsLoading } = useSettings();
@@ -97,7 +92,7 @@ const OverviewPage = () => {
 	const showConnectionSuccess =
 		queryParams[ 'wcpay-connection-success' ] === '1';
 	const isSandboxOnboardedSuccessful =
-		queryParams[ 'sandbox-onboarded' ] === 'true';
+		queryParams[ 'wcpay-sandbox-success' ] === 'true';
 
 	const showLoanOfferError = queryParams[ 'wcpay-loan-offer-error' ] === '1';
 	const showServerLinkError =
@@ -132,7 +127,7 @@ const OverviewPage = () => {
 		.filter( ( e ) => e && e.fee !== undefined );
 
 	if ( ! isTestDriveSuccessDisplayed && isSandboxOnboardedSuccessful ) {
-		createSuccessNotice(
+		dispatch( 'core/notices' ).createSuccessNotice(
 			__(
 				'Success! You can start using WooPayments in sandbox mode.',
 				'woocommerce-payments'
