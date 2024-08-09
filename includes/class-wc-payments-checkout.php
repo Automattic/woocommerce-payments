@@ -347,7 +347,7 @@ class WC_Payments_Checkout {
 	 * @return bool - True if the payment method is reusable and the saved cards feature is enabled for the gateway and there is no subscription item in the cart, false otherwise.
 	 */
 	private function should_upe_payment_method_show_save_option( $payment_method ) {
-		if ( is_user_logged_in() && WC_Payments_Features::is_woopay_enabled() ) {
+		if ( $payment_method->get_id() === Payment_Method::CARD && is_user_logged_in() && WC_Payments_Features::is_woopay_enabled() ) {
 			return false;
 		}
 
