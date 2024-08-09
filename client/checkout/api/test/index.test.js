@@ -41,6 +41,7 @@ const mockAppearance = {
 		'.Text--redirect': {},
 		'.Heading': {},
 		'.Button': {},
+		'.Link': {},
 	},
 	theme: 'stripe',
 	variables: {
