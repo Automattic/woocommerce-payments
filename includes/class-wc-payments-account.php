@@ -1325,7 +1325,7 @@ class WC_Payments_Account {
 							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
 							'progressive'                 => $progressive ? 'true' : false,
 							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
-							'create_test_drive_account'   => $create_test_drive_account ? 'true' : false,
+							'test_drive'                  => $create_test_drive_account ? 'true' : false,
 							'test_mode'                   => $should_onboard_in_test_mode ? 'true' : false,
 							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							'source'                      => $onboarding_source,
@@ -1376,6 +1376,10 @@ class WC_Payments_Account {
 					);
 					return;
 				}
+
+				// If we are creating a test-drive account, we start with a clean onboarding state
+				// since there is no merchant KYC.
+				delete_transient( self::ONBOARDING_STATE_TRANSIENT );
 
 				// Check if there is already an onboarding flow started.
 				if ( get_transient( self::ONBOARDING_STATE_TRANSIENT ) ) {
@@ -1811,10 +1815,19 @@ class WC_Payments_Account {
 		// If an account already exists for this site and there is no need for KYC verifications, we're done.
 		// Our platform will respond with a `false` URL in this case.
 		if ( isset( $onboarding_data['url'] ) && false === $onboarding_data['url'] ) {
-			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
+			// Clear the account cache.
+			$this->clear_cache();
+
+			// Set the gateway options.
+			$gateway = WC_Payments::get_gateway();
+			$gateway->update_option( 'enabled', 'yes' );
+			$gateway->update_option( 'test_mode', empty( $onboarding_data['is_live'] ) ? 'yes' : 'no' );
+
+			// Store a state after completing KYC for tracks. This is stored temporarily in option because
+			// user might not have agreed to TOS yet.
 			update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => true ] );
 
-			// Cleanup any existing onboarding state.
+			// Clean up any existing onboarding state.
 			delete_transient( self::ONBOARDING_STATE_TRANSIENT );
 
 			return add_query_arg(
