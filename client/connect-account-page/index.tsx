@@ -208,7 +208,6 @@ const ConnectAccountPage: React.FC = () => {
 		} );
 
 		const url = addQueryArgs( connectUrl, {
-			test_mode: 'true',
 			test_drive: 'true',
 		} );
 
@@ -251,16 +250,20 @@ const ConnectAccountPage: React.FC = () => {
 				}
 			} );
 		} else {
-			window.location.href = url;
+			// Redirect to the connect URL to set up the Jetpack connection.
+			window.location.href = addQueryArgs( url, {
+				auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
+			} );
 		}
 	};
 
-	const forceOnboardTestDrive = () => {
-		const forceOnboard = urlParams.get( 'force-test-onboard' ) || false;
-
-		// If the force test onboard is present and Jetpack is connected
+	const autoStartTestDriveOnboarding = () => {
+		// If Jetpack is connected and the parameter is present in the URL,
 		// we should start onboarding Test Drive account automatically.
-		if ( forceOnboard && wcpaySettings.isJetpackConnected ) {
+		if (
+			wcpaySettings.isJetpackConnected &&
+			urlParams.get( 'auto_start_test_drive_onboarding' )
+		) {
 			handleSetupTestDriveMode();
 		}
 	};
@@ -275,7 +278,9 @@ const ConnectAccountPage: React.FC = () => {
 			source: determineTrackingSource(),
 		} );
 
-		forceOnboardTestDrive();
+		// Maybe auto-start the test drive onboarding.
+		autoStartTestDriveOnboarding();
+
 		// We only want to run this once.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );

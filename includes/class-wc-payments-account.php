@@ -1097,12 +1097,14 @@ class WC_Payments_Account {
 		 *      4.2 On ERROR -> redirect to CONNECT PAGE with ERROR message
 		 * 5. Working WPCOM/Jetpack connection and:
 		 *    5.1 If NO Stripe account connected:
-		 *         5.1.1 If we come from ONBOARDING WIZARD or use the SANDBOX MODE/BUILDER FLOW:
+		 *         5.1.1 If we are setting up a test drive account and the auto-start onboarding is enabled,
+		 *               we redirect to the CONNECT PAGE to let the JS logic orchestrate the Stripe account creation.
+		 *         5.1.2 If we come from the ONBOARDING WIZARD:
 		 *                Initialize the Stripe account and:
 		 *                5.1.1.1 On SUCCESS -> redirect to STRIPE KYC
 		 *                5.1.1.2 On existing account -> redirect to OVERVIEW PAGE
 		 *                5.1.1.3 On ERROR -> redirect to CONNECT PAGE with ERROR message
-		 *         5.1.2 All other cases -> redirect to ONBOARDING WIZARD
+		 *         5.1.3 All other cases -> redirect to ONBOARDING WIZARD
 		 *    5.2 If PARTIALLY onboarded Stripe account connected -> redirect to STRIPE KYC
 		 *    5.3 If fully onboarded Stripe account connected -> redirect to OVERVIEW PAGE
 		 *
@@ -1120,8 +1122,15 @@ class WC_Payments_Account {
 			$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 			$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 			$create_test_drive_account   = ! empty( $_GET['test_drive'] ) && 'true' === $_GET['test_drive'];
-			// We will onboard in test mode if the test_mode GET param is set or if we are in dev mode.
-			$should_onboard_in_test_mode = ( isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) || WC_Payments::mode()->is_dev();
+			// There is no point in auto starting test drive onboarding if we are not in the test drive mode.
+			$auto_start_test_drive_onboarding = $create_test_drive_account &&
+												! empty( $_GET['auto_start_test_drive_onboarding'] ) &&
+												'true' === $_GET['auto_start_test_drive_onboarding'];
+			// We will onboard in test mode if the test_mode GET param is set, if we are creating a test drive account,
+			// or if we are in dev mode.
+			$should_onboard_in_test_mode = ( isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ||
+											$create_test_drive_account ||
+											WC_Payments::mode()->is_dev();
 
 			// Hide menu notification badge upon starting setup.
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
@@ -1319,14 +1328,15 @@ class WC_Payments_Account {
 			// If there is a working one, we can proceed with the Stripe account handling.
 			try {
 				$this->maybe_init_jetpack_connection(
-					// Carry over all the important GET params, so we have them after the Jetpack connection setup.
+				// Carry over all the important GET params, so we have them after the Jetpack connection setup.
 					add_query_arg(
 						[
 							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
 							'progressive'                 => $progressive ? 'true' : false,
 							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
-							'test_drive'                  => $create_test_drive_account ? 'true' : false,
 							'test_mode'                   => $should_onboard_in_test_mode ? 'true' : false,
+							'test_drive'                  => $create_test_drive_account ? 'true' : false,
+							'auto_start_test_drive_onboarding' => $auto_start_test_drive_onboarding ? 'true' : false,
 							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							'source'                      => $onboarding_source,
 
@@ -1377,21 +1387,41 @@ class WC_Payments_Account {
 					return;
 				}
 
-				// If we are creating a test-drive account, we start with a clean onboarding state
-				// since there is no merchant KYC.
-				delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+				// If we are creating a test-drive account, we do things a little different.
+				if ( $create_test_drive_account ) {
+					// Since there is no Stripe KYC, make sure we start with a clean state.
+					delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+
+					// If we have the auto_start_test_drive_onboarding flag, we redirect to the Connect page
+					// to let the JS logic take control and orchestrate things.
+					if ( $auto_start_test_drive_onboarding ) {
+						$this->redirect_service->redirect_to_connect_page(
+							null,
+							$from, // Carry over the from since we are doing a short-circuit.
+							[
+								'promo'      => ! empty( $incentive_id ) ? $incentive_id : false,
+								'test_drive' => 'true',
+								'auto_start_test_drive_onboarding' => 'true', // This is critical.
+								'test_mode'  => $should_onboard_in_test_mode ? 'true' : false,
+								'source'     => $onboarding_source,
+							]
+						);
+						return;
+					}
+				}
 
 				// Check if there is already an onboarding flow started.
 				if ( get_transient( self::ONBOARDING_STATE_TRANSIENT ) ) {
 					// Carry over all relevant GET params to the confirmation URL.
 					// We don't need to carry over reset account or test_to_live params because those actions
 					// automatically discard any ongoing onboarding.
+					// Also, do not carry over auto_start_test_drive_onboarding as we want the merchant to see the notice.
 					$confirmation_url = add_query_arg(
 						[
 							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
 							'progressive'                 => $progressive ? 'true' : false,
 							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
-							'create_test_drive_account'   => $create_test_drive_account ? 'true' : false,
+							'test_drive'                  => $create_test_drive_account ? 'true' : false,
 							'test_mode'                   => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
 							'from'                        => $from, // Use the same from.
 							'source'                      => $onboarding_source,
