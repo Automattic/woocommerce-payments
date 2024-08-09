@@ -1775,7 +1775,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function enqueue_cart_scripts() {
-		if ( ! WC_Payments_Utils::is_cart_page() ) {
+		if ( ! WC_Payments_Utils::is_cart_page() || ! self::get_gateway()->is_enabled() ) {
 			return;
 		}
 
