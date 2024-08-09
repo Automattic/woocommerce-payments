@@ -398,8 +398,9 @@ class WC_Payments_Utils {
 	/**
 	 * Apply a callback on every value in an array, regardless of the number of array dimensions.
 	 *
-	 * @param array    $array The array to map.
+	 * @param array    $array    The array to map.
 	 * @param callable $callback The callback to apply.
+	 *
 	 * @return array The mapped array.
 	 */
 	public static function array_map_recursive( array $array, callable $callback ): array {
@@ -412,6 +413,40 @@ class WC_Payments_Utils {
 
 			$array[ $key ] = $value;
 		}
+
+		return $array;
+	}
+
+	/**
+	 * Filter a multidimensional array.
+	 *
+	 * It works just like array_filter, but it also filters multidimensional/nested arrays, regardless of depth.
+	 *
+	 * @see https://www.php.net/manual/en/function.array-filter.php
+	 *
+	 * @param array         $array    The array to filter.
+	 * @param callable|null $callback Optional. The callback to apply.
+	 *                                The callback should return true to keep the value, false otherwise.
+	 *                                If no callback is provided, all non-truthy values will be removed.
+	 *
+	 * @return array The filtered array.
+	 */
+	public static function array_filter_recursive( array $array, callable $callback = null ): array {
+		foreach ( $array as $key => &$value ) { // Mind the use of a reference.
+			if ( \is_array( $value ) ) {
+				$value = self::array_filter_recursive( $value, $callback );
+				if ( ! $value ) {
+					unset( $array[ $key ] );
+				}
+			} elseif ( ! is_null( $callback ) ) {
+				if ( ! $callback( $value ) ) {
+					unset( $array[ $key ] );
+				}
+			} elseif ( ! $value ) {
+				unset( $array[ $key ] );
+			}
+		}
+		unset( $value ); // Kill the reference to avoid memory leaks.
 
 		return $array;
 	}
