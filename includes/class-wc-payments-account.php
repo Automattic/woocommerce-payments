@@ -1418,7 +1418,7 @@ class WC_Payments_Account {
 				set_transient( self::ONBOARDING_STARTED_TRANSIENT, true, MINUTE_IN_SECONDS );
 
 				$redirect_to = $this->init_stripe_onboarding(
-					$should_onboard_in_test_mode,
+					$create_test_drive_account ? 'test_drive' : ( $should_onboard_in_test_mode ? 'test' : 'live' ),
 					$wcpay_connect_param,
 					[
 						'promo'       => ! empty( $incentive_id ) ? $incentive_id : false,
@@ -1692,7 +1692,7 @@ class WC_Payments_Account {
 	/**
 	 * Initializes the onboarding flow by fetching the URL from the API and redirecting to it.
 	 *
-	 * @param string $mode               The onboarding mode. It should only be `live`, `test`, or `test_drive`.
+	 * @param string $setup_mode         The onboarding setup mode. It should only be `live`, `test`, or `test_drive`.
 	 *                                   On invalid value, it will default to `live`.
 	 * @param string $wcpay_connect_from Where the user should be returned to after connecting.
 	 * @param array  $additional_args    Additional query args to add to the return URL.
@@ -1700,16 +1700,16 @@ class WC_Payments_Account {
 	 * @return string The URL to redirect the user to. Empty string if there is no URL to redirect to.
 	 * @throws API_Exception
 	 */
-	private function init_stripe_onboarding( string $mode, string $wcpay_connect_from, array $additional_args = [] ): string {
-		if ( ! in_array( $mode, [ 'live', 'test', 'test_drive' ], true ) ) {
-			$mode = 'live';
+	private function init_stripe_onboarding( string $setup_mode, string $wcpay_connect_from, array $additional_args = [] ): string {
+		if ( ! in_array( $setup_mode, [ 'live', 'test', 'test_drive' ], true ) ) {
+			$setup_mode = 'live';
 		}
 		// Flags to enable progressive onboarding and collect payout requirements.
 		$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 		$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
 		// Make sure the onboarding test mode DB flag is set.
-		WC_Payments_Onboarding_Service::set_test_mode( 'live' !== $mode );
+		WC_Payments_Onboarding_Service::set_test_mode( 'live' !== $setup_mode );
 
 		if ( ! $collect_payout_requirements ) {
 			// Clear onboarding related account options if this is an initial onboarding attempt.
@@ -1729,13 +1729,13 @@ class WC_Payments_Account {
 		// If the site is running on localhost, use a bogus URL. This is to avoid Stripe's errors.
 		// wp_http_validate_url does not check that, unfortunately.
 		$home_is_localhost = 'localhost' === wp_parse_url( $home_url, PHP_URL_HOST );
-		$fallback_url      = ( 'live' !== $mode || $home_is_localhost ) ? 'http://wcpay.test' : null;
+		$fallback_url      = ( 'live' !== $setup_mode || $home_is_localhost ) ? 'https://wcpay.test' : null;
 
 		$current_user = get_userdata( get_current_user_id() );
 
 		// The general account data.
 		$account_data = [
-			'setup_mode' => $mode,
+			'setup_mode' => $setup_mode,
 			'url'        => ! $home_is_localhost && wp_http_validate_url( $home_url ) ? $home_url : $fallback_url,
 		];
 
@@ -1744,7 +1744,7 @@ class WC_Payments_Account {
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
 		if ( ! empty( $self_assessment_data ) ) {
 			$business_type = $self_assessment_data['business_type'] ?? null;
-			$account_data  = array_merge_recursive(
+			$account_data  = WC_Payments_Utils::array_merge_recursive_distinct(
 				$account_data,
 				[
 					'country'       => $self_assessment_data['country'] ?? null,
@@ -1767,10 +1767,11 @@ class WC_Payments_Account {
 					],
 				]
 			);
-		} elseif ( 'test_drive' === $mode ) {
-			$account_data = array_merge_recursive(
+		} elseif ( 'test_drive' === $setup_mode ) {
+			$account_data = WC_Payments_Utils::array_merge_recursive_distinct(
 				$account_data,
 				[
+					// We use the store base country to create a customized account.
 					'country'       => WC()->countries->get_base_country() ?? null,
 					'business_name' => get_bloginfo( 'name' ),
 					'individual'    => [
@@ -1779,8 +1780,8 @@ class WC_Payments_Account {
 					],
 				]
 			);
-		} elseif ( 'test' === $mode ) {
-			$account_data = array_merge_recursive(
+		} elseif ( 'test' === $setup_mode ) {
+			$account_data = WC_Payments_Utils::array_merge_recursive_distinct(
 				$account_data,
 				[
 					'business_type' => 'individual',
@@ -1802,7 +1803,7 @@ class WC_Payments_Account {
 		$user_data = $this->get_onboarding_user_data();
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
-			'live' === $mode,
+			'live' === $setup_mode,
 			$return_url,
 			$site_data,
 			WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
@@ -1887,9 +1888,10 @@ class WC_Payments_Account {
 		// Clear the account cache.
 		$this->clear_cache();
 
+		// Set the gateway options.
 		$gateway = WC_Payments::get_gateway();
 		$gateway->update_option( 'enabled', 'yes' );
-		$gateway->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
+		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
 
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
