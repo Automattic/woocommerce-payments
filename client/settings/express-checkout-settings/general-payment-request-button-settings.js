@@ -14,6 +14,7 @@ import {
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useContext } from '@wordpress/element';
+import { ADMIN_URL, getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
@@ -165,23 +166,49 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 		isPaymentRequestEnabled &&
 		isWooPayFeatureFlagEnabled;
 
+	const cartPageUrl = `${ ADMIN_URL }post.php?post=${
+		getSetting( 'storePages' )?.cart?.id
+	}&action=edit`;
+
+	const checkoutPageUrl = `${ ADMIN_URL }post.php?post=${
+		getSetting( 'storePages' )?.checkout?.id
+	}&action=edit`;
+
 	return (
 		<CardBody>
 			{ showWarning && (
-				<InlineNotice
-					status="warning"
-					icon={ true }
-					isDismissible={ false }
-				>
-					{ sprintf(
-						/* translators: %s type of button to which the settings will be applied */
-						__(
-							'These settings will also apply to the %s on your store.',
-							'woocommerce-payments'
-						),
-						otherButtons
-					) }
-				</InlineNotice>
+				<>
+					<InlineNotice
+						status="warning"
+						icon={ true }
+						isDismissible={ false }
+					>
+						{ sprintf(
+							/* translators: %s type of button to which the settings will be applied */
+							__(
+								'These settings will also apply to the %s on your store.',
+								'woocommerce-payments'
+							),
+							otherButtons
+						) }
+					</InlineNotice>
+					<InlineNotice
+						status="warning"
+						icon={ true }
+						isDismissible={ false }
+					>
+						{ __( 'These settings may be overriden in the' ) }{ ' ' }
+						<a href={ cartPageUrl }>{ __( 'Cart Block' ) }</a>{ ' ' }
+						{ __( 'and the' ) }{ ' ' }
+						<a href={ checkoutPageUrl }>
+							{ __( 'Checkout Block' ) }
+						</a>
+						.{ ' ' }
+						{ __(
+							'You may customize these in the respective block settings'
+						) }
+					</InlineNotice>
+				</>
 			) }
 			<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 			<SelectControl
