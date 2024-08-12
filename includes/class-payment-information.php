@@ -274,16 +274,16 @@ class Payment_Information {
 			$order->add_meta_data( 'is_woopay', true, true );
 			$order->save_meta_data();
 		}
-		$pi = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
+		$payment_information = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
 
 		if ( self::PAYMENT_METHOD_ERROR === $payment_method ) {
 			$error_message = $request['wcpay-payment-method-error-message'] ?? __( 'Invalid Payment Method', 'woocommerce-payments' );
 			$error_code    = $request['wcpay-payment-method-error-code'] ?? 'unknown-error';
 			$error         = new \WP_Error( $error_code, $error_message );
-			$pi->set_error( $error );
+			$payment_information->set_error( $error );
 		}
 
-		return $pi;
+		return $payment_information;
 	}
 
 	/**
