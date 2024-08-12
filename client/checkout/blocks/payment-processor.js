@@ -194,6 +194,8 @@ const PaymentProcessor = ( {
 
 					if ( result.error ) {
 						return {
+							// We return a `success` type even when there's an error since we want the checkout request to go
+							// through, so we can have this attempt recorded in an Order.
 							type: 'success',
 							meta: {
 								paymentMethodData: {
