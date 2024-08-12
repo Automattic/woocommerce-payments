@@ -21,6 +21,8 @@ import {
 	deleteSkipWooPayCookie,
 } from 'wcpay/checkout/woopay/utils';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
+import { getAppearance } from 'wcpay/checkout/upe-styles';
+import { getAppearanceType } from 'wcpay/checkout/utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -48,10 +50,11 @@ export const WoopayExpressCheckoutButton = ( {
 	const buttonRef = useRef( null );
 	const isLoadingRef = useRef( false );
 	let {
-		type: buttonType,
 		height: buttonHeight,
+		type: buttonType,
 		theme,
 		context,
+		radius: borderRadius,
 	} = buttonSettings;
 	const [ isLoading, setIsLoading ] = useState( false );
 	const [ buttonWidthType, setButtonWidthType ] = useState(
@@ -61,6 +64,7 @@ export const WoopayExpressCheckoutButton = ( {
 	// If we are on the checkout block, we receive button attributes which overwrite the extension specific settings
 	if ( typeof buttonAttributes !== 'undefined' ) {
 		buttonHeight = buttonAttributes.height || buttonHeight;
+		buttonRadius = buttonAttributes.borderRadius || borderRadius;
 		theme = buttonAttributes?.darkMode ? 'light' : 'dark';
 	}
 
@@ -210,6 +214,8 @@ export const WoopayExpressCheckoutButton = ( {
 			isLoadingRef.current = true;
 			setIsLoading( true );
 
+			const appearanceType = getAppearanceType();
+
 			if ( isProductPage ) {
 				const productData = getProductDataRef.current();
 
@@ -230,6 +236,7 @@ export const WoopayExpressCheckoutButton = ( {
 					}
 					WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
 						_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+						appearance: getAppearance( appearanceType ),
 					} )
 						.then( async ( response ) => {
 							if (
@@ -273,6 +280,7 @@ export const WoopayExpressCheckoutButton = ( {
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
+					appearance: getAppearance( appearanceType ),
 				} )
 					.then( async ( response ) => {
 						if ( response?.blog_id && response?.data?.session ) {
@@ -355,8 +363,12 @@ export const WoopayExpressCheckoutButton = ( {
 			data-type={ buttonType }
 			data-theme={ theme }
 			data-width-type={ buttonWidthType }
-			style={ { height: `${ buttonHeight }px` } }
+			style={ {
+				height: `${ buttonHeight }px`,
+				borderRadius: `${ borderRadius }px`,
+			} }
 			disabled={ isLoading }
+			type="button"
 		>
 			{ isLoading ? (
 				<span className="wc-block-components-spinner" />

@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { merchant, shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -42,7 +42,7 @@ describe( 'Order > Refund Failure', () => {
 		const card = config.get( 'cards.basic' );
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
-		await expect( page ).toMatch( 'Order received' );
+		await expect( page ).toMatchTextContent( 'Order received' );
 
 		// Get the order ID so we can open it in the merchant view
 		const orderIdField = await page.$(
@@ -55,6 +55,14 @@ describe( 'Order > Refund Failure', () => {
 	} );
 
 	afterAll( async () => {
+		page.removeAllListeners( 'dialog' );
+		page.on( 'dialog', async function ( dialog ) {
+			try {
+				await dialog.accept();
+			} catch ( err ) {
+				console.warn( err.message );
+			}
+		} );
 		await merchant.logout();
 	} );
 
@@ -68,13 +76,31 @@ describe( 'Order > Refund Failure', () => {
 				// We need to remove any listeners on the `dialog` event otherwise we can't catch the dialog below
 				await page.removeAllListeners( 'dialog' );
 
+				// Sometimes the element is not clickable due to the header getting on the way. This seems to
+				// only happen in CI for WC 7.7.0 so the workaround is to remove those elements.
+				const hideElementIfExists = ( sel ) => {
+					const element = document.querySelector( sel );
+					if ( element ) {
+						element.outerHTML = '';
+					}
+				};
+				await page.evaluate(
+					hideElementIfExists,
+					'.woocommerce-layout__header'
+				);
+				await page.evaluate( hideElementIfExists, '#wpadminbar' );
+
 				// Click the Refund button
-				await expect( page ).toClick( 'button.refund-items' );
+				const refundItemsButton = await expect( page ).toMatchElement(
+					'button.refund-items',
+					{
+						visible: true,
+					}
+				);
+				await refundItemsButton.click();
 
 				// Verify the refund section shows
-				await page.waitForSelector( 'div.wc-order-refund-items', {
-					visible: true,
-				} );
+				await page.waitForSelector( 'div.wc-order-refund-items' );
 
 				// Verify Refund via WooPayments button is displayed
 				await page.waitForSelector( 'button.do-api-refund' );
@@ -84,14 +110,18 @@ describe( 'Order > Refund Failure', () => {
 				// Initiate refund attempt
 				await expect( page ).toFill( selector, value );
 
-				await expect( page ).toMatchElement( '.do-api-refund', {
-					text: /Refund .* via WooPayments/,
-				} );
+				const refundButton = await expect( page ).toMatchElement(
+					'.do-api-refund',
+					{
+						visible: true,
+						text: /Refund .* via WooPayments/,
+					}
+				);
 
 				// Confirm the refund
 				const refundDialog = await expect( page ).toDisplayDialog(
 					async () => {
-						await expect( page ).toClick( 'button.do-api-refund' );
+						await refundButton.click();
 					}
 				);
 
@@ -99,10 +129,6 @@ describe( 'Order > Refund Failure', () => {
 				const invalidRefundAlert = await expect( page ).toDisplayDialog(
 					async () => {
 						await refundDialog.accept();
-						await uiUnblocked();
-						await page.waitForNavigation( {
-							waitUntil: 'networkidle0',
-						} );
 					}
 				);
 				await expect( invalidRefundAlert.message() ).toEqual(

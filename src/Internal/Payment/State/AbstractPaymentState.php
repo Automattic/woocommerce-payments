@@ -79,6 +79,7 @@ abstract class AbstractPaymentState {
 	 * @throws PaymentRequestException   When data is not available or invalid.
 	 */
 	public function start_processing( PaymentRequest $request ) {
+		// @phpstan-ignore-next-line
 		$this->throw_unavailable_method_exception( __METHOD__ );
 	}
 
@@ -92,6 +93,7 @@ abstract class AbstractPaymentState {
 	 * @throws StateTransitionException
 	 */
 	public function complete_processing() {
+		// @phpstan-ignore-next-line
 		$this->throw_unavailable_method_exception( __METHOD__ );
 	}
 	// phpcs:enable Squiz.Commenting.FunctionComment.InvalidNoReturn
@@ -103,15 +105,15 @@ abstract class AbstractPaymentState {
 	 * This method should only be called whenever the process is ready to transition
 	 * to the next state, as each new state will be considered the payment's latest one.
 	 *
-	 * @template ConcreteState
-	 * @param class-string<ConcreteState> | string $state_class The class of the state to crate.
+	 * @template ConcreteState of AbstractPaymentState
+	 * @param class-string<ConcreteState> $state_class The class of the state to create.
 	 *
-	 * @return AbstractPaymentState | ConcreteState
+	 * @return ConcreteState The generated payment state instance.
 	 *
 	 * @throws StateTransitionException In case the new state could not be created.
 	 * @throws ContainerException       When the dependency container cannot instantiate the state.
 	 */
-	protected function create_state( string $state_class ) {
+	protected function create_state( /*class-string<ConcreteState>*/ $state_class ): AbstractPaymentState {
 		$state = $this->state_factory->create_state( $state_class, $this->context );
 
 		// This is where logging will be added.

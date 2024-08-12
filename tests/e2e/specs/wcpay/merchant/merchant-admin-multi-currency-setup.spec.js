@@ -67,7 +67,7 @@ describe( 'Merchant Multi-Currency Settings', () => {
 			currencyCode: 'CHF',
 			rate: '1.25',
 			charmPricing: '-0.01',
-			rounding: '0.50',
+			rounding: '0.5',
 			currencyPrecision: 2,
 		};
 

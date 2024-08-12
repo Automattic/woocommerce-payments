@@ -225,7 +225,8 @@ export const DepositFailureNotice: React.FC< {
 	updateAccountLink: string;
 } > = ( { updateAccountLink } ) => {
 	const accountLinkWithSource = addQueryArgs( updateAccountLink, {
-		source: 'deposits-overview__deposit-failure-notice',
+		from: 'WCPAY_PAYOUTS',
+		source: 'wcpay-payout-failure-notice',
 	} );
 	return (
 		<InlineNotice
@@ -246,8 +247,8 @@ export const DepositFailureNotice: React.FC< {
 								recordEvent(
 									'wcpay_account_details_link_clicked',
 									{
-										source:
-											'deposits-overview__deposit-failure-notice',
+										from: 'WCPAY_PAYOUTS',
+										source: 'wcpay-payout-failure-notice',
 									}
 								)
 							}

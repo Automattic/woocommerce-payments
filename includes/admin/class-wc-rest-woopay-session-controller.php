@@ -41,6 +41,13 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'email' => [
+						'type'     => 'string',
+						'format'   => 'email',
+						'required' => true,
+					],
+				],
 			]
 		);
 	}

@@ -1,0 +1,95 @@
+.wcpay-filter.components-custom-select-control {
+	font-size: 13px;
+	color: $gray-900;
+
+	.wcpay-filter.components-custom-select-control__label {
+		display: inline-block;
+		margin-bottom: 0;
+		color: $wp-gray-40;
+		margin-right: 0.2em;
+		white-space: nowrap;
+
+		&::after {
+			content: ':';
+		}
+	}
+
+	.wcpay-filter.components-custom-select-control__item {
+		padding: $gap-small;
+		margin: 0;
+		line-height: initial;
+		grid-template-columns: auto auto auto;
+		justify-content: start;
+		white-space: nowrap;
+		border-radius: 2px;
+
+		&.is-highlighted {
+			background: $gray-0;
+		}
+	}
+
+	.wcpay-filter.components-custom-select-control__item-icon {
+		margin-right: 0.2em;
+	}
+
+	.wcpay-filter.components-custom-select-control__item-hint {
+		margin-left: 1.8em;
+		text-align: left;
+		color: $gray-700;
+	}
+
+	button.wcpay-filter.components-custom-select-control__button {
+		width: 100%;
+		background-color: #fff;
+		margin: 0 1px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 6px 8px;
+		border: 1px solid $gray-200;
+		font-size: 13px;
+
+		&:hover,
+		&:focus {
+			color: initial;
+			background-color: $gray-0;
+			box-shadow: none;
+		}
+
+		&.placeholder {
+			color: $gray-50;
+		}
+
+		.wcpay-filter.components-custom-select-control__button-value {
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			overflow-x: hidden;
+		}
+
+		svg {
+			fill: initial;
+			width: 18px;
+			flex: 0 0 18px;
+		}
+
+		&[aria-expanded='true'] {
+			.wcpay-filter.components-custom-select-control__button-value {
+				visibility: hidden;
+			}
+			.components-custom-select-control__label::after {
+				visibility: hidden;
+			}
+		}
+
+		@media screen and ( max-width: 782px ) {
+			font-size: 16px;
+		}
+	}
+
+	.wcpay-filter.components-custom-select-control__menu {
+		margin: -1px 1px;
+		border-color: $gray-300;
+		max-height: 300px;
+		padding: $grid-unit-10 $grid-unit-15;
+	}
+}

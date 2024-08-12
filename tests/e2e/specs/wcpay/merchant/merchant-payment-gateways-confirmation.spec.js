@@ -13,6 +13,33 @@ const WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE =
 	'tr[data-gateway_id="woocommerce_payments"] .wc-payment-gateway-method-toggle-enabled';
 
 describe( 'payment gateways disable confirmation', () => {
+	// Newer WooCommerce versions get rid of the 'Save Changes' button and save the changes immediately
+	const saveChangesIfAvailable = async () => {
+		const saveChangesSelector =
+			"xpath/.//button[contains(., 'Save changes')]";
+		const saveChangesButton = await page.$( saveChangesSelector );
+
+		if ( saveChangesButton ) {
+			const isDisabled = await page.$eval(
+				saveChangesSelector,
+				( node ) => node.disabled
+			);
+
+			if ( ! isDisabled ) {
+				return await Promise.all( [
+					expect( page ).toClick( 'button', {
+						text: 'Save changes',
+					} ),
+					page.waitForNavigation( {
+						waitUntil: 'networkidle0',
+					} ),
+				] );
+			}
+		}
+
+		await page.reload( { waitUntil: 'networkidle0' } );
+	};
+
 	beforeAll( async () => {
 		await merchant.login();
 	} );
@@ -41,7 +68,7 @@ describe( 'payment gateways disable confirmation', () => {
 		);
 
 		// Dialog should be displayed
-		await expect( page ).toMatch( 'Disable WooPayments' );
+		await expect( page ).toMatchTextContent( 'Disable WooPayments' );
 
 		// Clicking "Cancel" should not disable WCPay
 		await expect( page ).toClick( 'button', {
@@ -49,13 +76,10 @@ describe( 'payment gateways disable confirmation', () => {
 		} );
 
 		// After clicking "Cancel", the modal should close and WCPay should still be enabled, even after refresh
-		await expect( page ).not.toMatch( 'Disable WooPayments' );
-		await expect( page ).toClick( 'button', {
-			text: 'Save changes',
-		} );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		await expect( page ).not.toMatchTextContent( 'Disable WooPayments' );
+
+		await saveChangesIfAvailable();
+
 		await expect(
 			page
 		).toMatchElement(
@@ -78,7 +102,7 @@ describe( 'payment gateways disable confirmation', () => {
 		);
 
 		// Dialog should be displayed
-		await expect( page ).toMatch( 'Disable WooPayments' );
+		await expect( page ).toMatchTextContent( 'Disable WooPayments' );
 
 		// Clicking "Disable" should disable WCPay
 		await expect( page ).toClick( 'button', {
@@ -86,19 +110,14 @@ describe( 'payment gateways disable confirmation', () => {
 		} );
 
 		// After clicking "Disable", the modal should close
-		await expect( page ).not.toMatch( 'Disable WooPayments' );
+		await expect( page ).not.toMatchTextContent( 'Disable WooPayments' );
 
 		await page.waitForSelector(
 			`${ WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE } .woocommerce-input-toggle:not(.woocommerce-input-toggle--loading)`
 		);
 
-		// and refreshing the page should show WCPay become disabled
-		await expect( page ).toClick( 'button', {
-			text: 'Save changes',
-		} );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		await saveChangesIfAvailable();
+
 		await expect(
 			page
 		).toMatchElement(
@@ -113,12 +132,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await page.waitForSelector(
 			`${ WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE } .woocommerce-input-toggle:not(.woocommerce-input-toggle--loading)`
 		);
-		await expect( page ).toClick( 'button', {
-			text: 'Save changes',
-		} );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		await saveChangesIfAvailable();
 		await expect(
 			page
 		).toMatchElement(
@@ -141,7 +155,7 @@ describe( 'payment gateways disable confirmation', () => {
 		);
 
 		// Dialog should be displayed
-		await expect( page ).toMatch( 'Disable WooPayments' );
+		await expect( page ).toMatchTextContent( 'Disable WooPayments' );
 
 		// Clicking "Cancel" should not disable WCPay
 		await expect( page ).toClick( 'button', {
@@ -149,7 +163,7 @@ describe( 'payment gateways disable confirmation', () => {
 		} );
 
 		// After clicking "Cancel", the modal should close and WCPay should still be enabled
-		await expect( page ).not.toMatch( 'Disable WooPayments' );
+		await expect( page ).not.toMatchTextContent( 'Disable WooPayments' );
 		await expect(
 			page
 		).toMatchElement(
@@ -161,18 +175,18 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect( page ).toClick(
 			WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE
 		);
-		await expect( page ).toMatch( 'Disable WooPayments' );
+		await expect( page ).toMatchTextContent( 'Disable WooPayments' );
 		await expect( page ).toClick( 'button', {
 			text: 'Cancel',
 		} );
-		await expect( page ).not.toMatch( 'Disable WooPayments' );
+		await expect( page ).not.toMatchTextContent( 'Disable WooPayments' );
 		await expect( page ).toClick(
 			WC_GATEWAYS_LIST_TABLE__WC_PAYMENTS_TOGGLE
 		);
-		await expect( page ).toMatch( 'Disable WooPayments' );
+		await expect( page ).toMatchTextContent( 'Disable WooPayments' );
 		await expect( page ).toClick( 'button', {
 			text: 'Cancel',
 		} );
-		await expect( page ).not.toMatch( 'Disable WooPayments' );
+		await expect( page ).not.toMatchTextContent( 'Disable WooPayments' );
 	} );
 } );

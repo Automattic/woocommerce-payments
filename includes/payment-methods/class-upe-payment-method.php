@@ -130,6 +130,8 @@ abstract class UPE_Payment_Method {
 	 * @param array|false $payment_details Optional payment details from charge object.
 	 *
 	 * @return string
+	 *
+	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_title( string $account_country = null, $payment_details = false ) {
 		return $this->title;
@@ -260,6 +262,8 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @param string|null $account_country Optional account country.
 	 * @return string
+	 *
+	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_icon( string $account_country = null ) {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
@@ -299,7 +303,10 @@ abstract class UPE_Payment_Method {
 	 * @return array
 	 */
 	public function get_countries() {
-		return $this->countries;
+		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
+
+		return $this->has_domestic_transactions_restrictions() ? [ $account_country ] : $this->countries;
 	}
 
 	/**

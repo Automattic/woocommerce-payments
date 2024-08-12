@@ -8,8 +8,11 @@ import {
 	getPaymentRequestData,
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
-} from '../../payment-request/utils';
-import { decryptClientSecret } from '../utils/encryption';
+	getExpressCheckoutAjaxURL,
+	getExpressCheckoutConfig,
+} from 'utils/express-checkout';
+import { getAppearance } from 'checkout/upe-styles';
+import { getAppearanceType } from '../utils';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -118,90 +121,6 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Generates a Stripe payment method.
-	 *
-	 * @param {Object} elements A hash of all Stripe elements, used to enter card data.
-	 * @param {Object} preparedCustomerData Default values for customer data, used on pages like Pay for Order.
-	 * @return {Object} A request object, which will be prepared and then `.send()`.
-	 */
-	generatePaymentMethodRequest( elements, preparedCustomerData = {} ) {
-		const stripe = this.getStripe();
-
-		return new ( class {
-			constructor() {
-				this.args = {
-					...elements,
-					billing_details: {
-						address: {},
-					},
-				};
-			}
-
-			/**
-			 * Prepares a value that's been loaded from inputs,
-			 * uses a default value if none is present.
-			 *
-			 * @param {string} name The key of the value.
-			 * @param {mixed} value The value to sanitize.
-			 * @return {mixed}     The sanitized value, `undefined` if not present.
-			 */
-			prepareValue( name, value ) {
-				// Fall back to the value in `preparedCustomerData`.
-				if ( typeof value === 'undefined' || value.length === 0 ) {
-					value = preparedCustomerData[ name ]; // `undefined` if not set.
-				}
-
-				if ( typeof value !== 'undefined' && value.length > 0 ) {
-					return value;
-				}
-			}
-
-			/**
-			 * Updates a billing detail within the request.
-			 *
-			 * @param {string} name The name of the billing value.
-			 * @param {string} value The actual value.
-			 */
-			setBillingDetail( name, value ) {
-				const preparedValue = this.prepareValue( name, value );
-				if ( typeof preparedValue !== 'undefined' ) {
-					this.args.billing_details[ name ] = preparedValue;
-				}
-			}
-
-			/**
-			 * Updates an address detail within the request.
-			 *
-			 * @param {string} name The name of the address value.
-			 * @param {string} value The actual value.
-			 */
-			setAddressDetail( name, value ) {
-				const preparedValue = this.prepareValue( name, value );
-				if ( typeof preparedValue !== 'undefined' ) {
-					this.args.billing_details.address[ name ] = preparedValue;
-				}
-			}
-
-			/**
-			 * Sends the request to Stripe once everything is ready.
-			 *
-			 * @return {Object} The payment method object if successfully loaded.
-			 */
-			send() {
-				return stripe
-					.createPaymentMethod( this.args )
-					.then( ( paymentMethod ) => {
-						if ( paymentMethod.error ) {
-							throw paymentMethod.error;
-						}
-
-						return paymentMethod;
-					} );
-			}
-		} )();
-	}
-
-	/**
 	 * Extracts the details about a payment intent from the redirect URL,
 	 * and displays the intent confirmation modal (if needed).
 	 *
@@ -253,7 +172,7 @@ export default class WCPayAPI {
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
 				return this.getStripe().handleNextAction( {
-					clientSecret: decryptClientSecret( clientSecret ),
+					clientSecret: clientSecret,
 				} );
 			}
 
@@ -264,18 +183,13 @@ export default class WCPayAPI {
 					publishableKey,
 					locale,
 					accountIdForIntentConfirmation
-				).confirmCardPayment(
-					decryptClientSecret(
-						clientSecret,
-						accountIdForIntentConfirmation
-					)
-				);
+				).confirmCardPayment( clientSecret );
 			}
 
 			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
 			return this.getStripe( true ).handleNextAction( {
-				clientSecret: decryptClientSecret( clientSecret ),
+				clientSecret: clientSecret,
 			} );
 		};
 
@@ -353,9 +267,7 @@ export default class WCPayAPI {
 			}
 
 			return this.getStripe()
-				.confirmCardSetup(
-					decryptClientSecret( response.data.client_secret )
-				)
+				.confirmCardSetup( response.data.client_secret )
 				.then( ( confirmedSetupIntent ) => {
 					const { setupIntent, error } = confirmedSetupIntent;
 					if ( error ) {
@@ -498,13 +410,62 @@ export default class WCPayAPI {
 		} );
 	}
 
+	/**
+	 * Submits shipping address to get available shipping options
+	 * from Express Checkout ECE payment method.
+	 *
+	 * @param {Object} shippingAddress Shipping details.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	expressCheckoutECECalculateShippingOptions( shippingAddress ) {
+		return this.request(
+			getExpressCheckoutAjaxURL( 'get_shipping_options' ),
+			{
+				security: getExpressCheckoutConfig( 'nonce' )?.shipping,
+				is_product_page: getExpressCheckoutConfig( 'is_product_page' ),
+				...shippingAddress,
+			}
+		);
+	}
+
+	/**
+	 * Creates order based on Express Checkout ECE payment method.
+	 *
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	expressCheckoutECECreateOrder( paymentData ) {
+		return this.request( getExpressCheckoutAjaxURL( 'create_order' ), {
+			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.checkout,
+			...paymentData,
+		} );
+	}
+
+	/**
+	 * Pays for an order based on the Express Checkout payment method.
+	 *
+	 * @param {integer} order The order ID.
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	expressCheckoutECEPayForOrder( order, paymentData ) {
+		return this.request( getExpressCheckoutAjaxURL( 'pay_for_order' ), {
+			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.pay_for_order,
+			order,
+			...paymentData,
+		} );
+	}
+
 	initWooPay( userEmail, woopayUserSession ) {
 		if ( ! this.isWooPayRequesting ) {
 			this.isWooPayRequesting = true;
 			const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 			const nonce = getConfig( 'initWooPayNonce' );
+			const appearanceType = getAppearanceType();
+
 			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
 				_wpnonce: nonce,
+				appearance: getAppearance( appearanceType ),
 				email: userEmail,
 				user_session: woopayUserSession,
 				order_id: getConfig( 'order_id' ),

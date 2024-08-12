@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<ruleset name="WCPay">
+	<description>WCPay custom coding standards.</description>
+
+	<rule ref="WCPay.Hooks.DisallowHooksInConstructor">
+		<!-- https://github.com/Automattic/woocommerce-payments/issues/7259 -->
+		<exclude-pattern>*/includes/subscriptions/*</exclude-pattern>
+		<exclude-pattern>*/includes/compat/subscriptions/*</exclude-pattern>
+
+		<!-- https://github.com/Automattic/woocommerce-payments/issues/7266 -->
+		<exclude-pattern>*/includes/emails/*</exclude-pattern>
+
+		<!-- https://github.com/Automattic/woocommerce-payments/issues/7260 -->
+		<exclude-pattern>*/includes/class-woopay-tracker.php</exclude-pattern>
+		<exclude-pattern>*/includes/woopay/*</exclude-pattern>
+		<exclude-pattern>*/includes/woopay-user/*</exclude-pattern>
+
+		<exclude-pattern>*/includes/class-wc-payments-order-success-page.php</exclude-pattern>
+
+		<!-- https://github.com/Automattic/woocommerce-payments/issues/7264 -->
+		<exclude-pattern>*/includes/class-wc-payments-customer-service.php</exclude-pattern>
+		<exclude-pattern>*/includes/class-wc-payments-token-service.php</exclude-pattern>
+
+		<!-- https://github.com/Automattic/woocommerce-payments/issues/7265 -->
+		<exclude-pattern>*/includes/class-wc-payments-webhook-reliability-service.php</exclude-pattern>
+	</rule>
+</ruleset>

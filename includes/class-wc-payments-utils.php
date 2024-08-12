@@ -34,6 +34,27 @@ class WC_Payments_Utils {
 	const FORCE_DISCONNECTED_FLAG_NAME = 'wcpaydev_force_disconnected';
 
 	/**
+	 * The Store API route patterns that should be handled by the WooPay session handler.
+	 */
+	const STORE_API_ROUTE_PATTERNS = [
+		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/add-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
+		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
+		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
+		// By adding it to this list, we're able to identify the user and load the correct session for this route.
+		'@^\/wc\/v3\/woopay\/session$@',
+	];
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
@@ -722,7 +743,7 @@ class WC_Payments_Utils {
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
-		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
+		if ( apply_filters( 'wcpay_disable_new_onboarding', defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) ) {
 			return false;
 		}
 
@@ -855,27 +876,6 @@ class WC_Payments_Utils {
 		}
 
 		return $formatted_amount;
-	}
-
-	/**
-	 * Encrypts client secret of intents created on Stripe.
-	 *
-	 * @param   string $stripe_account_id Stripe account ID.
-	 * @param   string $client_secret     Client secret string.
-	 *
-	 * @return  string                 Encrypted value.
-	 */
-	public static function encrypt_client_secret( string $stripe_account_id, string $client_secret ): string {
-		if ( \WC_Payments_Features::is_client_secret_encryption_enabled() ) {
-			return openssl_encrypt(
-				$client_secret,
-				'aes-128-cbc',
-				substr( $stripe_account_id, 5 ),
-				0,
-				str_repeat( 'WC', 8 )
-			);
-		}
-		return $client_secret;
 	}
 
 	/**
@@ -1074,6 +1074,30 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns true if the request that's currently being processed is a Store API request, false
+	 * otherwise.
+	 *
+	 * @return bool True if request is a Store API request, false otherwise.
+	 */
+	public static function is_store_api_request(): bool {
+		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
+		} else {
+			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$request_path = $url_parts ? rtrim( $url_parts['path'], '/' ) : '';
+			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		}
+
+		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
+			if ( 1 === preg_match( $pattern, $rest_route ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Gets the current active theme transient for a given location
 	 * Falls back to 'stripe' if no transients are set.
 	 *
@@ -1124,5 +1148,47 @@ class WC_Payments_Utils {
 
 		// Fallback to 'stripe' if no transients are set.
 		return 'stripe';
+	}
+
+	/**
+	 * Returns the list of countries in the European Economic Area (EEA).
+	 *
+	 * Based on the list documented at https://www.gov.uk/eu-eea.
+	 *
+	 * @return string[]
+	 */
+	public static function get_european_economic_area_countries() {
+		return [
+			Country_Code::AUSTRIA,
+			Country_Code::BELGIUM,
+			Country_Code::BULGARIA,
+			Country_Code::CROATIA,
+			Country_Code::CYPRUS,
+			Country_Code::CZECHIA,
+			Country_Code::DENMARK,
+			Country_Code::ESTONIA,
+			Country_Code::FINLAND,
+			Country_Code::FRANCE,
+			Country_Code::GERMANY,
+			Country_Code::GREECE,
+			Country_Code::HUNGARY,
+			Country_Code::IRELAND,
+			Country_Code::ICELAND,
+			Country_Code::ITALY,
+			Country_Code::LATVIA,
+			Country_Code::LIECHTENSTEIN,
+			Country_Code::LITHUANIA,
+			Country_Code::LUXEMBOURG,
+			Country_Code::MALTA,
+			Country_Code::NORWAY,
+			Country_Code::NETHERLANDS,
+			Country_Code::POLAND,
+			Country_Code::PORTUGAL,
+			Country_Code::ROMANIA,
+			Country_Code::SLOVAKIA,
+			Country_Code::SLOVENIA,
+			Country_Code::SPAIN,
+			Country_Code::SWEDEN,
+		];
 	}
 }

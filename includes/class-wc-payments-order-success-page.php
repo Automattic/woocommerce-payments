@@ -16,6 +16,7 @@ class WC_Payments_Order_Success_Page {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_filter( 'woocommerce_order_received_verify_known_shoppers', [ $this, 'determine_woopay_order_received_verify_known_shoppers' ], 11 );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
 		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'unregister_payment_method_override' ] );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );
@@ -42,7 +43,7 @@ class WC_Payments_Order_Success_Page {
 	 * Hooked into `woocommerce_order_get_payment_method_title` to change the payment method title on the
 	 * order received page for WooPay and BNPL orders.
 	 *
-	 * @param string $payment_method_title Original payment method title.
+	 * @param string            $payment_method_title Original payment method title.
 	 * @param WC_Abstract_Order $abstract_order Successful received order being shown.
 	 * @return string
 	 */
@@ -82,7 +83,7 @@ class WC_Payments_Order_Success_Page {
 		if ( $payment_method->is_bnpl() ) {
 			$bnpl_output = $this->show_bnpl_payment_method_name( $gateway, $payment_method );
 
-			if ( $bnpl_output !== false ) {
+			if ( false !== $bnpl_output ) {
 				return $bnpl_output;
 			}
 		}
@@ -117,7 +118,7 @@ class WC_Payments_Order_Success_Page {
 	/**
 	 * Add the BNPL logo to the payment method name on the order received page.
 	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway the gateway being shown.
+	 * @param WC_Payment_Gateway_WCPay                 $gateway the gateway being shown.
 	 * @param WCPay\Payment_Methods\UPE_Payment_Method $payment_method the payment method being shown.
 	 *
 	 * @return string|false
@@ -182,7 +183,7 @@ class WC_Payments_Order_Success_Page {
 	 * Formats the additional text to be displayed on the thank you page, with the side effect
 	 * as a workaround for an issue in Woo core 8.1.x and 8.2.x.
 	 *
-	 * @param string $additional_text
+	 * @param string $additional_text The additional text to be displayed.
 	 *
 	 * @return string Formatted text.
 	 */
@@ -196,7 +197,7 @@ class WC_Payments_Order_Success_Page {
 		 * @see https://github.com/woocommerce/woocommerce/pull/39758 Introduce the issue since 8.1.0.
 		 * @see https://github.com/woocommerce/woocommerce/pull/40353 Fix the issue since 8.3.0.
 		 */
-		if( version_compare( WC_VERSION, '8.0', '>' )
+		if ( version_compare( WC_VERSION, '8.0', '>' )
 			&& version_compare( WC_VERSION, '8.3', '<' )
 		) {
 			echo "
@@ -226,5 +227,34 @@ class WC_Payments_Order_Success_Page {
 			WC_Payments::get_file_version( 'assets/css/success.css' ),
 			'all',
 		);
+	}
+
+	/**
+	 * Make sure we show the TYP page for orders paid with WooPay
+	 * that create new user accounts, code mainly copied from
+	 * WooCommerce WC_Shortcode_Checkout::order_received and
+	 * WC_Shortcode_Checkout::guest_should_verify_email.
+	 *
+	 * @param bool $value The current value for this filter.
+	 */
+	public function determine_woopay_order_received_verify_known_shoppers( $value ) {
+		global $wp;
+
+		$order_id  = $wp->query_vars['order-received'];
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) );
+		$order     = wc_get_order( $order_id );
+
+		if ( ( ! $order instanceof WC_Order ) || ! $order->get_meta( 'is_woopay' ) || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+			return $value;
+		}
+
+		$verification_grace_period = (int) apply_filters( 'woocommerce_order_email_verification_grace_period', 10 * MINUTE_IN_SECONDS, $order );
+		$date_created              = $order->get_date_created();
+
+		// We do not need to verify the email address if we are within the grace period immediately following order creation.
+		$is_within_grace_period = is_a( $date_created, \WC_DateTime::class, true )
+			&& time() - $date_created->getTimestamp() <= $verification_grace_period;
+
+		return ! $is_within_grace_period;
 	}
 }

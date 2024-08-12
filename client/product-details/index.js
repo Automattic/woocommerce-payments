@@ -6,7 +6,7 @@
  */
 import { initializeBnplSiteMessaging } from './bnpl-site-messaging';
 import request from 'wcpay/checkout/utils/request';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 
 jQuery( async function ( $ ) {
 	/**

@@ -66,10 +66,15 @@ class Fraud_Prevention_Service {
 
 	/**
 	 * Appends the fraud prevention token to the JS context if the protection is enabled, and a session exists.
+	 * This token will also be used by express checkouts.
 	 *
 	 * @return  void
 	 */
 	public static function maybe_append_fraud_prevention_token() {
+		if ( wp_script_is( self::TOKEN_NAME, 'enqueued' ) ) {
+			return;
+		}
+
 		// Check session first before trying to append the token.
 		if ( ! WC()->session ) {
 			return;
@@ -82,9 +87,9 @@ class Fraud_Prevention_Service {
 			return;
 		}
 
-		// Don't add the token if the user isn't on the cart or checkout page.
-		// Checking the cart page too because the user can pay quickly via the payment buttons on that page.
-		if ( ! is_checkout() && ! is_cart() ) {
+		// Don't add the token if the user isn't on the cart, checkout, product or pay for order page.
+		// Checking the product and cart page too because the user can pay quickly via the payment buttons on that page.
+		if ( ! is_checkout() && ! is_cart() && ! is_product() && ! $instance->is_pay_for_order_page() ) {
 			return;
 		}
 
@@ -96,6 +101,15 @@ class Fraud_Prevention_Service {
 			"window.wcpayFraudPreventionToken = '" . esc_js( $instance->get_token() ) . "';",
 			'after'
 		);
+	}
+
+	/**
+	 * Checks if this is the Pay for Order page.
+	 *
+	 * @return bool
+	 */
+	public function is_pay_for_order_page() {
+		return is_checkout() && isset( $_GET['pay_for_order'] ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
 
 	/**

@@ -55,6 +55,13 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 	private $mock_session_service;
 
 	/**
+	 * Mock WC_Payments_Redirect_Service.
+	 *
+	 * @var WC_Payments_Redirect_Service|MockObject
+	 */
+	private $mock_redirect_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -72,11 +79,12 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
+		$this->mock_redirect_service         = $this->createMock( WC_Payments_Redirect_Service::class );
 
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
+			->setMethods( [ 'init_hooks' ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service ] )
 			->getMock();
 
 		$this->wcpay_account->init_hooks();
@@ -93,47 +101,28 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function test_maybe_redirect_to_server_link_will_run() {
-		$this->assertNotFalse(
-			has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_to_server_link' ] )
-		);
-	}
-
 	public function test_maybe_redirect_to_server_link_skips_ajax_requests() {
 		add_filter( 'wp_doing_ajax', '__return_true' );
 
-		$this->mock_api_client->expects( $this->never() )->method( 'get_link' );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_account_link' );
 
-		$this->wcpay_account->maybe_redirect_to_server_link();
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 
 	public function test_maybe_redirect_to_server_link_skips_non_admin_users() {
 		wp_set_current_user( 0 );
 
-		$this->mock_api_client->expects( $this->never() )->method( 'get_link' );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_account_link' );
 
-		$this->wcpay_account->maybe_redirect_to_server_link();
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 
 	public function test_maybe_redirect_to_server_link_skips_regular_requests() {
 		unset( $_GET['wcpay-link-handler'] );
 
-		$this->mock_api_client->expects( $this->never() )->method( 'get_link' );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_account_link' );
 
-		$this->wcpay_account->maybe_redirect_to_server_link();
-	}
-
-	public function test_maybe_redirect_to_server_link_redirects_to_link() {
-		$this->mock_api_client
-			->method( 'get_link' )
-			->willReturn( [ 'url' => 'https://link.url' ] );
-
-		$this->wcpay_account
-			->expects( $this->once() )
-			->method( 'redirect_to' )
-			->with( 'https://link.url' );
-
-		$this->wcpay_account->maybe_redirect_to_server_link();
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 
 	public function test_maybe_redirect_to_server_link_forwards_all_arguments() {
@@ -141,31 +130,17 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 		$_GET['id']         = 'link_id';
 		$_GET['random_arg'] = 'random_arg';
 
-		$this->mock_api_client
+		$this->mock_redirect_service
 			->expects( $this->once() )
-			->method( 'get_link' )
+			->method( 'redirect_to_account_link' )
 			->with(
 				[
 					'type'       => 'login_link',
 					'id'         => 'link_id',
 					'random_arg' => 'random_arg',
 				]
-			)
-			->willReturn( [ 'url' => 'https://link.url' ] );
+			);
 
-		$this->wcpay_account->maybe_redirect_to_server_link();
-	}
-
-	public function test_maybe_redirect_to_server_link_redirects_to_overview_on_error() {
-		$this->mock_api_client
-			->method( 'get_link' )
-			->willThrowException( new API_Exception( 'Error: The requested link is invalid.', 'invalid_request_error', 400 ) );
-
-		$this->wcpay_account
-			->expects( $this->once() )
-			->method( 'redirect_to' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Foverview&wcpay-server-link-error=1' );
-
-		$this->wcpay_account->maybe_redirect_to_server_link();
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 }

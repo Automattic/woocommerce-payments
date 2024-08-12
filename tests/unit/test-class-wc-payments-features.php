@@ -18,10 +18,18 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	 */
 	protected $mock_cache;
 
+	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_wcpay_account;
+
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
 		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
 		'_wcpay_feature_documents'               => 'documents',
 		'_wcpay_feature_auth_and_capture'        => 'isAuthAndCaptureEnabled',
+		'_wcpay_feature_stripe_ece'              => 'isStripeEceEnabled',
 	];
 
 	public function set_up() {
@@ -29,6 +37,17 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
+
+		// Mock the WCPay Account class to make sure the account is not restricted by default.
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_wcpay_account
+			->method( 'is_account_rejected' )
+			->willReturn( false );
+		$this->mock_wcpay_account
+			->method( 'is_account_under_review' )
+			->willReturn( false );
+
+		WC_Payments::set_account_service( $this->mock_wcpay_account );
 	}
 
 	public function tear_down() {
@@ -88,6 +107,32 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_woopay_eligible_returns_false() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
+		$this->assertFalse( WC_Payments_Features::is_woopay_eligible() );
+	}
+
+	public function test_is_woopay_eligible_when_account_is_suspended_returns_false() {
+		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$mock_wcpay_account
+			->method( 'is_account_under_review' )
+			->willReturn( true );
+
+		WC_Payments::set_account_service( $mock_wcpay_account );
+
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+
+		$this->assertFalse( WC_Payments_Features::is_woopay_eligible() );
+	}
+
+	public function test_is_woopay_eligible_when_account_is_rejected_returns_false() {
+		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$mock_wcpay_account
+			->method( 'is_account_rejected' )
+			->willReturn( true );
+
+		WC_Payments::set_account_service( $mock_wcpay_account );
+
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+
 		$this->assertFalse( WC_Payments_Features::is_woopay_eligible() );
 	}
 
@@ -181,9 +226,9 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_woopay_express_checkout_enabled() );
 	}
 
-	public function test_is_woopay_direct_checkout_enabled_returns_true() {
+	public function test_is_woopay_direct_checkout_enabled_returns_true_when_woopayments_gateway_enabled() {
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enabled' => 'yes' ] );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
-		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '1' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
@@ -194,9 +239,21 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 	}
 
+	public function test_is_woopay_direct_checkout_enabled_returns_false_when_woopayments_gateway_disabled() {
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enabled' => 'no' ] );
+		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
+		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
+		$this->mock_cache->method( 'get' )->willReturn(
+			[
+				'platform_checkout_eligible'        => true,
+				'platform_direct_checkout_eligible' => true,
+			]
+		);
+		$this->assertFalse( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
+	}
+
 	public function test_is_woopay_direct_checkout_enabled_returns_false_when_flag_is_false() {
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
-		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '1' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '0' );
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
@@ -209,7 +266,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_woopay_direct_checkout_enabled_returns_false_when_woopay_eligible_is_false() {
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
-		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '1' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 		$this->mock_cache->method( 'get' )->willReturn(
 			[
@@ -220,7 +276,8 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 	}
 
-	public function test_is_woopay_direct_checkout_enabled_returns_false_when_first_party_auth_is_disabled() {
+	public function test_is_woopay_direct_checkout_enabled_returns_true_when_first_party_auth_is_disabled() {
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enabled' => 'yes' ] );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '0' );
 		$this->set_feature_flag_option( WC_Payments_Features::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
@@ -230,7 +287,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 				'platform_direct_checkout_eligible' => true,
 			]
 		);
-		$this->assertFalse( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 	}
 
 	public function test_is_wcpay_frt_review_feature_active_returns_true() {

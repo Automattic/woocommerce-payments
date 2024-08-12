@@ -25,6 +25,7 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePaymentRequestLocations: jest.fn(),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	usePaymentRequestButtonBorderRadius: jest.fn().mockReturnValue( [ 4 ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	useWooPayEnabledSettings: jest.fn(),
@@ -35,7 +36,7 @@ jest.mock( '../../../data', () => ( {
 jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
 
-jest.mock( 'payment-request/utils', () => ( {
+jest.mock( 'utils/express-checkout', () => ( {
 	getPaymentRequestData: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',
@@ -222,7 +223,7 @@ describe( 'PaymentRequestSettings', () => {
 			expect.anything()
 		);
 
-		userEvent.click( screen.getByLabelText( 'Large (56 px)' ) );
+		userEvent.click( screen.getByLabelText( 'Large (55 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
 	} );
 
@@ -264,7 +265,7 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect(
 			screen.queryByText(
-				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
+				'Your custom checkout fields may not be compatible with these payment methods.'
 			)
 		).toBeInTheDocument();
 	} );
@@ -276,7 +277,7 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect(
 			screen.queryByText(
-				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
+				'Your custom checkout fields may not be compatible with these payment methods.'
 			)
 		).not.toBeInTheDocument();
 	} );

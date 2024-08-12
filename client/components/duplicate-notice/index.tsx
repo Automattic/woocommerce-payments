@@ -8,21 +8,38 @@ import { __ } from '@wordpress/i18n';
 import { getAdminUrl } from 'wcpay/utils';
 import { useDispatch } from '@wordpress/data';
 
+export type PaymentMethodToPluginsMap = { [ key: string ]: string[] };
 interface DuplicateNoticeProps {
 	paymentMethod: string;
-	dismissedDuplicateNotices: string[];
-	setDismissedDuplicateNotices: ( notices: string[] ) => void;
+	gatewaysEnablingPaymentMethod: string[];
+	dismissedNotices: PaymentMethodToPluginsMap;
+	setDismissedDuplicateNotices: (
+		notices: PaymentMethodToPluginsMap
+	) => null;
 }
 
 function DuplicateNotice( {
 	paymentMethod,
-	dismissedDuplicateNotices,
+	gatewaysEnablingPaymentMethod,
+	dismissedNotices,
 	setDismissedDuplicateNotices,
 }: DuplicateNoticeProps ): JSX.Element | null {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	const handleDismiss = useCallback( () => {
-		const updatedNotices = [ ...dismissedDuplicateNotices, paymentMethod ];
+		const updatedNotices = { ...dismissedNotices };
+		if ( updatedNotices[ paymentMethod ] ) {
+			// If there are existing dismissed notices for the payment method, append to the current array.
+			updatedNotices[ paymentMethod ] = [
+				...new Set( [
+					...updatedNotices[ paymentMethod ],
+					...gatewaysEnablingPaymentMethod,
+				] ),
+			];
+		} else {
+			updatedNotices[ paymentMethod ] = gatewaysEnablingPaymentMethod;
+		}
+
 		setDismissedDuplicateNotices( updatedNotices );
 		updateOptions( {
 			wcpay_duplicate_payment_method_notices_dismissed: updatedNotices,
@@ -30,13 +47,20 @@ function DuplicateNotice( {
 		wcpaySettings.dismissedDuplicateNotices = updatedNotices;
 	}, [
 		paymentMethod,
-		dismissedDuplicateNotices,
+		gatewaysEnablingPaymentMethod,
+		dismissedNotices,
 		setDismissedDuplicateNotices,
 		updateOptions,
 	] );
 
-	if ( dismissedDuplicateNotices.includes( paymentMethod ) ) {
-		return null;
+	if ( dismissedNotices?.[ paymentMethod ] ) {
+		const isNoticeDismissedForEveryGateway = gatewaysEnablingPaymentMethod.every(
+			( value ) => dismissedNotices[ paymentMethod ].includes( value )
+		);
+
+		if ( isNoticeDismissedForEveryGateway ) {
+			return null;
+		}
 	}
 
 	return (

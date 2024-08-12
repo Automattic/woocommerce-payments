@@ -82,9 +82,10 @@ class WC_Payments_Customer_Service {
 	 * Class constructor
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
-	 * @param WC_Payments_Account         $account             WC_Payments_Account instance.
-	 * @param Database_Cache              $database_cache      Database_Cache instance.
-	 * @param WC_Payments_Session_Service $session_service     Session Service class instance.
+	 * @param WC_Payments_Account         $account WC_Payments_Account instance.
+	 * @param Database_Cache              $database_cache Database_Cache instance.
+	 * @param WC_Payments_Session_Service $session_service Session Service class instance.
+	 * @param WC_Payments_Order_Service   $order_service Order Service class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -177,12 +178,12 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return string           WooPayments customer ID.
 	 * @throws API_Exception    Throws when server API request fails.
-*/
+	 */
 	public function get_or_create_customer_id_from_order( ?int $user_id, WC_Order $order ): string {
 		// Determine the customer making the payment, create one if we don't have one already.
 		$customer_id   = $this->get_customer_id_by_user_id( $user_id );
 		$customer_data = self::map_customer_data( $order, new WC_Customer( $user_id ?? 0 ) );
-		$user          =  null === $user_id ? null :  get_user_by( 'id', $user_id );
+		$user          = null === $user_id ? null : get_user_by( 'id', $user_id );
 
 		if ( null !== $customer_id ) {
 			$this->update_customer_for_user( $customer_id, $user, $customer_data );
@@ -526,9 +527,9 @@ class WC_Payments_Customer_Service {
 		}
 
 		global $wp;
-		$user_email = '';
-		$firstname  = '';
-		$lastname   = '';
+		$user_email      = '';
+		$firstname       = '';
+		$lastname        = '';
 		$billing_country = '';
 
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -536,9 +537,9 @@ class WC_Payments_Customer_Service {
 			$order    = wc_get_order( $order_id );
 
 			if ( is_a( $order, 'WC_Order' ) ) {
-				$firstname  = $order->get_billing_first_name();
-				$lastname   = $order->get_billing_last_name();
-				$user_email = $order->get_billing_email();
+				$firstname       = $order->get_billing_first_name();
+				$lastname        = $order->get_billing_last_name();
+				$user_email      = $order->get_billing_email();
 				$billing_country = $order->get_billing_country();
 			}
 		}
@@ -547,17 +548,17 @@ class WC_Payments_Customer_Service {
 			$user = wp_get_current_user();
 
 			if ( $user->ID ) {
-				$firstname  = $user->user_firstname;
-				$lastname   = $user->user_lastname;
-				$user_email = get_user_meta( $user->ID, 'billing_email', true );
-				$user_email = $user_email ?: $user->user_email;
+				$firstname       = $user->user_firstname;
+				$lastname        = $user->user_lastname;
+				$user_email      = get_user_meta( $user->ID, 'billing_email', true );
+				$user_email      = ! empty( $user_email ) ? $user_email : $user->user_email;
 				$billing_country = get_user_meta( $user->ID, 'billing_country', true );
 			}
 		}
 
 		return [
-			'name'  => $firstname . ' ' . $lastname,
-			'email' => $user_email,
+			'name'            => $firstname . ' ' . $lastname,
+			'email'           => $user_email,
 			'billing_country' => $billing_country,
 		];
 	}

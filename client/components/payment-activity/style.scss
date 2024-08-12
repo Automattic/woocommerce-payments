@@ -23,6 +23,28 @@
 				padding: 16px 0 19px;
 			}
 		}
+
+		&__header {
+			.wcpay-filter.components-custom-select-control {
+				.wcpay-filter.components-custom-select-control {
+					&__menu {
+						// Ensure date preset items are shown without vertical scroll.
+						max-height: fit-content;
+					}
+
+					&__item {
+						// Set alignment of columns in the date preset dropdown.
+						grid-template-columns: 10% 25% 65%;
+					}
+				}
+			}
+
+			@include breakpoint( '<660px' ) {
+				// Sets Mobile view of the payment activity widget header. Date preset dropdown is moved to a new line.
+				flex-direction: column !important;
+				gap: 16px;
+			}
+		}
 	}
 }
 

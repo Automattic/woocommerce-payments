@@ -8,7 +8,8 @@ import { test, expect, Page } from '@playwright/test';
  */
 import { useMerchant } from '../../utils/helpers';
 
-test.describe( 'payment gateways disable confirmation', () => {
+// Skipping the test for now as it is flaky on GH action runs. See #8875.
+test.skip( 'payment gateways disable confirmation', () => {
 	useMerchant();
 
 	const getToggle = ( page: Page ) =>

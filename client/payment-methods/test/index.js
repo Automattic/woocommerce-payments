@@ -448,8 +448,8 @@ describe( 'PaymentMethods', () => {
 		render(
 			<DuplicatedPaymentMethodsContext.Provider
 				value={ {
-					duplicates: [ 'card' ],
-					dismissedDuplicateNotices: [],
+					duplicates: { card: '' },
+					dismissedDuplicateNotices: {},
 					setDismissedDuplicateNotices: jest.fn(),
 				} }
 			>

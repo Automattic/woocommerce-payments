@@ -20,6 +20,12 @@ import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import {
+	expressCheckoutElementApplePay,
+	expressCheckoutElementGooglePay,
+} from '../../express-checkout/blocks';
+import tokenizedCartPaymentRequestPaymentMethod from '../../tokenized-payment-request/blocks';
+
+import {
 	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_BANCONTACT,
 	PAYMENT_METHOD_NAME_BECS,
@@ -153,7 +159,16 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
+	registerExpressPaymentMethod(
+		tokenizedCartPaymentRequestPaymentMethod( api )
+	);
+} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
+	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+} else {
+	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+}
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();

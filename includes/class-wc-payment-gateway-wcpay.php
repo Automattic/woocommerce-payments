@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\StoreApi\Payments\PaymentContext;
+use Automattic\WooCommerce\StoreApi\Payments\PaymentResult;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Mode;
@@ -18,7 +20,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception};
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception, Invalid_Address_Exception, Fraud_Prevention_Enabled_Exception, Invalid_Phone_Number_Exception, Rate_Limiter_Enabled_Exception, Order_ID_Mismatch_Exception, Order_Not_Found_Exception, New_Process_Payment_Exception };
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -115,17 +117,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
-	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE       = 'upe_process_redirect_order_id_mismatched';
-	const UPE_APPEARANCE_TRANSIENT                         = 'wcpay_upe_appearance';
-	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT               = 'wcpay_wc_blocks_upe_appearance';
-	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_product_page_appearance';
-	const UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT       = 'wcpay_upe_bnpl_classic_cart_appearance';
-	const UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT         = 'wcpay_upe_bnpl_cart_block_appearance';
-	const UPE_APPEARANCE_THEME_TRANSIENT                   = 'wcpay_upe_appearance_theme';
-	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT         = 'wcpay_wc_blocks_upe_appearance_theme';
-	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_product_page_appearance_theme';
-	const UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_bnpl_classic_cart_appearance_theme';
-	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT   = 'wcpay_upe_bnpl_cart_block_appearance_theme';
+	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE        = 'upe_process_redirect_order_id_mismatched';
+	const UPE_APPEARANCE_TRANSIENT                          = 'wcpay_upe_appearance';
+	const UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT       = 'wcpay_upe_add_payment_method_appearance';
+	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT                = 'wcpay_wc_blocks_upe_appearance';
+	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT        = 'wcpay_upe_bnpl_product_page_appearance';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT        = 'wcpay_upe_bnpl_classic_cart_appearance';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT          = 'wcpay_upe_bnpl_cart_block_appearance';
+	const UPE_APPEARANCE_THEME_TRANSIENT                    = 'wcpay_upe_appearance_theme';
+	const UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_add_payment_method_appearance_theme';
+	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT          = 'wcpay_wc_blocks_upe_appearance_theme';
+	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT  = 'wcpay_upe_bnpl_product_page_appearance_theme';
+	const UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT  = 'wcpay_upe_bnpl_classic_cart_appearance_theme';
+	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT    = 'wcpay_upe_bnpl_cart_block_appearance_theme';
 
 	/**
 	 * The locations of appearance transients.
@@ -558,6 +562,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
 
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
+			add_action( 'woocommerce_rest_checkout_process_payment_with_context', [ $this, 'setup_payment_error_handler' ], 10, 2 );
 
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
 
@@ -676,6 +681,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			remove_all_actions( 'woocommerce_store_api_checkout_order_processed' );
 			// Avoid increasing coupon usage count during preflight check.
 			remove_all_actions( 'woocommerce_order_status_pending' );
+
+			// Avoid creating new accounts during preflight check.
+			remove_all_filters( 'woocommerce_checkout_registration_required' );
 		}
 
 		return $response;
@@ -765,7 +773,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( isset( $account_data['account_id'] ) ) {
 			return '';
 		}
-		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
+		return html_entity_decode( WC_Payments_Account::get_connect_url( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK ) );
 	}
 
 	/**
@@ -1063,6 +1071,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$factors[] = Factor::PAYMENT_REQUEST();
 		}
 
+		if ( defined( 'WCPAY_EXPRESS_CHECKOUT_CHECKOUT' ) && WCPAY_EXPRESS_CHECKOUT_CHECKOUT ) {
+			$factors[] = Factor::EXPRESS_CHECKOUT_ELEMENT();
+		}
+
 		$router = wcpay_get_container()->get( Router::class );
 		return $router->should_use_new_payment_process( $factors );
 	}
@@ -1072,8 +1084,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * and if the answer is yes, uses it and returns the result.
 	 *
 	 * @param WC_Order $order Order that needs payment.
-	 * @return array|null     Array if processed, null if the new process is not supported.
-	 * @throws Exception      If the payment process could not be completed.
+	 * @return array|null Array  if processed, null if the new process is not supported.
+	 * @throws Exception Error processing the payment.
 	 */
 	public function new_process_payment( WC_Order $order ) {
 		$manual_capture = $this->get_capture_type() === Payment_Capture_Type::MANUAL();
@@ -1119,7 +1131,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		throw new Exception( __( 'The payment process could not be completed.', 'woocommerce-payments' ) );
+		throw new Exception(
+			__( 'The payment process could not be completed.', 'woocommerce-payments' ),
+			0,
+			new New_Process_Payment_Exception(
+				__( 'The payment process could not be completed.', 'woocommerce-payments' ),
+				'new_process_payment'
+			)
+		);
 	}
 
 	/**
@@ -1128,7 +1147,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param int $order_id Order ID to process the payment for.
 	 *
 	 * @return array|null An array with result of payment and redirect URL, or nothing.
-	 * @throws Process_Payment_Exception Error processing the payment.
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
@@ -1141,7 +1159,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
-				throw new Process_Payment_Exception(
+				throw new Invalid_Phone_Number_Exception(
 					__( 'Invalid phone number.', 'woocommerce-payments' ),
 					'invalid_phone_number'
 				);
@@ -1151,7 +1169,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
-					throw new Process_Payment_Exception(
+					throw new Fraud_Prevention_Enabled_Exception(
 						__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
 						'fraud_prevention_enabled'
 					);
@@ -1159,7 +1177,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
-				throw new Process_Payment_Exception(
+				throw new Rate_Limiter_Enabled_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
 					'rate_limiter_enabled'
 				);
@@ -1279,9 +1297,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->add_order_note( $note );
 			}
 
-			// Re-throw the exception after setting everything up.
-			// This makes the error notice show up both in the regular and block checkout.
-			throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) );
+			// This allows WC to check if WP_DEBUG mode is enabled before returning previous Exception and expose Exception class name to frontend.
+			add_filter( 'woocommerce_return_previous_exceptions', '__return_true' );
+			wc_add_notice( wp_strip_all_tags( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) ), 'error' );
+			do_action( 'update_payment_result_on_error', $e, $order );
+
+			return [
+				'result'   => 'fail',
+				'redirect' => '',
+			];
 		}
 	}
 
@@ -1349,6 +1373,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Sets up a handler to add error details to the payment result.
+	 * Registers an action to handle 'update_payment_result_on_error',
+	 * using the payment result object from 'woocommerce_rest_checkout_process_payment_with_context'.
+	 *
+	 * @param PaymentContext $context The payment context.
+	 * @param PaymentResult  $result  The payment result, passed by reference.
+	 */
+	public function setup_payment_error_handler( PaymentContext $context, PaymentResult &$result ) {
+		add_action(
+			'update_payment_result_on_error',
+			function ( $error ) use ( &$result ) {
+				$result->set_payment_details(
+					array_merge(
+						$result->payment_details,
+						[ 'errorMessage' => wp_strip_all_tags( $error->getMessage() ) ]
+					)
+				);
+			}
+		);
+	}
+
+	/**
 	 * Manages customer details held on WCPay server for WordPress user associated with an order.
 	 *
 	 * @param WC_Order $order   WC Order object.
@@ -1410,9 +1456,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WCPay\Payment_Information $payment_information Payment info.
 	 * @param bool                      $scheduled_subscription_payment Used to determinate is scheduled subscription payment to add more fields into API request.
 	 *
-	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
+	 * @return array|null An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception
-	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
+	 * @throws Exception When amount too small.
+	 * @throws Invalid_Address_Exception
+	 * @throws Order_Not_Found_Exception
+	 * @throws Order_ID_Mismatch_Exception When the payment intent could not be authenticated.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception When request class filter filed to extend request class because of incompatibility.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception When immutable parameter gets changed in request class.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception When you send incorrect request value via setters.
@@ -1426,10 +1475,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount   = $order->get_total();
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
-		$customer_details_options   = [
+		$customer_details_options = [
 			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
 		];
-		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
+
+		if ( $payment_information->get_customer_id() ) {
+			$user        = $order->get_user();
+			$customer_id = $payment_information->get_customer_id();
+		} else {
+			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
+		}
 
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
@@ -1515,7 +1570,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 				if ( $intent_meta_order_id !== $order_id ) {
-					throw new Intent_Authentication_Exception(
+					throw new Order_ID_Mismatch_Exception(
 						sprintf(
 							/* translators: %s: metadata. We do not need to translate WooPayMeta */
 							esc_html( __( 'We\'re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: %1$s, order_id: %2$s', 'woocommerce-payments' ) ),
@@ -1626,7 +1681,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 
 				if ( $intent_meta_order_id !== $order_id ) {
-					throw new Intent_Authentication_Exception(
+					throw new Order_ID_Mismatch_Exception(
 						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
 						'order_id_mismatch'
 					);
@@ -1742,7 +1797,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
+							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
 						// Include the payment method ID so the Blocks integration can save cards.
@@ -1785,7 +1840,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type    = $this->get_payment_method_type_for_setup_intent( $intent, $token );
 		}
 
-		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $_POST['payment_request_type'] ) && empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 		}
 
@@ -1967,7 +2022,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
+							$client_secret,
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						);
 						wp_safe_redirect( $redirect_url );
@@ -1979,7 +2034,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
 			$is_order_id_mismatched_exception =
-				is_a( $e, Process_Payment_Exception::class )
+				$e instanceof Process_Payment_Exception
 				&& self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE === $e->get_error_code();
 
 			// If the order ID mismatched exception is thrown, do not mark the order as failed.
@@ -2580,15 +2635,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Gets account default currency.
-	 *
-	 * @return string Currency code.
-	 */
-	public function get_account_default_currency(): string {
-		return $this->account->get_account_default_currency();
-	}
-
-	/**
 	 * Gets connected account business name.
 	 *
 	 * @param string $default_value Value to return when not connected or failed to fetch business name.
@@ -2777,7 +2823,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$merchant_country
 				)
 			);
-			return $this->get_account_default_currency();
+			return $this->account->get_account_default_currency();
 		}
 
 		return $country_locale_data['currency_code'];
@@ -3757,10 +3803,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$setup_intent_output = [
 				'id'            => $setup_intent->get_id(),
 				'status'        => $setup_intent->get_status(),
-				'client_secret' => WC_Payments_Utils::encrypt_client_secret(
-					$this->account->get_stripe_account_id(),
-					$setup_intent->get_client_secret()
-				),
+				'client_secret' => $setup_intent->get_client_secret(),
 			];
 
 			wp_send_json_success( $setup_intent_output, 200 );
@@ -3992,7 +4035,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
@@ -4031,7 +4073,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$elements_location = isset( $_POST['elements_location'] ) ? wc_clean( wp_unslash( $_POST['elements_location'] ) ) : null;
 			$appearance        = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
 
-			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block' ];
+			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block', 'add_payment_method' ];
 			if ( ! $elements_location || ! in_array( $elements_location, $valid_locations, true ) ) {
 				throw new Exception(
 					__( 'Unable to update UPE appearance values at this time.', 'woocommerce-payments' )
@@ -4053,7 +4095,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			/**
 			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
 			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
-			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block'.
+			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block', 'add_payment_method'.
 			 *
 			 * @since 7.4.0
 			 */
@@ -4061,6 +4103,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$appearance_transient       = [
 				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
+				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
 				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
@@ -4068,6 +4111,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			][ $elements_location ];
 			$appearance_theme_transient = [
 				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
+				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT,
 				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
 				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
 				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
@@ -4457,7 +4501,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
-		$check_if_usable = function ( array $address ): bool {
+		$wc_locale_data = WC()->countries->get_country_locale();
+
+		$check_if_usable = function ( array $address ) use ( $wc_locale_data ): bool {
+			if ( $address['country'] && isset( $wc_locale_data[ $address['country'] ] ) ) {
+				$country_locale_data = $wc_locale_data[ $address['country'] ];
+				$fields_to_check     = [
+					'state'     => 'state',
+					'city'      => 'city',
+					'postcode'  => 'postal_code',
+					'address_1' => 'line1',
+				];
+
+				foreach ( $fields_to_check as $locale_field => $address_field ) {
+					$is_field_required = (
+						! isset( $country_locale_data[ $locale_field ] ) ||
+						! isset( $country_locale_data[ $locale_field ]['required'] ) ||
+						$country_locale_data[ $locale_field ]['required']
+					);
+
+					if ( $is_field_required && ! $address[ $address_field ] ) {
+						return false;
+					}
+				}
+
+				return true;
+			}
+
 			return $address['country'] && $address['state'] && $address['city'] && $address['postal_code'] && $address['line1'];
 		};
 
@@ -4468,8 +4538,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$billing_data = $this->order_service->get_billing_data_from_order( $order );
-		if ( $check_if_usable( $billing_data['address'] ) ) {
-			$request->set_shipping( $billing_data );
+		// Afterpay fails if we send more parameters than expected in the shipping address.
+		// This ensures that we only send the name and address fields, as in get_shipping_data_from_order.
+		$shipping_data = [
+			'name'    => $billing_data['name'] ?? '',
+			'address' => $billing_data['address'] ?? [],
+		];
+		if ( $check_if_usable( $shipping_data['address'] ) ) {
+			$request->set_shipping( $shipping_data );
 			return;
 		}
 
@@ -4485,6 +4561,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
 	 * @param Payment_Information          $payment_information   The payment information object.
 	 * @param WC_Order                     $order                 The order object.
+	 * @throws Invalid_Address_Exception
 	 *
 	 * @return void
 	 */

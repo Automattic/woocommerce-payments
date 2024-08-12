@@ -13,6 +13,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
+use WCPay\Constants\Country_Code;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
@@ -20,11 +21,15 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Fraud_Prevention_Enabled_Exception;
+use WCPay\Exceptions\Invalid_Address_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Exceptions\Order_ID_Mismatch_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
+use WCPay\Internal\Payment\State\PaymentErrorState;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\PaymentProcessingService;
@@ -186,6 +191,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $mock_duplicates_detection_service;
 
 	/**
+	 * Backup of WC locale data
+	 *
+	 * @var array
+	 */
+	private $locale_backup;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -266,6 +278,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_payment_metadata' )
 			->willReturn( [] );
 		wcpay_get_test_container()->replace( OrderService::class, $mock_order_service );
+
+		$this->locale_backup = WC()->countries->get_country_locale();
 	}
 
 	/**
@@ -301,6 +315,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 
 		wcpay_get_test_container()->reset_all_replacements();
+		WC()->session->set( 'wc_notices', [] );
+		WC()->countries->locale = $this->locale_backup;
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -824,9 +840,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->set_billing_phone( '+1123456789123456789123' );
 		$order->save();
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Invalid phone number.' );
-		$this->card_gateway->process_payment( $order->get_id() );
+		$result = $this->card_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {
@@ -2554,6 +2572,31 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
+	public function test_process_payment_for_order_rejects_with_order_id_mismatch() {
+		$order                = WC_Helper_Order::create_order();
+		$intent_meta_order_id = 0;
+		$woopay_intent_id     = 'woopay_invalid_intent_id_mock';
+		$payment_intent       = WC_Helper_Intention::create_intention(
+			[
+				'status'   => 'success',
+				'metadata' => [ 'order_id' => (string) $intent_meta_order_id ],
+			]
+		);
+
+		$_POST['platform-checkout-intent'] = $woopay_intent_id;
+
+		$payment_information = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $woopay_intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->expectException( 'WCPay\Exceptions\Order_ID_Mismatch_Exception' );
+		$this->expectExceptionMessage( 'We&#039;re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: ' . $intent_meta_order_id . ', order_id: ' . $order->get_id() );
+		$this->card_gateway->process_payment_for_order( WC()->cart, $payment_information );
+	}
+
 	public function test_set_mandate_data_to_payment_intent_if_not_required() {
 		$payment_method = 'woocommerce_payments_sepa_debit';
 		$order          = WC_Helper_Order::create_order();
@@ -2794,6 +2837,120 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
+	/**
+	 * @dataProvider process_payment_for_order_afterpay_clearpay_provider
+	 */
+	public function test_process_payment_for_order_afterpay_clearpay( array $address, array $locale_data, ?string $expected_exception ) {
+		$payment_method                              = 'woocommerce_payments_afterpay_clearpay';
+		$expected_upe_payment_method_for_pi_creation = 'afterpay_clearpay';
+		$order                                       = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->set_billing_city( $address['city'] );
+		$order->set_billing_state( $address['state'] );
+		$order->set_billing_postcode( $address['postcode'] );
+		$order->set_billing_country( $address['country'] );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'afterpay_clearpay' );
+
+		if ( $expected_exception ) {
+			$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 0, null, null, null, null, true );
+			$this->expectException( $expected_exception );
+		} else {
+			$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+			$request->expects( $this->once() )
+				->method( 'set_payment_methods' )
+				->with( [ $expected_upe_payment_method_for_pi_creation ] );
+			$request->expects( $this->once() )
+				->method( 'format_response' )
+				->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+		}
+
+		WC()->countries->locale = $locale_data;
+
+		$afterpay_gateway = current(
+			array_filter(
+				$this->gateways,
+				function ( $gateway ) {
+					return $gateway->get_payment_method()->get_id() === 'afterpay_clearpay';
+				}
+			)
+		);
+
+		$afterpay_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function process_payment_for_order_afterpay_clearpay_provider() {
+		return [
+			'with valid full address'         => [
+				'address'            => [
+					'city'     => 'WooCity',
+					'state'    => 'NY',
+					'postcode' => '12345',
+					'country'  => Country_Code::UNITED_STATES,
+				],
+				// An empty locale data means all fields should be required.
+				'locale_data'        => [],
+				'expected_exception' => null,
+			],
+			'with incomplete address'         => [
+				'address'            => [
+					'city'     => 'WooCity',
+					'state'    => '',
+					'postcode' => '12345',
+					'country'  => Country_Code::UNITED_STATES,
+				],
+				'locale_data'        => [
+					// A missing `required` attribute means that the field will be required.
+					Country_Code::UNITED_STATES => [ 'state' => [ 'label' => 'State' ] ],
+				],
+				'expected_exception' => Invalid_Address_Exception::class,
+			],
+			'optional state'                  => [
+				'address'            => [
+					'city'     => 'London',
+					'state'    => '',
+					'postcode' => 'HA9 9LY',
+					'country'  => Country_Code::UNITED_KINGDOM,
+				],
+				'locale_data'        => [
+					Country_Code::UNITED_KINGDOM => [ 'state' => [ 'required' => false ] ],
+				],
+				'expected_exception' => null,
+			],
+			'optional state and postcode'     => [
+				'address'            => [
+					'city'     => 'London',
+					'state'    => '',
+					'postcode' => '',
+					'country'  => Country_Code::UNITED_KINGDOM,
+				],
+				'locale_data'        => [
+					Country_Code::UNITED_KINGDOM => [
+						'state'    => [ 'required' => false ],
+						'postcode' => [ 'required' => false ],
+					],
+				],
+				'expected_exception' => null,
+			],
+			'optional state, invalid address' => [
+				'address'            => [
+					'city'     => '',
+					'state'    => 'London',
+					'postcode' => 'HA9 9LY',
+					'country'  => Country_Code::UNITED_KINGDOM,
+				],
+				'locale_data'        => [
+					Country_Code::UNITED_KINGDOM => [ 'state' => [ 'required' => false ] ],
+				],
+				'expected_exception' => Invalid_Address_Exception::class,
+			],
+		];
+	}
+
 	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
 		delete_transient( 'wcpay_minimum_amount_usd' );
 
@@ -2837,17 +2994,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
-		$this->expectException( Exception::class );
-		$price   = html_entity_decode( wp_strip_all_tags( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
-		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
-		$this->expectExceptionMessage( $message );
 
-		try {
-			$this->card_gateway->process_payment( $order->get_id() );
-		} catch ( Exception $e ) {
-			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
-			throw $e;
-		}
+		$this->card_gateway->process_payment( $order->get_id() );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( 'The selected payment method requires a total amount of at least $60.00.', $error_notices['error'][0]['notice'] );
+		$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
 	}
 
 	public function test_process_payment_rejects_if_missing_fraud_prevention_token() {
@@ -2860,9 +3012,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'is_enabled' )
 			->willReturn( true );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( "We're not able to process this payment. Please refresh the page and try again." );
-		$this->card_gateway->process_payment( $order->get_id() );
+		try {
+			$this->card_gateway->process_payment( $order->get_id() );
+		} catch ( Exception $e ) {
+			$this->assertEquals( 'Exception', get_class( $e ) );
+			$this->assertEquals( "We're not able to process this payment. Please refresh the page and try again.", $e->getMessage() );
+			$this->assertEquals( 'WCPay\Exceptions\Fraud_Prevention_Enabled_Exception', get_class( $e->getPrevious() ) );
+		}
 	}
 
 	public function test_process_payment_rejects_if_invalid_fraud_prevention_token() {
@@ -2883,9 +3039,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$_POST['wcpay-fraud-prevention-token'] = 'incorrect-token';
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( "We're not able to process this payment. Please refresh the page and try again." );
-		$this->card_gateway->process_payment( $order->get_id() );
+		try {
+			$this->card_gateway->process_payment( $order->get_id() );
+		} catch ( Exception $e ) {
+			$this->assertEquals( 'Exception', get_class( $e ) );
+			$this->assertEquals( "We're not able to process this payment. Please refresh the page and try again.", $e->getMessage() );
+			$this->assertEquals( 'WCPay\Exceptions\Fraud_Prevention_Enabled_Exception', get_class( $e->getPrevious() ) );
+		}
 	}
 
 	public function test_process_payment_marks_order_as_blocked_for_fraud() {
@@ -2939,10 +3099,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' )
 			->willThrowException( new API_Exception( $error_message, 'wcpay_blocked_by_fraud_rule', 400, 'card_error' ) );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( $error_message );
-
-		$mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( $error_message, $error_notices['error'][0]['notice'] );
 	}
 
 	public function test_process_payment_marks_order_as_blocked_for_fraud_avs_mismatch() {
@@ -3009,10 +3170,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' )
 			->willThrowException( new API_Exception( $error_message, 'incorrect_zip', 400, 'card_error' ) );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( $error_message );
-
-		$mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( $error_message, $error_notices['error'][0]['notice'] );
 
 		delete_transient( 'wcpay_fraud_protection_settings' );
 	}
@@ -3081,10 +3243,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'process_payment_for_order' )
 			->willThrowException( new API_Exception( $error_message, 'incorrect_zip', 400, 'card_error' ) );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( $error_message );
-
-		$mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( $error_message, $error_notices['error'][0]['notice'] );
 
 		delete_transient( 'wcpay_fraud_protection_settings' );
 	}
@@ -3620,6 +3783,51 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			],
 			$result
 		);
+	}
+
+	public function test_new_process_payment_throw_exception() {
+		// The new payment process is only accessible in dev mode.
+		WC_Payments::mode()->dev();
+
+		$mock_service = $this->createMock( PaymentProcessingService::class );
+		$mock_router  = $this->createMock( Router::class );
+		$order        = WC_Helper_Order::create_order();
+		$mock_state   = $this->createMock( PaymentErrorState::class );
+
+		wcpay_get_test_container()->replace( PaymentProcessingService::class, $mock_service );
+		wcpay_get_test_container()->replace( Router::class, $mock_router );
+
+		$mock_router->expects( $this->once() )
+			->method( 'should_use_new_payment_process' )
+			->willReturn( true );
+
+		// Assert: The new service is called.
+		$mock_service->expects( $this->once() )
+			->method( 'process_payment' )
+			->with( $order->get_id() )
+			->willReturn( $mock_state );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'The payment process could not be completed.' );
+
+		$this->card_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_rate_limiter_enabled_throw_exception() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( true );
+
+		try {
+			$this->card_gateway->process_payment( $order->get_id() );
+		} catch ( Exception $e ) {
+			$this->assertEquals( 'Exception', get_class( $e ) );
+			$this->assertEquals( 'Your payment was not processed.', $e->getMessage() );
+			$this->assertEquals( 'WCPay\Exceptions\Rate_Limiter_Enabled_Exception', get_class( $e->getPrevious() ) );
+		}
 	}
 
 	public function test_process_payment_returns_correct_redirect() {

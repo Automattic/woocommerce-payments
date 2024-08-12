@@ -42,13 +42,15 @@ export const DisputesFilters = ( {
 	};
 
 	return (
-		<ReportFilters
-			filters={ populateDisputesCurrencies( filters ) }
-			advancedFilters={ advancedFilters }
-			showDatePicker={ false }
-			path="/payments/disputes"
-			query={ getQuery() }
-		/>
+		<div className="woocommerce-filters-disputes">
+			<ReportFilters
+				filters={ populateDisputesCurrencies( filters ) }
+				advancedFilters={ advancedFilters }
+				showDatePicker={ false }
+				path="/payments/disputes"
+				query={ getQuery() }
+			/>
+		</div>
 	);
 };
 

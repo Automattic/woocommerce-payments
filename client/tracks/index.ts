@@ -8,7 +8,7 @@ import domReady from '@wordpress/dom-ready';
  */
 import { Event } from './event';
 import { getConfig } from 'wcpay/utils/checkout';
-import { getPaymentRequestData } from 'wcpay/payment-request/utils';
+import { getPaymentRequestData } from 'wcpay/utils/express-checkout';
 
 /**
  * Checks if site tracking is enabled.

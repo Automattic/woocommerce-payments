@@ -70,6 +70,35 @@ describe( 'WoopayExpressCheckoutButton', () => {
 	const mockRequest = jest.fn().mockResolvedValue( true );
 	const mockAddToCart = jest.fn().mockResolvedValue( true );
 	const api = new WCPayAPI( {}, mockRequest );
+	const mockAppearance = {
+		rules: {
+			'.Block': {},
+			'.Input': {},
+			'.Input--invalid': {},
+			'.Label': {},
+			'.Tab': {},
+			'.Tab--selected': {},
+			'.Tab:hover': {},
+			'.TabIcon--selected': {
+				color: undefined,
+			},
+			'.TabIcon:hover': {
+				color: undefined,
+			},
+			'.Text': {},
+			'.Text--redirect': {},
+			'.Heading': {},
+			'.Button': {},
+			'.Link': {},
+		},
+		theme: 'stripe',
+		variables: {
+			colorBackground: '#ffffff',
+			colorText: undefined,
+			fontFamily: undefined,
+			fontSizeBase: undefined,
+		},
+	};
 
 	beforeEach( () => {
 		expressCheckoutIframe.mockImplementation( () => jest.fn() );
@@ -145,6 +174,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					return 'testkey';
 				case 'order_id':
 					return 1;
+				case 'appearance':
+					return mockAppearance;
 				default:
 					return 'foo';
 			}
@@ -170,6 +201,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				order_id: 1,
 				key: 'testkey',
 				billing_email: 'test@test.com',
+				appearance: mockAppearance,
 			} );
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );

@@ -1,4 +1,12 @@
 /**
+ * External dependencies
+ */
+import { useEffect, useState, RawHTML } from '@wordpress/element';
+import { Elements } from '@stripe/react-stripe-js';
+// eslint-disable-next-line import/no-unresolved
+import { StoreNotice } from '@woocommerce/blocks-checkout';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
@@ -6,14 +14,16 @@ import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { useFingerprint } from './hooks';
 import { LoadableBlock } from 'wcpay/components/loadable';
-import { Elements } from '@stripe/react-stripe-js';
-import { useEffect, useState } from 'react';
 import PaymentProcessor from './payment-processor';
 import { getPaymentMethodTypes } from 'wcpay/checkout/utils/upe';
 
 const PaymentElements = ( { api, ...props } ) => {
 	const stripe = api.getStripeForUPE( props.paymentMethodId );
 	const [ errorMessage, setErrorMessage ] = useState( null );
+	const [
+		paymentProcessorLoadErrorMessage,
+		setPaymentProcessorLoadErrorMessage,
+	] = useState( undefined );
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
 	);
@@ -63,10 +73,23 @@ const PaymentElements = ( { api, ...props } ) => {
 					fonts: fontRules,
 				} }
 			>
+				{ paymentProcessorLoadErrorMessage?.error?.message && (
+					<div className="wc-block-components-notices">
+						<StoreNotice status="error" isDismissible={ false }>
+							<RawHTML>
+								{
+									paymentProcessorLoadErrorMessage.error
+										.message
+								}
+							</RawHTML>
+						</StoreNotice>
+					</div>
+				) }
 				<PaymentProcessor
 					api={ api }
 					errorMessage={ errorMessage }
 					fingerprint={ fingerprint }
+					onLoadError={ setPaymentProcessorLoadErrorMessage }
 					{ ...props }
 				/>
 			</Elements>

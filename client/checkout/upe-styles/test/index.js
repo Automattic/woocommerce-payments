@@ -196,7 +196,83 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 					backgroundColor: '#ffffff',
 				},
+				'.Heading': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Button': {
+					backgroundColor: 'rgb(255, 255, 255)',
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					outline: '1px solid rgb(150, 88, 138)',
+					padding: '10px',
+				},
+				'.Link': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
 			},
+		} );
+	} );
+
+	[
+		{
+			elementsLocation: 'shortcode_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'blocks_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'other',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+	].forEach( ( { elementsLocation, expectedSelectors } ) => {
+		afterEach( () => {
+			document.querySelector.mockClear();
+		} );
+
+		describe( `when elementsLocation is ${ elementsLocation }`, () => {
+			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
+				jest.spyOn( document, 'querySelector' ).mockImplementation(
+					() => mockElement
+				);
+				jest.spyOn( window, 'getComputedStyle' ).mockImplementation(
+					() => mockCSStyleDeclaration
+				);
+
+				upeStyles.getAppearance( elementsLocation );
+
+				expectedSelectors.forEach( ( selector ) => {
+					expect( document.querySelector ).toHaveBeenCalledWith(
+						selector
+					);
+				} );
+			} );
 		} );
 	} );
 } );

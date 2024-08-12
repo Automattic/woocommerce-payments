@@ -208,7 +208,7 @@ const SettingsManager = () => {
 	const [
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
-	] = useState( wcpaySettings.dismissedDuplicateNotices || [] );
+	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
 
 	return (
 		<SettingsLayout>

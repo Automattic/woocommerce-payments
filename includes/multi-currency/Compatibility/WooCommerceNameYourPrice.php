@@ -63,7 +63,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 
 		$nyp_id = $variation_id ? $variation_id : $product_id;
 
-		if ( \WC_Name_Your_Price_Helpers::is_nyp( $nyp_id ) && isset( $cart_item['nyp'] ) ) {
+		if ( class_exists( '\WC_Name_Your_Price_Helpers' ) && \WC_Name_Your_Price_Helpers::is_nyp( $nyp_id ) && isset( $cart_item['nyp'] ) ) {
 			$currency                  = $this->multi_currency->get_selected_currency();
 			$cart_item['nyp_currency'] = $currency->get_code();
 			$cart_item['nyp_original'] = $cart_item['nyp'];
@@ -102,6 +102,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 				$cart_item['nyp'] = $this->multi_currency->get_raw_conversion( $raw_price, $selected_currency->get_code(), $from_currency );
 			}
 
+			// @phpstan-ignore-next-line.
 			$cart_item = WC_Name_Your_Price()->cart->set_cart_item( $cart_item );
 		}
 
@@ -130,7 +131,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 		}
 
 		// Check to see if the product is a NYP product.
-		if ( \WC_Name_Your_Price_Helpers::is_nyp( $product ) ) {
+		if ( class_exists( '\WC_Name_Your_Price_Helpers' ) && \WC_Name_Your_Price_Helpers::is_nyp( $product ) ) {
 			return false;
 		}
 

@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
-import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
@@ -76,9 +75,9 @@ declare const global: {
 	};
 };
 
-const mockUseCurrentProtectionLevel = mocked( useCurrentProtectionLevel );
+const mockUseCurrentProtectionLevel = jest.mocked( useCurrentProtectionLevel );
 
-const mockUseAdvancedFraudProtectionSettings = mocked(
+const mockUseAdvancedFraudProtectionSettings = jest.mocked(
 	useAdvancedFraudProtectionSettings
 );
 

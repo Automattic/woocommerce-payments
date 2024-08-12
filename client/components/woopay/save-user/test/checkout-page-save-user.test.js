@@ -6,6 +6,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import { addAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -14,6 +15,31 @@ import CheckoutPageSaveUser from '../checkout-page-save-user';
 import useWooPayUser from '../../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../../hooks/use-selected-payment-method';
 import { getConfig } from 'utils/checkout';
+import { useDispatch } from '@wordpress/data';
+
+const jQueryMock = ( selector ) => {
+	if ( typeof selector === 'function' ) {
+		return selector( jQueryMock );
+	}
+
+	return {
+		on: ( event, callbackOrSelector, callback2 ) =>
+			addAction(
+				`payment-request-test.jquery-event.${ selector }${
+					typeof callbackOrSelector === 'string'
+						? `.${ callbackOrSelector }`
+						: ''
+				}.${ event }`,
+				'tests',
+				typeof callbackOrSelector === 'string'
+					? callback2
+					: callbackOrSelector
+			),
+		val: () => null,
+		is: () => null,
+		remove: () => null,
+	};
+};
 
 jest.mock( '../../hooks/use-woopay-user', () => jest.fn() );
 jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
@@ -24,15 +50,14 @@ jest.mock(
 	'@woocommerce/blocks-checkout',
 	() => ( {
 		extensionCartUpdate: jest.fn(),
+		ValidationInputError: () => {
+			return <div>Dummy error element</div>;
+		},
 	} ),
 	{ virtual: true }
 );
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn().mockReturnValue( {
-		setBillingAddress: jest.fn(),
-		setShippingAddress: jest.fn(),
-	} ),
-} ) );
+
+jest.mock( '@wordpress/data' );
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn().mockReturnValue( true ),
@@ -57,6 +82,14 @@ jest.mock( 'tracks', () => ( {
 	},
 } ) );
 
+jest.mock(
+	'@woocommerce/block-data',
+	() => ( {
+		VALIDATION_STORE_KEY: 'wc/store/validation',
+	} ),
+	{ virtual: true }
+);
+
 const BlocksCheckoutEnvironmentMock = ( { children } ) => (
 	<div>
 		<button className="wc-block-components-checkout-place-order-button">
@@ -71,8 +104,20 @@ const BlocksCheckoutEnvironmentMock = ( { children } ) => (
 
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
+		global.$ = jQueryMock;
+		global.jQuery = jQueryMock;
+		useDispatch.mockImplementation( () => {
+			return {
+				setValidationErrors: jest.fn(),
+				clearValidationError: jest.fn(),
+				setBillingAddress: jest.fn(),
+				setShippingAddress: jest.fn(),
+			};
+		} );
+
 		useWooPayUser.mockImplementation( () => false );
 		extensionCartUpdate.mockResolvedValue( {} );
+		extensionCartUpdate.mockClear();
 
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: true,
@@ -82,6 +127,15 @@ describe( 'CheckoutPageSaveUser', () => {
 		getConfig.mockImplementation(
 			( setting ) => setting === 'forceNetworkSavedCards'
 		);
+
+		window.wcSettings = {
+			wcVersion: '9.1.2',
+			storePages: {
+				checkout: {
+					permalink: 'http://localhost/',
+				},
+			},
+		};
 
 		window.wcpaySettings = {
 			accountStatus: {

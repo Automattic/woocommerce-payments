@@ -147,3 +147,27 @@ img {
 		}
 	}
 }
+
+/**
+ * This styling fixes the appearance of advanced filters on list screens.
+ * In particular, it adds a gap between advanced date filter inputs on viewports >= 783px.
+ * See https://github.com/woocommerce/woocommerce/blob/892afbe1b9ee7bd1d20e7c34ad6180d91b8b94d9/packages/js/components/src/advanced-filters/style.scss#L119
+ */
+.woocommerce-filters-deposits,
+.woocommerce-filters-disputes,
+.woocommerce-filters-documents,
+.woocommerce-filters-transactions {
+	@media screen and ( min-width: 783px ) {
+		.woocommerce-filters-advanced {
+			&__fieldset {
+				display: grid;
+				grid-template-columns: 100px auto 1fr;
+			}
+		}
+		.components-select-control
+			.components-input-control__container
+			.components-select-control__input {
+			padding-right: var( --main-gap );
+		}
+	}
+}

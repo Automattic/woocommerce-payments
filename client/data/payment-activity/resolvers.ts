@@ -31,7 +31,7 @@ export function* getPaymentActivityData(
 	try {
 		const results = yield apiFetch( { path } );
 
-		yield updatePaymentActivity( results as PaymentActivityData );
+		yield updatePaymentActivity( results as PaymentActivityData, query );
 	} catch ( e ) {
 		yield controls.dispatch(
 			'core/notices',

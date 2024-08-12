@@ -69,6 +69,7 @@
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable">
 		<exclude-pattern>templates/emails/</exclude-pattern>
 		<exclude-pattern>includes/in-person-payments/templates/</exclude-pattern>
+		<exclude-pattern>includes/compat/subscriptions/emails</exclude-pattern>
 	</rule>
 
 	<!-- Disallow long array syntax -->
@@ -111,6 +112,7 @@
 				<element value="manage_woocommerce" />
 				<element value="pay_for_order" />
 				<element value="read_private_shop_orders" />
+				<element value="edit_shop_subscription_payment_method" />
 			</property>
 		</properties>
 	</rule>
@@ -137,7 +139,7 @@
 	<rule ref="PEAR.WhiteSpace.ObjectOperatorIndent" />
 
 	<!-- Custom WCPay rules -->
-	<rule ref="./dev/phpcs/ruleset.xml"/>
+	<rule ref="./dev/phpcs/WCPay/ruleset.xml"/>
 
 	<!-- Check the class structure (ordering of methods, properties, etc.) -->
 	<rule ref="SlevomatCodingStandard.Classes.ClassStructure">

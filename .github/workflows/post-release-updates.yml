@@ -139,8 +139,8 @@ jobs:
           NEXT_RELEASE_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
         run: |
           cd wiki
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           
           HAS_CHANGES=false
           

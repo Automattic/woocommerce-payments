@@ -26,6 +26,7 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+	usePaymentRequestButtonBorderRadius: jest.fn().mockReturnValue( [ 4 ] ),
 	useWooPayLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
@@ -49,7 +50,7 @@ jest.mock( '@stripe/stripe-js', () => ( {
 	loadStripe: jest.fn().mockReturnValue( null ),
 } ) );
 
-jest.mock( 'payment-request/utils', () => ( {
+jest.mock( 'utils/express-checkout', () => ( {
 	getPaymentRequestData: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',

@@ -78,7 +78,7 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 		foreach ( WC_Log_Handler_File::get_log_files() as $log_file_name ) {
 			// If the log file name starts with our handle, "touch" it to update the last modified timestamp.
 			if ( strpos( $log_file_name, self::HANDLE ) === 0 ) {
-				touch( trailingslashit( WC_LOG_DIR ) . $log_file_name );
+				touch( trailingslashit( WC_LOG_DIR ) . $log_file_name ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_touch
 			}
 		}
 	}

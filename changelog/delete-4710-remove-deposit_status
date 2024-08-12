@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Removed deprecated deposit_status key from account status

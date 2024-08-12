@@ -110,7 +110,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the hash for.
 	 * @return string             The product's hash or an empty string.
 	 */
-	public static function get_wcpay_product_hash( WC_Product $product ) : string {
+	public static function get_wcpay_product_hash( WC_Product $product ): string {
 		return $product->get_meta( self::PRODUCT_HASH_KEY, true );
 	}
 
@@ -122,7 +122,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return string             The WC Pay product ID or an empty string.
 	 */
-	public function get_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
+	public function get_wcpay_product_id( WC_Product $product, $test_mode = null ): string {
 		// If the subscription product doesn't have a WC Pay product ID, create one.
 		if ( ! self::has_wcpay_product_id( $product, $test_mode ) ) {
 			$is_current_environment = null === $test_mode || WC_Payments::mode()->is_test() === $test_mode;
@@ -142,7 +142,7 @@ class WC_Payments_Product_Service {
 	 * @param string $type The item type to create a product for.
 	 * @return string       The item's WCPay product id.
 	 */
-	public function get_wcpay_product_id_for_item( string $type ) : string {
+	public function get_wcpay_product_id_for_item( string $type ): string {
 		$sanitized_type  = self::sanitize_option_key( $type );
 		$option_key_name = self::get_wcpay_product_id_option() . '_' . $sanitized_type;
 		if ( ! get_option( $option_key_name ) ) {
@@ -169,7 +169,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return bool                 The WC Pay product ID or an empty string.
 	 */
-	public static function has_wcpay_product_id( WC_Product $product, $test_mode = null ) : bool {
+	public static function has_wcpay_product_id( WC_Product $product, $test_mode = null ): bool {
 		return (bool) $product->get_meta( self::get_wcpay_product_id_option( $test_mode ) );
 	}
 
@@ -557,7 +557,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get data from.
 	 * @return array
 	 */
-	private function get_product_data( WC_Product $product ) : array {
+	private function get_product_data( WC_Product $product ): array {
 		return [
 			'description' => $product->get_description() ? $product->get_description() : 'N/A',
 			'name'        => $product->get_name(),
@@ -573,7 +573,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return array The products to update.
 	 */
-	private function get_products_to_update( WC_Product $product ) : array {
+	private function get_products_to_update( WC_Product $product ): array {
 		return $product->is_type( 'variable-subscription' ) ? $product->get_available_variations( 'object' ) : [ $product ];
 	}
 
@@ -584,7 +584,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to generate the hash for.
 	 * @return string             The product's hash.
 	 */
-	private function get_product_hash( WC_Product $product ) : string {
+	private function get_product_hash( WC_Product $product ): string {
 		return md5( implode( $this->get_product_data( $product ) ) );
 	}
 
@@ -595,8 +595,8 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return bool Whether the product needs to be update in WC Pay.
 	 */
-	private function product_needs_update( WC_Product $product ) : bool {
-		return $this->get_product_hash( $product ) !== static::get_wcpay_product_hash($product);
+	private function product_needs_update( WC_Product $product ): bool {
+		return $this->get_product_hash( $product ) !== static::get_wcpay_product_hash( $product );
 	}
 
 	/**
@@ -628,7 +628,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return string The WCPay product ID meta key/option name.
 	 */
-	public static function get_wcpay_product_id_option( $test_mode = null ) : string {
+	public static function get_wcpay_product_id_option( $test_mode = null ): string {
 		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
 		return $test_mode ? self::TEST_PRODUCT_ID_KEY : self::LIVE_PRODUCT_ID_KEY;
 	}
@@ -640,7 +640,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return string The price hash option name.
 	 */
-	public static function get_wcpay_price_id_option( $test_mode = null ) : string {
+	public static function get_wcpay_price_id_option( $test_mode = null ): string {
 		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
 		return $test_mode ? self::TEST_PRICE_ID_KEY : self::LIVE_PRICE_ID_KEY;
 	}
@@ -762,7 +762,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to get the hash for.
 	 * @return string             The product's price hash or an empty string.
 	 */
-	public static function get_wcpay_price_hash( WC_Product $product ) : string {
+	public static function get_wcpay_price_hash( WC_Product $product ): string {
 		wc_deprecated_function( __FUNCTION__, '3.3.0' );
 		return $product->get_meta( self::PRICE_HASH_KEY, true );
 	}
@@ -777,7 +777,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return string The product's WC Pay price ID or an empty string.
 	 */
-	public function get_wcpay_price_id( WC_Product $product, $test_mode = null ) : string {
+	public function get_wcpay_price_id( WC_Product $product, $test_mode = null ): string {
 		wc_deprecated_function( __FUNCTION__, '3.3.0' );
 		$price_id = $product->get_meta( self::get_wcpay_price_id_option( $test_mode ), true );
 

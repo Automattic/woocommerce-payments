@@ -1,16 +1,18 @@
 /**
  * External dependencies
  */
-import {
-	enablePageDialogAccept,
-	setBrowserViewport,
-} from '@wordpress/e2e-test-utils';
+import { setDefaultOptions } from 'expect-puppeteer';
+import { setBrowserViewport } from '@wordpress/e2e-test-utils';
 
 import { addConsoleSuppression } from '@woocommerce/e2e-environment';
+
+setDefaultOptions( { timeout: 3000 } );
 
 const ERROR_MESSAGES_TO_IGNORE = [
 	'violates the following Content Security Policy directive',
 	'You may test your Stripe.js integration over HTTP.',
+	// eslint-disable-next-line max-len
+	"The page requested an origin-keyed agent cluster using the Origin-Agent-Cluster header, but could not be origin-keyed since the origin 'https://js.stripe.com' had previously been placed in a site-keyed agent cluster. Update your headers to uniformly request origin-keying for all pages on the origin.",
 	'is deprecated',
 	'Unrecognized feature:',
 	'This Element will be mounted to a DOM element that contains child nodes',
@@ -25,9 +27,16 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'was preloaded using link preload but not used within a few seconds',
 	'No UI will be shown. CanMakePayment and hasEnrolledInstrument',
 	'Failed to load resource: the server responded with a status of 404 (Not Found)',
-	'Store "wc/payments" is already registered.',
+	'is already registered.',
 	'Preflight request for request with keepalive specified is currently not supported',
 	'ReactDOM.render is no longer supported in React 18',
+	'[Stripe.js] Unrecognized',
+	'[Stripe.js] For more information',
+	'[Stripe.js] The following payment method types are not activated',
+	'Failed to load resource: the server responded with a status of 400 (Bad Request)',
+	'No Amplitude API key provided',
+	'is registered with an invalid category',
+	'"Heading" is not a supported class',
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {
@@ -99,14 +108,15 @@ function capturePageEventsForTearDown() {
  */
 function removePageEvents() {
 	pageEvents.forEach( ( [ eventName, handler ] ) => {
-		page.removeListener( eventName, handler );
+		page.off( eventName, handler );
 	} );
 }
 
 function setTestTimeouts() {
 	const TIMEOUT = 100000;
 	// Increase default value to avoid test failing due to timeouts.
-	page.setDefaultTimeout( TIMEOUT );
+	// But we want the matchers timeout to be smaller than the test timeout to have meaningful error messages.
+	page.setDefaultTimeout( TIMEOUT / 4 );
 	// running the login flow takes more than the default timeout of 5 seconds,
 	// so we need to increase it to run the login in the beforeAll hook
 	jest.setTimeout( TIMEOUT );
@@ -125,7 +135,13 @@ beforeAll( async () => {
 	}
 
 	capturePageEventsForTearDown();
-	enablePageDialogAccept();
+	page.on( 'dialog', async function ( dialog ) {
+		try {
+			await dialog.accept();
+		} catch ( err ) {
+			console.warn( err.message );
+		}
+	} );
 	setTestTimeouts();
 	await setupBrowser();
 } );

@@ -7,7 +7,53 @@
 	}
 }
 
+.is-mobile,
+.is-small {
+	.woopay-save-new-user-container.wc-version-greater-than-91::after {
+		background: currentColor;
+		box-shadow: -50vw 0 0 0 currentColor, 50vw 0 0 0 currentColor;
+		content: '';
+		height: 1px;
+		opacity: 0.11;
+		width: 100%;
+		margin-top: 22px;
+	}
+}
+
+.is-medium,
+.is-large {
+	.woopay-save-new-user-container.wc-version-greater-than-91 {
+		border-bottom: 1px solid hsla( 0, 0%, 7%, 0.11 );
+		margin-bottom: 48px;
+	}
+}
+
+@media ( max-width: 600px ) {
+	.is-mobile,
+	.is-small {
+		.wc-block-components-form
+			.wc-block-components-checkout-step.is-woopay::after {
+			height: 0;
+		}
+	}
+}
+
 .woopay-save-new-user-container {
+	.save-details {
+		.wc-block-components-text-input input:-webkit-autofill {
+			padding: 1.5em 0.5em 1.5em 0.5em;
+		}
+	}
+
+	&.wc-version-greater-than-91 {
+		@media ( min-width: 601px ),
+			( min-width: 566px ) and ( max-width: 568px ) {
+			.save-details {
+				margin-bottom: 48px;
+			}
+		}
+	}
+
 	.save-details-header {
 		display: flex;
 		align-items: flex-start;
@@ -41,7 +87,7 @@
 				text-indent: 0;
 			}
 
-			input {
+			input:not( .without-margin-right ) {
 				margin-right: $gap-small;
 			}
 

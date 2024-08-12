@@ -11,7 +11,7 @@ import {
 	getBackgroundColor,
 } from './utils.js';
 
-const appearanceSelectors = {
+export const appearanceSelectors = {
 	default: {
 		hiddenContainer: '#wcpay-hidden-div',
 		hiddenInput: '#wcpay-hidden-input',
@@ -36,6 +36,9 @@ const appearanceSelectors = {
 			'form.checkout',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '#place_order' ],
+		linkSelectors: [ 'a' ],
 	},
 	blocksCheckout: {
 		appendTarget: '#billing.wc-block-components-address-form',
@@ -58,6 +61,9 @@ const appearanceSelectors = {
 			'.wc-block-checkout',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplProductPage: {
 		appendTarget: '.product .cart .quantity',
@@ -73,6 +79,9 @@ const appearanceSelectors = {
 			'#main',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.single_add_to_cart_button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplClassicCart: {
 		appendTarget: '.cart .quantity',
@@ -88,6 +97,9 @@ const appearanceSelectors = {
 			'#main',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.checkout-button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplCartBlock: {
 		appendTarget: '.wc-block-cart .wc-block-components-quantity-selector',
@@ -107,6 +119,9 @@ const appearanceSelectors = {
 			'.wp-block-woocommerce-cart',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.wc-block-cart__submit-button' ],
+		linkSelectors: [ 'a' ],
 	},
 
 	/**
@@ -148,7 +163,7 @@ const appearanceSelectors = {
 			case 'blocks_checkout':
 				appearanceSelector = this.blocksCheckout;
 				break;
-			case 'classic_checkout':
+			case 'shortcode_checkout':
 				appearanceSelector = this.classicCheckout;
 				break;
 			case 'bnpl_product_page':
@@ -436,12 +451,14 @@ export const getAppearance = ( elementsLocation ) => {
 	};
 
 	const backgroundColor = getBackgroundColor( selectors.backgroundSelectors );
+	const headingRules = getFieldStyles( selectors.headingSelectors, '.Label' );
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
 		'.Block',
 		backgroundColor
 	);
-
+	const buttonRules = getFieldStyles( selectors.buttonSelectors, '.Input' );
+	const linkRules = getFieldStyles( selectors.linkSelectors, '.Label' );
 	const globalRules = {
 		colorBackground: backgroundColor,
 		colorText: labelRules.color,
@@ -464,6 +481,9 @@ export const getAppearance = ( elementsLocation ) => {
 			'.TabIcon--selected': selectedTabIconRules,
 			'.Text': labelRules,
 			'.Text--redirect': labelRules,
+			'.Heading': headingRules,
+			'.Button': buttonRules,
+			'.Link': linkRules,
 		},
 	};
 	// Remove hidden fields from DOM.

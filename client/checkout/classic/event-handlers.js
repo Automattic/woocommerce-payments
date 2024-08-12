@@ -9,7 +9,7 @@ import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
 	isLinkEnabled,
-	isPaymentMethodRestrictedToLocation,
+	hasPaymentMethodCountryRestrictions,
 	isUsingSavedPaymentMethod,
 	togglePaymentMethodForCountry,
 } from '../utils/upe';
@@ -69,7 +69,7 @@ jQuery( function ( $ ) {
 	} );
 
 	$( document.body ).on( 'updated_checkout', () => {
-		maybeMountStripePaymentElement();
+		maybeMountStripePaymentElement( 'shortcode_checkout' );
 		injectStripePMMEContainers();
 	} );
 
@@ -112,7 +112,11 @@ jQuery( function ( $ ) {
 	} );
 
 	if ( $addPaymentMethodForm.length || $payForOrderForm.length ) {
-		maybeMountStripePaymentElement();
+		maybeMountStripePaymentElement( 'add_payment_method' );
+	}
+
+	if ( $payForOrderForm.length ) {
+		maybeMountStripePaymentElement( 'shortcode_checkout' );
 	}
 
 	$addPaymentMethodForm.on( 'submit', function () {
@@ -214,13 +218,17 @@ jQuery( function ( $ ) {
 		}
 	}
 
-	async function maybeMountStripePaymentElement() {
+	async function maybeMountStripePaymentElement( elementsLocation ) {
 		if (
 			$( '.wcpay-upe-element' ).length &&
 			! $( '.wcpay-upe-element' ).children().length
 		) {
 			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
-				await mountStripePaymentElement( api, upeElement );
+				await mountStripePaymentElement(
+					api,
+					upeElement,
+					elementsLocation
+				);
 				restrictPaymentMethodToLocation( upeElement );
 			}
 			maybeEnableStripeLink( api );
@@ -228,7 +236,7 @@ jQuery( function ( $ ) {
 	}
 
 	function restrictPaymentMethodToLocation( upeElement ) {
-		if ( isPaymentMethodRestrictedToLocation( upeElement ) ) {
+		if ( hasPaymentMethodCountryRestrictions( upeElement ) ) {
 			togglePaymentMethodForCountry( upeElement );
 
 			// this event only applies to the checkout form, but not "place order" or "add payment method" pages.

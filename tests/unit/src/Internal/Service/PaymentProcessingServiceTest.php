@@ -13,8 +13,6 @@ use PHPUnit_Utils;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Intention;
 use WC_Payment_Gateway_WCPay;
-use WC_Payments_API_Abstract_Intention;
-use WC_Payments_API_Setup_Intention;
 use WCPay\Constants\Intent_Status;
 use WCPay\Internal\Payment\PaymentContext;
 use WCPay\Internal\Payment\PaymentRequest;
@@ -175,53 +173,10 @@ class PaymentProcessingServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $url, $result );
 	}
 
-	/**
-	 * Test URL will be returned with encrypted secret key
-	 *
-	 * @param WC_Payments_API_Abstract_Intention $intent
-	 *
-	 * @dataProvider intent_provider_for_encrypted_key_urls
-	 * @return void
-	 */
-	public function test_redirect_url_returns_url_with_encrypted_secret_key( $intent ) {
-		$secret = 'encrypted_secret'; // Dummy text to avoid calling crypt function.
-		$nonce  = 'nonce'; // Return of nonce function when called from legacy proxy.
-		$order  = 1; // Order id.
-		$prefix = $intent instanceof WC_Payments_API_Setup_Intention ? 'si' : 'pi';
-
-		$this->mock_legacy_proxy->expects( $this->once() )
-			->method( 'call_static' )
-			->with( \WC_Payments_Features::class, 'is_client_secret_encryption_enabled' )
-			->willReturn( true );
-
-		$this->mock_legacy_proxy->expects( $this->exactly( 2 ) )
-			->method( 'call_function' )
-			->withConsecutive(
-				[
-					'openssl_encrypt',
-					$intent->get_client_secret(),
-					'aes-128-cbc',
-					substr( $intent->get_customer_id(), 5 ),
-					0,
-					str_repeat( 'WC', 8 ),
-				],
-				[ 'wp_create_nonce', 'wcpay_update_order_status_nonce' ]
-			)
-			->willReturnOnConsecutiveCalls( $secret, $nonce );
-
-		$result = $this->sut->get_authentication_redirect_url( $intent, $order );
-		$this->assertSame( "#wcpay-confirm-$prefix:$order:$secret:$nonce", $result );
-	}
-
-	public function test_redirect_url_returns_url_with_non_encrypted_client_secret_when_encryption_disabled() {
+	public function test_redirect_url_returns_url() {
 		$intent = WC_Helper_Intention::create_setup_intention();
 		$nonce  = 'nonce'; // Return of nonce function when called from legacy proxy.
 		$order  = 1; // Order id.
-
-		$this->mock_legacy_proxy->expects( $this->once() )
-			->method( 'call_static' )
-			->with( \WC_Payments_Features::class, 'is_client_secret_encryption_enabled' )
-			->willReturn( false ); // Just to test when encryption is disabled.
 
 		$this->mock_legacy_proxy->expects( $this->once() )
 			->method( 'call_function' )

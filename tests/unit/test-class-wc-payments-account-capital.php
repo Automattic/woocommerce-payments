@@ -57,6 +57,13 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 	private $mock_session_service;
 
 	/**
+	 * Mock WC_Payments_Redirect_Service.
+	 *
+	 * @var WC_Payments_Redirect_Service|MockObject
+	 */
+	private $mock_redirect_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -74,11 +81,12 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
+		$this->mock_redirect_service         = $this->createMock( WC_Payments_Redirect_Service::class );
 
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setMethods( [ 'redirect_to', 'init_hooks' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
+			->setMethods( [ 'init_hooks' ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service ] )
 			->getMock();
 		$this->wcpay_account->init_hooks();
 	}
@@ -94,93 +102,45 @@ class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function test_maybe_redirect_to_capital_offer_will_run() {
+	public function test_maybe_redirect_by_get_param_will_run() {
 		$wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setMethodsExcept( [ 'maybe_redirect_to_capital_offer', 'init_hooks' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service ] )
+			->setMethodsExcept( [ 'init_hooks' ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service ] )
 			->getMock();
 		$wcpay_account->init_hooks();
 
 		$this->assertNotFalse(
-			has_action( 'admin_init', [ $wcpay_account, 'maybe_redirect_to_capital_offer' ] )
+			has_action( 'admin_init', [ $wcpay_account, 'maybe_redirect_by_get_param' ] )
 		);
 	}
 
 	public function test_maybe_redirect_to_capital_offer_skips_ajax_requests() {
 		add_filter( 'wp_doing_ajax', '__return_true' );
 
-		$this->mock_wcpay_request( Get_Account_Capital_Link::class, 0 );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_capital_view_offer_page' );
 
-		$this->wcpay_account->maybe_redirect_to_capital_offer();
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 
 	public function test_maybe_redirect_to_capital_offer_skips_non_admin_users() {
 		wp_set_current_user( 0 );
 
-		$this->mock_wcpay_request( Get_Account_Capital_Link::class, 0 );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_capital_view_offer_page' );
 
-		$this->wcpay_account->maybe_redirect_to_capital_offer();
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 
 	public function test_maybe_redirect_to_capital_offer_skips_regular_requests() {
 		unset( $_GET['wcpay-loan-offer'] );
 
-		$this->mock_wcpay_request( Get_Account_Capital_Link::class, 0 );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_capital_view_offer_page' );
 
-		$this->wcpay_account->maybe_redirect_to_capital_offer();
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 
 	public function test_maybe_redirect_to_capital_offer_redirects_to_capital_offer() {
-		$request = $this->mock_wcpay_request( Get_Account_Capital_Link::class );
-		$request
-			->expects( $this->once() )
-			->method( 'set_type' )
-			->with( 'capital_financing_offer' );
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_capital_view_offer_page' );
 
-		$request
-			->expects( $this->once() )
-			->method( 'set_return_url' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
-
-		$request
-			->expects( $this->once() )
-			->method( 'set_refresh_url' )
-			->with( 'http://example.org/wp-admin/admin.php?wcpay-loan-offer' );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( new Response( [ 'url' => 'https://capital.url' ] ) );
-
-		$this->wcpay_account->expects( $this->once() )->method( 'redirect_to' )->with( 'https://capital.url' );
-
-		$this->wcpay_account->maybe_redirect_to_capital_offer();
-	}
-
-	public function test_maybe_redirect_to_capital_offer_redirects_to_overview_on_error() {
-		$request = $this->mock_wcpay_request( Get_Account_Capital_Link::class );
-		$request
-			->expects( $this->once() )
-			->method( 'set_type' )
-			->with( 'capital_financing_offer' );
-
-		$request
-			->expects( $this->once() )
-			->method( 'set_return_url' )
-			->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=/payments/overview' );
-
-		$request
-			->expects( $this->once() )
-			->method( 'set_refresh_url' )
-			->with( 'http://example.org/wp-admin/admin.php?wcpay-loan-offer' );
-
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willThrowException(
-				new API_Exception( 'Error: This account has no offer of financing from Capital.', 'invalid_request_error', 400 )
-			);
-
-		$this->wcpay_account->expects( $this->once() )->method( 'redirect_to' )->with( 'http://example.org/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Foverview&wcpay-loan-offer-error=1' );
-
-		$this->wcpay_account->maybe_redirect_to_capital_offer();
+		$this->wcpay_account->maybe_redirect_by_get_param();
 	}
 }

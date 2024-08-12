@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Allowed countries rule card notice tests renders correctly when countries except some are allowed, others will be blocked 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -179,7 +179,7 @@ Object {
 `;
 
 exports[`Allowed countries rule card notice tests renders correctly when countries except some are allowed, others will be hold 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -357,7 +357,7 @@ Object {
 `;
 
 exports[`Allowed countries rule card notice tests renders correctly when specific countries are allowed, others will be blocked 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -535,7 +535,7 @@ Object {
 `;
 
 exports[`Allowed countries rule card notice tests renders correctly when specific countries are allowed, others will be hold 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -713,7 +713,7 @@ Object {
 `;
 
 exports[`Allowed countries rule card notice tests renders html entities correctly 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p

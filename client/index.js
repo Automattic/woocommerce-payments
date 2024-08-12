@@ -26,7 +26,6 @@ import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
 import MultiCurrencySetupPage from 'wcpay/multi-currency-setup';
 import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
-import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
 import OnboardingPage from 'onboarding';
@@ -233,15 +232,6 @@ addFilter(
 				id: 'wc-payments-capital',
 			},
 			capability: 'manage_woocommerce',
-		} );
-		pages.push( {
-			container: PreviewReceiptPage,
-			path: '/payments/card-readers/preview-receipt',
-			wpOpenMenu: menuID,
-			breadcrumbs: [
-				rootLink,
-				__( 'Preview a printed receipt', 'woocommerce-payments' ),
-			],
 		} );
 		if ( wcpaySettings && wcpaySettings.featureFlags.documents ) {
 			pages.push( {

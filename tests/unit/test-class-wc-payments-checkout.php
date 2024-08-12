@@ -510,4 +510,30 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			);
 			$this->assertSame( true, $this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig'][ Payment_Method::CARD ]['showSaveOption'] );
 	}
+
+	public function test_upe_appearance_transients() {
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn(
+				[
+					Payment_Method::CARD,
+				]
+			);
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->willReturn(
+				new CC_Payment_Method( $this->mock_token_service )
+			);
+
+		set_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT, '{}', DAY_IN_SECONDS );
+		set_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT, 'night', DAY_IN_SECONDS );
+		delete_transient( WC_Payment_Gateway_WCPay::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertSame( '{}', $js_config['upeAppearance'] );
+		$this->assertSame( 'night', $js_config['wcBlocksUPEAppearanceTheme'] );
+		$this->assertFalse( $js_config['upeAddPaymentMethodAppearance'] );
+	}
 }

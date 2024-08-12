@@ -152,8 +152,8 @@ describe( 'PaymentMethod', () => {
 		render(
 			<DuplicatedPaymentMethodsContext.Provider
 				value={ {
-					duplicates: [ 'ideal' ],
-					dismissedDuplicateNotices: [],
+					duplicates: { ideal: [ 'woocommerce_payments' ] },
+					dismissedDuplicateNotices: {},
 					setDismissedDuplicateNotices: setDismissedDuplicateNoticesMock,
 				} }
 			>
@@ -172,8 +172,8 @@ describe( 'PaymentMethod', () => {
 		render(
 			<DuplicatedPaymentMethodsContext.Provider
 				value={ {
-					duplicates: [ 'card' ],
-					dismissedDuplicateNotices: [],
+					duplicates: { card: [ 'woocommerce_payments' ] },
+					dismissedDuplicateNotices: {},
 					setDismissedDuplicateNotices: setDismissedDuplicateNoticesMock,
 				} }
 			>

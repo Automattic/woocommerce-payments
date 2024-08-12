@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
 Requires at least: 6.0
-Tested up to: 6.4
+Tested up to: 6.6
 Requires PHP: 7.3
-Stable tag: 7.6.0
+Stable tag: 8.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,174 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 8.0.2 - 2024-08-07 =
+* Fix - Add opt-in checks to prevent blocking customers using other payment methods.
+* Fix - Fix error in Express Checkout Element use with coupons.
+* Fix - Only enable Direct Checkout when WooPayments gateway is enabled.
+
+
+= 8.0.1 - 2024-07-31 =
+* Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
+
+
+= 8.0.0 - 2024-07-31 =
+* Add - Add ECE support for multiple product types.
+* Add - Add ECE support for WooCommerce Deposits.
+* Add - Added filter to enable updating Level 3 data based on order data.
+* Add - Add independent ECE instances in WC Blocks.
+* Add - Add the new payment method logos to the connect page.
+* Add - Apply WooPay direct checkout flow to alternative mini cart checkout button.
+* Add - Pass Blocks checkout appearance on init WooPay
+* Add - Pass product, blocks cart, classic cart and checkout on get WooPay session
+* Add - Set ECE as Default for Express Checkout Buttons unless it was disabled.
+* Add - Support adding tax details (corporate number) for Japan merchants (so can generate tax documents for consumption tax, aka VAT).
+* Add - Use new payment_method_domains endpoint for domain registration.
+* Add - Use Stripe's Express Checkout Element (ECE) for express checkout button previews in the settings when ECE is enabled.
+* Fix - Allow Afterpay gateway to process payments when the state/county is optional for GB and NZ addresses.
+* Fix - Allow the purchase of physical subscriptions using ECE if no shipping options are defined.
+* Fix - Disable ECE for non shipping products if Tax is calculated on billing address.
+* Fix - Disable WooPay’s Direct Checkout feature if WooPayments is not enabled as payment gateway.
+* Fix - Ensure that 'wcSettings' exists before attempting to use 'wcSettings.wcBlocksConfig'.
+* Fix - Ensure the 'Proceed to Checkout' button does not collapse when adding a loading spinner, in the Direct Checkout flow.
+* Fix - Fix Express Checkout Element button width.
+* Fix - Fixing fatal errors when subscription classes are not available
+* Fix - Fix minimum width for express checkout buttons on checkout block.
+* Fix - Fix payment method title for Express Checkout Element orders.
+* Fix - Fix UI state when processing ECE payment on Cart Block.
+* Fix - Fix WooPay opt-in blocks field on WooCommerce 9.1+.
+* Fix - Make Google Pay ECE compatible with WooPay.
+* Fix - Prevent WooPay opt-in from blocking the place order button
+* Fix - Remove bullet from WooPay button on cart block in Safari
+* Fix - Replace WooPay's development environment constants with global variables.
+* Fix - Send optional fields data to WooPay.
+* Fix - Updates payments settings copy to support pay now with klarna.
+* Fix - Use the customer id saved in the subscription to process renewal payments.
+* Update - Deprecate Giropay.
+* Update - Increase font size and update the design of the WooPay button
+* Update - Reorder onboarding wizard business types to always have Company as the first option.
+* Update - Set express checkout max button height to 55px
+* Dev - Add error logging to ECE critical endpoints.
+* Dev - Avoid using deprecated hook for processed checkout order.
+* Dev - Bump WC tested up to version to 9.1.2
+* Dev - Update bundle size checker workflow to support node v20
+* Dev - Update node to v20
+
+= 7.9.2 - 2024-07-18 =
+* Fix - Fix store connection loop for onboarding flows started from the Woo > Settings > Payments page.
+
+
+= 7.9.1 - 2024-07-11 =
+* Fix - Fix Documents API regex to allow documents with dashes in name to be viewed.
+
+
+= 7.9.0 - 2024-07-10 =
+* Add - Add a separate transient to save UPE appearance styles for the Add Payment Method standalone page. Correct regression that prevented proper styles calculation in the shortcode checkout.
+* Add - Add Pay for Order support in Express Checkout Elements.
+* Add - Add support for configuring button radius when ECE is enabled
+* Add - Add support for ECE elements on the Shortcode Cart and Checkout pages
+* Add - Add support for the Express Checkout Element on product pages.
+* Add - Add telemetry events from PRBs into ECE.
+* Add - Ensure shoppers can still checkout, even when WooPay is slow or unavailable.
+* Add - feat: tokenized cart PRBs on shortcode cart and checkout behind feature flag.
+* Add - Support style settings for ECE buttons
+* Fix - Clearly display available instant deposit amount on notice and button label on Payment Overview page
+* Fix - Disable Stripe Link in ECE.
+* Fix - Disable WooPay for suspended and rejected accounts.
+* Fix - Display an invalid address error instead of generic one in the checkout form when Afterpay is selected as payment method
+* Fix - Display payment error message in the Payment context with Blocks.
+* Fix - fix: display refund amount w/ tokenized cart PRBs
+* Fix - fix: pricing decimal formatting for tokenized cart
+* Fix - fix: tokenized PRBs payment type
+* Fix - Fixed an error when renewing subscriptions without a billing country
+* Fix - Fix output for compatibility data.
+* Fix - Fix transaction list and document list advanced filter styling issue preventing dates to be input on mobile screens.
+* Fix - Fix WooPay Direct Checkout feature check.
+* Fix - Fix WooPay OTP modal not rendering on the shortcode checkout if BNPL methods are available.
+* Fix - Hide payment methods with domestic transactions restrictions (Klarna, Affirm, Afterpay) when conditions are not met.
+* Fix - Make the search box, and typed search term visible clearly on the 'Payments > Transactions' page, when there are too many existing search tags.
+* Fix - Properly wait for tokenized cart data updates before refreshing PRB data.
+* Fix - Retrieve saved tokens only relevant for the specific payment gateway.
+* Update - Deprecate Giropay.
+* Update - Update payment receipt settings to remove mention of the printed receipts.
+* Dev - Add validation for path variables.
+* Dev - Migrate Affirm and Afterpay payment method components to TypeScript.
+* Dev - Prevent infinite loop in usePaymentFailHandler effect
+* Dev - Refactor redirects logic in payments
+
+= 7.8.1 - 2024-06-25 =
+* Fix - Fix "Dispute not loaded" error that was affecting responding to disputes.
+
+
+= 7.8.0 - 2024-06-19 =
+* Add - Add a feedback survey modal upon deactivation.
+* Add - Add new select component to be used for reporting filters, e.g. Payments overview currency select
+* Add - Add payment processing using ECE in the Blocks checkout and cart pages.
+* Add - Add the WooPay Direct Checkout flow to the classic mini cart widget.
+* Add - Add woocommerce-return-previous-exceptions filter
+* Add - Enable adapted extensions compatibility with Direct Checkout.
+* Add - feat: add pay-for-order support w/ tokenized cart PRBs
+* Add - Fix ECE not working without WooPay.
+* Add - Reset notifications about duplicate enabled payment methods when new plugins are enabling them.
+* Fix - Fall back to credit card as default payment method when a payment method is toggled off.
+* Fix - fix: address normalization on checkout for tokenized cart PRBs
+* Fix - fix: itemized totals & pending amount on tokenized cart
+* Fix - fix: Store API tokenized cart payment method title
+* Fix - Fixes some cases where redirects to the onboarding will open in a new tab.
+* Fix - Fix input-specific credit card errors.
+* Fix - Fix Payment method title for PRBs not displaying correctly because of ECE code.
+* Fix - Fix Teams for WooCommerce Memberships on product WooPay Express Checkout Button.
+* Fix - Fix WooPay Direct Checkout feature check.
+* Fix - Improve consistency of Manage button for different WooPayments KYC states
+* Fix - Make it so that the WooPay button is not triggered on Checkout pages when the "Enter" key is pressed on a keyboard.
+* Fix - Prevent account creation during WooPay preflight request.
+* Update - chore: update incompatibility notice wrapping
+* Update - Declare compatibility with the Cart and Checkout blocks.
+* Update - Improve the transition from the WCPay KYC to the WC Admin Payments Task
+* Update - Update the Payments Overview screen with a new currency selection UI for stores with multiple deposit currencies
+* Update - Use FILTER_SANITIZE_EMAIL to sanitize email input
+* Dev - Add New_Process_Payment_Exception
+* Dev - Add Order_ID_Mismatch_Exception
+* Dev - Add sh support in pre-push husky script.
+* Dev - Add validation for path variables.
+* Dev - Bump WooCommerce Tested To version to 8.9.2
+* Dev - Bump WooCommerce Tested To version to 8.9.3
+* Dev - chore: EPMs to always send shipping phone
+* Dev - Clean up and refactor some old code which is no longer in use.
+* Dev - Fix PHPStan warnings.
+* Dev - Fix unused parameter phpcs sniffs in checkout classes.
+* Dev - Improve test coverage of upe.js and rename isPaymentMethodRestrictedToLocation to hasPaymentMethodCountryRestrictions
+* Dev - Remove redundant wrapper around method invocation.
+
+= 7.7.0 - 2024-05-29 =
+* Add - Add share key query param when sending data to Stripe KYC.
+* Add - Add the WooPay Direct Checkout flow to the blocks mini cart widget.
+* Add - feat: add multi-currency support to Store API.
+* Add - feat: error message on 1M+ amount.
+* Add - feat: tokenized cart PRBs on PDPs via feature flag.
+* Add - Render ECE buttons behind a feature flag.
+* Fix - Charm pricing and rounding options corrected for all currencies that aren't presented with decimal points.
+* Fix - Fix "Pay for order" infinite loading when submitting form without payment details.
+* Fix - fix: remove WooPay checkout pages scripts from non-checkout pages.
+* Fix - fix: settings notices consistency.
+* Fix - fix: Store API tokenized cart nonce verification.
+* Fix - Fix a bug in Tracks where shopper events are not fired properly.
+* Fix - Fix ECE error in the blocks checkout when PRBs are disabled.
+* Fix - Fix Payment block render error while editing the block checkout page.
+* Fix - Fix shortcode orders when using WooPay Direct Checkout.
+* Fix - Improve visibility of WooPay button on light and outline button themes.
+* Fix - Updating saved payment method billing address before processing the payment.
+* Update - Do not auto-redirect to WooPay on page load.
+* Update - Pass previous exception with exception.
+* Update - Removed deprecated deposit_status key from account status.
+* Update - Remove public key encryption setting from WooPayments settings.
+* Update - Update XPF currency formatting.
+* Dev - Add command to run QIT PHPStan tests.
+* Dev - Add local release package support for PHPStan.
+* Dev - Bump tested up to version for WP to 6.5 and WC to 8.9.1.
+* Dev - Fix Klarna E2E tests.
+* Dev - Guarantee REST intialization on REST request context (avoiding rest_preload_api_request context).
+* Dev - Upgrade jetpack sync package version.
 
 = 7.6.0 - 2024-05-08 =
 * Add - Add additional data to Compatibility service

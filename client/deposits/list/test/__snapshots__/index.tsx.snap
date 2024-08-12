@@ -5,71 +5,75 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
   <div
     class=" woocommerce-payments-page"
   >
-    <h2
-      class="screen-reader-text"
-    >
-      Filters
-    </h2>
     <div
-      class="woocommerce-filters"
+      class="woocommerce-filters-deposits"
     >
+      <h2
+        class="screen-reader-text"
+      >
+        Filters
+      </h2>
       <div
-        class="woocommerce-filters__basic-filters"
+        class="woocommerce-filters"
       >
         <div
-          class="woocommerce-filters-filter"
+          class="woocommerce-filters__basic-filters"
         >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Deposit currency
-            :
-          </span>
           <div
-            class="components-dropdown"
-            tabindex="-1"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Deposit currency
+              :
+            </span>
+            <div
+              class="components-dropdown"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
-        </div>
-        <div
-          class="woocommerce-filters-filter"
-        >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Show
-            :
-          </span>
           <div
-            class="components-dropdown"
-            tabindex="-1"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Show
+              :
+            </span>
+            <div
+              class="components-dropdown"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All deposits
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All deposits
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -157,7 +161,6 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-1"
             class="woocommerce-table__table"
             role="group"
@@ -531,13 +534,13 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -551,71 +554,75 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
   <div
     class=" woocommerce-payments-page"
   >
-    <h2
-      class="screen-reader-text"
-    >
-      Filters
-    </h2>
     <div
-      class="woocommerce-filters"
+      class="woocommerce-filters-deposits"
     >
+      <h2
+        class="screen-reader-text"
+      >
+        Filters
+      </h2>
       <div
-        class="woocommerce-filters__basic-filters"
+        class="woocommerce-filters"
       >
         <div
-          class="woocommerce-filters-filter"
+          class="woocommerce-filters__basic-filters"
         >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Deposit currency
-            :
-          </span>
           <div
-            class="components-dropdown"
-            tabindex="-1"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Deposit currency
+              :
+            </span>
+            <div
+              class="components-dropdown"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
-        </div>
-        <div
-          class="woocommerce-filters-filter"
-        >
-          <span
-            class="woocommerce-filters-label"
-          >
-            Show
-            :
-          </span>
           <div
-            class="components-dropdown"
-            tabindex="-1"
+            class="woocommerce-filters-filter"
           >
-            <button
-              aria-expanded="false"
-              class="components-button woocommerce-dropdown-button"
-              type="button"
+            <span
+              class="woocommerce-filters-label"
             >
-              <div
-                class="woocommerce-dropdown-button__labels"
+              Show
+              :
+            </span>
+            <div
+              class="components-dropdown"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-dropdown-button"
+                type="button"
               >
-                <span>
-                  All deposits
-                </span>
-              </div>
-            </button>
+                <div
+                  class="woocommerce-dropdown-button__labels"
+                >
+                  <span>
+                    All deposits
+                  </span>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -703,7 +710,6 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-0"
             class="woocommerce-table__table"
             role="group"
@@ -1063,13 +1069,13 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

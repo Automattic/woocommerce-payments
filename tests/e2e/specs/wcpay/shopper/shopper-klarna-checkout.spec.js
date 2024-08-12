@@ -14,24 +14,24 @@ const UPE_METHOD_CHECKBOXES = [
 	"//label[contains(text(), 'Klarna')]/preceding-sibling::span/input[@type='checkbox']",
 ];
 
-const checkoutPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), 'Klarna')]`;
-
 describe( 'Klarna checkout', () => {
+	let wasMulticurrencyEnabled;
 	beforeAll( async () => {
 		await merchant.login();
+		wasMulticurrencyEnabled = await merchantWCP.activateMulticurrency();
+		await merchantWCP.deactivateMulticurrency();
 		await merchantWCP.enablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 		await shopper.login();
-		await shopperWCP.changeAccountCurrencyTo(
-			config.get( 'addresses.customer.billing' ),
-			'USD'
-		);
 	} );
 
 	afterAll( async () => {
 		await shopperWCP.emptyCart();
 		await shopperWCP.logout();
 		await merchant.login();
+		if ( wasMulticurrencyEnabled ) {
+			await merchantWCP.activateMulticurrency();
+		}
 		await merchantWCP.disablePaymentMethod( UPE_METHOD_CHECKBOXES );
 		await merchant.logout();
 	} );
@@ -51,10 +51,10 @@ describe( 'Klarna checkout', () => {
 			if ( element ) {
 				element.click();
 			}
-		}, 'button[aria-label="Open Learn More Modal"]' );
+		}, 'a[aria-label="Open Learn More Modal"]' );
 
 		// Wait for the iframe to be added by Stripe JS after clicking on the element.
-		await page.waitFor( 1000 );
+		await page.waitForTimeout( 1000 );
 
 		const paymentMethodMessageModalIframeHandle = await page.waitForSelector(
 			'iframe[src*="js.stripe.com/v3/elements-inner-payment-method-messaging-modal"]'
@@ -85,93 +85,84 @@ describe( 'Klarna checkout', () => {
 				// https://docs.klarna.com/resources/test-environment/sample-customer-data/#united-states-of-america
 				email: 'customer@email.us',
 				phone: '+13106683312',
+				firstname: 'Test',
+				lastname: 'Person-us',
 			},
 			[ [ 'Beanie', 3 ] ]
 		);
 
 		await uiUnblocked();
 
-		await page.waitForXPath( checkoutPaymentMethodSelector );
-		const [ paymentMethodLabel ] = await page.$x(
-			checkoutPaymentMethodSelector
-		);
-		await paymentMethodLabel.click();
+		await page.evaluate( async () => {
+			const paymentMethodLabel = document.querySelector(
+				'label[for="payment_method_woocommerce_payments_klarna"]'
+			);
+			if ( paymentMethodLabel ) {
+				paymentMethodLabel.click();
+			}
+		} );
+
 		await shopper.placeOrder();
 
-		// Klarna is rendered in an iframe, so we need to get its reference.
-		// Sometimes the iframe is updated (or removed from the page),
-		// this function has been created so that we always get the most updated reference.
-		const getNewKlarnaIframe = async () => {
-			const klarnaFrameHandle = await page.waitForSelector(
-				'#klarna-apf-iframe'
-			);
+		await page.waitForSelector( '#phone' );
 
-			return await klarnaFrameHandle.contentFrame();
-		};
+		await page.waitForTimeout( 2000 );
 
-		let klarnaIframe = await getNewKlarnaIframe();
-
-		const frameNavigationHandler = async ( frame ) => {
-			const newKlarnaIframe = await getNewKlarnaIframe();
-			if ( frame === newKlarnaIframe ) {
-				klarnaIframe = newKlarnaIframe;
-			}
-		};
-
-		// Add frame navigation event listener.
-		page.on( 'framenavigated', frameNavigationHandler );
-
-		// waiting for the redirect & the Klarna iframe to load within the Stripe test page.
-		// this is the "confirm phone number" page - we just click "continue".
-		await klarnaIframe.waitForSelector( '#collectPhonePurchaseFlow' );
-		(
-			await klarnaIframe.waitForSelector(
-				'#onContinue[data-testid="kaf-button"]'
-			)
-		 ).click();
-		// this is where the OTP code is entered.
-		await klarnaIframe.waitForSelector( '#phoneOtp' );
-		await expect( klarnaIframe ).toFill(
-			'[data-testid="kaf-field"]',
-			'000000'
-		);
-
-		await klarnaIframe.waitForSelector(
-			'button[data-testid="select-payment-category"'
-		);
-
-		await klarnaIframe.waitForSelector( '.skeleton-wrapper' );
-		await klarnaIframe.waitFor(
-			() => ! document.querySelector( '.skeleton-wrapper' )
-		);
-
-		// Select Payment Plan - 4 weeks & click continue.
-		await klarnaIframe
-			.waitForSelector( 'input[type="radio"][id*="pay_in_n"]' )
-			.then( ( input ) => input.click() );
-		await klarnaIframe
-			.waitForSelector( 'button[data-testid="select-payment-category"' )
+		await page
+			.waitForSelector( '#onContinue' )
 			.then( ( button ) => button.click() );
 
-		// Payment summary page. Click continue.
-		await klarnaIframe
-			.waitForSelector( 'button[data-testid="pick-plan"]' )
-			.then( ( button ) => button.click() );
+		// This is where the OTP code is entered.
+		await page.waitForSelector( '#phoneOtp' );
 
-		// at this point, the event listener is not needed anymore.
-		page.removeListener( 'framenavigated', frameNavigationHandler );
+		await page.waitForTimeout( 2000 ); // Wait for animations
+
+		await expect( page ).toFill( 'input#otp_field', '123456' );
+
+		await page.waitForSelector( '[role="heading"]', {
+			visible: true,
+			text: /(Confirm and pay)|(Choose how to pay)/i,
+		} );
+
+		let readyToBuy;
+		try {
+			await page.waitForSelector( 'button#buy_button', {
+				visible: true,
+				timeout: 10000,
+			} );
+			readyToBuy = true;
+		} catch ( err ) {
+			console.warn( err );
+			readyToBuy = false;
+		}
+
+		if ( ! readyToBuy ) {
+			// Select Payment Plan - 4 weeks & click continue.
+			await page
+				.waitForSelector(
+					'[id="payinparts_kp.0-ui"] input[type="radio"]'
+				)
+				.then( ( radio ) => radio.click() );
+
+			await page.waitForTimeout( 2000 );
+
+			await expect( page ).toClick( 'button', {
+				text: 'Continue',
+			} );
+		}
 
 		// Confirm payment.
-		await klarnaIframe
-			.waitForSelector(
-				'button[data-testid="confirm-and-pay"]:not(:disabled)'
-			)
-			.then( ( button ) => button.click() );
+		await page.waitForSelector( 'button#buy_button' );
+		await page.waitForTimeout( 2000 ); // We need to wait a bit for the button to become clickable.
+		await expect( page ).toClick( 'button#buy_button' );
 
 		// Wait for the order confirmation page to load.
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
 		} );
-		await expect( page ).toMatch( 'Order received' );
+
+		await page.waitForSelector( 'h1.entry-title' );
+
+		await expect( page ).toMatchTextContent( 'Order received' );
 	} );
 } );

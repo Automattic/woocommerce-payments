@@ -33,13 +33,15 @@ export const DepositsFilters = ( props ) => {
 	};
 
 	return (
-		<ReportFilters
-			filters={ populateDepositCurrencies( filters ) }
-			advancedFilters={ advancedFilters }
-			showDatePicker={ false }
-			path="/payments/deposits"
-			query={ getQuery() }
-		/>
+		<div className="woocommerce-filters-deposits">
+			<ReportFilters
+				filters={ populateDepositCurrencies( filters ) }
+				advancedFilters={ advancedFilters }
+				showDatePicker={ false }
+				path="/payments/deposits"
+				query={ getQuery() }
+			/>
+		</div>
 	);
 };
 

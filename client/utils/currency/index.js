@@ -340,7 +340,7 @@ function composeFallbackCurrency( amount, currencyCode, isZeroDecimal ) {
 	}
 }
 
-function trimEndingZeroes( formattedCurrencyAmount = '' ) {
+export function trimEndingZeroes( formattedCurrencyAmount = '' ) {
 	return formattedCurrencyAmount
 		.split( ' ' )
 		.map( ( chunk ) =>
