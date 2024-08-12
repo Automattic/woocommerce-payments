@@ -94,6 +94,26 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.1.0-test-2 - unreleased =
+* Add - Add button rules to appearance
+* Add - Add heading rules to appearance
+* Add - Add link rules to appearance
+* Add - Adds skeleton loading element for BNPL payment messaging element on product details page.
+* Add - Add tokenized cart PRB support to cart and checkout blocks.
+* Fix - Added better error message when mandate is invalid.
+* Fix - fix: cart association on tokenized PRB orders via custom session handler
+* Fix - Fix onboarding redirect loop when starting from Woo Settings Payments.
+* Fix - Fix uncaught error on the block based Cart page when WooPayments is disabled.
+* Fix - Migrate to Docker Compose V2 for test runner environment setup scripts
+* Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
+* Fix - Translate hardcoded strings on the Connect page
+* Update - Updated the integration between WooPayments Multi-Currency and Product Add-Ons.
+* Update - Update outdated express checkout settings notification.
+* Dev - Bump WC tested up to version to 9.2.0
+* Dev - Fix Klarna and Refund Failures E2E tests
+* Dev - Match the Node version in nvm with the minimum version in package.json.
+* Dev - Update bundle size checker workflow to support node v20
+
 = 8.0.2 - 2024-08-07 =
 * Fix - Add opt-in checks to prevent blocking customers using other payment methods.
 * Fix - Fix error in Express Checkout Element use with coupons.
