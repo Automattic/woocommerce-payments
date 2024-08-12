@@ -31,7 +31,7 @@ export const getAppearanceType = () => {
 		return 'bnpl_classic_cart';
 	}
 
-	if ( document.querySelector( '.wp-block-woocommerce-product-details' ) ) {
+	if ( document.querySelector( '.single-product' ) ) {
 		return 'bnpl_product_page';
 	}
 };
