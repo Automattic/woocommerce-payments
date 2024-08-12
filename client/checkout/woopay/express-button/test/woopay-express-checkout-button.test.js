@@ -128,6 +128,29 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		).toBeInTheDocument();
 	} );
 
+	test( 'respect buttonAttributes API when available ', () => {
+		render(
+			<WoopayExpressCheckoutButton
+				isPreview={ false }
+				buttonSettings={ buttonSettings }
+				api={ api }
+				isProductPage={ false }
+				emailSelector="#email"
+				buttonAttributes={ {
+					height: '55',
+					borderRadius: '20',
+					darkMode: true,
+				} }
+			/>
+		);
+
+		const button = screen.queryByRole( 'button', { name: 'WooPay' } );
+		expect( button.getAttribute( 'style' ) ).toBe(
+			'height: 55px; border-radius: 20px;'
+		);
+		expect( button.getAttribute( 'data-theme' ) ).toBe( 'light' );
+	} );
+
 	test( 'does not prefetch session data by default', async () => {
 		getConfig.mockImplementation( ( v ) => {
 			switch ( v ) {
