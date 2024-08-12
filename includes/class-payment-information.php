@@ -26,7 +26,7 @@ class Payment_Information {
 	 *
 	 * @type string
 	 */
-	const PAYMENT_METHOD_ERROR = 'ERROR';
+	const PAYMENT_METHOD_ERROR = 'woocommerce_payments_payment_method_error';
 
 	/**
 	 * The ID of the payment method used for this payment.
