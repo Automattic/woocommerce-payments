@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Do not enqueue Cart scripts if WooPayments is not enabled

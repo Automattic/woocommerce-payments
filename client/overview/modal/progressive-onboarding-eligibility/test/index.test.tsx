@@ -88,7 +88,7 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 		);
 
 		expect( window.location.href ).toBe(
-			`https://wcpay.test/connect?collect_payout_requirements=true`
+			`https://wcpay.test/connect?collect_payout_requirements=true&source=unknown&from=WCPAY_OVERVIEW`
 		);
 	} );
 } );

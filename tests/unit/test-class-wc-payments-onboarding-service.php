@@ -137,7 +137,6 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_filters_registered_properly() {
-		$this->assertNotFalse( has_filter( 'wcpay_dev_mode', [ $this->onboarding_service, 'maybe_enable_dev_mode' ] ) );
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
 	}
 
@@ -195,14 +194,174 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->onboarding_service->set_test_mode( true );
 
 		$this->assertTrue( get_option( 'wcpay_onboarding_test_mode' ) );
-		$this->assertTrue( WC_Payments::mode()->is_dev() );
 
 		$this->onboarding_service->set_test_mode( false );
 
 		$this->assertFalse( get_option( 'wcpay_onboarding_test_mode' ) );
-		$this->assertFalse( WC_Payments::mode()->is_dev() );
 
 		delete_option( 'wcpay_onboarding_test_mode' );
+	}
+
+	/**
+	 * @dataProvider data_get_from
+	 */
+	public function test_get_from( $expected, $referer, $get_params ) {
+		$this->assertEquals( $expected, WC_Payments_Onboarding_Service::get_from( $referer, $get_params ) );
+	}
+
+	/**
+	 * Data provider for test_get_from.
+	 *
+	 * @return array[]
+	 */
+	public function data_get_from(): array {
+		return [
+			'Unknown from'                                 => [
+				'',
+				'',
+				[],
+			],
+			'Non-empty from GET param trumps everything'   => [
+				'WCADMIN_PAYMENT_INCENTIVE',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[
+					'source'                             => 'wcpay-connect-page',
+					'wcpay-connect'                      => 'WCADMIN_PAYMENT_TASK',
+					'wcpay-disable-onboarding-test-mode' => 'true',
+					'from'                               => 'WCADMIN_PAYMENT_INCENTIVE',
+				],
+			],
+			'Empty from GET param is ignored'              => [
+				'WCADMIN_PAYMENT_TASK',
+				'',
+				[
+					'from'          => '',
+					'wcpay-connect' => 'WCADMIN_PAYMENT_TASK',
+				],
+			],
+			'Via test to live param'                       => [
+				'WCPAY_TEST_TO_LIVE',
+				'any',
+				[
+					'wcpay-connect'                      => '1',
+					'wcpay-disable-onboarding-test-mode' => 'true',
+				],
+			],
+			'test to live param takes precedence'          => [
+				'WCPAY_TEST_TO_LIVE',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[
+					'wcpay-connect'                      => 'WCADMIN_PAYMENT_TASK',
+					'wcpay-disable-onboarding-test-mode' => 'true',
+				],
+			],
+			'Via reset account param'                      => [
+				'WCPAY_RESET_ACCOUNT',
+				'any',
+				[
+					'wcpay-connect'       => '1',
+					'wcpay-reset-account' => 'true',
+				],
+			],
+			'reset account param takes precedence'         => [
+				'WCPAY_RESET_ACCOUNT',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[
+					'wcpay-connect'       => 'WCADMIN_PAYMENT_TASK',
+					'wcpay-reset-account' => 'true',
+				],
+			],
+			'Via the wcpay-connect value - takes precedence over referer' => [
+				'WCADMIN_PAYMENT_TASK',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[ 'wcpay-connect' => 'WCADMIN_PAYMENT_TASK' ],
+			],
+			'Via the wcpay-connect value - Payments task'  => [
+				'WCADMIN_PAYMENT_TASK',
+				'any',
+				[ 'wcpay-connect' => 'WCADMIN_PAYMENT_TASK' ],
+			],
+			'Via the wcpay-connect value - Payments Settings' => [
+				'WCADMIN_PAYMENT_SETTINGS',
+				'any',
+				[ 'wcpay-connect' => 'WCADMIN_PAYMENT_SETTINGS' ],
+			],
+			'Via the wcpay-connect value - Incentive page' => [
+				'WCADMIN_PAYMENT_INCENTIVE',
+				'any',
+				[ 'wcpay-connect' => 'WCADMIN_PAYMENT_INCENTIVE' ],
+			],
+			'Via the wcpay-connect value - Connect page'   => [
+				'WCPAY_CONNECT',
+				'any',
+				[ 'wcpay-connect' => 'WCPAY_CONNECT' ],
+			],
+			'Via the wcpay-connect value - Onboarding wizard' => [
+				'WCPAY_ONBOARDING_WIZARD',
+				'any',
+				[ 'wcpay-connect' => 'WCPAY_ONBOARDING_WIZARD' ],
+			],
+			'Via the wcpay-connect value - Test to live'   => [
+				'WCPAY_TEST_TO_LIVE',
+				'any',
+				[ 'wcpay-connect' => 'WCPAY_TEST_TO_LIVE' ],
+			],
+			'Via the wcpay-connect value - Reset account'  => [
+				'WCPAY_RESET_ACCOUNT',
+				'any',
+				[ 'wcpay-connect' => 'WCPAY_RESET_ACCOUNT' ],
+			],
+			'Via the wcpay-connect value - WPCOM'          => [
+				'WPCOM',
+				'any',
+				[ 'wcpay-connect' => 'WPCOM' ],
+			],
+			'Via the wcpay-connect value - Stripe'         => [
+				'STRIPE',
+				'any',
+				[ 'wcpay-connect' => 'STRIPE' ],
+			],
+			'Invalid wcpay-connect value is ignored'       => [
+				'',
+				'any',
+				[ 'wcpay-connect' => 'something' ],
+			],
+			'Via the referer URL - payments task'          => [
+				'WCADMIN_PAYMENT_TASK',
+				'/wp-admin/admin.php?page=wc-admin&task=payments',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - settings page'          => [
+				'WCADMIN_PAYMENT_SETTINGS',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - incentive page'         => [
+				'WCADMIN_PAYMENT_INCENTIVE',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - Connect page'           => [
+				'WCPAY_CONNECT',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - Onboarding wizard'      => [
+				'WCPAY_ONBOARDING_WIZARD',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fonboarding',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - WPCOM'                  => [
+				'WPCOM',
+				'http://public-api.wordpress.com/something',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - Stripe'                 => [
+				'STRIPE',
+				'http://something.stripe.com/something',
+				[ 'wcpay-connect' => '1' ],
+			],
+		];
 	}
 
 	/**
@@ -212,26 +371,137 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, WC_Payments_Onboarding_Service::get_source( $referer, $get_params ) );
 	}
 
-	public function data_get_source() {
+	/**
+	 * Data provider for test_get_source.
+	 *
+	 * @return array[]
+	 */
+	public function data_get_source(): array {
 		return [
-			[ 'wcadmin-payment-task', 'any', [ 'wcpay-connect' => 'WCADMIN_PAYMENT_TASK' ] ],
-			[ 'wcadmin-settings-page', '/wp-admin/admin.php?page=wc-settings&tab=checkout', [ 'wcpay-connect' => '1' ] ],
-			[ 'wcadmin-incentive-page', '/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page', [ 'wcpay-connect' => '1' ] ],
-			[ 'wcpay-connect-page', '/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect', [ 'wcpay-connect' => '1' ] ],
-			[
+			'Valid source GET param trumps everything'    => [
+				'wcpay-connect-page',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[
+					'source'                             => 'wcpay-connect-page',
+					'wcpay-connect'                      => 'WCADMIN_PAYMENT_TASK',
+					'wcpay-disable-onboarding-test-mode' => 'true',
+					'from'                               => 'WCADMIN_PAYMENT_INCENTIVE',
+				],
+			],
+			'Invalid source GET param is ignored'         => [
+				'wcadmin-payment-task',
+				'',
+				[
+					'source'        => 'bogus',
+					'wcpay-connect' => 'WCADMIN_PAYMENT_TASK',
+				],
+			],
+			'unknown source GET param is ignored'         => [
+				'wcadmin-payment-task',
+				'',
+				[
+					'source'        => 'unknown',
+					'wcpay-connect' => 'WCADMIN_PAYMENT_TASK',
+				],
+			],
+			'Unknown source'                              => [
+				'unknown',
+				'',
+				[],
+			],
+			'Via the wcpay-connect value'                 => [
+				'wcadmin-payment-task',
+				'any',
+				[ 'wcpay-connect' => 'WCADMIN_PAYMENT_TASK' ],
+			],
+			'Via the referer URL - with valid source in it' => [
+				'wcpay-go-live-task',
+				'/wp-admin/admin.php?page=wc-admin&task=payments&source=wcpay-go-live-task',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - with invalid source in it' => [
+				'wcadmin-payment-task',
+				'/wp-admin/admin.php?page=wc-admin&task=payments&source=bogus',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - payments task'         => [
+				'wcadmin-payment-task',
+				'/wp-admin/admin.php?page=wc-admin&task=payments',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - settings page'         => [
+				'wcadmin-settings-page',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - incentive page'        => [
+				'wcadmin-incentive-page',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - Connect page'          => [
+				'wcpay-connect-page',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - Overview page'         => [
+				'wcpay-overview-page',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Foverview',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via the referer URL - Deposits/Payouts page' => [
+				'wcpay-payouts-page',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits',
+				[ 'wcpay-connect' => '1' ],
+			],
+			'Via test to live param'                      => [
 				'wcpay-setup-live-payments',
 				'any',
 				[
 					'wcpay-connect'                      => '1',
-					'wcpay-disable-onboarding-test-mode' => '1',
+					'wcpay-disable-onboarding-test-mode' => 'true',
 				],
 			],
-			[
+			'test to live param takes precedence'         => [
+				'wcpay-setup-live-payments',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[
+					'wcpay-connect'                      => 'WCADMIN_PAYMENT_TASK',
+					'wcpay-disable-onboarding-test-mode' => 'true',
+					'from'                               => 'WCADMIN_PAYMENT_INCENTIVE',
+				],
+			],
+			'Via reset account param'                     => [
 				'wcpay-reset-account',
 				'any',
 				[
 					'wcpay-connect'       => '1',
-					'wcpay-reset-account' => '1',
+					'wcpay-reset-account' => 'true',
+				],
+			],
+			'reset account param takes precedence'        => [
+				'wcpay-reset-account',
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fconnect',
+				[
+					'wcpay-connect'       => 'WCADMIN_PAYMENT_TASK',
+					'wcpay-reset-account' => 'true',
+					'from'                => 'WCADMIN_PAYMENT_INCENTIVE',
+				],
+			],
+			'wcpay-connect value takes precedence over from and referer' => [
+				'wcadmin-payment-task',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[
+					'wcpay-connect' => 'WCADMIN_PAYMENT_TASK',
+					'from'          => 'WCADMIN_PAYMENT_INCENTIVE',
+				],
+			],
+			'from value takes precedence over referer'    => [
+				'wcadmin-incentive-page',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
+				[
+					'wcpay-connect' => 'bogus',
+					'from'          => 'WCADMIN_PAYMENT_INCENTIVE',
 				],
 			],
 		];

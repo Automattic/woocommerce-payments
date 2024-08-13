@@ -7,14 +7,17 @@
  * @return {Array} An array of PaymentItems
  */
 export const normalizeLineItems = ( displayItems ) => {
-	return displayItems.map( ( displayItem ) =>
-		// The amount prop is already present on the item.
-		( {
-			...displayItem,
+	return displayItems.map( ( displayItem ) => {
+		let amount = displayItem?.amount ?? displayItem?.value;
+		if ( displayItem.key === 'total_discount' ) {
+			amount = -amount;
+		}
+
+		return {
 			name: displayItem.label,
-			amount: displayItem?.amount ?? displayItem?.value,
-		} )
-	);
+			amount,
+		};
+	} );
 };
 
 /**
