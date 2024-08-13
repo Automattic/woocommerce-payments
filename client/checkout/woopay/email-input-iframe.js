@@ -398,8 +398,10 @@ export const handleWooPayEmailInput = async (
 				// Dispatch an event after we get the response.
 				dispatchUserExistEvent( data[ 'user-exists' ] );
 
-				if ( data[ 'user-exists' ] && shouldOpenIframe ) {
-					openIframe( email );
+				if ( data[ 'user-exists' ] ) {
+					if ( shouldOpenIframe ) {
+						openIframe( email );
+					}
 				} else if ( data.code !== 'rest_invalid_param' ) {
 					recordUserEvent( 'checkout_woopay_save_my_info_offered' );
 
