@@ -125,6 +125,17 @@ export const getTracksIdentity = async (): Promise< string | undefined > => {
 
 	body.append( 'tracksNonce', nonce );
 	body.append( 'action', 'get_identity' );
+
+	if ( window.wcPayFrontendTracks ) {
+		const { event, properties } = window.wcPayFrontendTracks;
+
+		body.append( 'tracksEventName', event );
+
+		if ( properties ) {
+			body.append( 'tracksEventProp', JSON.stringify( properties ) );
+		}
+	}
+
 	try {
 		const response = await fetch( ajaxUrl, {
 			method: 'post',

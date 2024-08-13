@@ -118,6 +118,14 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	public function ajax_tracks_id() {
 		$tracks_id = $this->tracks_get_identity();
 
+		if (
+			isset(
+				$_REQUEST['tracksEventName'] // phpcs:ignore WordPress.Security.NonceVerification
+			)
+		) {
+			$this->ajax_tracks();
+		}
+
 		if ( $tracks_id ) {
 			wp_send_json_success( $tracks_id );
 		}
@@ -144,11 +152,30 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
+	 * @param bool   $guest_record_on_frontend Indicate whether the event should be recorded        by guests on front-end.
 	 */
-	public function maybe_record_wcpay_shopper_event( $event, $data = [] ) {
+	public function maybe_record_wcpay_shopper_event( $event, $data = [], $guest_record_on_frontend = true ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
 			$event = self::$user_prefix . '_' . $event;
+		}
+
+		// For guest users, record the event on the front-end to prevent cache miss.
+		if ( ! is_user_logged_in() ) {
+			wp_register_script( 'wcpay-frontend-tracks', '', [], WCPAY_VERSION_NUMBER, false );
+
+			wp_enqueue_script( 'wcpay-frontend-tracks' );
+
+			wp_localize_script(
+				'wcpay-frontend-tracks',
+				'wcPayFrontendTracks',
+				[
+					'event'      => $event,
+					'properties' => $data,
+				]
+			);
+
+			return false;
 		}
 
 		$is_admin_event      = false;

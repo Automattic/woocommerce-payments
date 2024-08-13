@@ -31,6 +31,10 @@ declare global {
 				country: string;
 			};
 		};
+		wcPayFrontendTracks: {
+			event: string;
+			properties: Record< string, unknown >;
+		};
 	}
 }
 
