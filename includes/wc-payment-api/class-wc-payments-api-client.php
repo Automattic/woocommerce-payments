@@ -998,7 +998,13 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		return $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
+		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
+
+		if ( ! is_array( $session ) ) {
+			return [];
+		}
+
+		return $session;
 	}
 
 	/**

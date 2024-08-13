@@ -51,6 +51,17 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/session',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_onboarding_session' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				// TODO: add args.
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/business_types',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -114,6 +125,18 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+	}
+
+	/**
+	 * Create an account session via the API.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_Error|WP_REST_Response
+	 */
+	public function get_onboarding_session( WP_REST_Request $request ) {
+		$account_session = $this->onboarding_service->create_embedded_onboarding_session();
+		return rest_ensure_response( $account_session );
 	}
 
 	/**

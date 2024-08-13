@@ -13,6 +13,15 @@ export type OnboardingFields = {
 	go_live_timeframe?: string;
 };
 
+export interface OnboardingProps {
+	country?: string;
+	type?: string;
+	structure?: string;
+	mcc?: string;
+	annual_revenue?: string;
+	go_live_timeframe?: string;
+}
+
 export interface PoEligibleResult {
 	result: 'eligible' | 'not_eligible';
 }
@@ -54,4 +63,12 @@ export interface MccsDisplayTreeItem {
 	items?: MccsDisplayTreeItem[];
 	mcc?: number;
 	keywords?: string[];
+}
+
+export interface AccountSession {
+	clientSecret: string;
+	expiresAt: number;
+	accountId: string;
+	isLive: boolean;
+	accountCreated: boolean;
 }

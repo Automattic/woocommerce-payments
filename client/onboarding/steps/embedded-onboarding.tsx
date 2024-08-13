@@ -2,36 +2,53 @@
  * External dependencies
  */
 import React, { useState } from 'react';
+import { loadConnectAndInitialize } from '@stripe/connect-js';
+import {
+	ConnectAccountOnboarding,
+	ConnectComponentsProvider,
+} from '@stripe/react-connect-js';
 
 /**
  * Internal dependencies
  */
+import { useAccountSession } from 'wcpay/onboarding/hooks';
 
 const EmbeddedOnboarding: React.FC = () => {
+	// TODO: Pass the query params.
+	const { accountSession, isLoading } = useAccountSession( {} );
+
 	// We use `useState` to ensure the Connect instance is only initialized once
 	const [ stripeConnectInstance ] = useState( () => {
 		const fetchClientSecret = async () => {
 			// Fetch the AccountSession client secret
-			const response = await fetch('/account_session', { method: "POST" });
-			if (!response.ok) {
-				// Handle errors on the client side here
-				const {error} = await response.json();
-				console.error('An error occurred: ', error);
-				document.querySelector('#error').removeAttribute('hidden');
-				return undefined;
-			} else {
-				const {client_secret: clientSecret} = await response.json();
-				document.querySelector('#error').setAttribute('hidden', '');
-				return clientSecret;
-			}
-		}
+			const clientSecret = accountSession.clientSecret;
+			return clientSecret;
+		};
 
-		return loadConnectAndInitialize({
-			// This is your test publishable API key.
-			publishableKey: "pk_test_qblFNYngBkEdjEZ16jxxoWSM",
+		return loadConnectAndInitialize( {
+			// This is your test publishable API key. TODO: get the config
+			publishableKey: 'pk_test_qblFNYngBkEdjEZ16jxxoWSM',
 			fetchClientSecret: fetchClientSecret,
-		})
-	});
+		} );
+	} );
+
+	const handleOnboardingComplete = () => {
+		console.log( 'onboarding complete!');
+	};
+
+	return (
+		! isLoading && (
+			<>
+				<ConnectComponentsProvider
+					connectInstance={ stripeConnectInstance }
+				>
+					<ConnectAccountOnboarding
+						onExit={ () => handleOnboardingComplete }
+					/>
+				</ConnectComponentsProvider>
+			</>
+		)
+	);
 };
 
 export default EmbeddedOnboarding;

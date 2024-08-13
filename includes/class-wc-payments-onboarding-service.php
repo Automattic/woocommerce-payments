@@ -136,6 +136,25 @@ class WC_Payments_Onboarding_Service {
 		);
 	}
 
+	public function create_embedded_onboarding_session() {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return [];
+		}
+
+		// Note: at the moment, we aren't caching this since it only gets initialised on a new onboarding,
+		// and we want to make a request to the server in that instance. In the future, we can look to cache it.
+		// TODO: Send params with the request
+		$account_session = $this->payments_api_client->initialise_embedded_onboarding();
+
+		return [
+			'clientSecret'   => $account_session['client_secret'] ?? '',
+			'expiresAt'      => $account_session['expires_at'] ?? 0,
+			'accountId'      => $account_session['account_id'] ?? '',
+			'isLive'         => $account_session['is_live'] ?? false,
+			'accountCreated' => $account_session['account_created'] ?? false,
+		];
+	}
+
 	/**
 	 * Gets and caches the business types per country from the server.
 	 *
