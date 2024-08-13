@@ -8,8 +8,61 @@ import { test, expect } from '@playwright/test';
  */
 import { useMerchant } from '../../utils/helpers';
 
-// Optional currency symbol, followed by one or more digits, decimal separator, or comma.
-const formattedCurrencyRegex = /[^\d.,]*[\d.,]+/;
+interface CurrencyData {
+	code: string;
+	symbol: string;
+	symbolPosition: 'left' | 'right';
+	decimalSeparator: string;
+	priceFormat: string;
+	thousandSeparator: string;
+	precision: number;
+}
+
+declare global {
+	interface Window {
+		wcpaySettings: {
+			accountDefaultCurrency: string;
+			currencyData: Record< string, CurrencyData >;
+		};
+	}
+}
+
+// Regular expression to match a formatted currency value, with the currency symbol on the left or right.
+const formattedCurrencyRegex = (
+	symbolPosition: 'left' | 'right',
+	symbol: string
+) => {
+	// TODO: this doesn't work for html encoded entities like CHF.
+	if ( symbolPosition === 'left' ) {
+		// Match a currency value with symbol on the left,
+		// followed by one or more digits, decimal separator, or comma.
+		// with an optional negative sign at the beginning.
+		return new RegExp( `^-?${ symbol }[\\d.,]+` );
+	}
+	// Match a currency value with symbol on the right,
+	// followed by one or more digits, decimal separator, or comma.
+	// with an optional negative sign at the beginning.
+	return new RegExp( `^-?[\\d.,]+${ symbol }` );
+};
+
+/**
+ * Get the merchant account default currency data from window.wcpaySettings.
+ */
+const getDefaultAccountCurrencyData = async (
+	page
+): Promise< CurrencyData > => {
+	return await page.evaluate( () => {
+		const { accountDefaultCurrency, currencyData } = window.wcpaySettings;
+
+		const accountDefaultCurrencyData = Object.values( currencyData ).find(
+			( currency ) =>
+				currency.code.toLowerCase() ===
+				accountDefaultCurrency.toLowerCase()
+		);
+
+		return accountDefaultCurrencyData;
+	} );
+};
 
 test.describe( 'Merchant account balance overview', () => {
 	// Use the merchant user for this test suite.
@@ -30,6 +83,11 @@ test.describe( 'Merchant account balance overview', () => {
 				}
 			);
 
+			const {
+				symbolPosition,
+				symbol,
+			} = await getDefaultAccountCurrencyData( page );
+
 			await test.step(
 				'Observe the total account balance, ensuring it has a formatted currency value',
 				async () => {
@@ -41,7 +99,7 @@ test.describe( 'Merchant account balance overview', () => {
 					);
 
 					await expect( totalBalanceValue ).toHaveText(
-						formattedCurrencyRegex
+						formattedCurrencyRegex( symbolPosition, symbol )
 					);
 				}
 			);
@@ -57,7 +115,7 @@ test.describe( 'Merchant account balance overview', () => {
 					);
 
 					await expect( availableFundsValue ).toHaveText(
-						formattedCurrencyRegex
+						formattedCurrencyRegex( symbolPosition, symbol )
 					);
 				}
 			);
