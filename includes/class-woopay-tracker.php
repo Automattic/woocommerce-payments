@@ -152,15 +152,14 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
-	 * @param bool   $guest_record_on_frontend Indicate whether the event should be recorded        by guests on front-end.
 	 */
-	public function maybe_record_wcpay_shopper_event( $event, $data = [], $guest_record_on_frontend = true ) {
+	public function maybe_record_wcpay_shopper_event( $event, $data = [] ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		// For guest users, record the event on the front-end to prevent cache miss.
+		// For guest users, record the event on the front-end to prevent cache break.
 		if ( ! is_user_logged_in() ) {
 			wp_register_script( 'wcpay-frontend-tracks', '', [], WCPAY_VERSION_NUMBER, false );
 
