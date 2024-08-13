@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 
-export type OnboardingSteps = 'business' | 'store' | 'loading';
+export type OnboardingSteps = 'business' | 'store' | 'loading' | 'embedded';
 
 export type OnboardingFields = {
 	country?: string;

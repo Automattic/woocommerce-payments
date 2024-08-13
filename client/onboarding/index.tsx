@@ -41,6 +41,9 @@ const OnboardingStepper = () => {
 					<StoreDetails />
 				</OnboardingForm>
 			</Step>
+			<Step name="embedded">
+				<></>
+			</Step>
 			<LoadingStep name="loading" />
 		</Stepper>
 	);
