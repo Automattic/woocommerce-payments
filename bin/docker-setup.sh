@@ -14,20 +14,21 @@ redirect_output() {
     fi
 }
 
-# --user xfs forces the wordpress:cli container to use a user with the same ID as the main wordpress container. See:
+# --user 33:33 forces the wordpress:cli container to use a user with the same ID as the main wordpress container. See:
 # https://hub.docker.com/_/wordpress#running-as-an-arbitrary-user
+# https://github.com/docker-library/wordpress/discussions/909#discussioncomment-9941634
 cli()
 {
 	INTERACTIVE=''
 	if [ -t 1 ] ; then
 		INTERACTIVE='-it'
 	fi
-	redirect_output docker run $INTERACTIVE --env-file default.env --rm --user xfs --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
+	redirect_output docker run $INTERACTIVE --env-file default.env --rm --user 33:33 --volumes-from $WP_CONTAINER --network container:$WP_CONTAINER wordpress:cli "$@"
 }
 
 set +e
 # Wait for containers to be started up before the setup.
-# The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
+# The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
 cli wp db check --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
