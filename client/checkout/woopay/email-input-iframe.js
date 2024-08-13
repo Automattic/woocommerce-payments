@@ -434,7 +434,11 @@ export const handleWooPayEmailInput = async (
 		timer = setTimeout( () => {
 			if ( validateEmail( email ) ) {
 				woopayLocateUser( email );
+
+				return;
 			}
+
+			dispatchUserExistEvent( false ); // Always show checkbox until the email is from a valid WooPay user.
 		}, waitTime );
 	} );
 
