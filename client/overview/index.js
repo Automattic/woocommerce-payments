@@ -3,10 +3,10 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import { Button, Card, Notice } from '@wordpress/components';
+import React from 'react';
+import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -25,17 +25,11 @@ import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
 import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
-import SetupLivePaymentsModal from './modal/setup-live-payments';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import { useDisputes, useGetSettings, useSettings } from 'data';
+import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
-import BannerNotice from 'wcpay/components/banner-notice';
-import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
-import { recordEvent } from 'wcpay/tracks';
-import { ClickTooltip } from 'wcpay/components/tooltip';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -58,74 +52,6 @@ const OverviewPageError = () => {
 	);
 };
 
-const OverviewSandboxModeNotice = ( { ctaAction = () => {} } ) => {
-	return (
-		<BannerNotice status="warning" isDismissible={ false }>
-			{ interpolateComponents( {
-				mixedString: sprintf(
-					/* translators: %1$s: WooPayments */
-					__(
-						// eslint-disable-next-line max-len
-						'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real transactions, {{switchToLiveLink}}set up a live %1$s account.{{/switchToLiveLink}} {{learnMoreIcon/}}',
-						'woocommerce-payments'
-					),
-					'WooPayments'
-				),
-				components: {
-					strong: <strong />,
-					learnMoreIcon: (
-						<ClickTooltip
-							buttonIcon={ <HelpOutlineIcon /> }
-							buttonLabel={ __(
-								'Learn more about sandbox mode',
-								'woocommerce-payments'
-							) }
-							maxWidth={ '250px' }
-							content={
-								<>
-									{ interpolateComponents( {
-										mixedString: sprintf(
-											/* translators: %1$s: WooPayments */
-											__(
-												// eslint-disable-next-line max-len
-												'Sandbox mode gives you access to all %1$s features while checkout transactions are simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-												'woocommerce-payments'
-											),
-											'WooPayments'
-										),
-										components: {
-											learnMoreLink: (
-												// eslint-disable-next-line jsx-a11y/anchor-has-content
-												<Link
-													href={
-														// eslint-disable-next-line max-len
-														'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
-													}
-													target="_blank"
-													rel="noreferrer"
-													type="external"
-													onClick={ () =>
-														recordEvent(
-															'wcpay_overview_sandbox_mode_learn_more_clicked'
-														)
-													}
-												/>
-											),
-										},
-									} ) }
-								</>
-							}
-						/>
-					),
-					switchToLiveLink: (
-						<Button variant="link" onClick={ ctaAction } />
-					),
-				},
-			} ) }
-		</BannerNotice>
-	);
-};
-
 const OverviewPage = () => {
 	const {
 		accountStatus,
@@ -138,11 +64,8 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 	} = wcpaySettings;
 
-	const isDevMode = wcpaySettings.devMode;
+	const isOnboardingTestMode = wcpaySettings.onboardingTestMode;
 	const { isLoading: settingsIsLoading } = useSettings();
-	const [ livePaymentsModalVisible, setLivePaymentsModalVisible ] = useState(
-		false
-	);
 	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {
@@ -170,6 +93,8 @@ const OverviewPage = () => {
 	const showLoanOfferError = queryParams[ 'wcpay-loan-offer-error' ] === '1';
 	const showServerLinkError =
 		queryParams[ 'wcpay-server-link-error' ] === '1';
+	const showResetAccountError =
+		queryParams[ 'wcpay-reset-account-error' ] === '1';
 	const showProgressiveOnboardingEligibilityModal =
 		showConnectionSuccess &&
 		progressiveOnboarding.isEnabled &&
@@ -217,14 +142,23 @@ const OverviewPage = () => {
 					) }
 				</Notice>
 			) }
-			{ isDevMode ? (
-				<OverviewSandboxModeNotice
-					ctaAction={ () => setLivePaymentsModalVisible( true ) }
+			{ showResetAccountError && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'There was a problem resetting your account. Please wait a few seconds and try again.',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+			{ isOnboardingTestMode ? (
+				<SandboxModeSwitchToLiveNotice
+					from="WCPAY_OVERVIEW"
+					source="wcpay-overview-page"
 				/>
 			) : (
 				<TestModeNotice
 					currentPage="overview"
-					isDevMode={ isDevMode }
+					isOnboardingTestMode={ isOnboardingTestMode }
 					actions={ [] }
 				/>
 			) }
@@ -287,13 +221,6 @@ const OverviewPage = () => {
 			{ showProgressiveOnboardingEligibilityModal && (
 				<ErrorBoundary>
 					<ProgressiveOnboardingEligibilityModal />
-				</ErrorBoundary>
-			) }
-			{ livePaymentsModalVisible && (
-				<ErrorBoundary>
-					<SetupLivePaymentsModal
-						onClose={ () => setLivePaymentsModalVisible( false ) }
-					/>
 				</ErrorBoundary>
 			) }
 		</Page>

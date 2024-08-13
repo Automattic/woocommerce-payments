@@ -756,7 +756,7 @@ class WC_Payments_Utils {
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
-		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
+		if ( apply_filters( 'wcpay_disable_new_onboarding', defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) ) {
 			return false;
 		}
 
@@ -1097,7 +1097,7 @@ class WC_Payments_Utils {
 			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
 		} else {
 			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = rtrim( $url_parts['path'], '/' );
+			$request_path = $url_parts ? rtrim( $url_parts['path'], '/' ) : '';
 			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
 		}
 

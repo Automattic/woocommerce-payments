@@ -45,7 +45,7 @@ class Get_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WC_Payments_API_Client::ACCOUNTS_API, $request->get_api() );
 		$this->assertSame( 'GET', $request->get_method() );
 	}
-	public function test_get_account_will_be_requested_as_test_mode_only_in_dev_mode() {
+	public function test_get_account_will_be_requested_as_test_mode_only_in_test_mode_onboarding() {
 		// enable test mode.
 		WC_Payments::mode()->test();
 		$request_test = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
@@ -55,6 +55,11 @@ class Get_Account_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 		$request_live = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->assertFalse( $request_live->get_default_params()['test_mode'] );
+
+		// enable just test mode onboarding.
+		WC_Payments::mode()->set_test_mode_onboarding( true );
+		$request_dev = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->assertTrue( $request_dev->get_default_params()['test_mode'] );
 
 		// enable dev mode.
 		WC_Payments::mode()->dev();

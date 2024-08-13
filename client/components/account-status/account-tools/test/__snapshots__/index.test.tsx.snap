@@ -1,42 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`AccountTools should render in live mode 1`] = `
-<div>
-  <div
-    class="account-tools"
-  >
-    <hr
-      aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
-      data-wp-c16t="true"
-      data-wp-component="CardDivider"
-      role="separator"
-    />
-    <h4>
-      Account Tools
-    </h4>
-    <p>
-      Payments and deposits are disabled until account setup is completed. If you are experiencing problems completing account setup, or need to change the email/country associated with your account, you can reset your account and start from the beginning.
-    </p>
-    <div
-      class="account-tools__actions"
-    >
-      <a
-        class="components-button is-secondary"
-        href="/onboarding?source=account-tools__finish-setup-button"
-      >
-        Finish setup
-      </a>
-      <button
-        class="components-button is-tertiary"
-        type="button"
-      >
-        Reset account
-      </button>
-    </div>
-  </div>
-</div>
-`;
+exports[`AccountTools should NOT render in live mode 1`] = `<div />`;
 
 exports[`AccountTools should render in sandbox mode 1`] = `
 <div>
@@ -59,14 +23,8 @@ exports[`AccountTools should render in sandbox mode 1`] = `
     <div
       class="account-tools__actions"
     >
-      <a
-        class="components-button is-secondary"
-        href="/onboarding?source=account-tools__finish-setup-button"
-      >
-        Finish setup
-      </a>
       <button
-        class="components-button is-tertiary"
+        class="components-button is-secondary"
         type="button"
       >
         Reset account

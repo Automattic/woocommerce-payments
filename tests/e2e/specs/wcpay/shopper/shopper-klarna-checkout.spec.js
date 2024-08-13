@@ -132,7 +132,6 @@ describe( 'Klarna checkout', () => {
 			} );
 			readyToBuy = true;
 		} catch ( err ) {
-			console.warn( err );
 			readyToBuy = false;
 		}
 

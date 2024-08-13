@@ -889,7 +889,7 @@ class WC_Payments_API_Client {
 	public function get_woopay_eligibility() {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+				'test_mode' => WC_Payments::mode()->is_test_mode_onboarding(), // only send a test mode request if in test mode onboarding.
 			],
 			self::WOOPAY_ACCOUNTS_API,
 			self::GET
@@ -908,7 +908,7 @@ class WC_Payments_API_Client {
 	public function update_woopay( $data ) {
 		return $this->request(
 			array_merge(
-				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
+				[ 'test_mode' => WC_Payments::mode()->is_test_mode_onboarding() ],
 				$data
 			),
 			self::WOOPAY_ACCOUNTS_API,
@@ -940,18 +940,19 @@ class WC_Payments_API_Client {
 	/**
 	 * Get data needed to initialize the onboarding flow
 	 *
-	 * @param string $return_url                  - URL to redirect to at the end of the flow.
-	 * @param array  $site_data                   - Data to track ToS agreement.
-	 * @param array  $user_data                   - Data about the user doing the onboarding (location and device).
-	 * @param array  $account_data                - Data to prefill the onboarding.
-	 * @param array  $actioned_notes              - Actioned WCPay note names to be sent to the onboarding flow.
-	 * @param bool   $progressive                 - Whether we need to enable progressive onboarding prefill.
-	 * @param bool   $collect_payout_requirements - Whether we need to redirect user to Stripe KYC to complete their payouts data.
+	 * @param bool   $live_account                Whether to get the onboarding data for a live mode or test mode account.
+	 * @param string $return_url                  URL to redirect to at the end of the flow.
+	 * @param array  $site_data                   Data to track ToS agreement.
+	 * @param array  $user_data                   Data about the user doing the onboarding (location and device).
+	 * @param array  $account_data                Data to prefill the onboarding.
+	 * @param array  $actioned_notes              Actioned WCPay note names to be sent to the onboarding flow.
+	 * @param bool   $progressive                 Whether we need to enable progressive onboarding prefill.
+	 * @param bool   $collect_payout_requirements Whether we need to redirect user to Stripe KYC to complete their payouts data.
 	 *
-	 * @throws API_Exception Exception thrown on request failure.
 	 * @return array An array containing the url and state fields.
+	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_data( string $return_url, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function get_onboarding_data( bool $live_account, string $return_url, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -960,7 +961,7 @@ class WC_Payments_API_Client {
 				'user_data'                   => $user_data,
 				'account_data'                => $account_data,
 				'actioned_notes'              => $actioned_notes,
-				'create_live_account'         => ! WC_Payments::mode()->is_dev(),
+				'create_live_account'         => $live_account,
 				'progressive'                 => $progressive,
 				'collect_payout_requirements' => $collect_payout_requirements,
 			]
