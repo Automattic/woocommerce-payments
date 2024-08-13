@@ -166,10 +166,6 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 		isPaymentRequestEnabled &&
 		isWooPayFeatureFlagEnabled;
 
-	const cartPageUrl = `${ ADMIN_URL }post.php?post=${
-		getSetting( 'storePages' )?.cart?.id
-	}&action=edit`;
-
 	const checkoutPageUrl = `${ ADMIN_URL }post.php?post=${
 		getSetting( 'storePages' )?.checkout?.id
 	}&action=edit`;
@@ -197,16 +193,12 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 						icon={ true }
 						isDismissible={ false }
 					>
-						{ __( 'These settings may be overriden in the' ) }{ ' ' }
-						<a href={ cartPageUrl }>{ __( 'Cart Block' ) }</a>{ ' ' }
-						{ __( 'and the' ) }{ ' ' }
-						<a href={ checkoutPageUrl }>
-							{ __( 'Checkout Block' ) }
-						</a>
-						.{ ' ' }
 						{ __(
-							'You may customize these in the respective block settings'
-						) }
+							'Some appearance settings may be overridden by the express payment section of the'
+						) }{ ' ' }
+						<a href={ checkoutPageUrl }>
+							{ __( 'Cart & Checkout blocks' ) }
+						</a>
 					</InlineNotice>
 				</>
 			) }
