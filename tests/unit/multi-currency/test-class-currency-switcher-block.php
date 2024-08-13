@@ -48,7 +48,11 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
 		$this->mock_compatibility        = $this->createMock( Compatibility::class );
 		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
-		$this->mock_currencies           = [
+		$this->mock_localization_service
+			->method( 'get_currency_format' )
+			->willReturn( [ 'num_decimals' => 2 ] );
+
+		$this->mock_currencies = [
 			new Currency( $this->mock_localization_service, 'USD', 1 ),
 			new Currency( $this->mock_localization_service, 'CAD', 1.206823 ),
 			new Currency( $this->mock_localization_service, 'GBP', 0.708099 ),
