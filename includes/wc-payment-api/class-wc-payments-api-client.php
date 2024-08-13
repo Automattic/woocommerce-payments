@@ -970,6 +970,37 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Initialise the embedded onboarding flow, returning a session object which is used by the frontend.
+	 *
+	 * @param array $site_data Site data.
+	 * @param array $user_data User data.
+	 * @param array $account_data Account data to be prefilled.
+	 * @param array $actioned_notes Actioned notes to be sent.
+	 * @param bool  $progressive Whether progressive onboarding should be enabled for this onboarding.
+	 * @param bool  $collect_payout_requirements Whether we need to collect payout requirements.
+	 *
+	 * @return array
+	 *
+	 * @throws API_Exception
+	 */
+	public function initialise_embedded_onboarding( array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+		$request_args = apply_filters(
+			'wc_payments_get_onboarding_data_args',
+			[
+				'site_data'                   => $site_data,
+				'user_data'                   => $user_data,
+				'account_data'                => $account_data,
+				'actioned_notes'              => $actioned_notes,
+				'create_live_account'         => ! WC_Payments::mode()->is_dev(),
+				'progressive'                 => $progressive,
+				'collect_payout_requirements' => $collect_payout_requirements,
+			]
+		);
+
+		return $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
+	}
+
+	/**
 	 * Get the fields data to be used by the onboarding flow.
 	 *
 	 * @param string $locale The locale to ask for from the server.

@@ -604,6 +604,15 @@ class WC_Payments_Admin {
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
 		}
 
+		// Enqueue the onboarding scripts if the user is on the onboarding page.
+		if ( WC_Payments_Utils::is_onboarding_page() ) {
+			wp_localize_script(
+				'WCPAY_ONBOARDING_SETTINGS',
+				'wcpayOnboardingSettings',
+				[]
+			);
+		}
+
 		// TODO: Try to enqueue the JS and CSS bundles lazily (will require changes on WC-Admin).
 		$current_screen = get_current_screen() ? get_current_screen()->base : null;
 		if ( wc_admin_is_registered_page() || 'widgets' === $current_screen ) {
