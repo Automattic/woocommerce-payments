@@ -60,6 +60,8 @@ class WC_Payments_Webhook_Reliability_Service {
 		$this->action_scheduler_service   = $action_scheduler_service;
 		$this->webhook_processing_service = $webhook_processing_service;
 
+		// Note: Sometimes the `woocommerce_payments_account_refreshed` hook is ran before ActionScheduler is initialized.
+		// In that case, we will not be able to schedule jobs. We will just ignore it.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_schedule_fetch_events' ] );
 		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'fetch_events_and_schedule_processing_jobs' ] );
 		add_action( self::WEBHOOK_PROCESS_EVENT_ACTION, [ $this, 'process_event' ] );
@@ -155,9 +157,17 @@ class WC_Payments_Webhook_Reliability_Service {
 	/**
 	 * Schedule a job to fetch failed events.
 	 *
+	 * We will bail if this is called too early and ActionScheduler is not initialized.
+	 *
 	 * @return void
 	 */
 	private function schedule_fetch_events() {
+		// If the ActionScheduler is not initialized, we will get a fatal error when trying to schedule.
+		if ( ! ActionScheduler::is_initialized() ) {
+			Logger::info( 'Skipping scheduling a job to fetch failed events from the server: ActionScheduler is not initialized.' );
+			return;
+		}
+
 		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_FETCH_EVENTS_ACTION );
 		Logger::info( 'Successfully schedule a job to fetch failed events from the server.' );
 	}

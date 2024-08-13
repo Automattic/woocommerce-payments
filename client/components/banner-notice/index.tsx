@@ -15,6 +15,7 @@ import classNames from 'classnames';
 import { Icon, Button } from '@wordpress/components';
 import { check, info } from '@wordpress/icons';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
+import NoticeIcon from 'gridicons/dist/notice';
 import CloseIcon from 'gridicons/dist/cross-small';
 
 /**
@@ -24,7 +25,7 @@ import './style.scss';
 
 const statusIconMap = {
 	success: check,
-	error: NoticeOutlineIcon,
+	error: NoticeIcon,
 	warning: NoticeOutlineIcon,
 	info: info,
 };

@@ -621,4 +621,10 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 		unset( $_REQUEST['rest_route'] );
 	}
+
+	public function test_is_store_api_request_with_malformed_url() {
+		$_SERVER['REQUEST_URI'] = '///wp-json/wp/v2/users';
+
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+	}
 }
