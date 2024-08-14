@@ -42,7 +42,7 @@ import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
 import './add-payment-methods-task.scss';
-import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 const usePaymentMethodsCheckboxState = () => {
 	// For UPE, the card payment method is required and always active.
