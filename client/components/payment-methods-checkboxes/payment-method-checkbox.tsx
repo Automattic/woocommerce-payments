@@ -33,7 +33,7 @@ type PaymentMethodProps = {
 const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
 	name,
 } ) => {
-	const description = PaymentMethodsMap[ name ];
+	const { description } = PaymentMethodsMap[ name ];
 
 	if ( ! description ) return null;
 
