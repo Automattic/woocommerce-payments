@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { useGetPaymentMethodStatuses } from 'wcpay/data';
 import { useState } from '@wordpress/element';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import methodsConfiguration from '../../payment-methods-map';
+import methodsConfiguration from '../../../../payment-methods-map';
 import InlineNotice from 'components/inline-notice';
 import { select, useDispatch } from '@wordpress/data';
 import { NAMESPACE, STORE_NAME } from 'wcpay/data/constants';

@@ -10,10 +10,10 @@ import { Button } from '@wordpress/components';
 /**
  * Internal Dependencies
  */
-import PaymentConfirmIllustration from '../components/payment-confirm-illustration';
-import ConfirmationModal from '../components/confirmation-modal';
-import PaymentMethodsMap from '../payment-methods-map';
-import RequirementsMap from '../requirements-map';
+import PaymentConfirmIllustration from '../../../components/payment-confirm-illustration';
+import ConfirmationModal from '../../../components/confirmation-modal';
+import PaymentMethodsMap from '../../../payment-methods-map';
+import RequirementsMap from '../../../requirements-map';
 import './activation-modal.scss';
 
 const ConfirmPaymentMethodActivationModal = ( {
