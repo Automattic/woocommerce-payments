@@ -62,8 +62,8 @@ export const ExpressCheckoutPreviewComponent = ( {
 		},
 		paymentMethods: {
 			link: 'never',
-			googlePay: 'auto',
-			applePay: 'auto',
+			googlePay: 'always',
+			applePay: 'always',
 		},
 		layout: { overflow: 'never' },
 	};
