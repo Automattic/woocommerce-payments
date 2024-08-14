@@ -83,7 +83,7 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 				</p>
 				{ reportLink && (
 					<Link href={ reportLink } onClick={ handleReportLinkClick }>
-						{ __( 'View report', 'woocommerce_payments' ) }
+						{ __( 'View report', 'woocommerce-payments' ) }
 					</Link>
 				) }
 			</div>
