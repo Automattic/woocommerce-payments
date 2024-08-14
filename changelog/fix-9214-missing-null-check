@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Added a simple null check for an edge case.
+
+

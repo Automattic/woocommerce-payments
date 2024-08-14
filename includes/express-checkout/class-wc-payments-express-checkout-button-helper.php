@@ -124,6 +124,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		if ( WC()->cart->has_discount() ) {
 			$items[] = [
+				'key'    => 'total_discount',
 				'label'  => esc_html( __( 'Discount', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $discounts, $currency ),
 			];

@@ -9,7 +9,6 @@ import {
 	Button,
 	Card,
 	CardBody,
-	Notice,
 	Panel,
 	PanelBody,
 } from '@wordpress/components';
@@ -30,6 +29,11 @@ import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
+import { sanitizeHTML } from 'wcpay/utils/sanitize';
+import { isInDevMode } from 'wcpay/utils';
+import ResetAccountModal from 'wcpay/overview/modal/reset-account';
+import { trackAccountReset } from 'wcpay/onboarding/tracking';
+import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
@@ -40,8 +44,7 @@ const SandboxModeNotice = () => (
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
-	const isNewFlowEnabled =
-		wcpaySettings.progressiveOnboarding?.isNewFlowEnabled;
+	const [ modalVisible, setModalVisible ] = useState( false );
 
 	const [ errorMessage, setErrorMessage ] = useState< string >(
 		wcpaySettings.errorMessage
@@ -52,26 +55,52 @@ const ConnectAccountPage: React.FC = () => {
 		connectUrl,
 		connect: { availableCountries, country },
 		devMode,
+		onboardingTestMode,
+		isJetpackConnected,
+		isAccountConnected,
+		isAccountValid,
 	} = wcpaySettings;
 
 	const isCountrySupported = !! availableCountries[ country ];
 
-	const determineTrackingSource = () => {
-		const urlParams = new URLSearchParams( window.location.search );
-		const from = urlParams.get( 'from' ) || '';
+	const urlParams = new URLSearchParams( window.location.search );
 
-		// Determine where the user came from.
-		let source = 'wcadmin';
-		switch ( from ) {
+	const determineTrackingSource = () => {
+		// If we have a source query param in the current request, use that.
+		const urlSource = urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' );
+		if ( !! urlSource && 'unknown' !== urlSource ) {
+			return urlSource;
+		}
+
+		// Next, search for a source in the Connect URL as that is determined server-side and it is reliable.
+		if ( connectUrl.includes( 'source=' ) ) {
+			const url = new URL( connectUrl );
+			const source = url.searchParams.get( 'source' );
+			if ( !! source && 'unknown' !== source ) {
+				return source;
+			}
+		}
+		// Finally, make some guesses based on the 'from' query param.
+		// We generally should not reach this step, but it's a fallback with reliable guesses.
+		const urlFrom = urlParams.get( 'from' ) || '';
+		let sourceGuess = 'wcpay-connect-page';
+		switch ( urlFrom ) {
 			case 'WCADMIN_PAYMENT_TASK':
-				source = 'wcadmin-payment-task';
+				sourceGuess = 'wcadmin-payment-task';
 				break;
 			case 'WCADMIN_PAYMENT_SETTINGS':
-				source = 'wcadmin-settings-page';
+				sourceGuess = 'wcadmin-settings-page';
+				break;
+			case 'WCADMIN_PAYMENT_INCENTIVE':
+				sourceGuess = 'wcadmin-incentive-page';
 				break;
 		}
 
-		return source;
+		return sourceGuess;
+	};
+
+	const determineTrackingFrom = () => {
+		return urlParams.get( 'from' )?.replace( /[^\w-]+/g, '' ) || '';
 	};
 
 	useEffect( () => {
@@ -80,6 +109,7 @@ const ConnectAccountPage: React.FC = () => {
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
+			from: determineTrackingFrom(),
 			source: determineTrackingSource(),
 		} );
 		// We only want to run this once.
@@ -93,7 +123,10 @@ const ConnectAccountPage: React.FC = () => {
 		};
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
-			window.location.href = connectUrl;
+			window.location.href = addQueryArgs( connectUrl, {
+				source: determineTrackingSource(),
+				from: 'WCPAY_CONNECT',
+			} );
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
@@ -118,13 +151,13 @@ const ConnectAccountPage: React.FC = () => {
 
 	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
 		recordEvent( 'wcpay_connect_account_clicked', {
-			wpcom_connection: wcpaySettings.isJetpackConnected ? 'Yes' : 'No',
-			is_new_onboarding_flow: isNewFlowEnabled,
+			wpcom_connection: isJetpackConnected ? 'Yes' : 'No',
 			...( incentive && {
 				incentive_id: incentive.id,
 			} ),
 			sandbox_mode: sandboxMode,
 			path: 'payments_connect_v2',
+			from: determineTrackingFrom(),
 			source: determineTrackingSource(),
 		} );
 	};
@@ -155,7 +188,10 @@ const ConnectAccountPage: React.FC = () => {
 			return handleLocationCheck();
 		}
 
-		window.location.href = connectUrl;
+		window.location.href = addQueryArgs( connectUrl, {
+			source: determineTrackingSource(),
+			from: 'WCPAY_CONNECT',
+		} );
 	};
 
 	const handleEnableSandboxMode = async () => {
@@ -163,23 +199,68 @@ const ConnectAccountPage: React.FC = () => {
 
 		trackConnectAccountClicked( true );
 
-		const url = addQueryArgs( connectUrl, {
-			test_mode: true,
-			create_builder_account: true,
+		window.location.href = addQueryArgs( connectUrl, {
+			test_mode: 'true',
+			create_builder_account: 'true',
+			source: determineTrackingSource(),
+			from: 'WCPAY_CONNECT',
 		} );
-		window.location.href = url;
 	};
+
+	const handleReset = () => {
+		trackAccountReset();
+
+		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
+			'wcpay-reset-account': 'true',
+			from: 'WCPAY_CONNECT',
+			source: determineTrackingSource(),
+		} );
+	};
+
+	// Determine if we have the account session error message since we want to customize the UX a little bit.
+	let isAccountSetupSessionError = false;
+	if ( errorMessage && errorMessage.includes( 'account setup session' ) ) {
+		isAccountSetupSessionError = true;
+	}
+
+	let ctaLabel = strings.button.jetpack_not_connected;
+	if ( isJetpackConnected ) {
+		ctaLabel = strings.button.account_not_connected;
+		// If we have the account setup session error, best not to push too much with the CTA copy.
+		if (
+			! isAccountSetupSessionError &&
+			isAccountConnected &&
+			! isAccountValid
+		) {
+			ctaLabel = strings.button.account_invalid;
+		}
+	}
+
+	// If there is no error message from elsewhere, but we have:
+	// - a broken Jetpack connection and a connected account;
+	// - or working Jetpack connection and a connected but invalid account.
+	// show a generic error message.
+	if (
+		! errorMessage &&
+		( ( ! isJetpackConnected && isAccountConnected ) ||
+			( isJetpackConnected && isAccountConnected && ! isAccountValid ) )
+	) {
+		setErrorMessage( strings.setupErrorNotice );
+	}
 
 	return (
 		<Page isNarrow className="connect-account-page">
 			{ errorMessage && (
-				<Notice
-					className="wcpay-connect-error-notice"
+				<BannerNotice
 					status="error"
+					icon={ true }
 					isDismissible={ false }
 				>
-					{ errorMessage }
-				</Notice>
+					<div
+						// eslint-disable-next-line react/no-danger
+						dangerouslySetInnerHTML={ sanitizeHTML( errorMessage ) }
+					></div>
+				</BannerNotice>
 			) }
 			{ wcpaySettings.onBoardingDisabled ? (
 				<Card>
@@ -192,7 +273,25 @@ const ConnectAccountPage: React.FC = () => {
 							{ strings.nonSupportedCountry }
 						</BannerNotice>
 					) }
-					{ devMode && <SandboxModeNotice /> }
+					{
+						// Show general sandbox notice when no account is connected but sandbox mode is active.
+						! isAccountConnected && devMode ? (
+							<SandboxModeNotice />
+						) : (
+							// If we already have a sandbox account connected (but in an invalid state) and
+							// a working Jetpack connection (to be able to delete the current account)
+							// show the switch to live sandbox notice.
+							isAccountConnected &&
+							! isAccountValid &&
+							onboardingTestMode &&
+							isJetpackConnected && (
+								<SandboxModeSwitchToLiveNotice
+									from="WCPAY_CONNECT"
+									source="wcpay-connect-page"
+								/>
+							)
+						)
+					}
 					<Card>
 						<div className="connect-account-page__heading">
 							<img src={ LogoImg } alt="logo" />
@@ -248,38 +347,69 @@ const ConnectAccountPage: React.FC = () => {
 							<Button
 								variant="primary"
 								isBusy={ isSubmitted }
-								disabled={ isSubmitted }
+								disabled={
+									isSubmitted || isAccountSetupSessionError
+								}
 								onClick={ handleSetup }
 							>
-								{ wcpaySettings.isJetpackConnected
-									? strings.button.jetpack_connected
-									: strings.button.jetpack_not_connected }
+								{ ctaLabel }
 							</Button>
+							{
+								// Only show the reset button if an account is connected and didn't complete KYC, or if we are in dev mode.
+								isAccountConnected &&
+									( ! wcpaySettings.accountStatus
+										.detailsSubmitted ||
+										isInDevMode() ) && (
+										<Button
+											variant={ 'tertiary' }
+											onClick={ () =>
+												setModalVisible( true )
+											}
+										>
+											{ strings.button.reset }
+										</Button>
+									)
+							}
 						</div>
 					</Card>
-					{ incentive && <Incentive { ...incentive } /> }
-					<Panel className="connect-account-page__sandbox-mode-panel">
-						<PanelBody
-							title={ strings.sandboxMode.title }
-							initialOpen={ false }
-						>
-							<InlineNotice
-								icon
-								status="info"
-								isDismissible={ false }
-							>
-								{ strings.sandboxMode.description }
-							</InlineNotice>
-							<Button
-								variant="secondary"
-								isBusy={ isSandboxModeClicked }
-								disabled={ isSandboxModeClicked }
-								onClick={ handleEnableSandboxMode }
-							>
-								{ strings.button.sandbox }
-							</Button>
-						</PanelBody>
-					</Panel>
+					{
+						// Only show the incentive if an account is NOT connected.
+						! isAccountConnected && incentive && (
+							<Incentive { ...incentive } />
+						)
+					}
+					{
+						// Only show the sandbox mode panel if an account is NOT connected.
+						! isAccountConnected && (
+							<Panel className="connect-account-page__sandbox-mode-panel">
+								<PanelBody
+									title={ strings.sandboxMode.title }
+									initialOpen={ false }
+								>
+									<InlineNotice
+										icon
+										status="info"
+										isDismissible={ false }
+									>
+										{ strings.sandboxMode.description }
+									</InlineNotice>
+									<Button
+										variant="secondary"
+										isBusy={ isSandboxModeClicked }
+										disabled={ isSandboxModeClicked }
+										onClick={ handleEnableSandboxMode }
+									>
+										{ strings.button.sandbox }
+									</Button>
+								</PanelBody>
+							</Panel>
+						)
+					}
+					<ResetAccountModal
+						isVisible={ modalVisible }
+						onDismiss={ () => setModalVisible( false ) }
+						onSubmit={ handleReset }
+					/>
 				</>
 			) }
 		</Page>

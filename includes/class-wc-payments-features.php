@@ -270,7 +270,7 @@ class WC_Payments_Features {
 		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
 		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 
-		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopay_enabled();
+		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopayments_gateway_enabled() && self::is_woopay_enabled();
 	}
 
 	/**
@@ -391,5 +391,17 @@ class WC_Payments_Features {
 				'isStripeEceEnabled'             => self::is_stripe_ece_enabled(),
 			]
 		);
+	}
+
+	/**
+	 * Checks if WooCommerce Payments gateway is enabled.
+	 *
+	 * @return bool True if WooCommerce Payments gateway is enabled, false otherwise.
+	 */
+	private static function is_woopayments_gateway_enabled() {
+		$woopayments_settings        = get_option( 'woocommerce_woocommerce_payments_settings' );
+		$woopayments_enabled_setting = $woopayments_settings['enabled'] ?? 'no';
+
+		return 'yes' === $woopayments_enabled_setting;
 	}
 }

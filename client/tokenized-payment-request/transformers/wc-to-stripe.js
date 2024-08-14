@@ -53,6 +53,7 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 					.join( ', ' ),
 		]
 			.filter( Boolean )
+			.map( decodeEntities )
 			.join( ' ' ),
 	} ) );
 

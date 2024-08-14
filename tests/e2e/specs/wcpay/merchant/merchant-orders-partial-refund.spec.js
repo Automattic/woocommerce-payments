@@ -91,9 +91,7 @@ describe.each( dataTable )(
 			page.on( 'dialog', async function ( dialog ) {
 				try {
 					await dialog.accept();
-				} catch ( err ) {
-					console.warn( err.message );
-				}
+				} catch ( err ) {}
 			} );
 		} );
 

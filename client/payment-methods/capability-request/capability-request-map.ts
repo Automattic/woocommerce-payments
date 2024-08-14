@@ -27,7 +27,7 @@ const CapabilityRequestList: Array< CapabilityRequestMap > = [
 				),
 				actions: 'link',
 				actionUrl:
-					'https://woocommerce.com/document/woopayments/payment-methods/#jcb',
+					'https://woocommerce.com/document/woopayments/payment-methods/jcb-for-merchants-in-japan/',
 				actionsLabel: __( 'Finish setup', 'woocommerce-payments' ),
 			},
 			pending: {

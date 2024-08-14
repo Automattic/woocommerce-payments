@@ -56,6 +56,11 @@ const LoadingStep: React.FC< Props > = () => {
 
 	const handleComplete = async () => {
 		const { connectUrl } = wcpaySettings;
+
+		const urlParams = new URLSearchParams( window.location.search );
+		const urlSource =
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
+
 		let isEligible;
 		try {
 			isEligible = await isEligibleForPo();
@@ -64,16 +69,16 @@ const LoadingStep: React.FC< Props > = () => {
 			// TODO maybe log these errors in future, e.g. with tracks.
 			isEligible = false;
 		}
-		const resultUrl = addQueryArgs( connectUrl, {
-			self_assessment: fromDotNotation( data ),
-			progressive: isEligible,
-			source: 'onboarding-wizard',
-		} );
 
-		trackRedirected( isEligible );
+		trackRedirected( isEligible, urlSource );
 		removeTrackListener();
 
-		window.location.href = resultUrl;
+		window.location.href = addQueryArgs( connectUrl, {
+			self_assessment: fromDotNotation( data ),
+			progressive: isEligible,
+			source: urlSource,
+			from: 'WCPAY_ONBOARDING_WIZARD',
+		} );
 	};
 
 	useEffect( () => {
