@@ -60,19 +60,19 @@ If you need to set up a different local environment alongside the default one, h
           args:
             - XDEBUG_REMOTE_PORT=9004 # Change the xDebug port.
         ports: !override # This will override the default ports rather than appending to them.
-          - "8084:80" # Change the HTTP port.
+          - "8092:80" # Change the HTTP port.
       db:
         container_name: woopayments_apiv2_mysql # Change the container name.
         ports: !override # This will override the default ports rather than appending to them.
-          - "5679:3306" # Change the MySQL port.
+          - "5690:3306" # Change the MySQL port.
       phpMyAdmin:
         container_name: woopayments_apiv2_phpmyadmin # Change the container name.
         ports: !override # This will override the default ports rather than appending to them.
-          - "8085:80" # Change the PHPMyAdmin HTTP port.
+          - "8093:80" # Change the PHPMyAdmin HTTP port.
     ```
 4. Run `npm run up` in the new directory to start the new environment.
 5. Run `WP_URL=localhost:8084 ./bin/docker-setup.sh woopayments_apiv2_wordpress` to set up the new environment. Notice the use of the new container name and the new port for the WordPress container.
-6. You are all set! You can now access the new environment at `http://localhost:8084/wp-admin/` and PHPMyAdmin at `http://localhost:8085/`.
+6. You are all set! You can now access the new environment at `http://localhost:8092/wp-admin/` and PHPMyAdmin at `http://localhost:8093/`.
 
 ### Changing default port for xDebug
 To change the default port for xDebug you should create `docker-compose.override.yml` with the following contents:
