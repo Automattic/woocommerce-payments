@@ -1,7 +1,7 @@
 // Cart Block
 .wc-block-components-express-payment--cart {
 	.wc-block-components-express-payment__event-buttons > li {
-		padding-bottom: 11px !important;
+		padding-bottom: 12px !important;
 
 		&:last-child {
 			padding-bottom: 0 !important;
@@ -18,7 +18,7 @@
 // Checkout Block
 .wc-block-components-express-payment--checkout {
 	.wc-block-components-express-payment__event-buttons {
-		grid-gap: 11px !important;
+		grid-gap: 12px !important;
 		grid-template-columns: repeat(
 			auto-fit,
 			minmax( 232px, 1fr )

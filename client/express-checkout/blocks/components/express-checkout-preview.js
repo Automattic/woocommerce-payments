@@ -27,7 +27,7 @@ export const ExpressCheckoutPreviewComponent = ( {
 		appearance: {
 			variables: {
 				borderRadius: `${ radius ?? getDefaultBorderRadius() }px`,
-				spacingUnit: '5.5px',
+				spacingUnit: '6px',
 			},
 		},
 	};
