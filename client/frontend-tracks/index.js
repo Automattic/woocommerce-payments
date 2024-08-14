@@ -3,8 +3,8 @@
  */
 import { recordUserEvent } from 'tracks';
 
-if ( window.wcPayFrontendTracks ) {
-	const { event, properties } = window.wcPayFrontendTracks;
-
-	recordUserEvent( event, properties );
+if ( window.wcPayFrontendTracks && window.wcPayFrontendTracks.length ) {
+	for ( const track of window.wcPayFrontendTracks ) {
+		recordUserEvent( track.event, track.properties );
+	}
 }

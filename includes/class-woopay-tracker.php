@@ -73,6 +73,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
+		add_action( 'woocommerce_after_main_content', [ $this, 'after_main_content' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
 		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );
 	}
@@ -151,17 +152,16 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		WC_Payments::register_script_with_dependencies( 'wcpay-frontend-tracks', 'dist/frontend-tracks' );
+		add_filter(
+			'wcpay_frontend_tracks',
+			function ( $tracks ) use ( $event, $data ) {
+				$tracks[] = [
+					'event'      => $event,
+					'properties' => $data,
+				];
 
-		wp_enqueue_script( 'wcpay-frontend-tracks' );
-
-		wp_localize_script(
-			'wcpay-frontend-tracks',
-			'wcPayFrontendTracks',
-			[
-				'event'      => $event,
-				'properties' => $data,
-			]
+				return $tracks;
+			}
 		);
 	}
 
@@ -583,5 +583,28 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		}
 
 		$this->maybe_record_admin_event( 'woopay_express_button_locations_updated', $props );
+	}
+
+	/**
+	 * Add front-end tracks scripts to prevent cache break.
+	 *
+	 * @return void
+	 */
+	public function after_main_content() {
+		$frontent_tracks = apply_filters( 'wcpay_frontend_tracks', [] );
+
+		if ( count( $frontent_tracks ) === 0 ) {
+			return;
+		}
+
+		WC_Payments::register_script_with_dependencies( 'wcpay-frontend-tracks', 'dist/frontend-tracks' );
+
+		wp_enqueue_script( 'wcpay-frontend-tracks' );
+
+		wp_localize_script(
+			'wcpay-frontend-tracks',
+			'wcPayFrontendTracks',
+			$frontent_tracks
+		);
 	}
 }
