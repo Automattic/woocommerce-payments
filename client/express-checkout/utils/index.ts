@@ -181,6 +181,7 @@ export const getExpressCheckoutButtonAppearance = () => {
 			borderRadius: `${
 				buttonSettings?.radius ?? getDefaultBorderRadius()
 			}px`,
+			spacingUnit: '5.5px',
 		},
 	};
 };
