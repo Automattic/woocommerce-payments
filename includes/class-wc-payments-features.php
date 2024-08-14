@@ -15,6 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Features class
  */
 class WC_Payments_Features {
+	/**
+	 * If you need to remove or deprecate a flag:
+	 * - Please update the `Erase_Deprecated_Flags_And_Options` migration with:
+	 *   - The next version of WooPayments.
+	 *   - The flag to be deleted.
+	 */
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const STRIPE_BILLING_FLAG_NAME          = '_wcpay_feature_stripe_billing';
 	const STRIPE_ECE_FLAG_NAME              = '_wcpay_feature_stripe_ece';

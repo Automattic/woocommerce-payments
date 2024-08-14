@@ -22,6 +22,7 @@ class Erase_Deprecated_Flags_And_Options {
 	 */
 	public function maybe_migrate() {
 		$previous_version = get_option( 'woocommerce_woocommerce_payments_version' );
+		// feel free to modify the version here to the next one, if you add a new flag to be deleted in the `migrate` method.
 		if ( version_compare( '8.1.0', $previous_version, '>' ) ) {
 			$this->migrate();
 		}
@@ -31,6 +32,9 @@ class Erase_Deprecated_Flags_And_Options {
 	 * Does the actual migration.
 	 */
 	private function migrate() {
+		// please update as necessary, when feature flags are removed.
+		// you don't need to check for previous values or if the migration already ran in previous versions.
+		// if the migration did already run, the operations below will just be noop.
 		delete_option( '_wcpay_feature_progressive_onboarding' );
 		delete_option( '_wcpay_feature_client_secret_encryption' );
 		delete_option( '_wcpay_feature_allow_subscription_migrations' );
