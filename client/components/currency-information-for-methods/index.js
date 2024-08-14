@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import _ from 'lodash';
+import { uniq } from 'lodash';
 import { sprintf, __, _n } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -113,8 +113,8 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		} );
 	} );
 
-	missingCurrencyLabels = _.uniq( missingCurrencyLabels );
-	paymentMethodsWithMissingCurrencies = _.uniq(
+	missingCurrencyLabels = uniq( missingCurrencyLabels );
+	paymentMethodsWithMissingCurrencies = uniq(
 		paymentMethodsWithMissingCurrencies
 	);
 

@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { sprintf, __, _n } from '@wordpress/i18n';
 import { Button, Card, CardBody } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import _ from 'lodash';
+import { without, isString, capitalize } from 'lodash';
 
 /**
  * Internal dependencies
@@ -150,7 +150,7 @@ const AddCurrenciesTask = () => {
 			] );
 		} else {
 			setSelectedCurrencyCodes(
-				_.without( selectedCurrencyCodes, currencyCode )
+				without( selectedCurrencyCodes, currencyCode )
 			);
 		}
 	};
@@ -180,7 +180,7 @@ const AddCurrenciesTask = () => {
 				checked={ selectedCurrencyCodes.includes( code ) }
 				onChange={ handleChange }
 				currency={ availableCurrencies[ code ] }
-				testId={ _.isString( testId ) ? testId : null }
+				testId={ isString( testId ) ? testId : null }
 			/>
 		);
 
@@ -196,7 +196,7 @@ const AddCurrenciesTask = () => {
 					'woocommerce-payments'
 				),
 				selectedCurrencyCodesLength < 10
-					? _.capitalize( numberWords[ selectedCurrencyCodesLength ] )
+					? capitalize( numberWords[ selectedCurrencyCodesLength ] )
 					: selectedCurrencyCodesLength
 			) }
 			index={ 1 }
