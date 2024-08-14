@@ -33,13 +33,11 @@ const ConfirmPaymentMethodActivationModal = ( {
 
 	const paymentMethodInformation = PaymentMethodsMap[ paymentMethod ];
 
-	const handleConfirmationClick = () => {
-		onConfirmClose();
-	};
 	return (
 		<ConfirmationModal
 			title={ sprintf(
-				__( 'One more step to enable %s', 'woocommerce_payments' ),
+				// translators: %s is the name of a payment method.
+				__( 'One more step to enable %s', 'woocommerce-payments' ),
 				paymentMethodInformation.label
 			) }
 			shouldCloseOnClickOutside={ false }
@@ -50,7 +48,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 					<Button isSecondary onClick={ onClose }>
 						{ __( 'Cancel', 'woocommerce-payments' ) }
 					</Button>
-					<Button isPrimary onClick={ handleConfirmationClick }>
+					<Button isPrimary onClick={ onConfirmClose }>
 						{ __( 'Continue', 'woocommerce-payments' ) }
 					</Button>
 				</>
@@ -65,6 +63,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 					<p>
 						{ sprintf(
 							__(
+								// translators: %s is the name of a payment method.
 								'You need to provide more information to enable %s on your checkout:',
 								'woocommerce-payments'
 							),
@@ -84,6 +83,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 				<p>
 					{ sprintf(
 						__(
+							// translators: %s is the name of a payment method.
 							'You need to provide more information to enable %s on your checkout.',
 							'woocommerce-payments'
 						),
