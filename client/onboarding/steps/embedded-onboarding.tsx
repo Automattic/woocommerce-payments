@@ -29,7 +29,7 @@ const EmbeddedOnboarding: React.FC = () => {
 
 		return loadConnectAndInitialize( {
 			// This is your test publishable API key. TODO: get the config
-			publishableKey: 'pk_test_qblFNYngBkEdjEZ16jxxoWSM',
+			publishableKey: 'blah',
 			fetchClientSecret: fetchClientSecret,
 		} );
 	} );
