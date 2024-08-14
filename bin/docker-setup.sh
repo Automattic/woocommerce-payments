@@ -127,6 +127,9 @@ else
 	cli wp option update woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 fi
 
+echo "Installing and activating Disable WordPress Updates..."
+wp_cli plugin install disable-wordpress-updates --activate
+
 echo "Installing dev tools plugin..."
 set +e
 git clone git@github.com:Automattic/woocommerce-payments-dev-tools.git docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools
