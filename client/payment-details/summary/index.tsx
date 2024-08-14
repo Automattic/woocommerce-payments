@@ -19,7 +19,7 @@ import moment from 'moment';
 import React, { useContext, useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
-import { isEmpty } from 'lodash';
+import _ from 'lodash';
 
 /**
  * Internal dependencies.
@@ -650,7 +650,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					} }
 				/>
 			) }
-			{ ! isEmpty( charge ) && ! charge.order && ! isLoading && (
+			{ ! _.isEmpty( charge ) && ! charge.order && ! isLoading && (
 				<MissingOrderNotice
 					charge={ charge }
 					isLoading={ isLoading }
