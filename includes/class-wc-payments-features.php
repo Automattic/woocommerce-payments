@@ -23,7 +23,6 @@ class WC_Payments_Features {
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME  = '_wcpay_feature_woopay_direct_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
-	const STREAMLINE_REFUNDS_FLAG_NAME      = '_wcpay_feature_streamline_refunds';
 	const TOKENIZED_CART_PRB_FLAG_NAME      = '_wcpay_feature_tokenized_cart_prb';
 	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME = '_wcpay_feature_payment_overview_widget';
 
@@ -45,15 +44,6 @@ class WC_Payments_Features {
 	 */
 	public static function is_tokenized_cart_prb_enabled(): bool {
 		return '1' === get_option( self::TOKENIZED_CART_PRB_FLAG_NAME, '0' );
-	}
-
-	/**
-	 * Checks whether streamline refunds is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_streamline_refunds_enabled(): bool {
-		return '1' === get_option( self::STREAMLINE_REFUNDS_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -186,15 +176,6 @@ class WC_Payments_Features {
 		}
 
 		update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '1' );
-	}
-
-	/**
-	 * Returns whether WCPay Subscription migration is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_subscription_migration_enabled() {
-		return '1' === get_option( '_wcpay_feature_allow_subscription_migrations', '0' );
 	}
 
 	/**
@@ -386,7 +367,6 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
-				'isRefundControlsEnabled'        => self::is_streamline_refunds_enabled(),
 				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
 				'isStripeEceEnabled'             => self::is_stripe_ece_enabled(),
 			]
