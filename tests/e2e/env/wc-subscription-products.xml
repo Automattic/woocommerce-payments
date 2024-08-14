@@ -26,7 +26,7 @@
 >
 
 <channel>
-	<title>WooCommerce Payments E2E site</title>
+	<title>WooPayments E2E site</title>
 	<link>http://localhost:8084</link>
 	<description>Just another WordPress site</description>
 	<pubDate>Fri, 26 Aug 2022 14:13:50 +0000</pubDate>
@@ -37,7 +37,7 @@
 
 		<wp:author><wp:author_id>1</wp:author_id><wp:author_login><![CDATA[admin]]></wp:author_login><wp:author_email><![CDATA[admin@woocommercecoree2etestsuite.com]]></wp:author_email><wp:author_display_name><![CDATA[admin]]></wp:author_display_name><wp:author_first_name><![CDATA[Test]]></wp:author_first_name><wp:author_last_name><![CDATA[Test]]></wp:author_last_name></wp:author>
 
-				
+
 	<generator>https://wordpress.org/?v=6.0.1</generator>
 
 		<item>
@@ -516,4 +516,3 @@
 							</item>
 				</channel>
 </rss>
-	
