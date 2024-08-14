@@ -18,6 +18,7 @@ import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
+import EmbeddedOnboarding from 'wcpay/onboarding/steps/embedded-onboarding';
 
 const OnboardingStepper = () => {
 	const handleExit = () => {
@@ -48,7 +49,7 @@ const OnboardingStepper = () => {
 				</OnboardingForm>
 			</Step>
 			<Step name="embedded">
-				<></>
+				<EmbeddedOnboarding />
 			</Step>
 			<LoadingStep name="loading" />
 		</Stepper>

@@ -62,6 +62,17 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/finalise',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'finalise_embedded_onboarding' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				// TODO: add args
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/business_types',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -137,6 +148,18 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	public function get_onboarding_session( WP_REST_Request $request ) {
 		$account_session = $this->onboarding_service->create_embedded_onboarding_session();
 		return rest_ensure_response( $account_session );
+	}
+
+	/**
+	 * Finalise the embedded onboarding session via the API.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
+	 */
+	public function finalise_embedded_onboarding( WP_REST_Request $request ) {
+		$result = $this->onboarding_service->finalise_embedded_onboarding();
+		return rest_ensure_response( $result );
 	}
 
 	/**

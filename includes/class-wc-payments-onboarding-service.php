@@ -136,14 +136,22 @@ class WC_Payments_Onboarding_Service {
 		);
 	}
 
-	public function create_embedded_onboarding_session() {
+	/**
+	 * Retrieve the onboarding session and handle initial account creation (if necessary).
+	 * Will return the session key used to initialise the embedded onboarding session.
+	 *
+	 * @return array Session data.
+	 *
+	 * @throws API_Exception
+	 */
+	public function create_embedded_onboarding_session(): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
 
 		// Note: at the moment, we aren't caching this since it only gets initialised on a new onboarding,
 		// and we want to make a request to the server in that instance. In the future, we can look to cache it.
-		// TODO: Send params with the request
+		// TODO: Send params with the request.
 		$account_session = $this->payments_api_client->initialise_embedded_onboarding();
 
 		return [
@@ -152,6 +160,18 @@ class WC_Payments_Onboarding_Service {
 			'accountId'      => $account_session['account_id'] ?? '',
 			'isLive'         => $account_session['is_live'] ?? false,
 			'accountCreated' => $account_session['account_created'] ?? false,
+		];
+	}
+
+	public function finalise_embedded_onboarding(): array {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return [];
+		}
+
+		$result = $this->payments_api_client->finalise_embedded_onboarding();
+
+		return [
+			'success' => $result['success'] ?? false,
 		];
 	}
 

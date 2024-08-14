@@ -1008,6 +1008,19 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Finalise the embedded onboarding flow.
+	 *
+	 * @TODO: add params.
+	 *
+	 * @return array
+	 *
+	 * @throws API_Exception
+	 */
+	public function finalise_embedded_onboarding(): array {
+		return $this->request( [], self::ONBOARDING_API . '/embedded/finalise', self::POST, true, true );
+	}
+
+	/**
 	 * Get the fields data to be used by the onboarding flow.
 	 *
 	 * @param string $locale The locale to ask for from the server.
