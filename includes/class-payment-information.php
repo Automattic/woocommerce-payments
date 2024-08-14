@@ -277,7 +277,7 @@ class Payment_Information {
 		$payment_information = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
 
 		if ( self::PAYMENT_METHOD_ERROR === $payment_method ) {
-			$error_message = $request['wcpay-payment-method-error-message'] ?? __( 'Invalid Payment Method', 'woocommerce-payments' );
+			$error_message = $request['wcpay-payment-method-error-message'] ?? __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' );
 			$error_code    = $request['wcpay-payment-method-error-code'] ?? 'unknown-error';
 			$error         = new \WP_Error( $error_code, $error_message );
 			$payment_information->set_error( $error );

@@ -235,6 +235,23 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'invalid_card', $error->get_error_code() );
 	}
 
+	public function test_from_payment_request_with_error_no_details() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                 => CC_Payment_Gateway::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY => Payment_Information::PAYMENT_METHOD_ERROR,
+			]
+		);
+		$this->assertEquals( Payment_Information::PAYMENT_METHOD_ERROR, $payment_information->get_payment_method() );
+		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
+		$this->assertFalse( $payment_information->is_merchant_initiated() );
+
+		$error = $payment_information->get_error();
+		$this->assertInstanceOf( \WP_Error::class, $error );
+		$this->assertEquals( "We're not able to process this payment. Please try again later.", $error->get_error_message() );
+		$this->assertEquals( 'unknown-error', $error->get_error_code() );
+	}
+
 	public function test_get_cvc_confirmation_from_request_returns_null_if_payment_method_is_empty() {
 		$cvc_confirmation = Payment_Information::get_cvc_confirmation_from_request( [ 'payment_method' => null ] );
 		$this->assertEquals( null, $cvc_confirmation );
