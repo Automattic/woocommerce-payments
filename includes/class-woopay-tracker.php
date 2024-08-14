@@ -118,14 +118,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	public function ajax_tracks_id() {
 		$tracks_id = $this->tracks_get_identity();
 
-		if (
-			isset(
-				$_REQUEST['tracksEventName'] // phpcs:ignore WordPress.Security.NonceVerification
-			)
-		) {
-			$this->ajax_tracks();
-		}
-
 		if ( $tracks_id ) {
 			wp_send_json_success( $tracks_id );
 		}
@@ -159,28 +151,18 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		// For guest users, record the event on the front-end to prevent cache break.
-		if ( ! is_user_logged_in() ) {
-			wp_register_script( 'wcpay-frontend-tracks', '', [], WCPAY_VERSION_NUMBER, false );
+		WC_Payments::register_script_with_dependencies( 'wcpay-frontend-tracks', 'dist/frontend-tracks' );
 
-			wp_enqueue_script( 'wcpay-frontend-tracks' );
+		wp_enqueue_script( 'wcpay-frontend-tracks' );
 
-			wp_localize_script(
-				'wcpay-frontend-tracks',
-				'wcPayFrontendTracks',
-				[
-					'event'      => $event,
-					'properties' => $data,
-				]
-			);
-
-			return false;
-		}
-
-		$is_admin_event      = false;
-		$track_on_all_stores = true;
-
-		return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores );
+		wp_localize_script(
+			'wcpay-frontend-tracks',
+			'wcPayFrontendTracks',
+			[
+				'event'      => $event,
+				'properties' => $data,
+			]
+		);
 	}
 
 	/**
