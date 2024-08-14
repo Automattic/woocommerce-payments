@@ -58,19 +58,15 @@ If you need to set up a different local environment alongside the default one, h
         container_name: woopayments_apiv2_wordpress # Change the container name.
         build:
           args:
-            - XDEBUG_REMOTE_PORT=9003 # Change the xDebug port.
+            - XDEBUG_REMOTE_PORT=9004 # Change the xDebug port.
         ports: !override # This will override the default ports rather than appending to them.
           - "8084:80" # Change the HTTP port.
-        volumes:
-          - /Users/vladolaru/Work/a8c/woocommerce-develop/plugins/woocommerce:/var/www/html/wp-content/plugins/woocommerce
-          - /Users/vladolaru/Work/a8c/woocommerce-develop/plugins/woocommerce-beta-tester:/var/www/html/wp-content/plugins/woocommerce-beta-tester
       db:
         container_name: woopayments_apiv2_mysql # Change the container name.
         ports: !override # This will override the default ports rather than appending to them.
           - "5679:3306" # Change the MySQL port.
       phpMyAdmin:
         container_name: woopayments_apiv2_phpmyadmin # Change the container name.
-        image: arm64v8/phpmyadmin:latest # Force the arm64v8 image version
         ports: !override # This will override the default ports rather than appending to them.
           - "8085:80" # Change the PHPMyAdmin HTTP port.
     ```
