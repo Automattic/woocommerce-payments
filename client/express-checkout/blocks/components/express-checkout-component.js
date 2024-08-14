@@ -85,6 +85,18 @@ const ExpressCheckoutComponent = ( {
 		onReady( event );
 	};
 
+	if ( buttonOptions.buttonTheme.applePay === 'black' ) {
+		if ( expressPaymentMethod === 'applePay' ) {
+			buttonOptions.buttonHeight = buttonOptions.buttonHeight + 0.4;
+		}
+	} else if (
+		expressPaymentMethod === 'googlePay' &&
+		buttonOptions.buttonTheme.googlePay === 'white'
+	) {
+		// Adjust height for Google Pay only
+		buttonOptions.buttonHeight = buttonOptions.buttonHeight - 2;
+	}
+
 	return (
 		<ExpressCheckoutElement
 			options={ {
