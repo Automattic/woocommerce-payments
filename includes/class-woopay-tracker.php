@@ -73,7 +73,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
-		add_action( 'woocommerce_after_main_content', [ $this, 'after_main_content' ] );
+		add_action( 'woocommerce_after_main_content', [ $this, 'add_frontend_tracks_scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
 		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );
 	}
@@ -590,7 +590,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @return void
 	 */
-	public function after_main_content() {
+	public function add_frontend_tracks_scripts() {
 		$frontent_tracks = apply_filters( 'wcpay_frontend_tracks', [] );
 
 		if ( count( $frontent_tracks ) === 0 ) {
