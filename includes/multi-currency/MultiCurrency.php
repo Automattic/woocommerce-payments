@@ -9,7 +9,6 @@ namespace WCPay\MultiCurrency;
 
 use WC_Payments;
 use WC_Payments_Utils;
-use WC_Payments_Localization_Service;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Exceptions\API_Exception;
@@ -18,8 +17,9 @@ use WCPay\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
-use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
 defined( 'ABSPATH' ) || exit;
@@ -147,9 +147,9 @@ class MultiCurrency {
 	private $payments_account;
 
 	/**
-	 * Instance of WC_Payments_Localization_Service.
+	 * Instance of MultiCurrencyLocalizationInterface.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var MultiCurrencyLocalizationInterface
 	 */
 	private $localization_service;
 
@@ -184,13 +184,13 @@ class MultiCurrency {
 	/**
 	 * Class constructor.
 	 *
-	 * @param MultiCurrencyApiClientInterface  $payments_api_client  Payments API client.
-	 * @param MultiCurrencyAccountInterface    $payments_account     Payments Account instance.
-	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
-	 * @param Database_Cache                   $database_cache       Database Cache instance.
-	 * @param Utils|null                       $utils                Optional Utils instance.
+	 * @param MultiCurrencyApiClientInterface    $payments_api_client  Payments API client.
+	 * @param MultiCurrencyAccountInterface      $payments_account     Payments Account instance.
+	 * @param MultiCurrencyLocalizationInterface $localization_service Localization Service instance.
+	 * @param Database_Cache                     $database_cache       Database Cache instance.
+	 * @param Utils|null                         $utils                Optional Utils instance.
 	 */
-	public function __construct( MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
+	public function __construct( MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
 		$this->localization_service = $localization_service;

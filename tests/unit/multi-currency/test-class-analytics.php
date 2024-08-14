@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WCPay_Multi_Currency_Compatibility_Tests
+ * Class WCPay_Multi_Currency_Analytics_Tests
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -10,6 +10,7 @@ use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\MultiCurrency\Analytics;
 use WCPay\MultiCurrency\Currency;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -54,9 +55,9 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * The localization service.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var MultiCurrencyLocalizationInterface
 	 */
-	private $localization_service;
+	private $mock_localization_service;
 
 	/**
 	 * Pre-test setup
@@ -66,7 +67,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 
 		$this->add_mock_order_with_meta();
 		$this->set_is_admin( true );
-		$this->set_is_rest_request( true );
+		$this->set_is_rest_request();
 		add_filter(
 			'woocommerce_is_rest_api_request',
 			function () {
@@ -89,7 +90,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 
 		$this->analytics = new Analytics( $this->mock_multi_currency );
 
-		$this->localization_service = new WC_Payments_Localization_Service();
+		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		$this->mock_localization_service->expects( $this->any() )
+			->method( 'get_currency_format' )
+			->willReturn( [ 'num_decimals' => 2 ] );
 
 		remove_filter( 'user_has_cap', $cb );
 	}
@@ -166,7 +170,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	public function test_update_order_stats_data_with_multi_currency_order() {
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->localization_service, 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$args  = $this->order_args_provider( 123, 0, 1, 15.50, 1.50, 0, 14.00 );
 		$order = wc_create_order();
@@ -181,7 +185,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	public function test_update_order_stats_data_with_large_order() {
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->localization_service, 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$args  = $this->order_args_provider( 123, 0, 1, 130500.75, 20000, 10000, 100500.75 );
 		$order = wc_create_order();
@@ -196,7 +200,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	public function test_update_order_stats_data_with_stripe_exchange_rate() {
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( $this->localization_service, 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$args  = $this->order_args_provider( 123, 0, 1, 15.50, 1.50, 0, 15.00 );
 		$order = wc_create_order();
@@ -575,14 +579,19 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	}
 
 	private function get_mock_available_currencies() {
-		$this->localization_service = new WC_Payments_Localization_Service();
+		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
 		if ( empty( $this->mock_available_currencies ) ) {
+			$this->mock_localization_service
+				->expects( $this->any() )
+				->method( 'get_currency_format' )
+				->willReturn( [ 'num_decimals' => 2 ] );
+
 			$this->mock_available_currencies = [
-				'GBP' => new Currency( $this->localization_service, 'GBP', 1.2 ),
-				'USD' => new Currency( $this->localization_service, 'USD', 1 ),
-				'EUR' => new Currency( $this->localization_service, 'EUR', 0.9 ),
-				'ISK' => new Currency( $this->localization_service, 'ISK', 30.52 ),
-				'NZD' => new Currency( $this->localization_service, 'NZD', 1.4 ),
+				'GBP' => new Currency( $this->mock_localization_service, 'GBP', 1.2 ),
+				'USD' => new Currency( $this->mock_localization_service, 'USD', 1 ),
+				'EUR' => new Currency( $this->mock_localization_service, 'EUR', 0.9 ),
+				'ISK' => new Currency( $this->mock_localization_service, 'ISK', 30.52 ),
+				'NZD' => new Currency( $this->mock_localization_service, 'NZD', 1.4 ),
 			];
 		}
 

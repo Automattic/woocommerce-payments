@@ -7,8 +7,7 @@
 
 namespace WCPay\MultiCurrency;
 
-use WC_Payments_Localization_Service;
-use WC_Payments_Utils;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -67,21 +66,21 @@ class Currency implements \JsonSerializable {
 	private $last_updated;
 
 	/**
-	 * Instance of WC_Payments_Localization_Service.
+	 * Instance of MultiCurrencyLocalizationInterface.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var MultiCurrencyLocalizationInterface
 	 */
 	private $localization_service;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_Localization_Service $localization_service Localization service instance.
-	 * @param string                           $code Three letter currency code.
-	 * @param float                            $rate The conversion rate.
-	 * @param int|null                         $last_updated The time this currency was last updated.
+	 * @param MultiCurrencyLocalizationInterface $localization_service Localization service instance.
+	 * @param string                             $code Three letter currency code.
+	 * @param float                              $rate The conversion rate.
+	 * @param int|null                           $last_updated The time this currency was last updated.
 	 */
-	public function __construct( WC_Payments_Localization_Service $localization_service, $code = '', float $rate = 1.0, $last_updated = null ) {
+	public function __construct( MultiCurrencyLocalizationInterface $localization_service, $code = '', float $rate = 1.0, $last_updated = null ) {
 		$this->localization_service = $localization_service;
 		$this->code                 = $code;
 		$this->rate                 = $rate;
