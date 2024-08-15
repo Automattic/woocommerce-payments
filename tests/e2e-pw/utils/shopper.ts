@@ -253,3 +253,31 @@ export const placeOrderWithCurrency = async (
 	const url = await page.url();
 	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
 };
+
+export const emptyCart = async ( page: Page ) => {
+	await navigation.goToCart( page );
+
+	// Remove products if they exist.
+	let products = await page.locator( '.remove' ).all();
+
+	while ( products.length ) {
+		await products[ 0 ].click();
+		await isUIUnblocked( page );
+
+		products = await page.locator( '.remove' ).all();
+	}
+
+	// Remove coupons if they exist.
+	let coupons = await page.locator( '.woocommerce-remove-coupon' ).all();
+
+	while ( coupons.length ) {
+		await coupons[ 0 ].click();
+		await isUIUnblocked( page );
+
+		coupons = await page.locator( '.woocommerce-remove-coupon' ).all();
+	}
+
+	await expect( page.locator( '.cart-empty.woocommerce-info' ) ).toHaveText(
+		'Your cart is currently empty.'
+	);
+};

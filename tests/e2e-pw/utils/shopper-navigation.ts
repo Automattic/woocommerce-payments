@@ -18,6 +18,11 @@ export const goToProductPageBySlug = async (
 	await page.goto( `/product/${ productSlug }`, { waitUntil: 'load' } );
 };
 
+export const goToCart = async ( page: Page ) => {
+	await page.goto( '/cart/', { waitUntil: 'load' } );
+	isUIUnblocked( page );
+};
+
 export const goToCheckout = async ( page: Page ) => {
 	await page.goto( '/checkout/', { waitUntil: 'load' } );
 	isUIUnblocked( page );
