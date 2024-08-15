@@ -221,7 +221,10 @@ export async function setupProductCheckout(
 			await addToCartFromShopPage( page, productTitle );
 			// Make sure the number of items in the cart is incremented before adding another item.
 			await expect( page.locator( '.cart-contents .count' ) ).toHaveText(
-				new RegExp( `${ ++cartSize } items?` )
+				new RegExp( `${ ++cartSize } items?` ),
+				{
+					timeout: 30000,
+				}
 			);
 		}
 	}
@@ -246,6 +249,7 @@ export const placeOrderWithCurrency = async (
 	] );
 	await fillCardDetails( page, config.cards.basic );
 	await placeOrder( page );
+	await page.waitForURL( /\/order-received\//, { waitUntil: 'load' } );
 	await expect(
 		page.getByRole( 'heading', { name: 'Order received' } )
 	).toBeVisible();

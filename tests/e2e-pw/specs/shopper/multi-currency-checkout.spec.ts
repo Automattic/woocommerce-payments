@@ -12,7 +12,7 @@ import {
 	deactivateMulticurrency,
 	removeCurrency,
 } from '../../utils/merchant';
-import { placeOrderWithCurrency } from '../../utils/shopper';
+import { emptyCart, placeOrderWithCurrency } from '../../utils/shopper';
 import * as navigation from '../../utils/shopper-navigation';
 
 test.describe( 'Multi-currency checkout', () => {
@@ -34,6 +34,7 @@ test.describe( 'Multi-currency checkout', () => {
 
 	test.afterAll( async () => {
 		await removeCurrency( merchantPage, 'EUR' );
+		await emptyCart( shopperPage );
 
 		if ( ! wasMulticurrencyEnabled ) {
 			await deactivateMulticurrency( merchantPage );
