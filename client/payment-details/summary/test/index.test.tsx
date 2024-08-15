@@ -33,7 +33,6 @@ declare const global: {
 		};
 		featureFlags: {
 			isAuthAndCaptureEnabled: boolean;
-			isRefundControlsEnabled: boolean;
 		};
 	};
 };
@@ -185,7 +184,6 @@ describe( 'PaymentDetailsSummary', () => {
 			},
 			featureFlags: {
 				isAuthAndCaptureEnabled: true,
-				isRefundControlsEnabled: false,
 			},
 			currencyData: {
 				US: {
@@ -921,8 +919,6 @@ describe( 'PaymentDetailsSummary', () => {
 
 	describe( 'order missing notice', () => {
 		test( 'renders notice if order missing', () => {
-			global.wcpaySettings.featureFlags.isRefundControlsEnabled = true;
-
 			const charge = getBaseCharge();
 			charge.order = null;
 
@@ -942,8 +938,6 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 
 		test( 'does not render notice if order present', () => {
-			global.wcpaySettings.featureFlags.isRefundControlsEnabled = true;
-
 			const charge = getBaseCharge();
 
 			const container = renderCharge( charge );
