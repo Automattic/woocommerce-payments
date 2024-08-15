@@ -152,6 +152,25 @@ export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
 	);
 };
 
+export const appendPaymentMethodErrorDataToForm = (
+	$form,
+	paymentMethodError
+) => {
+	[
+		[ 'wcpay-payment-method-error-code', paymentMethodError.code ],
+		[
+			'wcpay-payment-method-error-decline-code',
+			paymentMethodError.decline_code,
+		],
+		[ 'wcpay-payment-method-error-message', paymentMethodError.message ],
+		[ 'wcpay-payment-method-error-type', paymentMethodError.type ],
+	].forEach( ( [ fieldName, value ] ) => {
+		$form.append(
+			`<input type="hidden" id="${ fieldName }" name="${ fieldName }" value="${ value }" />`
+		);
+	} );
+};
+
 export const appendFraudPreventionTokenInputToForm = ( $form ) => {
 	const fraudPreventionToken = window.wcpayFraudPreventionToken ?? '';
 	$form.append(
