@@ -108,13 +108,15 @@ button.wcpay-stripelink-modal-trigger:hover {
 	}
 }
 
-img.copy-icon {
-	display: inline;
+.copy-icon {
+	display: inline-block;
 	float: none !important;
 	cursor: pointer;
-	height: 1.2em !important;
-	max-height: 1.2em !important;
+	height: 1.2em;
+	width: 1.2em;
 	margin: -0.2em 0.1em -0.2em -0.1em;
+	background: url( 'assets/images/icons/copy.svg?asset' );
+	background-size: cover;
 }
 
 @import '../woopay/style';
