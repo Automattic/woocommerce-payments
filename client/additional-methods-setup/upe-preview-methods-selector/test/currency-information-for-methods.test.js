@@ -11,13 +11,11 @@ import {
 	useCurrencies,
 	useEnabledCurrencies,
 	useAccountDomesticCurrency,
-} from '../../../data';
-import CurrencyInformationForMethods, {
-	BuildMissingCurrenciesTooltipMessage,
-} from '..';
+} from 'wcpay/data';
+import CurrencyInformationForMethods from '../currency-information-for-methods';
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
 	useAccountDomesticCurrency: jest.fn(),
@@ -237,28 +235,5 @@ describe( 'CurrencyInformationForMethods', () => {
 				ignore: '.a11y-speak-region',
 			} )
 		).toBeInTheDocument();
-	} );
-
-	it( 'returns correct string with the given LPM label and currency list', () => {
-		const output = BuildMissingCurrenciesTooltipMessage( 'x', [ 'EUR' ] );
-		expect( output ).toBe(
-			'x requires the EUR currency. In order to enable the payment method, you must add this currency to your store.'
-		);
-		const outputMultiple = BuildMissingCurrenciesTooltipMessage( 'x', [
-			'EUR',
-			'PLN',
-		] );
-		expect( outputMultiple ).toBe(
-			'x requires the EUR and PLN currencies. In order to enable the payment method, you must add these currencies to your store.'
-		);
-		const outputMany = BuildMissingCurrenciesTooltipMessage( 'x', [
-			'EUR',
-			'PLN',
-			'TRY',
-		] );
-		expect( outputMany ).toBe(
-			'x requires the EUR, PLN, and TRY currencies. ' +
-				'In order to enable the payment method, you must add these currencies to your store.'
-		);
 	} );
 } );

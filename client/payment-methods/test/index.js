@@ -13,7 +13,6 @@ import { select } from '@wordpress/data';
  */
 import PaymentMethods from '..';
 import {
-	useAccountDomesticCurrency,
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
@@ -42,7 +41,6 @@ jest.mock( '../../data', () => ( {
 	useManualCapture: jest.fn(),
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
-	useAccountDomesticCurrency: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 } ) );
 
@@ -87,7 +85,6 @@ describe( 'PaymentMethods', () => {
 			accountEmail: 'admin@example.com',
 			capabilityRequestNotices: {},
 		};
-		useAccountDomesticCurrency.mockReturnValue( 'usd' );
 		select.mockImplementation( () => ( {
 			getSettings: jest.fn().mockReturnValue( {
 				account_country: 'US',
