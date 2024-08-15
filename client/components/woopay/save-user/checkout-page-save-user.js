@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -131,55 +132,51 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	}, [ isPhoneValid ] );
 
 	useEffect( () => {
-		const formSubmitButton = isBlocksCheckout
-			? document.querySelector(
-					'button.wc-block-components-checkout-place-order-button'
-			  )
-			: document.querySelector(
-					'form.woocommerce-checkout button[type="submit"]'
-			  );
+		const checkoutForm = jQuery( 'form.woocommerce-checkout' );
 
-		if ( ! formSubmitButton ) {
+		checkoutForm.on( 'checkout_place_order', function () {
+			jQuery( '#validate-error-invalid-woopay-phone-number' ).show();
+		} );
+	}, [] );
+
+	const updatePhoneNumberValidationError = useCallback( () => {
+		if ( ! isSaveDetailsChecked ) {
+			clearValidationError( errorId );
+			if ( isPhoneValid !== null ) {
+				onPhoneValidationChange( null );
+			}
 			return;
 		}
 
-		const updateFormSubmitButton = () => {
-			if ( isSaveDetailsChecked && isPhoneValid ) {
-				clearValidationError( errorId );
-
-				// Set extension data if checkbox is selected and phone number is valid in blocks checkout.
-				if ( isBlocksCheckout ) {
-					sendExtensionData( false );
-				}
-			}
-
-			if ( isSaveDetailsChecked && ! isPhoneValid ) {
-				setValidationErrors( {
-					[ errorId ]: {
-						message: __(
-							'Please enter a valid mobile phone number.',
-							'woocommerce-payments'
-						),
-						// Hides errors when the number has not been typed yet but shows when trying to place the order.
-						hidden: isPhoneValid === null,
-					},
-				} );
-			}
-		};
-
-		updateFormSubmitButton();
-
-		return () => {
+		if ( isSaveDetailsChecked && isPhoneValid ) {
 			clearValidationError( errorId );
-		};
+
+			// Set extension data if checkbox is selected and phone number is valid in blocks checkout.
+			if ( isBlocksCheckout ) {
+				sendExtensionData( false );
+			}
+			return;
+		}
+
+		if ( isSaveDetailsChecked && ! isPhoneValid ) {
+			setValidationErrors( {
+				[ errorId ]: {
+					message: __(
+						'Please enter a valid mobile phone number.',
+						'woocommerce-payments'
+					),
+					// Hides errors when the number has not been typed yet but shows when trying to place the order.
+					hidden: isPhoneValid === null,
+				},
+			} );
+		}
 	}, [
-		setValidationErrors,
-		errorId,
 		clearValidationError,
 		isBlocksCheckout,
 		isPhoneValid,
 		isSaveDetailsChecked,
 		sendExtensionData,
+		setValidationErrors,
 	] );
 
 	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
@@ -198,8 +195,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		if ( isBlocksCheckout && userDataSent ) {
 			sendExtensionData( true );
 		}
+		clearValidationError( errorId );
 		return null;
 	}
+
+	updatePhoneNumberValidationError();
 
 	return (
 		<Container
@@ -270,11 +270,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							name="woopay_viewport"
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
-						<div
-							className={
-								isPhoneValid === false ? 'has-error' : ''
-							}
-						>
+						<div className={ isPhoneValid ? '' : 'has-error' }>
 							<PhoneNumberInput
 								value={ phoneNumber }
 								onValueChange={ setPhoneNumber }
@@ -289,10 +285,23 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								isBlocksCheckout={ isBlocksCheckout }
 							/>
 						</div>
-						<ValidationInputError
-							elementId={ errorId }
-							propertyName={ errorId }
-						/>
+						{ isBlocksCheckout && (
+							<ValidationInputError
+								elementId={ errorId }
+								propertyName={ errorId }
+							/>
+						) }
+						{ ! isBlocksCheckout && ! isPhoneValid && (
+							<p
+								id="validate-error-invalid-woopay-phone-number"
+								hidden={ isPhoneValid !== false }
+							>
+								{ __(
+									'Please enter a valid mobile phone number.',
+									'woocommerce-payments'
+								) }
+							</p>
+						) }
 						<AdditionalInformation />
 						<Agreement />
 					</div>

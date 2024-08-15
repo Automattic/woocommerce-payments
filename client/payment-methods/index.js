@@ -17,9 +17,8 @@ import {
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
 	useUnselectedPaymentMethod,
-	useAccountDomesticCurrency,
 } from 'wcpay/data';
-import PAYMENT_METHOD_IDS from './constants';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
@@ -28,9 +27,8 @@ import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
-import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import CapabilityRequestNotice from './capability-request';
-import { BuildMissingCurrenciesTooltipMessage } from 'wcpay/components/currency-information-for-methods';
+import { getMissingCurrenciesTooltipMessage } from 'wcpay/multi-currency/missing-currencies-message';
 
 const PaymentMethods = () => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -72,8 +70,6 @@ const PaymentMethods = () => {
 	const [ deleteModalParams, handleDeleteModalOpen ] = useState( null );
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
-
-	const stripeAccountDomesticCurrency = useAccountDomesticCurrency();
 
 	const completeActivation = ( itemId ) => {
 		updateSelectedPaymentMethod( itemId );
@@ -149,6 +145,7 @@ const PaymentMethods = () => {
 						{ availableMethods.map(
 							( {
 								id,
+								description,
 								label,
 								icon: Icon,
 								allows_manual_capture: isAllowingManualCapture,
@@ -164,7 +161,7 @@ const PaymentMethods = () => {
 										wcpaySettings.storeCurrency;
 									if ( currencies.indexOf( currency ) < 0 ) {
 										isSetupRequired = true;
-										setupTooltip = BuildMissingCurrenciesTooltipMessage(
+										setupTooltip = getMissingCurrenciesTooltipMessage(
 											label,
 											currencies
 										);
@@ -175,10 +172,7 @@ const PaymentMethods = () => {
 										id={ id }
 										key={ id }
 										label={ label }
-										description={ getPaymentMethodDescription(
-											id,
-											stripeAccountDomesticCurrency
-										) }
+										description={ description }
 										checked={
 											enabledMethodIds.includes( id ) &&
 											upeCapabilityStatuses.INACTIVE !==

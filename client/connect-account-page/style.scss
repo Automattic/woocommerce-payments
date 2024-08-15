@@ -93,6 +93,7 @@
 		button {
 			width: 100%;
 			justify-content: center;
+			margin-right: $gap-small;
 			@media screen and ( min-width: $break-small ) {
 				width: auto;
 				justify-content: left;
