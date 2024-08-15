@@ -10,10 +10,10 @@ import { Button } from '@wordpress/components';
 /**
  * Internal Dependencies
  */
-import PaymentConfirmIllustration from '../components/payment-confirm-illustration';
-import ConfirmationModal from '../components/confirmation-modal';
-import PaymentMethodsMap from '../payment-methods-map';
-import RequirementsMap from '../requirements-map';
+import PaymentConfirmIllustration from 'wcpay/components/payment-confirm-illustration';
+import ConfirmationModal from 'wcpay/components/confirmation-modal';
+import PaymentMethodsMap from 'wcpay/payment-methods-map';
+import RequirementsMap from 'wcpay/requirements-map';
 import './activation-modal.scss';
 
 const ConfirmPaymentMethodActivationModal = ( {
@@ -42,7 +42,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 			) }
 			shouldCloseOnClickOutside={ false }
 			onRequestClose={ onClose }
-			className={ 'wcpay-payment-method-confirmation-modal' }
+			className="wcpay-payment-method-confirmation-modal"
 			actions={
 				<>
 					<Button isSecondary onClick={ onClose }>
@@ -70,7 +70,7 @@ const ConfirmPaymentMethodActivationModal = ( {
 							paymentMethodInformation.label
 						) }
 					</p>
-					<ul className={ 'payment-method-requirements-list' }>
+					<ul className="payment-method-requirements-list">
 						{ requirementsToDisplay.map( ( requirement, index ) => (
 							<li key={ 'requirement' + index }>
 								{ RequirementsMap[ requirement ] ??

@@ -11,7 +11,7 @@ import { select } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import PaymentMethods from '..';
+import PaymentMethodsSection from '..';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
@@ -32,7 +32,7 @@ jest.mock( '@woocommerce/components', () => {
 	};
 } );
 
-jest.mock( '../../data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
@@ -42,6 +42,7 @@ jest.mock( '../../data', () => ( {
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
+	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -51,7 +52,7 @@ jest.mock( '@wordpress/data', () => ( {
 	select: jest.fn(),
 } ) );
 
-describe( 'PaymentMethods', () => {
+describe( 'PaymentMethodsSection', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useSelectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
@@ -93,14 +94,14 @@ describe( 'PaymentMethods', () => {
 		useGetDuplicatedPaymentMethodIds.mockReturnValue( [] );
 	} );
 
-	test( 'payment methods are rendered correctly', () => {
+	it( 'renders payment methods', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'card', 'sepa_debit' ],
 		] );
 
-		render( <PaymentMethods /> );
+		render( <PaymentMethodsSection /> );
 
-		const cc = screen.getByRole( 'checkbox', {
+		const card = screen.getByRole( 'checkbox', {
 			name: 'Credit / Debit card',
 		} );
 		const becs = screen.getByRole( 'checkbox', {
@@ -109,46 +110,16 @@ describe( 'PaymentMethods', () => {
 		const sepa = screen.getByRole( 'checkbox', {
 			name: 'SEPA Direct Debit',
 		} );
-		const bancontact = screen.getByRole( 'checkbox', {
-			name: 'Bancontact',
-		} );
-		const eps = screen.getByRole( 'checkbox', { name: 'EPS' } );
-		const giropay = screen.getByRole( 'checkbox', { name: 'giropay' } );
-		const sofort = screen.getByRole( 'checkbox', { name: 'Sofort' } );
-		const p24 = screen.getByRole( 'checkbox', {
-			name: 'Przelewy24 (P24)',
-		} );
-		const ideal = screen.getByRole( 'checkbox', { name: 'iDEAL' } );
+		const klarna = screen.queryByRole( 'checkbox', { name: 'Klarna' } );
 
-		const allMethods = [
-			becs,
-			bancontact,
-			eps,
-			giropay,
-			sofort,
-			ideal,
-			p24,
-			cc,
-			sepa,
-		];
-		const enabledMethods = [ cc, sepa ];
-
-		enabledMethods.forEach( ( method ) => {
-			expect( method ).toBeChecked();
-		} );
-		allMethods.forEach( ( method ) => {
-			expect( method.closest( 'ul' ) ).toHaveClass(
-				'payment-methods__available-methods'
-			);
-		} );
-		allMethods
-			.filter( ( method ) => ! enabledMethods.includes( method ) )
-			.forEach( ( method ) => {
-				expect( method ).not.toBeChecked();
-			} );
+		// BNPLs should not be present
+		expect( klarna ).not.toBeInTheDocument();
+		expect( card ).toBeChecked();
+		expect( sepa ).toBeChecked();
+		expect( becs ).not.toBeChecked();
 	} );
 
-	test( 'inactive and pending payment methods have notice pills', () => {
+	it( 'renders notice pills on inactive and pending payment methods', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
 		useSelectedPaymentMethod.mockReturnValue( [
 			[
@@ -203,89 +174,13 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render( <PaymentMethods /> );
+		render( <PaymentMethodsSection /> );
 
 		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
 	} );
 
-	test( 'affirm afterpay pms renders correctly', () => {
-		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'card',
-			'au_becs_debit',
-			'affirm',
-			'afterpay_clearpay',
-			'bancontact',
-			'eps',
-			'giropay',
-			'ideal',
-			'p24',
-			'sepa_debit',
-			'sofort',
-		] );
-
-		render( <PaymentMethods /> );
-
-		const affirm = screen.getByRole( 'checkbox', { name: 'Affirm' } );
-		const afterpay = screen.getByRole( 'checkbox', {
-			name: 'Afterpay',
-		} );
-
-		expect( affirm ).toBeInTheDocument();
-		expect( afterpay ).toBeInTheDocument();
-	} );
-
-	test( 'affirm and afterpay appear checked when enabled', () => {
-		useGetAvailablePaymentMethodIds.mockReturnValue( [
-			'card',
-			'au_becs_debit',
-			'affirm',
-			'afterpay_clearpay',
-			'bancontact',
-			'eps',
-			'giropay',
-			'ideal',
-			'p24',
-			'sepa_debit',
-			'sofort',
-		] );
-		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'affirm', 'afterpay_clearpay' ],
-		] );
-
-		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: {
-				status: upeCapabilityStatuses.ACTIVE,
-				requirements: [],
-			},
-			affirm_payments: {
-				status: upeCapabilityStatuses.ACTIVE,
-				requirements: [],
-			},
-			afterpay_clearpay_payments: {
-				status: upeCapabilityStatuses.ACTIVE,
-				requirements: [],
-			},
-		} );
-
-		const renderPaymentElements = () => {
-			render( <PaymentMethods /> );
-		};
-
-		renderPaymentElements();
-
-		const affirm = screen.getByRole( 'checkbox', {
-			name: 'Affirm',
-		} );
-		const afterpay = screen.getByRole( 'checkbox', {
-			name: 'Afterpay',
-		} );
-
-		expect( affirm ).toBeChecked();
-		expect( afterpay ).toBeChecked();
-	} );
-
-	test( 'renders the payment methods component', () => {
-		render( <PaymentMethods /> );
+	it( 'renders the payment methods component', () => {
+		render( <PaymentMethodsSection /> );
 
 		expect( screen.queryByText( 'Payment methods' ) ).toBeInTheDocument();
 		expect(
@@ -293,7 +188,7 @@ describe( 'PaymentMethods', () => {
 		).toHaveTextContent( 'Payment methods' );
 	} );
 
-	it( 'should render the activation modal when requirements exist for the payment method', () => {
+	it( 'renders the activation modal when requirements exist for the payment method', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
@@ -303,7 +198,7 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render( <PaymentMethods /> );
+		render( <PaymentMethodsSection /> );
 
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Bancontact/ } )
@@ -332,7 +227,7 @@ describe( 'PaymentMethods', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'should render the delete modal on an already active payment method', () => {
+	it( 'renders the delete modal on an already active payment method', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'bancontact' ],
 			jest.fn(),
@@ -345,7 +240,7 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		render( <PaymentMethods /> );
+		render( <PaymentMethodsSection /> );
 
 		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
 
@@ -370,7 +265,7 @@ describe( 'PaymentMethods', () => {
 		jest.useRealTimers();
 	} );
 
-	it( "should render the setup tooltip correctly when multi currency is disabled and store currency doesn't support the LPM", () => {
+	it( "renders the setup tooltip correctly when multi currency is disabled and store currency doesn't support the LPM", () => {
 		global.wcpaySettings.isMultiCurrencyEnabled = false;
 		global.wcpaySettings.storeCurrency = 'TRY';
 		useEnabledPaymentMethodIds.mockReturnValue( [
@@ -385,7 +280,7 @@ describe( 'PaymentMethods', () => {
 			},
 		} );
 
-		const { container } = render( <PaymentMethods /> );
+		const { container } = render( <PaymentMethodsSection /> );
 
 		// Checkbox shouldn't be rendered.
 		expect(
@@ -415,7 +310,7 @@ describe( 'PaymentMethods', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'duplicate notices should not appear when dismissed', () => {
+	it( 'should not render duplicate notices when they have been dismissed', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
 
@@ -427,7 +322,7 @@ describe( 'PaymentMethods', () => {
 					setDismissedDuplicateNotices: jest.fn(),
 				} }
 			>
-				<PaymentMethods />
+				<PaymentMethodsSection />
 			</DuplicatedPaymentMethodsContext.Provider>
 		);
 
@@ -438,7 +333,7 @@ describe( 'PaymentMethods', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'duplicate notice should appear when not dismissed', () => {
+	it( 'should render duplicate notice when they have not been dismissed', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
 		useGetDuplicatedPaymentMethodIds.mockReturnValue( [ 'card' ] );
 
@@ -450,7 +345,7 @@ describe( 'PaymentMethods', () => {
 					setDismissedDuplicateNotices: jest.fn(),
 				} }
 			>
-				<PaymentMethods />
+				<PaymentMethodsSection />
 			</DuplicatedPaymentMethodsContext.Provider>
 		);
 

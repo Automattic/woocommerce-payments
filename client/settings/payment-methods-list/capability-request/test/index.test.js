@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import { useGetPaymentMethodStatuses } from '../../../data';
+import { useGetPaymentMethodStatuses } from 'wcpay/data';
 import CapabilityNotice from '../capability-request-notice';
 
 const CapabilityRequestListMock = {
@@ -29,7 +29,7 @@ const CapabilityRequestListMock = {
 	},
 };
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useGetPaymentMethodStatuses: jest.fn(),
 } ) );
 
