@@ -79,9 +79,7 @@ const ConnectAccountPage: React.FC = () => {
 		wcpaySettings.errorMessage
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
-	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
-		false
-	);
+	const [ isSandboxModeClicked, setIsSandboxModeClicked ] = useState( false );
 	const [ isTestDriveModeModalShown, setTestDriveModeModalShown ] = useState(
 		false
 	);
@@ -199,7 +197,7 @@ const ConnectAccountPage: React.FC = () => {
 
 	const handleSetupTestDriveMode = async () => {
 		setTestDriveLoaderProgress( 5 );
-		setTestDriveModeSubmitted( true );
+		setIsSandboxModeClicked( true );
 		trackConnectAccountClicked( true );
 
 		// Scroll the page to the top to ensure the logo is visible.
@@ -254,6 +252,27 @@ const ConnectAccountPage: React.FC = () => {
 			window.location.href = addQueryArgs( url, {
 				auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
 			} );
+		}
+	};
+
+	const handleEnableSandboxMode = async () => {
+		// Default to Express account onboarding for Singapore and the United Arab Emirates.
+		if (
+			wcpaySettings.connect.country === 'SG' ||
+			wcpaySettings.connect.country === 'AE'
+		) {
+			setIsSandboxModeClicked( true );
+
+			trackConnectAccountClicked( true );
+
+			window.location.href = addQueryArgs( connectUrl, {
+				test_mode: 'true',
+				create_builder_account: 'true',
+				source: determineTrackingSource(),
+				from: 'WCPAY_CONNECT',
+			} );
+		} else {
+			handleSetupTestDriveMode();
 		}
 	};
 
@@ -551,9 +570,9 @@ const ConnectAccountPage: React.FC = () => {
 									</InlineNotice>
 									<Button
 										variant="secondary"
-										isBusy={ isTestDriveModeSubmitted }
-										disabled={ isTestDriveModeSubmitted }
-										onClick={ handleSetupTestDriveMode }
+										isBusy={ isSandboxModeClicked }
+										disabled={ isSandboxModeClicked }
+										onClick={ handleEnableSandboxMode }
 									>
 										{ strings.button.sandbox }
 									</Button>
