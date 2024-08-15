@@ -325,7 +325,7 @@ export const handleWooPayEmailInput = async (
 		window.dispatchEvent( woopayUserCheckEvent );
 	};
 
-	const woopayLocateUser = async ( email ) => {
+	const woopayLocateUser = async ( email, shouldOpenIframe = true ) => {
 		parentDiv.insertBefore( spinner, woopayEmailInput );
 
 		if ( parentDiv.contains( errorMessage ) ) {
@@ -399,7 +399,9 @@ export const handleWooPayEmailInput = async (
 				dispatchUserExistEvent( data[ 'user-exists' ] );
 
 				if ( data[ 'user-exists' ] ) {
-					openIframe( email );
+					if ( shouldOpenIframe ) {
+						openIframe( email );
+					}
 				} else if ( data.code !== 'rest_invalid_param' ) {
 					recordUserEvent( 'checkout_woopay_save_my_info_offered' );
 
@@ -430,6 +432,8 @@ export const handleWooPayEmailInput = async (
 		spinner.remove();
 
 		timer = setTimeout( () => {
+			dispatchUserExistEvent( false ); // Always show checkbox until the email is from a valid WooPay user.
+
 			if ( validateEmail( email ) ) {
 				woopayLocateUser( email );
 			}
@@ -529,6 +533,14 @@ export const handleWooPayEmailInput = async (
 			closeIframe( false );
 		}
 	} );
+
+	if ( woopayEmailInput.value ) {
+		const email = woopayEmailInput.value;
+
+		if ( validateEmail( email ) ) {
+			woopayLocateUser( email, false );
+		}
+	}
 
 	if ( customerClickedBackButton ) {
 		// Dispatch an event declaring this user exists as returned via back button. Wait for the window to load.
