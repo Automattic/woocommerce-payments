@@ -245,6 +245,10 @@ export const placeOrderWithCurrency = async (
 		[ config.products.simple.name, 1 ],
 	] );
 	await fillCardDetails( page, config.cards.basic );
+	// Takes off the focus out of the Stripe elements to let Stripe logic
+	// wrap up and make sure the Place Order button is clickable.
+	await page.locator( '#place_order' ).focus();
+	await page.waitForTimeout( 1000 );
 	await placeOrder( page );
 	await page.waitForURL( /\/order-received\//, { waitUntil: 'load' } );
 	await expect(
