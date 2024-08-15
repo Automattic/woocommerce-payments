@@ -1426,6 +1426,7 @@ class WC_Payments_Account {
 							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
 							'test_drive'                  => $create_test_drive_account ? 'true' : false,
 							'test_mode'                   => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
+							'create_builder_account'      => $create_builder_account ? 'true' : false,
 							'from'                        => $from, // Use the same from.
 							'source'                      => $onboarding_source,
 							'wcpay-discard-started-onboarding' => 'true',
