@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import _ from 'lodash';
-import { sprintf, __, _n } from '@wordpress/i18n';
+import { uniq } from 'lodash';
+import { sprintf, __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -17,48 +17,7 @@ import {
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import InlineNotice from 'components/inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
-
-const ListToCommaSeparatedSentencePartConverter = ( items ) => {
-	if ( items.length === 1 ) {
-		return items[ 0 ];
-	} else if ( items.length === 2 ) {
-		return items.join( ' ' + __( 'and', 'woocommerce-payments' ) + ' ' );
-	}
-	const lastItem = items.pop();
-	return (
-		items.join( ', ' ) +
-		__( ', and', 'woocommerce-payments' ) +
-		' ' +
-		lastItem
-	);
-};
-
-export const BuildMissingCurrenciesTooltipMessage = (
-	paymentMethodLabel,
-	missingCurrencies
-) => {
-	return sprintf(
-		__(
-			'%s requires the %s %s. In order to enable ' +
-				'the payment method, you must add %s to your store.',
-			'woocommerce-payments'
-		),
-		paymentMethodLabel,
-		ListToCommaSeparatedSentencePartConverter( missingCurrencies ),
-		_n(
-			'currency',
-			'currencies',
-			missingCurrencies.length,
-			'woocommerce-payments'
-		),
-		_n(
-			'this currency',
-			'these currencies',
-			missingCurrencies.length,
-			'woocommerce-payments'
-		)
-	);
-};
+import { formatListOfItems } from 'wcpay/utils/format-list-of-items';
 
 const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	const {
@@ -113,8 +72,8 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		} );
 	} );
 
-	missingCurrencyLabels = _.uniq( missingCurrencyLabels );
-	paymentMethodsWithMissingCurrencies = _.uniq(
+	missingCurrencyLabels = uniq( missingCurrencyLabels );
+	paymentMethodsWithMissingCurrencies = uniq(
 		paymentMethodsWithMissingCurrencies
 	);
 
@@ -167,12 +126,8 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 			{ interpolateComponents( {
 				mixedString: sprintf(
 					stringFormat,
-					ListToCommaSeparatedSentencePartConverter(
-						paymentMethodsWithMissingCurrencies
-					),
-					ListToCommaSeparatedSentencePartConverter(
-						missingCurrencyLabels
-					)
+					formatListOfItems( paymentMethodsWithMissingCurrencies ),
+					formatListOfItems( missingCurrencyLabels )
 				),
 				components: {
 					strong: <strong />,
