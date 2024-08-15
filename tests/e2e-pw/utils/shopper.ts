@@ -15,7 +15,7 @@ export const isUIUnblocked = async ( page: Page ) => {
 export const fillBillingAddress = async (
 	page: Page,
 	billingAddress: CustomerAddress
-): Promise< void > => {
+) => {
 	await page
 		.locator( '#billing_first_name' )
 		.fill( billingAddress.firstname );
@@ -37,21 +37,21 @@ export const fillBillingAddress = async (
 	await page.locator( '#billing_email' ).fill( billingAddress.email );
 };
 
-export const placeOrder = async ( page: Page ): Promise< void > => {
+export const placeOrder = async ( page: Page ) => {
 	await page.locator( '#place_order' ).click();
 };
 
 export const addCartProduct = async (
 	page: Page,
 	productId = 16 // Beanie
-): Promise< void > => {
+) => {
 	await page.goto( `/shop/?add-to-cart=${ productId }` );
 };
 
 export const fillCardDetails = async (
 	page: Page,
 	card = config.cards.basic
-): Promise< void > => {
+) => {
 	if (
 		await page.$(
 			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
@@ -99,7 +99,7 @@ export const fillCardDetails = async (
 export const confirmCardAuthentication = async (
 	page: Page,
 	authorize = true
-): Promise< void > => {
+) => {
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
 	// appears at the top of the DOM.
 	await page.waitForSelector(
@@ -131,10 +131,7 @@ export const confirmCardAuthentication = async (
  *
  * This function assumes that the page object has already navigated to a product page.
  */
-export const getPriceFromProduct = async (
-	page: Page,
-	slug: string
-): Promise< string > => {
+export const getPriceFromProduct = async ( page: Page, slug: string ) => {
 	await navigation.goToProductPageBySlug( page, slug );
 
 	const priceText = await page
@@ -242,7 +239,7 @@ export async function setupProductCheckout(
 export const placeOrderWithCurrency = async (
 	page: Page,
 	currency: string
-): Promise< string > => {
+) => {
 	await navigation.goToShopWithCurrency( page, currency );
 	await setupProductCheckout( page, config.addresses.customer.billing, [
 		[ config.products.simple.name, 1 ],

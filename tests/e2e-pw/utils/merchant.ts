@@ -78,7 +78,7 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 	}
 };
 
-export const getActiveThemeSlug = async ( page: Page ): Promise< string > => {
+export const getActiveThemeSlug = async ( page: Page ) => {
 	await navigation.goToThemes( page );
 
 	const activeTheme = await page.locator( '.theme.active' );
