@@ -55,23 +55,23 @@ If you need to set up a different local environment alongside the default one, h
     ```
     services:
       wordpress:
-        container_name: woopayments_apiv2_wordpress # Change the container name.
+        container_name: woopayments_2nd_wordpress # Change the container name.
         build:
           args:
             - XDEBUG_REMOTE_PORT=9004 # Change the xDebug port.
         ports: !override # This will override the default ports rather than appending to them.
           - "8092:80" # Change the HTTP port.
       db:
-        container_name: woopayments_apiv2_mysql # Change the container name.
+        container_name: woopayments_2nd_mysql # Change the container name.
         ports: !override # This will override the default ports rather than appending to them.
           - "5690:3306" # Change the MySQL port.
       phpMyAdmin:
-        container_name: woopayments_apiv2_phpmyadmin # Change the container name.
+        container_name: woopayments_2nd_phpmyadmin # Change the container name.
         ports: !override # This will override the default ports rather than appending to them.
           - "8093:80" # Change the PHPMyAdmin HTTP port.
     ```
 4. Run `npm run up` in the new directory to start the new environment.
-5. Run `WP_URL=localhost:8084 ./bin/docker-setup.sh woopayments_apiv2_wordpress` to set up the new environment. Notice the use of the new container name and the new port for the WordPress container.
+5. Run `WP_URL=localhost:8084 ./bin/docker-setup.sh woopayments_2nd_wordpress` to set up the new environment. Notice the use of the new container name and the new port for the WordPress container.
 6. You are all set! You can now access the new environment at `http://localhost:8092/wp-admin/` and PHPMyAdmin at `http://localhost:8093/`.
 
 ### Changing default port for xDebug
