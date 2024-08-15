@@ -1547,7 +1547,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Get Stripe login url
+	 * Get Stripe login url.
 	 *
 	 * @return string Stripe account login url.
 	 */
