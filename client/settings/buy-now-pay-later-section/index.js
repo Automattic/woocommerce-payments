@@ -22,7 +22,7 @@ const BuyNowPayLaterMethodsDescription = () => (
 		<h2>{ __( 'Buy now, pay later', 'woocommerce-payments' ) }</h2>
 		<p>
 			{ __(
-				'Boost sales by offering customers additional buying power, and flexible payment options.',
+				'Boost sales by offering customers additional buying power and flexible payment options.',
 				'woocommerce-payments'
 			) }
 		</p>
