@@ -28,7 +28,7 @@ import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants'
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import CapabilityRequestNotice from './capability-request';
-import { BuildMissingCurrenciesTooltipMessage } from 'wcpay/components/currency-information-for-methods';
+import { getMissingCurrenciesTooltipMessage } from 'wcpay/multi-currency/missing-currencies-message';
 
 const PaymentMethods = () => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -161,7 +161,7 @@ const PaymentMethods = () => {
 										wcpaySettings.storeCurrency;
 									if ( currencies.indexOf( currency ) < 0 ) {
 										isSetupRequired = true;
-										setupTooltip = BuildMissingCurrenciesTooltipMessage(
+										setupTooltip = getMissingCurrenciesTooltipMessage(
 											label,
 											currencies
 										);
