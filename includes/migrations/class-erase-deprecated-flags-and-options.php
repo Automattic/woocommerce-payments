@@ -45,7 +45,6 @@ class Erase_Deprecated_Flags_And_Options {
 		delete_option( '_wcpay_feature_sofort' );
 		delete_option( '_wcpay_feature_giropay' );
 		delete_option( '_wcpay_feature_grouped_settings' );
-		delete_option( '_wcpay_feature_customer_multi_currency' );
 		delete_option( '_wcpay_feature_upe_settings_preview' );
 		delete_option( '_wcpay_feature_upe' );
 		delete_option( '_wcpay_feature_upe_split' );
