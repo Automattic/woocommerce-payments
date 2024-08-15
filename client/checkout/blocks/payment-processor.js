@@ -27,6 +27,7 @@ import { useCustomerData } from './utils';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/classic/payment-processing';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -193,8 +194,26 @@ const PaymentProcessor = ( {
 
 					if ( result.error ) {
 						return {
-							type: 'error',
-							message: result.error.message,
+							// We return a `success` type even when there's an error since we want the checkout request to go
+							// through, so we can have this attempt recorded in an Order.
+							type: 'success',
+							meta: {
+								paymentMethodData: {
+									payment_method:
+										upeMethods[ paymentMethodId ],
+									'wcpay-payment-method': PAYMENT_METHOD_ERROR,
+									'wcpay-payment-method-error-code':
+										result.error.code,
+									'wcpay-payment-method-error-decline-code':
+										result.error.decline_code,
+									'wcpay-payment-method-error-message':
+										result.error.message,
+									'wcpay-payment-method-error-type':
+										result.error.type,
+									'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+									'wcpay-fingerprint': fingerprint,
+								},
+							},
 						};
 					}
 
