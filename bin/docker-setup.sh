@@ -31,7 +31,7 @@ cli wp db check --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
 	sleep 5
-	cli db check --path=/var/www/html --quiet > /dev/null
+	cli wp db check --path=/var/www/html --quiet > /dev/null
 done
 
 # If the plugin is already active then return early
