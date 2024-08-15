@@ -108,5 +108,14 @@ button.wcpay-stripelink-modal-trigger:hover {
 	}
 }
 
+img.copy-icon {
+	display: inline;
+	float: none !important;
+	cursor: pointer;
+	height: 1.2em !important;
+	max-height: 1.2em !important;
+	margin: -0.2em 0.1em -0.2em -0.1em;
+}
+
 @import '../woopay/style';
 @import '../../components/loadable/style';

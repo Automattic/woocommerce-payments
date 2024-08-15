@@ -326,12 +326,13 @@ class WC_Payments_Checkout {
 			];
 
 			$gateway_for_payment_method                            = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+			$copy_icon_url = plugins_url( 'assets/images/icons/copy.svg', WCPAY_PLUGIN_FILE );
 			$settings[ $payment_method_id ]['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
 				/* translators: link to Stripe testing page */
 				$payment_method->get_testing_instructions(),
 				[
-					'strong' => '<strong>',
-					'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+					'img' => "<img src='$copy_icon_url' class='copy-icon' onclick='navigator.clipboard.writeText(`4242424242424242`);'>",
+					'a'    => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 				]
 			);
 			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
@@ -407,13 +408,14 @@ class WC_Payments_Checkout {
 					<?php
 						$testing_instructions = $this->gateway->get_payment_method()->get_testing_instructions();
 					if ( false !== $testing_instructions ) {
+						$copy_icon_url = plugins_url( 'assets/images/icons/copy.svg', WCPAY_PLUGIN_FILE );
 						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
 							$testing_instructions,
 							[
-								'strong' => '<strong>',
-								'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+								'img' => "<img src='$copy_icon_url' class='copy-icon' onclick='navigator.clipboard.writeText(`4242424242424242`);'>",
+								'a'    => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 							]
 						);
 					}
