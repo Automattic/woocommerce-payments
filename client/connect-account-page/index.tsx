@@ -223,6 +223,9 @@ const ConnectAccountPage: React.FC = () => {
 				credentials: 'same-origin',
 				headers: {
 					'Content-Type': 'application/json',
+					// Make sure we don't cache the response.
+					pragma: 'no-cache',
+					'cache-control': 'no-cache',
 				},
 			} ).then( ( response ) => {
 				// Please bear in mind that the fetch request will be redirected and the response we will get is from
