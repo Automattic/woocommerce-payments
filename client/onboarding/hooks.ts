@@ -21,7 +21,7 @@ interface AccountSessionReturn {
 export const useAccountSession = (
 	query: OnboardingProps
 ): AccountSessionReturn => {
-	const path = addQueryArgs( `${ NAMESPACE }/onboarding/embedded`, query );
+	const path = addQueryArgs( `${ NAMESPACE }/onboarding/session`, query );
 	const { data, isLoading } = useApiFetch< AccountSessionData >( {
 		path,
 		errorMessage: __(

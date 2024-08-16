@@ -43,9 +43,6 @@ const EmbeddedOnboarding: React.FC = () => {
 					body: JSON.stringify( {} ),
 				}
 			);
-
-			console.log( response );
-			debugger;
 		} catch ( error ) {
 			return undefined;
 		}
@@ -53,15 +50,15 @@ const EmbeddedOnboarding: React.FC = () => {
 
 	return (
 		<>
-			! isLoading && (
-			<ConnectComponentsProvider
-				connectInstance={ stripeConnectInstance }
-			>
-				<ConnectAccountOnboarding
-					onExit={ () => handleOnboardingComplete }
-				/>
-			</ConnectComponentsProvider>
-			)
+			{ ! isLoading && (
+				<ConnectComponentsProvider
+					connectInstance={ stripeConnectInstance }
+				>
+					<ConnectAccountOnboarding
+						onExit={ () => handleOnboardingComplete }
+					/>
+				</ConnectComponentsProvider>
+			) }
 		</>
 	);
 };
