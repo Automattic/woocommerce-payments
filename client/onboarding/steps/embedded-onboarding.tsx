@@ -11,18 +11,24 @@ import {
 /**
  * Internal dependencies
  */
-import { useAccountSession } from 'wcpay/onboarding/hooks';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import { NAMESPACE } from 'data/constants';
+import apiFetch from '@wordpress/api-fetch';
+import { AccountSession } from 'wcpay/onboarding/types';
+
+type AccountSessionData = AccountSession;
 
 const EmbeddedOnboarding: React.FC = () => {
 	// TODO: Pass the query params.
 	const { data, setData } = useOnboardingContext();
-	const { accountSession, isLoading } = useAccountSession( {} );
 
 	// We use `useState` to ensure the Connect instance is only initialized once
 	const [ stripeConnectInstance ] = useState( () => {
 		const fetchClientSecret = async () => {
+			const accountSession = await apiFetch< AccountSessionData >( {
+				path: `${ NAMESPACE }/onboarding/session`,
+				method: 'GET',
+			} );
 			// Fetch the AccountSession client secret
 			return accountSession.clientSecret;
 		};
@@ -50,15 +56,13 @@ const EmbeddedOnboarding: React.FC = () => {
 
 	return (
 		<>
-			{ ! isLoading && (
-				<ConnectComponentsProvider
-					connectInstance={ stripeConnectInstance }
-				>
-					<ConnectAccountOnboarding
-						onExit={ () => handleOnboardingComplete }
-					/>
-				</ConnectComponentsProvider>
-			) }
+			<ConnectComponentsProvider
+				connectInstance={ stripeConnectInstance }
+			>
+				<ConnectAccountOnboarding
+					onExit={ () => handleOnboardingComplete }
+				/>
+			</ConnectComponentsProvider>
 		</>
 	);
 };

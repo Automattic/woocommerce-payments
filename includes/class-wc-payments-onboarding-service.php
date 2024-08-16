@@ -155,13 +155,11 @@ class WC_Payments_Onboarding_Service {
 		$account_session = $this->payments_api_client->initialise_embedded_onboarding();
 
 		return [
-			'data' => [
-				'clientSecret'   => $account_session['client_secret'] ?? '',
-				'expiresAt'      => $account_session['expires_at'] ?? 0,
-				'accountId'      => $account_session['account_id'] ?? '',
-				'isLive'         => $account_session['is_live'] ?? false,
-				'accountCreated' => $account_session['account_created'] ?? false,
-			],
+			'clientSecret'   => $account_session['client_secret'] ?? '',
+			'expiresAt'      => $account_session['expires_at'] ?? 0,
+			'accountId'      => $account_session['account_id'] ?? '',
+			'isLive'         => $account_session['is_live'] ?? false,
+			'accountCreated' => $account_session['account_created'] ?? false,
 		];
 	}
 
