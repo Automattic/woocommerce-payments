@@ -1,4 +1,4 @@
-# WooCommerce Payments Unit Tests
+# WooPayments Unit Tests
 
 This guide follows the [WooCommerce guide to unit tests](https://github.com/woocommerce/woocommerce/tree/master/tests).
 

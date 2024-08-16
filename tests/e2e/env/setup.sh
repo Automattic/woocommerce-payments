@@ -26,7 +26,7 @@ WC_CUSTOMER_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.passw
 WP_ADMIN=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.username')
 WP_ADMIN_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.password')
 WP_ADMIN_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.email')
-SITE_TITLE="WooCommerce Payments E2E site"
+SITE_TITLE="WooPayments E2E site"
 SITE_URL=$WP_URL
 
 if [[ $FORCE_E2E_DEPS_SETUP ]]; then
@@ -245,23 +245,23 @@ cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer 
 
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
 if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
-	echo "Creating WooCommerce Payments zip file from GitHub artifact..."
+	echo "Creating WooPayments zip file from GitHub artifact..."
 	mv "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments-build
     cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
 
-	echo "Installing & activating the WooCommerce Payments plugin using the zip file created..."
+	echo "Installing & activating the WooPayments plugin using the zip file created..."
 	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate
 else
-	echo "Activating the WooCommerce Payments plugin..."
+	echo "Activating the WooPayments plugin..."
 	cli wp plugin activate woocommerce-payments
 fi
 
-echo "Setting up WooCommerce Payments..."
+echo "Setting up WooPayments..."
 if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
-	echo "Creating WooCommerce Payments settings"
+	echo "Creating WooPayments settings"
 	cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 else
-	echo "Updating WooCommerce Payments settings"
+	echo "Updating WooPayments settings"
 	cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 fi
 
