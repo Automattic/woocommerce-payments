@@ -207,7 +207,7 @@ const ConnectAccountPage: React.FC = () => {
 			top: 0,
 		} );
 
-		const url = addQueryArgs( connectUrl, {
+		const customizedConnectUrl = addQueryArgs( connectUrl, {
 			test_drive: 'true',
 		} );
 
@@ -217,38 +217,26 @@ const ConnectAccountPage: React.FC = () => {
 		// Otherwise, redirect to the Jetpack connect screen.
 		if ( wcpaySettings.isJetpackConnected ) {
 			setTestDriveModeModalShown( true );
-			fetch( url, {
+			fetch( customizedConnectUrl, {
 				method: 'GET',
 				redirect: 'follow',
 				credentials: 'same-origin',
 				headers: {
-					'Content-Type': 'application/json',
+					'content-type': 'application/json',
 					// Make sure we don't cache the response.
 					pragma: 'no-cache',
 					'cache-control': 'no-cache',
 				},
-			} ).then( ( response ) => {
-				// Please bear in mind that the fetch request will be redirected and the response we will get is from
-				// the final URL in the redirect chain.
+			} )
+				.then( ( response ) => response.json() )
+				.then( ( response ) => {
+					// Please bear in mind that the fetch request will be redirected and the response we will get is from
+					// the final URL in the redirect chain.
 
-				clearInterval( updateProgress );
-				setTestDriveLoaderProgress( 40 );
-
-				// Check the content type of the response.
-				const contentType = response.headers.get( 'content-type' );
-				if (
-					contentType &&
-					contentType.indexOf( 'application/json' ) !== -1
-				) {
-					// If we have received a JSON response then it means we might need to redirect the merchant.
-					// This is the case for failing to onboarding a test-drive account
-					// and our platform has fallen back on creating a regular test account.
-					return response.json().then( ( payload ) => {
-						if ( payload?.success && payload?.data?.redirect_to ) {
-							window.location.href = payload.data.redirect_to;
-							return;
-						}
-
+					if (
+						! response?.success ||
+						! response?.data?.redirect_to
+					) {
 						// If we didn't get a redirect_to URL,
 						// refresh the page with an error flag to show the error message.
 						window.location.href = addQueryArgs(
@@ -257,31 +245,45 @@ const ConnectAccountPage: React.FC = () => {
 								test_drive_error: 'true',
 							}
 						);
-					} );
-				}
+						return;
+					}
 
-				// We received a non-JSON response, which means we are on the final redirect URL.
-				// Check the url for the `wcpay-connection-success` parameter, indicating a successful connection.
-				const responseUrlParams = new URLSearchParams( response.url );
-				const connectionSuccess =
-					responseUrlParams.get( 'wcpay-connection-success' ) || '';
+					clearInterval( updateProgress );
+					setTestDriveLoaderProgress( 40 );
 
-				// The account has been successfully onboarded.
-				if ( !! connectionSuccess ) {
-					// Start checking the account status in a loop.
-					checkAccountStatus();
-				} else {
-					// Redirect to the response URL, but attach our test drive flags.
-					// This URL is generally a Connect page URL.
-					window.location.href = addQueryArgs( response.url, {
-						test_drive: 'true',
+					// Check the url for the `wcpay-connection-success` parameter, indicating a successful connection.
+					const responseUrlParams = new URLSearchParams(
+						response.data.redirect_to
+					);
+					const connectionSuccess =
+						responseUrlParams.get( 'wcpay-connection-success' ) ||
+						'';
+
+					// The account has been successfully onboarded.
+					if ( !! connectionSuccess ) {
+						// Start checking the account status in a loop.
+						checkAccountStatus();
+					} else {
+						// Redirect to the response URL, but attach our test drive flags.
+						// This URL is generally a Connect page URL.
+						window.location.href = addQueryArgs(
+							response.data.redirect_to,
+							{
+								test_drive: 'true',
+								test_drive_error: 'true',
+							}
+						);
+					}
+				} )
+				.catch( () => {
+					// If the fetch request fails, refresh the page with an error flag to show the error message.
+					window.location.href = addQueryArgs( window.location.href, {
 						test_drive_error: 'true',
 					} );
-				}
-			} );
+				} );
 		} else {
 			// Redirect to the connect URL to set up the Jetpack connection.
-			window.location.href = addQueryArgs( url, {
+			window.location.href = addQueryArgs( customizedConnectUrl, {
 				auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
 			} );
 		}
