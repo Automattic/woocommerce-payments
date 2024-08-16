@@ -1157,8 +1157,11 @@ class WC_Payments_Account {
 					$state,
 					$mode,
 					[
-						'from'   => $from,
-						'source' => $onboarding_source,
+						'from'                  => $from,
+						'source'                => $onboarding_source,
+						// Carry over some parameters as they may be used by our frontend logic.
+						'wcpay-sandbox-success' => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
+						'test_drive_error'      => ! empty( $_GET['test_drive_error'] ) ? 'true' : false,
 					]
 				);
 				return;
@@ -1821,6 +1824,9 @@ class WC_Payments_Account {
 					],
 				]
 			);
+
+			// If we get to the overview page, we want to show the success message.
+			$return_url = add_query_arg( 'wcpay-sandbox-success', 'true', $return_url );
 		} elseif ( 'test' === $setup_mode ) {
 			$account_data = WC_Payments_Utils::array_merge_recursive_distinct(
 				$account_data,
@@ -1833,6 +1839,9 @@ class WC_Payments_Account {
 					],
 				]
 			);
+
+			// If we get to the overview page, we want to show the success message.
+			$return_url = add_query_arg( 'wcpay-sandbox-success', 'true', $return_url );
 		}
 
 		$site_data = [
