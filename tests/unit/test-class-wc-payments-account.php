@@ -254,7 +254,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$onboarding_source,
 		$has_working_jetpack_connection,
 		$is_stripe_connected,
-		$create_builder_account,
+		$create_test_drive_account,
 		$expected_next_step
 	) {
 
@@ -278,7 +278,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$_GET['from']       = $onboarding_from;
 		$_GET['source']     = $onboarding_source;
-		$_GET['test_drive'] = $create_builder_account ? 'true' : null;
+		$_GET['test_drive'] = $create_test_drive_account ? 'true' : null;
 
 		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
@@ -324,7 +324,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				$this->mock_api_client
 					->expects( $this->never() )
 					->method( 'start_server_connection' );
-				if ( ! $create_builder_account ) {
+				if ( ! $create_test_drive_account ) {
 					$this->mock_api_client
 						->expects( $this->once() )
 						->method( 'get_onboarding_data' )
@@ -335,22 +335,15 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 						->with( 'https://connect.stripe.com/something' );
 				} else {
 					// For test-drive accounts, we expect the server to finish everything and get back no Stripe URL.
-					// Instead, we will be redirected to a connect link.
+					// We expect no redirect since we will reply with a JSON.
 					$this->mock_api_client
 						->expects( $this->once() )
 						->method( 'get_onboarding_data' )
 						->willReturn( [ 'url' => false ] );
+
 					$mock_redirect_service
-						->expects( $this->once() )
-						->method( 'redirect_to' )
-						->with(
-							// The redirect URL should be a connect URL.
-							$this->logicalAnd(
-								$this->stringContains( 'wcpay-connect=' ),
-								$this->stringContains( 'source=' . $onboarding_source ),
-								$this->stringContains( 'wcpay-connection-success=1' )
-							)
-						);
+						->expects( $this->never() )
+						->method( 'redirect_to' );
 				}
 				break;
 			case 'connect_page':
@@ -408,8 +401,21 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				break;
 		}
 
+		// Use this hack to be able to force WP to use wp_die instead of die, and intercept the wp_die() call.
+		add_filter( 'wp_doing_ajax', '__return_true', 999 );
+		add_filter(
+			'wp_die_ajax_handler',
+			function () {
+				return '__return_null';
+			},
+			999
+		);
+
 		// Act.
 		$wcpay_account->maybe_handle_onboarding();
+
+		remove_all_filters( 'wp_doing_ajax' );
+		remove_all_filters( 'wp_die_ajax_handler' );
 	}
 
 	/**
@@ -465,7 +471,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				'overview_page',
 			],
-			'From Connect page - no Jetpack connection, Stripe connected - sandbox' => [
+			'From Connect page - no Jetpack connection, Stripe connected - test-drive' => [
 				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
 				WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
 				false,
@@ -473,7 +479,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				'start_jetpack_connection',
 			],
-			'From Connect page - Jetpack connection, Stripe not connected - sandbox' => [
+			'From Connect page - Jetpack connection, Stripe not connected - test-drive' => [
 				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE, // Some other original source.
 				true,
@@ -481,7 +487,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				'init_stripe_onboarding',
 			],
-			'From Connect page - Jetpack connection, Stripe connected - sandbox' => [
+			'From Connect page - Jetpack connection, Stripe connected - test-drive' => [
 				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE, // Some other original source.
 				true,

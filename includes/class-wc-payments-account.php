@@ -1468,7 +1468,7 @@ class WC_Payments_Account {
 				$redirect_to = wp_sanitize_redirect( $redirect_to );
 				$redirect_to = wp_validate_redirect( $redirect_to );
 
-				// When creating test-drive accounts, if there is a need for KYC,
+				// When creating test-drive accounts,
 				// reply with a JSON so the JS logic can pick it up and redirect the merchant.
 				if ( $create_test_drive_account && ! empty( $redirect_to ) ) {
 					wp_send_json_success( [ 'redirect_to' => $redirect_to ] );
