@@ -330,8 +330,9 @@ class WC_Payments_Checkout {
 				/* translators: link to Stripe testing page */
 				$payment_method->get_testing_instructions(),
 				[
-					'span' => '<span class="copy-icon" onclick="navigator.clipboard.writeText(`4242424242424242`)">',
-					'a'    => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+					'span'   => '<span class="copy-icon" onclick="navigator.clipboard.writeText(`4242424242424242`)">',
+					'strong' => '<strong>',
+					'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 				]
 			);
 			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
@@ -412,9 +413,9 @@ class WC_Payments_Checkout {
 							/* translators: link to Stripe testing page */
 							$testing_instructions,
 							[
-								'span' => '<span class="copy-icon" onclick="navigator.clipboard.writeText(`4242424242424242`)">',
-								'a'    => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-							]
+								'span'   => '<span class="copy-icon" onclick="navigator.clipboard.writeText(`4242424242424242`)">',
+								'strong' => '<strong>',
+								'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',										]
 						);
 					}
 					?>

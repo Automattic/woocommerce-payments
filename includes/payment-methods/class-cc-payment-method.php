@@ -70,6 +70,6 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_testing_instructions() {
-		return __( 'Use test card 4242 4242 4242 4242 <span></span> or refer to our <a>Testing Guide</a>.', 'woocommerce-payments' );
+		return __( '<strong>Test mode: </strong>use test card 4242 4242 4242 4242 <span></span> or refer to our <a>Testing Guide</a>.', 'woocommerce-payments' );
 	}
 }
