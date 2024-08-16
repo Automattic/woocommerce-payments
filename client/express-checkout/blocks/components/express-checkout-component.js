@@ -98,7 +98,7 @@ const ExpressCheckoutComponent = ( {
 			paymentMethodContainer &&
 			! availablePaymentMethods[ expressPaymentMethod ]
 		) {
-			paymentMethodContainer.style.display = 'none';
+			paymentMethodContainer.remove();
 		}
 
 		// Any actions that WooPayments needs to perform.
