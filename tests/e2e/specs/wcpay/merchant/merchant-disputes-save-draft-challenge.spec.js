@@ -107,6 +107,8 @@ describe( 'Disputes > Merchant can save and resume draft dispute challenge', () 
 			}
 		);
 
+		// After we click save, the UI will be blocked and enter in load state, we need to wait for this to finish
+		// to avoid running into race conditions with the reload.
 		await uiLoaded();
 
 		// Reload the page
