@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix merchant-disputes-save-draft-challenge E2E tests and clean up console output by supressing warnings related to upe styles.

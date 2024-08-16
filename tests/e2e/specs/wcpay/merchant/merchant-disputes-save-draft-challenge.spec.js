@@ -107,6 +107,8 @@ describe( 'Disputes > Merchant can save and resume draft dispute challenge', () 
 			}
 		);
 
+		await uiLoaded();
+
 		// Reload the page
 		await page.reload();
 
