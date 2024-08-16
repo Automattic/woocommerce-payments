@@ -234,8 +234,34 @@ const ConnectAccountPage: React.FC = () => {
 				clearInterval( updateProgress );
 				setTestDriveLoaderProgress( 40 );
 
-				// Check the response url for the `wcpay-connection-success` parameter,
-				// indicating a successful connection.
+				// Check the content type of the response.
+				const contentType = response.headers.get( 'content-type' );
+				if (
+					contentType &&
+					contentType.indexOf( 'application/json' ) !== -1
+				) {
+					// If we have received a JSON response then it means we might need to redirect the merchant.
+					// This is the case for failing to onboarding a test-drive account
+					// and our platform has fallen back on creating a regular test account.
+					return response.json().then( ( payload ) => {
+						if ( payload?.success && payload?.data?.redirect_to ) {
+							window.location.href = payload.data.redirect_to;
+							return;
+						}
+
+						// If we didn't get a redirect_to URL,
+						// refresh the page with an error flag to show the error message.
+						window.location.href = addQueryArgs(
+							window.location.href,
+							{
+								test_drive_error: 'true',
+							}
+						);
+					} );
+				}
+
+				// We received a non-JSON response, which means we are on the final redirect URL.
+				// Check the url for the `wcpay-connection-success` parameter, indicating a successful connection.
 				const responseUrlParams = new URLSearchParams( response.url );
 				const connectionSuccess =
 					responseUrlParams.get( 'wcpay-connection-success' ) || '';
@@ -246,6 +272,7 @@ const ConnectAccountPage: React.FC = () => {
 					checkAccountStatus();
 				} else {
 					// Redirect to the response URL, but attach our test drive flags.
+					// This URL is generally a Connect page URL.
 					window.location.href = addQueryArgs( response.url, {
 						test_drive: 'true',
 						test_drive_error: 'true',

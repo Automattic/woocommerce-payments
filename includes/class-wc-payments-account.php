@@ -1279,6 +1279,7 @@ class WC_Payments_Account {
 						// Carry over some parameters as they may be used by our frontend logic.
 						'wcpay-connection-success' => ! empty( $_GET['wcpay-connection-success'] ) ? '1' : false,
 						'wcpay-sandbox-success'    => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
+						'test_drive_error'         => ! empty( $_GET['test_drive_error'] ) ? 'true' : false,
 					]
 				);
 				return;
@@ -1397,7 +1398,7 @@ class WC_Payments_Account {
 					if ( $auto_start_test_drive_onboarding ) {
 						$this->redirect_service->redirect_to_connect_page(
 							null,
-							$from, // Carry over the from since we are doing a short-circuit.
+							$from, // Carry over `from` since we are doing a short-circuit.
 							[
 								'promo'      => ! empty( $incentive_id ) ? $incentive_id : false,
 								'test_drive' => 'true',
@@ -1460,9 +1461,18 @@ class WC_Payments_Account {
 
 				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
 
-				// Redirect the user to where our Stripe onboarding instructed.
-				// The URL will be checked for validity in the redirect service.
-				$this->redirect_service->redirect_to( $redirect_to );
+				// Make sure the redirect URL is safe.
+				$redirect_to = wp_sanitize_redirect( $redirect_to );
+				$redirect_to = wp_validate_redirect( $redirect_to );
+
+				// When creating test-drive accounts, if there is a need for KYC,
+				// reply with a JSON so the JS logic can pick it up and redirect the merchant.
+				if ( $create_test_drive_account && ! empty( $redirect_to ) ) {
+					wp_send_json_success( [ 'redirect_to' => $redirect_to ] );
+				} else {
+					// Redirect the user to where our Stripe onboarding instructed.
+					$this->redirect_service->redirect_to( $redirect_to );
+				}
 			} catch ( API_Exception $e ) {
 				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
 
