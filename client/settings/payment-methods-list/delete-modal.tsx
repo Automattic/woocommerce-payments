@@ -10,8 +10,8 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import PaymentDeleteIllustration from '../components/payment-delete-illustration';
-import ConfirmationModal from '../components/confirmation-modal';
+import PaymentDeleteIllustration from 'wcpay/components/payment-delete-illustration';
+import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import InlineNotice from 'wcpay/components/inline-notice';
 
 const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
