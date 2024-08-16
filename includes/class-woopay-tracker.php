@@ -152,7 +152,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		$data['tracking_data'] = [
+		$data['record_event_data'] = [
 			'is_admin_event'      => false,
 			'track_on_all_stores' => true,
 		];
@@ -288,16 +288,16 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
-		if ( isset( $properties['tracking_data'] ) ) {
-			if ( isset( $properties['tracking_data']['is_admin_event'] ) ) {
-				$is_admin_event = $properties['tracking_data']['is_admin_event'];
+		if ( isset( $properties['record_event_data'] ) ) {
+			if ( isset( $properties['record_event_data']['is_admin_event'] ) ) {
+				$is_admin_event = $properties['record_event_data']['is_admin_event'];
 			}
 
-			if ( isset( $properties['tracking_data']['track_on_all_stores'] ) ) {
-				$track_on_all_stores = $properties['tracking_data']['track_on_all_stores'];
+			if ( isset( $properties['record_event_data']['track_on_all_stores'] ) ) {
+				$track_on_all_stores = $properties['record_event_data']['track_on_all_stores'];
 			}
 
-			unset( $properties['tracking_data'] );
+			unset( $properties['record_event_data'] );
 		}
 
 		if ( ! $this->should_enable_tracking( $is_admin_event, $track_on_all_stores ) ) {
