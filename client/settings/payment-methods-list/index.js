@@ -40,6 +40,7 @@ const PaymentMethodsList = ( { methodIds } ) => {
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null
 	);
+
 	const [ deleteModalParams, handleDeleteModalOpen ] = useState( null );
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
