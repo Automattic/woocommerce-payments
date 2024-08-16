@@ -5,12 +5,15 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import {
 	extensionCartUpdate,
 	ValidationInputError,
 } from '@woocommerce/blocks-checkout'; // eslint-disable-line import/no-unresolved
-import { VALIDATION_STORE_KEY } from '@woocommerce/block-data'; // eslint-disable-line import/no-unresolved
+import {
+	VALIDATION_STORE_KEY,
+	CHECKOUT_STORE_KEY,
+} from '@woocommerce/block-data'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
@@ -40,6 +43,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
 
+	const checkoutIsProcessing = useSelect( ( select ) =>
+		select( CHECKOUT_STORE_KEY ).isProcessing()
+	);
+
 	const isRegisteredUser = useWooPayUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
@@ -52,6 +59,32 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		'9.1',
 		'>='
 	);
+
+	useEffect( () => {
+		if ( ! isBlocksCheckout ) {
+			return;
+		}
+
+		const rememberMe = document.querySelector( '#remember-me' );
+
+		if ( ! rememberMe ) {
+			return;
+		}
+
+		if ( checkoutIsProcessing ) {
+			rememberMe.classList.add(
+				'wc-block-components-checkout-step--disabled'
+			);
+			rememberMe.setAttribute( 'disabled', 'disabled' );
+
+			return;
+		}
+
+		rememberMe.classList.remove(
+			'wc-block-components-checkout-step--disabled'
+		);
+		rememberMe.removeAttribute( 'disabled', 'disabled' );
+	}, [ checkoutIsProcessing, isBlocksCheckout ] );
 
 	const getPhoneFieldValue = () => {
 		let phoneFieldValue = '';
