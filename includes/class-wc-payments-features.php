@@ -21,16 +21,17 @@ class WC_Payments_Features {
 	 *   - The next version of WooPayments.
 	 *   - The flag to be deleted.
 	 */
-	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
-	const STRIPE_BILLING_FLAG_NAME          = '_wcpay_feature_stripe_billing';
-	const STRIPE_ECE_FLAG_NAME              = '_wcpay_feature_stripe_ece';
-	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
-	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME = '_wcpay_feature_woopay_first_party_auth';
-	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME  = '_wcpay_feature_woopay_direct_checkout';
-	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
-	const DISPUTE_ISSUER_EVIDENCE           = '_wcpay_feature_dispute_issuer_evidence';
-	const TOKENIZED_CART_PRB_FLAG_NAME      = '_wcpay_feature_tokenized_cart_prb';
-	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME = '_wcpay_feature_payment_overview_widget';
+	const WCPAY_SUBSCRIPTIONS_FLAG_NAME         = '_wcpay_feature_subscriptions';
+	const STRIPE_BILLING_FLAG_NAME              = '_wcpay_feature_stripe_billing';
+	const STRIPE_ECE_FLAG_NAME                  = '_wcpay_feature_stripe_ece';
+	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME     = '_wcpay_feature_woopay_express_checkout';
+	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME     = '_wcpay_feature_woopay_first_party_auth';
+	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME      = '_wcpay_feature_woopay_direct_checkout';
+	const AUTH_AND_CAPTURE_FLAG_NAME            = '_wcpay_feature_auth_and_capture';
+	const DISPUTE_ISSUER_EVIDENCE               = '_wcpay_feature_dispute_issuer_evidence';
+	const TOKENIZED_CART_PRB_FLAG_NAME          = '_wcpay_feature_tokenized_cart_prb';
+	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME     = '_wcpay_feature_payment_overview_widget';
+	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME = '_wcpay_feature_woopay_global_theme_support';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -258,6 +259,16 @@ class WC_Payments_Features {
 		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 
 		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopayments_gateway_enabled() && self::is_woopay_enabled();
+	}
+
+	/**
+	 * Checks whether WooPay global theme support is eligible.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_global_theme_support_eligible() {
+		$account_cache = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		return is_array( $account_cache ) && $account_cache['platform_global_theme_support_enabled'] ?? false;
 	}
 
 	/**

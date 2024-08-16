@@ -2547,6 +2547,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Updates whether woopay global theme support is enabled or disabled.
+	 *
+	 * @param bool $value Whether woopay global theme support should be enabled.
+	 */
+	public function update_is_woopay_global_theme_support_enabled( $value ) {
+		$current_value = 'yes' === $this->get_option( 'is_woopay_global_theme_support_enabled', 'no' );
+
+		if ( $value !== $current_value ) {
+			WC_Payments::woopay_tracker()->maybe_record_admin_event(
+				$value ? 'woopay_global_theme_support_enabled' : 'woopay_global_theme_support_disabled',
+				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
+			);
+
+			$this->update_option( 'is_woopay_global_theme_support_enabled', $value ? 'yes' : 'no' );
+		}
+	}
+
+	/**
 	 * Init settings for gateways.
 	 */
 	public function init_settings() {

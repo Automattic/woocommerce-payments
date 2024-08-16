@@ -418,6 +418,21 @@ export const useWooPayEnabledSettings = () => {
 	return [ isWooPayEnabled, updateIsWooPayEnabled ];
 };
 
+export const useWooPayGlobalThemeSupportEnabledSettings = () => {
+	const { updateIsWooPayGlobalThemeSupportEnabled } = useDispatch(
+		STORE_NAME
+	);
+
+	const isWooPayGlobalThemeSupportEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWooPayGlobalThemeSupportEnabled()
+	);
+
+	return [
+		isWooPayGlobalThemeSupportEnabled,
+		updateIsWooPayGlobalThemeSupportEnabled,
+	];
+};
+
 export const useWooPayCustomMessage = () => {
 	const { updateWooPayCustomMessage } = useDispatch( STORE_NAME );
 
