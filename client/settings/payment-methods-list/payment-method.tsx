@@ -18,15 +18,15 @@ import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
 } from 'wcpay/utils/account-fees';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
-import Chip from '../chip';
-import LoadableCheckboxControl from '../loadable-checkbox';
-import { getDocumentationUrlForDisabledPaymentMethod } from '../payment-method-disabled-tooltip';
-import Pill from '../pill';
-import InlineNotice from '../inline-notice';
+import WCPaySettingsContext from '../wcpay-settings-context';
+import Chip from 'wcpay/components/chip';
+import LoadableCheckboxControl from 'wcpay/components/loadable-checkbox';
+import { getDocumentationUrlForDisabledPaymentMethod } from 'wcpay/components/payment-method-disabled-tooltip';
+import Pill from 'wcpay/components/pill';
+import InlineNotice from 'wcpay/components/inline-notice';
 import './payment-method.scss';
-import DuplicateNotice from '../duplicate-notice';
-import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
+import DuplicateNotice from 'wcpay/components/duplicate-notice';
+import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
 
 interface PaymentMethodProps {
 	id: string;
@@ -266,8 +266,7 @@ const PaymentMethod = ( {
 		<li
 			className={ classNames(
 				'payment-method__list-item',
-				{ 'has-icon-border': id !== 'card' },
-				{ overlay: needsOverlay },
+				{ 'has-icon-border': id !== 'card', overlay: needsOverlay },
 				className
 			) }
 		>
