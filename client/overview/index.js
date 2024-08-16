@@ -96,8 +96,12 @@ const OverviewPage = () => {
 
 	const showConnectionSuccess =
 		queryParams[ 'wcpay-connection-success' ] === '1';
+
+	// We want to show the sandbox success notice only if the account is enabled or complete.
 	const isSandboxOnboardedSuccessful =
-		queryParams[ 'wcpay-sandbox-success' ] === 'true';
+		queryParams[ 'wcpay-sandbox-success' ] === 'true' &&
+		( ( accountStatus.status && accountStatus.status === 'complete' ) ||
+			accountStatus.status === 'enabled' );
 
 	const showLoanOfferError = queryParams[ 'wcpay-loan-offer-error' ] === '1';
 	const showServerLinkError =
