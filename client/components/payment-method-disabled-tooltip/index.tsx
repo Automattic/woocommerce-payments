@@ -10,7 +10,7 @@ import React from 'react';
  * Internal dependencies
  */
 import { HoverTooltip } from 'components/tooltip';
-import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 export const DocumentationUrlForDisabledPaymentMethod = {
 	DEFAULT:
