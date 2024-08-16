@@ -29,7 +29,7 @@ const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
 	};
 };
 
-// Visual adjustments to horizontally align the height of the buttons.
+// Visual adjustments to horizontally align the buttons.
 const adjustButtonHeights = ( buttonOptions, expressPaymentMethod ) => {
 	// Apple Pay has a nearly imperceptible height difference. We increase it by 1px here.
 	if ( buttonOptions.buttonTheme.applePay === 'black' ) {
@@ -38,7 +38,7 @@ const adjustButtonHeights = ( buttonOptions, expressPaymentMethod ) => {
 		}
 	}
 
-	// GooglePay with the white theme has a 2px hegith difference due to its border.
+	// GooglePay with the white theme has a 2px height difference due to its border.
 	if (
 		expressPaymentMethod === 'googlePay' &&
 		buttonOptions.buttonTheme.googlePay === 'white'
