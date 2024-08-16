@@ -16,7 +16,7 @@ import {
 	useUnselectedPaymentMethod,
 } from 'wcpay/data';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
-import PaymentMethod from 'wcpay/components/payment-methods-list/payment-method';
+import PaymentMethod from './payment-method';
 import methodsConfiguration from '../../payment-methods-map';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
