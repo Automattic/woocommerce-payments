@@ -179,7 +179,11 @@ const ConnectAccountPage: React.FC = () => {
 			// consider our work done and redirect the merchant.
 			// Otherwise, schedule another check after 2 seconds.
 			if (
-				! ( account as AccountData ).status.includes( 'pending' ) ||
+				( account &&
+					( account as AccountData ).status &&
+					! ( account as AccountData ).status.includes(
+						'pending'
+					) ) ||
 				loaderProgressRef.current > 95
 			) {
 				setTestDriveLoaderProgress( 100 );
