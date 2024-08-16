@@ -110,12 +110,16 @@ button.wcpay-stripelink-modal-trigger:hover {
 	}
 }
 
-.copy-icon {
+button.copy-icon {
 	display: inline-block;
-	cursor: pointer;
 	height: 1.2em;
 	width: 1.2em;
-	margin: -0.2em 0.1em -0.2em -0.1em;
+	line-height: 1.2em;
+	vertical-align: middle;
+	margin-left: -0.1em;
+	padding: 0;
+	border-radius: 0;
+	border: none !important;
 	background: url( 'assets/images/icons/copy.svg?asset' );
 	background-size: cover;
 }
