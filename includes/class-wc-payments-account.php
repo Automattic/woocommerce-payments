@@ -1775,8 +1775,11 @@ class WC_Payments_Account {
 
 		// The general account data.
 		$account_data = [
-			'setup_mode' => $setup_mode,
-			'url'        => ! $home_is_localhost && wp_http_validate_url( $home_url ) ? $home_url : $fallback_url,
+			'setup_mode'    => $setup_mode,
+			// We use the store base country to create a customized account.
+			'country'       => WC()->countries->get_base_country() ?? null,
+			'url'           => ! $home_is_localhost && wp_http_validate_url( $home_url ) ? $home_url : $fallback_url,
+			'business_name' => get_bloginfo( 'name' ),
 		];
 
 		// Gather all the account data depending on the request context.
@@ -1787,6 +1790,7 @@ class WC_Payments_Account {
 			$account_data  = WC_Payments_Utils::array_merge_recursive_distinct(
 				$account_data,
 				[
+					// Overwrite the country if the merchant chose a different one than the Woo base location.
 					'country'       => $self_assessment_data['country'] ?? null,
 					'email'         => $self_assessment_data['email'] ?? null,
 					'business_name' => $self_assessment_data['business_name'] ?? null,
@@ -1811,10 +1815,7 @@ class WC_Payments_Account {
 			$account_data = WC_Payments_Utils::array_merge_recursive_distinct(
 				$account_data,
 				[
-					// We use the store base country to create a customized account.
-					'country'       => WC()->countries->get_base_country() ?? null,
-					'business_name' => get_bloginfo( 'name' ),
-					'individual'    => [
+					'individual' => [
 						'first_name' => $current_user->first_name ?? null,
 						'last_name'  => $current_user->last_name ?? null,
 					],
@@ -1826,7 +1827,6 @@ class WC_Payments_Account {
 				[
 					'business_type' => 'individual',
 					'mcc'           => '5734',
-					'business_name' => get_bloginfo( 'name' ),
 					'individual'    => [
 						'first_name' => $current_user->first_name ?? null,
 						'last_name'  => $current_user->last_name ?? null,
