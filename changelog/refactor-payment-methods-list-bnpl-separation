@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: separate BNPL methods from settings list
