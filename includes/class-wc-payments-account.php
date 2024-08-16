@@ -1122,8 +1122,6 @@ class WC_Payments_Account {
 			$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 			$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 			$create_test_drive_account   = ! empty( $_GET['test_drive'] ) && 'true' === $_GET['test_drive'];
-			$create_builder_account      = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
-
 			// There is no point in auto starting test drive onboarding if we are not in the test drive mode.
 			$auto_start_test_drive_onboarding = $create_test_drive_account &&
 												! empty( $_GET['auto_start_test_drive_onboarding'] ) &&
@@ -1338,7 +1336,6 @@ class WC_Payments_Account {
 							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
 							'test_mode'                   => $should_onboard_in_test_mode ? 'true' : false,
 							'test_drive'                  => $create_test_drive_account ? 'true' : false,
-							'create_builder_account'      => $create_builder_account ? 'true' : false,
 							'auto_start_test_drive_onboarding' => $auto_start_test_drive_onboarding ? 'true' : false,
 							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							'source'                      => $onboarding_source,
