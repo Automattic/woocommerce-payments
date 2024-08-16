@@ -48,7 +48,8 @@ import {
 	isExportModalDismissed,
 	getExportLanguage,
 	isDefaultSiteLanguage,
-} from 'utils';
+	applyThousandSeparator,
+} from 'wcpay/utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
@@ -66,9 +67,8 @@ import DownloadButton from 'components/download-button';
 import CSVExportModal from 'components/csv-export-modal';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
-import { applyThousandSeparator } from '../../utils/index.js';
 import { HoverTooltip } from 'components/tooltip';
-import { PAYMENT_METHOD_TITLES } from 'payment-methods/constants';
+import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 interface TransactionsListProps {

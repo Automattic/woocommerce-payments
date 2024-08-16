@@ -14,7 +14,7 @@ import React, { useContext, useEffect } from 'react';
 import LoadableCheckboxControl from 'components/loadable-checkbox';
 import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import { useManualCapture, useAccountDomesticCurrency } from 'wcpay/data';
+import { useManualCapture } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
 import PaymentMethodsMap from '../../payment-methods-map';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
@@ -24,7 +24,6 @@ import {
 } from '../../utils/account-fees';
 import PaymentMethodDisabledTooltip from '../payment-method-disabled-tooltip';
 import Pill from '../pill';
-import { getPaymentMethodDescription } from 'wcpay/utils/payment-methods';
 import './payment-method-checkbox.scss';
 
 type PaymentMethodProps = {
@@ -34,11 +33,7 @@ type PaymentMethodProps = {
 const PaymentMethodDescription: React.FC< PaymentMethodProps > = ( {
 	name,
 } ) => {
-	const stripeAccountDomesticCurrency = useAccountDomesticCurrency();
-	const description = getPaymentMethodDescription(
-		name,
-		stripeAccountDomesticCurrency as string
-	);
+	const { description } = PaymentMethodsMap[ name ];
 
 	if ( ! description ) return null;
 

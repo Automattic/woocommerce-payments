@@ -37,16 +37,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
 		$this->order         = WC_Helper_Order::create_order();
-
-		// Turn on fraud settings.
-		update_option( 'wcpay_fraud_protection_settings_active', '1' );
-	}
-
-	public function tear_down() {
-		// Disable fraud settings.
-		update_option( 'wcpay_fraud_protection_settings_active', 0 );
-
-		parent::tear_down();
 	}
 
 	/**
@@ -525,7 +515,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_started_does_not_add_fraud_meta_box_type_if_fraud_settings_disabled() {
 		// Arrange: Create intention with provided args, turn off fraud settings.
 		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_ACTION ] );
-		update_option( 'wcpay_fraud_protection_settings_active', 0 );
 
 		// Act: Attempt to mark the payment started.
 		$this->order_service->update_order_status_from_intent( $this->order, $intent );
