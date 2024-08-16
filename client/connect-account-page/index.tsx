@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { render } from '@wordpress/element';
 import {
 	Button,
@@ -14,6 +14,8 @@ import {
 } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
+import { Loader } from '@woocommerce/onboarding';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -29,16 +31,43 @@ import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
+import WooPaymentsLogo from 'assets/images/logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInDevMode } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { trackAccountReset } from 'wcpay/onboarding/tracking';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 
+interface AccountData {
+	status: string;
+}
+
 const SandboxModeNotice = () => (
 	<BannerNotice icon status="warning" isDismissible={ false }>
 		{ strings.sandboxModeNotice }
 	</BannerNotice>
+);
+
+const TestDriveLoader: React.FunctionComponent< {
+	progress: number;
+} > = ( { progress } ) => (
+	<Loader className="connect-account-page__preloader">
+		<img src={ WooPaymentsLogo } alt="" />
+		<Loader.Layout>
+			<Loader.Title>
+				{ __(
+					'Creating your sandbox account',
+					'woocommerce-payments'
+				) }
+			</Loader.Title>
+			<Loader.ProgressBar progress={ progress ?? 0 } />
+			<Loader.Sequence interval={ 0 }>
+				{ __(
+					'In just a few moments, you will be ready to test payments on your store.'
+				) }
+			</Loader.Sequence>
+		</Loader.Layout>
+	</Loader>
 );
 
 const ConnectAccountPage: React.FC = () => {
@@ -50,7 +79,20 @@ const ConnectAccountPage: React.FC = () => {
 		wcpaySettings.errorMessage
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
-	const [ isSandboxModeClicked, setSandboxModeClicked ] = useState( false );
+	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
+		false
+	);
+	const [ isTestDriveModeModalShown, setTestDriveModeModalShown ] = useState(
+		false
+	);
+	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] = useState(
+		5
+	);
+
+	// Create a reference object.
+	const loaderProgressRef = useRef( testDriveLoaderProgress );
+	loaderProgressRef.current = testDriveLoaderProgress;
+
 	const {
 		connectUrl,
 		connect: { availableCountries, country },
@@ -103,6 +145,165 @@ const ConnectAccountPage: React.FC = () => {
 		return urlParams.get( 'from' )?.replace( /[^\w-]+/g, '' ) || '';
 	};
 
+	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
+		recordEvent( 'wcpay_connect_account_clicked', {
+			wpcom_connection: isJetpackConnected ? 'Yes' : 'No',
+			...( incentive && {
+				incentive_id: incentive.id,
+			} ),
+			sandbox_mode: sandboxMode,
+			path: 'payments_connect_v2',
+			from: determineTrackingFrom(),
+			source: determineTrackingSource(),
+		} );
+	};
+
+	const updateLoaderProgress = ( maxPercent: number, step: number ) => {
+		if ( loaderProgressRef.current < maxPercent ) {
+			const newProgress = loaderProgressRef.current + step;
+			setTestDriveLoaderProgress( newProgress );
+		}
+	};
+
+	const checkAccountStatus = () => {
+		// Fetch account status from the cache.
+		apiFetch( {
+			path: `/wc/v3/payments/accounts`,
+			method: 'GET',
+		} ).then( ( account ) => {
+			// Simulate the update of the loader progress bar by 4% per check.
+			// Limit to a maximum of 15 checks or 30 seconds.
+			updateLoaderProgress( 100, 4 );
+
+			// If the account status is not a pending one or progress percentage is above 95,
+			// consider our work done and redirect the merchant.
+			// Otherwise, schedule another check after 2 seconds.
+			if (
+				( account &&
+					( account as AccountData ).status &&
+					! ( account as AccountData ).status.includes(
+						'pending'
+					) ) ||
+				loaderProgressRef.current > 95
+			) {
+				setTestDriveLoaderProgress( 100 );
+
+				// Redirect to the Connect URL and let it figure it out where to point the merchant.
+				window.location.href = addQueryArgs( connectUrl, {
+					test_drive: 'true',
+					'wcpay-sandbox-success': 'true',
+					source: determineTrackingSource(),
+					from: 'WCPAY_CONNECT',
+				} );
+			} else {
+				setTimeout( checkAccountStatus, 2000 );
+			}
+		} );
+	};
+
+	const handleSetupTestDriveMode = async () => {
+		setTestDriveLoaderProgress( 5 );
+		setTestDriveModeSubmitted( true );
+		trackConnectAccountClicked( true );
+
+		// Scroll the page to the top to ensure the logo is visible.
+		window.scrollTo( {
+			top: 0,
+		} );
+
+		const customizedConnectUrl = addQueryArgs( connectUrl, {
+			test_drive: 'true',
+		} );
+
+		const updateProgress = setInterval( updateLoaderProgress, 2500, 40, 5 );
+
+		// If Jetpack is connected, we should proceed with AJAX onboarding.
+		// Otherwise, redirect to the Jetpack connect screen.
+		if ( wcpaySettings.isJetpackConnected ) {
+			setTestDriveModeModalShown( true );
+			fetch( customizedConnectUrl, {
+				method: 'GET',
+				redirect: 'follow',
+				credentials: 'same-origin',
+				headers: {
+					'content-type': 'application/json',
+					// Make sure we don't cache the response.
+					pragma: 'no-cache',
+					'cache-control': 'no-cache',
+				},
+			} )
+				.then( ( response ) => response.json() )
+				.then( ( response ) => {
+					// Please bear in mind that the fetch request will be redirected and the response we will get is from
+					// the final URL in the redirect chain.
+
+					if (
+						! response?.success ||
+						! response?.data?.redirect_to
+					) {
+						// If we didn't get a redirect_to URL,
+						// refresh the page with an error flag to show the error message.
+						window.location.href = addQueryArgs(
+							window.location.href,
+							{
+								test_drive_error: 'true',
+							}
+						);
+						return;
+					}
+
+					clearInterval( updateProgress );
+					setTestDriveLoaderProgress( 40 );
+
+					// Check the url for the `wcpay-connection-success` parameter, indicating a successful connection.
+					const responseUrlParams = new URLSearchParams(
+						response.data.redirect_to
+					);
+					const connectionSuccess =
+						responseUrlParams.get( 'wcpay-connection-success' ) ||
+						'';
+
+					// The account has been successfully onboarded.
+					if ( !! connectionSuccess ) {
+						// Start checking the account status in a loop.
+						checkAccountStatus();
+					} else {
+						// Redirect to the response URL, but attach our test drive flags.
+						// This URL is generally a Connect page URL.
+						window.location.href = addQueryArgs(
+							response.data.redirect_to,
+							{
+								test_drive: 'true',
+								test_drive_error: 'true',
+							}
+						);
+					}
+				} )
+				.catch( () => {
+					// If the fetch request fails, refresh the page with an error flag to show the error message.
+					window.location.href = addQueryArgs( window.location.href, {
+						test_drive_error: 'true',
+					} );
+				} );
+		} else {
+			// Redirect to the connect URL to set up the Jetpack connection.
+			window.location.href = addQueryArgs( customizedConnectUrl, {
+				auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
+			} );
+		}
+	};
+
+	const autoStartTestDriveOnboarding = () => {
+		// If Jetpack is connected and the parameter is present in the URL,
+		// we should start onboarding Test Drive account automatically.
+		if (
+			wcpaySettings.isJetpackConnected &&
+			urlParams.get( 'auto_start_test_drive_onboarding' )
+		) {
+			handleSetupTestDriveMode();
+		}
+	};
+
 	useEffect( () => {
 		recordEvent( 'page_view', {
 			path: 'payments_connect_v2',
@@ -112,6 +313,10 @@ const ConnectAccountPage: React.FC = () => {
 			from: determineTrackingFrom(),
 			source: determineTrackingSource(),
 		} );
+
+		// Maybe auto-start the test drive onboarding.
+		autoStartTestDriveOnboarding();
+
 		// We only want to run this once.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
@@ -149,19 +354,6 @@ const ConnectAccountPage: React.FC = () => {
 		document.body.appendChild( container );
 	};
 
-	const trackConnectAccountClicked = ( sandboxMode: boolean ) => {
-		recordEvent( 'wcpay_connect_account_clicked', {
-			wpcom_connection: isJetpackConnected ? 'Yes' : 'No',
-			...( incentive && {
-				incentive_id: incentive.id,
-			} ),
-			sandbox_mode: sandboxMode,
-			path: 'payments_connect_v2',
-			from: determineTrackingFrom(),
-			source: determineTrackingSource(),
-		} );
-	};
-
 	const handleSetup = async () => {
 		setSubmitted( true );
 
@@ -194,19 +386,6 @@ const ConnectAccountPage: React.FC = () => {
 		} );
 	};
 
-	const handleEnableSandboxMode = async () => {
-		setSandboxModeClicked( true );
-
-		trackConnectAccountClicked( true );
-
-		window.location.href = addQueryArgs( connectUrl, {
-			test_mode: 'true',
-			create_builder_account: 'true',
-			source: determineTrackingSource(),
-			from: 'WCPAY_CONNECT',
-		} );
-	};
-
 	const handleReset = () => {
 		trackAccountReset();
 
@@ -217,10 +396,23 @@ const ConnectAccountPage: React.FC = () => {
 		} );
 	};
 
-	// Determine if we have the account session error message since we want to customize the UX a little bit.
 	let isAccountSetupSessionError = false;
+	// Determine if we have the account session error message since we want to customize the UX a little bit.
 	if ( errorMessage && errorMessage.includes( 'account setup session' ) ) {
 		isAccountSetupSessionError = true;
+	}
+
+	const isAccountTestDriveError =
+		'true' === urlParams.get( 'test_drive_error' );
+	if ( ! errorMessage && isAccountTestDriveError ) {
+		// If there isn't an error message from elsewhere, but we have a test drive error,
+		// show the test drive error message.
+		setErrorMessage(
+			__(
+				'An error occurred while setting up your sandbox account. Please try again!',
+				'woocommerce-payments'
+			)
+		);
 	}
 
 	let ctaLabel = strings.button.jetpack_not_connected;
@@ -395,9 +587,9 @@ const ConnectAccountPage: React.FC = () => {
 									</InlineNotice>
 									<Button
 										variant="secondary"
-										isBusy={ isSandboxModeClicked }
-										disabled={ isSandboxModeClicked }
-										onClick={ handleEnableSandboxMode }
+										isBusy={ isTestDriveModeSubmitted }
+										disabled={ isTestDriveModeSubmitted }
+										onClick={ handleSetupTestDriveMode }
 									>
 										{ strings.button.sandbox }
 									</Button>
@@ -411,6 +603,9 @@ const ConnectAccountPage: React.FC = () => {
 						onSubmit={ handleReset }
 					/>
 				</>
+			) }
+			{ isTestDriveModeModalShown && (
+				<TestDriveLoader progress={ testDriveLoaderProgress } />
 			) }
 		</Page>
 	);

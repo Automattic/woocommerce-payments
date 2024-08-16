@@ -1582,7 +1582,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							/* translators: %s: metadata. We do not need to translate WooPayMeta */
 							esc_html( __( 'We\'re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: %1$s, order_id: %2$s', 'woocommerce-payments' ) ),
 							esc_attr( $intent_meta_order_id ),
-							esc_attr( $order_id ),
+							esc_attr( $order_id )
 						),
 						'order_id_mismatch'
 					);
@@ -3822,7 +3822,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
+				WC_Payments_Utils::get_filtered_error_status_code( $e )
 			);
 		}
 	}
@@ -4139,7 +4139,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
+				WC_Payments_Utils::get_filtered_error_status_code( $e )
 			);
 		}
 	}
