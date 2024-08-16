@@ -152,6 +152,11 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
+		$data['tracking_data'] = [
+			'is_admin_event'      => false,
+			'track_on_all_stores' => true,
+		];
+
 		add_filter(
 			'wcpay_frontend_tracks',
 			function ( $tracks ) use ( $event, $data ) {
@@ -281,6 +286,18 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		// We don't want to track user events during unit tests/CI runs.
 		if ( $user instanceof \WP_User && 'wptests_capabilities' === $user->cap_key ) {
 			return false;
+		}
+
+		if ( isset( $properties['tracking_data'] ) ) {
+			if ( isset( $properties['tracking_data']['is_admin_event'] ) ) {
+				$is_admin_event = $properties['tracking_data']['is_admin_event'];
+			}
+
+			if ( isset( $properties['tracking_data']['track_on_all_stores'] ) ) {
+				$track_on_all_stores = $properties['tracking_data']['track_on_all_stores'];
+			}
+
+			unset( $properties['tracking_data'] );
 		}
 
 		if ( ! $this->should_enable_tracking( $is_admin_event, $track_on_all_stores ) ) {
