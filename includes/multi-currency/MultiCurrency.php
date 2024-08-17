@@ -11,7 +11,6 @@ use WC_Payments;
 use WC_Payments_Utils;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
-use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 use WCPay\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
@@ -418,7 +417,7 @@ class MultiCurrency {
 						'currencies' => $currency_data,
 						'updated'    => time(),
 					];
-				} catch ( API_Exception $e ) {
+				} catch ( \Exception $e ) {
 					return null;
 				}
 			},

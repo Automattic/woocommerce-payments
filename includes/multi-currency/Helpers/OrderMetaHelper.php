@@ -8,7 +8,6 @@
 namespace WCPay\MultiCurrency\Helpers;
 
 use WC_Payments_Utils;
-use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 
@@ -227,7 +226,7 @@ class OrderMetaHelper {
 			// Attempt to get the intent.
 			try {
 				$intent_object = $this->payments_api_client->get_intent( $intent_id );
-			} catch ( API_Exception $e ) {
+			} catch ( \Exception $e ) {
 				// Log the error returned.
 				Logger::error( "Error when attempting to get intent ($intent_id):\n" . $e->getMessage() );
 				$intent_object = null;
