@@ -267,27 +267,30 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					</p>
 				</>
 			) }
-			{ wcpaySettings.isWooPayGlobalThemeSupportEligible && (
-				<>
-					<h4>
-						{ __(
-							'WooPay Global Theme Support',
-							'woocommerce-payments'
-						) }
-					</h4>
-					<div className="test">
-						<CheckboxControl
-							disabled={ ! isWooPayEnabled }
-							checked={ isWooPayGlobalThemeSupportEnabled }
-							onChange={ updateIsWooPayGlobalThemeSupportEnabled }
-							label={ __(
-								'Enable WooPay Global Theme Support',
+			{ wcpaySettings.isWooPayGlobalThemeSupportEligible &&
+				type === 'woopay' && (
+					<>
+						<h4>
+							{ __(
+								'WooPay Global Theme Support',
 								'woocommerce-payments'
 							) }
-						/>
-					</div>
-				</>
-			) }
+						</h4>
+						<div className="test">
+							<CheckboxControl
+								disabled={ ! isWooPayEnabled }
+								checked={ isWooPayGlobalThemeSupportEnabled }
+								onChange={
+									updateIsWooPayGlobalThemeSupportEnabled
+								}
+								label={ __(
+									'Enable WooPay Global Theme Support',
+									'woocommerce-payments'
+								) }
+							/>
+						</div>
+					</>
+				) }
 			<h4>{ __( 'Preview', 'woocommerce-payments' ) }</h4>
 			<div className="payment-method-settings__option-help-text">
 				{ __(
