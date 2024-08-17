@@ -7,11 +7,11 @@
 
 namespace WCPay\MultiCurrency\Exceptions;
 
-use WCPay\Exceptions\Base_Exception;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Exception for throwing errors when an invalid currency rate is used.
  */
-class InvalidCurrencyRateException extends Base_Exception {}
+class InvalidCurrencyRateException extends Exception {}
