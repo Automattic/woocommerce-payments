@@ -44,30 +44,38 @@ test.describe( 'Multi-currency checkout', () => {
 	test.describe( `Checkout with multiple currencies`, async () => {
 		Object.keys( currenciesOrders ).forEach( ( currency: string ) => {
 			test( `checkout with ${ currency }`, async () => {
-				currenciesOrders[ currency ] = await placeOrderWithCurrency(
-					shopperPage,
-					currency
-				);
-			} );
+				await test.step( `pay with ${ currency }`, async () => {
+					currenciesOrders[ currency ] = await placeOrderWithCurrency(
+						shopperPage,
+						currency
+					);
+				} );
 
-			test( `should display ${ currency } in the order received page`, async () => {
-				await expect(
-					await shopperPage.locator(
-						'.woocommerce-order-overview__total'
-					)
-				).toHaveText( new RegExp( currency ) );
-			} );
-
-			test( `should display ${ currency } in the customer order page`, async () => {
-				await navigation.goToOrder(
-					shopperPage,
-					currenciesOrders[ currency ]
+				await test.step(
+					`should display ${ currency } in the order received page`,
+					async () => {
+						await expect(
+							shopperPage.locator(
+								'.woocommerce-order-overview__total'
+							)
+						).toHaveText( new RegExp( currency ) );
+					}
 				);
-				await expect(
-					shopperPage.locator(
-						'.woocommerce-table--order-details tfoot tr:last-child td'
-					)
-				).toHaveText( new RegExp( currency ) );
+
+				await test.step(
+					`should display ${ currency } in the customer order page`,
+					async () => {
+						await navigation.goToOrder(
+							shopperPage,
+							currenciesOrders[ currency ]
+						);
+						await expect(
+							shopperPage.locator(
+								'.woocommerce-table--order-details tfoot tr:last-child td'
+							)
+						).toHaveText( new RegExp( currency ) );
+					}
+				);
 			} );
 		} );
 	} );
