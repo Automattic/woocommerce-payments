@@ -40,6 +40,7 @@ test.describe( 'Multi-currency', () => {
 		await expect(
 			page.getByRole( 'heading', { name: 'Enabled currencies' } )
 		).toBeVisible();
+		await expect( page.getByText( 'Default currency' ) ).toBeVisible();
 		await expect(
 			page.locator( '.multi-currency-settings' ).last()
 		).toHaveScreenshot();
