@@ -332,7 +332,7 @@ class WC_Payments_Checkout {
 				$payment_method->get_testing_instructions(),
 				[
 					'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-					'button' => '<button class="copy-icon" aria-label="Copy test card number to clipboard" title="Copy to clipboard" onclick="event.preventDefault(); navigator.clipboard.writeText(`4242424242424242`)">',
+					'button' => '<button class="js-woopayments-copy-icon" aria-label="' . esc_attr( __( 'Copy test card number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '" onclick="event.preventDefault(); navigator.clipboard.writeText(`4242424242424242`)">',
 					'strong' => '<strong>',
 				]
 			);
@@ -415,7 +415,7 @@ class WC_Payments_Checkout {
 							$testing_instructions,
 							[
 								'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-								'button' => '<button class="copy-icon" aria-label="Copy test card number to clipboard" title="Copy to clipboard" onclick="event.preventDefault(); navigator.clipboard.writeText(`4242424242424242`)">',
+								'button' => '<button class="js-woopayments-copy-icon" aria-label="' . esc_attr( __( 'Copy test card number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '" onclick="event.preventDefault(); navigator.clipboard.writeText(`4242424242424242`)">',
 								'strong' => '<strong>',
 							]
 						);
