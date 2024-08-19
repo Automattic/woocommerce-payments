@@ -18,7 +18,7 @@ document.addEventListener(
 
 			window.wp?.data
 				?.dispatch( 'core/notices' )
-				.createInfoNotice(
+				?.createInfoNotice(
 					__(
 						'Test number copied to your clipboard!',
 						'woocommerce-payments'
