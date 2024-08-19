@@ -10,7 +10,7 @@ namespace WCPay\MultiCurrency\Compatibility;
 use WC_Payments_Explicit_Price_Formatter;
 use WC_Payments_Features;
 use WC_Subscription;
-use WCPay\Logger;
+use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\FrontendCurrencies;
 use WCPay\MultiCurrency\MultiCurrency;
 

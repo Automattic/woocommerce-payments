@@ -8,7 +8,7 @@
 namespace WCPay\MultiCurrency\Helpers;
 
 use WC_Payments_Utils;
-use WCPay\Logger;
+use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 
 defined( 'ABSPATH' ) || exit;
