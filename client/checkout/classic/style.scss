@@ -1,3 +1,5 @@
+@import '../style';
+
 #payment .payment_method_woocommerce_payments .testmode-info {
 	margin-bottom: 0.5em;
 }
@@ -91,18 +93,4 @@ li.wc_payment_method:has( .input-radio:checked
 			}
 		}
 	}
-}
-
-button.js-woopayments-copy-icon {
-	display: inline-block;
-	height: 1.2em;
-	width: 1.2em;
-	line-height: 1.2em;
-	vertical-align: middle;
-	margin-left: -0.1em;
-	padding: 0;
-	border-radius: 0;
-	border: none !important;
-	background: url( 'assets/images/icons/copy.svg?asset' );
-	background-size: cover;
 }
