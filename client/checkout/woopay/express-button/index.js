@@ -11,7 +11,6 @@ import { getConfig } from 'utils/checkout';
 import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
-import '../../express-checkout-buttons.scss';
 
 const oldWoopayContainers = [];
 

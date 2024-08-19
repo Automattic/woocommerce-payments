@@ -1,4 +1,4 @@
-# WooCommerce Payments
+# WooPayments
 
 This is a feature plugin for accepting payments via a WooCommerce-branded payment gateway.
 
@@ -31,9 +31,9 @@ Head to https://github.com/settings/tokens/new?scopes=repo&description=Composer+
 
 To fix this up, follow the link provided in the prompt and paste the token into the terminal window to continue.
 
-### Extending WooCommerce Payments
+### Extending WooPayments
 
-If you are extending WooCommerce Payments, or building on top of it, please refer to the [core docs](includes/core/README.md) and directory (`includes/core`) for guides and recommended ways of doing it.
+If you are extending WooPayments, or building on top of it, please refer to the [core docs](includes/core/README.md) and directory (`includes/core`) for guides and recommended ways of doing it.
 
 ## Setup
 

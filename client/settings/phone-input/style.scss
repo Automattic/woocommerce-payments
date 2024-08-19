@@ -98,7 +98,7 @@
 			box-shadow: none;
 			border: 1px solid $gray-300;
 			border-radius: 5px;
-			margin-left: 0.125rem;
+			margin-left: 0.1rem;
 			width: calc( 100% - 0.25rem );
 
 			&::placeholder {
@@ -111,6 +111,16 @@
 			}
 		}
 	}
+
+	.iti {
+		margin-top: 16px;
+	}
+}
+
+.wc-block-components-form
+	.woopay-save-new-user-container
+	.wc-block-components-text-input:only-child {
+	margin-top: 0;
 }
 
 #phone-number {

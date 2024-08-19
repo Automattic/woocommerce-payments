@@ -76,7 +76,9 @@ button.wcpay-stripelink-modal-trigger:hover {
 }
 
 #remember-me {
-	margin-top: 36px;
+	margin: 36px 0 0 0;
+	padding: 0;
+	border: 0;
 
 	h2 {
 		font-size: 18px;
@@ -106,6 +108,20 @@ button.wcpay-stripelink-modal-trigger:hover {
 		img {
 		min-width: 64px;
 	}
+}
+
+button.copy-icon {
+	display: inline-block;
+	height: 1.2em;
+	width: 1.2em;
+	line-height: 1.2em;
+	vertical-align: middle;
+	margin-left: -0.1em;
+	padding: 0;
+	border-radius: 0;
+	border: none !important;
+	background: url( 'assets/images/icons/copy.svg?asset' );
+	background-size: cover;
 }
 
 @import '../woopay/style';

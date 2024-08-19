@@ -27,6 +27,9 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	usePaymentRequestButtonBorderRadius: jest.fn().mockReturnValue( [ 4 ] ),
+	useWooPayGlobalThemeSupportEnabledSettings: jest
+		.fn()
+		.mockReturnValue( [ false, jest.fn() ] ),
 	useWooPayLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),

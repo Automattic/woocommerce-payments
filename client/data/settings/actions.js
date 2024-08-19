@@ -258,6 +258,12 @@ export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
 }
 
+export function updateIsWooPayGlobalThemeSupportEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_woopay_global_theme_support_enabled: isEnabled,
+	} );
+}
+
 export function updateWooPayCustomMessage( message ) {
 	return updateSettingsValues( {
 		woopay_custom_message: message,
