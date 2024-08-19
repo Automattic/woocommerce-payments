@@ -898,6 +898,7 @@ class WC_Payments_Admin {
 			'trackingInfo'                       => $this->account->get_tracking_info(),
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
+			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
