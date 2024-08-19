@@ -268,7 +268,8 @@ class WC_Payments_Features {
 	 */
 	public static function is_woopay_global_theme_support_eligible() {
 		$account_cache = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		return is_array( $account_cache ) && $account_cache['platform_global_theme_support_enabled'] ?? false;
+
+		return is_array( $account_cache ) && ( $account_cache['platform_global_theme_support_enabled'] ?? false );
 	}
 
 	/**
