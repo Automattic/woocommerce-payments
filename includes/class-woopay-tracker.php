@@ -145,17 +145,22 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
+	 * @param bool   $record_on_frontend whether to record the event on the frontend to prevent cache break.
 	 */
-	public function maybe_record_wcpay_shopper_event( $event, $data = [] ) {
+	public function maybe_record_wcpay_shopper_event( $event, $data = [], $record_on_frontend = true ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		$data['record_event_data'] = [
-			'is_admin_event'      => false,
-			'track_on_all_stores' => true,
-		];
+		$is_admin_event      = false;
+		$track_on_all_stores = true;
+
+		if ( ! $record_on_frontend ) {
+			return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores );
+		}
+
+		$data['record_event_data'] = compact( 'is_admin_event', 'track_on_all_stores' );
 
 		add_filter(
 			'wcpay_frontend_tracks',
@@ -544,7 +549,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 			// Don't track WooPay orders. They will be tracked on WooPay side with more details.
 			if ( ! $is_woopay_order ) {
-				$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties );
+				$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties, false );
 			}
 			// If the order was placed using a different payment gateway, just increment a counter.
 		} else {
