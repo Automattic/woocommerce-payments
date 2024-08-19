@@ -383,7 +383,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
-					'testingInstructions'    => '<strong>Test mode: </strong>use test card 4242 4242 4242 4242 <button class="js-woopayments-copy-icon" aria-label="Copy test card number to clipboard" title="Copy to clipboard" onclick="event.preventDefault(); navigator.clipboard.writeText(`4242424242424242`)"></button> or refer to our <a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">testing guide</a>.',
+					'testingInstructions'    => '<strong>Test mode: </strong>use test card 4242 4242 4242 4242 <button class="js-woopayments-copy-icon" aria-label="Copy test card number to clipboard" title="Copy to clipboard" onclick="event.preventDefault(); navigator.clipboard.writeText(`4242424242424242`)"></button> or refer to our <a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards">testing guide</a>.',
 					'forceNetworkSavedCards' => false,
 				],
 				'link' => [
