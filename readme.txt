@@ -106,6 +106,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Do not enqueue Cart scripts if WooPayments is not enabled
 * Fix - fix: alignment of info icon w/ WooPay/Link settings
 * Fix - fix: cart association on tokenized PRB orders via custom session handler
+* Fix - fix: platform_global_theme_support_enabled undefined index
 * Fix - fix: translatable strings around currencies list
 * Fix - Fix GooglePay button missing in Safari.
 * Fix - Fix onboarding redirect loop when starting from Woo Settings Payments.
