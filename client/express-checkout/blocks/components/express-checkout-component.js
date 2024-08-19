@@ -44,6 +44,7 @@ const ExpressCheckoutComponent = ( {
 	onClick,
 	onClose,
 	expressPaymentMethod = '',
+	buttonAttributes,
 } ) => {
 	const {
 		buttonOptions,
@@ -85,10 +86,21 @@ const ExpressCheckoutComponent = ( {
 		onReady( event );
 	};
 
+	// The Cart & Checkout blocks provide unified styles across all buttons,
+	// which should override the extension specific settings.
+	const buttonOptionsBlockOverride = {};
+	if ( typeof buttonAttributes !== 'undefined' ) {
+		buttonOptionsBlockOverride.buttonHeight = buttonAttributes.height;
+		buttonOptionsBlockOverride.theme = buttonAttributes?.darkMode
+			? 'light'
+			: 'dark';
+	}
+
 	return (
 		<ExpressCheckoutElement
 			options={ {
 				...buttonOptions,
+				...buttonOptionsBlockOverride,
 				...getPaymentMethodsOverride( expressPaymentMethod ),
 			} }
 			onClick={ onButtonClick }
