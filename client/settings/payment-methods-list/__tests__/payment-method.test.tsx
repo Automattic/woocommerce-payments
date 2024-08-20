@@ -12,7 +12,7 @@ import { act } from 'react-dom/test-utils';
  * Internal dependencies
  */
 import PaymentMethod from '../payment-method';
-import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
+import DuplicatedPaymentMethodsContext from '../../settings-manager/duplicated-payment-methods-context';
 
 describe( 'PaymentMethod', () => {
 	let checked = false;

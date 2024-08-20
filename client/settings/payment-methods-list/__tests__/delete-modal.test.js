@@ -11,7 +11,7 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import ConfirmPaymentMethodDeleteModal from '../delete-modal';
-import paymentMethodsMap from '../../payment-methods-map';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
 
 const mockOnClose = jest.fn();
 const mockOnConfirm = jest.fn();
