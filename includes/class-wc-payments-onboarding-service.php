@@ -151,7 +151,7 @@ class WC_Payments_Onboarding_Service {
 
 		// Note: at the moment, we aren't caching this since it only gets initialised on a new onboarding,
 		// and we want to make a request to the server in that instance. In the future, we can look to cache it.
-		// TODO: Send params with the request.
+		// TODO GH-9251: Send params with the request.
 		$account_session = $this->payments_api_client->initialise_embedded_onboarding();
 
 		return [

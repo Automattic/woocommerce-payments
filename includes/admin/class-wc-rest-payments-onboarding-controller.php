@@ -56,7 +56,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_onboarding_session' ],
 				'permission_callback' => [ $this, 'check_permission' ],
-				// TODO: add args.
+				// TODO GH-9251: add args.
 			]
 		);
 
@@ -67,7 +67,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'finalise_embedded_onboarding' ],
 				'permission_callback' => [ $this, 'check_permission' ],
-				// TODO: add args.
+				// TODO GH-9251: add args.
 			]
 		);
 

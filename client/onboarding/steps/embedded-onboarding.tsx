@@ -20,7 +20,7 @@ import { getAdminUrl } from 'wcpay/utils';
 type AccountSessionData = AccountSession;
 
 const EmbeddedOnboarding: React.FC = () => {
-	// TODO: Pass the query params.
+	// TODO GH-9251: Pass the query params.
 	const { data, setData } = useOnboardingContext();
 
 	// We use `useState` to ensure the Connect instance is only initialized once
@@ -65,7 +65,7 @@ const EmbeddedOnboarding: React.FC = () => {
 								},
 							} );
 						} catch ( error ) {
-							// TODO add error to the overview page
+							// TODO GH-9251 add error to the overview page
 						}
 						window.location.href = getAdminUrl( {
 							page: 'wc-admin',
