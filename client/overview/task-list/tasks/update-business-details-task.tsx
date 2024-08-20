@@ -28,10 +28,12 @@ export const getUpdateBusinessDetailsTask = (
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
 	const connectUrl = wcpaySettings.connectUrl;
-	const accountLinkWithSource = addQueryArgs( accountLink, {
-		from: 'WCPAY_OVERVIEW',
-		source: 'wcpay-update-business-details-task',
-	} );
+	const accountLinkWithSource = accountLink
+		? addQueryArgs( accountLink, {
+				from: 'WCPAY_OVERVIEW',
+				source: 'wcpay-update-business-details-task',
+		  } )
+		: '';
 
 	let accountDetailsTaskDescription: React.ReactElement | string = '',
 		errorMessageDescription,

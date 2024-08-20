@@ -308,15 +308,8 @@
 		display: flex;
 		justify-content: center;
 		flex-direction: column;
-		gap: $gap-smaller;
+		gap: 12px;
 
-		.woopay-express-button,
-		.StripeElement {
-			width: 100%;
-			&:not( :last-child ) {
-				margin-right: 8px;
-			}
-		}
 		@media screen and ( max-width: 782px ) {
 			flex-wrap: wrap;
 

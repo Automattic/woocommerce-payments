@@ -73,6 +73,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
 		add_action( 'woocommerce_store_api_checkout_order_processed', [ $this, 'checkout_order_processed' ], 10, 2 );
 		add_action( 'woocommerce_payments_save_user_in_woopay', [ $this, 'must_save_payment_method_to_platform' ] );
+		add_action( 'wp_footer', [ $this, 'add_frontend_tracks_scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
 		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );
 	}
@@ -144,8 +145,9 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 *
 	 * @param string $event name of the event.
 	 * @param array  $data array of event properties.
+	 * @param bool   $record_on_frontend whether to record the event on the frontend to prevent cache break.
 	 */
-	public function maybe_record_wcpay_shopper_event( $event, $data = [] ) {
+	public function maybe_record_wcpay_shopper_event( $event, $data = [], $record_on_frontend = true ) {
 		// Top level events should not be namespaced.
 		if ( '_aliasUser' !== $event ) {
 			$event = self::$user_prefix . '_' . $event;
@@ -154,7 +156,23 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$is_admin_event      = false;
 		$track_on_all_stores = true;
 
-		return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores );
+		if ( ! $record_on_frontend ) {
+			return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores );
+		}
+
+		$data['record_event_data'] = compact( 'is_admin_event', 'track_on_all_stores' );
+
+		add_filter(
+			'wcpay_frontend_tracks',
+			function ( $tracks ) use ( $event, $data ) {
+				$tracks[] = [
+					'event'      => $event,
+					'properties' => $data,
+				];
+
+				return $tracks;
+			}
+		);
 	}
 
 	/**
@@ -273,6 +291,18 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		// We don't want to track user events during unit tests/CI runs.
 		if ( $user instanceof \WP_User && 'wptests_capabilities' === $user->cap_key ) {
 			return false;
+		}
+
+		if ( isset( $properties['record_event_data'] ) ) {
+			if ( isset( $properties['record_event_data']['is_admin_event'] ) ) {
+				$is_admin_event = $properties['record_event_data']['is_admin_event'];
+			}
+
+			if ( isset( $properties['record_event_data']['track_on_all_stores'] ) ) {
+				$track_on_all_stores = $properties['record_event_data']['track_on_all_stores'];
+			}
+
+			unset( $properties['record_event_data'] );
 		}
 
 		if ( ! $this->should_enable_tracking( $is_admin_event, $track_on_all_stores ) ) {
@@ -519,7 +549,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 			// Don't track WooPay orders. They will be tracked on WooPay side with more details.
 			if ( ! $is_woopay_order ) {
-				$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties );
+				$this->maybe_record_wcpay_shopper_event( 'checkout_order_placed', $properties, false );
 			}
 			// If the order was placed using a different payment gateway, just increment a counter.
 		} else {
@@ -575,5 +605,28 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		}
 
 		$this->maybe_record_admin_event( 'woopay_express_button_locations_updated', $props );
+	}
+
+	/**
+	 * Add front-end tracks scripts to prevent cache break.
+	 *
+	 * @return void
+	 */
+	public function add_frontend_tracks_scripts() {
+		$frontent_tracks = apply_filters( 'wcpay_frontend_tracks', [] );
+
+		if ( count( $frontent_tracks ) === 0 ) {
+			return;
+		}
+
+		WC_Payments::register_script_with_dependencies( 'wcpay-frontend-tracks', 'dist/frontend-tracks' );
+
+		wp_enqueue_script( 'wcpay-frontend-tracks' );
+
+		wp_localize_script(
+			'wcpay-frontend-tracks',
+			'wcPayFrontendTracks',
+			$frontent_tracks
+		);
 	}
 }
