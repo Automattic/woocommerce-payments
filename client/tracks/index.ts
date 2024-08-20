@@ -81,7 +81,7 @@ export const recordUserEvent = (
 	fetch( ajaxUrl, {
 		method: 'post',
 		body,
-	} );
+	} ).then( ( response ) => response.json() );
 };
 
 /**
