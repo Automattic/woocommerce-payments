@@ -88,8 +88,8 @@ test.describe( 'Multi-currency checkout', () => {
 				if ( currenciesOrders[ currency ] ) {
 					await expect(
 						shopperPage.locator( 'tr' ).filter( {
-							has: shopperPage.getByLabel(
-								`View order number ${ currenciesOrders[ currency ] }`
+							has: shopperPage.getByText(
+								`#${ currenciesOrders[ currency ] }`
 							),
 						} )
 					).toHaveText( new RegExp( currency ) );
