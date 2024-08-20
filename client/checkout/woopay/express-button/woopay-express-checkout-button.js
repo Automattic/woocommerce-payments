@@ -236,7 +236,11 @@ export const WoopayExpressCheckoutButton = ( {
 					}
 					WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
 						_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-						appearance: getAppearance( appearanceType ),
+						appearance: getConfig(
+							'isWooPayGlobalThemeSupportEnabled'
+						)
+							? getAppearance( appearanceType )
+							: null,
 					} )
 						.then( async ( response ) => {
 							if (
@@ -280,7 +284,9 @@ export const WoopayExpressCheckoutButton = ( {
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
-					appearance: getAppearance( appearanceType ),
+					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+						? getAppearance( appearanceType )
+						: null,
 				} )
 					.then( async ( response ) => {
 						if ( response?.blog_id && response?.data?.session ) {

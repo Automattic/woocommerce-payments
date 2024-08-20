@@ -2572,6 +2572,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
+	public function test_process_payment_for_order_rejects_if_the_payment_information_has_an_error() {
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+
+		$order = WC_Helper_Order::create_order();
+		$pi    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi->set_error( new \WP_Error( 'invalid_card', 'Invalid Card' ) );
+
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid Card' );
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
 	public function test_process_payment_for_order_rejects_with_order_id_mismatch() {
 		$order                = WC_Helper_Order::create_order();
 		$intent_meta_order_id = 0;

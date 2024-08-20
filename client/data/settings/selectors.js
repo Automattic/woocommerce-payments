@@ -223,6 +223,10 @@ export const getIsWooPayEnabled = ( state ) => {
 	return getSettings( state ).is_woopay_enabled || false;
 };
 
+export const getIsWooPayGlobalThemeSupportEnabled = ( state ) => {
+	return getSettings( state ).is_woopay_global_theme_support_enabled || false;
+};
+
 export const getWooPayCustomMessage = ( state ) => {
 	return getSettings( state ).woopay_custom_message || '';
 };

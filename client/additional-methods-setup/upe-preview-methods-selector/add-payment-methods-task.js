@@ -35,14 +35,13 @@ import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
-import CurrencyInformationForMethods, {
-	BuildMissingCurrenciesTooltipMessage,
-} from '../../components/currency-information-for-methods';
+import CurrencyInformationForMethods from './currency-information-for-methods';
+import { getMissingCurrenciesTooltipMessage } from 'wcpay/multi-currency/missing-currencies-message';
 import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
-import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
+import ConfirmPaymentMethodActivationModal from 'wcpay/settings/payment-methods-list/activation-modal';
 import './add-payment-methods-task.scss';
-import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 const usePaymentMethodsCheckboxState = () => {
 	// For UPE, the card payment method is required and always active.
@@ -228,7 +227,7 @@ const AddPaymentMethodsTask = () => {
 					const currency = wcpaySettings.storeCurrency;
 					if ( currencies.indexOf( currency ) < 0 ) {
 						isSetupRequired = true;
-						setupTooltip = BuildMissingCurrenciesTooltipMessage(
+						setupTooltip = getMissingCurrenciesTooltipMessage(
 							label,
 							currencies
 						);
