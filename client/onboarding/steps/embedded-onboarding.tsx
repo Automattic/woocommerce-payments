@@ -15,6 +15,7 @@ import { useOnboardingContext } from 'wcpay/onboarding/context';
 import { NAMESPACE } from 'data/constants';
 import apiFetch from '@wordpress/api-fetch';
 import { AccountSession } from 'wcpay/onboarding/types';
+import { getAdminUrl } from 'wcpay/utils';
 
 type AccountSessionData = AccountSession;
 
@@ -40,27 +41,39 @@ const EmbeddedOnboarding: React.FC = () => {
 		} );
 	} );
 
-	const handleOnboardingComplete = async () => {
-		try {
-			const response = await fetch(
-				`${ NAMESPACE }/onboarding/finalise`,
-				{
-					method: 'POST',
-					body: JSON.stringify( {} ),
-				}
-			);
-		} catch ( error ) {
-			return undefined;
-		}
-	};
-
 	return (
 		<>
 			<ConnectComponentsProvider
 				connectInstance={ stripeConnectInstance }
 			>
 				<ConnectAccountOnboarding
-					onExit={ () => handleOnboardingComplete }
+					// onExit={ () => handleOnboardingComplete }
+					onExit={ async () => {
+						const urlParams = new URLSearchParams(
+							window.location.search
+						);
+						const urlSource =
+							urlParams
+								.get( 'source' )
+								?.replace( /[^\w-]+/g, '' ) || 'unknown';
+						try {
+							await apiFetch( {
+								path: `${ NAMESPACE }/onboarding/finalise`,
+								method: 'POST',
+								data: {
+									source: urlSource,
+								},
+							} );
+						} catch ( error ) {
+							// TODO add error to the overview page
+						}
+						window.location.href = getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/overview',
+							source: urlSource,
+							from: 'WCPAY_ONBOARDING_WIZARD',
+						} );
+					} }
 				/>
 			</ConnectComponentsProvider>
 		</>

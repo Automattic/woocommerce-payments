@@ -166,15 +166,18 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Finalise the embedded onboarding session.
 	 *
+	 * @param string $locale The locale to use to i18n the data.
+	 * @param string $source The source of the onboarding flow.
+	 *
 	 * @return array|false[]
 	 * @throws API_Exception
 	 */
-	public function finalise_embedded_onboarding(): array {
+	public function finalise_embedded_onboarding( string $locale, string $source ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
 
-		$result = $this->payments_api_client->finalise_embedded_onboarding();
+		$result = $this->payments_api_client->finalise_embedded_onboarding( $locale, $source );
 
 		return [
 			'success' => $result['success'] ?? false,

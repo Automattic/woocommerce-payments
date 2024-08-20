@@ -67,7 +67,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'finalise_embedded_onboarding' ],
 				'permission_callback' => [ $this, 'check_permission' ],
-				// TODO: add args
+				// TODO: add args.
 			]
 		);
 
@@ -158,7 +158,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
 	 */
 	public function finalise_embedded_onboarding( WP_REST_Request $request ) {
-		$result = $this->onboarding_service->finalise_embedded_onboarding();
+		$result = $this->onboarding_service->finalise_embedded_onboarding( get_user_locale(), $request->get_param( 'source' ) );
 		return rest_ensure_response( $result );
 	}
 
