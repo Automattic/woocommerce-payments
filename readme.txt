@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.1.0 - 2024-08-21 =
+= 8.1.0-test-3 - unreleased =
 * Add - Add button rules to appearance
 * Add - Add heading rules to appearance
 * Add - Add link rules to appearance
