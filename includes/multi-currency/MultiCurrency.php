@@ -1025,24 +1025,20 @@ class MultiCurrency {
 		}
 
 		$message = sprintf(
-		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
-			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a>Use %3$s instead.</a>', 'woocommerce-payments' ),
+		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name, %4 Link to switch currency */
+			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a href="%4$s">Use %3$s instead.</a>', 'woocommerce-payments' ),
 			apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] ),
 			apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $current_currency->get_name() ),
-			$currencies[ $store_currency ]
+			esc_html( $currencies[ $store_currency ] ),
+			esc_url( '?currency=' . $store_currency )
 		);
 
 		$notice_id = md5( $message );
 
 		echo '<p class="woocommerce-store-notice demo_store" data-notice-id="' . esc_attr( $notice_id . 2 ) . '" style="display:none;">';
-		// No need to escape here as the function called handles it.
+		// No need to escape here as the contents of $message is already escaped.
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo \WC_Payments_Utils::esc_interpolated_html(
-			$message,
-			[
-				'a' => '<a href="?currency=' . esc_attr( $store_currency ) . '">',
-			]
-		);
+		echo $message;
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
 	}
 
