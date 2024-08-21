@@ -332,8 +332,10 @@ class WC_Payments_Checkout {
 				$payment_method->get_testing_instructions(),
 				[
 					'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-					'button' => '<button class="copy-icon" aria-label="Copy test card number to clipboard" title="Copy to clipboard" onclick="event.preventDefault(); navigator.clipboard.writeText(`4242424242424242`)">',
+					'button' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i>',
 					'strong' => '<strong>',
+					// tabindex=0 allows for better text selection - it helps especially on mobile.
+					'number' => '<span tabindex="0" class="js-woopayments-test-number">',
 				]
 			);
 			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
@@ -415,8 +417,10 @@ class WC_Payments_Checkout {
 							$testing_instructions,
 							[
 								'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-								'button' => '<button class="copy-icon" aria-label="Copy test card number to clipboard" title="Copy to clipboard" onclick="event.preventDefault(); navigator.clipboard.writeText(`4242424242424242`)">',
+								'button' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i>',
 								'strong' => '<strong>',
+								// tabindex=0 allows for better text selection - it helps especially on mobile.
+								'number' => '<span tabindex="0" class="js-woopayments-test-number">',
 							]
 						);
 					}

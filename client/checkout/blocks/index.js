@@ -44,6 +44,7 @@ import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
+import '../utils/copy-test-number';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
