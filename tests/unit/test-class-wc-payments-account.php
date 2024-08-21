@@ -51,11 +51,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	private $mock_action_scheduler_service;
 
 	/**
-	 * Mock WC_Payments_Session_Service.
+	 * Mock WC_Payments_Onboarding_Service.
 	 *
-	 * @var WC_Payments_Session_Service|MockObject
+	 * @var WC_Payments_Onboarding_Service|MockObject
 	 */
-	private $mock_session_service;
+	private $mock_onboarding_service;
 
 	/**
 	 * Mock WC_Payments_Redirect_Service.
@@ -82,10 +82,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client               = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
-		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
+		$this->mock_onboarding_service       = $this->createMock( WC_Payments_Onboarding_Service::class );
 		$this->mock_redirect_service         = $this->createMock( WC_Payments_Redirect_Service::class );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_onboarding_service, $this->mock_redirect_service );
 		$this->wcpay_account->init_hooks();
 	}
 
@@ -268,7 +268,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->onlyMethods( [ 'redirect_to' ] )
 			->getMock();
-		$wcpay_account         = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $mock_redirect_service );
+		$wcpay_account         = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_onboarding_service, $mock_redirect_service );
 
 		$_GET['wcpay-connect'] = 'connect-from';
 		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
