@@ -2126,59 +2126,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Returns an array containing the names of all the WCPay related notes that have been actioned.
-	 *
-	 * @return array
-	 */
-	private function get_actioned_notes(): array {
-		$wcpay_note_names = [];
-
-		try {
-			/**
-			 * Data Store for admin notes
-			 *
-			 * @var DataStore $data_store
-			 */
-			$data_store = WC_Data_Store::load( 'admin-note' );
-		} catch ( Exception $e ) {
-			// Don't stop the on-boarding process if something goes wrong here. Log the error and return the empty array
-			// of actioned notes.
-			Logger::error( $e );
-			return $wcpay_note_names;
-		}
-
-		// Fetch the last 10 actioned wcpay-promo admin notifications.
-		$add_like_clause = function ( $where_clause ) {
-			return $where_clause . " AND name like 'wcpay-promo-%'";
-		};
-
-		add_filter( 'woocommerce_note_where_clauses', $add_like_clause );
-
-		$wcpay_promo_notes = $data_store->get_notes(
-			[
-				'status'     => [ Note::E_WC_ADMIN_NOTE_ACTIONED ],
-				'is_deleted' => false,
-				'per_page'   => 10,
-			]
-		);
-
-		remove_filter( 'woocommerce_note_where_clauses', $add_like_clause );
-
-		// If we didn't get an array back from the data store, return an empty array of results.
-		if ( ! is_array( $wcpay_promo_notes ) ) {
-			return $wcpay_note_names;
-		}
-
-		// Copy the name of each note into the results.
-		foreach ( (array) $wcpay_promo_notes as $wcpay_note ) {
-			$note               = new Note( $wcpay_note->note_id );
-			$wcpay_note_names[] = $note->get_name();
-		}
-
-		return $wcpay_note_names;
-	}
-
-	/**
 	 * Gets the account country.
 	 *
 	 * @return string Country.
