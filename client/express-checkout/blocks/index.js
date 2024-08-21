@@ -10,6 +10,8 @@ import GooglePayPreview from './components/google-pay-preview';
 const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
+	title: 'Apple Pay',
+	description: 'Pay with Apple Pay',
 	content: (
 		<ExpressCheckoutContainer api={ api } expressPaymentMethod="applePay" />
 	),
@@ -29,6 +31,8 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 const expressCheckoutElementGooglePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
+	title: 'Google Pay',
+	description: 'Pay with Google Pay',
 	content: (
 		<ExpressCheckoutContainer
 			api={ api }

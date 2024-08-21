@@ -44,6 +44,8 @@ const WooPayExpressCheckoutButtonContainer = () => {
 
 const wooPayExpressCheckoutPaymentMethod = () => ( {
 	name: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
+	title: 'WooPay',
+	description: 'Express Checkout from WooPay',
 	content: <WooPayExpressCheckoutButtonContainer />,
 	edit: (
 		<WoopayExpressCheckoutButton

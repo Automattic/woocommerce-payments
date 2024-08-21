@@ -18,6 +18,8 @@ const ApplePayPreview = () => <img src={ applePayImage } alt="" />;
 
 const tokenizedCartPaymentRequestPaymentMethod = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
+	title: 'Tokenized Cart Payment Request',
+	description: 'Pay with Apple Pay or Google Pay',
 	content: (
 		<PaymentRequestExpress api={ api } stripe={ api.loadStripe( true ) } />
 	),
