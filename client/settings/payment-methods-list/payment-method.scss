@@ -27,16 +27,15 @@
 		flex: 1 1 100%;
 		order: 1;
 		display: flex;
-		flex-wrap: nowrap;
 		justify-content: space-between;
+		flex-direction: column;
 
 		@include breakpoint( '>660px' ) {
+			flex-wrap: nowrap;
+			flex-direction: row;
+			align-items: center;
 			flex: 1 1 auto;
 			order: 3;
-		}
-
-		@include breakpoint( '<660px' ) {
-			flex-wrap: wrap;
 		}
 	}
 
@@ -158,13 +157,12 @@
 
 	&__fees {
 		display: flex;
-		align-items: center;
-		justify-content: flex-end;
 		white-space: nowrap;
-		margin-left: 16px;
 
-		@include breakpoint( '<660px' ) {
-			margin-left: 0;
+		@include breakpoint( '>660px' ) {
+			justify-content: flex-end;
+			margin-left: 16px;
+			flex-shrink: 0;
 		}
 	}
 
