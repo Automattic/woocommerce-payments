@@ -178,19 +178,20 @@ class WC_Payments_Onboarding_Service {
 			self::set_onboarding_eligibility_modal_dismissed();
 		}
 
-		$site_data = [
+		$site_data      = [
 			'site_username' => wp_get_current_user()->user_login,
 			'site_locale'   => get_locale(),
 		];
-
-		$user_data = $this->get_onboarding_user_data();
+		$user_data      = $this->get_onboarding_user_data();
+		$account_data   = $this->get_account_data( $setup_mode, $self_assessment_data );
+		$actioned_notes = self::get_actioned_notes();
 
 		$account_session = $this->payments_api_client->initialise_embedded_onboarding(
 			'live' === $setup_mode,
 			$site_data,
 			array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-			array_filter( $this->get_account_data( $setup_mode, $self_assessment_data ) ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-			self::get_actioned_notes(),
+			array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+			$actioned_notes,
 			$progressive,
 			$collect_payout_requirements
 		);
