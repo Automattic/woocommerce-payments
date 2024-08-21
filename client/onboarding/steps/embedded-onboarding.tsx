@@ -17,14 +17,19 @@ import {
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import { NAMESPACE } from 'data/constants';
 import apiFetch from '@wordpress/api-fetch';
-import { AccountSession } from 'wcpay/onboarding/types';
+import {
+	AccountSession,
+	PoEligibleData,
+	PoEligibleResult,
+} from 'wcpay/onboarding/types';
 import { getAdminUrl } from 'wcpay/utils';
+import { fromDotNotation } from 'wcpay/onboarding/utils';
+import { addQueryArgs } from '@wordpress/url';
 
 type AccountSessionData = AccountSession;
 
 const EmbeddedOnboarding: React.FC = () => {
-	// TODO GH-9251: Pass the query params.
-	const { data, setData } = useOnboardingContext();
+	const { data } = useOnboardingContext();
 	const [ publishableKey, setPublishableKey ] = useState( '' );
 	const [ clientSecret, setClientSecret ] = useState<
 		( () => Promise< string > ) | null
@@ -35,9 +40,51 @@ const EmbeddedOnboarding: React.FC = () => {
 	] = useState< StripeConnectInstance | null >( null );
 
 	useEffect( () => {
+		const isEligibleForPo = async () => {
+			if (
+				! data.country ||
+				! data.business_type ||
+				! data.mcc ||
+				! data.annual_revenue ||
+				! data.go_live_timeframe
+			) {
+				return false;
+			}
+			const eligibilityDetails: PoEligibleData = {
+				business: {
+					country: data.country,
+					type: data.business_type,
+					mcc: data.mcc,
+				},
+				store: {
+					annual_revenue: data.annual_revenue,
+					go_live_timeframe: data.go_live_timeframe,
+				},
+			};
+			const eligibleResult = await apiFetch< PoEligibleResult >( {
+				path: '/wc/v3/payments/onboarding/router/po_eligible',
+				method: 'POST',
+				data: eligibilityDetails,
+			} );
+
+			return 'eligible' === eligibleResult.result;
+		};
+
 		const fetchKeys = async () => {
+			let isEligible;
+			try {
+				isEligible = await isEligibleForPo();
+			} catch ( error ) {
+				// fall back to full KYC scenario.
+				isEligible = false;
+			}
+
+			const path = addQueryArgs( `${ NAMESPACE }/onboarding/session`, {
+				self_assessment: fromDotNotation( data ),
+				progressive: isEligible,
+			} );
 			const accountSession = await apiFetch< AccountSessionData >( {
-				path: `${ NAMESPACE }/onboarding/session`,
+				path: path,
 				method: 'GET',
 			} );
 			setPublishableKey( accountSession.publishableKey );
@@ -47,7 +94,7 @@ const EmbeddedOnboarding: React.FC = () => {
 		};
 
 		fetchKeys();
-	}, [] );
+	}, [ data ] );
 
 	// Initialize the Stripe Connect instance only once when publishableKey and clientSecret are ready
 	useEffect( () => {

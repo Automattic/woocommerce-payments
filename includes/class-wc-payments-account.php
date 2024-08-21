@@ -9,8 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Automattic\WooCommerce\Admin\Notes\DataStore;
-use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Core\Server\Request\Get_Account;
@@ -61,11 +59,11 @@ class WC_Payments_Account {
 	private $action_scheduler_service;
 
 	/**
-	 * WC_Payments_Session_Service instance for working with session information
+	 * WC_Payments_Onboarding_Service instance for working with onboarding business logic
 	 *
-	 * @var WC_Payments_Session_Service
+	 * @var WC_Payments_Onboarding_Service
 	 */
-	private $session_service;
+	private $onboarding_service;
 
 	/**
 	 * WC_Payments_Redirect_Service instance for handling redirects business logic
@@ -80,20 +78,20 @@ class WC_Payments_Account {
 	 * @param WC_Payments_API_Client               $payments_api_client      Payments API client.
 	 * @param Database_Cache                       $database_cache           Database cache util.
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service Action scheduler service.
-	 * @param WC_Payments_Session_Service          $session_service          Session service.
+	 * @param WC_Payments_Onboarding_Service       $onboarding_service       Onboarding service.
 	 * @param WC_Payments_Redirect_Service         $redirect_service         Redirect service.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		Database_Cache $database_cache,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
-		WC_Payments_Session_Service $session_service,
+		WC_Payments_Onboarding_Service $onboarding_service,
 		WC_Payments_Redirect_Service $redirect_service
 	) {
 		$this->payments_api_client      = $payments_api_client;
 		$this->database_cache           = $database_cache;
 		$this->action_scheduler_service = $action_scheduler_service;
-		$this->session_service          = $session_service;
+		$this->onboarding_service       = $onboarding_service;
 		$this->redirect_service         = $redirect_service;
 	}
 
@@ -1705,57 +1703,14 @@ class WC_Payments_Account {
 		}
 		// Onboarding self-assessment data.
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
-		if ( $self_assessment_data ) {
-			$business_type = $self_assessment_data['business_type'] ?? null;
-			$account_data  = [
-				'setup_mode'    => $test_mode ? 'test' : 'live',
-				'country'       => $self_assessment_data['country'] ?? null,
-				'email'         => $self_assessment_data['email'] ?? null,
-				'business_name' => $self_assessment_data['business_name'] ?? null,
-				'url'           => $self_assessment_data['url'] ?? null,
-				'mcc'           => $self_assessment_data['mcc'] ?? null,
-				'business_type' => $business_type,
-				'company'       => [
-					'structure' => 'company' === $business_type ? ( $self_assessment_data['company']['structure'] ?? null ) : null,
-				],
-				'individual'    => [
-					'first_name' => $self_assessment_data['individual']['first_name'] ?? null,
-					'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
-					'phone'      => $self_assessment_data['phone'] ?? null,
-				],
-				'store'         => [
-					'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
-					'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
-				],
-			];
-		} elseif ( $test_mode ) {
-			// We will provide bogus account data only for test mode accounts.
-			$home_url    = get_home_url();
-			$default_url = 'http://wcpay.test';
-			$url         = wp_http_validate_url( $home_url ) ? $home_url : $default_url;
-			// If the site is running on localhost, use the default URL. This is to avoid Stripe's errors.
-			// wp_http_validate_url does not check that, unfortunately.
-			if ( wp_parse_url( $home_url, PHP_URL_HOST ) === 'localhost' ) {
-				$url = $default_url;
-			}
-			$account_data = [
-				'setup_mode'    => 'test',
-				'business_type' => 'individual',
-				'mcc'           => '5734',
-				'url'           => $url,
-				'business_name' => get_bloginfo( 'name' ),
-			];
-		} else {
-			// The account will not be prefilled with any details.
-			$account_data = [];
-		}
 
 		$site_data = [
 			'site_username' => wp_get_current_user()->user_login,
 			'site_locale'   => get_locale(),
 		];
 
-		$user_data = $this->get_onboarding_user_data();
+		$user_data    = $this->onboarding_service->get_onboarding_user_data();
+		$account_data = $this->onboarding_service->get_account_data( $test_mode, $self_assessment_data );
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			! $test_mode,
@@ -1763,7 +1718,7 @@ class WC_Payments_Account {
 			$site_data,
 			array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 			array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-			$this->get_actioned_notes(),
+			WC_Payments_Onboarding_Service::get_actioned_notes(),
 			$progressive,
 			$collect_payout_requirements
 		);
@@ -2339,25 +2294,5 @@ class WC_Payments_Account {
 	public function get_lifetime_total_payment_volume(): int {
 		$account = $this->get_cached_account_data();
 		return (int) ! empty( $account ) && isset( $account['lifetime_total_payment_volume'] ) ? $account['lifetime_total_payment_volume'] : 0;
-	}
-
-	/**
-	 * Get user data to send to the onboarding flow.
-	 *
-	 * @return array The user data.
-	 */
-	private function get_onboarding_user_data(): array {
-		return [
-			'user_id'           => get_current_user_id(),
-			'sift_session_id'   => $this->session_service->get_sift_session_id(),
-			'ip_address'        => \WC_Geolocation::get_ip_address(),
-			'browser'           => [
-				'user_agent'       => isset( $_SERVER['HTTP_USER_AGENT'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
-				'accept_language'  => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '',
-				'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
-			],
-			'referer'           => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
-			'onboarding_source' => WC_Payments_Onboarding_Service::get_source(),
-		];
 	}
 }

@@ -5,9 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Rest_Request_Exception;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -56,7 +53,55 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_onboarding_session' ],
 				'permission_callback' => [ $this, 'check_permission' ],
-				// TODO GH-9251: add args.
+				'args'                => [
+					'progressive'                 => [
+						'required'    => false,
+						'description' => 'Whether the session is for progressive onboarding.',
+						'type'        => 'string',
+					],
+					'collect_payout_requirements' => [
+						'required'    => false,
+						'description' => 'Whether the session is for collecting payout requirements.',
+						'type'        => 'string',
+					],
+					'self_assessment'             => [
+						'required'    => true,
+						'description' => 'The self-assessment data.',
+						'type'        => 'object',
+						'properties'  => [
+							'country'           => [
+								'type'        => 'string',
+								'description' => 'The country code where the company is legally registered.',
+								'required'    => true,
+							],
+							'business_type'     => [
+								'type'        => 'string',
+								'description' => 'The company incorporation type.',
+								'required'    => true,
+							],
+							'mcc'               => [
+								'type'        => 'string',
+								'description' => 'The merchant category code. This can either be a true MCC or an MCCs tree item id from the onboarding form.',
+								'required'    => true,
+							],
+							'annual_revenue'    => [
+								'type'        => 'string',
+								'description' => 'The estimated annual revenue bucket id.',
+								'required'    => true,
+							],
+							'go_live_timeframe' => [
+								'type'        => 'string',
+								'description' => 'The timeframe bucket for the estimated first live transaction.',
+								'required'    => true,
+							],
+							'url'               => [
+								'type'        => 'string',
+								'description' => 'The URL of the store.',
+								'required'    => true,
+							],
+						],
+					],
+				],
 			]
 		);
 
@@ -146,7 +191,11 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 * @return WP_Error|WP_REST_Response
 	 */
 	public function get_onboarding_session( WP_REST_Request $request ) {
-		$account_session = $this->onboarding_service->create_embedded_onboarding_session();
+		$account_session = $this->onboarding_service->create_embedded_onboarding_session(
+			! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [],
+			! empty( $request->get_param( 'progressive' ) ) && 'true' === $request->get_param( 'progressive' ),
+			! empty( $request->get_param( 'collect_payout_requirements' ) ) && 'true' === $request->get_param( 'collect_payout_requirements' )
+		);
 		return rest_ensure_response( $account_session );
 	}
 

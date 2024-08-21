@@ -973,6 +973,7 @@ class WC_Payments_API_Client {
 	/**
 	 * Initialise the embedded onboarding flow, returning a session object which is used by the frontend.
 	 *
+	 * @param bool  $live_account Whether to create live account.
 	 * @param array $site_data Site data.
 	 * @param array $user_data User data.
 	 * @param array $account_data Account data to be prefilled.
@@ -984,7 +985,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception
 	 */
-	public function initialise_embedded_onboarding( array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function initialise_embedded_onboarding( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -992,7 +993,7 @@ class WC_Payments_API_Client {
 				'user_data'                   => $user_data,
 				'account_data'                => $account_data,
 				'actioned_notes'              => $actioned_notes,
-				'create_live_account'         => ! WC_Payments::mode()->is_dev(),
+				'create_live_account'         => $live_account,
 				'progressive'                 => $progressive,
 				'collect_payout_requirements' => $collect_payout_requirements,
 			]

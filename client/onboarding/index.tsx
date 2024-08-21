@@ -14,7 +14,6 @@ import { OnboardingForm } from './form';
 import Step from './step';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
-import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
@@ -51,7 +50,6 @@ const OnboardingStepper = () => {
 			<Step name="embedded">
 				<EmbeddedOnboarding />
 			</Step>
-			<LoadingStep name="loading" />
 		</Stepper>
 	);
 };

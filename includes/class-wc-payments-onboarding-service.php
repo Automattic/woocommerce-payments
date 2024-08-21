@@ -9,8 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\Admin\Notes\DataStore;
+use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Logger;
 
 /**
  * Class handling onboarding related business logic.
@@ -78,14 +81,23 @@ class WC_Payments_Onboarding_Service {
 	private $database_cache;
 
 	/**
+	 * Session service.
+	 *
+	 * @var WC_Payments_Session_Service instance for working with session information
+	 */
+	private $session_service;
+
+	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param Database_Cache         $database_cache      Database cache util.
+	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
+	 * @param Database_Cache              $database_cache      Database cache util.
+	 * @param WC_Payments_Session_Service $session_service     Session service.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache, WC_Payments_Session_Service $session_service ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->database_cache      = $database_cache;
+		$this->session_service     = $session_service;
 	}
 
 	/**
@@ -140,19 +152,48 @@ class WC_Payments_Onboarding_Service {
 	 * Retrieve the onboarding session and handle initial account creation (if necessary).
 	 * Will return the session key used to initialise the embedded onboarding session.
 	 *
+	 * @param array   $self_assessment_data Self assessment data.
+	 * @param boolean $progressive Whether the onboarding is progressive.
+	 * @param boolean $collect_payout_requirements Whether to collect payout requirements.
+	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception
 	 */
-	public function create_embedded_onboarding_session(): array {
+	public function create_embedded_onboarding_session( array $self_assessment_data, bool $progressive = false, bool $collect_payout_requirements = false ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
+		$test_mode = WC_Payments::mode()->is_test();
 
-		// Note: at the moment, we aren't caching this since it only gets initialised on a new onboarding,
-		// and we want to make a request to the server in that instance. In the future, we can look to cache it.
-		// TODO GH-9251: Send params with the request.
-		$account_session = $this->payments_api_client->initialise_embedded_onboarding();
+		// Make sure the onboarding test mode DB flag is set.
+		self::set_test_mode( $test_mode );
+
+		if ( ! $collect_payout_requirements ) {
+			// Clear onboarding related account options if this is an initial onboarding attempt.
+			self::clear_account_options();
+		} else {
+			// Since we assume user has already either gotten here from the eligibility modal,
+			// or has already dismissed it, we should set the modal as dismissed so it doesn't display again.
+			self::set_onboarding_eligibility_modal_dismissed();
+		}
+
+		$site_data = [
+			'site_username' => wp_get_current_user()->user_login,
+			'site_locale'   => get_locale(),
+		];
+
+		$user_data = $this->get_onboarding_user_data();
+
+		$account_session = $this->payments_api_client->initialise_embedded_onboarding(
+			! $test_mode,
+			$site_data,
+			array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+			array_filter( $this->get_account_data( $test_mode, $self_assessment_data ) ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+			self::get_actioned_notes(),
+			$progressive,
+			$collect_payout_requirements
+		);
 
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
@@ -262,6 +303,135 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		return $classes;
+	}
+
+	/**
+	 * Get account data for onboarding from self assestment data.
+	 *
+	 * @param bool  $test_mode Test mode.
+	 * @param array $self_assessment_data Self assessment data.
+	 *
+	 * @return array Account data.
+	 */
+	public function get_account_data( bool $test_mode, array $self_assessment_data ): array {
+		if ( $self_assessment_data ) {
+			$business_type = $self_assessment_data['business_type'] ?? null;
+			$account_data  = [
+				'setup_mode'    => $test_mode ? 'test' : 'live',
+				'country'       => $self_assessment_data['country'] ?? null,
+				'email'         => $self_assessment_data['email'] ?? null,
+				'business_name' => $self_assessment_data['business_name'] ?? null,
+				'url'           => $self_assessment_data['url'] ?? null,
+				'mcc'           => $self_assessment_data['mcc'] ?? null,
+				'business_type' => $business_type,
+				'company'       => [
+					'structure' => 'company' === $business_type ? ( $self_assessment_data['company']['structure'] ?? null ) : null,
+				],
+				'individual'    => [
+					'first_name' => $self_assessment_data['individual']['first_name'] ?? null,
+					'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
+					'phone'      => $self_assessment_data['phone'] ?? null,
+				],
+				'store'         => [
+					'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
+					'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
+				],
+			];
+		} elseif ( $test_mode ) {
+			// We will provide bogus account data only for test mode accounts.
+			$home_url    = get_home_url();
+			$default_url = 'http://wcpay.test';
+			$url         = wp_http_validate_url( $home_url ) ? $home_url : $default_url;
+			// If the site is running on localhost, use the default URL. This is to avoid Stripe's errors.
+			// wp_http_validate_url does not check that, unfortunately.
+			if ( wp_parse_url( $home_url, PHP_URL_HOST ) === 'localhost' ) {
+				$url = $default_url;
+			}
+			$account_data = [
+				'setup_mode'    => 'test',
+				'business_type' => 'individual',
+				'mcc'           => '5734',
+				'url'           => $url,
+				'business_name' => get_bloginfo( 'name' ),
+			];
+		} else {
+			// The account will not be prefilled with any details.
+			$account_data = [];
+		}
+		return $account_data;
+	}
+
+	/**
+	 * Get user data to send to the onboarding flow.
+	 *
+	 * @return array The user data.
+	 */
+	public function get_onboarding_user_data(): array {
+		return [
+			'user_id'           => get_current_user_id(),
+			'sift_session_id'   => $this->session_service->get_sift_session_id(),
+			'ip_address'        => \WC_Geolocation::get_ip_address(),
+			'browser'           => [
+				'user_agent'       => isset( $_SERVER['HTTP_USER_AGENT'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
+				'accept_language'  => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '',
+				'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
+			],
+			'referer'           => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
+			'onboarding_source' => self::get_source(),
+		];
+	}
+
+	/**
+	 * Get actioned notes.
+	 *
+	 * @return array
+	 */
+	public static function get_actioned_notes(): array {
+		$wcpay_note_names = [];
+
+		try {
+			/**
+			 * Data Store for admin notes
+			 *
+			 * @var DataStore $data_store
+			 */
+			$data_store = WC_Data_Store::load( 'admin-note' );
+		} catch ( Exception $e ) {
+			// Don't stop the on-boarding process if something goes wrong here. Log the error and return the empty array
+			// of actioned notes.
+			Logger::error( $e );
+			return $wcpay_note_names;
+		}
+
+		// Fetch the last 10 actioned wcpay-promo admin notifications.
+		$add_like_clause = function ( $where_clause ) {
+			return $where_clause . " AND name like 'wcpay-promo-%'";
+		};
+
+		add_filter( 'woocommerce_note_where_clauses', $add_like_clause );
+
+		$wcpay_promo_notes = $data_store->get_notes(
+			[
+				'status'     => [ Note::E_WC_ADMIN_NOTE_ACTIONED ],
+				'is_deleted' => false,
+				'per_page'   => 10,
+			]
+		);
+
+		remove_filter( 'woocommerce_note_where_clauses', $add_like_clause );
+
+		// If we didn't get an array back from the data store, return an empty array of results.
+		if ( ! is_array( $wcpay_promo_notes ) ) {
+			return $wcpay_note_names;
+		}
+
+		// Copy the name of each note into the results.
+		foreach ( (array) $wcpay_promo_notes as $wcpay_note ) {
+			$note               = new Note( $wcpay_note->note_id );
+			$wcpay_note_names[] = $note->get_name();
+		}
+
+		return $wcpay_note_names;
 	}
 
 	/**
