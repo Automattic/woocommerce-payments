@@ -8,7 +8,6 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Payment_Gateway_WCPay;
-use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;

@@ -20,6 +20,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
+use WCPay\MultiCurrency\Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -181,15 +182,24 @@ class MultiCurrency {
 	private $order_meta_helper;
 
 	/**
+	 * Gateway context.
+	 *
+	 * @var array
+	 */
+	public $gateway_context;
+
+	/**
 	 * Class constructor.
 	 *
+	 * @param array                              $gateway_context      Gateway context.
 	 * @param MultiCurrencyApiClientInterface    $payments_api_client  Payments API client.
 	 * @param MultiCurrencyAccountInterface      $payments_account     Payments Account instance.
 	 * @param MultiCurrencyLocalizationInterface $localization_service Localization Service instance.
 	 * @param Database_Cache                     $database_cache       Database Cache instance.
 	 * @param Utils|null                         $utils                Optional Utils instance.
 	 */
-	public function __construct( MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
+	public function __construct( array $gateway_context, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
+		$this->gateway_context      = $gateway_context;
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
 		$this->localization_service = $localization_service;
@@ -1349,15 +1359,57 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function register_admin_scripts() {
-		WC_Payments::register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
+		$this->register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
 
-		WC_Payments_Utils::register_style(
+		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',
-			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/multi-currency.css', $this->gateway_context['plugin_file_path'] ),
 			[ 'wc-components', 'WCPAY_ADMIN_SETTINGS' ],
-			\WC_Payments::get_file_version( 'dist/multi-currency.css' ),
+			$this->get_file_version( 'dist/multi-currency.css' ),
 			'all'
 		);
+	}
+
+	/**
+	 * Load script with all required dependencies.
+	 *
+	 * @param string $handler Script handler.
+	 * @param string $script Script name relative to the plugin root.
+	 * @param array  $additional_dependencies Additional dependencies.
+	 *
+	 * @return void
+	 */
+	public function register_script_with_dependencies( string $handler, string $script, array $additional_dependencies = [] ) {
+		$script_file       = $script . '.js';
+		$script_src_url    = plugins_url( $script_file, $this->gateway_context['plugin_file_path'] );
+		$script_asset_path = plugin_dir_path( $this->gateway_context['plugin_file_path'] ) . $script . '.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+		$all_dependencies  = array_merge( $script_asset['dependencies'], $additional_dependencies );
+
+		wp_register_script(
+			$handler,
+			$script_src_url,
+			$all_dependencies,
+			$this->get_file_version( $script_file ),
+			true
+		);
+	}
+
+	/**
+	 * Get the file modified time as a cache buster if we're in dev mode.
+	 *
+	 * @param string $file Local path to the file.
+	 *
+	 * @return string
+	 */
+	public function get_file_version( $file ) {
+		$plugin_path = plugin_dir_path( $this->gateway_context['plugin_file_path'] );
+
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( $plugin_path . $file ) ) {
+			return (string) filemtime( $plugin_path . trim( $file, '/' ) );
+		}
+
+		return $this->gateway_context['plugin_version'];
 	}
 
 	/**
