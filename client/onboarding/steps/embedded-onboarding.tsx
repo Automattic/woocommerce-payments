@@ -10,21 +10,22 @@ import {
 	ConnectAccountOnboarding,
 	ConnectComponentsProvider,
 } from '@stripe/react-connect-js';
+import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
-import { useOnboardingContext } from 'wcpay/onboarding/context';
 import { NAMESPACE } from 'data/constants';
-import apiFetch from '@wordpress/api-fetch';
+import LoadBar from 'wcpay/components/load-bar';
+import { useOnboardingContext } from 'wcpay/onboarding/context';
 import {
 	AccountSession,
 	PoEligibleData,
 	PoEligibleResult,
 } from 'wcpay/onboarding/types';
-import { getAdminUrl } from 'wcpay/utils';
 import { fromDotNotation } from 'wcpay/onboarding/utils';
-import { addQueryArgs } from '@wordpress/url';
+import { getAdminUrl } from 'wcpay/utils';
 
 type AccountSessionData = AccountSession;
 
@@ -38,6 +39,10 @@ const EmbeddedOnboarding: React.FC = () => {
 		stripeConnectInstance,
 		setStripeConnectInstance,
 	] = useState< StripeConnectInstance | null >( null );
+	const [ loading, setLoading ] = useState( true );
+	const onLoaderStart = () => {
+		setLoading( false );
+	};
 
 	useEffect( () => {
 		const isEligibleForPo = async () => {
@@ -110,11 +115,13 @@ const EmbeddedOnboarding: React.FC = () => {
 
 	return (
 		<>
+			{ loading && <LoadBar /> }
 			{ stripeConnectInstance && (
 				<ConnectComponentsProvider
 					connectInstance={ stripeConnectInstance }
 				>
 					<ConnectAccountOnboarding
+						onLoaderStart={ onLoaderStart }
 						onExit={ async () => {
 							const urlParams = new URLSearchParams(
 								window.location.search
