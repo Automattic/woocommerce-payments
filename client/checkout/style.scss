@@ -26,4 +26,10 @@
 	&:active i {
 		transform: scale( 0.9 );
 	}
+
+	.theme--night & {
+		i {
+			filter: invert( 100% ) hue-rotate( 180deg );
+		}
+	}
 }
