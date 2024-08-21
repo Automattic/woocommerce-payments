@@ -1,9 +1,7 @@
+@import '../style';
+
 .wcpay-payment-element {
 	margin-bottom: 2rem;
-}
-
-.wcpay-card-mounted {
-	background-color: #fff;
 }
 
 /* stylelint-disable-next-line selector-id-pattern */
@@ -76,7 +74,9 @@ button.wcpay-stripelink-modal-trigger:hover {
 }
 
 #remember-me {
-	margin-top: 36px;
+	margin: 36px 0 0 0;
+	padding: 0;
+	border: 0;
 
 	h2 {
 		font-size: 18px;

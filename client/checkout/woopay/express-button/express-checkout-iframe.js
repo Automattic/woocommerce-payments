@@ -109,7 +109,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
-					appearance: getAppearance( appearanceType ),
+					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+						? getAppearance( appearanceType )
+						: null,
 				}
 			).then( ( response ) => {
 				if ( response?.data?.session ) {

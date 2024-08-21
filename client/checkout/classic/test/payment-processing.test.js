@@ -7,13 +7,22 @@ import {
 	processPayment,
 	renderTerms,
 	__resetGatewayUPEComponentsElement,
+	__resetHasCheckoutCompleted,
 } from '../payment-processing';
 import { getAppearance } from '../../upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getFingerprint } from 'wcpay/checkout/utils/fingerprint';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from 'wcpay/checkout/utils/fingerprint';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import { waitFor } from '@testing-library/react';
-import { getSelectedUPEGatewayPaymentMethod } from 'wcpay/checkout/utils/upe';
+import {
+	appendPaymentMethodErrorDataToForm,
+	appendPaymentMethodIdToForm,
+	getSelectedUPEGatewayPaymentMethod,
+} from 'wcpay/checkout/utils/upe';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( '../../upe-styles' );
 
@@ -58,6 +67,7 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 
 jest.mock( 'wcpay/checkout/utils/fingerprint', () => ( {
 	getFingerprint: jest.fn(),
+	appendFingerprintInputToForm: jest.fn(),
 } ) );
 
 jest.mock( 'wcpay/checkout/utils/show-error-checkout', () => jest.fn() );
@@ -87,7 +97,11 @@ const mockElements = jest.fn( () => ( {
 	submit: mockSubmit,
 } ) );
 
-const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {} );
+const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
+	paymentMethod: {
+		id: 'paymentMethodId',
+	},
+} );
 
 const apiMock = {
 	saveUPEAppearance: jest.fn().mockResolvedValue( {} ),
@@ -386,6 +400,7 @@ describe( 'Payment processing', () => {
 
 			document.body.removeChild( element );
 		} );
+		__resetHasCheckoutCompleted();
 		jest.clearAllMocks();
 	} );
 
@@ -617,6 +632,132 @@ describe( 'Payment processing', () => {
 			elements: expect.any( Object ),
 			params: {},
 		} );
+	} );
+
+	test( 'Payment processing adds the payment information to the form', async () => {
+		setupBillingDetailsFields();
+		getFingerprint.mockImplementation( () => {
+			return { visitorId: 'fingerprint' };
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+				submit: checkoutForm.submit,
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		mockCreatePaymentMethod.mockReturnValue( {
+			paymentMethod: {
+				id: 'paymentMethodId',
+			},
+		} );
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
+			elements: expect.any( Object ),
+			params: {
+				billing_details: expect.objectContaining( {
+					name: 'John Doe',
+					email: 'john.doe@example.com',
+					phone: '555-1234',
+					address: expect.any( Object ),
+				} ),
+			},
+		} );
+
+		expect( appendPaymentMethodIdToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			'paymentMethodId'
+		);
+
+		expect( appendFingerprintInputToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			'fingerprint'
+		);
+
+		expect( checkoutForm.submit ).toHaveBeenCalled();
+	} );
+
+	test( 'Payment processing adds the error information if payment method fails to be created', async () => {
+		setupBillingDetailsFields();
+		getFingerprint.mockImplementation( () => {
+			return { visitorId: 'fingerprint' };
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+				submit: checkoutForm.submit,
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		const errorData = {
+			code: 'code',
+			decline_code: 'decline_code',
+			message: 'message',
+			type: 'type',
+		};
+
+		mockCreatePaymentMethod.mockReturnValue( {
+			error: errorData,
+		} );
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
+			elements: expect.any( Object ),
+			params: {
+				billing_details: expect.objectContaining( {
+					name: 'John Doe',
+					email: 'john.doe@example.com',
+					phone: '555-1234',
+					address: expect.any( Object ),
+				} ),
+			},
+		} );
+
+		expect( appendPaymentMethodIdToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			PAYMENT_METHOD_ERROR
+		);
+
+		expect( appendPaymentMethodErrorDataToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			errorData
+		);
+
+		expect( appendFingerprintInputToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			'fingerprint'
+		);
+
+		expect( checkoutForm.submit ).toHaveBeenCalled();
 	} );
 
 	function setupBillingDetailsFields() {
