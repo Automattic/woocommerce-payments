@@ -1,5 +1,38 @@
 *** WooPayments Changelog ***
 
+= 8.1.0 - 2024-08-21 =
+* Add - Add button rules to appearance
+* Add - Add heading rules to appearance
+* Add - Add link rules to appearance
+* Add - Adds skeleton loading element for BNPL payment messaging element on product details page.
+* Add - Add tokenized cart PRB support to cart and checkout blocks.
+* Add - Add WooPay global theme support flag
+* Add - Enhance Sandbox mode onboarding by skipping KYC and making it fully automated for all supported countries.
+* Fix - Added better error message when mandate is invalid.
+* Fix - Do not enqueue Cart scripts if WooPayments is not enabled
+* Fix - fix: alignment of info icon w/ WooPay/Link settings
+* Fix - fix: cart association on tokenized PRB orders via custom session handler
+* Fix - fix: platform_global_theme_support_enabled undefined index
+* Fix - fix: translatable strings around currencies list
+* Fix - Fix GooglePay button missing in Safari.
+* Fix - Fix onboarding redirect loop when starting from Woo Settings Payments.
+* Fix - Fix spacing on Express Checkout buttons.
+* Fix - Fix uncaught error on the block based Cart page when WooPayments is disabled.
+* Fix - Fix WooPay checkboxes while signed in.
+* Fix - If a payment method fails to be created in the frontend during checkout, forward the errors to the server so it can be recorded in an order.
+* Fix - Migrate to Docker Compose V2 for test runner environment setup scripts
+* Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
+* Fix - Translate hardcoded strings on the Connect page
+* Update - refactor: separate BNPL methods from settings list
+* Update - Updated the integration between WooPayments Multi-Currency and Product Add-Ons.
+* Update - Update outdated express checkout settings notification.
+* Dev - Add e2e tests for critical flow: merchant account balance overview
+* Dev - Bump WC tested up to version to 9.2.0
+* Dev - Fix Klarna and Refund Failures E2E tests
+* Dev - Match the Node version in nvm with the minimum version in package.json.
+* Dev - Remove unnecessary console.warn statements added in #9121.
+* Dev - Update bundle size checker workflow to support node v20
+
 = 8.0.2 - 2024-08-07 =
 * Fix - Add opt-in checks to prevent blocking customers using other payment methods.
 * Fix - Fix error in Express Checkout Element use with coupons.
