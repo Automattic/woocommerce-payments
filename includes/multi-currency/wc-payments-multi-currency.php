@@ -41,6 +41,7 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 		$gateway_context = [
 			'plugin_version'                 => WCPAY_VERSION_NUMBER,
 			'plugin_file_path'               => WCPAY_PLUGIN_FILE,
+			'is_dev_mode'                    => WC_Payments::mode()->is_dev(),
 			'is_wcpay_subscriptions_enabled' => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
 		];
 
