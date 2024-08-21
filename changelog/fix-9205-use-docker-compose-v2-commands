@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Migrate to Docker Compose V2 for test runner environment setup scripts

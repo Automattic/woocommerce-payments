@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: We update the Docker setup script to work with the latest WP CLI image.
-
-
