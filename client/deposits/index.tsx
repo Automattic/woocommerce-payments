@@ -101,12 +101,15 @@ const NextDepositNotice: React.FC = () => {
 
 const DepositFailureNotice: React.FC = () => {
 	const { hasErroredExternalAccount } = useAccountStatus();
-	const accountLink = addQueryArgs( wcpaySettings.accountStatus.accountLink, {
-		from: 'WCPAY_PAYOUTS',
-		source: 'wcpay-payout-failure-notice',
-	} );
 
-	return hasErroredExternalAccount ? (
+	const accountLink = wcpaySettings.accountStatus.accountLink
+		? addQueryArgs( wcpaySettings.accountStatus.accountLink, {
+				from: 'WCPAY_PAYOUTS',
+				source: 'wcpay-payout-failure-notice',
+		  } )
+		: '';
+
+	return hasErroredExternalAccount && accountLink !== '' ? (
 		<BannerNotice
 			status="warning"
 			icon

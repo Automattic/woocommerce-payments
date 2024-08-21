@@ -164,10 +164,10 @@ class WC_Payments_Onboarding_Service {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
-		$test_mode = WC_Payments::mode()->is_test();
+		$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
 
 		// Make sure the onboarding test mode DB flag is set.
-		self::set_test_mode( $test_mode );
+		self::set_test_mode( 'live' !== $setup_mode );
 
 		if ( ! $collect_payout_requirements ) {
 			// Clear onboarding related account options if this is an initial onboarding attempt.
@@ -186,10 +186,10 @@ class WC_Payments_Onboarding_Service {
 		$user_data = $this->get_onboarding_user_data();
 
 		$account_session = $this->payments_api_client->initialise_embedded_onboarding(
-			! $test_mode,
+			'live' === $setup_mode,
 			$site_data,
 			array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-			array_filter( $this->get_account_data( $test_mode, $self_assessment_data ) ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+			array_filter( $this->get_account_data( $setup_mode, $self_assessment_data ) ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 			self::get_actioned_notes(),
 			$progressive,
 			$collect_payout_requirements
@@ -308,55 +308,76 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Get account data for onboarding from self assestment data.
 	 *
-	 * @param bool  $test_mode Test mode.
-	 * @param array $self_assessment_data Self assessment data.
+	 * @param string $setup_mode Setup mode.
+	 * @param array  $self_assessment_data Self assessment data.
 	 *
 	 * @return array Account data.
 	 */
-	public function get_account_data( bool $test_mode, array $self_assessment_data ): array {
-		if ( $self_assessment_data ) {
+	public function get_account_data( string $setup_mode, array $self_assessment_data ): array {
+		$home_url = get_home_url();
+		// If the site is running on localhost, use a bogus URL. This is to avoid Stripe's errors.
+		// wp_http_validate_url does not check that, unfortunately.
+		$home_is_localhost = 'localhost' === wp_parse_url( $home_url, PHP_URL_HOST );
+		$fallback_url      = ( 'live' !== $setup_mode || $home_is_localhost ) ? 'https://wcpay.test' : null;
+		$current_user      = get_userdata( get_current_user_id() );
+
+		// The general account data.
+		$account_data = [
+			'setup_mode'    => $setup_mode,
+			// We use the store base country to create a customized account.
+			'country'       => WC()->countries->get_base_country() ?? null,
+			'url'           => ! $home_is_localhost && wp_http_validate_url( $home_url ) ? $home_url : $fallback_url,
+			'business_name' => get_bloginfo( 'name' ),
+		];
+
+		if ( ! empty( $self_assessment_data ) ) {
 			$business_type = $self_assessment_data['business_type'] ?? null;
-			$account_data  = [
-				'setup_mode'    => $test_mode ? 'test' : 'live',
-				'country'       => $self_assessment_data['country'] ?? null,
-				'email'         => $self_assessment_data['email'] ?? null,
-				'business_name' => $self_assessment_data['business_name'] ?? null,
-				'url'           => $self_assessment_data['url'] ?? null,
-				'mcc'           => $self_assessment_data['mcc'] ?? null,
-				'business_type' => $business_type,
-				'company'       => [
-					'structure' => 'company' === $business_type ? ( $self_assessment_data['company']['structure'] ?? null ) : null,
-				],
-				'individual'    => [
-					'first_name' => $self_assessment_data['individual']['first_name'] ?? null,
-					'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
-					'phone'      => $self_assessment_data['phone'] ?? null,
-				],
-				'store'         => [
-					'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
-					'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
-				],
-			];
-		} elseif ( $test_mode ) {
-			// We will provide bogus account data only for test mode accounts.
-			$home_url    = get_home_url();
-			$default_url = 'http://wcpay.test';
-			$url         = wp_http_validate_url( $home_url ) ? $home_url : $default_url;
-			// If the site is running on localhost, use the default URL. This is to avoid Stripe's errors.
-			// wp_http_validate_url does not check that, unfortunately.
-			if ( wp_parse_url( $home_url, PHP_URL_HOST ) === 'localhost' ) {
-				$url = $default_url;
-			}
-			$account_data = [
-				'setup_mode'    => 'test',
-				'business_type' => 'individual',
-				'mcc'           => '5734',
-				'url'           => $url,
-				'business_name' => get_bloginfo( 'name' ),
-			];
-		} else {
-			// The account will not be prefilled with any details.
-			$account_data = [];
+			$account_data  = WC_Payments_Utils::array_merge_recursive_distinct(
+				$account_data,
+				[
+					// Overwrite the country if the merchant chose a different one than the Woo base location.
+					'country'       => $self_assessment_data['country'] ?? null,
+					'email'         => $self_assessment_data['email'] ?? null,
+					'business_name' => $self_assessment_data['business_name'] ?? null,
+					'url'           => $self_assessment_data['url'] ?? null,
+					'mcc'           => $self_assessment_data['mcc'] ?? null,
+					'business_type' => $business_type,
+					'company'       => [
+						'structure' => 'company' === $business_type ? ( $self_assessment_data['company']['structure'] ?? null ) : null,
+					],
+					'individual'    => [
+						'first_name' => $self_assessment_data['individual']['first_name'] ?? null,
+						'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
+						'phone'      => $self_assessment_data['phone'] ?? null,
+					],
+					'store'         => [
+						'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
+						'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
+					],
+				]
+			);
+		} elseif ( 'test_drive' === $setup_mode ) {
+			$account_data = WC_Payments_Utils::array_merge_recursive_distinct(
+				$account_data,
+				[
+					'individual' => [
+						'first_name' => $current_user->first_name ?? null,
+						'last_name'  => $current_user->last_name ?? null,
+					],
+				]
+			);
+		} elseif ( 'test' === $setup_mode ) {
+			$account_data = WC_Payments_Utils::array_merge_recursive_distinct(
+				$account_data,
+				[
+					'business_type' => 'individual',
+					'mcc'           => '5734',
+					'individual'    => [
+						'first_name' => $current_user->first_name ?? null,
+						'last_name'  => $current_user->last_name ?? null,
+					],
+				]
+			);
 		}
 		return $account_data;
 	}

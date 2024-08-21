@@ -1,14 +1,29 @@
-#wcpay-card-element {
-	border: 1px solid #ddd;
-	padding: 5px 7px;
-	min-height: 29px;
-	margin-bottom: 0.5rem;
-}
-
-.wcpay-card-mounted {
-	background-color: #fff;
-}
-
 #payment .payment_method_woocommerce_payments .woocommerce-error {
 	margin: 1rem 0;
+}
+
+.js-woopayments-copy-test-number {
+	line-height: 1.2em;
+	vertical-align: middle;
+	border-radius: 0;
+	border: none !important;
+	background-color: transparent;
+	padding: 3px;
+
+	i {
+		display: inline-block;
+		width: 1.2em;
+		height: 1.2em;
+
+		background: url( 'assets/images/icons/copy.svg?asset' ) no-repeat center;
+		background-size: contain;
+	}
+
+	&:hover {
+		background-color: transparent;
+	}
+
+	&:active i {
+		transform: scale( 0.9 );
+	}
 }

@@ -60,10 +60,12 @@ const AccountStatusError = () => {
 
 const AccountStatusDetails = ( props ) => {
 	const { accountStatus, accountFees } = props;
-	const accountLink = addQueryArgs( accountStatus.accountLink, {
-		from: 'WCPAY_ACCOUNT_DETAILS',
-		source: 'wcpay-account-details',
-	} );
+	const accountLink = accountStatus.accountLink
+		? addQueryArgs( accountStatus.accountLink, {
+				from: 'WCPAY_ACCOUNT_DETAILS',
+				source: 'wcpay-account-details',
+		  } )
+		: false;
 	const cardTitle = (
 		<>
 			<FlexItem className={ 'account-details' }>
@@ -78,21 +80,23 @@ const AccountStatusDetails = ( props ) => {
 					}
 				/>
 			</FlexBlock>
-			<FlexItem className={ 'edit-details' }>
-				<Button
-					variant={ 'link' }
-					onClick={ () =>
-						recordEvent( 'wcpay_account_details_link_clicked', {
-							from: 'WCPAY_ACCOUNT_DETAILS',
-							source: 'wcpay-account-details',
-						} )
-					}
-					href={ accountLink }
-					target={ '_blank' }
-				>
-					{ __( 'Edit details', 'woocommerce-payments' ) }
-				</Button>
-			</FlexItem>
+			{ accountLink && (
+				<FlexItem className={ 'edit-details' }>
+					<Button
+						variant={ 'link' }
+						onClick={ () =>
+							recordEvent( 'wcpay_account_details_link_clicked', {
+								from: 'WCPAY_ACCOUNT_DETAILS',
+								source: 'wcpay-account-details',
+							} )
+						}
+						href={ accountLink }
+						target={ '_blank' }
+					>
+						{ __( 'Edit details', 'woocommerce-payments' ) }
+					</Button>
+				</FlexItem>
+			) }
 		</>
 	);
 
@@ -104,6 +108,7 @@ const AccountStatusDetails = ( props ) => {
 				<PaymentsStatus
 					paymentsEnabled={ accountStatus.paymentsEnabled }
 					accountStatus={ accountStatus.status }
+					iconSize={ 24 }
 				/>
 			</AccountStatusItem>
 			<AccountStatusItem
@@ -117,6 +122,7 @@ const AccountStatusDetails = ( props ) => {
 					poComplete={
 						accountStatus.progressiveOnboarding.isComplete
 					}
+					iconSize={ 24 }
 				/>
 			</AccountStatusItem>
 			<AccountTools />
