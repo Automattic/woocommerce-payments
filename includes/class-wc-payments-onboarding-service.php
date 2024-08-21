@@ -160,6 +160,7 @@ class WC_Payments_Onboarding_Service {
 			'accountId'      => $account_session['account_id'] ?? '',
 			'isLive'         => $account_session['is_live'] ?? false,
 			'accountCreated' => $account_session['account_created'] ?? false,
+			'publishableKey' => $account_session['publishable_key'] ?? '',
 		];
 	}
 

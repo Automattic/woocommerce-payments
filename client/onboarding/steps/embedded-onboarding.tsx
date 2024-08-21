@@ -1,8 +1,11 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import { loadConnectAndInitialize } from '@stripe/connect-js';
+import React, { useEffect, useState } from 'react';
+import {
+	loadConnectAndInitialize,
+	StripeConnectInstance,
+} from '@stripe/connect-js';
 import {
 	ConnectAccountOnboarding,
 	ConnectComponentsProvider,
@@ -22,60 +25,78 @@ type AccountSessionData = AccountSession;
 const EmbeddedOnboarding: React.FC = () => {
 	// TODO GH-9251: Pass the query params.
 	const { data, setData } = useOnboardingContext();
+	const [ publishableKey, setPublishableKey ] = useState( '' );
+	const [ clientSecret, setClientSecret ] = useState<
+		( () => Promise< string > ) | null
+	>( null );
+	const [
+		stripeConnectInstance,
+		setStripeConnectInstance,
+	] = useState< StripeConnectInstance | null >( null );
 
-	// We use `useState` to ensure the Connect instance is only initialized once
-	const [ stripeConnectInstance ] = useState( () => {
-		const fetchClientSecret = async () => {
+	useEffect( () => {
+		const fetchKeys = async () => {
 			const accountSession = await apiFetch< AccountSessionData >( {
 				path: `${ NAMESPACE }/onboarding/session`,
 				method: 'GET',
 			} );
-			// Fetch the AccountSession client secret
-			return accountSession.clientSecret;
+			setPublishableKey( accountSession.publishableKey );
+			setClientSecret( () => () =>
+				Promise.resolve( accountSession.clientSecret )
+			); // Ensure clientSecret is wrapped as a function returning a Promise
 		};
 
-		return loadConnectAndInitialize( {
-			// This is your test publishable API key. TODO: get the config
-			publishableKey: 'blah',
-			fetchClientSecret: fetchClientSecret,
-		} );
-	} );
+		fetchKeys();
+	}, [] );
+
+	// Initialize the Stripe Connect instance only once when publishableKey and clientSecret are ready
+	useEffect( () => {
+		if ( publishableKey && clientSecret && ! stripeConnectInstance ) {
+			const stripeInstance = loadConnectAndInitialize( {
+				publishableKey: publishableKey,
+				fetchClientSecret: clientSecret, // Pass the function returning the Promise<string>
+			} );
+
+			setStripeConnectInstance( stripeInstance );
+		}
+	}, [ publishableKey, clientSecret, stripeConnectInstance ] );
 
 	return (
 		<>
-			<ConnectComponentsProvider
-				connectInstance={ stripeConnectInstance }
-			>
-				<ConnectAccountOnboarding
-					// onExit={ () => handleOnboardingComplete }
-					onExit={ async () => {
-						const urlParams = new URLSearchParams(
-							window.location.search
-						);
-						const urlSource =
-							urlParams
-								.get( 'source' )
-								?.replace( /[^\w-]+/g, '' ) || 'unknown';
-						try {
-							await apiFetch( {
-								path: `${ NAMESPACE }/onboarding/finalise`,
-								method: 'POST',
-								data: {
-									source: urlSource,
-								},
+			{ stripeConnectInstance && (
+				<ConnectComponentsProvider
+					connectInstance={ stripeConnectInstance }
+				>
+					<ConnectAccountOnboarding
+						onExit={ async () => {
+							const urlParams = new URLSearchParams(
+								window.location.search
+							);
+							const urlSource =
+								urlParams
+									.get( 'source' )
+									?.replace( /[^\w-]+/g, '' ) || 'unknown';
+							try {
+								await apiFetch( {
+									path: `${ NAMESPACE }/onboarding/finalise`,
+									method: 'POST',
+									data: {
+										source: urlSource,
+									},
+								} );
+							} catch ( error ) {
+								// TODO GH-9251 add error to the overview page
+							}
+							window.location.href = getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/overview',
+								source: urlSource,
+								from: 'WCPAY_ONBOARDING_WIZARD',
 							} );
-						} catch ( error ) {
-							// TODO GH-9251 add error to the overview page
-						}
-						window.location.href = getAdminUrl( {
-							page: 'wc-admin',
-							path: '/payments/overview',
-							source: urlSource,
-							from: 'WCPAY_ONBOARDING_WIZARD',
-						} );
-					} }
-				/>
-			</ConnectComponentsProvider>
+						} }
+					/>
+				</ConnectComponentsProvider>
+			) }
 		</>
 	);
 };

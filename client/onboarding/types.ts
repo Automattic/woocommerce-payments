@@ -71,4 +71,5 @@ export interface AccountSession {
 	accountId: string;
 	isLive: boolean;
 	accountCreated: boolean;
+	publishableKey: string;
 }
