@@ -123,7 +123,6 @@ const LinkExpressCheckoutItem = (): React.ReactElement => {
 															mixedString: __(
 																'Link autofills your customers’ payment and shipping details to ' +
 																	'deliver an easy and seamless checkout experience. ' +
-																	'New payment experience (UPE) needs to be enabled for Link. ' +
 																	'By enabling this feature, you agree to the ' +
 																	'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
 																	'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
@@ -134,14 +133,14 @@ const LinkExpressCheckoutItem = (): React.ReactElement => {
 																	<a
 																		target="_blank"
 																		rel="noreferrer"
-																		href="https://link.co/terms"
+																		href="https://link.com/terms"
 																	/>
 																),
 																privacyPolicy: (
 																	<a
 																		target="_blank"
 																		rel="noreferrer"
-																		href="https://link.co/privacy"
+																		href="https://link.com/privacy"
 																	/>
 																),
 															},

@@ -22,6 +22,13 @@ use WCPay\Payment_Methods\CC_Payment_Gateway;
  */
 class Payment_Information {
 	/**
+	 * Key used to indicate that an error occurred during the payment method creation in the client.
+	 *
+	 * @type string
+	 */
+	const PAYMENT_METHOD_ERROR = 'woocommerce_payments_payment_method_error';
+
+	/**
 	 * The ID of the payment method used for this payment.
 	 *
 	 * @var string
@@ -111,6 +118,13 @@ class Payment_Information {
 	 * @var string
 	 */
 	private $customer_id;
+
+	/**
+	 * Will be set if there was an error during setup.
+	 *
+	 * @var ?\WP_Error
+	 */
+	private $error = null;
 
 	/**
 	 * Payment information constructor.
@@ -260,7 +274,16 @@ class Payment_Information {
 			$order->add_meta_data( 'is_woopay', true, true );
 			$order->save_meta_data();
 		}
-		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
+		$payment_information = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
+
+		if ( self::PAYMENT_METHOD_ERROR === $payment_method ) {
+			$error_message = $request['wcpay-payment-method-error-message'] ?? __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' );
+			$error_code    = $request['wcpay-payment-method-error-code'] ?? 'unknown-error';
+			$error         = new \WP_Error( $error_code, $error_message );
+			$payment_information->set_error( $error );
+		}
+
+		return $payment_information;
 	}
 
 	/**
@@ -454,5 +477,25 @@ class Payment_Information {
 	 */
 	public function get_customer_id() {
 		return $this->customer_id;
+	}
+
+
+	/**
+	 * Sets the error data.
+	 *
+	 * @param \WP_Error $error The error to be set.
+	 * @return void
+	 */
+	public function set_error( \WP_Error $error ) {
+		$this->error = $error;
+	}
+
+	/**
+	 * Returns the error data.
+	 *
+	 * @return ?\WP_Error
+	 */
+	public function get_error() {
+		return $this->error;
 	}
 }

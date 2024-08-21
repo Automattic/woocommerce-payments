@@ -6,7 +6,7 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 
 const { registerPlugin } = window.wp.plugins;
 
-const paymentMethods = getUPEConfig( 'paymentMethodsConfig' );
+const paymentMethods = getUPEConfig( 'paymentMethodsConfig' ) || {};
 
 const BNPL_PAYMENT_METHODS = {
 	AFFIRM: 'affirm',

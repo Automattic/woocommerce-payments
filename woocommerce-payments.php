@@ -8,10 +8,10 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 9.1.2
+ * WC tested up to: 9.2.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 8.0.2
+ * Version: 8.1.0
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -55,8 +55,6 @@ function wcpay_activated() {
 function wcpay_deactivated() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::remove_woo_admin_notes();
-	delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );
-	delete_transient( 'wcpay_bnpl_april15_successful_purchases_count' );
 }
 
 register_activation_hook( __FILE__, 'wcpay_activated' );
@@ -150,12 +148,16 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
  */
 function wcpay_init() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
+	require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session.php';
 	WC_Payments::init();
 	/**
 	 * Needs to be loaded as soon as possible
 	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
+	if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
+		( new WC_Payments_Payment_Request_Session() )->init();
+	}
 }
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.

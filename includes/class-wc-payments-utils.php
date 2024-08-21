@@ -38,6 +38,8 @@ class WC_Payments_Utils {
 	 */
 	const STORE_API_ROUTE_PATTERNS = [
 		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/add-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-item$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
@@ -396,8 +398,9 @@ class WC_Payments_Utils {
 	/**
 	 * Apply a callback on every value in an array, regardless of the number of array dimensions.
 	 *
-	 * @param array    $array The array to map.
+	 * @param array    $array    The array to map.
 	 * @param callable $callback The callback to apply.
+	 *
 	 * @return array The mapped array.
 	 */
 	public static function array_map_recursive( array $array, callable $callback ): array {
@@ -412,6 +415,101 @@ class WC_Payments_Utils {
 		}
 
 		return $array;
+	}
+
+	/**
+	 * Filter a multidimensional array.
+	 *
+	 * It works just like array_filter, but it also filters multidimensional/nested arrays, regardless of depth.
+	 *
+	 * @see https://www.php.net/manual/en/function.array-filter.php
+	 *
+	 * @param array         $array    The array to filter.
+	 * @param callable|null $callback Optional. The callback to apply.
+	 *                                The callback should return true to keep the value, false otherwise.
+	 *                                If no callback is provided, all non-truthy values will be removed.
+	 *
+	 * @return array The filtered array.
+	 */
+	public static function array_filter_recursive( array $array, callable $callback = null ): array {
+		foreach ( $array as $key => &$value ) { // Mind the use of a reference.
+			if ( \is_array( $value ) ) {
+				$value = self::array_filter_recursive( $value, $callback );
+				if ( ! $value ) {
+					unset( $array[ $key ] );
+				}
+			} elseif ( ! is_null( $callback ) ) {
+				if ( ! $callback( $value ) ) {
+					unset( $array[ $key ] );
+				}
+			} elseif ( ! $value ) {
+				unset( $array[ $key ] );
+			}
+		}
+		unset( $value ); // Kill the reference to avoid memory leaks.
+
+		return $array;
+	}
+
+	/**
+	 * Merge arrays recursively like array_merge.
+	 *
+	 * This method merges any number of arrays recursively, replacing entries with string keys with values from latter arrays.
+	 * If the entry or the next value to be assigned is an array, then it automagically treats both arguments as an array.
+	 * Numeric entries are appended, not replaced, but only if they are unique.
+	 * If the entry or the next value to be assigned is null, it will not overwrite non-null entries.
+	 *
+	 * Note that this does not work the same as array_merge_recursive:
+	 * array_merge_recursive has a behavior that is not quite helpful, especially around overwriting values
+	 * with the same string keys (it will not overwrite, but gather them in an array).
+	 *
+	 * @link http://www.php.net/manual/en/function.array-merge-recursive.php#96201 (initial source)
+	 *
+	 * @return array
+	 */
+	public static function array_merge_recursive_distinct(): array {
+		$arrays = func_get_args();
+		$base   = array_shift( $arrays );
+
+		// Make sure the base is an array.
+		if ( ! is_array( $base ) ) {
+			$base = empty( $base ) ? [] : [ $base ];
+		}
+
+		foreach ( $arrays as $append ) {
+			// Coerce single values to array.
+			if ( ! is_array( $append ) ) {
+				$append = [ $append ];
+			}
+
+			foreach ( $append as $key => $value ) {
+				if ( ! array_key_exists( $key, $base ) && ! is_numeric( $key ) ) {
+					$base[ $key ] = $value;
+					continue;
+				}
+
+				// We include null values only when using string keys that don't exist in the base.
+				// For the rest of the scenarios, null entries are ignored.
+				if ( is_null( $value ) ) {
+					continue;
+				}
+
+				if ( is_array( $value ) || ( array_key_exists( $key, $base ) && is_array( $base[ $key ] ) ) ) {
+					if ( ! isset( $base[ $key ] ) ) {
+						$base[ $key ] = [];
+					}
+					$base[ $key ] = self::array_merge_recursive_distinct( $base[ $key ], $value );
+				} elseif ( is_numeric( $key ) ) {
+					if ( ! in_array( $value, $base, true ) ) {
+						$base[] = $value;
+					}
+				} else {
+					$base[ $key ] = $value;
+				}
+			}
+		}
+
+		return $base;
 	}
 
 	/**
@@ -741,7 +839,7 @@ class WC_Payments_Utils {
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
-		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
+		if ( apply_filters( 'wcpay_disable_new_onboarding', defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) ) {
 			return false;
 		}
 
@@ -1082,7 +1180,7 @@ class WC_Payments_Utils {
 			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
 		} else {
 			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = rtrim( $url_parts['path'], '/' );
+			$request_path = $url_parts ? rtrim( $url_parts['path'], '/' ) : '';
 			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
 		}
 

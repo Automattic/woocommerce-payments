@@ -350,7 +350,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/trait-level3.php';
 		include_once __DIR__ . '/core/server/request/trait-order-info.php';
 		include_once __DIR__ . '/core/server/request/trait-date-parameters.php';
-		include_once __DIR__ . '/core/server/request/trait-use-test-mode-only-when-dev-mode.php';
+		include_once __DIR__ . '/core/server/request/trait-use-test-mode-only-when-test-mode-onboarding.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
 		include_once __DIR__ . '/core/server/request/class-get-reporting-payment-activity.php';
@@ -635,6 +635,8 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-gateway-settings-sync.php';
 		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
 		require_once __DIR__ . '/migrations/class-giropay-deprecation-settings-update.php';
+		require_once __DIR__ . '/migrations/class-erase-bnpl-announcement-meta.php';
+		require_once __DIR__ . '/migrations/class-erase-deprecated-flags-and-options.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -643,6 +645,8 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Giropay_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -671,10 +675,6 @@ class WC_Payments {
 
 			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway() );
 			$admin_settings->init_hooks();
-
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-bnpl-announcement.php';
-			$bnpl_announcement = new WC_Payments_Bnpl_Announcement( self::get_gateway(), self::get_account_service(), time() );
-			$bnpl_announcement->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
@@ -1775,7 +1775,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function enqueue_cart_scripts() {
-		if ( ! WC_Payments_Utils::is_cart_page() ) {
+		if ( ! WC_Payments_Utils::is_cart_page() || ! self::get_gateway()->is_enabled() ) {
 			return;
 		}
 

@@ -8,6 +8,7 @@ declare global {
 	const wcpaySettings: {
 		version: string;
 		connectUrl: string;
+		overviewUrl: string;
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
@@ -21,6 +22,8 @@ declare global {
 		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
+		isAccountConnected: boolean;
+		isAccountValid: boolean;
 		accountStatus: {
 			email?: string;
 			created: string;
@@ -85,7 +88,6 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		progressiveOnboarding?: {
-			isNewFlowEnabled: boolean;
 			isEnabled: boolean;
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
@@ -176,6 +178,7 @@ declare global {
 				woocommerce_coming_soon: string;
 				woocommerce_private_link: string;
 			};
+			timeZone: string;
 		};
 		adminUrl: string;
 		countries: Record< string, string >;
