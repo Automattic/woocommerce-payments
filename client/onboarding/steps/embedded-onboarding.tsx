@@ -26,6 +26,9 @@ import {
 } from 'wcpay/onboarding/types';
 import { fromDotNotation } from 'wcpay/onboarding/utils';
 import { getAdminUrl } from 'wcpay/utils';
+import { LoadError } from '@stripe/connect-js/types/config';
+import BannerNotice from 'wcpay/components/banner-notice';
+import { __ } from '@wordpress/i18n';
 
 type AccountSessionData = AccountSession;
 
@@ -40,8 +43,12 @@ const EmbeddedOnboarding: React.FC = () => {
 		setStripeConnectInstance,
 	] = useState< StripeConnectInstance | null >( null );
 	const [ loading, setLoading ] = useState( true );
+	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
 	const onLoaderStart = () => {
 		setLoading( false );
+	};
+	const onLoadError = ( loadError: LoadError ) => {
+		setLoadErrorMessage( loadError.error.message || 'Unknown error' );
 	};
 
 	useEffect( () => {
@@ -92,10 +99,23 @@ const EmbeddedOnboarding: React.FC = () => {
 				path: path,
 				method: 'GET',
 			} );
-			setPublishableKey( accountSession.publishableKey );
-			setClientSecret( () => () =>
-				Promise.resolve( accountSession.clientSecret )
-			); // Ensure clientSecret is wrapped as a function returning a Promise
+			if (
+				accountSession.publishableKey &&
+				accountSession.clientSecret
+			) {
+				setPublishableKey( accountSession.publishableKey );
+				setClientSecret( () => () =>
+					Promise.resolve( accountSession.clientSecret )
+				); // Ensure clientSecret is wrapped as a function returning a Promise
+			} else {
+				setLoading( false );
+				setLoadErrorMessage(
+					__(
+						"Failed to create account session. Please check that you're using the latest version of WooCommerce Payments.",
+						'woocommerce-payments'
+					)
+				);
+			}
 		};
 
 		fetchKeys();
@@ -116,12 +136,16 @@ const EmbeddedOnboarding: React.FC = () => {
 	return (
 		<>
 			{ loading && <LoadBar /> }
+			{ loadErrorMessage && (
+				<BannerNotice status="error">{ loadErrorMessage }</BannerNotice>
+			) }
 			{ stripeConnectInstance && (
 				<ConnectComponentsProvider
 					connectInstance={ stripeConnectInstance }
 				>
 					<ConnectAccountOnboarding
 						onLoaderStart={ onLoaderStart }
+						onLoadError={ onLoadError }
 						onExit={ async () => {
 							const urlParams = new URLSearchParams(
 								window.location.search

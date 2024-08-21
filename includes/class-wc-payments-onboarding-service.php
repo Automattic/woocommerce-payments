@@ -186,15 +186,20 @@ class WC_Payments_Onboarding_Service {
 		$account_data   = $this->get_account_data( $setup_mode, $self_assessment_data );
 		$actioned_notes = self::get_actioned_notes();
 
-		$account_session = $this->payments_api_client->initialise_embedded_onboarding(
-			'live' === $setup_mode,
-			$site_data,
-			array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-			array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-			$actioned_notes,
-			$progressive,
-			$collect_payout_requirements
-		);
+		try {
+			$account_session = $this->payments_api_client->initialise_embedded_onboarding(
+				'live' === $setup_mode,
+				$site_data,
+				array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+				array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+				$actioned_notes,
+				$progressive,
+				$collect_payout_requirements
+			);
+		} catch ( API_Exception $e ) {
+			// If we fail to create the session, return an empty array.
+			return [];
+		}
 
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
