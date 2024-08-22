@@ -1009,7 +1009,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Finalise the embedded onboarding flow.
+	 * Finalize the embedded onboarding flow.
 	 *
 	 * @param string $locale The locale to use to i18n the data.
 	 * @param string $source The source of the onboarding flow.
@@ -1017,12 +1017,12 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception
 	 */
-	public function finalise_embedded_onboarding( string $locale, string $source ): array {
+	public function finalize_embedded_onboarding( string $locale, string $source ): array {
 		$request_args = [
 			'locale' => $locale,
 			'source' => $source,
 		];
-		return $this->request( $request_args, self::ONBOARDING_API . '/embedded/finalise', self::POST, true, true );
+		return $this->request( $request_args, self::ONBOARDING_API . '/embedded/finalize', self::POST, true, true );
 	}
 
 	/**

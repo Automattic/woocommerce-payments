@@ -214,10 +214,11 @@ const EmbeddedOnboarding: React.FC = () => {
 									?.replace( /[^\w-]+/g, '' ) || 'unknown';
 							try {
 								await apiFetch( {
-									path: `${ NAMESPACE }/onboarding/finalise`,
+									path: `${ NAMESPACE }/onboarding/finalize`,
 									method: 'POST',
 									data: {
 										source: urlSource,
+										clientSecret: clientSecret,
 									},
 								} );
 							} catch ( error ) {

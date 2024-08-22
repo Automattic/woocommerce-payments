@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
+use WCPay\Core\Exceptions\Bad_Request_Exception;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
@@ -65,6 +66,7 @@ class WC_Payments_Onboarding_Service {
 	const FROM_WPCOM            = 'WPCOM';
 	const FROM_WPCOM_CONNECTION = 'WPCOM_CONNECTION';
 	const FROM_STRIPE           = 'STRIPE';
+	const FROM_STRIPE_EMBEDDED  = 'STRIPE_EMBEDDED';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -201,6 +203,10 @@ class WC_Payments_Onboarding_Service {
 			return [];
 		}
 
+		if ( ! empty( $account_session['client_secret'] ) ) {
+			set_transient( WC_Payments_Account::ONBOARDING_SESSION_TRANSIENT, $account_session['client_secret'] );
+		}
+
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
 			'expiresAt'      => $account_session['expires_at'] ?? 0,
@@ -212,23 +218,30 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Finalise the embedded onboarding session.
+	 * Finalize the embedded onboarding session.
 	 *
 	 * @param string $locale The locale to use to i18n the data.
 	 * @param string $source The source of the onboarding flow.
 	 *
-	 * @return array|false[]
+	 * @return array Containing the following keys: success, account_id, mode.
+	 *
 	 * @throws API_Exception
+	 * @throws Bad_Request_Exception
 	 */
-	public function finalise_embedded_onboarding( string $locale, string $source ): array {
+	public function finalize_embedded_onboarding( string $locale, string $source ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			return [];
+			throw new Bad_Request_Exception( __( 'Could not connect to the server.', 'woocommerce-payments' ) );
 		}
 
-		$result = $this->payments_api_client->finalise_embedded_onboarding( $locale, $source );
+		$result = $this->payments_api_client->finalize_embedded_onboarding( $locale, $source );
+		if ( ! $result || ! $result['success'] ?? false ) {
+			throw new API_Exception( __( 'Could not finalize the onboarding session.', 'woocommerce-payments' ) );
+		}
 
 		return [
-			'success' => $result['success'] ?? false,
+			'success'    => $result['success'] ?? false,
+			'account_id' => $result['account_id'] ?? '',
+			'mode'       => $result['mode'],
 		];
 	}
 

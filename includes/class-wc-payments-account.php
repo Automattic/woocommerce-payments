@@ -28,6 +28,7 @@ class WC_Payments_Account {
 	const ONBOARDING_DISABLED_TRANSIENT                         = 'wcpay_on_boarding_disabled';
 	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
+	const ONBOARDING_SESSION_TRANSIENT                          = 'wcpay_stripe_onboarding_session';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
@@ -1841,6 +1842,63 @@ class WC_Payments_Account {
 			WC_Payments::get_gateway()->update_is_woopay_enabled( true );
 			delete_transient( 'woopay_enabled_by_default' );
 		}
+	}
+
+	/**
+	 * Handle the finalization of an embedded onboarding. This includes updating the cache, setting the gateway mode,
+	 * tracking the event, and redirecting the user to the overview page.
+	 *
+	 * @param string $session_id     The session ID.
+	 * @param string $mode           The mode in which the account was created. Either 'test' or 'live'.
+	 * @param array  $additional_args Additional query args to add to the redirect URLs.
+	 *
+	 * @return void
+	 */
+	public function finalize_embedded_connection( string $session_id, string $mode, array $additional_args = [] ) {
+		// If the transient isn't set properly, then this isn't a valid onboarding session.
+		if ( get_transient( self::ONBOARDING_SESSION_TRANSIENT ) !== $session_id ) {
+			$this->redirect_service->redirect_to_connect_page(
+				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ),
+				null, // No need to specify any from as we will carry over the once in the additional args, if present.
+				$additional_args
+			);
+			return;
+		}
+
+		// The session ID matches, so we can delete the stored one.
+		delete_transient( self::ONBOARDING_SESSION_TRANSIENT );
+
+		// Clear the account cache.
+		$this->clear_cache();
+
+		// Set the gateway options.
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', 'yes' );
+		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
+
+		// Store a state after completing KYC for tracks. This is stored temporarily in option because
+		// user might not have agreed to TOS yet.
+		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
+
+		// Track account connection finish. TODO: Need a way to get the promo with embedded.
+		$event_properties = [
+			'incentive' => '',
+			'mode'      => 'test' === $mode ? 'test' : 'live',
+			'from'      => $additional_args['from'] ?? '',
+			'source'    => $additional_args['source'] ?? '',
+		];
+
+		$this->tracks_event(
+			self::TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED,
+			$event_properties
+		);
+
+		$params = $additional_args;
+
+		// TODO: Handle the response from the server when the merchant exits onboarding early.
+
+		$params['wcpay-connection-success'] = '1';
+		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_STRIPE_EMBEDDED, $params );
 	}
 
 	/**

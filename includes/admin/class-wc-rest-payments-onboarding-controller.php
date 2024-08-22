@@ -107,10 +107,10 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/finalise',
+			'/' . $this->rest_base . '/finalize',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'finalise_embedded_onboarding' ],
+				'callback'            => [ $this, 'finalize_embedded_onboarding' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				// TODO GH-9251: add args.
 			]
@@ -200,14 +200,22 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
-	 * Finalise the embedded onboarding session via the API.
+	 * Finalize the embedded onboarding session via the API.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
 	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
 	 */
-	public function finalise_embedded_onboarding( WP_REST_Request $request ) {
-		$result = $this->onboarding_service->finalise_embedded_onboarding( get_user_locale(), $request->get_param( 'source' ) );
+	public function finalize_embedded_onboarding( WP_REST_Request $request ) {
+		$client_secret = $request->get_param( 'clientSecret' );
+		$source        = $request->get_param( 'source' );
+
+		// Call the API to finalize the onboarding.
+		$result = $this->onboarding_service->finalize_embedded_onboarding( get_user_locale(), $source );
+
+		// Handle some post-onboarding tasks and redirect.
+		WC_Payments::get_account_service()->finalize_embedded_connection( $client_secret, $result['mode'] );
+
 		return rest_ensure_response( $result );
 	}
 
