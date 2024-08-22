@@ -4,7 +4,11 @@
  * External dependencies
  */
 import { useSelect, useDispatch, dispatch } from '@wordpress/data';
-import { STORE_NAME } from '../constants';
+
+/**
+ * Internal dependencies
+ */
+import { STORE_NAME } from './constants';
 
 export const useCurrencies = () =>
 	useSelect( ( select ) => {
