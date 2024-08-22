@@ -10,7 +10,7 @@ import SupportPhoneInput from '..';
 import {
 	useGetSavingError,
 	useAccountBusinessSupportPhone,
-	useDevMode,
+	useTestModeOnboarding,
 } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
@@ -103,7 +103,7 @@ describe( 'SupportPhoneInput', () => {
 			'+10000000000', // test phone number.
 			jest.fn(),
 		] );
-		useDevMode.mockReturnValue( true );
+		useTestModeOnboarding.mockReturnValue( true );
 
 		const { container } = render( <SupportPhoneInput /> );
 		expect(
