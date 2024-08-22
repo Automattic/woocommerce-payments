@@ -12,10 +12,9 @@ use WCPay\MultiCurrency\Analytics;
 use WCPay\MultiCurrency\Currency;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\MultiCurrency;
-
-use WCPay\Database_Cache;
 
 /**
  * Analytics unit tests.
@@ -82,16 +81,16 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
 
-		$mock_api_client     = $this->createMock( MultiCurrencyApiClientInterface::class );
-		$mock_account        = $this->createMock( MultiCurrencyAccountInterface::class );
-		$mock_localization   = $this->createMock( MultiCurrencyLocalizationInterface::class );
-		$mock_database_cache = $this->createMock( Database_Cache::class );
-		$gateway_context     = [
+		$mock_api_client   = $this->createMock( MultiCurrencyApiClientInterface::class );
+		$mock_account      = $this->createMock( MultiCurrencyAccountInterface::class );
+		$mock_localization = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		$mock_cache        = $this->createMock( MultiCurrencyCacheInterface::class );
+		$gateway_context   = [
 			'is_dev_mode' => true,
 		];
 
 		$this->mock_multi_currency = $this->getMockBuilder( MultiCurrency::class )
-			->setConstructorArgs( [ $gateway_context, $mock_api_client, $mock_account, $mock_localization, $mock_database_cache ] )
+			->setConstructorArgs( [ $gateway_context, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
 			->getMock();
 
 		$this->mock_multi_currency->expects( $this->any() )

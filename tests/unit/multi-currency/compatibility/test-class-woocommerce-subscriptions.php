@@ -8,11 +8,10 @@
 use WCPay\MultiCurrency\Compatibility\WooCommerceSubscriptions;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
-
-use WCPay\Database_Cache;
 
 /**
  * WCPay\MultiCurrency\Compatibility\WooCommerceSubscriptions unit tests.
@@ -67,16 +66,16 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	public function set_up() {
 		parent::set_up();
 
-		$mock_api_client     = $this->createMock( MultiCurrencyApiClientInterface::class );
-		$mock_account        = $this->createMock( MultiCurrencyAccountInterface::class );
-		$mock_localization   = $this->createMock( MultiCurrencyLocalizationInterface::class );
-		$mock_database_cache = $this->createMock( Database_Cache::class );
-		$gateway_context     = [
+		$mock_api_client   = $this->createMock( MultiCurrencyApiClientInterface::class );
+		$mock_account      = $this->createMock( MultiCurrencyAccountInterface::class );
+		$mock_localization = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		$mock_cache        = $this->createMock( MultiCurrencyCacheInterface::class );
+		$gateway_context   = [
 			'is_customer_multi_currency_enabled' => true,
 		];
 
 		$this->mock_multi_currency = $this->getMockBuilder( MultiCurrency::class )
-			->setConstructorArgs( [ $gateway_context, $mock_api_client, $mock_account, $mock_localization, $mock_database_cache ] )
+			->setConstructorArgs( [ $gateway_context, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
 			->getMock();
 
 		$this->mock_utils                = $this->createMock( Utils::class );
