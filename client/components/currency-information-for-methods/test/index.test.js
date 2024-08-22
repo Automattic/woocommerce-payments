@@ -7,11 +7,8 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import {
-	useCurrencies,
-	useEnabledCurrencies,
-	useAccountDomesticCurrency,
-} from '../../../data';
+import { useAccountDomesticCurrency } from '../../../data';
+import { useCurrencies, useEnabledCurrencies } from 'mccy/data';
 import CurrencyInformationForMethods, {
 	BuildMissingCurrenciesTooltipMessage,
 } from '..';
@@ -21,6 +18,11 @@ jest.mock( '../../../data', () => ( {
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
 	useAccountDomesticCurrency: jest.fn(),
+} ) );
+
+jest.mock( 'mccy/data', () => ( {
+	useCurrencies: jest.fn(),
+	useEnabledCurrencies: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {

@@ -36,14 +36,17 @@ jest.mock( '@woocommerce/components', () => {
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
-	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
-	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 	useManualCapture: jest.fn(),
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
 	useAccountDomesticCurrency: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
+} ) );
+
+jest.mock( 'mccy/data', () => ( {
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
