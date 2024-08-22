@@ -1429,7 +1429,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_utils = $this->createMock( Utils::class );
 
+		$gateway_context      = [
+			'is_dev_mode' => true,
+		];
 		$this->multi_currency = new MultiCurrency(
+			$gateway_context,
 			$mock_api_client ?? $this->mock_api_client,
 			$this->mock_account,
 			$this->localization_service,
@@ -1438,9 +1442,6 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		);
 		$this->multi_currency->init_widgets();
 		$this->multi_currency->init();
-
-		// Fix an issue in WPCOM tests.
-		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->multi_currency );
 	}
 
 	private function add_mock_order_with_currency_meta( $currency ) {

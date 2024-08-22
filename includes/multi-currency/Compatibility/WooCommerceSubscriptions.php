@@ -395,6 +395,10 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $html_price;
 		}
 
+		if ( ! $this->multi_currency->has_additional_currencies_enabled() ) {
+			return $html_price;
+		}
+
 		/**
 		 * Get the currency code from the subscription, then return the explicit price.
 		 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
