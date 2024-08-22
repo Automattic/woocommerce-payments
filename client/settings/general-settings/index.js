@@ -9,7 +9,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { useDevMode, useTestMode } from 'wcpay/data';
+import { useTestMode, useTestModeOnboarding } from 'wcpay/data';
 import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';
@@ -20,7 +20,7 @@ import { recordEvent } from 'wcpay/tracks';
 const GeneralSettings = () => {
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
 	const [ modalVisible, setModalVisible ] = useState( false );
-	const isDevModeEnabled = useDevMode();
+	const isTestModeOnboarding = useTestModeOnboarding();
 	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
 
 	return (
@@ -28,7 +28,7 @@ const GeneralSettings = () => {
 			<Card>
 				<CardBody>
 					<EnableWooPaymentsCheckbox />
-					{ ! isDevModeEnabled && (
+					{ ! isTestModeOnboarding && (
 						<>
 							<h4>
 								{ __( 'Test mode', 'woocommerce-payments' ) }
@@ -82,7 +82,7 @@ const GeneralSettings = () => {
 							/>
 						</>
 					) }
-					{ isDevModeEnabled && (
+					{ isTestModeOnboarding && (
 						<InlineNotice
 							status="warning"
 							isDismissible={ false }
