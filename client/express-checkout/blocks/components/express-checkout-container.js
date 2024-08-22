@@ -8,7 +8,10 @@ import { Elements } from '@stripe/react-stripe-js';
  * Internal dependencies
  */
 import ExpressCheckoutComponent from './express-checkout-component';
-import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
+import {
+	getExpressCheckoutButtonAppearance,
+	getExpressCheckoutData,
+} from 'wcpay/express-checkout/utils';
 import '../express-checkout-element.scss';
 
 const ExpressCheckoutContainer = ( props ) => {
@@ -21,7 +24,9 @@ const ExpressCheckoutContainer = ( props ) => {
 	const options = {
 		mode: 'payment',
 		paymentMethodCreation: 'manual',
-		amount: billing.cartTotal.value,
+		amount: getExpressCheckoutData( 'has_trial_subscription' )
+			? 1300 // TODO: Find a way to get the cart total with trial subscription.
+			: billing.cartTotal.value,
 		currency: billing.currency.code.toLowerCase(),
 		appearance: getExpressCheckoutButtonAppearance(),
 	};
