@@ -36,6 +36,7 @@ type AccountSessionData = AccountSession;
 const EmbeddedOnboarding: React.FC = () => {
 	const { data } = useOnboardingContext();
 	const [ publishableKey, setPublishableKey ] = useState( '' );
+	const [ locale, setLocale ] = useState( '' );
 	const [ clientSecret, setClientSecret ] = useState<
 		( () => Promise< string > ) | null
 	>( null );
@@ -105,6 +106,7 @@ const EmbeddedOnboarding: React.FC = () => {
 				accountSession.clientSecret
 			) {
 				setPublishableKey( accountSession.publishableKey );
+				setLocale( accountSession.locale );
 				setClientSecret( () => () =>
 					Promise.resolve( accountSession.clientSecret )
 				); // Ensure clientSecret is wrapped as a function returning a Promise
@@ -133,11 +135,12 @@ const EmbeddedOnboarding: React.FC = () => {
 					overlays: 'drawer',
 					variables: appearance.variables,
 				},
+				locale: locale.replace( '_', '-' ),
 			} );
 
 			setStripeConnectInstance( stripeInstance );
 		}
-	}, [ publishableKey, clientSecret, stripeConnectInstance ] );
+	}, [ publishableKey, clientSecret, stripeConnectInstance, locale ] );
 
 	return (
 		<>

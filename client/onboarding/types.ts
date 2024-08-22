@@ -72,4 +72,5 @@ export interface AccountSession {
 	isLive: boolean;
 	accountCreated: boolean;
 	publishableKey: string;
+	locale: string;
 }

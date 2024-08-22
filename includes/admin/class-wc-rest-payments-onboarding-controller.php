@@ -196,6 +196,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			! empty( $request->get_param( 'progressive' ) ) && 'true' === $request->get_param( 'progressive' ),
 			! empty( $request->get_param( 'collect_payout_requirements' ) ) && 'true' === $request->get_param( 'collect_payout_requirements' )
 		);
+
+		$account_session['locale'] = get_user_locale();
+
 		return rest_ensure_response( $account_session );
 	}
 
