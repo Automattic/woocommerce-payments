@@ -16,7 +16,7 @@ import {
 jest.mock( 'wcpay/data', () => ( {
 	useAccountBusinessSupportPhone: jest.fn(),
 	useGetSavingError: jest.fn(),
-	useDevMode: jest.fn(),
+	useTestModeOnboarding: jest.fn(),
 } ) );
 
 describe( 'SupportPhoneInput', () => {
