@@ -36,13 +36,14 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 
 	if ( is_null( $instance ) ) {
 		// While multi-currency is being decoupled from WooPayments into a separate module, it is still rendered within the plugin.
-		// We don't want to reference WCPAY constants from within the module, therefore, we need a few variables from the
-		// WooPayments gateway, as reflected in the array below.
+		// We don't want to reference WCPAY constants from within the module, therefore, we need a few variables from the gateway,
+		// as reflected in the array below.
 		$gateway_context = [
-			'plugin_version'                 => WCPAY_VERSION_NUMBER,
-			'plugin_file_path'               => WCPAY_PLUGIN_FILE,
-			'is_dev_mode'                    => WC_Payments::mode()->is_dev(),
-			'is_wcpay_subscriptions_enabled' => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
+			'plugin_version'                     => WCPAY_VERSION_NUMBER,
+			'plugin_file_path'                   => WCPAY_PLUGIN_FILE,
+			'is_dev_mode'                        => WC_Payments::mode()->is_dev(),
+			'is_wcpay_subscriptions_enabled'     => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
+			'is_customer_multi_currency_enabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
 		];
 
 		$instance = new WCPay\MultiCurrency\MultiCurrency(
