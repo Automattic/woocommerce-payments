@@ -11,13 +11,13 @@ use WC_Payments;
 use WC_Payments_Utils;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
-use WCPay\Database_Cache;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 use WCPay\MultiCurrency\Utils;
@@ -154,11 +154,11 @@ class MultiCurrency {
 	private $localization_service;
 
 	/**
-	 * Instance of Database_Cache.
+	 * Instance of MultiCurrencyCacheInterface.
 	 *
-	 * @var Database_Cache
+	 * @var MultiCurrencyCacheInterface
 	 */
-	private $database_cache;
+	private $cache;
 
 	/**
 	 * Tracking instance.
@@ -195,15 +195,15 @@ class MultiCurrency {
 	 * @param MultiCurrencyApiClientInterface    $payments_api_client  Payments API client.
 	 * @param MultiCurrencyAccountInterface      $payments_account     Payments Account instance.
 	 * @param MultiCurrencyLocalizationInterface $localization_service Localization Service instance.
-	 * @param Database_Cache                     $database_cache       Database Cache instance.
+	 * @param MultiCurrencyCacheInterface        $cache                Cache instance.
 	 * @param Utils|null                         $utils                Optional Utils instance.
 	 */
-	public function __construct( array $gateway_context, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
+	public function __construct( array $gateway_context, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, Utils $utils = null ) {
 		$this->gateway_context      = $gateway_context;
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
 		$this->localization_service = $localization_service;
-		$this->database_cache       = $database_cache;
+		$this->cache                = $cache;
 		// If a Utils instance is not passed as argument, initialize it. This allows to mock it in tests.
 		$this->utils                   = $utils ?? new Utils();
 		$this->geolocation             = new Geolocation( $this->localization_service );
@@ -401,7 +401,7 @@ class MultiCurrency {
 	 */
 	public function clear_cache() {
 		Logger::debug( 'Clearing the cache to force new rates to be fetched from the server.' );
-		$this->database_cache->delete( Database_Cache::CURRENCIES_KEY );
+		$this->cache->delete( MultiCurrencyCacheInterface::CURRENCIES_KEY );
 	}
 
 	/**
@@ -412,14 +412,14 @@ class MultiCurrency {
 	 * @return ?array
 	 */
 	public function get_cached_currencies() {
-		$cached_data = $this->database_cache->get( Database_Cache::CURRENCIES_KEY );
+		$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY );
 		// If connection to server cannot be established, or if payment provider is not connected, or if the account is rejected, return expired data or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
 			return $cached_data ?? null;
 		}
 
-		return $this->database_cache->get_or_add(
-			Database_Cache::CURRENCIES_KEY,
+		return $this->cache->get_or_add(
+			MultiCurrencyCacheInterface::CURRENCIES_KEY,
 			function () {
 				try {
 					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( get_woocommerce_currency() ) );
