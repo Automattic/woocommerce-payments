@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
-use WCPay\Core\Exceptions\Bad_Request_Exception;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
@@ -226,16 +225,17 @@ class WC_Payments_Onboarding_Service {
 	 * @return array Containing the following keys: success, account_id, mode.
 	 *
 	 * @throws API_Exception
-	 * @throws Bad_Request_Exception
 	 */
 	public function finalize_embedded_onboarding( string $locale, string $source ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			throw new Bad_Request_Exception( __( 'Could not connect to the server.', 'woocommerce-payments' ) );
+			return [
+				'success' => false,
+			];
 		}
 
 		$result = $this->payments_api_client->finalize_embedded_onboarding( $locale, $source );
 		if ( ! $result || ! $result['success'] ?? false ) {
-			throw new API_Exception( __( 'Could not finalize the onboarding session.', 'woocommerce-payments' ) );
+			throw new API_Exception( __( 'Could not finalize the onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
 		}
 
 		return [
