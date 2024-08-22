@@ -19,6 +19,7 @@ declare global {
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
+		testModeOnboarding: boolean;
 		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
@@ -97,7 +98,6 @@ declare global {
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
-		onboardingTestMode: boolean;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];

@@ -19,7 +19,7 @@ import { CachedDispute } from 'wcpay/types/disputes';
 import { TaskItemProps } from './types';
 import { getAddApmsTask } from './tasks/add-apms-task';
 import { getGoLiveTask } from './tasks/go-live-task';
-import { isInDevMode } from 'wcpay/utils';
+import { isInTestModeOnboarding } from 'wcpay/utils';
 
 // Requirements we don't want to show to the user because they are too generic/not useful. These refer to Stripe error codes.
 const requirementBlacklist = [ 'invalid_value_other' ];
@@ -88,7 +88,8 @@ export const getTasks = ( {
 		detailsSubmitted &&
 		! isPoInProgress;
 
-	const isGoLiveTaskVisible = isInDevMode( false ) && showGoLiveTask;
+	const isGoLiveTaskVisible =
+		isInTestModeOnboarding( false ) && showGoLiveTask;
 
 	return [
 		isUpdateDetailsTaskVisible &&

@@ -14,14 +14,14 @@ const openModal = jest.fn();
 
 declare const global: {
 	wcpaySettings: {
-		devMode: boolean;
+		testModeOnboarding: boolean;
 	};
 };
 
 describe( 'AccountTools', () => {
 	it( 'should NOT render in live mode', () => {
 		global.wcpaySettings = {
-			devMode: false,
+			testModeOnboarding: false,
 		};
 
 		const { container } = render(
@@ -31,9 +31,9 @@ describe( 'AccountTools', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	it( 'should render in sandbox mode', () => {
+	it( 'should render in test/sandbox mode onboarding', () => {
 		global.wcpaySettings = {
-			devMode: true,
+			testModeOnboarding: true,
 		};
 
 		const { container } = render(
