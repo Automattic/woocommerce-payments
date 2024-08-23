@@ -6,12 +6,11 @@
 import { apiFetch } from '@wordpress/data-controls';
 import { dispatch, select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-// TODO: Decouple 'tracks'.
-import { recordEvent } from 'tracks';
 
 /**
  * Internal Dependencies
  */
+import { recordEvent } from 'mccy/interface/data';
 import TYPES from './action-types';
 import { NAMESPACE, STORE_NAME } from './constants';
 

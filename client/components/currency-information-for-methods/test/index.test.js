@@ -8,7 +8,7 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import { useAccountDomesticCurrency } from '../../../data';
-import { useCurrencies, useEnabledCurrencies } from 'mccy/data';
+import { useCurrencies, useEnabledCurrencies } from 'mccy/interface/data';
 import CurrencyInformationForMethods, {
 	BuildMissingCurrenciesTooltipMessage,
 } from '..';
@@ -20,7 +20,7 @@ jest.mock( '../../../data', () => ( {
 	useAccountDomesticCurrency: jest.fn(),
 } ) );
 
-jest.mock( 'mccy/data', () => ( {
+jest.mock( 'mccy/interface/data', () => ( {
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
 } ) );

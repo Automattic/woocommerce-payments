@@ -25,7 +25,7 @@ import {
 	useManualCapture,
 	useAccountDomesticCurrency,
 } from '../../../data';
-import { useCurrencies, useEnabledCurrencies } from 'mccy/data';
+import { useCurrencies, useEnabledCurrencies } from 'mccy/interface/data';
 
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
@@ -39,7 +39,7 @@ jest.mock( '../../../data', () => ( {
 	useAccountDomesticCurrency: jest.fn(),
 } ) );
 
-jest.mock( 'mccy/data', () => ( {
+jest.mock( 'mccy/interface/data', () => ( {
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
 } ) );

@@ -44,7 +44,7 @@ jest.mock( '../../data', () => ( {
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 } ) );
 
-jest.mock( 'mccy/data', () => ( {
+jest.mock( 'mccy/interface/data', () => ( {
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
