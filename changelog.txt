@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 8.1.1 - 2024-08-23 =
+
 = 8.1.0 - 2024-08-21 =
 * Add - Add button rules to appearance
 * Add - Add heading rules to appearance
