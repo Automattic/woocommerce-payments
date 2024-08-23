@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Country_Code;
 use WCPay\MultiCurrency\Utils;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
@@ -458,7 +457,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
 
@@ -475,7 +474,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
 
@@ -490,7 +489,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
 
@@ -511,7 +510,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
 
@@ -536,7 +535,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
 
@@ -546,11 +545,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_display_geolocation_currency_update_notice_does_not_display_if_using_default_currency() {
-		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, Country_Code::UNITED_STATES );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'US' );
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::UNITED_STATES;
+				return 'US';
 			}
 		);
 
@@ -564,7 +563,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::UNITED_STATES;
+				return 'US';
 			}
 		);
 
