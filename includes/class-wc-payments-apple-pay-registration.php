@@ -95,7 +95,6 @@ class WC_Payments_Apple_Pay_Registration {
 		add_action( 'parse_request', [ $this, 'parse_domain_association_request' ], 10, 1 );
 
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_error_notice' ] );
-		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_live_account_notice' ] );
 		add_action( 'add_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
 	}
@@ -351,30 +350,6 @@ class WC_Payments_Apple_Pay_Registration {
 		if ( ! $this->was_enabled( $prev_settings ) ) {
 			$this->verify_domain_if_configured();
 		}
-	}
-
-	/**
-	 * Display warning notice explaining that the domain can't be registered without a live account.
-	 */
-	public function display_live_account_notice() {
-		if ( ! $this->is_enabled() || $this->account->get_is_live() ) {
-			return;
-		}
-
-		?>
-		<div class="notice notice-warning apple-pay-message">
-			<p>
-				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
-				<?php
-					printf(
-						/* translators: %s: WooPayments */
-						esc_html__( 'Express checkouts are enabled. To use Apple Pay, please use a live %s account.', 'woocommerce-payments' ),
-						'WooPayments'
-					);
-				?>
-			</p>
-		</div>
-		<?php
 	}
 
 	/**
