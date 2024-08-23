@@ -7,7 +7,7 @@
 
 namespace WCPay\MultiCurrency\Helpers;
 
-use WC_Payments_Utils;
+use WCPay\MultiCurrency\BackendCurrencies;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 
@@ -25,6 +25,13 @@ class OrderMetaHelper {
 	private $payments_api_client;
 
 	/**
+	 * Backend currencies object.
+	 *
+	 * @var BackendCurrencies
+	 */
+	private $backend_currencies;
+
+	/**
 	 * Array of errors, if any.
 	 *
 	 * @var array
@@ -35,9 +42,11 @@ class OrderMetaHelper {
 	 * Constructor.
 	 *
 	 * @param MultiCurrencyApiClientInterface $payments_api_client Payments API client.
+	 * @param BackendCurrencies               $backend_currencies  Backend currencies object.
 	 */
-	public function __construct( MultiCurrencyApiClientInterface $payments_api_client ) {
+	public function __construct( MultiCurrencyApiClientInterface $payments_api_client, BackendCurrencies $backend_currencies ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->backend_currencies  = $backend_currencies;
 	}
 
 	/**
@@ -246,7 +255,7 @@ class OrderMetaHelper {
 		/**
 		 * Zero decimal currencies have a different conversion rate value.
 		 */
-		if ( in_array( strtolower( $order_currency ), WC_Payments_Utils::zero_decimal_currencies(), true ) ) {
+		if ( $this->backend_currencies->is_zero_decimal_currency( $order_currency ) ) {
 			if ( '' !== $charge_items['charge_exchange_rate']['value'] ) {
 				$charge_items['charge_exchange_rate']['value'] = $charge_items['charge_exchange_rate']['value'] / 100;
 			}
