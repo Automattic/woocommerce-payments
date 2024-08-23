@@ -481,6 +481,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_wcpay_enabled'                       => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'is_test_mode_enabled'                   => WC_Payments::mode()->is_test(),
+				'is_test_mode_onboarding'                => WC_Payments::mode()->is_test_mode_onboarding(),
 				'is_dev_mode_enabled'                    => WC_Payments::mode()->is_dev(),
 				'is_multi_currency_enabled'              => WC_Payments_Features::is_customer_multi_currency_enabled(),
 				'is_wcpay_subscriptions_enabled'         => WC_Payments_Features::is_wcpay_subscriptions_enabled(),

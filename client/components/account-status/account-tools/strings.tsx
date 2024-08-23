@@ -7,11 +7,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { isInDevMode } from 'utils';
+import { isInTestModeOnboarding } from 'utils';
 
 export default {
 	title: __( 'Account Tools', 'woocommerce-payments' ),
-	description: isInDevMode()
+	description: isInTestModeOnboarding()
 		? __(
 				'Your account is in sandbox mode. If you are experiencing problems completing account setup, or wish to test with a different email/country associated with your account, you can reset your account and start from the beginning.',
 				'woocommerce-payments'
