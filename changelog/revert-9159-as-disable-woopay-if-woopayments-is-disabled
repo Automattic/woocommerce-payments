@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Reverts changes related to Direct Checkout that broke the PayPal extension.

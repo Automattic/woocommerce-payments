@@ -27,6 +27,7 @@ export const ExpressCheckoutPreviewComponent = ( {
 		appearance: {
 			variables: {
 				borderRadius: `${ radius ?? getDefaultBorderRadius() }px`,
+				spacingUnit: '6px',
 			},
 		},
 	};
@@ -62,8 +63,8 @@ export const ExpressCheckoutPreviewComponent = ( {
 		},
 		paymentMethods: {
 			link: 'never',
-			googlePay: 'auto',
-			applePay: 'auto',
+			googlePay: 'always',
+			applePay: 'always',
 		},
 		layout: { overflow: 'never' },
 	};

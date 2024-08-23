@@ -54,8 +54,6 @@ function _manually_load_plugin() {
 		}
 	);
 
-	update_option( '_wcpay_feature_allow_subscription_migrations', '1' );
-
 	$_plugin_dir = __DIR__ . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';

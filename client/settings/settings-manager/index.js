@@ -11,7 +11,6 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AdvancedSettings from '../advanced-settings';
-import PaymentMethods from '../../payment-methods';
 import ExpressCheckout from '../express-checkout';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
@@ -21,6 +20,8 @@ import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
 import LoadableSettingsSection from '../loadable-settings-section';
+import PaymentMethodsSection from '../payment-methods-section';
+import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
 import {
 	useDepositDelayDays,
@@ -30,22 +31,6 @@ import {
 import FraudProtection from '../fraud-protection';
 import { isDefaultSiteLanguage } from 'wcpay/utils';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
-
-const PaymentMethodsDescription = () => (
-	<>
-		<h2>
-			{ __( 'Payments accepted on checkout', 'woocommerce-payments' ) }
-		</h2>
-		<p>
-			{ __(
-				'Add and edit payments available to customers at checkout. ' +
-					'Based on their device type, location, and purchase history, ' +
-					'your customers will only see the most relevant payment methods.',
-				'woocommerce-payments'
-			) }
-		</p>
-	</>
-);
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -229,16 +214,8 @@ const SettingsManager = () => {
 					setDismissedDuplicateNotices: setDismissedDuplicateNotices,
 				} }
 			>
-				<SettingsSection
-					description={ PaymentMethodsDescription }
-					id="payment-methods"
-				>
-					<LoadableSettingsSection numLines={ 60 }>
-						<ErrorBoundary>
-							<PaymentMethods />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
+				<PaymentMethodsSection />
+				<BuyNowPayLaterSection />
 				<SettingsSection
 					id="express-checkouts"
 					description={ ExpressCheckoutDescription }

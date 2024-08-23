@@ -47,15 +47,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether streamline refunds is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_streamline_refunds_enabled(): bool {
-		return '1' === get_option( self::STREAMLINE_REFUNDS_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Checks if WooPay is enabled.
 	 *
 	 * @return bool
@@ -188,15 +179,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Returns whether WCPay Subscription migration is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_subscription_migration_enabled() {
-		return '1' === get_option( '_wcpay_feature_allow_subscription_migrations', '0' );
-	}
-
-	/**
 	 * Checks whether woopay is enabled.
 	 *
 	 * @return bool
@@ -261,6 +243,17 @@ class WC_Payments_Features {
 		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
 
 		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopayments_gateway_enabled() && self::is_woopay_enabled();
+	}
+
+	/**
+	 * Checks whether WooPay global theme support is eligible.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_global_theme_support_eligible() {
+		$account_cache = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account_cache ) && ( $account_cache['platform_global_theme_support_enabled'] ?? false );
 	}
 
 	/**

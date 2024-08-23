@@ -3,10 +3,11 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies.
@@ -30,6 +31,7 @@ import { getTasks, taskSort } from './task-list/tasks';
 import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
+import BannerNotice from 'wcpay/components/banner-notice';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -38,17 +40,18 @@ const OverviewPageError = () => {
 		return null;
 	}
 	return (
-		<Notice
+		<BannerNotice
+			className={ showLoginError ? 'wcpay-login-error' : '' }
 			status="error"
+			icon={ true }
 			isDismissible={ false }
-			className="wcpay-login-error"
 		>
 			{ wcpaySettings.errorMessage ||
 				__(
 					'There was a problem redirecting you to the account dashboard. Please try again.',
 					'woocommerce-payments'
 				) }
-		</Notice>
+		</BannerNotice>
 	);
 };
 
@@ -65,6 +68,10 @@ const OverviewPage = () => {
 
 	const isOnboardingTestMode = wcpaySettings.onboardingTestMode;
 	const { isLoading: settingsIsLoading } = useSettings();
+	const [
+		isTestDriveSuccessDisplayed,
+		setTestDriveSuccessDisplayed,
+	] = useState( false );
 	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {
@@ -88,6 +95,12 @@ const OverviewPage = () => {
 
 	const showConnectionSuccess =
 		queryParams[ 'wcpay-connection-success' ] === '1';
+
+	// We want to show the sandbox success notice only if the account is enabled or complete.
+	const isSandboxOnboardedSuccessful =
+		queryParams[ 'wcpay-sandbox-success' ] === 'true' &&
+		( ( accountStatus.status && accountStatus.status === 'complete' ) ||
+			accountStatus.status === 'enabled' );
 
 	const showLoanOfferError = queryParams[ 'wcpay-loan-offer-error' ] === '1';
 	const showServerLinkError =
@@ -120,6 +133,18 @@ const OverviewPage = () => {
 			return { payment_method: key, fee: value };
 		} )
 		.filter( ( e ) => e && e.fee !== undefined );
+
+	if ( ! isTestDriveSuccessDisplayed && isSandboxOnboardedSuccessful ) {
+		dispatch( 'core/notices' ).createSuccessNotice(
+			__(
+				'Success! You can start using WooPayments in sandbox mode.',
+				'woocommerce-payments'
+			)
+		);
+
+		// Ensure the success message is displayed only once.
+		setTestDriveSuccessDisplayed( true );
+	}
 
 	return (
 		<Page isNarrow className="wcpay-overview">
