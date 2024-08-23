@@ -31,6 +31,7 @@ import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from 'wcpay/checkout/constants';
+import '../utils/copy-test-number';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
