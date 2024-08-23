@@ -9,8 +9,6 @@ namespace WCPay\MultiCurrency;
 
 use WC_Payments;
 use WC_Payments_Utils;
-use WCPay\Constants\Country_Code;
-use WCPay\Constants\Currency_Code;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
@@ -1450,11 +1448,11 @@ class MultiCurrency {
 		$countries = WC_Payments_Utils::supported_countries();
 
 		$predefined_simulation_currencies = [
-			Currency_Code::UNITED_STATES_DOLLAR => $countries[ Country_Code::UNITED_STATES ],
-			Currency_Code::POUND_STERLING       => $countries[ Country_Code::UNITED_KINGDOM ],
+			'USD' => $countries['US'],
+			'GBP' => $countries['GB'],
 		];
 
-		$simulation_currency      = Currency_Code::UNITED_STATES_DOLLAR === get_option( 'woocommerce_currency', Currency_Code::UNITED_STATES_DOLLAR ) ? Currency_Code::POUND_STERLING : Currency_Code::UNITED_STATES_DOLLAR;
+		$simulation_currency      = 'USD' === get_option( 'woocommerce_currency', 'USD' ) ? 'GBP' : 'USD';
 		$simulation_currency_name = $this->available_currencies[ $simulation_currency ]->get_name();
 		$simulation_country       = $predefined_simulation_currencies[ $simulation_currency ];
 
