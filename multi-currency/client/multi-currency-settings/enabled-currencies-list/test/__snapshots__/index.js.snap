@@ -1,0 +1,434 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Multi-Currency enabled currencies list Enabled currencies list renders correctly 1`] = `
+<div>
+  <div
+    class="settings-section multi-currency-settings-enabled-currencies-section"
+  >
+    <div
+      class="settings-section__details"
+    >
+      <h2>
+        Enabled currencies
+      </h2>
+      <p>
+        Accept payments in multiple currencies. Prices are converted based on exchange rates and rounding rules. 
+        <a
+          href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#enabled-currencies"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Learn more
+        </a>
+      </p>
+    </div>
+    <div
+      class="settings-section__controls"
+    >
+      <div
+        class="components-surface components-card wcpay-multi-currency__enabled-currencies css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Card"
+      >
+        <div
+          class="css-mgwsf4-View-Content em57xhy0"
+        >
+          <div
+            class="components-card__body components-card-body wcpay-multi-currency__enabled-currencies-header css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="CardBody"
+          >
+            <div>
+              Name
+            </div>
+            <div>
+              Exchange rate
+            </div>
+            <div />
+          </div>
+          <hr
+            aria-orientation="horizontal"
+            class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+            data-wp-c16t="true"
+            data-wp-component="CardDivider"
+            role="separator"
+          />
+          <div
+            class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="CardBody"
+          >
+            <ul
+              class="enabled-currencies-list"
+            >
+              <li
+                class="enabled-currency usd"
+              >
+                <div
+                  class="enabled-currency__container"
+                >
+                  <div
+                    class="enabled-currency__flag"
+                  >
+                    🇺🇸
+                  </div>
+                  <div
+                    class="enabled-currency__label"
+                  >
+                    United States (US) dollar
+                  </div>
+                  <div
+                    class="enabled-currency__code"
+                  >
+                    (
+                    $ USD
+                    )
+                  </div>
+                </div>
+                <div
+                  class="enabled-currency__rate"
+                >
+                  Default currency
+                </div>
+                <div
+                  class="enabled-currency__actions"
+                />
+              </li>
+              <li
+                class="enabled-currency cad"
+              >
+                <div
+                  class="enabled-currency__container"
+                >
+                  <div
+                    class="enabled-currency__flag"
+                  >
+                    🇨🇦
+                  </div>
+                  <div
+                    class="enabled-currency__label"
+                  >
+                    Canadian dollar
+                  </div>
+                  <div
+                    class="enabled-currency__code"
+                  >
+                    (
+                    $ CAD
+                    )
+                  </div>
+                </div>
+                <div
+                  class="enabled-currency__rate"
+                >
+                  1 USD → 1.42 CAD
+                </div>
+                <div
+                  class="enabled-currency__actions"
+                >
+                  <button
+                    aria-label="Edit Canadian dollar"
+                    class="components-button enabled-currency__action edit is-link"
+                    type="button"
+                  >
+                    manage
+                  </button>
+                  <button
+                    aria-label="Remove Canadian dollar as an enabled currency"
+                    class="components-button enabled-currency__action delete is-link"
+                    type="button"
+                  >
+                    <span
+                      class="dashicon dashicons dashicons-trash"
+                    />
+                  </button>
+                </div>
+              </li>
+              <li
+                class="enabled-currency gbp"
+              >
+                <div
+                  class="enabled-currency__container"
+                >
+                  <div
+                    class="enabled-currency__flag"
+                  >
+                    🇬🇧
+                  </div>
+                  <div
+                    class="enabled-currency__label"
+                  >
+                    Pound sterling
+                  </div>
+                  <div
+                    class="enabled-currency__code"
+                  >
+                    (
+                    £ GBP
+                    )
+                  </div>
+                </div>
+                <div
+                  class="enabled-currency__rate"
+                >
+                  1 USD → 0.71 GBP
+                </div>
+                <div
+                  class="enabled-currency__actions"
+                >
+                  <button
+                    aria-label="Edit Pound sterling"
+                    class="components-button enabled-currency__action edit is-link"
+                    type="button"
+                  >
+                    manage
+                  </button>
+                  <button
+                    aria-label="Remove Pound sterling as an enabled currency"
+                    class="components-button enabled-currency__action delete is-link"
+                    type="button"
+                  >
+                    <span
+                      class="dashicon dashicons dashicons-trash"
+                    />
+                  </button>
+                </div>
+              </li>
+              <li
+                class="enabled-currency eur"
+              >
+                <div
+                  class="enabled-currency__container"
+                >
+                  <div
+                    class="enabled-currency__flag"
+                  >
+                    🇪🇺
+                  </div>
+                  <div
+                    class="enabled-currency__label"
+                  >
+                    Euro
+                  </div>
+                  <div
+                    class="enabled-currency__code"
+                  >
+                    (
+                    € EUR
+                    )
+                  </div>
+                </div>
+                <div
+                  class="enabled-currency__rate"
+                >
+                  1 USD → 0.83 EUR
+                </div>
+                <div
+                  class="enabled-currency__actions"
+                >
+                  <button
+                    aria-label="Edit Euro"
+                    class="components-button enabled-currency__action edit is-link"
+                    type="button"
+                  >
+                    manage
+                  </button>
+                  <button
+                    aria-label="Remove Euro as an enabled currency"
+                    class="components-button enabled-currency__action delete is-link"
+                    type="button"
+                  >
+                    <span
+                      class="dashicon dashicons dashicons-trash"
+                    />
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <hr
+            aria-orientation="horizontal"
+            class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+            data-wp-c16t="true"
+            data-wp-component="CardDivider"
+            role="separator"
+          />
+          <div
+            class="components-card__body components-card-body wcpay-multi-currency__available-currencies-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="CardBody"
+          >
+            <button
+              class="components-button wcpay-multi-currency__available-currencies-modal is-secondary"
+              data-testid="enabled-currencies-add-button"
+              type="button"
+            >
+              Add/remove currencies
+            </button>
+          </div>
+        </div>
+        <div
+          aria-hidden="true"
+          class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Elevation"
+        />
+        <div
+          aria-hidden="true"
+          class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Elevation"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Multi-Currency enabled currencies list Remove currency modal renders correctly 1`] = `
+<div
+  aria-labelledby="components-modal-header-1"
+  class="components-modal__frame wcpay-confirmation-modal enabled-currency-delete-modal"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    role="document"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-1"
+        >
+          Remove Euro
+        </h1>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="components-button has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="currency-delete-illustration__wrapper"
+    >
+      <div
+        class="currency-delete-illustration__illustrations"
+      >
+        €
+        <svg
+          class="gridicon gridicons-cross-circle currency-delete-illustration__currency-cross-icon"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g>
+            <path
+              d="M19.1 4.9C15.2 1 8.8 1 4.9 4.9S1 15.2 4.9 19.1s10.2 3.9 14.1 0 4-10.3.1-14.2zm-4.3 11.3L12 13.4l-2.8 2.8-1.4-1.4 2.8-2.8-2.8-2.8 1.4-1.4 2.8 2.8 2.8-2.8 1.4 1.4-2.8 2.8 2.8 2.8-1.4 1.4z"
+            />
+          </g>
+        </svg>
+      </div>
+    </div>
+    <p>
+      Are you sure you want to remove 
+      <strong>
+        Euro (EUR €)
+      </strong>
+      ? Your customers will no longer be able to pay in this currency and use payment methods listed below.
+    </p>
+    <ul>
+      <li>
+        <span
+          class="woocommerce-payments__payment-method-icon"
+        >
+          <img
+            alt="Giropay"
+            class="payment-method__icon"
+            src="assets/images/payment-methods/giropay.svg"
+          />
+          <span
+            class="woocommerce-payments__payment-method-icon__label"
+          >
+            giropay
+          </span>
+        </span>
+      </li>
+      <li>
+        <span
+          class="woocommerce-payments__payment-method-icon"
+        >
+          <img
+            alt="Sofort"
+            class="payment-method__icon"
+            src="assets/images/payment-methods/sofort.svg"
+          />
+          <span
+            class="woocommerce-payments__payment-method-icon__label"
+          >
+            Sofort
+          </span>
+        </span>
+      </li>
+      <li>
+        <span
+          class="woocommerce-payments__payment-method-icon"
+        >
+          <img
+            alt="SEPA Direct Debit"
+            class="payment-method__icon"
+            src="assets/images/payment-methods/sepa-debit.svg"
+          />
+          <span
+            class="woocommerce-payments__payment-method-icon__label"
+          >
+            SEPA Direct Debit
+          </span>
+        </span>
+      </li>
+    </ul>
+    <p>
+      You can add Euro (EUR €) again at any time in Multi-Currency settings.
+    </p>
+    <hr
+      class="wcpay-confirmation-modal__separator"
+    />
+    <div
+      class="wcpay-confirmation-modal__footer"
+    >
+      <button
+        class="components-button is-primary is-destructive"
+        type="button"
+      >
+        Remove
+      </button>
+      <button
+        class="components-button is-secondary"
+        type="button"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+`;
