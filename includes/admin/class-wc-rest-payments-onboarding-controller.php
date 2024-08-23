@@ -214,7 +214,11 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		$source        = $request->get_param( 'source' );
 
 		// Call the API to finalize the onboarding.
-		$result = $this->onboarding_service->finalize_embedded_onboarding( get_user_locale(), $source );
+		try {
+			$result = $this->onboarding_service->finalize_embedded_onboarding( get_user_locale(), $source );
+		} catch ( Exception $e ) {
+			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
+		}
 
 		// Handle some post-onboarding tasks and redirect.
 		WC_Payments::get_account_service()->finalize_embedded_connection( $client_secret, $result['mode'] );

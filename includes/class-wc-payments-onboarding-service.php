@@ -234,14 +234,19 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		$result = $this->payments_api_client->finalize_embedded_onboarding( $locale, $source );
-		if ( ! $result || ! $result['success'] ?? false ) {
-			throw new API_Exception( __( 'Could not finalize the onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
+
+		$success           = $result['success'] ?? false;
+		$details_submitted = $result['details_submitted'] ?? false;
+
+		if ( ! $result || ! $success ) {
+			throw new API_Exception( __( 'Failed to finalize onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
 		}
 
 		return [
-			'success'    => $result['success'] ?? false,
-			'account_id' => $result['account_id'] ?? '',
-			'mode'       => $result['mode'],
+			'success'           => $success,
+			'details_submitted' => $details_submitted,
+			'account_id'        => $result['account_id'] ?? '',
+			'mode'              => $result['mode'],
 		];
 	}
 

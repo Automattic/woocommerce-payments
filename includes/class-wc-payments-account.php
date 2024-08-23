@@ -1895,8 +1895,6 @@ class WC_Payments_Account {
 
 		$params = $additional_args;
 
-		// TODO: Handle the response from the server when the merchant exits onboarding early.
-
 		$params['wcpay-connection-success'] = '1';
 		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_STRIPE_EMBEDDED, $params );
 	}
