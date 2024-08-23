@@ -8,7 +8,6 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Payments;
-use WC_Payments_Utils;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
@@ -228,7 +227,7 @@ class MultiCurrency {
 
 		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
 
-		if ( $is_frontend_request || \WC_Payments_Utils::is_store_api_request() ) {
+		if ( $is_frontend_request || Utils::is_store_api_request() ) {
 			// Make sure that this runs after the main init function.
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );

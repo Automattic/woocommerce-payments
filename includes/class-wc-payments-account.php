@@ -616,6 +616,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return array
 	 */
 	public function get_supported_countries(): array {
+		// This is a wrapper function because of the MultiCurrencyAccountInterface.
 		return WC_Payments_Utils::supported_countries();
 	}
 
