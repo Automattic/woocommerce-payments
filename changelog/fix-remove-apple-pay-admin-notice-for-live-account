@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Remove obsolete ApplePay warning on wp-admin for test sites.
