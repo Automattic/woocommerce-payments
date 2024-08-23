@@ -95,6 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 8.1.1 - 2024-08-23 =
+* Fix - Fixed sandbox mode accounts being able to disable test mode for the payment gateway settings.
 
 
 = 8.1.0 - 2024-08-21 =
