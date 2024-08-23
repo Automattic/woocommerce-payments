@@ -1445,7 +1445,7 @@ class MultiCurrency {
 			return;
 		}
 
-		$countries = WC_Payments_Utils::supported_countries();
+		$countries = $this->payments_account->get_supported_countries();
 
 		$predefined_simulation_currencies = [
 			'USD' => $countries['US'],
