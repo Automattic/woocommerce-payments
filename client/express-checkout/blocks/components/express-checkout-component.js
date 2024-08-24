@@ -40,10 +40,11 @@ const adjustButtonHeights = ( buttonOptions, expressPaymentMethod ) => {
 	// Apple Pay has a nearly imperceptible height difference. We increase it by 1px here.
 	if ( buttonOptions.buttonTheme.applePay === 'black' ) {
 		if ( expressPaymentMethod === 'applePay' ) {
+			// The maximum allowed size is 55px.
 			buttonOptions.buttonHeight = Math.min(
 				buttonOptions.buttonHeight + 0.4,
 				55
-			); // Max allowed size is 55px.
+			);
 		}
 	}
 
