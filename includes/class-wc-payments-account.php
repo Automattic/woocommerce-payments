@@ -1852,17 +1852,15 @@ class WC_Payments_Account {
 	 * @param string $mode           The mode in which the account was created. Either 'test' or 'live'.
 	 * @param array  $additional_args Additional query args to add to the redirect URLs.
 	 *
-	 * @return void
+	 * @return array Returns whether the operation was successful, along with the URL params to handle the redirect.
 	 */
-	public function finalize_embedded_connection( string $session_id, string $mode, array $additional_args = [] ) {
+	public function finalize_embedded_connection( string $session_id, string $mode, array $additional_args = [] ): array {
 		// If the transient isn't set properly, then this isn't a valid onboarding session.
 		if ( get_transient( self::ONBOARDING_SESSION_TRANSIENT ) !== $session_id ) {
-			$this->redirect_service->redirect_to_connect_page(
-				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ),
-				null, // No need to specify any from as we will carry over the once in the additional args, if present.
-				$additional_args
-			);
-			return;
+			return [
+				'success' => false,
+				'params'  => [],
+			];
 		}
 
 		// The session ID matches, so we can delete the stored one.
@@ -1896,7 +1894,10 @@ class WC_Payments_Account {
 		$params = $additional_args;
 
 		$params['wcpay-connection-success'] = '1';
-		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_STRIPE_EMBEDDED, $params );
+		return [
+			'success' => true,
+			'params'  => $params,
+		];
 	}
 
 	/**

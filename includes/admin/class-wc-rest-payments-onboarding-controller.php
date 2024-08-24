@@ -220,7 +220,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
 		}
 
-		// Handle some post-onboarding tasks and redirect.
+		// Handle some post-onboarding tasks.
 		WC_Payments::get_account_service()->finalize_embedded_connection( $client_secret, $result['mode'] );
 
 		return rest_ensure_response( $result );

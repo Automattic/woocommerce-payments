@@ -26,12 +26,17 @@ import {
 	PoEligibleResult,
 } from 'wcpay/onboarding/types';
 import { fromDotNotation } from 'wcpay/onboarding/utils';
-import { getAdminUrl } from 'wcpay/utils';
+import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
 import { LoadError } from '@stripe/connect-js/types/config';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { __ } from '@wordpress/i18n';
 
 type AccountSessionData = AccountSession;
+
+interface FinalizeRepsonse {
+	success: boolean;
+	params: Record< string, string >;
+}
 
 const EmbeddedOnboarding: React.FC = () => {
 	const { data } = useOnboardingContext();
@@ -164,7 +169,9 @@ const EmbeddedOnboarding: React.FC = () => {
 									.get( 'source' )
 									?.replace( /[^\w-]+/g, '' ) || 'unknown';
 							try {
-								await apiFetch( {
+								const response = await apiFetch<
+									FinalizeRepsonse
+								>( {
 									path: `${ NAMESPACE }/onboarding/finalize`,
 									method: 'POST',
 									data: {
@@ -172,15 +179,22 @@ const EmbeddedOnboarding: React.FC = () => {
 										clientSecret: clientSecret,
 									},
 								} );
+
+								if ( response.success ) {
+									// TODO: Add the correct source.
+									window.location.href = getOverviewUrl(
+										response.params,
+										'WCPAY_ONBOARDING_WIZARD'
+									);
+								} else {
+									window.location.href = getConnectUrl(
+										{},
+										'WCPAY_ONBOARDING_WIZARD'
+									);
+								}
 							} catch ( error ) {
 								// TODO GH-9251 add error to the overview page
 							}
-							window.location.href = getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/overview',
-								source: urlSource,
-								from: 'WCPAY_ONBOARDING_WIZARD',
-							} );
 						} }
 					/>
 				</ConnectComponentsProvider>
