@@ -202,10 +202,6 @@ class WC_Payments_Onboarding_Service {
 			return [];
 		}
 
-		if ( ! empty( $account_session['client_secret'] ) ) {
-			set_transient( WC_Payments_Account::ONBOARDING_SESSION_TRANSIENT, $account_session['client_secret'] );
-		}
-
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
 			'expiresAt'      => $account_session['expires_at'] ?? 0,

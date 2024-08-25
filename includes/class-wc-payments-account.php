@@ -28,7 +28,6 @@ class WC_Payments_Account {
 	const ONBOARDING_DISABLED_TRANSIENT                         = 'wcpay_on_boarding_disabled';
 	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
-	const ONBOARDING_SESSION_TRANSIENT                          = 'wcpay_stripe_onboarding_session';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
@@ -1848,23 +1847,13 @@ class WC_Payments_Account {
 	 * Handle the finalization of an embedded onboarding. This includes updating the cache, setting the gateway mode,
 	 * tracking the event, and redirecting the user to the overview page.
 	 *
-	 * @param string $session_id     The session ID.
 	 * @param string $mode           The mode in which the account was created. Either 'test' or 'live'.
 	 * @param array  $additional_args Additional query args to add to the redirect URLs.
 	 *
 	 * @return array Returns whether the operation was successful, along with the URL params to handle the redirect.
 	 */
-	public function finalize_embedded_connection( string $session_id, string $mode, array $additional_args = [] ): array {
-		// If the transient isn't set properly, then this isn't a valid onboarding session.
-		if ( get_transient( self::ONBOARDING_SESSION_TRANSIENT ) !== $session_id ) {
-			return [
-				'success' => false,
-				'params'  => [],
-			];
-		}
-
-		// The session ID matches, so we can delete the stored one.
-		delete_transient( self::ONBOARDING_SESSION_TRANSIENT );
+	public function finalize_embedded_connection( string $mode, array $additional_args = [] ): array {
+		Logger::debug( "Finalizing embedded connection with following values: mode: {$mode}" );
 
 		// Clear the account cache.
 		$this->clear_cache();

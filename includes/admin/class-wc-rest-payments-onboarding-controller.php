@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Logger;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -210,8 +212,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
 	 */
 	public function finalize_embedded_onboarding( WP_REST_Request $request ) {
-		$client_secret = $request->get_param( 'clientSecret' );
-		$source        = $request->get_param( 'source' );
+		$source = $request->get_param( 'source' );
 
 		// Call the API to finalize the onboarding.
 		try {
@@ -220,10 +221,16 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
 		}
 
-		// Handle some post-onboarding tasks.
-		WC_Payments::get_account_service()->finalize_embedded_connection( $client_secret, $result['mode'] );
+		// Handle some post-onboarding tasks and get the redirect params.
+		$finalise = WC_Payments::get_account_service()->finalize_embedded_connection( $result['mode'] );
 
-		return rest_ensure_response( $result );
+		// Return the response, the client will handle the redirect.
+		return rest_ensure_response(
+			array_merge(
+				$result,
+				$finalise
+			)
+		);
 	}
 
 	/**
