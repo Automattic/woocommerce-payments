@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Ensure 55px is the maximum height for Apple Pay button.

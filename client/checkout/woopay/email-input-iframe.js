@@ -6,8 +6,10 @@ import { getConfig } from 'wcpay/utils/checkout';
 import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from 'utils/express-checkout';
+import { getAppearance } from 'checkout/upe-styles';
 import {
 	getTargetElement,
+	getAppearanceType,
 	validateEmail,
 	appendRedirectionParams,
 	shouldSkipWooPay,
@@ -177,6 +179,7 @@ export const handleWooPayEmailInput = async (
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
+		const appearanceType = getAppearanceType();
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(
@@ -186,6 +189,9 @@ export const handleWooPayEmailInput = async (
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
+					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+						? getAppearance( appearanceType )
+						: null,
 				}
 			).then( ( response ) => {
 				if ( response?.data?.session ) {
