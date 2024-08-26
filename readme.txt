@@ -94,6 +94,18 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.2.0-test-1 - unreleased =
+* Fix - Ensure 55px is the maximum height for Apple Pay button.
+* Fix - fix: missing translations on testing instructions.
+* Fix - fix: testing instructions dark theme support
+* Fix - Fix caching with tracking cookie.
+* Fix - Pass appearance data when initiating WooPay via the email input flow
+* Fix - Remove obsolete ApplePay warning on wp-admin for test sites.
+* Fix - Update cache after persisting the User session via WooPay
+* Fix - Updates test mode instructions copy for cards at checkout.
+* Update - update: payment method fees in one line
+* Dev - Migrate multi-currency e2e tests to Playwright.
+
 = 8.1.0 - 2024-08-21 =
 * Add - Add button rules to appearance
 * Add - Add heading rules to appearance
