@@ -6,10 +6,6 @@ import { __ } from '@wordpress/i18n';
 document.addEventListener(
 	'click',
 	function ( event ) {
-		if ( ! navigator.clipboard ) {
-			return;
-		}
-
 		const copyNumberButton = event.target?.closest(
 			'.js-woopayments-copy-test-number'
 		);
@@ -21,6 +17,14 @@ document.addEventListener(
 		const number = copyNumberButton.parentElement.querySelector(
 			'.js-woopayments-test-number'
 		).innerText;
+
+		if ( ! navigator.clipboard ) {
+			prompt(
+				__( 'Copy the test number:', 'woocommerce-payments' ),
+				number
+			);
+			return;
+		}
 		navigator.clipboard.writeText( number );
 
 		window.wp?.data
