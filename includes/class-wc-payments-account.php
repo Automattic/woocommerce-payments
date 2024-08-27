@@ -1200,25 +1200,26 @@ class WC_Payments_Account {
 				);
 				return;
 			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
-				// Delete the account if the onboarding test mode is enabled.
-				// Otherwise, we are already using a live account the request is invalid (it will be handled below,
+				// If the test mode onboarding is enabled:
+				// - Delete the current account;
+				// - Cleanup the gateway state for a fresh onboarding flow.
+				// Otherwise, we are already using a live account and the request is invalid (it will be handled below,
 				// in the "everything OK" scenario).
 				if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 					try {
 						// Delete the currently connected Stripe account.
 						$this->payments_api_client->delete_account( true );
-
-						$this->cleanup_on_account_reset();
 					} catch ( API_Exception $e ) {
 						// In case we fail to delete the account, log and carry on.
 						Logger::error( 'Failed to delete account in test mode: ' . $e->getMessage() );
 					}
+
+					$this->cleanup_on_account_reset();
 				}
 
-				// If dev mode is not active, we should not onboard in test mode since we are moving from test to live.
-				if ( ! WC_Payments::mode()->is_dev() ) {
-					$should_onboard_in_test_mode = false;
-				}
+				// Since we are moving from test to live, we will only onboard in test mode if we are in dev mode.
+				// Otherwise, we will do a live onboarding.
+				$should_onboard_in_test_mode = WC_Payments::mode()->is_dev();
 
 				$next_step_from = WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE;
 				// These from values are allowed to be passed through, when going from test to live.
@@ -2092,10 +2093,12 @@ class WC_Payments_Account {
 			return true;
 		}
 
+		// Handle test accounts.
+
 		// Fix test mode enabled DB state starting with the account data.
 		// These two should be in sync when in test mode onboarding.
 		// This is a weird case that shouldn't happen under normal circumstances.
-		if ( ! $account['is_live'] && ! WC_Payments_Onboarding_Service::is_test_mode_enabled() && WC_Payments::mode()->is_dev() ) {
+		if ( ! WC_Payments_Onboarding_Service::is_test_mode_enabled() && WC_Payments::mode()->is_dev() ) {
 			Logger::warning( 'Test mode account, account onboarding is NOT in test mode, but the plugin is in dev mode. Enabling test mode onboarding.' );
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
