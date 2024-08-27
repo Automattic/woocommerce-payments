@@ -8,8 +8,8 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
 import ConfirmationModal from 'mccy/confirmation-modal';
 import CurrencyDeleteIllustration from 'mccy/currency-delete-illustration';
-import PaymentMethodIcon from 'wcpay/settings/payment-method-icon';
-import paymentMethodsMap from 'wcpay/payment-methods-map';
+import PaymentMethodIcon from 'multi-currency/components/payment-method-icon';
+import paymentMethodsMap from 'multi-currency/utils/payment-methods-map';
 
 const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
