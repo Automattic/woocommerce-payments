@@ -703,7 +703,7 @@ class WooPay_Session {
 	 * @param string $rest_route  The REST route being checked.
 	 */
 	public static function ensure_woopay_route_namespace_is_loaded( $should_load, $ns, $rest_route ) {
-		if ( str_starts_with( $rest_route, 'wc/v3/woopay/session' ) ) {
+		if ( str_starts_with( $rest_route, 'wc/store/woopay' ) ) {
 			return true;
 		}
 
