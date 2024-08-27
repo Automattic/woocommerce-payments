@@ -15,7 +15,7 @@ import {
 	useCurrencies,
 	useDefaultCurrency,
 	useEnabledCurrencies,
-} from 'mccy/data';
+} from 'multi-currency/data';
 
 import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';

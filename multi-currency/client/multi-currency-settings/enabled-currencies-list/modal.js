@@ -13,7 +13,7 @@ import {
 	useAvailableCurrencies,
 	useEnabledCurrencies,
 	useDefaultCurrency,
-} from 'mccy/data';
+} from 'multi-currency/data';
 import EnabledCurrenciesModalCheckboxList from './modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from './modal-checkbox';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';

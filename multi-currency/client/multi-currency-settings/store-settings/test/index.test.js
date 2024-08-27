@@ -7,10 +7,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { useStoreSettings } from 'mccy/data';
+import { useStoreSettings } from 'multi-currency/data';
 import StoreSettings from '..';
 
-jest.mock( 'mccy/data', () => ( {
+jest.mock( 'multi-currency/data', () => ( {
 	useStoreSettings: jest.fn(),
 } ) );
 

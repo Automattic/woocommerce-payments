@@ -27,7 +27,7 @@ import {
 	useCurrencySettings,
 	useEnabledCurrencies,
 	useStoreSettings,
-} from 'mccy/data';
+} from 'multi-currency/data';
 import MultiCurrencySettingsContext from '../context';
 import { LoadableBlock } from 'wcpay/components/loadable';
 

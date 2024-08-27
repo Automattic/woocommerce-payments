@@ -3,7 +3,7 @@
  */
 import { Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useStoreSettings } from 'mccy/data';
+import { useStoreSettings } from 'multi-currency/data';
 
 /**
  * Internal dependencies

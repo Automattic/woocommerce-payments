@@ -6,8 +6,8 @@ import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
-import ConfirmationModal from 'mccy/confirmation-modal';
-import CurrencyDeleteIllustration from 'mccy/currency-delete-illustration';
+import ConfirmationModal from 'multi-currency/confirmation-modal';
+import CurrencyDeleteIllustration from 'multi-currency/currency-delete-illustration';
 import PaymentMethodIcon from 'multi-currency/components/payment-method-icon';
 import paymentMethodsMap from 'multi-currency/utils/payment-methods-map';
 

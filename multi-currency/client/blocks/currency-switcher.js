@@ -2,7 +2,7 @@
 /**
  * Internal dependencies
  */
-import { useEnabledCurrencies, useCurrencies } from 'mccy/data';
+import { useEnabledCurrencies, useCurrencies } from 'multi-currency/data';
 
 /**
  * External dependencies
