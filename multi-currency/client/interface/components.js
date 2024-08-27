@@ -11,3 +11,9 @@ export { default as WizardTaskList } from 'wcpay/additional-methods-setup/wizard
 export { default as Page } from 'wcpay/components/page';
 export { default as Search } from 'wcpay/components/search';
 export { LoadableBlock } from 'wcpay/components/loadable';
+
+/**
+ * Dependencies from MCCY to WooPayments.
+ */
+// mccy/setup
+export { default as MultiCurrencySetupPage } from 'mccy/setup';
