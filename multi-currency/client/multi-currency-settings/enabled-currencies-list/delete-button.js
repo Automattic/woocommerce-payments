@@ -6,8 +6,8 @@ import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
-import ConfirmationModal from 'wcpay/components/confirmation-modal';
-import CurrencyDeleteIllustration from 'wcpay/components/currency-delete-illustration';
+import ConfirmationModal from 'mccy/confirmation-modal';
+import CurrencyDeleteIllustration from 'mccy/currency-delete-illustration';
 import PaymentMethodIcon from 'wcpay/settings/payment-method-icon';
 import paymentMethodsMap from 'wcpay/payment-methods-map';
 

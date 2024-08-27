@@ -1,0 +1,31 @@
+.currency-delete-illustration {
+	&__wrapper {
+		margin: 30px auto 24px auto;
+		width: 35%;
+	}
+
+	&__illustrations {
+		position: relative;
+		margin: 0 auto;
+		background-color: #000580;
+		color: #ffe600;
+		width: 96px;
+		height: 72px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 48px;
+		line-height: 72px;
+	}
+
+	&__currency-cross-icon {
+		position: absolute;
+		top: -17px;
+		right: -17px;
+		width: 34px;
+		height: 34px;
+		fill: #cc1818;
+		background: $white;
+		border-radius: 999px;
+	}
+}

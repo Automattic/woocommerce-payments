@@ -3,7 +3,7 @@
  * External dependencies
  */
 import classNames from 'classnames';
-import { LoadableBlock } from 'wcpay/components/loadable';
+import { LoadableBlock } from 'mccy/loadable';
 
 const EnabledCurrenciesListItemPlaceholder = ( { isLoading } ) => {
 	return (

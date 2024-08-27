@@ -1,0 +1,29 @@
+.wcpay-confirmation-modal {
+	// increasing the specificity of the styles, to ensure it is honored
+	&#{&} {
+		max-width: 600px;
+	}
+
+	// to ensure that the separator extends all the way, even with different versions of Gutenberg
+	.components-modal__content {
+		display: flex;
+		flex-direction: column;
+		padding: 0 $grid-unit-30 $grid-unit-30;
+		p {
+			padding: 1em 0;
+			margin: 0;
+		}
+	}
+
+	.components-modal__header {
+		padding: $grid-unit-30;
+	}
+
+	&__separator {
+		margin: $grid-unit-30 -#{$grid-unit-30};
+	}
+
+	&__footer {
+		@include modal-footer-buttons;
+	}
+}
