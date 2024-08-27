@@ -12,6 +12,7 @@ import {
 } from '@woocommerce/blocks-registry';
 import { __ } from '@wordpress/i18n';
 import { useEffect, useRef } from 'react';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -64,6 +65,7 @@ const PaymentProcessor = ( {
 	shouldSavePayment,
 	fingerprint,
 	onLoadError = noop,
+	theme,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
@@ -267,7 +269,9 @@ const PaymentProcessor = ( {
 		<>
 			{ isTestMode && (
 				<p
-					className="content"
+					className={ classNames( 'content', {
+						[ `theme--${ theme }` ]: theme,
+					} ) }
 					dangerouslySetInnerHTML={ {
 						__html: testingInstructions,
 					} }
