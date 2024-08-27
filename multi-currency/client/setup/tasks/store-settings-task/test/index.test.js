@@ -7,7 +7,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from '../../../../additional-methods-setup/wizard/task/context';
+import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import {
 	useCurrencies,
 	useStoreSettings,

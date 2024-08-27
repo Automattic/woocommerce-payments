@@ -10,8 +10,8 @@ import _ from 'lodash';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from '../../../additional-methods-setup/wizard/task/context';
-import CollapsibleBody from '../../../additional-methods-setup/wizard/collapsible-body';
+import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
+import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
 import WizardTaskItem from '../../wizard/task-item';
 
 import {
@@ -22,11 +22,11 @@ import {
 } from 'wcpay/data';
 
 // eslint-disable-next-line max-len
-import EnabledCurrenciesModalCheckboxList from '../../../multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';
-import EnabledCurrenciesModalCheckbox from '../../../multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox';
+import EnabledCurrenciesModalCheckboxList from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';
+import EnabledCurrenciesModalCheckbox from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox';
 import Search from 'components/search';
 
-import { LoadableBlock } from '../../../components/loadable';
+import { LoadableBlock } from 'wcpay/components/loadable';
 
 import { recommendedCurrencyCodes, numberWords } from './constants';
 import {

@@ -17,7 +17,7 @@ import {
 	useSettings,
 } from 'wcpay/data';
 
-import WizardTaskContext from '../../../../additional-methods-setup/wizard/task/context';
+import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import { recommendedCurrencyCodes } from '../constants';
 import { __ } from '@wordpress/i18n';
 
