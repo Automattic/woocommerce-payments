@@ -17,7 +17,7 @@ import WizardTaskItem from '../../wizard/task-item';
 import PreviewModal from 'wcpay/multi-currency/preview-modal';
 import './index.scss';
 
-import { useStoreSettings } from 'wcpay/data';
+import { useStoreSettings } from 'mccy/data';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();

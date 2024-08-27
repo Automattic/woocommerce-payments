@@ -13,6 +13,10 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
 } ) );
 
+// TODO: Remove this while we have a dependency on 'wcpay/multi-currency/preview-modal'.
+jest.mock( 'wcpay/data', () => ( {
+	useStoreSettings: jest.fn(),
+} ) );
 jest.mock( 'mccy/data', () => ( {
 	useDefaultCurrency: jest.fn().mockReturnValue( {
 		code: 'USD',

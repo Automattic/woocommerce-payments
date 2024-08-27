@@ -21,6 +21,10 @@ import {
 import { recommendedCurrencyCodes } from '../constants';
 import { __ } from '@wordpress/i18n';
 
+// TODO: Remove this while we have a dependency on 'wcpay/multi-currency/preview-modal'.
+jest.mock( 'wcpay/data', () => ( {
+	useStoreSettings: jest.fn(),
+} ) );
 jest.mock( 'mccy/data', () => ( {
 	useCurrencies: jest.fn(),
 	useAvailableCurrencies: jest.fn(),
