@@ -1,9 +1,10 @@
 /**
- * Importing 'tracks' from WooPayments and exporting.
+ * Dependencies from WooPayments to MCCY.
  */
-export { recordEvent } from 'wcpay/tracks';
+// wcpay/data
+export { useSettings, useMultiCurrency } from 'wcpay/data';
 
 /**
- * Importing data from MCCY and exporting.
+ * Dependencies from MCCY to WooPayments.
  */
 export { useCurrencies, useEnabledCurrencies } from 'mccy/data';
