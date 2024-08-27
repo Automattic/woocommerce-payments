@@ -15,7 +15,7 @@ import {
 	useCurrencies,
 	useDefaultCurrency,
 	useEnabledCurrencies,
-} from 'wcpay/data';
+} from 'mccy/data';
 
 import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';

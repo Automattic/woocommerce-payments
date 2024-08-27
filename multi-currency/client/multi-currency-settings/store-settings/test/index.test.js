@@ -7,10 +7,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { useStoreSettings } from 'wcpay/data';
+import { useStoreSettings } from 'mccy/data';
 import StoreSettings from '..';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'mccy/data', () => ( {
 	useStoreSettings: jest.fn(),
 } ) );
 

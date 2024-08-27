@@ -11,7 +11,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import './style.scss';
 
-import { useStoreSettings } from 'wcpay/data';
+import { useStoreSettings } from 'mccy/data';
 import SettingsSection from 'wcpay/settings/settings-section';
 import { LoadableBlock } from 'wcpay/components/loadable';
 import PreviewModal from 'wcpay/multi-currency/preview-modal';

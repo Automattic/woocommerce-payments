@@ -2,7 +2,7 @@
 /**
  * Internal dependencies
  */
-import { useEnabledCurrencies, useCurrencies } from 'wcpay/data';
+import { useEnabledCurrencies, useCurrencies } from 'mccy/data';
 
 /**
  * External dependencies
