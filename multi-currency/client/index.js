@@ -7,8 +7,8 @@ import ReactDOM from 'react-dom';
 /**
  * Internal dependencies
  */
-import MultiCurrencySettings from './multi-currency-settings';
-import SingleCurrencySettings from './single-currency-settings';
+import MultiCurrencySettings from './settings/multi-currency';
+import SingleCurrencySettings from './settings/single-currency';
 import MultiCurrencySettingsContext from './context';
 
 const MultiCurrencySettingsPage = () => {
