@@ -33,10 +33,6 @@ jest.mock( '../../../data', () => ( {
 	useWooPayLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
-	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
-	useExpressCheckoutShowIncompatibilityNotice: jest
-		.fn()
-		.mockReturnValue( false ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
