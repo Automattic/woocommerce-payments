@@ -3,8 +3,8 @@
 /**
  * Internal dependencies
  */
-import Page from 'components/page';
 import MultiCurrencySetup from './tasks/multi-currency-setup';
+import { Page } from 'mccy/interface/components';
 import { WCPaySettingsContext } from 'mccy/interface/functions';
 
 const MultiCurrencySetupPage = () => {

@@ -7,9 +7,7 @@ import { Card, CardBody } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import Wizard from 'wcpay/additional-methods-setup/wizard/wrapper';
-import WizardTask from 'wcpay/additional-methods-setup/wizard/task';
-import WizardTaskList from 'wcpay/additional-methods-setup/wizard/task-list';
+import { Wizard, WizardTask, WizardTaskList } from 'mccy/interface/components';
 import StoreSettingsTask from './store-settings-task';
 import SetupCompleteTask from './setup-complete-task';
 import AddCurrenciesTask from './add-currencies-task';

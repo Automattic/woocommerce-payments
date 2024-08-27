@@ -9,7 +9,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
+import { CollapsibleBody } from 'mccy/interface/components';
 import { WizardTaskContext } from 'mccy/interface/functions';
 import WizardTaskItem from '../../wizard/task-item';
 import PreviewModal from 'wcpay/multi-currency/preview-modal';

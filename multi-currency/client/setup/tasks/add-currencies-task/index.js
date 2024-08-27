@@ -10,8 +10,12 @@ import _ from 'lodash';
 /**
  * Internal dependencies
  */
-import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
 import { WizardTaskContext } from 'mccy/interface/functions';
+import {
+	CollapsibleBody,
+	Search,
+	LoadableBlock,
+} from 'mccy/interface/components';
 import WizardTaskItem from '../../wizard/task-item';
 
 import {
@@ -24,9 +28,6 @@ import {
 // eslint-disable-next-line max-len
 import EnabledCurrenciesModalCheckboxList from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox';
-import Search from 'components/search';
-
-import { LoadableBlock } from 'wcpay/components/loadable';
 
 import { recommendedCurrencyCodes, numberWords } from './constants';
 import {

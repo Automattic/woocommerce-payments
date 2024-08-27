@@ -10,8 +10,7 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
-import WizardTaskItem from '../../wizard/task-item';
+import { CollapsibleBody, WizardTaskItem } from 'mccy/interface/components';
 import { WizardTaskContext } from 'mccy/interface/functions';
 
 import './index.scss';
