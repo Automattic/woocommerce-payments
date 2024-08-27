@@ -6,7 +6,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { TextControlWithAffixes } from '@woocommerce/components';
-import { formatCurrency, isZeroDecimalCurrency } from 'wcpay/utils/currency';
+import {
+	formatCurrency,
+	isZeroDecimalCurrency,
+} from 'multi-currency/utils/currency';
 
 const CurrencyPreview = ( {
 	storeCurrency,

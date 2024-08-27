@@ -5,8 +5,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { dateI18n } from '@wordpress/date';
 import { sprintf, __ } from '@wordpress/i18n';
-import SettingsLayout from 'wcpay/settings/settings-layout';
-import SettingsSection from 'wcpay/settings/settings-section';
 import moment from 'moment';
 
 /**
@@ -30,6 +28,8 @@ import {
 } from 'multi-currency/data';
 import MultiCurrencySettingsContext from '../context';
 import { LoadableBlock } from 'multi-currency/components/loadable';
+import SettingsLayout from 'multi-currency/components/settings-layout';
+import SettingsSection from 'multi-currency/components/settings-section';
 
 const SingleCurrencySettings = () => {
 	const {
