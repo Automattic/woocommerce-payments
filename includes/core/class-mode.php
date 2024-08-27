@@ -87,14 +87,19 @@ class Mode {
 		 */
 		$this->test_mode_onboarding = (bool) apply_filters( 'wcpay_test_mode_onboarding', $test_mode_onboarding );
 
-		// Getting the gateway settings directly from the database so the gateway doesn't need to be initialized.
-		$settings_option_name = 'woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings';
-		$wcpay_settings       = get_option( $settings_option_name );
-		$test_mode_setting    = 'yes' === ( $wcpay_settings['test_mode'] ?? false );
-		$test_mode            = $this->dev_mode || $test_mode_setting;
+		// If the current mode of onboarding is test, we should force enable test mode.
+		// Otherwise, follow the gateway settings.
+		if ( $this->test_mode_onboarding ) {
+			$test_mode = true;
+		} else {
+			// Getting the gateway settings directly from the database so the gateway doesn't need to be initialized.
+			$settings_option_name = 'woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings';
+			$wcpay_settings       = get_option( $settings_option_name );
+			$test_mode            = 'yes' === ( $wcpay_settings['test_mode'] ?? false );
+		}
 
 		/**
-		 * Allows WooPayments to enter test mode.
+		 * Allows WooPayments to enter test payments processing.
 		 *
 		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
 		 * @param bool $test_mode The pre-determined test mode.
@@ -103,21 +108,21 @@ class Mode {
 	}
 
 	/**
-	 * Checks if live is enabled.
+	 * Checks if live payment processing is enabled.
 	 *
-	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
+	 * @throws Exception In case the class has not been initialized yet.
 	 */
 	public function is_live(): bool {
 		$this->maybe_init();
-		return ! $this->test_mode && ! $this->dev_mode;
+		return ! $this->test_mode;
 	}
 
 	/**
-	 * Checks if test is enabled.
+	 * Checks if test payments processing is enabled.
 	 *
-	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
+	 * @throws Exception In case the class has not been initialized yet.
 	 */
 	public function is_test(): bool {
 		$this->maybe_init();
@@ -129,6 +134,7 @@ class Mode {
 	 * Checks if test mode onboarding is enabled.
 	 *
 	 * @return bool
+	 * @throws Exception In case the class has not been initialized yet.
 	 */
 	public function is_test_mode_onboarding(): bool {
 		$this->maybe_init();
@@ -137,55 +143,75 @@ class Mode {
 	}
 
 	/**
-	 * Sets the test mode onboarding.
-	 *
-	 * @param bool $enabled Whether test mode onboarding is enabled or not.
-	 */
-	public function set_test_mode_onboarding( bool $enabled ) {
-		$this->test_mode_onboarding = $enabled;
-	}
-
-	/**
-	 * Checks if dev is enabled.
+	 * Checks if dev mode is enabled.
 	 *
 	 * @return bool
+	 * @throws Exception In case the class has not been initialized yet.
 	 */
 	public function is_dev(): bool {
 		$this->maybe_init();
+
 		return $this->dev_mode;
 	}
 
 	/**
-	 * Enters into live mode.
+	 * Enable live payment processing.
 	 *
 	 * @return void
 	 */
 	public function live() {
-		// Doesn't affect our onboarding mode.
 		$this->test_mode = false;
-		$this->dev_mode  = false;
+		// We can't process live payments and be in test mode onboarding.
+		$this->test_mode_onboarding = false;
+		// We also can't be in dev mode.
+		$this->dev_mode = false;
 	}
 
 	/**
-	 * Enters into test mode.
+	 * Enable test payment processing.
 	 *
 	 * @return void
 	 */
 	public function test() {
-		// Doesn't affect our onboarding mode.
 		$this->test_mode = true;
-		$this->dev_mode  = false;
+		// Doesn't affect the onboarding mode or the dev mode.
 	}
 
 	/**
-	 * Enters into dev mode.
+	 * Enable test mode onboarding.
+	 *
+	 * @return void
+	 */
+	public function test_mode_onboarding() {
+		$this->test_mode_onboarding = true;
+		// When onboarding in test mode, we can only do test payment processing.
+		$this->test_mode = true;
+	}
+
+	/**
+	 * Enable live mode onboarding.
+	 *
+	 * @return void
+	 */
+	public function live_mode_onboarding() {
+		$this->test_mode_onboarding = false;
+		// When onboarding in live mode, we can't be in dev mode.
+		$this->dev_mode = false;
+		// Doesn't affect the payments processing mode.
+	}
+
+	/**
+	 * Enable the gateway dev mode.
+	 *
+	 * Payments processing and onboarding are always in test mode when dev mode is active.
 	 *
 	 * @return void
 	 */
 	public function dev() {
+		$this->dev_mode = true;
+		// In dev mode, everything is in test mode.
 		$this->test_mode            = true;
 		$this->test_mode_onboarding = true;
-		$this->dev_mode             = true;
 	}
 
 	/**
