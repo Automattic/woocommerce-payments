@@ -13,6 +13,7 @@ import { CollapsibleBody } from 'mccy/interface/components';
 import { WizardTaskContext } from 'mccy/interface/functions';
 import { useSettings, useMultiCurrency } from 'mccy/interface/data';
 import WizardTaskItem from '../../wizard/task-item';
+// TODO: Migrate to 'mccy/preview-modal'.
 import PreviewModal from 'wcpay/multi-currency/preview-modal';
 import './index.scss';
 

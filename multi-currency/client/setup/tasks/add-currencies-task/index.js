@@ -26,7 +26,9 @@ import {
 } from 'mccy/data';
 
 // eslint-disable-next-line max-len
+// TODO: Migrate to 'mccy/settings/enabled-currencies-list/modal-checkbox-list'.
 import EnabledCurrenciesModalCheckboxList from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';
+// TODO: Migrate to 'mccy/settings/enabled-currencies-list/modal-checkbox'.
 import EnabledCurrenciesModalCheckbox from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox';
 
 import { recommendedCurrencyCodes, numberWords } from './constants';
