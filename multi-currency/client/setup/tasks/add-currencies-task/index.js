@@ -10,8 +10,8 @@ import _ from 'lodash';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
+import { WizardTaskContext } from 'mccy/interface/functions';
 import WizardTaskItem from '../../wizard/task-item';
 
 import {

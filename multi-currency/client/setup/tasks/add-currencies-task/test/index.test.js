@@ -9,6 +9,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import AddCurrenciesTask from '..';
+import { WizardTaskContext } from 'mccy/interface/functions';
 import {
 	useCurrencies,
 	useAvailableCurrencies,
@@ -17,7 +18,6 @@ import {
 	useSettings,
 } from 'wcpay/data';
 
-import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import { recommendedCurrencyCodes } from '../constants';
 import { __ } from '@wordpress/i18n';
 

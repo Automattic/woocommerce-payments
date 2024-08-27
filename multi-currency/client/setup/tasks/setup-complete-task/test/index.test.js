@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
+import { WizardTaskContext } from 'mccy/interface/functions';
 import SetupCompleteTask from '../../setup-complete-task';
 
 jest.mock( '@wordpress/data', () => ( {

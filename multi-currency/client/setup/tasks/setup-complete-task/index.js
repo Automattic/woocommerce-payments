@@ -12,7 +12,7 @@ import { useDispatch } from '@wordpress/data';
  */
 import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
 import WizardTaskItem from '../../wizard/task-item';
-import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
+import { WizardTaskContext } from 'mccy/interface/functions';
 
 import './index.scss';
 

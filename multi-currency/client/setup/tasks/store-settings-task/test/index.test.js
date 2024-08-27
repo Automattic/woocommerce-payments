@@ -7,13 +7,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import {
 	useCurrencies,
 	useStoreSettings,
 	useSettings,
 	useMultiCurrency,
 } from 'wcpay/data';
+import { WizardTaskContext } from 'mccy/interface/functions';
 import StoreSettingsTask from '..';
 
 jest.mock( 'wcpay/data', () => ( {

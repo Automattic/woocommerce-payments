@@ -5,7 +5,7 @@
  */
 import Page from 'components/page';
 import MultiCurrencySetup from './tasks/multi-currency-setup';
-import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
+import { WCPaySettingsContext } from 'mccy/interface/functions';
 
 const MultiCurrencySetupPage = () => {
 	const { isSetupCompleted } = window.wcpaySettings.multiCurrencySetup;
