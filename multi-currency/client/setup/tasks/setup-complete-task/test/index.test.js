@@ -13,7 +13,7 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
 } ) );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'mccy/data', () => ( {
 	useDefaultCurrency: jest.fn().mockReturnValue( {
 		code: 'USD',
 		rate: 1,

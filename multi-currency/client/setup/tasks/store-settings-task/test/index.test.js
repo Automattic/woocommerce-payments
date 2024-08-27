@@ -7,12 +7,12 @@ import { render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { useCurrencies, useStoreSettings } from 'wcpay/data';
-import { WizardTaskContext } from 'mccy/interface/functions';
+import { useCurrencies, useStoreSettings } from 'mccy/data';
 import { useSettings, useMultiCurrency } from 'mccy/interface/data';
+import { WizardTaskContext } from 'mccy/interface/functions';
 import StoreSettingsTask from '..';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'mccy/data', () => ( {
 	useStoreSettings: jest.fn(),
 	useCurrencies: jest.fn(),
 	useSettings: jest.fn(),

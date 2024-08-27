@@ -23,7 +23,7 @@ import {
 	useAvailableCurrencies,
 	useEnabledCurrencies,
 	useDefaultCurrency,
-} from 'wcpay/data';
+} from 'mccy/data';
 
 // eslint-disable-next-line max-len
 import EnabledCurrenciesModalCheckboxList from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';

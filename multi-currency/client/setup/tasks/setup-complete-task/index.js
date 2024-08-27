@@ -15,7 +15,7 @@ import { WizardTaskContext } from 'mccy/interface/functions';
 
 import './index.scss';
 
-import { useDefaultCurrency } from 'wcpay/data';
+import { useDefaultCurrency } from 'mccy/data';
 
 const SetupComplete = () => {
 	const { isActive } = useContext( WizardTaskContext );

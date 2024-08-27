@@ -16,12 +16,12 @@ import {
 	useAvailableCurrencies,
 	useDefaultCurrency,
 	useEnabledCurrencies,
-} from 'wcpay/data';
+} from 'mccy/data';
 
 import { recommendedCurrencyCodes } from '../constants';
 import { __ } from '@wordpress/i18n';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'mccy/data', () => ( {
 	useCurrencies: jest.fn(),
 	useAvailableCurrencies: jest.fn(),
 	useDefaultCurrency: jest.fn(),
