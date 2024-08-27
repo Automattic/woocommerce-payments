@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Button, Modal } from '@wordpress/components';
 import { Icon, currencyDollar } from '@wordpress/icons';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -26,11 +27,15 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 	source,
 	onClose,
 }: Props ) => {
+	const [ isLoading, setIsLoading ] = useState( false );
+
 	const handleSetup = () => {
 		recordEvent( 'wcpay_onboarding_flow_setup_live_payments', {
 			from,
 			source,
 		} );
+
+		setIsLoading( true );
 
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			'wcpay-disable-onboarding-test-mode': 'true',
@@ -45,6 +50,7 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 			source,
 		} );
 
+		setIsLoading( false );
 		onClose();
 	};
 
@@ -85,7 +91,12 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 				<Button variant="tertiary" onClick={ trackAndClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
-				<Button variant="primary" onClick={ handleSetup }>
+				<Button
+					variant="primary"
+					onClick={ handleSetup }
+					isBusy={ isLoading }
+					disabled={ isLoading }
+				>
 					{ __( 'Continue setup', 'woocommerce-payments' ) }
 				</Button>
 			</div>
