@@ -13,7 +13,7 @@ import './style.scss';
 
 import { useStoreSettings } from 'multi-currency/data';
 import SettingsSection from 'wcpay/settings/settings-section';
-import { LoadableBlock } from 'wcpay/components/loadable';
+import { LoadableBlock } from 'multi-currency/components/loadable';
 import PreviewModal from 'wcpay/multi-currency/preview-modal';
 
 const StoreSettingsDescription = () => {

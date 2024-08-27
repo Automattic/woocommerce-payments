@@ -3,7 +3,7 @@
  * External dependencies
  */
 import classNames from 'classnames';
-import { LoadableBlock } from 'multi-currency/loadable';
+import { LoadableBlock } from 'multi-currency/components/loadable';
 
 const EnabledCurrenciesListItemPlaceholder = ( { isLoading } ) => {
 	return (

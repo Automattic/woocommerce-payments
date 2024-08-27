@@ -29,7 +29,7 @@ import {
 	useStoreSettings,
 } from 'multi-currency/data';
 import MultiCurrencySettingsContext from '../context';
-import { LoadableBlock } from 'wcpay/components/loadable';
+import { LoadableBlock } from 'multi-currency/components/loadable';
 
 const SingleCurrencySettings = () => {
 	const {
