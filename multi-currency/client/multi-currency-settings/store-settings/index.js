@@ -12,9 +12,9 @@ import { createInterpolateElement } from '@wordpress/element';
 import './style.scss';
 
 import { useStoreSettings } from 'multi-currency/data';
-import SettingsSection from 'wcpay/settings/settings-section';
+import SettingsSection from 'multi-currency/components/settings-section';
 import { LoadableBlock } from 'multi-currency/components/loadable';
-import PreviewModal from 'wcpay/multi-currency/preview-modal';
+import PreviewModal from 'multi-currency/components/preview-modal';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
