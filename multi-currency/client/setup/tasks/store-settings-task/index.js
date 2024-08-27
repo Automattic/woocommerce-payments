@@ -11,11 +11,12 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import { CollapsibleBody } from 'mccy/interface/components';
 import { WizardTaskContext } from 'mccy/interface/functions';
+import { useSettings, useMultiCurrency } from 'mccy/interface/data';
 import WizardTaskItem from '../../wizard/task-item';
 import PreviewModal from 'wcpay/multi-currency/preview-modal';
 import './index.scss';
 
-import { useStoreSettings, useSettings, useMultiCurrency } from 'wcpay/data';
+import { useStoreSettings } from 'wcpay/data';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
