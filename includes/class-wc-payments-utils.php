@@ -769,15 +769,23 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Retrieves the minimum amount required for transactions in a given currency.
+	 * Checks if there is a minimum amount required for transactions in a given currency.
 	 *
 	 * @param string $currency The currency to check for.
+	 * @param bool   $fallback_to_local_list Whether to fallback to the local Stripe list if the cached value is not available.
 	 *
-	 * @return int The minimum amount.
+	 * @return int|null Either the minimum amount, or `null` if not available.
 	 */
-	public static function get_cached_minimum_amount( $currency ) {
+	public static function get_cached_minimum_amount( $currency, $fallback_to_local_list = false ) {
 		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
-		return (int) $cached ? (int) $cached : self::get_stripe_minimum_amount( $currency );
+
+		if ( (int) $cached ) {
+			return (int) $cached;
+		} elseif ( $fallback_to_local_list ) {
+			return self::get_stripe_minimum_amount( $currency );
+		}
+
+		return null;
 	}
 
 	/**
