@@ -844,8 +844,8 @@ class WC_Payments_Admin {
 			],
 			'connectIncentive'                   => $connect_incentive,
 			'devMode'                            => $dev_mode,
-			'testMode'                           => $test_mode,
 			'testModeOnboarding'                 => $test_mode_onboarding,
+			'testMode'                           => $test_mode,
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'                 => WC_Payments_Account::is_on_boarding_disabled(),
 			'onboardingFieldsData'               => $this->onboarding_service->get_fields_data( get_user_locale() ),
