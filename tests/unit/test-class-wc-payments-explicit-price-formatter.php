@@ -249,8 +249,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 		$this->mock_database_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
 
 		$gateway_context      = [
-			'is_dev_mode'                        => true,
-			'is_customer_multi_currency_enabled' => true,
+			'is_dev_mode' => true,
 		];
 		$this->multi_currency = new MultiCurrency( $gateway_context, $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service, $this->mock_database_cache );
 		$this->multi_currency->init();

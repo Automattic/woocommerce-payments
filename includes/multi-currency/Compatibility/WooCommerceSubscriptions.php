@@ -391,10 +391,6 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $html_price;
 		}
 
-		if ( ! $this->multi_currency->gateway_context['is_customer_multi_currency_enabled'] ) {
-			return $html_price;
-		}
-
 		if ( ! $this->multi_currency->has_additional_currencies_enabled() ) {
 			return $html_price;
 		}
