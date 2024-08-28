@@ -1266,6 +1266,10 @@ class WC_Payments_Account {
 
 				// Track successful Jetpack connection.
 				$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS, $tracks_props );
+
+				// Always clear the account cache after establishing the Jetpack/WPCOM connection.
+				// An account may already be available on our platform for this store.
+				$this->clear_cache();
 			}
 
 			// Handle the "everything OK" scenario.
@@ -1394,7 +1398,7 @@ class WC_Payments_Account {
 
 				// If we are creating a test-drive account, we do things a little different.
 				if ( $create_test_drive_account ) {
-					// Since there is no Stripe KYC, make sure we start with a clean state.
+					// Since there should be no Stripe KYC needed, make sure we start with a clean state.
 					delete_transient( self::ONBOARDING_STATE_TRANSIENT );
 
 					// If we have the auto_start_test_drive_onboarding flag, we redirect to the Connect page
@@ -1465,6 +1469,10 @@ class WC_Payments_Account {
 
 				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
 
+				// Always clear the account cache after a Stripe onboarding init attempt.
+				// This allows the merchant to use connect links to refresh its account cache, in case something is wrong.
+				$this->clear_cache();
+
 				// Make sure the redirect URL is safe.
 				$redirect_to = wp_sanitize_redirect( $redirect_to );
 				$redirect_to = wp_validate_redirect( $redirect_to );
@@ -1479,6 +1487,9 @@ class WC_Payments_Account {
 				}
 			} catch ( API_Exception $e ) {
 				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+
+				// Always clear the account cache in case of errors.
+				$this->clear_cache();
 
 				Logger::error( 'Init Stripe onboarding failed. ' . $e->getMessage() );
 				$this->redirect_service->redirect_to_connect_page(
@@ -1866,9 +1877,6 @@ class WC_Payments_Account {
 		// If an account already exists for this site and/or there is no need for KYC verifications, we're done.
 		// Our platform will respond with a `false` URL in this case.
 		if ( isset( $onboarding_data['url'] ) && false === $onboarding_data['url'] ) {
-			// Clear the account cache.
-			$this->clear_cache();
-
 			// Set the gateway options.
 			$gateway = WC_Payments::get_gateway();
 			$gateway->update_option( 'enabled', 'yes' );
