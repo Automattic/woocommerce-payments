@@ -120,7 +120,11 @@ module.exports = {
 		],
 		alias: {
 			assets: path.resolve( process.cwd(), 'assets' ),
-			mccy: path.resolve( process.cwd(), 'multi-currency', 'client' ),
+			'multi-currency': path.resolve(
+				process.cwd(),
+				'multi-currency',
+				'client'
+			),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(
 				process.cwd(),
