@@ -20,7 +20,7 @@ export const getAppearanceType = () => {
 	}
 
 	if ( document.querySelector( '.woocommerce-billing-fields' ) ) {
-		return 'shortcode_checkout';
+		return 'woopay_shortcode_checkout';
 	}
 
 	if ( document.querySelector( '.wp-block-woocommerce-cart' ) ) {
