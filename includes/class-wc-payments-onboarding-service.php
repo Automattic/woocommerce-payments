@@ -236,13 +236,14 @@ class WC_Payments_Onboarding_Service {
 
 	/**
 	 * Set onboarding test mode.
-	 * Will also switch WC_Payments mode immediately.
+	 *
+	 * Will also switch the WC_Payments onboarding mode immediately.
 	 *
 	 * @param boolean $test_mode Whether to enable test mode.
 	 * @return void
 	 */
 	public static function set_test_mode( bool $test_mode ): void {
-		update_option( self::TEST_MODE_OPTION, $test_mode );
+		update_option( self::TEST_MODE_OPTION, $test_mode ? 'yes' : 'no', true );
 
 		// Switch WC_Payments onboarding mode immediately.
 		if ( $test_mode ) {
@@ -253,12 +254,12 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Returns whether onboarding test mode is enabled.
+	 * Determine if test mode onboarding is enabled.
 	 *
 	 * @return bool
 	 */
 	public static function is_test_mode_enabled(): bool {
-		return get_option( self::TEST_MODE_OPTION, false );
+		return 'yes' === get_option( self::TEST_MODE_OPTION, 'no' );
 	}
 
 	/**
