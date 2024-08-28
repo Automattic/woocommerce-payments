@@ -61,7 +61,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 */
 	protected function init() {
 		// Add needed actions and filters if WC Subscriptions or WCPay Subscriptions are active.
-		if ( class_exists( 'WC_Subscriptions' ) || $this->multi_currency->gateway_context['is_wcpay_subscriptions_enabled'] ) {
+		if ( class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Payments_Subscriptions' ) ) {
 			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 				$this->frontend_currencies = $this->multi_currency->get_frontend_currencies();
 
