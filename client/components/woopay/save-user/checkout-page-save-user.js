@@ -277,7 +277,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 									<path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
 								</svg>
 							) }
-							<span>
+							<span className="wc-block-components-checkbox__label">
 								{ __(
 									'Securely save my information for 1-click checkout',
 									'woocommerce-payments'
