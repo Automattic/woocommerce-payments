@@ -1555,8 +1555,8 @@ class WC_Payments_Account {
 		$gateway->update_option( 'enabled', 'no' );
 		$gateway->update_option( 'test_mode', 'no' );
 
-		delete_option( '_wcpay_onboarding_stripe_connected' );
-		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+		update_option( '_wcpay_onboarding_stripe_connected', [] );
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' );
 
 		// Discard any ongoing onboarding session.
 		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
