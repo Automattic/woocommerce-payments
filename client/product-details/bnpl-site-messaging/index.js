@@ -53,10 +53,12 @@ export const initializeBnplSiteMessaging = async () => {
 		isCart,
 		isCartBlock,
 		cartTotal,
+		minimumOrderAmount,
 	} = window.wcpayStripeSiteMessaging;
 
 	let amount;
 	let elementLocation = 'bnplProductPage';
+	const minOrderAmount = parseInt( minimumOrderAmount, 10 ) || 0;
 
 	if ( isCart || isCartBlock ) {
 		amount = parseInt( cartTotal, 10 ) || 0;
@@ -149,7 +151,7 @@ export const initializeBnplSiteMessaging = async () => {
 		);
 
 		let paymentMessageLoading;
-		if ( ! isCart ) {
+		if ( ! isCart && amount > minOrderAmount ) {
 			paymentMessageLoading = document.createElement( 'div' );
 			paymentMessageLoading.classList.add( 'pmme-loading' );
 			paymentMessageContainer.prepend( paymentMessageLoading );
@@ -208,7 +210,7 @@ export const initializeBnplSiteMessaging = async () => {
 					pmme.style.setProperty( '--wc-bnpl-margin-bottom', '-4px' );
 				}, 2000 );
 			} else {
-				paymentMessageLoading.remove();
+				paymentMessageLoading?.remove();
 			}
 		} );
 	}
