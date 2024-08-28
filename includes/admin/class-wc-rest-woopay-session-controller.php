@@ -21,14 +21,14 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'wc/store';
+	protected $namespace = 'wc/woopay';
 
 	/**
 	 * Endpoint path.
 	 *
 	 * @var string
 	 */
-	protected $rest_base = 'woopay/session';
+	protected $rest_base = 'session';
 
 	/**
 	 * Configure REST API routes.

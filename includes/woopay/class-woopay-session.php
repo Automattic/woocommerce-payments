@@ -47,13 +47,6 @@ class WooPay_Session {
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 
 		add_filter( 'automatewoo/referrals/referred_order_advocate', [ __CLASS__, 'automatewoo_refer_a_friend_referral_from_parameter' ] );
-
-		add_filter(
-			'wc_rest_should_load_namespace',
-			[ __CLASS__, 'ensure_woopay_route_namespace_is_loaded' ],
-			10,
-			3
-		);
 	}
 
 	/**
@@ -693,21 +686,6 @@ class WooPay_Session {
 		];
 
 		return WooPay_Utilities::encrypt_and_sign_data( $data );
-	}
-
-	/**
-	 * Ensure the WooPay session route namespace is loaded.
-	 *
-	 * @param bool   $should_load True if the namespace should be loaded, false otherwise.
-	 * @param string $ns          The namespace to check.
-	 * @param string $rest_route  The REST route being checked.
-	 */
-	public static function ensure_woopay_route_namespace_is_loaded( $should_load, $ns, $rest_route ) {
-		if ( str_starts_with( $rest_route, 'wc/store/woopay' ) ) {
-			return true;
-		}
-
-		return $should_load;
 	}
 
 	/**
