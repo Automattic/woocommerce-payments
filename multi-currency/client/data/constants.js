@@ -1,4 +1,4 @@
 /** @format */
 
 export const NAMESPACE = '/wc/v3/payments';
-export const STORE_NAME = 'wc/payments/mccy';
+export const STORE_NAME = 'wc/payments/multi-currency';
