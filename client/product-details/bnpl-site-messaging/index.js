@@ -8,14 +8,6 @@ import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import apiRequest from 'wcpay/checkout/utils/request';
 
-/**
- * Initializes the appearance of the payment element by retrieving the UPE configuration
- * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
- * it is simply returned.
- *
- * @param {Object} api The API object used to save the UPE configuration.
- * @return {Promise<Object>} The appearance object for the UPE.
- */
 const elementsLocations = {
 	bnplProductPage: {
 		configKey: 'upeBnplProductPageAppearance',
@@ -27,6 +19,16 @@ const elementsLocations = {
 	},
 };
 
+/**
+ * Initializes the appearance of the payment element by retrieving the UPE configuration
+ * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
+ * it is simply returned.
+ *
+ * @param {Object} api The API object used to save the UPE configuration.
+ * @param {string} location The location of the UPE.
+ *
+ * @return {Promise<Object>} The appearance object for the UPE.
+ */
 async function initializeAppearance( api, location ) {
 	const { configKey, appearanceKey } = elementsLocations[ location ];
 
