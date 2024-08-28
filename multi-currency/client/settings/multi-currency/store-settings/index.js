@@ -11,7 +11,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import './style.scss';
 
-import { useStoreSettings } from 'multi-currency/data';
+import { useStoreSettings } from 'multi-currency/interface/data';
 import SettingsSection from 'multi-currency/components/settings-section';
 import { LoadableBlock } from 'multi-currency/components/loadable';
 import PreviewModal from 'multi-currency/components/preview-modal';

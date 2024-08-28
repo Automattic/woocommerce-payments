@@ -15,11 +15,11 @@ import {
 	useEnabledCurrencies,
 	useCurrencySettings,
 	useStoreSettings,
-} from 'multi-currency/data';
+} from 'multi-currency/interface/data';
 
 import MultiCurrencySettingsContext from '../../context';
 
-jest.mock( 'multi-currency/data', () => ( {
+jest.mock( 'multi-currency/interface/data', () => ( {
 	useCurrencies: jest.fn(),
 	useAvailableCurrencies: jest.fn(),
 	useDefaultCurrency: jest.fn(),

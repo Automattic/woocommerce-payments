@@ -2,7 +2,10 @@
 /**
  * Internal dependencies
  */
-import { useEnabledCurrencies, useCurrencies } from 'multi-currency/data';
+import {
+	useEnabledCurrencies,
+	useCurrencies,
+} from 'multi-currency/interface/data';
 
 /**
  * External dependencies
