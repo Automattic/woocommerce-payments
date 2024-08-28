@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { WizardTaskContext } from 'mccy/interface/functions';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
 import SetupCompleteTask from '../../setup-complete-task';
 
 jest.mock( '@wordpress/data', () => ( {
@@ -17,7 +17,7 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'wcpay/data', () => ( {
 	useStoreSettings: jest.fn(),
 } ) );
-jest.mock( 'mccy/data', () => ( {
+jest.mock( 'multi-currency/data', () => ( {
 	useDefaultCurrency: jest.fn().mockReturnValue( {
 		code: 'USD',
 		rate: 1,

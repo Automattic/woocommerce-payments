@@ -9,14 +9,14 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import AddCurrenciesTask from '..';
-import { useSettings } from 'mccy/interface/data';
-import { WizardTaskContext } from 'mccy/interface/functions';
+import { useSettings } from 'multi-currency/interface/data';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
 import {
 	useCurrencies,
 	useAvailableCurrencies,
 	useDefaultCurrency,
 	useEnabledCurrencies,
-} from 'mccy/data';
+} from 'multi-currency/data';
 
 import { recommendedCurrencyCodes } from '../constants';
 import { __ } from '@wordpress/i18n';
@@ -25,13 +25,13 @@ import { __ } from '@wordpress/i18n';
 jest.mock( 'wcpay/data', () => ( {
 	useStoreSettings: jest.fn(),
 } ) );
-jest.mock( 'mccy/data', () => ( {
+jest.mock( 'multi-currency/data', () => ( {
 	useCurrencies: jest.fn(),
 	useAvailableCurrencies: jest.fn(),
 	useDefaultCurrency: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
 } ) );
-jest.mock( 'mccy/interface/data', () => ( {
+jest.mock( 'multi-currency/interface/data', () => ( {
 	useSettings: jest.fn(),
 } ) );
 

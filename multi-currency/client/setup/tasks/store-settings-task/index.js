@@ -9,15 +9,15 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { CollapsibleBody } from 'mccy/interface/components';
-import { WizardTaskContext } from 'mccy/interface/functions';
-import { useSettings, useMultiCurrency } from 'mccy/interface/data';
+import { CollapsibleBody } from 'multi-currency/interface/components';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
+import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
 import WizardTaskItem from '../../wizard/task-item';
-// TODO: Migrate to 'mccy/preview-modal'.
+// TODO: Migrate to 'multi-currency/preview-modal'.
 import PreviewModal from 'wcpay/multi-currency/preview-modal';
 import './index.scss';
 
-import { useStoreSettings } from 'mccy/data';
+import { useStoreSettings } from 'multi-currency/data';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();

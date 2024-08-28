@@ -15,5 +15,5 @@ export { LoadableBlock } from 'wcpay/components/loadable';
 /**
  * Dependencies from MCCY to WooPayments.
  */
-// mccy/setup
-export { default as MultiCurrencySetupPage } from 'mccy/setup';
+// multi-currency/setup
+export { default as MultiCurrencySetupPage } from 'multi-currency/setup';

@@ -7,7 +7,11 @@ import { Card, CardBody } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { Wizard, WizardTask, WizardTaskList } from 'mccy/interface/components';
+import {
+	Wizard,
+	WizardTask,
+	WizardTaskList,
+} from 'multi-currency/interface/components';
 import StoreSettingsTask from './store-settings-task';
 import SetupCompleteTask from './setup-complete-task';
 import AddCurrenciesTask from './add-currencies-task';

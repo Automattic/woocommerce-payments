@@ -10,12 +10,15 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { CollapsibleBody, WizardTaskItem } from 'mccy/interface/components';
-import { WizardTaskContext } from 'mccy/interface/functions';
+import {
+	CollapsibleBody,
+	WizardTaskItem,
+} from 'multi-currency/interface/components';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
 
 import './index.scss';
 
-import { useDefaultCurrency } from 'mccy/data';
+import { useDefaultCurrency } from 'multi-currency/data';
 
 const SetupComplete = () => {
 	const { isActive } = useContext( WizardTaskContext );

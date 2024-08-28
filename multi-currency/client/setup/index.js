@@ -4,8 +4,8 @@
  * Internal dependencies
  */
 import MultiCurrencySetup from './tasks/multi-currency-setup';
-import { Page } from 'mccy/interface/components';
-import { WCPaySettingsContext } from 'mccy/interface/functions';
+import { Page } from 'multi-currency/interface/components';
+import { WCPaySettingsContext } from 'multi-currency/interface/functions';
 
 const MultiCurrencySetupPage = () => {
 	const { isSetupCompleted } = window.wcpaySettings.multiCurrencySetup;

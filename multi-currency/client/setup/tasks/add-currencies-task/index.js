@@ -10,12 +10,12 @@ import _ from 'lodash';
 /**
  * Internal dependencies
  */
-import { WizardTaskContext } from 'mccy/interface/functions';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
 import {
 	CollapsibleBody,
 	Search,
 	LoadableBlock,
-} from 'mccy/interface/components';
+} from 'multi-currency/interface/components';
 import WizardTaskItem from '../../wizard/task-item';
 
 import {
@@ -23,12 +23,12 @@ import {
 	useAvailableCurrencies,
 	useEnabledCurrencies,
 	useDefaultCurrency,
-} from 'mccy/data';
+} from 'multi-currency/data';
 
 // eslint-disable-next-line max-len
-// TODO: Migrate to 'mccy/settings/enabled-currencies-list/modal-checkbox-list'.
+// TODO: Migrate to 'multi-currency/settings/enabled-currencies-list/modal-checkbox-list'.
 import EnabledCurrenciesModalCheckboxList from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';
-// TODO: Migrate to 'mccy/settings/enabled-currencies-list/modal-checkbox'.
+// TODO: Migrate to 'multi-currency/settings/enabled-currencies-list/modal-checkbox'.
 import EnabledCurrenciesModalCheckbox from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox';
 
 import { recommendedCurrencyCodes, numberWords } from './constants';
