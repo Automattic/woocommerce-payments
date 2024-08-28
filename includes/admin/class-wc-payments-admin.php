@@ -479,7 +479,7 @@ class WC_Payments_Admin {
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' ),
-			'all',
+			'all'
 		);
 
 		$this->add_menu_notification_badge();
