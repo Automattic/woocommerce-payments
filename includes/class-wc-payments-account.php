@@ -1959,7 +1959,7 @@ class WC_Payments_Account {
 		$incentive_id     = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 		$event_properties = [
 			'incentive' => $incentive_id,
-			'mode'      => 'test' === $mode ? 'test' : 'live',
+			'mode'      => 'live' !== $mode ? 'test' : 'live',
 			'from'      => $additional_args['from'] ?? '',
 			'source'    => $additional_args['source'] ?? '',
 		];
