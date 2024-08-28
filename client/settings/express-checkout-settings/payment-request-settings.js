@@ -14,9 +14,7 @@ import GeneralPaymentRequestButtonSettings from './general-payment-request-butto
 import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
-	useExpressCheckoutShowIncompatibilityNotice,
 } from 'wcpay/data';
-import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
 
 const PaymentRequestSettings = ( { section } ) => {
 	const [
@@ -42,15 +40,10 @@ const PaymentRequestSettings = ( { section } ) => {
 		}
 	};
 
-	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
-
 	return (
 		<Card>
 			{ section === 'enable' && (
 				<CardBody>
-					{ showIncompatibilityNotice && (
-						<ExpressCheckoutIncompatibilityNotice />
-					) }
 					<CheckboxControl
 						checked={ isPaymentRequestEnabled }
 						onChange={ updateIsPaymentRequestEnabled }
