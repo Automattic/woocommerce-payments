@@ -7,10 +7,8 @@
 
 namespace WCPay\MultiCurrency\Compatibility;
 
-use WC_Payments_Explicit_Price_Formatter;
-use WC_Payments_Features;
 use WC_Subscription;
-use WCPay\Logger;
+use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\FrontendCurrencies;
 use WCPay\MultiCurrency\MultiCurrency;
 
@@ -63,7 +61,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 */
 	protected function init() {
 		// Add needed actions and filters if WC Subscriptions or WCPay Subscriptions are active.
-		if ( class_exists( 'WC_Subscriptions' ) || WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+		if ( class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Payments_Subscriptions' ) ) {
 			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {
 				$this->frontend_currencies = $this->multi_currency->get_frontend_currencies();
 
@@ -393,6 +391,10 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $html_price;
 		}
 
+		if ( ! $this->multi_currency->has_additional_currencies_enabled() ) {
+			return $html_price;
+		}
+
 		/**
 		 * Get the currency code from the subscription, then return the explicit price.
 		 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
@@ -400,7 +402,15 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		 * @psalm-suppress UndefinedDocblockClass
 		 */
 		$currency_code = $this->current_my_account_subscription->get_currency() ?? get_woocommerce_currency();
-		return WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $html_price, $currency_code );
+
+		// This is sourced from WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency.
+		$price_to_check = html_entity_decode( wp_strip_all_tags( $html_price ) );
+
+		if ( false === strpos( $price_to_check, trim( $currency_code ) ) ) {
+			return $html_price . ' ' . $currency_code;
+		}
+
+		return $html_price;
 	}
 
 	/**

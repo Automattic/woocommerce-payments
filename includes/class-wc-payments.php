@@ -1399,6 +1399,22 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns gateway context variables needed for multi-currency support.
+	 *
+	 * @return array
+	 */
+	public static function get_context_for_multi_currency() {
+		// While multi-currency is being decoupled from WooPayments into a separate module, it is still rendered within the plugin.
+		// We don't want to reference WCPAY constants from within the module, therefore, we need a few variables from the gateway,
+		// as reflected in the array below.
+		return [
+			'plugin_version'   => WCPAY_VERSION_NUMBER,
+			'plugin_file_path' => WCPAY_PLUGIN_FILE,
+			'is_dev_mode'      => self::mode()->is_dev(),
+		];
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.

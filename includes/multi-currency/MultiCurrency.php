@@ -8,19 +8,16 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Payments;
-use WC_Payments_Utils;
-use WCPay\Constants\Country_Code;
-use WCPay\Constants\Currency_Code;
-use WCPay\Exceptions\API_Exception;
-use WCPay\Database_Cache;
-use WCPay\Logger;
+use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
+use WCPay\MultiCurrency\Utils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -154,11 +151,11 @@ class MultiCurrency {
 	private $localization_service;
 
 	/**
-	 * Instance of Database_Cache.
+	 * Instance of MultiCurrencyCacheInterface.
 	 *
-	 * @var Database_Cache
+	 * @var MultiCurrencyCacheInterface
 	 */
-	private $database_cache;
+	private $cache;
 
 	/**
 	 * Tracking instance.
@@ -182,19 +179,28 @@ class MultiCurrency {
 	private $order_meta_helper;
 
 	/**
+	 * Gateway context.
+	 *
+	 * @var array
+	 */
+	public $gateway_context;
+
+	/**
 	 * Class constructor.
 	 *
+	 * @param array                              $gateway_context      Gateway context.
 	 * @param MultiCurrencyApiClientInterface    $payments_api_client  Payments API client.
 	 * @param MultiCurrencyAccountInterface      $payments_account     Payments Account instance.
 	 * @param MultiCurrencyLocalizationInterface $localization_service Localization Service instance.
-	 * @param Database_Cache                     $database_cache       Database Cache instance.
+	 * @param MultiCurrencyCacheInterface        $cache                Cache instance.
 	 * @param Utils|null                         $utils                Optional Utils instance.
 	 */
-	public function __construct( MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
+	public function __construct( array $gateway_context, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, Utils $utils = null ) {
+		$this->gateway_context      = $gateway_context;
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
 		$this->localization_service = $localization_service;
-		$this->database_cache       = $database_cache;
+		$this->cache                = $cache;
 		// If a Utils instance is not passed as argument, initialize it. This allows to mock it in tests.
 		$this->utils                   = $utils ?? new Utils();
 		$this->geolocation             = new Geolocation( $this->localization_service );
@@ -219,9 +225,9 @@ class MultiCurrency {
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
-		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
+		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request();
 
-		if ( $is_frontend_request || \WC_Payments_Utils::is_store_api_request() ) {
+		if ( $is_frontend_request || Utils::is_store_api_request() ) {
 			// Make sure that this runs after the main init function.
 			add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
 			add_action( 'init', [ $this, 'update_selected_currency_by_geolocation' ], 12 );
@@ -266,7 +272,7 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
-		$this->order_meta_helper   = new OrderMetaHelper( $this->payments_api_client );
+		$this->order_meta_helper   = new OrderMetaHelper( $this->payments_api_client, $this->backend_currencies );
 
 		// Init all of the hooks.
 		$payment_method_compat->init_hooks();
@@ -369,7 +375,7 @@ class MultiCurrency {
 		$this->register_admin_scripts();
 
 		wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
-		WC_Payments_Utils::enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
+		wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 	}
 
 	/**
@@ -392,7 +398,7 @@ class MultiCurrency {
 	 */
 	public function clear_cache() {
 		Logger::debug( 'Clearing the cache to force new rates to be fetched from the server.' );
-		$this->database_cache->delete( Database_Cache::CURRENCIES_KEY );
+		$this->cache->delete( MultiCurrencyCacheInterface::CURRENCIES_KEY );
 	}
 
 	/**
@@ -403,14 +409,14 @@ class MultiCurrency {
 	 * @return ?array
 	 */
 	public function get_cached_currencies() {
-		$cached_data = $this->database_cache->get( Database_Cache::CURRENCIES_KEY );
+		$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY );
 		// If connection to server cannot be established, or if payment provider is not connected, or if the account is rejected, return expired data or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
 			return $cached_data ?? null;
 		}
 
-		return $this->database_cache->get_or_add(
-			Database_Cache::CURRENCIES_KEY,
+		return $this->cache->get_or_add(
+			MultiCurrencyCacheInterface::CURRENCIES_KEY,
 			function () {
 				try {
 					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( get_woocommerce_currency() ) );
@@ -418,7 +424,7 @@ class MultiCurrency {
 						'currencies' => $currency_data,
 						'updated'    => time(),
 					];
-				} catch ( API_Exception $e ) {
+				} catch ( \Exception $e ) {
 					return null;
 				}
 			},
@@ -560,7 +566,7 @@ class MultiCurrency {
 			if ( ! is_numeric( $manual_rate ) || 0 >= $manual_rate ) {
 				$message = 'Invalid manual currency rate passed to update_single_currency_settings: ' . $manual_rate;
 				Logger::error( $message );
-				throw new InvalidCurrencyRateException( esc_html( $message ), 'wcpay_multi_currency_invalid_currency_rate', 500 );
+				throw new InvalidCurrencyRateException( esc_html( $message ), 500 );
 			}
 			update_option( 'wcpay_multi_currency_manual_rate_' . $currency_code, $manual_rate );
 		}
@@ -940,7 +946,7 @@ class MultiCurrency {
 		if ( 0 >= $from_currency_rate ) {
 			$message = 'Invalid rate for from_currency in get_raw_conversion: ' . $from_currency_rate;
 			Logger::error( $message );
-			throw new InvalidCurrencyRateException( esc_html( $message ), 'wcpay_multi_currency_invalid_currency_rate', 500 );
+			throw new InvalidCurrencyRateException( esc_html( $message ), 500 );
 		}
 
 		$amount = $amount * ( $to_currency_rate / $from_currency_rate );
@@ -1016,24 +1022,20 @@ class MultiCurrency {
 		}
 
 		$message = sprintf(
-		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name */
-			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a>Use %3$s instead.</a>', 'woocommerce-payments' ),
+		/* translators: %1 User's country, %2 Selected currency name, %3 Default store currency name, %4 Link to switch currency */
+			__( 'We noticed you\'re visiting from %1$s. We\'ve updated our prices to %2$s for your shopping convenience. <a href="%4$s">Use %3$s instead.</a>', 'woocommerce-payments' ),
 			apply_filters( self::FILTER_PREFIX . 'override_notice_country', WC()->countries->countries[ $country ] ),
 			apply_filters( self::FILTER_PREFIX . 'override_notice_currency_name', $current_currency->get_name() ),
-			$currencies[ $store_currency ]
+			esc_html( $currencies[ $store_currency ] ),
+			esc_url( '?currency=' . $store_currency )
 		);
 
 		$notice_id = md5( $message );
 
 		echo '<p class="woocommerce-store-notice demo_store" data-notice-id="' . esc_attr( $notice_id . 2 ) . '" style="display:none;">';
-		// No need to escape here as the function called handles it.
+		// No need to escape here as the contents of $message is already escaped.
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo \WC_Payments_Utils::esc_interpolated_html(
-			$message,
-			[
-				'a' => '<a href="?currency=' . esc_attr( $store_currency ) . '">',
-			]
-		);
+		echo $message;
 		echo ' <a href="#" class="woocommerce-store-notice__dismiss-link">' . esc_html__( 'Dismiss', 'woocommerce-payments' ) . '</a></p>';
 	}
 
@@ -1350,15 +1352,57 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function register_admin_scripts() {
-		WC_Payments::register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
+		$this->register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
 
-		WC_Payments_Utils::register_style(
+		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',
-			plugins_url( 'dist/multi-currency.css', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/multi-currency.css', $this->gateway_context['plugin_file_path'] ),
 			[ 'wc-components', 'WCPAY_ADMIN_SETTINGS' ],
-			\WC_Payments::get_file_version( 'dist/multi-currency.css' ),
+			$this->get_file_version( 'dist/multi-currency.css' ),
 			'all'
 		);
+	}
+
+	/**
+	 * Load script with all required dependencies.
+	 *
+	 * @param string $handler Script handler.
+	 * @param string $script Script name relative to the plugin root.
+	 * @param array  $additional_dependencies Additional dependencies.
+	 *
+	 * @return void
+	 */
+	public function register_script_with_dependencies( string $handler, string $script, array $additional_dependencies = [] ) {
+		$script_file       = $script . '.js';
+		$script_src_url    = plugins_url( $script_file, $this->gateway_context['plugin_file_path'] );
+		$script_asset_path = plugin_dir_path( $this->gateway_context['plugin_file_path'] ) . $script . '.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+		$all_dependencies  = array_merge( $script_asset['dependencies'], $additional_dependencies );
+
+		wp_register_script(
+			$handler,
+			$script_src_url,
+			$all_dependencies,
+			$this->get_file_version( $script_file ),
+			true
+		);
+	}
+
+	/**
+	 * Get the file modified time as a cache buster if we're in dev mode.
+	 *
+	 * @param string $file Local path to the file.
+	 *
+	 * @return string
+	 */
+	public function get_file_version( $file ) {
+		$plugin_path = plugin_dir_path( $this->gateway_context['plugin_file_path'] );
+
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( $plugin_path . $file ) ) {
+			return (string) filemtime( $plugin_path . trim( $file, '/' ) );
+		}
+
+		return $this->gateway_context['plugin_version'];
 	}
 
 	/**
@@ -1400,14 +1444,14 @@ class MultiCurrency {
 			return;
 		}
 
-		$countries = WC_Payments_Utils::supported_countries();
+		$countries = $this->payments_account->get_supported_countries();
 
 		$predefined_simulation_currencies = [
-			Currency_Code::UNITED_STATES_DOLLAR => $countries[ Country_Code::UNITED_STATES ],
-			Currency_Code::POUND_STERLING       => $countries[ Country_Code::UNITED_KINGDOM ],
+			'USD' => $countries['US'],
+			'GBP' => $countries['GB'],
 		];
 
-		$simulation_currency      = Currency_Code::UNITED_STATES_DOLLAR === get_option( 'woocommerce_currency', Currency_Code::UNITED_STATES_DOLLAR ) ? Currency_Code::POUND_STERLING : Currency_Code::UNITED_STATES_DOLLAR;
+		$simulation_currency      = 'USD' === get_option( 'woocommerce_currency', 'USD' ) ? 'GBP' : 'USD';
 		$simulation_currency_name = $this->available_currencies[ $simulation_currency ]->get_name();
 		$simulation_country       = $predefined_simulation_currencies[ $simulation_currency ];
 
@@ -1632,7 +1676,7 @@ class MultiCurrency {
 	private function log_and_throw_invalid_currency_exception( $method, $currency_code, $code = 500 ) {
 		$message = 'Invalid currency passed to ' . $method . ': ' . $currency_code;
 		Logger::error( $message );
-		throw new InvalidCurrencyException( esc_html( $message ), 'wcpay_multi_currency_invalid_currency', esc_html( $code ) );
+		throw new InvalidCurrencyException( esc_html( $message ), esc_html( $code ) );
 	}
 
 	/**
