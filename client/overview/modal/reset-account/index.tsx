@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, CardDivider, Modal } from '@wordpress/components';
 
 /**
@@ -18,13 +18,17 @@ interface Props {
 
 const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 	const { isVisible, onDismiss, onSubmit } = props;
+	const [ isSubmitted, setSubmitted ] = useState( false );
 	if ( ! isVisible ) return null;
 
 	return (
 		<Modal
 			title={ strings.title }
 			className="wcpay-reset-account-modal"
-			onRequestClose={ onDismiss }
+			onRequestClose={ () => {
+				setSubmitted( false );
+				onDismiss();
+			} }
 		>
 			<p className="wcpay-reset-account-modal__headline">
 				{ strings.description }
@@ -40,13 +44,24 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 				<b>{ strings.confirmation }</b>
 			</div>
 			<div className="wcpay-reset-account-modal__footer">
-				<Button variant="tertiary" onClick={ onDismiss }>
+				<Button
+					variant="tertiary"
+					onClick={ () => {
+						setSubmitted( false );
+						onDismiss();
+					} }
+				>
 					{ strings.cancel }
 				</Button>
 				<Button
 					variant="primary"
 					isDestructive={ true }
-					onClick={ onSubmit }
+					isBusy={ isSubmitted }
+					disabled={ isSubmitted }
+					onClick={ () => {
+						setSubmitted( true );
+						onSubmit();
+					} }
 				>
 					{ strings.reset }
 				</Button>
