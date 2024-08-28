@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Disables testing instructions clipboard button on HTTP sites when navigator.clipboard is undefined.

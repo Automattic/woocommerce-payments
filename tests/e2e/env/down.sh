@@ -15,3 +15,8 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	step "Stopping server containers"
 	docker compose -f $E2E_ROOT/deps/wcp-server/docker-compose.yml down
 fi
+
+# Remove auth credentials from the Playwright config.
+# This must be kept when we fully migrate.
+step "Removing Playwright auth credentials"
+rm -rf "$E2E_ROOT/../e2e-pw/.auth"
