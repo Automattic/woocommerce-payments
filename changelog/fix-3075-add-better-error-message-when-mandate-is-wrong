@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Added better error message when mandate is invalid.

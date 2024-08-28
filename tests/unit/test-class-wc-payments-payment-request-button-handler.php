@@ -430,6 +430,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			[
 				'label'  => 'Shipping',
 				'amount' => $flat_rate['amount'],
+				'key'    => 'total_shipping',
 			],
 		];
 
