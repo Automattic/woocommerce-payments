@@ -74,20 +74,21 @@ class Mode {
 		 * Allows WooPayments to enter dev (aka sandbox) mode.
 		 *
 		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
-		 * @param bool $dev_mode The pre-determined dev mode.
+		 * @param bool $dev_mode Whether to enter WooPayments in dev mode.
 		 */
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );
 
+		// If dev mode is active, we enable test mode onboarding.
 		$test_mode_onboarding = $this->dev_mode || \WC_Payments_Onboarding_Service::is_test_mode_enabled();
 
 		/**
-		 * Allows WooPayments to onboard in test mode.
+		 * Allows WooPayments to use test mode onboarding.
 		 *
-		 * @param bool $test_mode_onboarding The pre-determined test mode onboarding.
+		 * @param bool $test_mode_onboarding Whether to use test mode onboarding.
 		 */
 		$this->test_mode_onboarding = (bool) apply_filters( 'wcpay_test_mode_onboarding', $test_mode_onboarding );
 
-		// If the current mode of onboarding is test, we should force enable test mode.
+		// If the current mode of onboarding is test, we will enable test mode payments processing.
 		// Otherwise, follow the gateway settings.
 		if ( $this->test_mode_onboarding ) {
 			$test_mode = true;
@@ -99,10 +100,10 @@ class Mode {
 		}
 
 		/**
-		 * Allows WooPayments to enter test payments processing.
+		 * Allows WooPayments to process payments in test mode.
 		 *
 		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
-		 * @param bool $test_mode The pre-determined test mode.
+		 * @param bool $test_mode Whether to process payments in test mode.
 		 */
 		$this->test_mode = (bool) apply_filters( 'wcpay_test_mode', $test_mode );
 	}
@@ -115,6 +116,7 @@ class Mode {
 	 */
 	public function is_live(): bool {
 		$this->maybe_init();
+
 		return ! $this->test_mode;
 	}
 
@@ -220,7 +222,7 @@ class Mode {
 	 * @return bool Whether `WCPAY_DEV_MODE` is defined and true.
 	 */
 	protected function is_wcpay_dev_mode_defined(): bool {
-		return(
+		return (
 			defined( 'WCPAY_DEV_MODE' )
 			&& WCPAY_DEV_MODE
 		);
