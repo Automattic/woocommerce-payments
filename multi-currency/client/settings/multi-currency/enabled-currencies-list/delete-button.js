@@ -9,7 +9,7 @@ import { useCallback, useState } from '@wordpress/element';
 import ConfirmationModal from 'multi-currency/components/confirmation-modal';
 import CurrencyDeleteIllustration from 'multi-currency/components/currency-delete-illustration';
 import PaymentMethodIcon from 'multi-currency/components/payment-method-icon';
-import paymentMethodsMap from 'multi-currency/interfaces/assets/payment-methods-map';
+import paymentMethodsMap from 'multi-currency/interfaces/assets';
 
 const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
