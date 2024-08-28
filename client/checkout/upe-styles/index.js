@@ -37,6 +37,8 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '#place_order' ],
+		linkSelectors: [ 'a' ],
 	},
 	blocksCheckout: {
 		appendTarget: '#billing.wc-block-components-address-form',
@@ -60,6 +62,8 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplProductPage: {
 		appendTarget: '.product .cart .quantity',
@@ -76,6 +80,8 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.single_add_to_cart_button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplClassicCart: {
 		appendTarget: '.cart .quantity',
@@ -92,6 +98,8 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.checkout-button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplCartBlock: {
 		appendTarget: '.wc-block-cart .wc-block-components-quantity-selector',
@@ -112,6 +120,29 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.wc-block-cart__submit-button' ],
+		linkSelectors: [ 'a' ],
+	},
+	wooPayClassicCheckout: {
+		appendTarget: '.woocommerce-billing-fields__field-wrapper',
+		upeThemeInputSelector: '#billing_first_name',
+		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
+		rowElement: 'p',
+		validClasses: [ 'form-row' ],
+		invalidClasses: [
+			'form-row',
+			'woocommerce-invalid',
+			'woocommerce-invalid-required-field',
+		],
+		backgroundSelectors: [
+			'#customer_details',
+			'#order_review',
+			'form.checkout',
+			'body',
+		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '#place_order' ],
+		linkSelectors: [ 'a' ],
 	},
 
 	/**
@@ -164,6 +195,9 @@ export const appearanceSelectors = {
 				break;
 			case 'bnpl_cart_block':
 				appearanceSelector = this.bnplCartBlock;
+				break;
+			case 'woopay_shortcode_checkout':
+				appearanceSelector = this.wooPayClassicCheckout;
 				break;
 		}
 
@@ -447,7 +481,8 @@ export const getAppearance = ( elementsLocation ) => {
 		'.Block',
 		backgroundColor
 	);
-
+	const buttonRules = getFieldStyles( selectors.buttonSelectors, '.Input' );
+	const linkRules = getFieldStyles( selectors.linkSelectors, '.Label' );
 	const globalRules = {
 		colorBackground: backgroundColor,
 		colorText: labelRules.color,
@@ -471,6 +506,8 @@ export const getAppearance = ( elementsLocation ) => {
 			'.Text': labelRules,
 			'.Text--redirect': labelRules,
 			'.Heading': headingRules,
+			'.Button': buttonRules,
+			'.Link': linkRules,
 		},
 	};
 	// Remove hidden fields from DOM.

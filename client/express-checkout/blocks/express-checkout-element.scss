@@ -1,4 +1,27 @@
-.wc-block-components-express-payment--checkout
+// Cart Block
+.wc-block-components-express-payment--cart {
+	.wc-block-components-express-payment__event-buttons > li {
+		padding-bottom: 12px !important;
+
+		&:last-child {
+			padding-bottom: 0 !important;
+		}
+	}
+}
+
+// OR separator
+.wc-block-components-express-payment-continue-rule--cart {
+	margin: 24px 0 !important;
+	height: 20px;
+}
+
+// Checkout Block
+.wc-block-components-express-payment--checkout {
 	.wc-block-components-express-payment__event-buttons {
-	grid-template-columns: repeat( auto-fit, minmax( 232px, 1fr ) ) !important;
+		grid-gap: 12px !important;
+		grid-template-columns: repeat(
+			auto-fit,
+			minmax( 232px, 1fr )
+		) !important;
+	}
 }

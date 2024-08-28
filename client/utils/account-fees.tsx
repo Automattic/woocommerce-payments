@@ -16,6 +16,7 @@ import React from 'react';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
 import { PaymentMethod } from 'wcpay/types/payment-methods';
 import { createInterpolateElement } from '@wordpress/element';
+import { ExternalLink } from '@wordpress/components';
 
 const countryFeeStripeDocsBaseLink =
 	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/#';
@@ -122,7 +123,7 @@ export const formatMethodFeesTooltip = (
 			? 1 - accountFees.discount[ 0 ].discount
 			: 1;
 
-	// Per https://woo.com/es/terms-conditions/woopayments-promotion-2023/ we exclude FX fees from discounts.
+	// Per https://woocommerce.com/terms-conditions/woopayments-promotion-2023/ we exclude FX fees from discounts.
 	const total = {
 		percentage_rate:
 			accountFees.base.percentage_rate * discountAdjustedFeeRate +
@@ -180,7 +181,7 @@ export const formatMethodFeesTooltip = (
 			{ wcpaySettings &&
 			wcpaySettings.connect &&
 			wcpaySettings.connect.country ? (
-				<div className={ 'wcpay-fees-tooltip__hint-text' }>
+				<div className="wcpay-fees-tooltip__hint-text">
 					<span>
 						{ stripeFeeSectionExistsForCountry(
 							wcpaySettings.connect.country
@@ -196,19 +197,17 @@ export const formatMethodFeesTooltip = (
 									),
 									components: {
 										linkToStripePage: (
-											<a
+											<ExternalLink
 												href={ getStripeFeeSectionUrl(
 													wcpaySettings.connect
 														.country
 												) }
-												target={ '_blank' }
-												rel={ 'noreferrer' }
 											>
 												{ __(
 													'Learn more',
 													'woocommerce-payments'
 												) }
-											</a>
+											</ExternalLink>
 										),
 									},
 							  } )
@@ -223,18 +222,16 @@ export const formatMethodFeesTooltip = (
 									),
 									components: {
 										linkToStripePage: (
-											<a
+											<ExternalLink
 												href={
 													countryFeeStripeDocsBaseLinkNoCountry
 												}
-												target={ '_blank' }
-												rel={ 'noreferrer' }
 											>
 												{ __(
 													'Learn more',
 													'woocommerce-payments'
 												) }
-											</a>
+											</ExternalLink>
 										),
 									},
 							  } ) }

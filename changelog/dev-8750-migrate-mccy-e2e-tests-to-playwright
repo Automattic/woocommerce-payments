@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Migrate multi-currency e2e tests to Playwright.

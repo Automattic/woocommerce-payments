@@ -17,6 +17,7 @@ import {
 import {
 	appendFraudPreventionTokenInputToForm,
 	appendPaymentMethodIdToForm,
+	appendPaymentMethodErrorDataToForm,
 	getPaymentMethodTypes,
 	getSelectedUPEGatewayPaymentMethod,
 	getTerms,
@@ -29,7 +30,8 @@ import enableStripeLinkPaymentMethod, {
 import {
 	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
-} from '../constants';
+	PAYMENT_METHOD_ERROR,
+} from 'wcpay/checkout/constants';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
@@ -192,14 +194,7 @@ function createStripePaymentMethod(
 
 	return api
 		.getStripeForUPE( paymentMethodType )
-		.createPaymentMethod( { elements, params: params } )
-		.then( ( paymentMethod ) => {
-			if ( paymentMethod.error ) {
-				throw paymentMethod.error;
-			}
-
-			return paymentMethod;
-		} );
+		.createPaymentMethod( { elements, params: params } );
 }
 
 /**
@@ -219,13 +214,20 @@ async function createStripePaymentElement(
 ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
+	const appearance = await initializeAppearance( api, elementsLocation );
+	document
+		.querySelector(
+			`.wcpay-upe-element[data-payment-method-type="${ paymentMethodType }"]`
+		)
+		?.closest( '.wc_payment_method' )
+		?.classList.add( `theme--${ appearance.theme || 'stripe' }` );
 	const options = {
 		mode: amount < 1 ? 'setup' : 'payment',
 		currency: getUPEConfig( 'currency' ).toLowerCase(),
 		amount: amount,
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
-		appearance: await initializeAppearance( api, elementsLocation ),
+		appearance,
 		fonts: getFontRulesFromPage(),
 	};
 
@@ -563,11 +565,20 @@ export const processPayment = (
 				$form,
 				paymentMethodType
 			);
+
+			if ( paymentMethodObject.error ) {
+				appendPaymentMethodIdToForm( $form, PAYMENT_METHOD_ERROR );
+				appendPaymentMethodErrorDataToForm(
+					$form,
+					paymentMethodObject.error
+				);
+			} else {
+				appendPaymentMethodIdToForm(
+					$form,
+					paymentMethodObject.paymentMethod.id
+				);
+			}
 			appendFingerprintInputToForm( $form, fingerprint );
-			appendPaymentMethodIdToForm(
-				$form,
-				paymentMethodObject.paymentMethod.id
-			);
 			appendFraudPreventionTokenInputToForm( $form );
 			await additionalActionsHandler(
 				paymentMethodObject.paymentMethod,
@@ -586,6 +597,15 @@ export const processPayment = (
 	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
 	return false;
 };
+
+/**
+ * Used only for testing, resets the hasCheckoutCompleted value.
+ *
+ * @return {void}
+ */
+export function __resetHasCheckoutCompleted() {
+	hasCheckoutCompleted = false;
+}
 
 /**
  * Used only for testing, resets the gatewayUPEComponents internal cache of elements for a given property.
