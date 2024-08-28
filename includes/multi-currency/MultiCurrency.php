@@ -225,7 +225,7 @@ class MultiCurrency {
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
-		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request();
+		$is_frontend_request = ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request();
 
 		if ( $is_frontend_request || Utils::is_store_api_request() ) {
 			// Make sure that this runs after the main init function.
