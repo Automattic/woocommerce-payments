@@ -51,7 +51,7 @@ class WC_Payments_Utils {
 		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
 		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
 		// By adding it to this list, we're able to identify the user and load the correct session for this route.
-		'@^\/wc\/v3\/woopay\/session$@',
+		'@^\/payments\/woopay\/session$@',
 	];
 
 	/**

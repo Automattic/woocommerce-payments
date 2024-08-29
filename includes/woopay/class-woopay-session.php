@@ -385,7 +385,7 @@ class WooPay_Session {
 	 * @param \WP_User $user The user object.
 	 * @return string The user email.
 	 */
-	private static function get_user_email( $user ) {
+	public static function get_user_email( $user ) {
 		if ( ! empty( $_POST['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return sanitize_email( wp_unslash( $_POST['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		}
@@ -400,6 +400,21 @@ class WooPay_Session {
 
 			if ( ! empty( $decrypted_data['user_email'] ) ) {
 				return sanitize_email( wp_unslash( $decrypted_data['user_email'] ) );
+			}
+		}
+
+		// Get the email from the customer object if it's available.
+		if ( ! empty( WC()->customer ) ) {
+			$billing_email = WC()->customer->get_billing_email();
+
+			if ( ! empty( $billing_email ) ) {
+				return $billing_email;
+			}
+
+			$customer_email = WC()->customer->get_email();
+
+			if ( ! empty( $customer_email ) ) {
+				return $customer_email;
 			}
 		}
 
