@@ -773,7 +773,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( isset( $account_data['account_id'] ) ) {
 			return '';
 		}
-		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
+		return html_entity_decode( WC_Payments_Account::get_connect_url( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK ) );
 	}
 
 	/**
@@ -1495,6 +1495,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
+		// If an error happened during the payment setup in the client it will be saved in the payment information so we can throw
+		// the error here and follow the standard failed order flow.
+		$error = $payment_information->get_error();
+		if ( ! is_null( $error ) ) {
+			throw new \Exception( $error->get_error_message() );
+		}
+
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
 			$order->payment_complete();
@@ -1575,7 +1582,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							/* translators: %s: metadata. We do not need to translate WooPayMeta */
 							esc_html( __( 'We\'re not able to process this payment. Please try again later. WooPayMeta: intent_meta_order_id: %1$s, order_id: %2$s', 'woocommerce-payments' ) ),
 							esc_attr( $intent_meta_order_id ),
-							esc_attr( $order_id ),
+							esc_attr( $order_id )
 						),
 						'order_id_mismatch'
 					);
@@ -2537,6 +2544,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				WooPay_Order_Status_Sync::remove_webhook();
 			}
 		}
+	}
+
+	/**
+	 * Updates whether woopay global theme support is enabled or disabled.
+	 *
+	 * @param bool $value Whether woopay global theme support should be enabled.
+	 */
+	public function update_is_woopay_global_theme_support_enabled( $value ) {
+		$current_value = 'yes' === $this->get_option( 'is_woopay_global_theme_support_enabled', 'no' );
+
+		if ( $value !== $current_value ) {
+			WC_Payments::woopay_tracker()->maybe_record_admin_event(
+				$value ? 'woopay_global_theme_support_enabled' : 'woopay_global_theme_support_disabled',
+				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
+			);
+
+			$this->update_option( 'is_woopay_global_theme_support_enabled', $value ? 'yes' : 'no' );
+		}
+	}
+
+
+	/**
+	 * Checks whether the WooPay global theme support is enabled.
+	 *
+	 * @return bool The result.
+	 */
+	public function is_woopay_global_theme_support_enabled() {
+		return WC_Payments_Features::is_woopay_global_theme_support_eligible() && 'yes' === $this->get_option( 'is_woopay_global_theme_support_enabled' );
 	}
 
 	/**
@@ -3815,7 +3850,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
+				WC_Payments_Utils::get_filtered_error_status_code( $e )
 			);
 		}
 	}
@@ -4132,7 +4167,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
 					],
 				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e ),
+				WC_Payments_Utils::get_filtered_error_status_code( $e )
 			);
 		}
 	}

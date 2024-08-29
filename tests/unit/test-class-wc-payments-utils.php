@@ -320,6 +320,492 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, $result );
 	}
 
+	public function test_array_map_recursive_maps_multidimensional() {
+		$array = [
+			'value0',
+			'key1' => 'value1',
+			'value2',
+			'key2' => [
+				'key3' => 'value3',
+				'key4' => [
+					'key5' => 'value5',
+				],
+				[
+					'key6' => 'value6',
+					[
+						'key7' => 'value7',
+					],
+				],
+			],
+			[
+				'key8' => 'value8',
+				[
+					'key9' => 'value9',
+				],
+			],
+		];
+
+		$expected = [
+			'value0_modified',
+			'key1' => 'value1_modified',
+			'value2_modified',
+			'key2' => [
+				'key3' => 'value3_modified',
+				'key4' => [
+					'key5' => 'value5_modified',
+				],
+				[
+					'key6' => 'value6_modified',
+					[
+						'key7' => 'value7_modified',
+					],
+				],
+			],
+			[
+				'key8' => 'value8_modified',
+				[
+					'key9' => 'value9_modified',
+				],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_map_recursive(
+			$array,
+			function ( $value ) {
+				return $value . '_modified';
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_map_recursive_maps_singledimensional() {
+		$array = [
+			'value0',
+			'key1' => 'value1',
+			'value2',
+		];
+
+		$expected = [
+			'value0_modified',
+			'key1' => 'value1_modified',
+			'value2_modified',
+		];
+
+		$result = WC_Payments_Utils::array_map_recursive(
+			$array,
+			function ( $value ) {
+				return $value . '_modified';
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_map_recursive_maps_empty_array() {
+		$array = [];
+
+		$expected = [];
+
+		$result = WC_Payments_Utils::array_map_recursive(
+			$array,
+			function ( $value ) {
+				return $value . '_modified';
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_map_recursive_maps_empty_array_with_keys() {
+		$array = [
+			'key1' => [],
+			'key2' => [],
+			'key3' => [
+				'key4' => [],
+			],
+		];
+
+		$expected = [
+			'key1' => [],
+			'key2' => [],
+			'key3' => [
+				'key4' => [],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_map_recursive(
+			$array,
+			function ( $value ) {
+				return $value . '_modified';
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_multidimensional() {
+		$array = [
+			0      => 'value0',
+			'key1' => 'value1',
+			1      => 'to_be_removed',
+			'key2' => [
+				'key3' => 'to_be_removed',
+				'key4' => [ // This should also be removed.
+					'key5' => 'to_be_removed',
+				],
+				[
+					'key6' => 'value6',
+					[ 'key7' => 'to_be_removed' ], // The entire array should be removed.
+				],
+			],
+			99     => [
+				'key8' => 'value8',
+				[
+					'key9' => 'value9',
+				],
+			],
+		];
+
+		$expected = [
+			0      => 'value0',
+			'key1' => 'value1',
+			'key2' => [
+				[
+					'key6' => 'value6',
+				],
+			],
+			99     => [
+				'key8' => 'value8',
+				[
+					'key9' => 'value9',
+				],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_filter_recursive(
+			$array,
+			function ( $value ) {
+				return 'to_be_removed' !== $value;
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_singledimensional() {
+		$array = [
+			0      => 'value0',
+			'key1' => 'value1',
+			1      => 'to_be_removed',
+			'key2' => 'to_be_removed',
+			99     => 'value3',
+		];
+
+		$expected = [
+			0      => 'value0',
+			'key1' => 'value1',
+			99     => 'value3',
+		];
+
+		$result = WC_Payments_Utils::array_filter_recursive(
+			$array,
+			function ( $value ) {
+				return 'to_be_removed' !== $value;
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_without_callback() {
+		$array = [
+			0      => 'value0',
+			'key1' => true,
+			1      => '',
+			'key2' => null,
+			'key3' => false,
+			99     => 'value3',
+			'0',
+			0,
+			[],
+			'key4' => [],
+			200    => [ true, false, 0, '', null ],
+			201    => [
+				0 => false,
+				3 => [],
+				7 => [
+					'key5' => false,
+					'key6' => [],
+					'key7' => '1',
+				],
+			],
+		];
+
+		// All non-truthy values are removed.
+		$expected = [
+			0      => 'value0',
+			'key1' => true,
+			99     => 'value3',
+			200    => [ true ],
+			201    => [
+				7 => [
+					'key7' => '1',
+				],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_filter_recursive( $array );
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_empty_array() {
+		$array = [];
+
+		$expected = [];
+
+		$result = WC_Payments_Utils::array_filter_recursive(
+			$array,
+			function ( $value ) {
+				return 'to_be_removed' !== $value;
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_empty_array_with_keys() {
+		$array = [
+			'key1' => [],
+			'key2' => [],
+			'key3' => [
+				'key4' => [],
+			],
+		];
+
+		$expected = [];
+
+		$result = WC_Payments_Utils::array_filter_recursive(
+			$array,
+			function ( $value ) {
+				return 'to_be_removed' !== $value;
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_merge_recursive_distinct_merges() {
+		$a1 = [
+			88    => 1,
+			'foo' => 2,
+			'bar' => [],
+			'x'   => 5,
+			'z'   => [
+				6,
+				'm' => 'hi',
+			],
+		];
+		$a2 = [
+			99    => 7,
+			'foo' => [],
+			'bar' => 9,
+			'y'   => 10,
+			'z'   => [
+				'm' => 'bye',
+				11,
+			],
+		];
+		$a3 = [
+			'z' => [
+				6,
+				'm' => 'final',
+			],
+		];
+
+		$expected = [
+			88    => 1,
+			'foo' => [ 2 ],
+			'bar' => [ 9 ],
+			'x'   => 5,
+			'z'   => [
+				6,
+				'm' => 'final',
+				11,
+			],
+			7,
+			'y'   => 10,
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2, $a3 );
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_merge_recursive_distinct_two_string_keyed_arrays() {
+		$a1 = [
+			'key1' => 'value1',
+			'key2' => [
+				'key2_1' => 'value2',
+				'key2_2' => null,
+				'key2_3' => 'value22',
+			],
+			'key3' => [
+				'key3_1' => 'value3',
+			],
+			'foo'  => [
+				'bar' => [
+					'baz' => 1,
+				],
+			],
+		];
+		$a2 = [
+			'key1' => null,
+			'key2' => [
+				'key2_1' => null,
+				'key2_2' => 'value',
+				'key2_3' => 'value22_modified',
+			],
+			'key3' => [
+				'key3_1' => 'value3_modified',
+			],
+			'foo'  => [
+				'bar' => [
+					'baz' => 2,
+				],
+			],
+		];
+
+		$expected = [
+			'key1' => 'value1',
+			'key2' => [
+				'key2_1' => 'value2',
+				'key2_2' => 'value',
+				'key2_3' => 'value22_modified',
+			],
+			'key3' => [
+				'key3_1' => 'value3_modified',
+			],
+			'foo'  => [
+				'bar' => [
+					'baz' => 2,
+				],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_merge_recursive_distinct_with_scalar() {
+		$a1 = [
+			'key1' => 'value1',
+		];
+		$a2 = 'scalar';
+
+		$expected = [
+			'key1' => 'value1',
+			'scalar',
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertEquals( $expected, $result );
+
+		$a1 = 'scalar';
+		$a2 = [
+			'key1' => 'value1',
+			'key3' => [
+				'key3_1' => 'value3',
+			],
+		];
+
+		$expected = [
+			'scalar',
+			'key1' => 'value1',
+			'key3' => [
+				'key3_1' => 'value3',
+			],
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertEquals( $expected, $result );
+
+		$a1 = 'scalar1';
+		$a2 = 2;
+
+		$expected = [
+			'scalar1',
+			2,
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_merge_recursive_distinct_null_entries() {
+		$a1 = [
+			'key1' => 'value1',
+			'key2' => [
+				'key2_1' => 'value2',
+				'key2_2' => null,
+			],
+			'foo'  => [
+				'b'   => null,
+				'bar' => [
+					'baz' => 1,
+				],
+			],
+			'value3',
+		];
+		$a2 = [
+			'key1' => null,
+			'key2' => [
+				'key2_1' => null,
+				'key2_2' => 'value',
+			],
+			null,
+			null,
+			'foo'  => [
+				'ba'     => null,
+				'bar'    => [
+					'baz'    => null,
+					'bazzzz' => null,
+				],
+				'barrrr' => null,
+			],
+			'key3' => null,
+			null,
+		];
+
+		$expected = [
+			'key1' => 'value1',
+			'key2' => [
+				'key2_1' => 'value2',
+				'key2_2' => 'value',
+			],
+			'foo'  => [
+				'b'      => null,
+				'bar'    => [
+					'baz'    => 1,
+					'bazzzz' => null,
+				],
+				'ba'     => null,
+				'barrrr' => null,
+			],
+			'value3',
+			'key3' => null,
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertSame( $expected, $result );
+	}
+
 	public function test_get_order_intent_currency() {
 		$order = WC_Helper_Order::create_order();
 
@@ -620,5 +1106,11 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
 
 		unset( $_REQUEST['rest_route'] );
+	}
+
+	public function test_is_store_api_request_with_malformed_url() {
+		$_SERVER['REQUEST_URI'] = '///wp-json/wp/v2/users';
+
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
 	}
 }

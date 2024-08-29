@@ -31,22 +31,15 @@ describe( 'Express checkout normalization', () => {
 			const expected = [
 				{
 					name: 'Item 1',
-					label: 'Item 1',
 					amount: 100,
-					value: 100,
 				},
 				{
 					name: 'Item 2',
-					label: 'Item 2',
 					amount: 200,
-					value: 200,
 				},
 				{
 					name: 'Item 3',
-					label: 'Item 3',
 					amount: 200,
-					valueWithTax: 300,
-					value: 200,
 				},
 			];
 
@@ -74,18 +67,60 @@ describe( 'Express checkout normalization', () => {
 			const expected = [
 				{
 					name: 'Item 1',
-					label: 'Item 1',
 					amount: 100,
 				},
 				{
 					name: 'Item 2',
-					label: 'Item 2',
 					amount: 200,
 				},
 				{
 					name: 'Item 3',
+					amount: 300,
+				},
+			];
+
+			expect( normalizeLineItems( displayItems ) ).toStrictEqual(
+				expected
+			);
+		} );
+
+		test( 'normalizes discount line item properly', () => {
+			const displayItems = [
+				{
+					label: 'Item 1',
+					amount: 100,
+				},
+				{
+					label: 'Item 2',
+					amount: 200,
+				},
+				{
 					label: 'Item 3',
 					amount: 300,
+				},
+				{
+					key: 'total_discount',
+					label: 'Discount',
+					amount: 50,
+				},
+			];
+
+			const expected = [
+				{
+					name: 'Item 1',
+					amount: 100,
+				},
+				{
+					name: 'Item 2',
+					amount: 200,
+				},
+				{
+					name: 'Item 3',
+					amount: 300,
+				},
+				{
+					name: 'Discount',
+					amount: -50,
 				},
 			];
 

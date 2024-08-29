@@ -48,6 +48,11 @@ interface MultiCurrencyAccountInterface {
 	public function get_account_customer_supported_currencies(): array;
 
 	/**
+	 * Get list of countries supported by the provider.
+	 */
+	public function get_supported_countries(): array;
+
+	/**
 	 * Get provider onboarding page url.
 	 *
 	 * @return string

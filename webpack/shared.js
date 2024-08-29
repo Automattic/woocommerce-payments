@@ -10,7 +10,6 @@ module.exports = {
 	entry: mapValues(
 		{
 			index: './client/index.js',
-			'bnpl-announcement': './client/bnpl-announcement/index.js',
 			settings: './client/settings/index.js',
 			'blocks-checkout': './client/checkout/blocks/index.js',
 			woopay: './client/checkout/woopay/index.js',
@@ -42,6 +41,7 @@ module.exports = {
 			'product-details': './client/product-details/index.js',
 			'cart-block': './client/cart/blocks/index.js',
 			'plugins-page': './client/plugins-page/index.js',
+			'frontend-tracks': './client/frontend-tracks/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -113,9 +113,18 @@ module.exports = {
 	},
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
-		modules: [ path.join( process.cwd(), 'client' ), 'node_modules' ],
+		modules: [
+			path.join( process.cwd(), 'client' ),
+			path.join( process.cwd(), 'multi-currency', 'client' ),
+			'node_modules',
+		],
 		alias: {
 			assets: path.resolve( process.cwd(), 'assets' ),
+			'multi-currency': path.resolve(
+				process.cwd(),
+				'multi-currency',
+				'client'
+			),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(
 				process.cwd(),

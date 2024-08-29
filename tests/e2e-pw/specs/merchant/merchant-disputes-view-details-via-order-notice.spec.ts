@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 import * as shopper from '../../utils/shopper';
 import { config } from '../../config/default';
 import { getMerchant, getShopper } from '../../utils/helpers';
-import * as merchant from '../../utils/merchant';
+import { goToOrder } from '../../utils/merchant-navigation';
 
 test.describe(
 	'Disputes > View dispute details via disputed order notice',
@@ -44,7 +44,7 @@ test.describe(
 			browser,
 		} ) => {
 			const { merchantPage } = await getMerchant( browser );
-			await merchant.goToOrder( merchantPage, orderId );
+			await goToOrder( merchantPage, orderId );
 
 			// If WC < 7.9, return early since the order dispute notice is not present.
 			const orderPaymentDetailsContainerVisible = await merchantPage

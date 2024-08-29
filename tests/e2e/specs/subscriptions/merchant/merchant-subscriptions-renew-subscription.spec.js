@@ -64,9 +64,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			page.on( 'dialog', async function ( dialog ) {
 				try {
 					await dialog.accept();
-				} catch ( err ) {
-					console.warn( err.message );
-				}
+				} catch ( err ) {}
 			} );
 			await merchant.logout();
 		} );
@@ -93,9 +91,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				page.on( 'dialog', async ( dialog ) => {
 					try {
 						await dialog.accept();
-					} catch ( err ) {
-						console.warn( err.message );
-					}
+					} catch ( err ) {}
 				} ),
 				uiUnblocked(),
 				page.waitForNavigation( { waitUntil: 'networkidle0' } ),
