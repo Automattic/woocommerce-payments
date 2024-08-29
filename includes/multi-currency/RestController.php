@@ -7,7 +7,7 @@
 
 namespace WCPay\MultiCurrency;
 
-use WCPay\Exceptions\Base_Exception;
+use Exception;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 
 defined( 'ABSPATH' ) || exit;
@@ -167,7 +167,7 @@ class RestController extends \WP_REST_Controller {
 			WC_Payments_Multi_Currency()->set_enabled_currencies( $enabled );
 			$response = $this->get_store_currencies();
 		} catch ( InvalidCurrencyException $e ) {
-			$response = new \WP_Error( $e->get_error_code(), $e->getMessage() );
+			$response = new \WP_Error( $e->getCode(), $e->getMessage() );
 		}
 		return rest_ensure_response( $response );
 	}
@@ -185,7 +185,7 @@ class RestController extends \WP_REST_Controller {
 		try {
 			$response = WC_Payments_Multi_Currency()->get_single_currency_settings( $currency_code );
 		} catch ( InvalidCurrencyException $e ) {
-			$response = new \WP_Error( $e->get_error_code(), $e->getMessage() );
+			$response = new \WP_Error( $e->getCode(), $e->getMessage() );
 		}
 
 		return rest_ensure_response( $response );
@@ -208,8 +208,8 @@ class RestController extends \WP_REST_Controller {
 		try {
 			WC_Payments_Multi_Currency()->update_single_currency_settings( $currency_code, $exchange_rate_type, $price_rounding, $price_charm, $manual_rate );
 			$response = WC_Payments_Multi_Currency()->get_single_currency_settings( $currency_code );
-		} catch ( Base_Exception $e ) {
-			$response = new \WP_Error( $e->get_error_code(), $e->getMessage() );
+		} catch ( Exception $e ) {
+			$response = new \WP_Error( $e->getCode(), $e->getMessage() );
 		}
 
 		return rest_ensure_response( $response );

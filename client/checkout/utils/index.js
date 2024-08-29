@@ -20,7 +20,7 @@ export const getAppearanceType = () => {
 	}
 
 	if ( document.querySelector( '.woocommerce-billing-fields' ) ) {
-		return 'shortcode_checkout';
+		return 'woopay_shortcode_checkout';
 	}
 
 	if ( document.querySelector( '.wp-block-woocommerce-cart' ) ) {
@@ -31,7 +31,7 @@ export const getAppearanceType = () => {
 		return 'bnpl_classic_cart';
 	}
 
-	if ( document.querySelector( '.wp-block-woocommerce-product-details' ) ) {
+	if ( document.querySelector( '.single-product' ) ) {
 		return 'bnpl_product_page';
 	}
 };

@@ -23,7 +23,9 @@ const renderSaveUserSection = () => {
 	);
 
 	if ( blocksCheckout.length ) {
-		const checkoutPageSaveUserContainer = document.createElement( 'div' );
+		const checkoutPageSaveUserContainer = document.createElement(
+			'fieldset'
+		);
 		const paymentOptions = document.getElementsByClassName(
 			'wp-block-woocommerce-checkout-payment-block'
 		)?.[ 0 ];

@@ -57,7 +57,7 @@ class Utils {
 	 * @return boolean
 	 */
 	public static function is_admin_api_request(): bool {
-		return 0 === stripos( wp_get_referer(), admin_url() ) && WC()->is_rest_api_request() && ! \WC_Payments_Utils::is_store_api_request();
+		return 0 === stripos( wp_get_referer(), admin_url() ) && WC()->is_rest_api_request() && ! self::is_store_api_request();
 	}
 
 
@@ -70,5 +70,22 @@ class Utils {
 	 */
 	public static function set_customer_session_cookie( bool $set ) {
 		WC()->session->set_customer_session_cookie( $set );
+	}
+
+	/**
+	 * Returns true if the request is a store REST API request.
+	 *
+	 * @return bool
+	 */
+	public static function is_store_api_request() {
+		if ( function_exists( 'WC' ) && method_exists( WC(), 'is_store_api_request' ) ) {
+			return WC()->is_store_api_request();
+		}
+		// The logic below is sourced from `WC()->is_store_api_request()`.
+		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+			return false;
+		}
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return false !== strpos( $_SERVER['REQUEST_URI'], trailingslashit( rest_get_url_prefix() ) . 'wc/store/' );
 	}
 }

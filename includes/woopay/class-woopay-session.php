@@ -480,6 +480,7 @@ class WooPay_Session {
 				'blog_url'                       => get_site_url(),
 				'blog_checkout_url'              => ! $is_pay_for_order ? wc_get_checkout_url() : $order->get_checkout_payment_url(),
 				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
+				'blog_timezone'                  => wp_timezone_string(),
 				'store_api_url'                  => self::get_store_api_url(),
 				'account_id'                     => $account_id,
 				'test_mode'                      => WC_Payments::mode()->is_test(),
