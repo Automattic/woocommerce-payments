@@ -41,6 +41,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useGetSavingError: jest.fn(),
 	useSavedCards: jest.fn(),
 	useDevMode: jest.fn(),
+	useTestModeOnboarding: jest.fn(),
 	useCardPresentEligible: jest.fn(),
 } ) );
 

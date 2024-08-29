@@ -33,7 +33,7 @@ import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
 import WooPaymentsLogo from 'assets/images/logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
-import { isInDevMode } from 'wcpay/utils';
+import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { trackAccountReset } from 'wcpay/onboarding/tracking';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
@@ -96,8 +96,7 @@ const ConnectAccountPage: React.FC = () => {
 	const {
 		connectUrl,
 		connect: { availableCountries, country },
-		devMode,
-		onboardingTestMode,
+		testModeOnboarding,
 		isJetpackConnected,
 		isAccountConnected,
 		isAccountValid,
@@ -467,7 +466,7 @@ const ConnectAccountPage: React.FC = () => {
 					) }
 					{
 						// Show general sandbox notice when no account is connected but sandbox mode is active.
-						! isAccountConnected && devMode ? (
+						! isAccountConnected && testModeOnboarding ? (
 							<SandboxModeNotice />
 						) : (
 							// If we already have a sandbox account connected (but in an invalid state) and
@@ -475,7 +474,7 @@ const ConnectAccountPage: React.FC = () => {
 							// show the switch to live sandbox notice.
 							isAccountConnected &&
 							! isAccountValid &&
-							onboardingTestMode &&
+							testModeOnboarding &&
 							isJetpackConnected && (
 								<SandboxModeSwitchToLiveNotice
 									from="WCPAY_CONNECT"
@@ -551,7 +550,7 @@ const ConnectAccountPage: React.FC = () => {
 								isAccountConnected &&
 									( ! wcpaySettings.accountStatus
 										.detailsSubmitted ||
-										isInDevMode() ) && (
+										isInTestModeOnboarding() ) && (
 										<Button
 											variant={ 'tertiary' }
 											onClick={ () =>

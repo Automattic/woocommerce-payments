@@ -224,20 +224,25 @@ const Deposits = () => {
 							'Manage and update your deposit account information to receive payments and deposits.',
 							'woocommerce-payments'
 						) }{ ' ' }
-						<ExternalLink
-							href={ accountLink }
-							onClick={ () => {
-								recordEvent(
-									'wcpay_settings_deposits_manage_in_stripe_click'
-								);
-								recordEvent(
-									'wcpay_account_details_link_clicked',
-									{ source: 'settings-deposits' }
-								);
-							} }
-						>
-							{ __( 'Manage in Stripe', 'woocommerce-payments' ) }
-						</ExternalLink>
+						{ accountLink && (
+							<ExternalLink
+								href={ accountLink }
+								onClick={ () => {
+									recordEvent(
+										'wcpay_settings_deposits_manage_in_stripe_click'
+									);
+									recordEvent(
+										'wcpay_account_details_link_clicked',
+										{ source: 'settings-deposits' }
+									);
+								} }
+							>
+								{ __(
+									'Manage in Stripe',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
+						) }
 					</p>
 				</div>
 			</CardBody>

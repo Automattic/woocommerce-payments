@@ -216,6 +216,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'create_and_confirm_setup_intent',
 					'get_payment_method',
 					'get_timeline',
+					'get_latest_fraud_ruleset',
 				]
 			)
 			->getMock();
@@ -3441,7 +3442,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mode->dev();
 		$this->assertTrue( $this->card_gateway->is_in_dev_mode() );
 
-		$mode->test();
+		$mode->live_mode_onboarding();
 		$this->assertFalse( $this->card_gateway->is_in_dev_mode() );
 
 		$mode->live();
@@ -3455,6 +3456,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mode = WC_Payments::mode();
 
 		$mode->dev();
+		$this->assertTrue( $this->card_gateway->is_in_test_mode() );
+
+		$mode->test_mode_onboarding();
 		$this->assertTrue( $this->card_gateway->is_in_test_mode() );
 
 		$mode->test();

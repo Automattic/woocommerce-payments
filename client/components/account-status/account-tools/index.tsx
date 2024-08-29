@@ -12,7 +12,7 @@ import strings from './strings';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { trackAccountReset } from 'wcpay/onboarding/tracking';
-import { isInDevMode } from 'wcpay/utils';
+import { isInTestModeOnboarding } from 'wcpay/utils';
 
 interface Props {
 	openModal: () => void;
@@ -30,8 +30,8 @@ const handleReset = () => {
 export const AccountTools: React.FC< Props > = () => {
 	const [ modalVisible, setModalVisible ] = useState( false );
 
-	// Only render when in dev/sandbox mode.
-	if ( ! isInDevMode() ) {
+	// Only render when in test/sandbox mode onboarding.
+	if ( ! isInTestModeOnboarding() ) {
 		return null;
 	}
 

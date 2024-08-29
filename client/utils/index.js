@@ -43,6 +43,26 @@ export const isInTestMode = ( fallback = false ) => {
 };
 
 /**
+ * Returns true if WooPayments is in test/sandbox mode onboarding, false otherwise.
+ *
+ * @param {boolean} fallback Fallback in case test/sandbox mode onboarding value can't be found
+ * 							 (for example if the wcpaySettings are undefined).
+ *
+ * @return {boolean} True if in test/sandbox mode onboarding, false otherwise.
+ * 					 Fallback value if test/sandbox mode onboarding value can't be found.
+ */
+export const isInTestModeOnboarding = ( fallback = false ) => {
+	if (
+		! isObject( wcpaySettings ) ||
+		! wcpaySettings.hasOwnProperty( 'testModeOnboarding' )
+	) {
+		return fallback;
+	}
+
+	return !! wcpaySettings.testModeOnboarding || fallback;
+};
+
+/**
  * Returns true if WooPayments is in dev/sandbox mode, false otherwise.
  *
  * @param {boolean} fallback Fallback in case dev/sandbox mode value can't be found (for example if the wcpaySettings are undefined).
