@@ -385,7 +385,7 @@ class WooPay_Session {
 	 * @param \WP_User $user The user object.
 	 * @return string The user email.
 	 */
-	private static function get_user_email( $user ) {
+	public static function get_user_email( $user ) {
 		if ( ! empty( $_POST['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return sanitize_email( wp_unslash( $_POST['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		}

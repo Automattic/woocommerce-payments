@@ -285,5 +285,5 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		}
 	}
 
-	openIframe( woopayEmailInput?.value );
+	openIframe( woopayEmailInput?.value || getConfig( 'woopaySessionEmail' ) );
 };

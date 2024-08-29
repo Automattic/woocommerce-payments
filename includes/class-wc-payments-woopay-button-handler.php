@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 
 /**
@@ -148,10 +149,13 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return array The modified config array.
 	 */
 	public function add_woopay_config( $config ) {
+		$user = wp_get_current_user();
+
 		$config['woopayButton']           = $this->get_button_settings();
 		$config['woopayButtonNonce']      = wp_create_nonce( 'woopay_button_nonce' );
 		$config['addToCartNonce']         = wp_create_nonce( 'wcpay-add-to-cart' );
 		$config['shouldShowWooPayButton'] = $this->should_show_woopay_button();
+		$config['woopaySessionEmail']     = WooPay_Session::get_user_email( $user );
 
 		return $config;
 	}
