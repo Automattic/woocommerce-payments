@@ -7,8 +7,6 @@
 
 namespace WCPay\MultiCurrency;
 
-use WC_Payments;
-use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
@@ -16,6 +14,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
+use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 use WCPay\MultiCurrency\Utils;
 
@@ -263,9 +262,8 @@ class MultiCurrency {
 			$this->update_manual_rate_currencies_notice_option();
 		}
 
-		$payment_method_compat = new PaymentMethodsCompatibility( $this, WC_Payments::get_gateway() );
-		$admin_notices         = new AdminNotices();
-		$user_settings         = new UserSettings( $this );
+		$admin_notices = new AdminNotices();
+		$user_settings = new UserSettings( $this );
 		new Analytics( $this );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
@@ -275,7 +273,6 @@ class MultiCurrency {
 		$this->order_meta_helper   = new OrderMetaHelper( $this->payments_api_client, $this->backend_currencies );
 
 		// Init all of the hooks.
-		$payment_method_compat->init_hooks();
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
 		$this->frontend_prices->init_hooks();

@@ -1,14 +1,14 @@
 <?php
 /**
- * Class WCPay_Multi_Currency_PaymentMethodsCompatibility_Tests
+ * Class WC_Payments_Currency_Manager_Tests
  *
  * @package WooCommerce\Payments\Tests
  */
 
 /**
- * WCPay\MultiCurrency\PaymentMethodsCompatibility unit tests.
+ * WC_Payments_Currency_Manager unit tests.
  */
-class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_UnitTestCase {
+class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WCPay\MultiCurrency\MultiCurrency.
 	 *
@@ -24,11 +24,11 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 	private $gateway_mock;
 
 	/**
-	 * Instance WCPay\MultiCurrency\PaymentMethodsCompatibility.
+	 * Instance of WC_Payments_Currency_Manager.
 	 *
-	 * @var \WCPay\MultiCurrency\PaymentMethodsCompatibility
+	 * @var \WCPay\WC_Payments_Currency_Manager
 	 */
-	private $payment_methods_compatibility;
+	private $currency_manager;
 
 	/**
 	 * WC_Payments_Localization_Service.
@@ -43,8 +43,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 	public function set_up() {
 		parent::set_up();
 
-		$this->multi_currency_mock = $this
-			->getMockBuilder( WCPay\MultiCurrency\MultiCurrency::class )
+		$this->multi_currency_mock = $this->getMockBuilder( WCPay\MultiCurrency\MultiCurrency::class )
 			->disableOriginalConstructor()
 			->setMethods(
 				[
@@ -68,8 +67,16 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 			->getMock();
 		$this->gateway_mock->method( 'get_account_country' )->willReturn( 'US' );
 
-		$this->payment_methods_compatibility = new \WCPay\MultiCurrency\PaymentMethodsCompatibility( $this->multi_currency_mock, $this->gateway_mock );
-		$this->payment_methods_compatibility->init_hooks();
+		$this->currency_manager = $this->getMockBuilder( \WCPay\WC_Payments_Currency_Manager::class )
+			->setConstructorArgs( [ $this->gateway_mock ] )
+			->setMethods( [ 'get_multi_currency_instance' ] )
+			->getMock();
+
+		// Mocking get_multi_currency_instance to return the multi_currency_mock.
+		$this->currency_manager->method( 'get_multi_currency_instance' )
+			->willReturn( $this->multi_currency_mock );
+
+		$this->currency_manager->init_hooks();
 
 		$this->localization_service = new WC_Payments_Localization_Service();
 	}
@@ -79,7 +86,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_account_domestic_currency' )->willReturn( 'USD' );
 
-		$this->payment_methods_compatibility->add_missing_currencies();
+		$this->currency_manager->maybe_add_missing_currencies();
 	}
 
 	public function test_it_should_not_update_available_currencies_when_not_needed() {
@@ -107,7 +114,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 		);
 		$this->multi_currency_mock->expects( $this->never() )->method( 'set_enabled_currencies' );
 
-		$this->payment_methods_compatibility->add_missing_currencies();
+		$this->currency_manager->maybe_add_missing_currencies();
 	}
 
 	public function test_it_should_update_available_currencies_when_needed() {
@@ -147,7 +154,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 				)
 			);
 
-		$this->payment_methods_compatibility->add_missing_currencies();
+		$this->currency_manager->maybe_add_missing_currencies();
 	}
 
 	public function test_it_should_not_update_available_currencies_with_bnpl_methods() {
@@ -173,7 +180,7 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 		);
 		$this->multi_currency_mock->expects( $this->never() )->method( 'set_enabled_currencies' );
 
-		$this->payment_methods_compatibility->add_missing_currencies();
+		$this->currency_manager->maybe_add_missing_currencies();
 	}
 
 	public function test_it_should_update_available_currencies_with_bnpl_methods() {
@@ -207,6 +214,6 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 				)
 			);
 
-		$this->payment_methods_compatibility->add_missing_currencies();
+		$this->currency_manager->maybe_add_missing_currencies();
 	}
 }
