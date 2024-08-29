@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Button, Modal } from '@wordpress/components';
@@ -26,7 +26,10 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 	source,
 	onClose,
 }: Props ) => {
+	const [ isSubmitted, setSubmitted ] = useState( false );
 	const handleSetup = () => {
+		setSubmitted( true );
+
 		recordEvent( 'wcpay_onboarding_flow_setup_live_payments', {
 			from,
 			source,
@@ -40,6 +43,8 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 	};
 
 	const trackAndClose = () => {
+		setSubmitted( false );
+
 		recordEvent( 'wcpay_setup_live_payments_modal_exit', {
 			from,
 			source,
@@ -85,7 +90,12 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 				<Button variant="tertiary" onClick={ trackAndClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
-				<Button variant="primary" onClick={ handleSetup }>
+				<Button
+					variant="primary"
+					isBusy={ isSubmitted }
+					disabled={ isSubmitted }
+					onClick={ handleSetup }
+				>
 					{ __( 'Continue setup', 'woocommerce-payments' ) }
 				</Button>
 			</div>

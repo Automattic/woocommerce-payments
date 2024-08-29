@@ -55,7 +55,6 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 
 		// Reset the mode.
 		WC_Payments::mode()->live();
-		WC_Payments::mode()->set_test_mode_onboarding( false );
 
 		// mock WC_Payments_Http and use it to set up system under test.
 		$this->mock_http_client = $this
