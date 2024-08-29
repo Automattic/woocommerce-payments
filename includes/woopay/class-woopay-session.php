@@ -405,10 +405,16 @@ class WooPay_Session {
 
 		// Get the email from the customer object if it's available.
 		if ( ! empty( WC()->customer ) ) {
-			$customer_changes = WC()->customer->get_changes();
+			$billing_email = WC()->customer->get_billing_email();
 
-			if ( isset( $customer_changes['billing'] ) && isset( $customer_changes['billing']['email'] ) ) {
-				return $customer_changes['billing']['email'];
+			if ( ! empty( $billing_email ) ) {
+				return $billing_email;
+			}
+
+			$customer_email = WC()->customer->get_email();
+
+			if ( ! empty( $customer_email ) ) {
+				return $customer_email;
 			}
 		}
 
