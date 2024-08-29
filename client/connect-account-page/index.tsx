@@ -206,11 +206,6 @@ const ConnectAccountPage: React.FC = () => {
 		setTestDriveModeSubmitted( true );
 		trackConnectAccountClicked( true );
 
-		// Scroll the page to the top to ensure the logo is visible.
-		window.scrollTo( {
-			top: 0,
-		} );
-
 		const customizedConnectUrl = addQueryArgs( connectUrl, {
 			test_drive: 'true',
 		} );
