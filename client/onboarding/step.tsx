@@ -37,7 +37,9 @@ const Step: React.FC< Props > = ( { name, children, showHeading = true } ) => {
 			<div className="stepper__nav">
 				<button
 					type="button"
-					className="stepper__nav-button"
+					className={ `stepper__nav-button ${
+						name === 'embedded' ? 'hide' : ''
+					}` }
 					onClick={ prevStep }
 				>
 					<ChevronLeft />
