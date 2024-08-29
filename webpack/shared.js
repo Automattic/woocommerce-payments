@@ -113,9 +113,18 @@ module.exports = {
 	},
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
-		modules: [ path.join( process.cwd(), 'client' ), 'node_modules' ],
+		modules: [
+			path.join( process.cwd(), 'client' ),
+			path.join( process.cwd(), 'multi-currency', 'client' ),
+			'node_modules',
+		],
 		alias: {
 			assets: path.resolve( process.cwd(), 'assets' ),
+			'multi-currency': path.resolve(
+				process.cwd(),
+				'multi-currency',
+				'client'
+			),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(
 				process.cwd(),

@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from '../constants';
+import { NAMESPACE } from './constants';
 import {
 	updateCurrencies,
 	updateCurrencySettings,

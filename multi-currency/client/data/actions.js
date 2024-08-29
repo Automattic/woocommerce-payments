@@ -6,13 +6,13 @@
 import { apiFetch } from '@wordpress/data-controls';
 import { dispatch, select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { recordEvent } from 'tracks';
 
 /**
  * Internal Dependencies
  */
+import { recordEvent } from 'multi-currency/interface/data';
 import TYPES from './action-types';
-import { NAMESPACE, STORE_NAME } from '../constants';
+import { NAMESPACE, STORE_NAME } from './constants';
 
 export function updateCurrencies( data ) {
 	return {
