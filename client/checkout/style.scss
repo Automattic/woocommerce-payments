@@ -7,7 +7,8 @@
 	vertical-align: middle;
 	border-radius: 0;
 	border: none !important;
-	background-color: transparent;
+	// some themes might override the color on all `button`s - whose selector has higher specificity and our class selector.
+	background-color: transparent !important;
 	padding: 3px;
 
 	i {
@@ -25,5 +26,11 @@
 
 	&:active i {
 		transform: scale( 0.9 );
+	}
+
+	.theme--night & {
+		i {
+			filter: invert( 100% ) hue-rotate( 180deg );
+		}
 	}
 }

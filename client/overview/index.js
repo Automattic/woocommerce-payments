@@ -67,7 +67,7 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 	} = wcpaySettings;
 
-	const isOnboardingTestMode = wcpaySettings.onboardingTestMode;
+	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
 	const { isLoading: settingsIsLoading } = useSettings();
 	const [
 		isTestDriveSuccessDisplayed,
@@ -175,7 +175,7 @@ const OverviewPage = () => {
 					) }
 				</Notice>
 			) }
-			{ isOnboardingTestMode ? (
+			{ isTestModeOnboarding ? (
 				<SandboxModeSwitchToLiveNotice
 					from="WCPAY_OVERVIEW"
 					source="wcpay-overview-page"
@@ -183,7 +183,7 @@ const OverviewPage = () => {
 			) : (
 				<TestModeNotice
 					currentPage="overview"
-					isOnboardingTestMode={ isOnboardingTestMode }
+					isTestModeOnboarding={ isTestModeOnboarding }
 					actions={ [] }
 				/>
 			) }

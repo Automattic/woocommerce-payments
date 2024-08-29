@@ -122,7 +122,7 @@ describe( 'AccountStatus', () => {
 	} );
 
 	test( 'renders account tools', () => {
-		global.wcpaySettings.devMode = true;
+		global.wcpaySettings.testModeOnboarding = true;
 
 		const { container: accountStatus } = renderAccountStatus(
 			{

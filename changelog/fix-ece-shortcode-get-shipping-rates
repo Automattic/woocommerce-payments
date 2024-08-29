@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix shipping rates retrieval method for shortcode cart/checkout.

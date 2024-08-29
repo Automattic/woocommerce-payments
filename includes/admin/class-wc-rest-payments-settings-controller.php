@@ -481,6 +481,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_wcpay_enabled'                       => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'is_test_mode_enabled'                   => WC_Payments::mode()->is_test(),
+				'is_test_mode_onboarding'                => WC_Payments::mode()->is_test_mode_onboarding(),
 				'is_dev_mode_enabled'                    => WC_Payments::mode()->is_dev(),
 				'is_multi_currency_enabled'              => WC_Payments_Features::is_customer_multi_currency_enabled(),
 				'is_wcpay_subscriptions_enabled'         => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
@@ -513,7 +514,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_card_present_eligible'               => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
 				'is_woopay_enabled'                      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'show_woopay_incompatibility_notice'     => get_option( 'woopay_invalid_extension_found', false ),
-				'show_express_checkout_incompatibility_notice' => $this->should_show_express_checkout_incompatibility_notice(),
 				'woopay_custom_message'                  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                      => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
 				'woopay_enabled_locations'               => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ) ),
@@ -1100,39 +1100,5 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$reporting_export_language = $request->get_param( 'reporting_export_language' );
 
 		$this->wcpay_gateway->update_option( 'reporting_export_language', $reporting_export_language );
-	}
-
-	/**
-	 * Whether to show the express checkout incompatibility notice.
-	 *
-	 * @return bool
-	 */
-	private function should_show_express_checkout_incompatibility_notice() {
-		// Apply filters to empty arrays to check if any plugin is modifying the checkout fields.
-		$after_apply_billing  = apply_filters( 'woocommerce_billing_fields', [], '' );
-		$after_apply_shipping = apply_filters( 'woocommerce_shipping_fields', [], '' );
-		$after_apply_checkout = array_filter(
-			apply_filters(
-				'woocommerce_checkout_fields',
-				[
-					'billing'  => [],
-					'shipping' => [],
-					'account'  => [],
-					'order'    => [],
-				]
-			)
-		);
-		// All the input values are empty, so if any of them is not empty, it means that the checkout fields are being modified.
-		$is_modifying_checkout_fields = ! empty(
-			array_filter(
-				[
-					'after_apply_billing'  => $after_apply_billing,
-					'after_apply_shipping' => $after_apply_shipping,
-					'after_apply_checkout' => $after_apply_checkout,
-				]
-			)
-		);
-
-		return $is_modifying_checkout_fields;
 	}
 }

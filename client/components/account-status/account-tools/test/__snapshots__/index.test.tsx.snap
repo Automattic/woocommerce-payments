@@ -2,7 +2,7 @@
 
 exports[`AccountTools should NOT render in live mode 1`] = `<div />`;
 
-exports[`AccountTools should render in sandbox mode 1`] = `
+exports[`AccountTools should render in test/sandbox mode onboarding 1`] = `
 <div>
   <div
     class="account-tools"
