@@ -14,7 +14,7 @@ const UPE_METHOD_CHECKBOXES = [
 	"//label[contains(text(), 'Klarna')]/preceding-sibling::span/input[@type='checkbox']",
 ];
 
-describe.skip( 'Klarna checkout', () => {
+describe( 'Klarna checkout', () => {
 	let wasMulticurrencyEnabled;
 	beforeAll( async () => {
 		await merchant.login();
