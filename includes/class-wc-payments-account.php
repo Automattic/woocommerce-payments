@@ -1200,25 +1200,26 @@ class WC_Payments_Account {
 				);
 				return;
 			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
-				// Delete the account if the onboarding test mode is enabled.
-				// Otherwise, we are already using a live account the request is invalid (it will be handled below,
+				// If the test mode onboarding is enabled:
+				// - Delete the current account;
+				// - Cleanup the gateway state for a fresh onboarding flow.
+				// Otherwise, we are already using a live account and the request is invalid (it will be handled below,
 				// in the "everything OK" scenario).
 				if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 					try {
 						// Delete the currently connected Stripe account.
 						$this->payments_api_client->delete_account( true );
-
-						$this->cleanup_on_account_reset();
 					} catch ( API_Exception $e ) {
 						// In case we fail to delete the account, log and carry on.
 						Logger::error( 'Failed to delete account in test mode: ' . $e->getMessage() );
 					}
+
+					$this->cleanup_on_account_reset();
 				}
 
-				// If dev mode is not active, we should not onboard in test mode since we are moving from test to live.
-				if ( ! WC_Payments::mode()->is_dev() ) {
-					$should_onboard_in_test_mode = false;
-				}
+				// Since we are moving from test to live, we will only onboard in test mode if we are in dev mode.
+				// Otherwise, we will do a live onboarding.
+				$should_onboard_in_test_mode = WC_Payments::mode()->is_dev();
 
 				$next_step_from = WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE;
 				// These from values are allowed to be passed through, when going from test to live.
@@ -1265,6 +1266,10 @@ class WC_Payments_Account {
 
 				// Track successful Jetpack connection.
 				$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS, $tracks_props );
+
+				// Always clear the account cache after establishing the Jetpack/WPCOM connection.
+				// An account may already be available on our platform for this store.
+				$this->clear_cache();
 			}
 
 			// Handle the "everything OK" scenario.
@@ -1393,7 +1398,7 @@ class WC_Payments_Account {
 
 				// If we are creating a test-drive account, we do things a little different.
 				if ( $create_test_drive_account ) {
-					// Since there is no Stripe KYC, make sure we start with a clean state.
+					// Since there should be no Stripe KYC needed, make sure we start with a clean state.
 					delete_transient( self::ONBOARDING_STATE_TRANSIENT );
 
 					// If we have the auto_start_test_drive_onboarding flag, we redirect to the Connect page
@@ -1464,6 +1469,10 @@ class WC_Payments_Account {
 
 				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
 
+				// Always clear the account cache after a Stripe onboarding init attempt.
+				// This allows the merchant to use connect links to refresh its account cache, in case something is wrong.
+				$this->clear_cache();
+
 				// Make sure the redirect URL is safe.
 				$redirect_to = wp_sanitize_redirect( $redirect_to );
 				$redirect_to = wp_validate_redirect( $redirect_to );
@@ -1478,6 +1487,9 @@ class WC_Payments_Account {
 				}
 			} catch ( API_Exception $e ) {
 				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+
+				// Always clear the account cache in case of errors.
+				$this->clear_cache();
 
 				Logger::error( 'Init Stripe onboarding failed. ' . $e->getMessage() );
 				$this->redirect_service->redirect_to_connect_page(
@@ -1543,8 +1555,8 @@ class WC_Payments_Account {
 		$gateway->update_option( 'enabled', 'no' );
 		$gateway->update_option( 'test_mode', 'no' );
 
-		delete_option( '_wcpay_onboarding_stripe_connected' );
-		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+		update_option( '_wcpay_onboarding_stripe_connected', [] );
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' );
 
 		// Discard any ongoing onboarding session.
 		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
@@ -1865,9 +1877,6 @@ class WC_Payments_Account {
 		// If an account already exists for this site and/or there is no need for KYC verifications, we're done.
 		// Our platform will respond with a `false` URL in this case.
 		if ( isset( $onboarding_data['url'] ) && false === $onboarding_data['url'] ) {
-			// Clear the account cache.
-			$this->clear_cache();
-
 			// Set the gateway options.
 			$gateway = WC_Payments::get_gateway();
 			$gateway->update_option( 'enabled', 'yes' );
@@ -1950,7 +1959,7 @@ class WC_Payments_Account {
 		$incentive_id     = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 		$event_properties = [
 			'incentive' => $incentive_id,
-			'mode'      => 'test' === $mode ? 'test' : 'live',
+			'mode'      => 'live' !== $mode ? 'test' : 'live',
 			'from'      => $additional_args['from'] ?? '',
 			'source'    => $additional_args['source'] ?? '',
 		];
@@ -2092,10 +2101,12 @@ class WC_Payments_Account {
 			return true;
 		}
 
+		// Handle test accounts.
+
 		// Fix test mode enabled DB state starting with the account data.
 		// These two should be in sync when in test mode onboarding.
 		// This is a weird case that shouldn't happen under normal circumstances.
-		if ( ! $account['is_live'] && ! WC_Payments_Onboarding_Service::is_test_mode_enabled() && WC_Payments::mode()->is_dev() ) {
+		if ( ! WC_Payments_Onboarding_Service::is_test_mode_enabled() && WC_Payments::mode()->is_dev() ) {
 			Logger::warning( 'Test mode account, account onboarding is NOT in test mode, but the plugin is in dev mode. Enabling test mode onboarding.' );
 			WC_Payments_Onboarding_Service::set_test_mode( true );
 		}
