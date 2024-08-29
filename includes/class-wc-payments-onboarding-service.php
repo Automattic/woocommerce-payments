@@ -256,10 +256,11 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Determine if test mode onboarding is enabled.
 	 *
-	 * @return bool
+	 * @return bool Whether test mode onboarding is enabled or not.
 	 */
 	public static function is_test_mode_enabled(): bool {
-		return 'yes' === get_option( self::TEST_MODE_OPTION, 'no' );
+		// We support the `1` option value also for backward compatibility with version 8.1.0.
+		return in_array( get_option( self::TEST_MODE_OPTION, 'no' ), [ 'yes', '1' ], true );
 	}
 
 	/**
