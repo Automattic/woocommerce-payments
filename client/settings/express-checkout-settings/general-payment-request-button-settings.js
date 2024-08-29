@@ -7,9 +7,9 @@ import { __, sprintf } from '@wordpress/i18n';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalNumberControl as NumberControl,
+	CheckboxControl,
 	SelectControl,
 	RadioControl,
-	Notice,
 	RangeControl,
 } from '@wordpress/components';
 import { Elements } from '@stripe/react-stripe-js';
@@ -21,10 +21,10 @@ import { useContext } from '@wordpress/element';
  */
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getPaymentRequestData } from 'utils/express-checkout';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import InlineNotice from 'wcpay/components/inline-notice';
 import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
@@ -32,6 +32,7 @@ import {
 	usePaymentRequestButtonBorderRadius,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
+	useWooPayGlobalThemeSupportEnabledSettings,
 } from 'wcpay/data';
 
 const makeButtonSizeText = ( string ) =>
@@ -166,36 +167,28 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 		isPaymentRequestEnabled &&
 		isWooPayFeatureFlagEnabled;
 
+	const [
+		isWooPayGlobalThemeSupportEnabled,
+		updateIsWooPayGlobalThemeSupportEnabled,
+	] = useWooPayGlobalThemeSupportEnabledSettings();
+
 	return (
 		<CardBody>
 			{ showWarning && (
-				<Notice
+				<InlineNotice
 					status="warning"
+					icon={ true }
 					isDismissible={ false }
-					className="express-checkout__notice"
 				>
-					<span>
-						<NoticeOutlineIcon
-							style={ {
-								color: '#F0B849',
-								fill: 'currentColor',
-								marginBottom: '-5px',
-								marginRight: '10px',
-							} }
-							size={ 20 }
-						/>
-					</span>
-					<span>
-						{ sprintf(
-							/* translators: %s type of button to which the settings will be applied */
-							__(
-								'These settings will also apply to the %s on your store.',
-								'woocommerce-payments'
-							),
-							otherButtons
-						) }
-					</span>
-				</Notice>
+					{ sprintf(
+						/* translators: %s type of button to which the settings will be applied */
+						__(
+							'These settings will also apply to the %s on your store.',
+							'woocommerce-payments'
+						),
+						otherButtons
+					) }
+				</InlineNotice>
 			) }
 			<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 			<SelectControl
@@ -274,6 +267,30 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					</p>
 				</>
 			) }
+			{ wcpaySettings.isWooPayGlobalThemeSupportEligible &&
+				type === 'woopay' && (
+					<>
+						<h4>
+							{ __(
+								'WooPay Global Theme Support',
+								'woocommerce-payments'
+							) }
+						</h4>
+						<div className="test">
+							<CheckboxControl
+								disabled={ ! isWooPayEnabled }
+								checked={ isWooPayGlobalThemeSupportEnabled }
+								onChange={
+									updateIsWooPayGlobalThemeSupportEnabled
+								}
+								label={ __(
+									'Enable WooPay Global Theme Support',
+									'woocommerce-payments'
+								) }
+							/>
+						</div>
+					</>
+				) }
 			<h4>{ __( 'Preview', 'woocommerce-payments' ) }</h4>
 			<div className="payment-method-settings__option-help-text">
 				{ __(

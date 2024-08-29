@@ -11,15 +11,15 @@ import {
 	shippingAddressChangeHandler,
 	shippingOptionChangeHandler,
 	paymentMethodHandler,
-} from '../../payment-request/event-handlers.js';
+} from '../event-handlers.js';
 
 import {
 	getPaymentRequest,
 	getPaymentRequestData,
+	transformCartDataForStoreAPI,
 	updatePaymentRequest,
-	normalizeLineItems,
-	displayLoginConfirmation,
-} from '../../payment-request/utils';
+	displayLoginConfirmationDialog,
+} from '../frontend-utils.js';
 
 export const useInitialization = ( {
 	api,
@@ -28,7 +28,14 @@ export const useInitialization = ( {
 	setExpressPaymentError,
 	onClick,
 	onClose,
+	cartData,
 } ) => {
+	cartData = transformCartDataForStoreAPI( null, {
+		...cartData,
+		...billing,
+		...shippingData,
+	} );
+
 	const stripe = useStripe();
 
 	const [ paymentRequest, setPaymentRequest ] = useState( null );
@@ -48,9 +55,7 @@ export const useInitialization = ( {
 
 		const pr = getPaymentRequest( {
 			stripe,
-			total: billing?.cartTotal?.value,
-			requestShipping: shippingData?.needsShipping,
-			displayItems: normalizeLineItems( billing?.cartTotalItems ),
+			cartData,
 		} );
 
 		pr.canMakePayment().then( ( result ) => {
@@ -72,6 +77,7 @@ export const useInitialization = ( {
 		isFinished,
 		shippingData?.needsShipping,
 		billing?.cartTotalItems,
+		cartData,
 	] );
 
 	// It's not possible to update the `requestShipping` property in the `paymentRequest`
@@ -86,7 +92,7 @@ export const useInitialization = ( {
 			// If login is required, display redirect confirmation dialog.
 			if ( getPaymentRequestData( 'login_confirmation' ) ) {
 				evt.preventDefault();
-				displayLoginConfirmation( paymentRequestType );
+				displayLoginConfirmationDialog( paymentRequestType );
 				return;
 			}
 
@@ -94,8 +100,7 @@ export const useInitialization = ( {
 			setExpressPaymentError( '' );
 			updatePaymentRequest( {
 				paymentRequest,
-				total: billing?.cartTotal?.value,
-				displayItems: normalizeLineItems( billing?.cartTotalItems ),
+				cartData,
 			} );
 			onClick();
 
@@ -105,12 +110,11 @@ export const useInitialization = ( {
 			}
 		},
 		[
-			onClick,
-			paymentRequest,
-			paymentRequestType,
 			setExpressPaymentError,
-			billing.cartTotal,
-			billing.cartTotalItems,
+			paymentRequest,
+			cartData,
+			onClick,
+			paymentRequestType,
 		]
 	);
 
@@ -134,11 +138,11 @@ export const useInitialization = ( {
 		};
 
 		paymentRequest?.on( 'shippingaddresschange', ( event ) =>
-			shippingAddressChangeHandler( api, event )
+			shippingAddressChangeHandler( event )
 		);
 
 		paymentRequest?.on( 'shippingoptionchange', ( event ) =>
-			shippingOptionChangeHandler( api, event )
+			shippingOptionChangeHandler( event )
 		);
 
 		paymentRequest?.on( 'paymentmethod', ( event ) =>
@@ -157,6 +161,7 @@ export const useInitialization = ( {
 		setIsFinished,
 		setPaymentRequest,
 		onClose,
+		cartData,
 	] );
 
 	return {

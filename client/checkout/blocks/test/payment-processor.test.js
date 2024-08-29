@@ -8,6 +8,7 @@ import { useEffect } from 'react';
  */
 import PaymentProcessor from '../payment-processor';
 import { PaymentElement } from '@stripe/react-stripe-js';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
 	validateElements: jest.fn().mockResolvedValue(),
@@ -153,10 +154,15 @@ describe( 'PaymentProcessor', () => {
 		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should return an error when createPaymentMethod fails', async () => {
+	it( 'should return success with the error data when createPaymentMethod fails', async () => {
 		let onPaymentSetupCallback;
 		mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
-			error: { message: 'Error creating payment method' },
+			error: {
+				code: 'code',
+				decline_code: 'decline_code',
+				message: 'Error creating payment method',
+				type: 'card_error',
+			},
 		} );
 
 		act( () => {
@@ -179,8 +185,61 @@ describe( 'PaymentProcessor', () => {
 
 		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
 		expect( await onPaymentSetupCallback() ).toEqual( {
-			type: 'error',
-			message: 'Error creating payment method',
+			type: 'success',
+			meta: {
+				paymentMethodData: {
+					payment_method: 'woocommerce_payments',
+					'wcpay-payment-method': PAYMENT_METHOD_ERROR,
+					'wcpay-payment-method-error-code': 'code',
+					'wcpay-payment-method-error-decline-code': 'decline_code',
+					'wcpay-payment-method-error-message':
+						'Error creating payment method',
+					'wcpay-payment-method-error-type': 'card_error',
+					'wcpay-fraud-prevention-token': '',
+					'wcpay-fingerprint': '',
+				},
+			},
+		} );
+		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
+	} );
+
+	it( 'should return success when there are no failures', async () => {
+		let onPaymentSetupCallback;
+		mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
+			paymentMethod: {
+				id: 'paymentMethodId',
+			},
+		} );
+
+		act( () => {
+			render(
+				<PaymentProcessor
+					activePaymentMethod="woocommerce_payments"
+					api={ mockApi }
+					paymentMethodId="card"
+					emitResponse={ {} }
+					eventRegistration={ {
+						onPaymentSetup: ( callback ) =>
+							( onPaymentSetupCallback = callback ),
+					} }
+					fingerprint=""
+					shouldSavePayment={ false }
+					upeMethods={ { card: 'woocommerce_payments' } }
+				/>
+			);
+		} );
+
+		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
+		expect( await onPaymentSetupCallback() ).toEqual( {
+			type: 'success',
+			meta: {
+				paymentMethodData: {
+					payment_method: 'woocommerce_payments',
+					'wcpay-payment-method': 'paymentMethodId',
+					'wcpay-fraud-prevention-token': '',
+					'wcpay-fingerprint': '',
+				},
+			},
 		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
 	} );

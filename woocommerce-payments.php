@@ -8,10 +8,10 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 9.1.2
+ * WC tested up to: 9.2.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 8.0.1
+ * Version: 8.1.0
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -43,7 +43,7 @@ function wcpay_activated() {
 		// Only redirect to onboarding when activated on its own. Either with a link...
 		isset( $_GET['action'] ) && 'activate' === $_GET['action'] // phpcs:ignore WordPress.Security.NonceVerification
 		// ...or with a bulk action.
-		|| isset( $_POST['checked'] ) && is_array( $_POST['checked'] ) && 1 === count( $_POST['checked'] ) // phpcs:ignore WordPress.Security.NonceVerification
+		|| isset( $_POST['checked'] ) && is_array( $_POST['checked'] ) && 1 === count( $_POST['checked'] ) // phpcs:ignore WordPress.Security.NonceVerification, Generic.CodeAnalysis.RequireExplicitBooleanOperatorPrecedence.MissingParentheses
 	) {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 	}
@@ -55,8 +55,6 @@ function wcpay_activated() {
 function wcpay_deactivated() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::remove_woo_admin_notes();
-	delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );
-	delete_transient( 'wcpay_bnpl_april15_successful_purchases_count' );
 }
 
 register_activation_hook( __FILE__, 'wcpay_activated' );

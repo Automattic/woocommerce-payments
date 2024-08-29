@@ -42,10 +42,14 @@ export const trackStepCompleted = ( step: string ): void => {
 	trackedSteps.add( step );
 };
 
-export const trackRedirected = ( isEligible: boolean ): void => {
+export const trackRedirected = (
+	isEligible: boolean,
+	source: string
+): void => {
 	recordEvent( 'wcpay_onboarding_flow_redirected', {
 		is_po_eligible: isEligible,
 		elapsed: elapsed( startTime ),
+		source,
 	} );
 };
 
@@ -53,20 +57,22 @@ export const trackAccountReset = (): void =>
 	recordEvent( 'wcpay_onboarding_flow_reset' );
 
 export const trackEligibilityModalClosed = (
-	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only'
+	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only',
+	source: string
 ): void =>
 	recordEvent( 'wcpay_onboarding_flow_eligibility_modal_closed', {
 		action,
+		source,
 	} );
 
 export const useTrackAbandoned = (): {
-	trackAbandoned: ( method: 'hide' | 'exit' ) => void;
+	trackAbandoned: ( method: 'hide' | 'exit', source: string ) => void;
 	removeTrackListener: () => void;
 } => {
 	const { errors, touched } = useOnboardingContext();
 	const { currentStep: step } = useStepperContext();
 
-	const trackEvent = ( method = 'hide' ) => {
+	const trackEvent = ( method = 'hide', source = 'unknown' ) => {
 		const event =
 			method === 'hide'
 				? 'wcpay_onboarding_flow_hidden'
@@ -79,12 +85,17 @@ export const useTrackAbandoned = (): {
 			step,
 			errored,
 			elapsed: elapsed( startTime ),
+			source,
 		} );
 	};
 
 	const listener = () => {
 		if ( document.visibilityState === 'hidden' ) {
-			trackEvent();
+			const urlParams = new URLSearchParams( window.location.search );
+			const source =
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown';
+			trackEvent( 'hide', source );
 		}
 	};
 
@@ -97,8 +108,8 @@ export const useTrackAbandoned = (): {
 	}, [ step, errors, touched ] );
 
 	return {
-		trackAbandoned: ( method: string ) => {
-			trackEvent( method );
+		trackAbandoned: ( method: string, source = 'unknown' ) => {
+			trackEvent( method, source );
 			document.removeEventListener( 'visibilitychange', listener );
 		},
 		removeTrackListener: () =>

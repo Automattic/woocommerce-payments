@@ -10,9 +10,7 @@ test.describe(
 		test( 'Load the home page', async ( { page } ) => {
 			await page.goto( '/' );
 			const title = page.locator( 'h1.site-title' );
-			await expect( title ).toHaveText(
-				/WooCommerce Payments E2E site/i
-			);
+			await expect( title ).toHaveText( /WooPayments E2E site/i );
 		} );
 
 		test.describe( 'Sign in as admin', () => {

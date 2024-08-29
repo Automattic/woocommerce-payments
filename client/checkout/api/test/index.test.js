@@ -40,6 +40,8 @@ const mockAppearance = {
 		'.Text': {},
 		'.Text--redirect': {},
 		'.Heading': {},
+		'.Button': {},
+		'.Link': {},
 	},
 	theme: 'stripe',
 	variables: {
@@ -76,10 +78,10 @@ describe( 'WCPayAPI', () => {
 		getConfig.mockImplementation( ( key ) => {
 			const mockProperties = {
 				initWooPayNonce: 'foo',
-				appearance: mockAppearance,
 				order_id: 1,
 				key: 'testkey',
 				billing_email: 'test@example.com',
+				isWooPayGlobalThemeSupportEnabled: true,
 			};
 			return mockProperties[ key ];
 		} );
@@ -110,6 +112,27 @@ describe( 'WCPayAPI', () => {
 			_wpnonce: '1234',
 			order: '12',
 			foo: 'bar',
+		} );
+	} );
+
+	test( 'WooPay should not support global theme styles', async () => {
+		buildAjaxURL.mockReturnValue( 'https://example.org/' );
+		getConfig.mockImplementation( ( key ) => {
+			const mockProperties = {
+				initWooPayNonce: 'foo',
+				isWooPayGlobalThemeSupportEnabled: false,
+			};
+			return mockProperties[ key ];
+		} );
+
+		const api = new WCPayAPI( {}, request );
+		await api.initWooPay( 'foo@bar.com', 'qwerty123' );
+
+		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
+			_wpnonce: 'foo',
+			appearance: null,
+			email: 'foo@bar.com',
+			user_session: 'qwerty123',
 		} );
 	} );
 } );

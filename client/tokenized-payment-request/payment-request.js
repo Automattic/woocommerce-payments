@@ -380,10 +380,16 @@ export default class WooPaymentsPaymentRequest {
 					'.woocommerce-notices-wrapper'
 				).first();
 
+				// the error thrown could have different formats, depending if it was a Store API failure or an ajax failure.
+				const errorMessage =
+					response.message ||
+					response.payment_result?.payment_details.find(
+						( detail ) => detail.key === 'errorMessage'
+					)?.value;
 				if ( $container.length ) {
 					$container.append(
 						jQuery( '<div class="woocommerce-error" />' ).text(
-							response.message
+							errorMessage
 						)
 					);
 

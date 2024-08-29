@@ -36,6 +36,7 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 
 	if ( is_null( $instance ) ) {
 		$instance = new WCPay\MultiCurrency\MultiCurrency(
+			WC_Payments::get_context_for_multi_currency(),
 			WC_Payments::get_payments_api_client(),
 			WC_Payments::get_account_service(),
 			WC_Payments::get_localization_service(),
