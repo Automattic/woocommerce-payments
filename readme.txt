@@ -94,7 +94,8 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.1.1 - 2024-08-23 =
+= 8.1.1 - 2024-08-29 =
+* Fix - Ensure 55px is the maximum height for Apple Pay button.
 * Fix - Fixed sandbox mode accounts being able to disable test mode for the payment gateway settings.
 
 
