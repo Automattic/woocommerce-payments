@@ -9,10 +9,12 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { CollapsibleBody } from 'multi-currency/interface/components';
+import {
+	CollapsibleBody,
+	WizardTaskItem,
+} from 'multi-currency/interface/components';
 import { WizardTaskContext } from 'multi-currency/interface/functions';
 import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
-import WizardTaskItem from '../../wizard/task-item';
 // TODO: Migrate to 'multi-currency/preview-modal'.
 import PreviewModal from 'wcpay/multi-currency/preview-modal';
 import './index.scss';

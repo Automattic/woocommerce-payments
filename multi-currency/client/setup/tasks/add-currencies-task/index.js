@@ -15,8 +15,8 @@ import {
 	CollapsibleBody,
 	Search,
 	LoadableBlock,
+	WizardTaskItem,
 } from 'multi-currency/interface/components';
-import WizardTaskItem from '../../wizard/task-item';
 
 import {
 	useCurrencies,

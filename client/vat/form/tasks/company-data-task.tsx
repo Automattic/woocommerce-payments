@@ -97,6 +97,7 @@ export const CompanyDataTask = ( {
 				'woocommerce-payments'
 			) }
 			className={ null }
+			visibleDescription={ null }
 		>
 			<CollapsibleBody className={ null }>
 				<TextControl
