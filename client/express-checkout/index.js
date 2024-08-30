@@ -210,10 +210,7 @@ jQuery( ( $ ) => {
 				}
 
 				return options.displayItems
-					.filter(
-						( i ) =>
-							i.label === __( 'Shipping', 'woocommerce-payments' )
-					)
+					.filter( ( i ) => i.key === 'total_shipping' )
 					.map( ( i ) => ( {
 						id: `rate-${ i.label }`,
 						amount: i.amount,
@@ -228,7 +225,7 @@ jQuery( ( $ ) => {
 			// Relying on what's provided in the cart response seems safest since it should always include a valid shipping
 			// rate if one is required and available.
 			// If no shipping rate is found we can't render the button so we just exit.
-			if ( options.requestShipping && ! shippingRates ) {
+			if ( options.requestShipping && ! shippingRates.length ) {
 				return;
 			}
 

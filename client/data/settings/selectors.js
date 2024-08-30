@@ -153,6 +153,10 @@ export const getIsTestModeEnabled = ( state ) => {
 	return getSettings( state ).is_test_mode_enabled || false;
 };
 
+export const getIsTestModeOnboarding = ( state ) => {
+	return getSettings( state ).is_test_mode_onboarding || false;
+};
+
 export const getIsDevModeEnabled = ( state ) => {
 	return getSettings( state ).is_dev_mode_enabled || false;
 };
@@ -223,6 +227,10 @@ export const getIsWooPayEnabled = ( state ) => {
 	return getSettings( state ).is_woopay_enabled || false;
 };
 
+export const getIsWooPayGlobalThemeSupportEnabled = ( state ) => {
+	return getSettings( state ).is_woopay_global_theme_support_enabled || false;
+};
+
 export const getWooPayCustomMessage = ( state ) => {
 	return getSettings( state ).woopay_custom_message || '';
 };
@@ -247,13 +255,6 @@ export const getAdvancedFraudProtectionSettings = ( state ) => {
 
 export const getShowWooPayIncompatibilityNotice = ( state ) => {
 	return getSettings( state ).show_woopay_incompatibility_notice || false;
-};
-
-export const getShowExpressCheckoutIncompatibilityNotice = ( state ) => {
-	return (
-		getSettings( state ).show_express_checkout_incompatibility_notice ||
-		false
-	);
 };
 
 export const getIsStripeBillingEnabled = ( state ) => {

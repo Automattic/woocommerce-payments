@@ -216,6 +216,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'create_and_confirm_setup_intent',
 					'get_payment_method',
 					'get_timeline',
+					'get_latest_fraud_ruleset',
 				]
 			)
 			->getMock();
@@ -2572,6 +2573,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
+	public function test_process_payment_for_order_rejects_if_the_payment_information_has_an_error() {
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+
+		$order = WC_Helper_Order::create_order();
+		$pi    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi->set_error( new \WP_Error( 'invalid_card', 'Invalid Card' ) );
+
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid Card' );
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
 	public function test_process_payment_for_order_rejects_with_order_id_mismatch() {
 		$order                = WC_Helper_Order::create_order();
 		$intent_meta_order_id = 0;
@@ -3429,7 +3442,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mode->dev();
 		$this->assertTrue( $this->card_gateway->is_in_dev_mode() );
 
-		$mode->test();
+		$mode->live_mode_onboarding();
 		$this->assertFalse( $this->card_gateway->is_in_dev_mode() );
 
 		$mode->live();
@@ -3443,6 +3456,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mode = WC_Payments::mode();
 
 		$mode->dev();
+		$this->assertTrue( $this->card_gateway->is_in_test_mode() );
+
+		$mode->test_mode_onboarding();
 		$this->assertTrue( $this->card_gateway->is_in_test_mode() );
 
 		$mode->test();

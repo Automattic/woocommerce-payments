@@ -9,6 +9,7 @@ import { Elements } from '@stripe/react-stripe-js';
  */
 import ExpressCheckoutComponent from './express-checkout-component';
 import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
+import '../express-checkout-element.scss';
 
 const ExpressCheckoutContainer = ( props ) => {
 	const { api, billing } = props;
@@ -26,7 +27,7 @@ const ExpressCheckoutContainer = ( props ) => {
 	};
 
 	return (
-		<div style={ { minHeight: '50px' } }>
+		<div style={ { minHeight: '40px' } }>
 			<Elements stripe={ stripePromise } options={ options }>
 				<ExpressCheckoutComponent { ...props } />
 			</Elements>

@@ -10,6 +10,21 @@ import { numberFormat } from '@woocommerce/number';
 import { __ } from '@wordpress/i18n';
 
 /**
+ * Returns whether a value is an object.
+ *
+ * @see https://stackoverflow.com/a/22482737 for the source of the approach and explanations.
+ *
+ * @param {any} value The value to check.
+ * @return {boolean} Whether the value is an object.
+ */
+export const isObject = ( value ) => {
+	if ( value === null ) {
+		return false;
+	}
+	return typeof value === 'function' || typeof value === 'object';
+};
+
+/**
  * Returns true if WooPayments is in test mode, false otherwise.
  *
  * @param {boolean} fallback Test mode fallback value in case test mode value can't be found.
@@ -17,10 +32,34 @@ import { __ } from '@wordpress/i18n';
  * @return {boolean} True if in test mode, false otherwise. Fallback value if test mode value can't be found.
  */
 export const isInTestMode = ( fallback = false ) => {
-	if ( typeof wcpaySettings === 'undefined' ) {
+	if (
+		! isObject( wcpaySettings ) ||
+		! wcpaySettings.hasOwnProperty( 'testMode' )
+	) {
 		return fallback;
 	}
-	return wcpaySettings.testMode === '1' || fallback;
+
+	return !! wcpaySettings.testMode || fallback;
+};
+
+/**
+ * Returns true if WooPayments is in test/sandbox mode onboarding, false otherwise.
+ *
+ * @param {boolean} fallback Fallback in case test/sandbox mode onboarding value can't be found
+ * 							 (for example if the wcpaySettings are undefined).
+ *
+ * @return {boolean} True if in test/sandbox mode onboarding, false otherwise.
+ * 					 Fallback value if test/sandbox mode onboarding value can't be found.
+ */
+export const isInTestModeOnboarding = ( fallback = false ) => {
+	if (
+		! isObject( wcpaySettings ) ||
+		! wcpaySettings.hasOwnProperty( 'testModeOnboarding' )
+	) {
+		return fallback;
+	}
+
+	return !! wcpaySettings.testModeOnboarding || fallback;
 };
 
 /**
@@ -31,10 +70,14 @@ export const isInTestMode = ( fallback = false ) => {
  * @return {boolean} True if in dev/sandbox mode, false otherwise. Fallback value if dev/sandbox mode value can't be found.
  */
 export const isInDevMode = ( fallback = false ) => {
-	if ( typeof wcpaySettings === 'undefined' ) {
+	if (
+		! isObject( wcpaySettings ) ||
+		! wcpaySettings.hasOwnProperty( 'devMode' )
+	) {
 		return fallback;
 	}
-	return wcpaySettings.devMode === '1' || fallback;
+
+	return !! wcpaySettings.devMode || fallback;
 };
 
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );

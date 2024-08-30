@@ -66,9 +66,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		page.on( 'dialog', async function ( dialog ) {
 			try {
 				await dialog.accept();
-			} catch ( err ) {
-				console.warn( err.message );
-			}
+			} catch ( err ) {}
 		} );
 		await merchant.logout();
 	} );

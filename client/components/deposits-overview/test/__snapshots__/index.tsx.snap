@@ -40,7 +40,7 @@ exports[`DepositFailureNotice Renders Renders DepositFailureNotice component cor
           Deposits are currently paused because a recent deposit failed. Please 
           <a
             class="components-external-link"
-            href="https://example.com?source=deposits-overview__deposit-failure-notice"
+            href="https://example.com?from=WCPAY_PAYOUTS&source=wcpay-payout-failure-notice"
             rel="external noreferrer noopener"
             target="_blank"
           >

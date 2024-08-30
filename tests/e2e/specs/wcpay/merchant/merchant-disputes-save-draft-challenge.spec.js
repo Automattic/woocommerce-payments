@@ -11,9 +11,10 @@ const { merchant, shopper, evalAndClick } = require( '@woocommerce/e2e-utils' );
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
 import { uiLoaded } from '../../../utils';
 
-let orderId;
-
 describe( 'Disputes > Merchant can save and resume draft dispute challenge', () => {
+	let orderId;
+	let paymentDetailsLink;
+
 	beforeAll( async () => {
 		await page.goto( config.get( 'url' ), { waitUntil: 'networkidle0' } );
 
@@ -36,7 +37,7 @@ describe( 'Disputes > Merchant can save and resume draft dispute challenge', () 
 		await merchant.goToOrder( orderId );
 
 		// Get the payment details link from the order page.
-		const paymentDetailsLink = await page.$eval(
+		paymentDetailsLink = await page.$eval(
 			'p.order_number > a',
 			( anchor ) => anchor.getAttribute( 'href' )
 		);
@@ -107,10 +108,23 @@ describe( 'Disputes > Merchant can save and resume draft dispute challenge', () 
 			}
 		);
 
-		// Reload the page
-		await page.reload();
-
+		// The merchant will be redirected to the dispute list page here, wait for it to load.
 		await uiLoaded();
+
+		// Open the payment details page again and wait for it to load.
+		await Promise.all( [
+			page.goto( paymentDetailsLink, {
+				waitUntil: 'networkidle0',
+			} ),
+			uiLoaded(),
+		] );
+
+		// Click the challenge dispute button.
+		await evalAndClick( '[data-testid="challenge-dispute-button"]' );
+		await Promise.all( [
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			uiLoaded(),
+		] );
 
 		// Verify the previously selected Product type was saved
 		await expect( page ).toMatchElement(

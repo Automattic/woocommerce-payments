@@ -385,7 +385,7 @@ class WooPay_Session {
 	 * @param \WP_User $user The user object.
 	 * @return string The user email.
 	 */
-	private static function get_user_email( $user ) {
+	public static function get_user_email( $user ) {
 		if ( ! empty( $_POST['email'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return sanitize_email( wp_unslash( $_POST['email'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		}
@@ -400,6 +400,21 @@ class WooPay_Session {
 
 			if ( ! empty( $decrypted_data['user_email'] ) ) {
 				return sanitize_email( wp_unslash( $decrypted_data['user_email'] ) );
+			}
+		}
+
+		// Get the email from the customer object if it's available.
+		if ( ! empty( WC()->customer ) ) {
+			$billing_email = WC()->customer->get_billing_email();
+
+			if ( ! empty( $billing_email ) ) {
+				return $billing_email;
+			}
+
+			$customer_email = WC()->customer->get_email();
+
+			if ( ! empty( $customer_email ) ) {
+				return $customer_email;
 			}
 		}
 
@@ -480,6 +495,7 @@ class WooPay_Session {
 				'blog_url'                       => get_site_url(),
 				'blog_checkout_url'              => ! $is_pay_for_order ? wc_get_checkout_url() : $order->get_checkout_payment_url(),
 				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
+				'blog_timezone'                  => wp_timezone_string(),
 				'store_api_url'                  => self::get_store_api_url(),
 				'account_id'                     => $account_id,
 				'test_mode'                      => WC_Payments::mode()->is_test(),

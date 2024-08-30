@@ -24,7 +24,6 @@ import StatusChip from './status-chip';
 import './style.scss';
 import './shared.scss';
 import { AccountTools } from './account-tools';
-import { isInDevMode } from 'wcpay/utils';
 import { recordEvent } from 'wcpay/tracks';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -61,9 +60,12 @@ const AccountStatusError = () => {
 
 const AccountStatusDetails = ( props ) => {
 	const { accountStatus, accountFees } = props;
-	const accountLink = addQueryArgs( accountStatus.accountLink, {
-		source: 'account-details',
-	} );
+	const accountLink = accountStatus.accountLink
+		? addQueryArgs( accountStatus.accountLink, {
+				from: 'WCPAY_ACCOUNT_DETAILS',
+				source: 'wcpay-account-details',
+		  } )
+		: false;
 	const cardTitle = (
 		<>
 			<FlexItem className={ 'account-details' }>
@@ -78,20 +80,23 @@ const AccountStatusDetails = ( props ) => {
 					}
 				/>
 			</FlexBlock>
-			<FlexItem className={ 'edit-details' }>
-				<Button
-					variant={ 'link' }
-					onClick={ () =>
-						recordEvent( 'wcpay_account_details_link_clicked', {
-							source: 'account-details',
-						} )
-					}
-					href={ accountLink }
-					target={ '_blank' }
-				>
-					{ __( 'Edit details', 'woocommerce-payments' ) }
-				</Button>
-			</FlexItem>
+			{ accountLink && (
+				<FlexItem className={ 'edit-details' }>
+					<Button
+						variant={ 'link' }
+						onClick={ () =>
+							recordEvent( 'wcpay_account_details_link_clicked', {
+								from: 'WCPAY_ACCOUNT_DETAILS',
+								source: 'wcpay-account-details',
+							} )
+						}
+						href={ accountLink }
+						target={ '_blank' }
+					>
+						{ __( 'Edit details', 'woocommerce-payments' ) }
+					</Button>
+				</FlexItem>
+			) }
 		</>
 	);
 
@@ -103,6 +108,7 @@ const AccountStatusDetails = ( props ) => {
 				<PaymentsStatus
 					paymentsEnabled={ accountStatus.paymentsEnabled }
 					accountStatus={ accountStatus.status }
+					iconSize={ 24 }
 				/>
 			</AccountStatusItem>
 			<AccountStatusItem
@@ -116,14 +122,10 @@ const AccountStatusDetails = ( props ) => {
 					poComplete={
 						accountStatus.progressiveOnboarding.isComplete
 					}
+					iconSize={ 24 }
 				/>
 			</AccountStatusItem>
-			{ ( ! accountStatus.detailsSubmitted || isInDevMode() ) && (
-				<AccountTools
-					accountLink={ wcpaySettings.connectUrl }
-					detailsSubmitted={ accountStatus.detailsSubmitted }
-				/>
-			) }
+			<AccountTools />
 			{ accountFees.length > 0 && (
 				<AccountFees accountFees={ accountFees } />
 			) }

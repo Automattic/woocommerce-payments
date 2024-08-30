@@ -291,21 +291,17 @@ class WC_Payments_Admin {
 		}
 		global $submenu;
 
-		// If the user is redirected to the page after Stripe KYC with an error, refresh the account data.
-		// The GET parameter accessed here comes from server and is just to indicate that some error occured. For this reason we're not using a nonce.
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['wcpay-connection-error'] ) ) {
-			$this->account->refresh_account_data();
-		}
 		try {
-			// Render full payments menu with sub-items only if the merchant completed the KYC (details_submitted = true).
-			$should_render_full_menu = $this->account->is_stripe_connected() && $this->account->is_details_submitted();
+			// Render full payments menu with sub-items only if:
+			// - we have working WPCOM/Jetpack connection;
+			// - the Stripe account is valid (connected, details submitted, and proper capabilities).
+			$should_render_full_menu = $this->account->has_working_jetpack_connection() && $this->account->is_stripe_account_valid();
 		} catch ( Exception $e ) {
 			// There is an issue with connection, don't render full menu, user will get redirected to the connect page.
 			$should_render_full_menu = false;
 		}
 
-		$top_level_link = $this->account->is_stripe_connected() ? '/payments/overview' : '/payments/connect';
+		$top_level_link = $should_render_full_menu ? '/payments/overview' : '/payments/connect';
 
 		$menu_icon = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgdmVyc2lvbj0iMS4xIgogICBpZD0ic3ZnNjciCiAgIHNvZGlwb2RpOmRvY25hbWU9IndjcGF5X21lbnVfaWNvbi5zdmciCiAgIHdpZHRoPSI4NTIiCiAgIGhlaWdodD0iNjg0IgogICBpbmtzY2FwZTp2ZXJzaW9uPSIxLjEgKGM0ZThmOWUsIDIwMjEtMDUtMjQpIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxkZWZzCiAgICAgaWQ9ImRlZnM3MSIgLz4KICA8c29kaXBvZGk6bmFtZWR2aWV3CiAgICAgaWQ9Im5hbWVkdmlldzY5IgogICAgIHBhZ2Vjb2xvcj0iI2ZmZmZmZiIKICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIKICAgICBib3JkZXJvcGFjaXR5PSIxLjAiCiAgICAgaW5rc2NhcGU6cGFnZXNoYWRvdz0iMiIKICAgICBpbmtzY2FwZTpwYWdlb3BhY2l0eT0iMC4wIgogICAgIGlua3NjYXBlOnBhZ2VjaGVja2VyYm9hcmQ9IjAiCiAgICAgc2hvd2dyaWQ9ImZhbHNlIgogICAgIGZpdC1tYXJnaW4tdG9wPSIwIgogICAgIGZpdC1tYXJnaW4tbGVmdD0iMCIKICAgICBmaXQtbWFyZ2luLXJpZ2h0PSIwIgogICAgIGZpdC1tYXJnaW4tYm90dG9tPSIwIgogICAgIGlua3NjYXBlOnpvb209IjI1NiIKICAgICBpbmtzY2FwZTpjeD0iLTg0Ljg1NzQyMiIKICAgICBpbmtzY2FwZTpjeT0iLTgzLjI5NDkyMiIKICAgICBpbmtzY2FwZTp3aW5kb3ctd2lkdGg9IjEzMTIiCiAgICAgaW5rc2NhcGU6d2luZG93LWhlaWdodD0iMTA4MSIKICAgICBpbmtzY2FwZTp3aW5kb3cteD0iMTE2IgogICAgIGlua3NjYXBlOndpbmRvdy15PSIyMDIiCiAgICAgaW5rc2NhcGU6d2luZG93LW1heGltaXplZD0iMCIKICAgICBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJzdmc2NyIgLz4KICA8cGF0aAogICAgIHRyYW5zZm9ybT0ic2NhbGUoLTEsIDEpIHRyYW5zbGF0ZSgtODUwLCAwKSIKICAgICBkPSJNIDc2OCw4NiBWIDU5OCBIIDg0IFYgODYgWiBtIDAsNTk4IGMgNDgsMCA4NCwtMzggODQsLTg2IFYgODYgQyA4NTIsMzggODE2LDAgNzY4LDAgSCA4NCBDIDM2LDAgMCwzOCAwLDg2IHYgNTEyIGMgMCw0OCAzNiw4NiA4NCw4NiB6IE0gMzg0LDEyOCB2IDQ0IGggLTg2IHYgODQgaCAxNzAgdiA0NCBIIDM0MCBjIC0yNCwwIC00MiwxOCAtNDIsNDIgdiAxMjggYyAwLDI0IDE4LDQyIDQyLDQyIGggNDQgdiA0NCBoIDg0IHYgLTQ0IGggODYgViA0MjggSCAzODQgdiAtNDQgaCAxMjggYyAyNCwwIDQyLC0xOCA0MiwtNDIgViAyMTQgYyAwLC0yNCAtMTgsLTQyIC00MiwtNDIgaCAtNDQgdiAtNDQgeiIKICAgICBmaWxsPSIjYTJhYWIyIgogICAgIGlkPSJwYXRoNjUiIC8+Cjwvc3ZnPgo=';
 
@@ -336,21 +332,19 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! $this->account->is_stripe_connected() ) {
-			if ( WC_Payments_Utils::should_use_new_onboarding_flow() ) {
-				wc_admin_register_page(
-					[
-						'id'         => 'wc-payments-onboarding',
-						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
-						'parent'     => 'wc-payments',
-						'path'       => '/payments/onboarding',
-						'capability' => 'manage_woocommerce',
-						'nav_args'   => [
-							'parent' => 'wc-payments',
-						],
-					]
-				);
-				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
-			}
+			wc_admin_register_page(
+				[
+					'id'         => 'wc-payments-onboarding',
+					'title'      => __( 'Onboarding', 'woocommerce-payments' ),
+					'parent'     => 'wc-payments',
+					'path'       => '/payments/onboarding',
+					'capability' => 'manage_woocommerce',
+					'nav_args'   => [
+						'parent' => 'wc-payments',
+					],
+				]
+			);
+			remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
 		}
 
 		if ( $should_render_full_menu ) {
@@ -485,7 +479,7 @@ class WC_Payments_Admin {
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'assets/css/admin.css' ),
-			'all',
+			'all'
 		);
 
 		$this->add_menu_notification_badge();
@@ -811,14 +805,21 @@ class WC_Payments_Admin {
 		try {
 			$test_mode = WC_Payments::mode()->is_test();
 		} catch ( Exception $e ) {
-			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in test mode! Message: %s', $e->getMessage() ), 'warning' );
+			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if the gateway should process payments in test mode! Message: %s', $e->getMessage() ), 'warning' );
+		}
+
+		$test_mode_onboarding = false;
+		try {
+			$test_mode_onboarding = WC_Payments::mode()->is_test_mode_onboarding();
+		} catch ( Exception $e ) {
+			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if we should onboard accounts in test mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
 		$dev_mode = false;
 		try {
 			$dev_mode = WC_Payments::mode()->is_dev();
 		} catch ( Exception $e ) {
-			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if WCPay should be in sandbox mode! Message: %s', $e->getMessage() ), 'warning' );
+			Logger::log( sprintf( 'WooPayments JS settings: Could not determine if the gateway should be in dev mode! Message: %s', $e->getMessage() ), 'warning' );
 		}
 
 		$connect_url       = WC_Payments_Account::get_connect_url();
@@ -835,6 +836,7 @@ class WC_Payments_Admin {
 		$this->wcpay_js_settings = [
 			'version'                            => WCPAY_VERSION_NUMBER,
 			'connectUrl'                         => $connect_url,
+			'overviewUrl'                        => WC_Payments_Account::get_overview_page_url(),
 			'connect'                            => [
 				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
@@ -842,8 +844,8 @@ class WC_Payments_Admin {
 			],
 			'connectIncentive'                   => $connect_incentive,
 			'devMode'                            => $dev_mode,
+			'testModeOnboarding'                 => $test_mode_onboarding,
 			'testMode'                           => $test_mode,
-			'onboardingTestMode'                 => WC_Payments_Onboarding_Service::is_test_mode_enabled(),
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'                 => WC_Payments_Account::is_on_boarding_disabled(),
 			'onboardingFieldsData'               => $this->onboarding_service->get_fields_data( get_user_locale() ),
@@ -853,8 +855,10 @@ class WC_Payments_Admin {
 			// Used in the settings page by the AccountFees component.
 			'zeroDecimalCurrencies'              => WC_Payments_Utils::zero_decimal_currencies(),
 			'fraudServices'                      => $this->fraud_service->get_fraud_services_config(),
-			'isJetpackConnected'                 => $this->payments_api_client->is_server_connected(),
+			'isJetpackConnected'                 => $this->account->has_working_jetpack_connection(),
 			'isJetpackIdcActive'                 => Jetpack_Identity_Crisis::has_identity_crisis(),
+			'isAccountConnected'                 => $this->account->has_account_data(),
+			'isAccountValid'                     => $this->account->is_stripe_account_valid(),
 			'accountStatus'                      => $account_status_data,
 			'accountFees'                        => $this->account->get_fees(),
 			'accountLoans'                       => $this->account->get_capital(),
@@ -901,6 +905,7 @@ class WC_Payments_Admin {
 			'trackingInfo'                       => $this->account->get_tracking_info(),
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
+			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
 		];
 
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
@@ -1006,9 +1011,6 @@ class WC_Payments_Admin {
 	 */
 	public function add_menu_notification_badge() {
 		global $menu;
-		if ( 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' ) ) {
-			return;
-		}
 
 		// If plugin activation date is less than 3 days, do not show the badge.
 		$past_3_days = time() - get_option( 'wcpay_activation_timestamp', 0 ) >= ( 3 * DAY_IN_SECONDS );
@@ -1016,8 +1018,24 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( $this->account->is_stripe_connected() ) {
-			update_option( 'wcpay_menu_badge_hidden', 'yes' );
+		// First, lets see what the DB option says.
+		$hide_badge = 'yes' === get_option( 'wcpay_menu_badge_hidden', 'no' );
+
+		// There are situations where we need to force show the badge.
+		// If we have:
+		// - a broken Jetpack connection and a connected account;
+		// - or working Jetpack connection and a connected but invalid account.
+		// show the badge since the merchant needs to take action.
+		if ( ( ! $this->account->has_working_jetpack_connection() && $this->account->has_account_data() )
+			|| ( $this->account->has_working_jetpack_connection() && $this->account->has_account_data() && ! $this->account->is_stripe_account_valid() ) ) {
+
+			$hide_badge = false;
+		} elseif ( $this->account->has_working_jetpack_connection() && $this->account->is_stripe_account_valid() ) {
+			// If everything is working fine, hide the badge regardless of the DB option.
+			$hide_badge = true;
+		}
+
+		if ( $hide_badge ) {
 			return;
 		}
 
@@ -1108,7 +1126,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( $this->account->is_stripe_connected( true ) ) {
+		if ( $this->account->is_stripe_connected( true, true ) ) {
 			return;
 		}
 

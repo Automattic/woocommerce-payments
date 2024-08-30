@@ -27,8 +27,9 @@ class WC_Payments_Account {
 
 	// ACCOUNT_OPTION is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
 	const ACCOUNT_OPTION                                        = 'wcpay_account_data';
-	const ON_BOARDING_DISABLED_TRANSIENT                        = 'wcpay_on_boarding_disabled';
-	const ON_BOARDING_STARTED_TRANSIENT                         = 'wcpay_on_boarding_started';
+	const ONBOARDING_DISABLED_TRANSIENT                         = 'wcpay_on_boarding_disabled';
+	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
+	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
@@ -103,14 +104,17 @@ class WC_Payments_Account {
 	 */
 	public function init_hooks() {
 		// Add admin init hooks.
+		// Our onboarding handling comes first.
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
-
+		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
+		// Second, handle redirections based on context.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_after_plugin_activation' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_by_get_param' ], 12 ); // Run this after the redirect to onboarding logic.
-		add_action( 'admin_init', [ $this, 'maybe_redirect_from_settings_page' ] );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_page' ] );
-
-		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
+		// Third, handle page redirections.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_settings_page' ], 15 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_wizard_page' ], 15 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_connect_page' ], 15 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_overview_page' ], 15 );
 
 		// Add handlers for inbox notes and reminders.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
@@ -168,15 +172,41 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Determine if the store has a working Jetpack connection.
+	 *
+	 * @return bool Whether the Jetpack connection is established and working or not.
+	 */
+	public function has_working_jetpack_connection(): bool {
+		return $this->payments_api_client->is_server_connected() && $this->payments_api_client->has_server_connection_owner();
+	}
+
+	/**
+	 * Check if there is meaningful data in the WooPayments account cache.
+	 *
+	 * It bypasses WPCOM/Jetpack connection check, the cache expiry check and only checks if the account_id is present.
+	 *
+	 * @return boolean Whether there is account data.
+	 */
+	public function has_account_data(): bool {
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+		if ( ! empty( $account_data['account_id'] ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Checks if the account is connected, assumes the value of $on_error on server error.
 	 *
 	 * @param bool $on_error Value to return on server error, defaults to false.
+	 * @param bool $force_refresh Force refresh account data cache.
 	 *
 	 * @return bool True if the account is connected, false otherwise, $on_error on error.
 	 */
-	public function is_stripe_connected( bool $on_error = false ): bool {
+	public function is_stripe_connected( bool $on_error = false, bool $force_refresh = false ): bool {
 		try {
-			return $this->try_is_stripe_connected();
+			return $this->try_is_stripe_connected( $force_refresh );
 		} catch ( Exception $e ) {
 			return $on_error;
 		}
@@ -185,11 +215,13 @@ class WC_Payments_Account {
 	/**
 	 * Checks if the account is connected, throws on server error.
 	 *
+	 * @param bool $force_refresh Force refresh account data cache.
+	 *
 	 * @return bool      True if the account is connected, false otherwise.
 	 * @throws Exception Throws exception when unable to detect connection status.
 	 */
-	public function try_is_stripe_connected(): bool {
-		$account = $this->get_cached_account_data();
+	public function try_is_stripe_connected( bool $force_refresh = false ): bool {
+		$account = $this->get_cached_account_data( $force_refresh );
 		if ( false === $account ) {
 			throw new Exception( esc_html__( 'Failed to detect connection status', 'woocommerce-payments' ) );
 		}
@@ -199,26 +231,40 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if the account is valid: which means it's connected and has valid card_payments capability status (requested, pending_verification, active and other valid ones).
+	 * Checks if the account is valid.
+	 *
+	 * This means:
+	 * - it's connected (i.e. we have account data)
+	 * - has submitted details (i.e. is not partially onboarded)
+	 * - has valid card_payments capability status (requested, pending_verification, active and other valid ones).
+	 *
 	 * Card_payments capability is crucial for account to function properly. If it is unrequested, we shouldn't show
 	 * any other options for the merchants since it'll lead to various errors.
 	 *
 	 * @see https://github.com/Automattic/woocommerce-payments/issues/5275
 	 *
-	 * @return bool True if the account have valid stripe account, false otherwise.
+	 * @return bool True if the account is a valid Stripe account, false otherwise.
 	 */
 	public function is_stripe_account_valid(): bool {
-		if ( ! $this->is_stripe_connected() ) {
-			return false;
-		}
-
 		$account = $this->get_cached_account_data();
-
-		if ( ! isset( $account['capabilities']['card_payments'] ) ) {
+		// The account is disconnected or we failed to get the account data.
+		if ( empty( $account ) ) {
 			return false;
 		}
 
-		return 'unrequested' !== $account['capabilities']['card_payments'];
+		// The account is partially onboarded.
+		if ( empty( $account['details_submitted'] ) ) {
+			return false;
+		}
+
+		// The account doesn't have the minimum required capabilities.
+		if ( ! isset( $account['capabilities']['card_payments'] )
+			|| 'unrequested' === $account['capabilities']['card_payments'] ) {
+			return false;
+		}
+
+		// The account is valid.
+		return true;
 	}
 
 	/**
@@ -293,12 +339,14 @@ class WC_Payments_Account {
 			'country'               => $account['country'] ?? Country_Code::UNITED_STATES,
 			'status'                => $account['status'],
 			'created'               => $account['created'] ?? '',
+			'testDrive'             => $account['is_test_drive'] ?? false,
 			'paymentsEnabled'       => $account['payments_enabled'],
 			'detailsSubmitted'      => $account['details_submitted'] ?? true,
 			'deposits'              => $account['deposits'] ?? [],
 			'currentDeadline'       => $account['current_deadline'] ?? false,
 			'pastDue'               => $account['has_overdue_requirements'] ?? false,
-			'accountLink'           => $this->get_login_url(),
+			// Test-drive accounts don't have access to the Stripe dashboard.
+			'accountLink'           => empty( $account['is_test_drive'] ) ? $this->get_login_url() : false,
 			'hasSubmittedVatData'   => $account['has_submitted_vat_data'] ?? false,
 			'requirements'          => [
 				'errors' => $account['requirements']['errors'] ?? [],
@@ -687,11 +735,11 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Checks if Stripe account is connected and redirects to the onboarding page if it is not.
+	 * Checks if everything is in working order and redirects to the connect page if not.
 	 *
 	 * @return bool True if the redirection happened.
 	 */
-	public function maybe_redirect_after_plugin_activation() {
+	public function maybe_redirect_after_plugin_activation(): bool {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
@@ -709,37 +757,28 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		$account = $this->get_cached_account_data();
-		if ( false === $account ) {
-			// Failed to retrieve account data. Exception is logged in http client.
-			return false;
-		}
-
 		if ( $should_redirect_to_onboarding ) {
-			// Update the option. If there's an account connected, we won't need to redirect in the future.
-			// If not, we will redirect once and will not want to redirect again.
+			// Update the option. We try to redirect once and will not attempt to redirect again.
 			update_option( 'wcpay_should_redirect_to_onboarding', false );
 		}
 
-		if ( ! empty( $account ) ) {
-			// Do not redirect if connected.
+		// If everything is in working order, don't redirect.
+		if ( $this->has_working_jetpack_connection() && $this->is_stripe_account_valid() ) {
 			return false;
 		}
 
-		// Redirect directly to onboarding page if come from WC Admin task.
-		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
-		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
-			$this->redirect_to_onboarding_page_or_start_server_connection( WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK );
-		}
+		// Redirect to Connect page.
+		$this->redirect_service->redirect_to_connect_page(
+			null,
+			WC_Payments_Onboarding_Service::FROM_PLUGIN_ACTIVATION,
+			[ 'source' => WC_Payments_Onboarding_Service::get_source() ]
+		);
 
-		// Redirect if not connected.
-		$this->redirect_service->redirect_to_connect_page();
 		return true;
 	}
 
 	/**
-	 * Redirects WooPayments settings to the overview page for partially
-	 * onboarded accounts, and the connect page when there is no account.
+	 * Redirects WooPayments settings to the connect page when there is no account or an invalid account.
 	 *
 	 * Every WooPayments page except connect are already hidden, but merchants can still access
 	 * it through WooCommerce settings.
@@ -762,31 +801,33 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// Not able to establish Stripe connection, redirect to the Connect page.
-		if ( ! $this->is_stripe_connected() ) {
-			$this->redirect_service->redirect_to_connect_page( null, 'WCADMIN_PAYMENT_SETTINGS' );
+		// If everything is NOT in good working condition, redirect to Payments Connect page.
+		if ( ! $this->has_working_jetpack_connection() || ! $this->is_stripe_account_valid() ) {
+			$this->redirect_service->redirect_to_connect_page(
+				sprintf(
+				/* translators: 1: WooPayments. */
+					__( 'Please <b>complete your %1$s setup</b> to process transactions.', 'woocommerce-payments' ),
+					'WooPayments'
+				),
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
+				[ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE ]
+			);
 			return true;
 		}
 
-		if ( $this->is_details_submitted() ) {
-			// Account fully onboarded, don't redirect.
-			return false;
-		} else {
-			// Account not yet fully onboarded so redirect to overview page.
-			$this->redirect_service->redirect_to_overview_page( 'WCADMIN_PAYMENT_SETTINGS' );
-			return true;
-		}
+		// Everything is OK, don't redirect.
+		return false;
 	}
 
 	/**
-	 * Redirects onboarding flow page (payments/onboarding) to the overview page for accounts that have Stripe connected.
+	 * Redirects onboarding wizard page (payments/onboarding) to the overview page for accounts that have a valid Stripe account.
 	 *
-	 * Payments onboarding flow page is already hidden for those who has Stripe account connected, but merchants can still access
-	 * it by clicking back in the browser tab.
+	 * Payments onboarding wizard page is already hidden for those who have a Stripe account connected,
+	 * but merchants can still access it by clicking back in the browser tab.
 	 *
 	 * @return bool True if the redirection happened, false otherwise.
 	 */
-	public function maybe_redirect_from_onboarding_page(): bool {
+	public function maybe_redirect_from_onboarding_wizard_page(): bool {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
@@ -796,13 +837,17 @@ class WC_Payments_Account {
 			'path' => '/payments/onboarding',
 		];
 
-		// We're not in the onboarding flow page, don't redirect.
+		// We're not in the onboarding wizard page, don't redirect.
 		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			return false;
 		}
 
-		// Prevent access to onboarding flow if the server is not connected. Redirect back to the connect page with an error message.
-		if ( ! $this->payments_api_client->is_server_connected() ) {
+		// Determine the original source from where the merchant entered the onboarding flow.
+		$onboarding_source = WC_Payments_Onboarding_Service::get_source();
+
+		// Prevent access to onboarding wizard if we don't have a working WPCOM/Jetpack connection.
+		// Redirect back to the connect page with an error message.
+		if ( ! $this->has_working_jetpack_connection() ) {
 			$referer = sanitize_text_field( wp_get_raw_referer() );
 
 			// Track unsuccessful Jetpack connection.
@@ -810,10 +855,10 @@ class WC_Payments_Account {
 				$this->tracks_event(
 					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE,
 					[
-						'mode'   => WC_Payments::mode()->is_test() ? 'test' : 'live',
+						'mode'   => WC_Payments_Onboarding_Service::is_test_mode_enabled() ? 'test' : 'live',
 						// Capture the user source of the connection attempt originating page.
 						// This is the same source that is used to track the onboarding flow origin.
-						'source' => isset( $_GET['source'] ) ? sanitize_text_field( wp_unslash( $_GET['source'] ) ) : '',
+						'source' => $onboarding_source,
 					]
 				);
 			}
@@ -824,7 +869,8 @@ class WC_Payments_Account {
 					__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
 					'WooPayments'
 				),
-				'WCPAY_ONBOARDING_FLOW'
+				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
+				[ 'source' => $onboarding_source ]
 			);
 			return true;
 		}
@@ -842,17 +888,111 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		$this->redirect_service->redirect_to_overview_page( 'WCPAY_ONBOARDING_FLOW' );
+		// Merchants with an invalid Stripe account, need to go to the Stripe KYC, not our onboarding wizard.
+		if ( ! $this->is_stripe_account_valid() ) {
+			$this->redirect_service->redirect_to_connect_page(
+				null,
+				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
+				[ 'source' => $onboarding_source ]
+			);
+			return true;
+		}
 
+		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD );
 		return true;
+	}
+
+	/**
+	 * Redirects connect page (payments/connect) to the overview page for stores that
+	 * have a working Jetpack connection and a valid Stripe account.
+	 *
+	 * Note: Connect _page_ links are not the same as connect links.
+	 *       Connect links are used to start/re-start/continue the onboarding flow and they are independent of
+	 *       the WP dashboard page (based solely on request params).
+	 *
+	 * IMPORTANT: The logic should be kept in sync with the one in maybe_redirect_from_overview_page to avoid loops.
+	 *
+	 * @see self::maybe_redirect_from_overview_page() for the opposite redirection.
+	 * @see self::maybe_handle_onboarding() for connect links handling.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_from_connect_page(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/connect',
+		];
+
+		// We're not on the Connect page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		// If everything is in good working condition, redirect to Payments Overview page.
+		if ( $this->has_working_jetpack_connection() && $this->is_stripe_account_valid() ) {
+			$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE );
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Redirects overview page (payments/overview) to the connect page for stores that
+	 * don't have a working Jetpack connection or a valid connected Stripe account.
+	 *
+	 * IMPORTANT: The logic should be kept in sync with the one in maybe_redirect_from_connect_page to avoid loops.
+	 *
+	 * @see self::maybe_redirect_from_connect_page() for the opposite redirection.
+	 * @see self::maybe_handle_onboarding() for connect links handling.
+	 *
+	 * @return bool True if the redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_from_overview_page(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/overview',
+		];
+
+		// We're not on the Overview page, don't redirect.
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return false;
+		}
+
+		// If everything is NOT in good working condition, redirect to Payments Connect page.
+		if ( ! $this->has_working_jetpack_connection() || ! $this->is_stripe_account_valid() ) {
+			$this->redirect_service->redirect_to_connect_page(
+				sprintf(
+				/* translators: 1: WooPayments. */
+					__( 'Please <b>complete your %1$s setup</b> to process transactions.', 'woocommerce-payments' ),
+					'WooPayments'
+				),
+				WC_Payments_Onboarding_Service::FROM_OVERVIEW_PAGE,
+				[
+					'test_mode' => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
+					'source'    => WC_Payments_Onboarding_Service::get_source(),
+				]
+			);
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
 	 * Filter function to add Stripe to the list of allowed redirect hosts
 	 *
-	 * @param array $hosts - array of allowed hosts.
+	 * @param array $hosts Array of allowed hosts.
 	 *
-	 * @return array allowed hosts
+	 * @return array Filtered allowed hosts
 	 */
 	public function allowed_redirect_hosts( $hosts ) {
 		$hosts[] = 'connect.stripe.com';
@@ -867,6 +1007,16 @@ class WC_Payments_Account {
 			return;
 		}
 
+		// Determine what was the immediately previous step of the onboarding flow.
+		$from = WC_Payments_Onboarding_Service::get_from();
+		// Determine the original/initial place from where the merchant entered the onboarding flow.
+		$onboarding_source = WC_Payments_Onboarding_Service::get_source();
+
+		/**
+		 * ==================
+		 * Handle Stripe dashboard login links.
+		 * ==================
+		 */
 		if ( isset( $_GET['wcpay-login'] ) && check_admin_referer( 'wcpay-login' ) ) {
 			try {
 				if ( $this->is_stripe_connected() && ! $this->is_details_submitted() ) {
@@ -881,151 +1031,224 @@ class WC_Payments_Account {
 					$this->redirect_service->redirect_to_account_link( $args );
 				}
 
-				// Clear account transient when generating Stripe dashboard's login link.
+				// Clear account cache when generating Stripe dashboard's login link.
 				$this->clear_cache();
+
 				$this->redirect_service->redirect_to_login();
 			} catch ( Exception $e ) {
-				Logger::error( 'Failed redirect_to_login: ' . $e );
+				Logger::error( 'Failed redirect_to_login: ' . $e->getMessage() );
 
 				$this->redirect_service->redirect_to_overview_page_with_error( [ 'wcpay-login-error' => '1' ] );
 			}
+
+			// We should not reach this point as we either redirect to the Stripe dashboard
+			// or to the Payments > Overview page with an error message.
 			return;
 		}
 
+		/**
+		 * ==================
+		 * Handle the Jetpack re-connection in case of missing connection owner.
+		 *
+		 * @see self::get_wpcom_reconnect_url()
+		 * ==================
+		 */
 		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) && check_admin_referer( 'wcpay-reconnect-wpcom' ) ) {
 			// Track the Jetpack connection start.
-			$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
+			$this->tracks_event(
+				self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START,
+				[
+					'is_reconnect' => true,
+					'from'         => $from,
+				]
+			);
 
 			$this->payments_api_client->start_server_connection( WC_Payments_Admin_Settings::get_settings_url() );
 			return;
 		}
 
+		/**
+		 * ==================
+		 * Handle connect links that trigger either the onboarding flow start or its continuation.
+		 *
+		 * "Onboarding flow" = the Jetpack connection + onboarding wizard + Stripe KYC.
+		 *
+		 * IMPORTANT: Connect links are NOT THE SAME as Connect page links:
+		 *    - Connect links are used to start/re-start/continue the onboarding flow.
+		 *      Connect links are WP admin links with the `wcpay-connect` GET parameter and a 'wcpay-connect' action nonce.
+		 *      Connect links imply actions being taken on the merchant store and account setup (hence the need to be protected by a nonce).
+		 *    - Connect page links are just the WC admin URL of the Connect page (page=wc-admin&path=/payments/connect).
+		 *
+		 * The BUSINESS LOGIC of handling connect links, in the order of priority:
+		 *
+		 * 0. Make changes to the account data if needed (e.g. reset account, disable test mode onboarding)
+		 *    as instructed by the GET params.
+		 *    0.1 If we reset the account -> redirect to CONNECT PAGE
+		 * 1. Returning from the WPCOM/Jetpack connection screen.
+		 *      1.1 SUCCESSFUL connection
+		 *          1.1.1 NO Stripe account connected -> redirect to ONBOARDING WIZARD
+		 *          1.1.2 Stripe account connected -> redirect to OVERVIEW PAGE
+		 *      1.2 UNSUCCESSFUL connection -> redirect to CONNECT PAGE with ERROR message
+		 * 2. Working WPCOM/Jetpack connection and fully onboarded Stripe account -> redirect to OVERVIEW PAGE
+		 * 3. Specific `from` places -> redirect to CONNECT PAGE regardless of the account status
+		 * 4. NO [working] WPCOM/Jetpack connection:
+		 *    Initialize the WPCOM registration and:
+		 *      4.1 On SUCCESS -> redirect to WPCOM/Jetpack connection screen (Calypso).
+		 *      4.2 On ERROR -> redirect to CONNECT PAGE with ERROR message
+		 * 5. Working WPCOM/Jetpack connection and:
+		 *    5.1 If NO Stripe account connected:
+		 *         5.1.1 If we are setting up a test drive account and the auto-start onboarding is enabled,
+		 *               we redirect to the CONNECT PAGE to let the JS logic orchestrate the Stripe account creation.
+		 *         5.1.2 If we come from the ONBOARDING WIZARD:
+		 *                Initialize the Stripe account and:
+		 *                5.1.1.1 On SUCCESS -> redirect to STRIPE KYC
+		 *                5.1.1.2 On existing account -> redirect to OVERVIEW PAGE
+		 *                5.1.1.3 On ERROR -> redirect to CONNECT PAGE with ERROR message
+		 *         5.1.3 All other cases -> redirect to ONBOARDING WIZARD
+		 *    5.2 If PARTIALLY onboarded Stripe account connected -> redirect to STRIPE KYC
+		 *    5.3 If fully onboarded Stripe account connected -> redirect to OVERVIEW PAGE
+		 *
+		 * This logic is so complex because we use connect links as a catch-all place to
+		 * handle everything and anything related to the WooPayments account setup. It reduces the complexity on the
+		 * "outer-edges" of our ecosystem (e.g. Woo core, emails, etc.) and centralizes the handling in one place.
+		 *
+		 * IMPORTANT: Whenever we decide to change the business logic we should UPDATE THE COMMENT ABOVE!!!
+		 *            Do NOT let this comment become stale/out-of-sync!!!
+		 * ==================
+		 */
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param         = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
-			$incentive                   = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
+			$incentive_id                = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 			$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
-			$create_builder_account      = ! empty( $_GET['create_builder_account'] ) && 'true' === $_GET['create_builder_account'];
-			$should_onboard_in_test_mode = isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) );
-
-			// Determine the original source from where the merchant entered the onboarding flow.
-			$onboarding_source = WC_Payments_Onboarding_Service::get_source( (string) wp_get_referer(), $_GET );
-
-			// Track WooPayments onboarding (aka connection) start.
-			// We should not have a connected Stripe account. If we do, it means we are not at the very start,
-			// but somewhere in between.
-			// Exclude returns from the Jetpack/WPCOM connection screens.
-			if ( ! $this->is_stripe_connected() && ! isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
-				$event_properties = [
-					'incentive' => $incentive,
-					'mode'      => $should_onboard_in_test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
-					'source'    => $onboarding_source,
-				];
-				$this->tracks_event(
-					self::TRACKS_EVENT_ACCOUNT_CONNECT_START,
-					$event_properties
-				);
-			}
-
-			// Main onboarding flow sources/entry-points are handled separately:
-			// - redirect to the Jetpack connection screens if there is no connection;
-			// - redirect to our onboarding wizard (MOX) if we have a connection but no Stripe account;
-			// - let other states be handled by the default business logic.
-			// We exclude builder flow onboardings from this special handling and let them use the fallback handling.
-			if ( in_array(
-				$onboarding_source,
-				[
-					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
-					WC_Payments_Onboarding_Service::SOURCE_WCPAY_CONNECT_PAGE,
-					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
-					WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
-				],
-				true
-			) && ! $create_builder_account ) {
-				// Handle the state with no Stripe account.
-				// We either need to redirect to the onboarding wizard (MOX)
-				// or first set up the Jetpack connection and redirect to the onboarding wizard after a successful connection.
-				if ( ! $this->is_stripe_connected() ) {
-					if ( ! $should_onboard_in_test_mode && WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
-						// If there is no test mode in the URL informing us to onboard in test mode,
-						// but the onboarding test mode is enabled in our DB, we should disable it.
-						// This is most likely a leftover from a previous onboarding attempt.
-						WC_Payments_Onboarding_Service::set_test_mode( false );
-					}
-
-					$this->redirect_to_onboarding_page_or_start_server_connection( $onboarding_source, $should_onboard_in_test_mode );
-				} elseif ( ! $this->is_details_submitted() && $this->payments_api_client->is_server_connected() ) {
-					// Handle the state where we have a connected Stripe account, but it is not fully onboarded.
-					// We redirect to the Stripe KYC for the merchant to finish verifications.
-					try {
-						$this->init_stripe_onboarding(
-							$wcpay_connect_param,
-							[
-								'promo'       => $incentive,
-								'progressive' => $progressive,
-							]
-						);
-					} catch ( Exception $e ) {
-						Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
-						$this->redirect_service->redirect_to_connect_page(
-							__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
-						);
-					}
-
-					// We should not reach this point as we either redirect to the Stripe KYC
-					// or to the Connect page with an error message.
-					return;
-				}
-			}
-
-			// Handle the flow for [a builder] moving from test to live.
-			if ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
-				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled();
-
-				// Delete the account if the test mode is enabled,
-				// otherwise it'll cause issues when trying to onboard again.
-				if ( $test_mode ) {
-					// Delete the account.
-					$this->payments_api_client->delete_account( $test_mode );
-					// Make sure we clear the cached account data as it may take a while
-					// for the account update webhook to come from our platform.
-					$this->clear_cache();
-				}
-
-				// Set the test mode to false now that we are handling a real onboarding.
-				WC_Payments_Onboarding_Service::set_test_mode( false );
-
-				$this->redirect_to_onboarding_page_or_start_server_connection( $onboarding_source );
-				return;
-			}
-
-			// Handle the flow for resetting an account (aka restarting onboarding).
-			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
-				$test_mode = WC_Payments_Onboarding_Service::is_test_mode_enabled() || WC_Payments::mode()->is_dev();
-
-				// Delete the account.
-				$this->payments_api_client->delete_account( $test_mode );
-				// Make sure we clear the cached account data as it may take a while
-				// for the account update webhook to come from our platform.
-				$this->clear_cache();
-
-				$this->redirect_to_onboarding_page_or_start_server_connection( $onboarding_source, $test_mode );
-				return;
-			}
+			$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
+			$create_test_drive_account   = ! empty( $_GET['test_drive'] ) && 'true' === $_GET['test_drive'];
+			// There is no point in auto starting test drive onboarding if we are not in the test drive mode.
+			$auto_start_test_drive_onboarding = $create_test_drive_account &&
+												! empty( $_GET['auto_start_test_drive_onboarding'] ) &&
+												'true' === $_GET['auto_start_test_drive_onboarding'];
+			// We will onboard in test mode if the test_mode GET param is set, if we are creating a test drive account,
+			// or if we are in dev mode.
+			$should_onboard_in_test_mode = ( isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ||
+											$create_test_drive_account ||
+											WC_Payments::mode()->is_dev();
 
 			// Hide menu notification badge upon starting setup.
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
-			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
-				$event_properties = [
-					'incentive' => $incentive,
-					'mode'      => $should_onboard_in_test_mode || WC_Payments::mode()->is_test() ? 'test' : 'live',
-				];
+			// By default, the next step will be informed that the user came from the Connect page.
+			$next_step_from = WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE;
 
-				if ( ! $this->payments_api_client->is_server_connected() ) {
+			// Default props we want to attach to onboarding Tracks events.
+			$tracks_props = [
+				'incentive' => $incentive_id,
+				'mode'      => $should_onboard_in_test_mode ? 'test' : 'live',
+				'from'      => $from,
+				'source'    => $onboarding_source,
+			];
+
+			// Handle the return from Stripe KYC flow (via a connect link).
+			// The state of the WPCOM/Jetpack connection should not matter - if we received the state data,
+			// we need to try and capture it.
+			if ( isset( $_GET['wcpay-state'] ) && isset( $_GET['wcpay-mode'] ) ) {
+				$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
+				$mode  = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
+
+				$this->finalize_connection(
+					$state,
+					$mode,
+					[
+						'from'                  => $from,
+						'source'                => $onboarding_source,
+						// Carry over some parameters as they may be used by our frontend logic.
+						'wcpay-sandbox-success' => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
+						'test_drive_error'      => ! empty( $_GET['test_drive_error'] ) ? 'true' : false,
+					]
+				);
+				return;
+			}
+
+			// Remove the previously stored onboarding state if the merchant wants to start a new onboarding session
+			// or if we came back from Stripe with an error but no state.
+			// This will allow us to avoid errors when finalizing the account connection.
+			if ( ( ! empty( $_GET['wcpay-discard-started-onboarding'] ) && 'true' === $_GET['wcpay-discard-started-onboarding'] )
+				|| ( WC_Payments_Onboarding_Service::FROM_STRIPE === $from && ! empty( $_GET['wcpay-connection-error'] ) ) ) {
+
+				delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+			}
+
+			// Make changes to account data as instructed by action GET params.
+			// This needs to happen early because we need to make things "not OK" for the rest of the logic.
+			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
+				try {
+					// Delete the currently Stripe connected account, in the onboarding mode we are currently in.
+					$this->payments_api_client->delete_account( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+				} catch ( API_Exception $e ) {
+					// In case we fail to delete the account, log and redirect to the Overview page.
+					Logger::error( 'Failed to delete account: ' . $e->getMessage() );
+
+					$this->redirect_service->redirect_to_overview_page_with_error( [ 'wcpay-reset-account-error' => '1' ] );
+					return;
+				}
+
+				$this->cleanup_on_account_reset();
+
+				// When we reset the account we want to always go the Connect page. Redirect immediately!
+				$this->redirect_service->redirect_to_connect_page(
+					null,
+					WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
+					[ 'source' => $onboarding_source ]
+				);
+				return;
+			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
+				// If the test mode onboarding is enabled:
+				// - Delete the current account;
+				// - Cleanup the gateway state for a fresh onboarding flow.
+				// Otherwise, we are already using a live account and the request is invalid (it will be handled below,
+				// in the "everything OK" scenario).
+				if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
+					try {
+						// Delete the currently connected Stripe account.
+						$this->payments_api_client->delete_account( true );
+					} catch ( API_Exception $e ) {
+						// In case we fail to delete the account, log and carry on.
+						Logger::error( 'Failed to delete account in test mode: ' . $e->getMessage() );
+					}
+
+					$this->cleanup_on_account_reset();
+				}
+
+				// Since we are moving from test to live, we will only onboard in test mode if we are in dev mode.
+				// Otherwise, we will do a live onboarding.
+				$should_onboard_in_test_mode = WC_Payments::mode()->is_dev();
+
+				$next_step_from = WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE;
+				// These from values are allowed to be passed through, when going from test to live.
+				if ( in_array(
+					$from,
+					[
+						WC_Payments_Onboarding_Service::FROM_SETTINGS,
+						WC_Payments_Onboarding_Service::FROM_OVERVIEW_PAGE,
+						WC_Payments_Onboarding_Service::FROM_GO_LIVE_TASK,
+					],
+					true
+				) ) {
+					$next_step_from = $from;
+				}
+			}
+
+			// Handle the return from the WPCOM/Jetpack connection screens.
+			// The merchant either completed the connection or failed. We handle both scenarios.
+			// Note: this should be handled early since the Jetpack connection is the first requirement
+			// in our onboarding stack.
+			if ( isset( $_GET['wcpay-connect-jetpack-success'] ) ) {
+				// If the merchant failed to set up the WPCOM/Jetpack connection,
+				// we redirect them back to the Connect page with an error message.
+				if ( ! $this->has_working_jetpack_connection() ) {
 					// Track unsuccessful Jetpack connection.
 					$this->tracks_event(
 						self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE,
-						$event_properties
+						// Use the DB stored onboarding mode, not the one determined from the current request params.
+						array_merge( $tracks_props, [ 'mode' => WC_Payments_Onboarding_Service::is_test_mode_enabled() ? 'test' : 'live' ] )
 					);
 
 					$this->redirect_service->redirect_to_connect_page(
@@ -1033,68 +1256,319 @@ class WC_Payments_Account {
 						/* translators: %s: WooPayments */
 							__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
 							'WooPayments'
-						)
+						),
+						WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
+						[ 'source' => $onboarding_source ]
 					);
 
 					return;
 				}
 
 				// Track successful Jetpack connection.
-				$this->tracks_event(
-					self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS,
-					$event_properties
-				);
+				$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_SUCCESS, $tracks_props );
+
+				// Always clear the account cache after establishing the Jetpack/WPCOM connection.
+				// An account may already be available on our platform for this store.
+				$this->clear_cache();
 			}
 
-			try {
-				$this->maybe_init_jetpack_connection(
-					$wcpay_connect_param,
+			// Handle the "everything OK" scenario.
+			// Handle this _after_ we've handled the actions that make things "not OK" (e.g. resetting account or
+			// moving from test to live).
+			// Payout requirement collection needs to bypass the "everything OK" scenario.
+			if ( ! $collect_payout_requirements
+				&& $this->has_working_jetpack_connection()
+				&& $this->is_stripe_account_valid() ) {
+
+				$this->redirect_service->redirect_to_overview_page(
+					$from,
 					[
-						'promo'                  => $incentive,
-						'progressive'            => $progressive ? 'true' : false,
-						'create_builder_account' => $create_builder_account ? 'true' : false,
-						'test_mode'              => $should_onboard_in_test_mode ? 'true' : false,
-						'source'                 => $onboarding_source,
+						'source'                   => $onboarding_source,
+						// Carry over some parameters as they may be used by our frontend logic.
+						'wcpay-connection-success' => ! empty( $_GET['wcpay-connection-success'] ) ? '1' : false,
+						'wcpay-sandbox-success'    => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
+						'test_drive_error'         => ! empty( $_GET['test_drive_error'] ) ? 'true' : false,
 					]
-				);
-			} catch ( Exception $e ) {
-				$this->redirect_service->redirect_to_connect_page(
-				/* translators: error message. */
-					sprintf( __( 'There was a problem connecting this site to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() )
 				);
 				return;
 			}
 
-			try {
-				$this->init_stripe_onboarding(
-					$wcpay_connect_param,
+			// Handle the specific from places that need to go to the Connect page first and start onboarding from there.
+			if (
+				in_array(
+					$from,
 					[
-						'promo'       => $incentive,
-						'progressive' => $progressive,
+						WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
+						WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+						WC_Payments_Onboarding_Service::FROM_STRIPE,
+					],
+					true
+				)
+				// This is a weird case, but it is best to handle it.
+				|| ( WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD === $from && ! $this->has_working_jetpack_connection() )
+			) {
+				$this->redirect_service->redirect_to_connect_page(
+					! empty( $_GET['wcpay-connection-error'] ) ? sprintf(
+					/* translators: 1: WooPayments. */
+						__( 'Please <b>complete your %1$s setup</b> to process transactions.', 'woocommerce-payments' ),
+						'WooPayments'
+					) : null,
+					null, // Do not carry over the `from` value to avoid redirect loops.
+					[
+						'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
+						'progressive'                 => $progressive ? 'true' : false,
+						'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
+						'source'                      => $onboarding_source,
 					]
 				);
-			} catch ( Exception $e ) {
-				Logger::error( 'Init Stripe onboarding flow failed. ' . $e );
-				$this->redirect_service->redirect_to_connect_page(
-					__( 'There was a problem redirecting you to the account connection page. Please try again.', 'woocommerce-payments' )
+				return;
+			}
+
+			// Track WooPayments onboarding (aka account connection) start.
+			// We should not have a connected Stripe account. If we do, it means we are not at the very start,
+			// but somewhere in between.
+			// Exclude returns from the WPCOM/Jetpack connection.
+			// This needs to happen _before_ we attempt to init the WPCOM/Jetpack connection!
+			if ( ! isset( $_GET['wcpay-connect-jetpack-success'] ) && ! $this->is_stripe_connected() ) {
+				$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_START, $tracks_props );
+			}
+
+			// First requirement: handle the WPCOM/Jetpack connection.
+			// If there is a working one, we can proceed with the Stripe account handling.
+			try {
+				$this->maybe_init_jetpack_connection(
+				// Carry over all the important GET params, so we have them after the Jetpack connection setup.
+					add_query_arg(
+						[
+							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
+							'progressive'                 => $progressive ? 'true' : false,
+							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
+							'test_mode'                   => $should_onboard_in_test_mode ? 'true' : false,
+							'test_drive'                  => $create_test_drive_account ? 'true' : false,
+							'auto_start_test_drive_onboarding' => $auto_start_test_drive_onboarding ? 'true' : false,
+							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
+							'source'                      => $onboarding_source,
+
+						],
+						self::get_connect_url( $wcpay_connect_param ) // Instruct Jetpack to return here (connect link).
+					),
+					$tracks_props
 				);
+			} catch ( API_Exception $e ) {
+				Logger::error( 'Init Jetpack connection failed. ' . $e->getMessage() );
+				$this->redirect_service->redirect_to_connect_page(
+				/* translators: %s: error message. */
+					sprintf( __( 'There was a problem connecting your store to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() ),
+					WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
+					[ 'source' => $onboarding_source ]
+				);
+				return;
+			}
+
+			// Handle the scenarios that need to point to the onboarding wizard before initializing the Stripe onboarding.
+			// All other more specific scenarios should have been handled by this point.
+			if ( ! $create_test_drive_account
+				// When we come from the onboarding wizard we obviously don't want to go back to it!
+				&& WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD !== $from
+				&& ! $this->is_stripe_connected() ) {
+
+				$this->redirect_service->redirect_to_onboarding_wizard(
+					// When we redirect to the onboarding wizard, we carry over the `from`, if we have it.
+					// This is because there is no interim step between the user clicking the connect link and the onboarding wizard.
+					! empty( $from ) ? $from : $next_step_from,
+					[ 'source' => $onboarding_source ]
+				);
+				return;
+			}
+
+			// Handle the Stripe account initialization and/or redirect to the Stripe KYC.
+			// This is used at the end of our onboarding wizard (MOX) and whenever the merchant needs to
+			// finish Stripe KYC verifications (like in the case of partially onboarded accounts).
+			// In case everything is already OK and there is no need for Stripe KYC,
+			// the merchant will get redirected to the Payments > Overview page.
+			try {
+				// Prevent duplicate requests to start the onboarding flow.
+				if ( get_transient( self::ONBOARDING_STARTED_TRANSIENT ) ) {
+					Logger::warning( 'Duplicate onboarding attempt detected.' );
+					$this->redirect_service->redirect_to_connect_page(
+						__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
+					);
+					return;
+				}
+
+				// If we are creating a test-drive account, we do things a little different.
+				if ( $create_test_drive_account ) {
+					// Since there should be no Stripe KYC needed, make sure we start with a clean state.
+					delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+
+					// If we have the auto_start_test_drive_onboarding flag, we redirect to the Connect page
+					// to let the JS logic take control and orchestrate things.
+					if ( $auto_start_test_drive_onboarding ) {
+						$this->redirect_service->redirect_to_connect_page(
+							null,
+							$from, // Carry over `from` since we are doing a short-circuit.
+							[
+								'promo'      => ! empty( $incentive_id ) ? $incentive_id : false,
+								'test_drive' => 'true',
+								'auto_start_test_drive_onboarding' => 'true', // This is critical.
+								'test_mode'  => $should_onboard_in_test_mode ? 'true' : false,
+								'source'     => $onboarding_source,
+							]
+						);
+						return;
+					}
+				}
+
+				// Check if there is already an onboarding flow started.
+				if ( get_transient( self::ONBOARDING_STATE_TRANSIENT ) ) {
+					// Carry over all relevant GET params to the confirmation URL.
+					// We don't need to carry over reset account or test_to_live params because those actions
+					// automatically discard any ongoing onboarding.
+					// Also, do not carry over auto_start_test_drive_onboarding as we want the merchant to see the notice.
+					$confirmation_url = add_query_arg(
+						[
+							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
+							'progressive'                 => $progressive ? 'true' : false,
+							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
+							'test_drive'                  => $create_test_drive_account ? 'true' : false,
+							'test_mode'                   => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
+							'from'                        => $from, // Use the same from.
+							'source'                      => $onboarding_source,
+							'wcpay-discard-started-onboarding' => 'true',
+
+						],
+						self::get_connect_url( $wcpay_connect_param ) // Instruct Jetpack to return here (connect link).
+					);
+					$this->redirect_service->redirect_to_connect_page(
+						sprintf(
+						/* translators: 1: anchor opening markup 2: closing anchor markup */
+							__( 'Another account setup session is already in progress. Please finish it or %1$sclick here to start again%2$s.', 'woocommerce-payments' ),
+							'<a href="' . esc_url( $confirmation_url ) . '">',
+							'</a>'
+						)
+					);
+					return;
+				}
+
+				// Set a quickly expiring transient to avoid duplicate requests.
+				// The duration should be sufficient for our platform to respond.
+				// There is no danger in having this transient expire too late
+				// because we delete it after we initiate the onboarding.
+				set_transient( self::ONBOARDING_STARTED_TRANSIENT, true, MINUTE_IN_SECONDS );
+
+				$redirect_to = $this->init_stripe_onboarding(
+					$create_test_drive_account ? 'test_drive' : ( $should_onboard_in_test_mode ? 'test' : 'live' ),
+					$wcpay_connect_param,
+					[
+						'promo'       => ! empty( $incentive_id ) ? $incentive_id : false,
+						'progressive' => $progressive ? 'true' : false,
+						'source'      => $onboarding_source,
+						'from'        => WC_Payments_Onboarding_Service::FROM_STRIPE,
+					]
+				);
+
+				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+
+				// Always clear the account cache after a Stripe onboarding init attempt.
+				// This allows the merchant to use connect links to refresh its account cache, in case something is wrong.
+				$this->clear_cache();
+
+				// Make sure the redirect URL is safe.
+				$redirect_to = wp_sanitize_redirect( $redirect_to );
+				$redirect_to = wp_validate_redirect( $redirect_to );
+
+				// When creating test-drive accounts,
+				// reply with a JSON so the JS logic can pick it up and redirect the merchant.
+				if ( $create_test_drive_account && ! empty( $redirect_to ) ) {
+					wp_send_json_success( [ 'redirect_to' => $redirect_to ] );
+				} else {
+					// Redirect the user to where our Stripe onboarding instructed.
+					$this->redirect_service->redirect_to( $redirect_to );
+				}
+			} catch ( API_Exception $e ) {
+				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+
+				// Always clear the account cache in case of errors.
+				$this->clear_cache();
+
+				Logger::error( 'Init Stripe onboarding failed. ' . $e->getMessage() );
+				$this->redirect_service->redirect_to_connect_page(
+					sprintf(
+					/* translators: %s: WooPayments. */
+						__( 'There was a problem setting up your %s account. Please try again.', 'woocommerce-payments' ),
+						'WooPayments'
+					),
+					null,
+					[ 'source' => $onboarding_source ]
+				);
+				return;
+			}
+
+			// Stop here when running unit tests.
+			if ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) {
+				return;
+			}
+
+			// We should not reach this point as the merchant should be redirected to the proper place already.
+			// But, as a failsafe, redirect to either the Payments > Overview page or the Connect page.
+			Logger::warning( 'Doing the failsafe WooPayments connect link redirect.' );
+			if ( $this->is_stripe_connected() && $this->has_working_jetpack_connection() ) {
+				$this->redirect_service->redirect_to_overview_page();
+			} else {
+				$this->redirect_service->redirect_to_connect_page( null, null, [ 'source' => $onboarding_source ] );
 			}
 			return;
 		}
 
-		if (
-			isset( $_GET['wcpay-state'] )
-			&& isset( $_GET['wcpay-mode'] )
-		) {
+		/**
+		 * ==================
+		 * Handle the redirect back from the Stripe KYC (proxied through our platform)
+		 * when it didn't come through a connect link.
+		 *
+		 * @see self::finalize_connection()
+		 * ==================
+		 */
+		if ( isset( $_GET['wcpay-state'] ) && isset( $_GET['wcpay-mode'] ) ) {
 			$state = sanitize_text_field( wp_unslash( $_GET['wcpay-state'] ) );
 			$mode  = sanitize_text_field( wp_unslash( $_GET['wcpay-mode'] ) );
-			$this->finalize_connection( $state, $mode );
+
+			$this->finalize_connection(
+				$state,
+				$mode,
+				[
+					'from'   => $from,
+					'source' => $onboarding_source,
+				]
+			);
+
 			return;
 		}
 	}
 
 	/**
-	 * Get Stripe login url
+	 * Sets things up for a fresh onboarding flow.
+	 *
+	 * @return void
+	 */
+	private function cleanup_on_account_reset() {
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', 'no' );
+		$gateway->update_option( 'test_mode', 'no' );
+
+		update_option( '_wcpay_onboarding_stripe_connected', [] );
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' );
+
+		// Discard any ongoing onboarding session.
+		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+		delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+		delete_transient( 'woopay_enabled_by_default' );
+
+		// Clear the cache to avoid stale data.
+		$this->clear_cache();
+	}
+
+	/**
+	 * Get Stripe login url.
 	 *
 	 * @return string Stripe account login url.
 	 */
@@ -1110,24 +1584,22 @@ class WC_Payments_Account {
 	/**
 	 * Get connect url.
 	 *
-	 * @see WC_Payments_Account::get_onboarding_return_url(). The $wcpay_connect_from param relies on this function returning the corresponding URL.
-	 *
-	 * @param string $wcpay_connect_from Optional. A page ID representing where the user should be returned to after connecting.
-	 *                                   Default is '1' - redirects back to the WooPayments overview page.
+	 * @param string $wcpay_connect_from Optional. A value to inform the connect logic where the user came from.
+	 *                                   It will allow us to adapt behavior and/or UX (e.g. redirect to different places).
 	 *
 	 * @return string Connect URL.
 	 */
 	public static function get_connect_url( $wcpay_connect_from = '1' ) {
+		// The minimal params that make a connect URL.
 		$url_params = [
 			'wcpay-connect' => $wcpay_connect_from,
+			'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
 		];
 
-		// Maintain the `from` param from the request URL, if present.
-		if ( isset( $_GET['from'] ) ) {
-			$url_params['from'] = sanitize_text_field( wp_unslash( $_GET['from'] ) );
-		}
+		// Attach our best guess of the onboarding source.
+		$url_params['source'] = WC_Payments_Onboarding_Service::get_source();
 
-		return wp_nonce_url( add_query_arg( $url_params, admin_url( 'admin.php' ) ), 'wcpay-connect' );
+		return add_query_arg( $url_params, admin_url( 'admin.php' ) );
 	}
 
 	/**
@@ -1215,47 +1687,40 @@ class WC_Payments_Account {
 	public static function is_on_boarding_disabled() {
 		// If the transient isn't set at all, we'll get false indicating that the server hasn't informed us that
 		// on-boarding has been disabled (i.e. it's enabled as far as we know).
-		return get_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+		return get_transient( self::ONBOARDING_DISABLED_TRANSIENT );
 	}
 
 	/**
 	 * Starts the Jetpack connection flow if it's not already fully connected.
 	 *
-	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
-	 * @param array  $additional_args    - additional query args to add to the return URL.
+	 * @param string $return_url Where to redirect the user back to.
+	 * @param array  $tracks_props Additional properties to attach to the Tracks event.
 	 *
 	 * @throws API_Exception If there was an error when registering the site on WP.com.
 	 */
-	private function maybe_init_jetpack_connection( $wcpay_connect_from, $additional_args = [] ) {
-		$is_jetpack_fully_connected = $this->payments_api_client->is_server_connected() && $this->payments_api_client->has_server_connection_owner();
-		if ( $is_jetpack_fully_connected ) {
+	private function maybe_init_jetpack_connection( string $return_url, array $tracks_props ) {
+		// Nothing to do if we already have a working Jetpack connection.
+		if ( $this->has_working_jetpack_connection() ) {
 			return;
 		}
 
 		// Track the Jetpack connection start.
-		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
+		$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START, $tracks_props );
 
-		$redirect = add_query_arg(
-			array_merge(
-				[
-					'wcpay-connect'                 => $wcpay_connect_from,
-					'wcpay-connect-jetpack-success' => '1',
-					'_wpnonce'                      => wp_create_nonce( 'wcpay-connect' ),
-				],
-				$additional_args
-			),
-			$this->get_onboarding_return_url( $wcpay_connect_from )
-		);
-		$this->payments_api_client->start_server_connection( $redirect );
+		// Ensure our success param is present.
+		$return_url = add_query_arg( [ 'wcpay-connect-jetpack-success' => '1' ], $return_url );
+
+		$this->payments_api_client->start_server_connection( $return_url );
 	}
 
 	/**
 	 * Builds the URL to return the user to after the Jetpack/Onboarding flow.
 	 *
 	 * @param string $wcpay_connect_from - Constant to decide where the user should be returned to after connecting.
+	 *
 	 * @return string
 	 */
-	private function get_onboarding_return_url( $wcpay_connect_from ) {
+	private function get_onboarding_return_url( string $wcpay_connect_from ): string {
 		$is_from_subscription_product_publish = preg_match(
 			'/WC_SUBSCRIPTIONS_PUBLISH_PRODUCT_(\d+)/',
 			$wcpay_connect_from,
@@ -1270,45 +1735,36 @@ class WC_Payments_Account {
 		}
 
 		// Custom return URL for the connect page based on the source.
-		// Default goto the overview page, since now it is GA (earlier it was redirected to plugin settings page).
+		// Defaults to using a connect link - this way we will route the user to the correct place.
 		switch ( $wcpay_connect_from ) {
 			case 'WC_SUBSCRIPTIONS_TABLE':
 				return admin_url( add_query_arg( [ 'post_type' => 'shop_subscription' ], 'edit.php' ) );
 			default:
-				return static::get_overview_page_url();
+				return static::get_connect_url();
 		}
 	}
 
 	/**
 	 * Initializes the onboarding flow by fetching the URL from the API and redirecting to it.
 	 *
-	 * @param string $wcpay_connect_from - where the user should be returned to after connecting.
-	 * @param array  $additional_args    - additional query args to add to the return URL.
+	 * @param string $setup_mode         The onboarding setup mode. It should only be `live`, `test`, or `test_drive`.
+	 *                                   On invalid value, it will default to `live`.
+	 * @param string $wcpay_connect_from Where the user should be returned to after connecting.
+	 * @param array  $additional_args    Additional query args to add to the return URL.
+	 *
+	 * @return string The URL to redirect the user to. Empty string if there is no URL to redirect to.
+	 * @throws API_Exception
 	 */
-	private function init_stripe_onboarding( $wcpay_connect_from, $additional_args = [] ) {
-		if ( get_transient( self::ON_BOARDING_STARTED_TRANSIENT ) ) {
-			$this->redirect_service->redirect_to_connect_page(
-				__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
-			);
-			return;
+	private function init_stripe_onboarding( string $setup_mode, string $wcpay_connect_from, array $additional_args = [] ): string {
+		if ( ! in_array( $setup_mode, [ 'live', 'test', 'test_drive' ], true ) ) {
+			$setup_mode = 'live';
 		}
-
-		// Set a quickly expiring transient to save the current onboarding state and avoid duplicate requests.
-		set_transient( self::ON_BOARDING_STARTED_TRANSIENT, true, 10 );
-
-		// Clear account transient when generating Stripe's oauth data.
-		$this->clear_cache();
-
 		// Flags to enable progressive onboarding and collect payout requirements.
 		$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 		$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
-		// Enable dev mode if the test_mode query param is set.
-		$test_mode = isset( $_GET['test_mode'] ) ? boolval( wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) : false;
-
-		if ( $test_mode ) {
-			WC_Payments_Onboarding_Service::set_test_mode( true );
-		}
+		// Make sure the onboarding test mode DB flag is set.
+		WC_Payments_Onboarding_Service::set_test_mode( 'live' !== $setup_mode );
 
 		if ( ! $collect_payout_requirements ) {
 			// Clear onboarding related account options if this is an initial onboarding attempt.
@@ -1324,49 +1780,80 @@ class WC_Payments_Account {
 			$return_url = add_query_arg( $additional_args, $return_url );
 		}
 
+		$home_url = get_home_url();
+		// If the site is running on localhost, use a bogus URL. This is to avoid Stripe's errors.
+		// wp_http_validate_url does not check that, unfortunately.
+		$home_is_localhost = 'localhost' === wp_parse_url( $home_url, PHP_URL_HOST );
+		$fallback_url      = ( 'live' !== $setup_mode || $home_is_localhost ) ? 'https://wcpay.test' : null;
+
+		$current_user = get_userdata( get_current_user_id() );
+
+		// The general account data.
+		$account_data = [
+			'setup_mode'    => $setup_mode,
+			// We use the store base country to create a customized account.
+			'country'       => WC()->countries->get_base_country() ?? null,
+			'url'           => ! $home_is_localhost && wp_http_validate_url( $home_url ) ? $home_url : $fallback_url,
+			'business_name' => get_bloginfo( 'name' ),
+		];
+
+		// Gather all the account data depending on the request context.
 		// Onboarding self-assessment data.
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
-		if ( $self_assessment_data ) {
+		if ( ! empty( $self_assessment_data ) ) {
 			$business_type = $self_assessment_data['business_type'] ?? null;
-			$account_data  = [
-				'setup_mode'    => 'live',  // If there is self assessment data, the user chose the 'live' setup mode.
-				'country'       => $self_assessment_data['country'] ?? null,
-				'email'         => $self_assessment_data['email'] ?? null,
-				'business_name' => $self_assessment_data['business_name'] ?? null,
-				'url'           => $self_assessment_data['url'] ?? null,
-				'mcc'           => $self_assessment_data['mcc'] ?? null,
-				'business_type' => $business_type,
-				'company'       => [
-					'structure' => 'company' === $business_type ? ( $self_assessment_data['company']['structure'] ?? null ) : null,
-				],
-				'individual'    => [
-					'first_name' => $self_assessment_data['individual']['first_name'] ?? null,
-					'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
-					'phone'      => $self_assessment_data['phone'] ?? null,
-				],
-				'store'         => [
-					'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
-					'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
-				],
-			];
-		} elseif ( $test_mode ) {
-			$home_url    = get_home_url();
-			$default_url = 'http://wcpay.test';
-			$url         = wp_http_validate_url( $home_url ) ? $home_url : $default_url;
-			// If the site is running on localhost, use the default URL. This is to avoid Stripe's errors.
-			// wp_http_validate_url does not check that, unfortunately.
-			if ( wp_parse_url( $home_url, PHP_URL_HOST ) === 'localhost' ) {
-				$url = $default_url;
-			}
-			$account_data = [
-				'setup_mode'    => 'test',
-				'business_type' => 'individual',
-				'mcc'           => '5734',
-				'url'           => $url,
-				'business_name' => get_bloginfo( 'name' ),
-			];
-		} else {
-			$account_data = [];
+			$account_data  = WC_Payments_Utils::array_merge_recursive_distinct(
+				$account_data,
+				[
+					// Overwrite the country if the merchant chose a different one than the Woo base location.
+					'country'       => $self_assessment_data['country'] ?? null,
+					'email'         => $self_assessment_data['email'] ?? null,
+					'business_name' => $self_assessment_data['business_name'] ?? null,
+					'url'           => $self_assessment_data['url'] ?? null,
+					'mcc'           => $self_assessment_data['mcc'] ?? null,
+					'business_type' => $business_type,
+					'company'       => [
+						'structure' => 'company' === $business_type ? ( $self_assessment_data['company']['structure'] ?? null ) : null,
+					],
+					'individual'    => [
+						'first_name' => $self_assessment_data['individual']['first_name'] ?? null,
+						'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
+						'phone'      => $self_assessment_data['phone'] ?? null,
+					],
+					'store'         => [
+						'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
+						'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
+					],
+				]
+			);
+		} elseif ( 'test_drive' === $setup_mode ) {
+			$account_data = WC_Payments_Utils::array_merge_recursive_distinct(
+				$account_data,
+				[
+					'individual' => [
+						'first_name' => $current_user->first_name ?? null,
+						'last_name'  => $current_user->last_name ?? null,
+					],
+				]
+			);
+
+			// If we get to the overview page, we want to show the success message.
+			$return_url = add_query_arg( 'wcpay-sandbox-success', 'true', $return_url );
+		} elseif ( 'test' === $setup_mode ) {
+			$account_data = WC_Payments_Utils::array_merge_recursive_distinct(
+				$account_data,
+				[
+					'business_type' => 'individual',
+					'mcc'           => '5734',
+					'individual'    => [
+						'first_name' => $current_user->first_name ?? null,
+						'last_name'  => $current_user->last_name ?? null,
+					],
+				]
+			);
+
+			// If we get to the overview page, we want to show the success message.
+			$return_url = add_query_arg( 'wcpay-sandbox-success', 'true', $return_url );
 		}
 
 		$site_data = [
@@ -1377,32 +1864,46 @@ class WC_Payments_Account {
 		$user_data = $this->get_onboarding_user_data();
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
+			'live' === $setup_mode,
 			$return_url,
 			$site_data,
-			array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-			array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+			WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+			WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 			$this->get_actioned_notes(),
 			$progressive,
 			$collect_payout_requirements
 		);
 
-		delete_transient( self::ON_BOARDING_STARTED_TRANSIENT );
+		// If an account already exists for this site and/or there is no need for KYC verifications, we're done.
+		// Our platform will respond with a `false` URL in this case.
+		if ( isset( $onboarding_data['url'] ) && false === $onboarding_data['url'] ) {
+			// Set the gateway options.
+			$gateway = WC_Payments::get_gateway();
+			$gateway->update_option( 'enabled', 'yes' );
+			$gateway->update_option( 'test_mode', empty( $onboarding_data['is_live'] ) ? 'yes' : 'no' );
 
-		// If an account already exists for this site, we're done.
-		if ( false === $onboarding_data['url'] ) {
-			WC_Payments::get_gateway()->update_option( 'enabled', 'yes' );
+			// Store a state after completing KYC for tracks. This is stored temporarily in option because
+			// user might not have agreed to TOS yet.
 			update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => true ] );
-			$redirect_url = add_query_arg(
+
+			// Clean up any existing onboarding state.
+			delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+
+			return add_query_arg(
 				[ 'wcpay-connection-success' => '1' ],
 				$return_url
 			);
-			$this->redirect_service->redirect_to( $redirect_url );
 		}
 
-		set_transient( 'woopay_enabled_by_default', $onboarding_data['woopay_enabled_by_default'], DAY_IN_SECONDS );
-		set_transient( 'wcpay_stripe_onboarding_state', $onboarding_data['state'], DAY_IN_SECONDS );
+		// We have an account that needs to be verified (has a URL to redirect the merchant to).
+		// Store the relevant onboarding data.
+		set_transient( 'woopay_enabled_by_default', isset( $onboarding_data['woopay_enabled_by_default'] ) ?? false, DAY_IN_SECONDS );
+		// Save the onboarding state for a day.
+		// This is used to verify the state when finalizing the onboarding and connecting the account.
+		// On finalizing the onboarding, the transient gets deleted.
+		set_transient( self::ONBOARDING_STATE_TRANSIENT, $onboarding_data['state'] ?? '', DAY_IN_SECONDS );
 
-		$this->redirect_service->redirect_to( $onboarding_data['url'] );
+		return (string) ( $onboarding_data['url'] ?? '' );
 	}
 
 	/**
@@ -1420,53 +1921,66 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Once the API redirects back to the site after the onboarding flow, verifies the parameters and stores the data
+	 * Once the API redirects back to the site after the onboarding flow, verifies the parameters and stores the data.
 	 *
-	 * @param string $state Secret string.
-	 * @param string $mode Mode in which this account has been connected. Either 'test' or 'live'.
+	 * @param string $state           Secret string.
+	 * @param string $mode            Mode in which this account has been created. Either 'test' or 'live'.
+	 * @param array  $additional_args Additional query args to add to redirect URLs.
 	 */
-	private function finalize_connection( $state, $mode ) {
-		if ( get_transient( 'wcpay_stripe_onboarding_state' ) !== $state ) {
+	private function finalize_connection( string $state, string $mode, array $additional_args = [] ) {
+		// If the state is not the same as the one we stored, something went wrong.
+		// Reject the connection and redirect to the Connect page for another try (this doesn't mean the merchant will
+		// need to set up a new account, just that it will need to do another round trip of server requests,
+		// with a new secret, etc.).
+		if ( get_transient( self::ONBOARDING_STATE_TRANSIENT ) !== $state ) {
 			$this->redirect_service->redirect_to_connect_page(
-				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' )
+				__( 'There was a problem processing your account data. Please try again.', 'woocommerce-payments' ),
+				null, // No need to specify any from as we will carry over the once in the additional args, if present.
+				$additional_args
 			);
 			return;
 		}
-		delete_transient( 'wcpay_stripe_onboarding_state' );
+		// The states match, so we can delete the stored one.
+		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+
+		// Clear the account cache.
 		$this->clear_cache();
 
+		// Set the gateway options.
 		$gateway = WC_Payments::get_gateway();
 		$gateway->update_option( 'enabled', 'yes' );
-		$gateway->update_option( 'test_mode', 'test' === $mode ? 'yes' : 'no' );
+		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
 
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
 		// Track account connection finish.
-		$incentive        = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
-		$progressive      = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+		$incentive_id     = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
 		$event_properties = [
-			'incentive' => $incentive,
-			'mode'      => 'test' === $mode ? 'test' : 'live',
+			'incentive' => $incentive_id,
+			'mode'      => 'live' !== $mode ? 'test' : 'live',
+			'from'      => $additional_args['from'] ?? '',
+			'source'    => $additional_args['source'] ?? '',
 		];
 		$this->tracks_event(
 			self::TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED,
 			$event_properties
 		);
 
-		$params = [
-			'wcpay-state'                => false,
-			'wcpay-account-id'           => false,
-			'wcpay-live-publishable-key' => false,
-			'wcpay-test-publishable-key' => false,
-			'wcpay-mode'                 => false,
-		];
-		if ( empty( $_GET['wcpay-connection-error'] ) ) {
-			$params['wcpay-connection-success'] = '1';
+		$params = $additional_args;
+		if ( ! empty( $_GET['wcpay-connection-error'] ) ) {
+			// If we get this parameter, but we have a valid state, it means the merchant left KYC early and didn't finish it.
+			// While we do have an account, it is not yet valid. We need to redirect them back to the connect page.
+			$params['wcpay-connection-error'] = '1';
+
+			$this->redirect_service->redirect_to_connect_page( '', WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
+			return;
 		}
 
-		$this->redirect_service->redirect_to( add_query_arg( $params ) );
+		$params['wcpay-connection-success'] = '1';
+
+		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
 	}
 
 	/**
@@ -1487,9 +2001,9 @@ class WC_Payments_Account {
 			Database_Cache::ACCOUNT_KEY,
 			function () {
 				try {
-					// Since we're about to call the server again, clear out the on-boarding disabled flag. We can let the code
-					// below re-create it if the server tells us on-boarding is still disabled.
-					delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
+					// Since we're about to call the server again, clear out the onboarding disabled flag.
+					// We can let the code below re-create it if the server tells us onboarding is still disabled.
+					delete_transient( self::ONBOARDING_DISABLED_TRANSIENT );
 
 					$request  = Get_Account::create();
 					$response = $request->send();
@@ -1500,11 +2014,11 @@ class WC_Payments_Account {
 						// Special case - detect account not connected and cache it.
 						$account = [];
 					} elseif ( 'wcpay_on_boarding_disabled' === $e->get_error_code() ) {
-						// Special case - detect account not connected and on-boarding disabled. This will get updated the
+						// Special case - detect account not connected and onboarding disabled. This will get updated the
 						// next time we call the server for account information, but just in case we set the expiry time for
 						// this setting an hour longer than the account details transient.
 						$account = [];
-						set_transient( self::ON_BOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
+						set_transient( self::ONBOARDING_DISABLED_TRANSIENT, true, 2 * HOUR_IN_SECONDS );
 					} else {
 						// Return false to signal account retrieval error.
 						return false;
@@ -1577,18 +2091,28 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// empty array - special value to indicate that there's no account connected.
+		// Empty array - special value to indicate that there's no account connected.
 		if ( empty( $account ) ) {
 			return true;
 		}
 
-		// live accounts are always valid.
+		// Live accounts are always valid.
 		if ( $account['is_live'] ) {
 			return true;
 		}
 
-		// test accounts are valid only when in dev mode.
-		if ( WC_Payments::mode()->is_dev() ) {
+		// Handle test accounts.
+
+		// Fix test mode enabled DB state starting with the account data.
+		// These two should be in sync when in test mode onboarding.
+		// This is a weird case that shouldn't happen under normal circumstances.
+		if ( ! WC_Payments_Onboarding_Service::is_test_mode_enabled() && WC_Payments::mode()->is_dev() ) {
+			Logger::warning( 'Test mode account, account onboarding is NOT in test mode, but the plugin is in dev mode. Enabling test mode onboarding.' );
+			WC_Payments_Onboarding_Service::set_test_mode( true );
+		}
+
+		// Test accounts are valid only when onboarding in test mode.
+		if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 			return true;
 		}
 
@@ -1888,43 +2412,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects to the onboarding flow page.
-	 * Also checks if the server is connected and try to connect it otherwise.
-	 *
-	 * @param string $source    The source of the redirect.
-	 * @param bool   $test_mode Whether to start the onboarding flow in test mode.
-	 *
-	 * @return void
-	 */
-	private function redirect_to_onboarding_page_or_start_server_connection( string $source, bool $test_mode = false ) {
-		if ( ! WC_Payments_Utils::should_use_new_onboarding_flow() ) {
-			return;
-		}
-
-		$onboarding_url = add_query_arg(
-			[
-				'test_mode' => $test_mode ? 'true' : false,
-				'source'    => $source,
-			],
-			admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' )
-		);
-
-		if ( ! $this->payments_api_client->is_server_connected() ) {
-			// TODO extract it to redirect service when we have a chance to refactor tracks events.
-			// Track the Jetpack connection start.
-			$this->tracks_event( self::TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_START );
-			try {
-				$this->payments_api_client->start_server_connection( $onboarding_url );
-			} catch ( API_Exception $e ) {
-				// If we can't connect to the server, return, the error will be shown on the relevant page.
-				return;
-			}
-		} else {
-			$this->redirect_service->redirect_to( $onboarding_url );
-		}
-	}
-
-	/**
 	 * Send a Tracks event.
 	 *
 	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
@@ -1985,7 +2472,7 @@ class WC_Payments_Account {
 				'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
 			],
 			'referer'           => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
-			'onboarding_source' => sanitize_text_field( wp_unslash( $_GET['source'] ) ),
+			'onboarding_source' => WC_Payments_Onboarding_Service::get_source(),
 		];
 	}
 }

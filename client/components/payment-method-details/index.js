@@ -7,7 +7,7 @@ import { Fragment } from 'react';
 import './style.scss';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from '../tooltip';
-import { PAYMENT_METHOD_TITLES } from 'payment-methods/constants';
+import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 /**
  *
  * @param {Object} payment Payment charge object
