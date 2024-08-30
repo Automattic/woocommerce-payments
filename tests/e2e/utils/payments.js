@@ -277,9 +277,7 @@ export async function setupCheckout( billingDetails ) {
 	// field changes. Need to wait to make sure that all key presses were processed by that mechanism.
 	await page.waitForTimeout( 1000 );
 	await uiUnblocked();
-	await expect( page ).toClick(
-		'.wc_payment_method.payment_method_woocommerce_payments'
-	);
+	await page.click( 'label[for="payment_method_woocommerce_payments"]' );
 }
 
 // Copy of the fillBillingDetails function from woocommerce/e2e-utils/src/flows/shopper.js
