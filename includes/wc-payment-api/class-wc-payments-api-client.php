@@ -985,7 +985,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception
 	 */
-	public function initialise_embedded_onboarding( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function initialize_embedded_onboarding( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
