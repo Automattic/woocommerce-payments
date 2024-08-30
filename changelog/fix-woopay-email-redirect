@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Redirect user to WooPay OTP when the email is saved.
