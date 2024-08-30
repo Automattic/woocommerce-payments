@@ -61,12 +61,19 @@ export const initializeBnplSiteMessaging = async () => {
 	let amount;
 	let elementLocation = 'bnplProductPage';
 	const minOrderAmount = parseInt( minimumOrderAmount, 10 ) || 0;
+	const paymentMessageContainer = document.getElementById(
+		'payment-method-message'
+	);
 
 	if ( isCart || isCartBlock ) {
 		amount = parseInt( cartTotal, 10 ) || 0;
 		elementLocation = 'bnplClassicCart';
 	} else {
 		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
+
+		if ( amount < minOrderAmount ) {
+			paymentMessageContainer.style.setProperty( 'display', 'none' );
+		}
 	}
 
 	let paymentMessageElement;
@@ -144,16 +151,13 @@ export const initializeBnplSiteMessaging = async () => {
 		}
 
 		// Set the `--wc-bnpl-margin-bottom` CSS variable to the computed bottom margin of the price element.
-		const paymentMessageContainer = document.getElementById(
-			'payment-method-message'
-		);
 		paymentMessageContainer.style.setProperty(
 			'--wc-bnpl-margin-bottom',
 			bottomMargin
 		);
 
 		let paymentMessageLoading;
-		if ( ! isCart && amount > minOrderAmount ) {
+		if ( ! isCart ) {
 			paymentMessageLoading = document.createElement( 'div' );
 			paymentMessageLoading.classList.add( 'pmme-loading' );
 			paymentMessageContainer.prepend( paymentMessageLoading );
