@@ -18,7 +18,7 @@ docker compose exec -u www-data wordpress \
 echo "Checking coverage..."
 
 docker-compose exec -u www-data wordpress \
-	php -d xdebug.start_with_request=yes \
+	php -d xdebug.start_with_request=trigger \
         /var/www/html/wp-content/plugins/woocommerce-payments/vendor/bin/phpunit \
         --configuration "/var/www/html/wp-content/plugins/woocommerce-payments/$CONFIGURATION_FILE" \
         --coverage-html /var/www/html/php-test-coverage \
