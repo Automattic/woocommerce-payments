@@ -187,13 +187,21 @@ const EmbeddedOnboarding: React.FC = () => {
 										'WCPAY_ONBOARDING_WIZARD'
 									);
 								} else {
-									window.location.href = getConnectUrl(
-										{},
+									// If a non-success response is received we should redirect to the overview page with an error flag:
+									window.location.href = getOverviewUrl(
+										{
+											...response.params,
+											onboardingError: true,
+										},
 										'WCPAY_ONBOARDING_WIZARD'
 									);
 								}
 							} catch ( error ) {
-								// TODO GH-9251 add error to the overview page
+								// If an error response is received we should redirect to the overview page with an error flag:
+								window.location.href = getOverviewUrl(
+									{ onboardingError: true },
+									'WCPAY_ONBOARDING_WIZARD'
+								);
 							}
 						} }
 					/>
