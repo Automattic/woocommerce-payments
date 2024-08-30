@@ -13,7 +13,7 @@ const getMultiCurrencyState = ( state ) => {
 		return {};
 	}
 
-	return state.multiCurrency || {};
+	return state || {};
 };
 
 export const getCurrencies = ( state ) => {
