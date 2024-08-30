@@ -214,17 +214,30 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
 	 */
 	public function finalize_embedded_onboarding( WP_REST_Request $request ) {
-		$source = $request->get_param( 'source' );
+		$source         = $request->get_param( 'source' ) ?? '';
+		$from           = $request->get_param( 'from' ) ?? '';
+		$actioned_notes = WC_Payments_Onboarding_Service::get_actioned_notes();
 
 		// Call the API to finalize the onboarding.
 		try {
-			$result = $this->onboarding_service->finalize_embedded_onboarding( get_user_locale(), $source );
+			$result = $this->onboarding_service->finalize_embedded_onboarding(
+				get_user_locale(),
+				$source,
+				$actioned_notes
+			);
 		} catch ( Exception $e ) {
 			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
 		}
 
 		// Handle some post-onboarding tasks and get the redirect params.
-		$finalise = WC_Payments::get_account_service()->finalize_embedded_connection( $result['mode'] );
+		$finalise = WC_Payments::get_account_service()->finalize_embedded_connection(
+			$result['mode'],
+			[
+				'promo'  => $result['promotion_id'] ?? '',
+				'from'   => $from,
+				'source' => $source,
+			]
+		);
 
 		// Return the response, the client will handle the redirect.
 		return rest_ensure_response(

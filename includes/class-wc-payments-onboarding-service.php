@@ -217,19 +217,20 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @param string $locale The locale to use to i18n the data.
 	 * @param string $source The source of the onboarding flow.
+	 * @param array  $actioned_notes The actioned notes for this onboarding.
 	 *
 	 * @return array Containing the following keys: success, account_id, mode.
 	 *
 	 * @throws API_Exception
 	 */
-	public function finalize_embedded_onboarding( string $locale, string $source ): array {
+	public function finalize_embedded_onboarding( string $locale, string $source, array $actioned_notes ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [
 				'success' => false,
 			];
 		}
 
-		$result = $this->payments_api_client->finalize_embedded_onboarding( $locale, $source );
+		$result = $this->payments_api_client->finalize_embedded_onboarding( $locale, $source, $actioned_notes );
 
 		$success           = $result['success'] ?? false;
 		$details_submitted = $result['details_submitted'] ?? false;
@@ -243,6 +244,7 @@ class WC_Payments_Onboarding_Service {
 			'details_submitted' => $details_submitted,
 			'account_id'        => $result['account_id'] ?? '',
 			'mode'              => $result['mode'],
+			'promotion_id'      => $result['promotion_id'] ?? null,
 		];
 	}
 

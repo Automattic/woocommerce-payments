@@ -1856,14 +1856,12 @@ class WC_Payments_Account {
 	 * Handle the finalization of an embedded onboarding. This includes updating the cache, setting the gateway mode,
 	 * tracking the event, and redirecting the user to the overview page.
 	 *
-	 * @param string $mode           The mode in which the account was created. Either 'test' or 'live'.
+	 * @param string $mode            The mode in which the account was created. Either 'test' or 'live'.
 	 * @param array  $additional_args Additional query args to add to the redirect URLs.
 	 *
 	 * @return array Returns whether the operation was successful, along with the URL params to handle the redirect.
 	 */
 	public function finalize_embedded_connection( string $mode, array $additional_args = [] ): array {
-		Logger::debug( "Finalizing embedded connection with following values: mode: {$mode}" );
-
 		// Clear the account cache.
 		$this->clear_cache();
 
@@ -1876,12 +1874,12 @@ class WC_Payments_Account {
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
-		// Track account connection finish. TODO: Need a way to get the promo with embedded.
+		// Track account connection finish.
 		$event_properties = [
-			'incentive' => '',
 			'mode'      => 'test' === $mode ? 'test' : 'live',
-			'from'      => $additional_args['from'] ?? '',
-			'source'    => $additional_args['source'] ?? '',
+			'incentive' => ! empty( $additional_args['promo'] ) ? sanitize_text_field( $additional_args['promo'] ) : '',
+			'from'      => ! empty( $additional_args['from'] ) ? sanitize_text_field( $additional_args['from'] ) : '',
+			'source'    => ! empty( $additional_args['source'] ) ? sanitize_text_field( $additional_args['source'] ) : '',
 		];
 
 		$this->tracks_event(
