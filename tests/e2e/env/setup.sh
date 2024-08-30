@@ -68,10 +68,9 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	step "Starting SERVER containers"
 	if [ -e $E2E_SERVICE_DOCKER_COMPOSE_OVERRIDE_FILE ]; then
-		echo "Using service override file: $E2E_SERVICE_DOCKER_COMPOSE_OVERRIDE_FILE"
+		echo "Using docker override file for WooPayments service (aka wcpay-server): $E2E_SERVICE_DOCKER_COMPOSE_OVERRIDE_FILE"
 		redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f $E2E_SERVICE_DOCKER_COMPOSE_OVERRIDE_FILE up --build --force-recreate -d
 	else
-		echo "bad"
 		redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 	fi
 
