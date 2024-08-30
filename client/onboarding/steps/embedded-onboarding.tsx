@@ -6,18 +6,21 @@ import {
 	loadConnectAndInitialize,
 	StripeConnectInstance,
 } from '@stripe/connect-js';
+import { LoadError } from '@stripe/connect-js/types/config';
 import {
 	ConnectAccountOnboarding,
 	ConnectComponentsProvider,
 } from '@stripe/react-connect-js';
 import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
-import appearance from '../embedded-appearance';
 
 /**
  * Internal dependencies
  */
 import { NAMESPACE } from 'data/constants';
+import appearance from '../embedded-appearance';
+import BannerNotice from 'wcpay/components/banner-notice';
 import LoadBar from 'wcpay/components/load-bar';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import {
@@ -27,9 +30,6 @@ import {
 } from 'wcpay/onboarding/types';
 import { fromDotNotation } from 'wcpay/onboarding/utils';
 import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
-import { LoadError } from '@stripe/connect-js/types/config';
-import BannerNotice from 'wcpay/components/banner-notice';
-import { __ } from '@wordpress/i18n';
 
 type AccountSessionData = AccountSession;
 

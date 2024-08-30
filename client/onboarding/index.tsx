@@ -13,11 +13,11 @@ import { getMccFromIndustry } from 'onboarding/utils';
 import { OnboardingForm } from './form';
 import Step from './step';
 import BusinessDetails from './steps/business-details';
+import EmbeddedOnboarding from './steps/embedded-onboarding';
 import StoreDetails from './steps/store-details';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
-import EmbeddedOnboarding from 'wcpay/onboarding/steps/embedded-onboarding';
 
 const OnboardingStepper = () => {
 	const handleExit = () => {
