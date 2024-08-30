@@ -11,7 +11,13 @@ import { Icon, check } from '@wordpress/icons';
 import WizardTaskContext from './task/context';
 import './task-item.scss';
 
-const WizardTaskItem = ( { children, title, index, className } ) => {
+const WizardTaskItem = ( {
+	children,
+	title,
+	index,
+	className,
+	visibleDescription,
+} ) => {
 	const { isCompleted, isActive } = useContext( WizardTaskContext );
 
 	return (
@@ -39,6 +45,16 @@ const WizardTaskItem = ( { children, title, index, className } ) => {
 				</div>
 				<span className="wcpay-wizard-task__title">{ title }</span>
 			</div>
+			{ visibleDescription && ! isActive && (
+				<span
+					className={ classNames(
+						'wcpay-wizard-task__visible-description-element',
+						'is-muted-color'
+					) }
+				>
+					{ visibleDescription }
+				</span>
+			) }
 			<div className="wcpay-wizard-task__body">{ children }</div>
 		</li>
 	);

@@ -34,7 +34,7 @@ export function* getCurrencies() {
 }
 
 /**
- * Retrieve single currency sttings from the site's REST API.
+ * Retrieve single currency settings from the site's REST API.
  *
  * @param {string} currencyCode The currency code to fetch settings for.
  */

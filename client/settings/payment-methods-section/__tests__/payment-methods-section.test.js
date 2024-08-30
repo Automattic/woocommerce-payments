@@ -48,6 +48,11 @@ jest.mock( 'multi-currency/interface/data', () => ( {
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
 
+jest.mock( 'multi-currency/interface/data', () => ( {
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
+} ) );
+
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest
 		.fn()

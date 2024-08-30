@@ -18,6 +18,8 @@ export * from './charges/hooks';
 export * from './timeline/hooks';
 export * from './disputes/hooks';
 export * from './settings/hooks';
+// TODO: Needs to be migrated. At the moment, there exist dependencies on these files.
+export * from 'multi-currency/data';
 export * from './card-readers/hooks';
 export * from './capital/hooks';
 export * from './documents/hooks';

@@ -10,23 +10,26 @@ import _ from 'lodash';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from '../../../additional-methods-setup/wizard/task/context';
-import CollapsibleBody from '../../../additional-methods-setup/wizard/collapsible-body';
-import WizardTaskItem from '../../wizard/task-item';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
+import {
+	CollapsibleBody,
+	Search,
+	LoadableBlock,
+	WizardTaskItem,
+} from 'multi-currency/interface/components';
 
 import {
 	useCurrencies,
 	useAvailableCurrencies,
 	useEnabledCurrencies,
 	useDefaultCurrency,
-} from 'wcpay/data';
+} from 'multi-currency/data';
 
 // eslint-disable-next-line max-len
-import EnabledCurrenciesModalCheckboxList from '../../../multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';
-import EnabledCurrenciesModalCheckbox from '../../../multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox';
-import Search from 'components/search';
-
-import { LoadableBlock } from '../../../components/loadable';
+// TODO: Migrate to 'multi-currency/settings/enabled-currencies-list/modal-checkbox-list'.
+import EnabledCurrenciesModalCheckboxList from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';
+// TODO: Migrate to 'multi-currency/settings/enabled-currencies-list/modal-checkbox'.
+import EnabledCurrenciesModalCheckbox from 'wcpay/multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox';
 
 import { recommendedCurrencyCodes, numberWords } from './constants';
 import {

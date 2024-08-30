@@ -9,13 +9,17 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from '../../../additional-methods-setup/wizard/task/context';
-import CollapsibleBody from '../../../additional-methods-setup/wizard/collapsible-body';
-import WizardTaskItem from '../../wizard/task-item';
-import PreviewModal from '../../../multi-currency/preview-modal';
+import {
+	CollapsibleBody,
+	WizardTaskItem,
+} from 'multi-currency/interface/components';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
+import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
+// TODO: Migrate to 'multi-currency/preview-modal'.
+import PreviewModal from 'wcpay/multi-currency/preview-modal';
 import './index.scss';
 
-import { useStoreSettings, useSettings, useMultiCurrency } from 'wcpay/data';
+import { useStoreSettings } from 'multi-currency/data';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
