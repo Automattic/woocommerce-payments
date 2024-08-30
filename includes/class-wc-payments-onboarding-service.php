@@ -188,7 +188,7 @@ class WC_Payments_Onboarding_Service {
 		$actioned_notes = self::get_actioned_notes();
 
 		try {
-			$account_session = $this->payments_api_client->initialise_embedded_onboarding(
+			$account_session = $this->payments_api_client->initialize_embedded_onboarding(
 				'live' === $setup_mode,
 				$site_data,
 				array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
