@@ -971,7 +971,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Initialise the embedded onboarding flow, returning a session object which is used by the frontend.
+	 * Initialize the embedded onboarding flow, returning a session object which is used by the frontend.
 	 *
 	 * @param bool  $live_account Whether to create live account.
 	 * @param array $site_data Site data.
