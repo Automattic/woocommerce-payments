@@ -231,7 +231,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 
 		// Call the API to finalize the onboarding.
 		try {
-			$result = $this->onboarding_service->finalize_embedded_onboarding(
+			$response = $this->onboarding_service->finalize_embedded_onboarding(
 				get_user_locale(),
 				$source,
 				$actioned_notes
@@ -241,10 +241,10 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		}
 
 		// Handle some post-onboarding tasks and get the redirect params.
-		$finalise = WC_Payments::get_account_service()->finalize_embedded_connection(
-			$result['mode'],
+		$finalize = WC_Payments::get_account_service()->finalize_embedded_connection(
+			$response['mode'],
 			[
-				'promo'  => $result['promotion_id'] ?? '',
+				'promo'  => $response['promotion_id'] ?? '',
 				'from'   => $from,
 				'source' => $source,
 			]
@@ -253,8 +253,8 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		// Return the response, the client will handle the redirect.
 		return rest_ensure_response(
 			array_merge(
-				$result,
-				$finalise
+				$response,
+				$finalize
 			)
 		);
 	}
