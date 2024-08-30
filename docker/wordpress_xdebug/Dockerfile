@@ -1,11 +1,12 @@
 FROM wordpress:php8.1
 ARG XDEBUG_REMOTE_PORT
 ARG XDEBUG_REMOTE_HOST=host.docker.internal
+ARG XDEBUG_START_WITH_REQUEST=trigger
 RUN pecl install xdebug \
     && echo 'xdebug.mode=coverage,debug' >> $PHP_INI_DIR/php.ini \
     && echo "xdebug.client_port=${XDEBUG_REMOTE_PORT}" >> $PHP_INI_DIR/php.ini \
     && echo "xdebug.client_host=${XDEBUG_REMOTE_HOST}" >> $PHP_INI_DIR/php.ini \
-    && echo 'xdebug.start_with_request=trigger' >> $PHP_INI_DIR/php.ini \
+    && echo "xdebug.start_with_request=${XDEBUG_START_WITH_REQUEST}" >> $PHP_INI_DIR/php.ini \
     && docker-php-ext-enable xdebug
 RUN apt-get update \
 	&& apt-get install --assume-yes --quiet --no-install-recommends gnupg2 subversion mariadb-client less jq openssh-client
