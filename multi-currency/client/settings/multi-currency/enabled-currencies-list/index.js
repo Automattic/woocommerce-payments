@@ -21,7 +21,7 @@ import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
-import SettingsSection from 'wcpay/settings/settings-section';
+import SettingsSection from 'multi-currency/components/settings-section';
 
 const EnabledCurrenciesSettingsDescription = () => {
 	const LEARN_MORE_URL =

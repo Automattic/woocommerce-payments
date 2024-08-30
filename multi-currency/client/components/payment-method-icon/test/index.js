@@ -9,7 +9,7 @@ import '@testing-library/jest-dom/extend-expect';
  * Internal dependencies
  */
 import PaymentMethodIcon from '..';
-import paymentMethodsMap from 'multi-currency/interfaces/assets/payment-methods-map';
+import { paymentMethodsMap } from 'multi-currency/interface/assets';
 
 describe( 'PaymentMethodIcon', () => {
 	it( 'renders BECS payment method icon', () => {

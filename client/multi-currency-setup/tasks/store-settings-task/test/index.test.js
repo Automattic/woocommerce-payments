@@ -13,10 +13,10 @@ import {
 	useStoreSettings,
 	useSettings,
 	useMultiCurrency,
-} from 'wcpay/data';
+} from 'multi-currency/data';
 import StoreSettingsTask from '..';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'multi-currency/data', () => ( {
 	useStoreSettings: jest.fn(),
 	useCurrencies: jest.fn(),
 	useSettings: jest.fn(),

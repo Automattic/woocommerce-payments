@@ -25,8 +25,8 @@ import {
 	useCurrencySettings,
 	useEnabledCurrencies,
 	useStoreSettings,
-} from 'multi-currency/interface/data';
-import MultiCurrencySettingsContext from '../../context';
+} from 'multi-currency/data';
+import MultiCurrencySettingsContext from 'multi-currency/context';
 import { LoadableBlock } from 'multi-currency/components/loadable';
 import SettingsLayout from 'multi-currency/components/settings-layout';
 import SettingsSection from 'multi-currency/components/settings-section';

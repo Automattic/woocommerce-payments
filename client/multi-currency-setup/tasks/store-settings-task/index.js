@@ -12,10 +12,14 @@ import interpolateComponents from '@automattic/interpolate-components';
 import WizardTaskContext from '../../../additional-methods-setup/wizard/task/context';
 import CollapsibleBody from '../../../additional-methods-setup/wizard/collapsible-body';
 import WizardTaskItem from '../../wizard/task-item';
-import PreviewModal from '../../../multi-currency/preview-modal';
+import PreviewModal from 'multi-currency/components/preview-modal';
 import './index.scss';
 
-import { useStoreSettings, useSettings, useMultiCurrency } from 'wcpay/data';
+import {
+	useStoreSettings,
+	useSettings,
+	useMultiCurrency,
+} from 'multi-currency/data';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();

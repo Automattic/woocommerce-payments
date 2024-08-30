@@ -22,9 +22,9 @@ import {
 } from 'wcpay/data';
 
 // eslint-disable-next-line max-len
-import EnabledCurrenciesModalCheckboxList from '../../../multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox-list';
-import EnabledCurrenciesModalCheckbox from '../../../multi-currency/multi-currency-settings/enabled-currencies-list/modal-checkbox';
-import Search from 'components/search';
+import EnabledCurrenciesModalCheckboxList from 'multi-currency/settings/multi-currency/enabled-currencies-list/modal-checkbox-list';
+import EnabledCurrenciesModalCheckbox from 'multi-currency/settings/multi-currency/enabled-currencies-list/modal-checkbox';
+import Search from 'multi-currency/components/search';
 
 import { LoadableBlock } from '../../../components/loadable';
 

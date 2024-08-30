@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getMissingCurrenciesTooltipMessage } from '../missing-currencies-message';
+import { getMissingCurrenciesTooltipMessage } from 'multi-currency/utils/missing-currencies-message';
 
 describe( 'getMissingCurrenciesTooltipMessage', () => {
 	it( 'returns correct string with the given LPM label and currency list', () => {
