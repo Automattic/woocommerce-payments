@@ -198,6 +198,7 @@ const EmbeddedOnboarding: React.FC = () => {
 								}
 							} catch ( error ) {
 								// If an error response is received we should redirect to the overview page with an error flag:
+								// Note that this should never happen, since we always expect a response from the server.
 								window.location.href = getOverviewUrl(
 									{ onboardingError: true },
 									'WCPAY_ONBOARDING_WIZARD'
