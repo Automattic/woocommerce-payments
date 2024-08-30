@@ -7,18 +7,18 @@ import { render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from '../../../../additional-methods-setup/wizard/task/context';
-import {
-	useCurrencies,
-	useStoreSettings,
-	useSettings,
-	useMultiCurrency,
-} from 'multi-currency/data';
+import { useCurrencies, useStoreSettings } from 'multi-currency/data';
+import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
 import StoreSettingsTask from '..';
 
 jest.mock( 'multi-currency/data', () => ( {
 	useStoreSettings: jest.fn(),
 	useCurrencies: jest.fn(),
+	useSettings: jest.fn(),
+	useMultiCurrency: jest.fn(),
+} ) );
+jest.mock( 'multi-currency/interface/data', () => ( {
 	useSettings: jest.fn(),
 	useMultiCurrency: jest.fn(),
 } ) );

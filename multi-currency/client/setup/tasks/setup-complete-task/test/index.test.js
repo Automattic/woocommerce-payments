@@ -6,14 +6,18 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import WizardTaskContext from '../../../../additional-methods-setup/wizard/task/context';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
 import SetupCompleteTask from '../../setup-complete-task';
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
 } ) );
 
+// TODO: Remove this while we have a dependency on 'wcpay/multi-currency/preview-modal'.
 jest.mock( 'wcpay/data', () => ( {
+	useStoreSettings: jest.fn(),
+} ) );
+jest.mock( 'multi-currency/data', () => ( {
 	useDefaultCurrency: jest.fn().mockReturnValue( {
 		code: 'USD',
 		rate: 1,

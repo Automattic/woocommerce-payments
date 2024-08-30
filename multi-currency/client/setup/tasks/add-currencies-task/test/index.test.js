@@ -9,23 +9,29 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import AddCurrenciesTask from '..';
+import { useSettings } from 'multi-currency/interface/data';
+import { WizardTaskContext } from 'multi-currency/interface/functions';
 import {
 	useCurrencies,
 	useAvailableCurrencies,
 	useDefaultCurrency,
 	useEnabledCurrencies,
-	useSettings,
-} from 'wcpay/data';
+} from 'multi-currency/data';
 
-import WizardTaskContext from '../../../../additional-methods-setup/wizard/task/context';
 import { recommendedCurrencyCodes } from '../constants';
 import { __ } from '@wordpress/i18n';
 
+// TODO: Remove this while we have a dependency on 'wcpay/multi-currency/preview-modal'.
 jest.mock( 'wcpay/data', () => ( {
+	useStoreSettings: jest.fn(),
+} ) );
+jest.mock( 'multi-currency/data', () => ( {
 	useCurrencies: jest.fn(),
 	useAvailableCurrencies: jest.fn(),
 	useDefaultCurrency: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
+} ) );
+jest.mock( 'multi-currency/interface/data', () => ( {
 	useSettings: jest.fn(),
 } ) );
 

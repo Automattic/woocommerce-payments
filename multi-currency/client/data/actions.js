@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal Dependencies
  */
-import { recordEvent } from 'multi-currency/interface/data';
+import { recordEvent } from 'multi-currency/interface/functions';
 import TYPES from './action-types';
 import { NAMESPACE, STORE_NAME } from './constants';
 
