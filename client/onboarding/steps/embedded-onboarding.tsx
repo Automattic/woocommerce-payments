@@ -176,12 +176,12 @@ const EmbeddedOnboarding: React.FC = () => {
 									method: 'POST',
 									data: {
 										source: urlSource,
+										from: 'WCPAY_ONBOARDING_WIZARD',
 										clientSecret: clientSecret,
 									},
 								} );
 
 								if ( response.success ) {
-									// TODO: Add the correct source.
 									window.location.href = getOverviewUrl(
 										response.params,
 										'WCPAY_ONBOARDING_WIZARD'

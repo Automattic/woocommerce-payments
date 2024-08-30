@@ -114,7 +114,18 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'finalize_embedded_onboarding' ],
 				'permission_callback' => [ $this, 'check_permission' ],
-				// TODO GH-9251: add args.
+				'args'                => [
+					'source' => [
+						'required'    => false,
+						'description' => 'The very first entry point the merchant entered our onboarding flow.',
+						'type'        => 'string',
+					],
+					'from'   => [
+						'required'    => false,
+						'description' => 'The previous step in the onboarding flow leading the merchant to arrive at the current step.',
+						'type'        => 'string',
+					],
+				],
 			]
 		);
 
