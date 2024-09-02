@@ -34,7 +34,10 @@ import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InlineNotice from 'components/inline-notice';
-import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import {
+	formatCurrency,
+	formatExplicitCurrency,
+} from 'multi-currency/interface/functions';
 import { displayStatus } from '../strings';
 import './style.scss';
 

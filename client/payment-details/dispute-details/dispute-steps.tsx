@@ -16,7 +16,7 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
  */
 import type { Dispute } from 'wcpay/types/disputes';
 import { ChargeBillingDetails } from 'wcpay/types/charges';
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import DisputeDueByDate from './dispute-due-by-date';
