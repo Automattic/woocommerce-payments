@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: platform_global_theme_support_enabled undefined index
