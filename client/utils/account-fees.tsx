@@ -1,7 +1,7 @@
 /** @format */
 
 /**
- * External depencencies
+ * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
