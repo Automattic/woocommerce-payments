@@ -21,7 +21,7 @@ const ConnectionSuccessNotice: React.FC = () => {
 			},
 			status: accountStatus,
 		},
-		onboardingTestMode,
+		testModeOnboarding,
 	} = wcpaySettings;
 
 	const DismissMenu = () => {
@@ -41,7 +41,7 @@ const ConnectionSuccessNotice: React.FC = () => {
 		);
 	};
 	const isPoDisabledOrCompleted = ! isPoEnabled || isPoComplete;
-	return ! isDismissed && ! onboardingTestMode && isPoDisabledOrCompleted ? (
+	return ! isDismissed && ! testModeOnboarding && isPoDisabledOrCompleted ? (
 		<Card className="wcpay-connection-success">
 			<DismissMenu />
 			<img src={ ConfettiImage } alt="confetti" />

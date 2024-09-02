@@ -1,5 +1,9 @@
 *** WooPayments Changelog ***
 
+= 8.1.1 - 2024-08-29 =
+* Fix - Ensure 55px is the maximum height for Apple Pay button.
+* Fix - Fixed sandbox mode accounts being able to disable test mode for the payment gateway settings.
+
 = 8.1.0 - 2024-08-21 =
 * Add - Add button rules to appearance
 * Add - Add heading rules to appearance

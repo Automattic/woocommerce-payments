@@ -193,13 +193,13 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	public function test_set_test_mode() {
 		$this->onboarding_service->set_test_mode( true );
 
-		$this->assertTrue( get_option( 'wcpay_onboarding_test_mode' ) );
+		$this->assertEquals( 'yes', get_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' ) );
 
 		$this->onboarding_service->set_test_mode( false );
 
-		$this->assertFalse( get_option( 'wcpay_onboarding_test_mode' ) );
+		$this->assertEquals( 'no', get_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' ) );
 
-		delete_option( 'wcpay_onboarding_test_mode' );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 	}
 
 	/**

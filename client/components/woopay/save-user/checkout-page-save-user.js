@@ -86,7 +86,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		rememberMe.removeAttribute( 'disabled', 'disabled' );
 	}, [ checkoutIsProcessing, isBlocksCheckout ] );
 
-	const getPhoneFieldValue = () => {
+	const getPhoneFieldValue = useCallback( () => {
 		let phoneFieldValue = '';
 		if ( isBlocksCheckout ) {
 			phoneFieldValue =
@@ -109,7 +109,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		}
 
 		return phoneFieldValue;
-	};
+	}, [ isBlocksCheckout ] );
 
 	const sendExtensionData = useCallback(
 		( shouldClearData = false ) => {
@@ -172,7 +172,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		} );
 	}, [] );
 
-	const updatePhoneNumberValidationError = useCallback( () => {
+	useEffect( () => {
 		if ( ! isSaveDetailsChecked ) {
 			clearValidationError( errorId );
 			if ( isPhoneValid !== null ) {
@@ -218,6 +218,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		? isWCPayChosen
 		: isWCPayChosen && isNewPaymentTokenChosen;
 
+	useEffect( () => {
+		setPhoneNumber( getPhoneFieldValue() );
+	}, [ getPhoneFieldValue, isWCPayWithNewTokenChosen ] );
+
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
 		! isWCPayWithNewTokenChosen ||
@@ -231,8 +235,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		clearValidationError( errorId );
 		return null;
 	}
-
-	updatePhoneNumberValidationError();
 
 	return (
 		<Container
@@ -277,7 +279,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 									<path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
 								</svg>
 							) }
-							<span>
+							<span className="wc-block-components-checkbox__label">
 								{ __(
 									'Securely save my information for 1-click checkout',
 									'woocommerce-payments'
