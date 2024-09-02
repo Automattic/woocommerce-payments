@@ -6,7 +6,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import SettingsLayout from 'multi-currency/components/settings-layout';
+import { SettingsLayout } from 'multi-currency/interface/components';
 import EnabledCurrenciesList from './enabled-currencies-list';
 import StoreSettings from './store-settings';
 import './style.scss';
@@ -14,7 +14,7 @@ import './style.scss';
 const MultiCurrencySettings = () => {
 	return (
 		<div className="multi-currency-settings">
-			<SettingsLayout>
+			<SettingsLayout displayBanner={ false }>
 				<EnabledCurrenciesList />
 				<StoreSettings />
 			</SettingsLayout>

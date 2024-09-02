@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import SettingsLayout from 'multi-currency/components/settings-layout';
+import { SettingsLayout } from 'multi-currency/interface/components';
 import EnabledCurrenciesList from '../enabled-currencies-list';
 import StoreSettings from '../store-settings';
 
@@ -16,7 +16,7 @@ jest.mock( '../store-settings', () => jest.fn() );
 
 const getContainer = () => {
 	return render(
-		<SettingsLayout>
+		<SettingsLayout displayBanner={ false }>
 			<EnabledCurrenciesList />
 			<StoreSettings />
 		</SettingsLayout>

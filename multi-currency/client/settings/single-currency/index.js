@@ -27,9 +27,11 @@ import {
 	useStoreSettings,
 } from 'multi-currency/data';
 import MultiCurrencySettingsContext from 'multi-currency/context';
-import { LoadableBlock } from 'multi-currency/components/loadable';
-import SettingsLayout from 'multi-currency/components/settings-layout';
-import SettingsSection from 'multi-currency/components/settings-section';
+import {
+	LoadableBlock,
+	SettingsLayout,
+	SettingsSection,
+} from 'multi-currency/interface/components';
 
 const SingleCurrencySettings = () => {
 	const {
@@ -166,7 +168,7 @@ const SingleCurrencySettings = () => {
 
 	return (
 		<div className={ 'single-currency-settings' }>
-			<SettingsLayout>
+			<SettingsLayout displayBanner={ false }>
 				<h2 className={ 'single-currency-settings-breadcrumb' }>
 					<Button
 						isLink

@@ -12,8 +12,10 @@ import { createInterpolateElement } from '@wordpress/element';
 import './style.scss';
 
 import { useStoreSettings } from 'multi-currency/data';
-import SettingsSection from 'multi-currency/components/settings-section';
-import { LoadableBlock } from 'multi-currency/components/loadable';
+import {
+	LoadableBlock,
+	SettingsSection,
+} from 'multi-currency/interface/components';
 import PreviewModal from 'multi-currency/components/preview-modal';
 
 const StoreSettingsDescription = () => {
