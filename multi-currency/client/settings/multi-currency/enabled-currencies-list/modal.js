@@ -16,7 +16,7 @@ import {
 } from 'multi-currency/interface/data';
 import EnabledCurrenciesModalCheckboxList from './modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from './modal-checkbox';
-import ConfirmationModal from 'multi-currency/components/confirmation-modal';
+import { ConfirmationModal } from 'multi-currency/interface/components';
 import Search from 'multi-currency/components/search';
 import './style.scss';
 

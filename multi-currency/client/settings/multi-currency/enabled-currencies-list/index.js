@@ -21,7 +21,7 @@ import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
-import SettingsSection from 'multi-currency/components/settings-section';
+import { SettingsSection } from 'multi-currency/interface/components';
 
 const EnabledCurrenciesSettingsDescription = () => {
 	const LEARN_MORE_URL =

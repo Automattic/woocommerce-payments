@@ -6,9 +6,11 @@ import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
-import ConfirmationModal from 'multi-currency/components/confirmation-modal';
+import {
+	ConfirmationModal,
+	PaymentMethodIcon,
+} from 'multi-currency/interface/components';
 import CurrencyDeleteIllustration from 'multi-currency/components/currency-delete-illustration';
-import PaymentMethodIcon from 'multi-currency/components/payment-method-icon';
 import { paymentMethodsMap } from 'multi-currency/interface/assets';
 
 const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
