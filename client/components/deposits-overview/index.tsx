@@ -16,7 +16,7 @@ import { getHistory } from '@woocommerce/navigation';
  * Internal dependencies.
  */
 import { getAdminUrl } from 'wcpay/utils';
-import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
 import Loadable from 'components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';

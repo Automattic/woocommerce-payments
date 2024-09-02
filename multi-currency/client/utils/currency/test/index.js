@@ -6,7 +6,7 @@
 /**
  * Internal dependencies
  */
-import * as utils from 'utils/currency';
+import * as utils from 'multi-currency/utils/currency';
 
 describe( 'Currency utilities', () => {
 	beforeEach( () => {

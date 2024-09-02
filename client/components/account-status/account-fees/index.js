@@ -10,7 +10,10 @@ import { __ } from '@wordpress/i18n';
  */
 import ExpirationBar from './expiration-bar';
 import ExpirationDescription from './expiration-description';
-import { formatCurrencyName, getCurrency } from 'utils/currency';
+import {
+	formatCurrencyName,
+	getCurrency,
+} from 'multi-currency/interface/functions';
 import {
 	formatAccountFeesDescription,
 	getCurrentBaseFee,
