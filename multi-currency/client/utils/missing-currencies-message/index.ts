@@ -6,7 +6,7 @@ import { sprintf, _n } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { formatListOfItems } from './format-list-of-items';
+import { formatListOfItems } from 'multi-currency/interface/functions';
 
 export const getMissingCurrenciesTooltipMessage = (
 	paymentMethodLabel: string,
