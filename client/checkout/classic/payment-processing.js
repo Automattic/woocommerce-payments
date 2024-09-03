@@ -214,13 +214,20 @@ async function createStripePaymentElement(
 ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
+	const appearance = await initializeAppearance( api, elementsLocation );
+	document
+		.querySelector(
+			`.wcpay-upe-element[data-payment-method-type="${ paymentMethodType }"]`
+		)
+		?.closest( '.wc_payment_method' )
+		?.classList.add( `theme--${ appearance.theme || 'stripe' }` );
 	const options = {
 		mode: amount < 1 ? 'setup' : 'payment',
 		currency: getUPEConfig( 'currency' ).toLowerCase(),
 		amount: amount,
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
-		appearance: await initializeAppearance( api, elementsLocation ),
+		appearance,
 		fonts: getFontRulesFromPage(),
 	};
 

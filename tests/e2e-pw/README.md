@@ -9,6 +9,9 @@ See [tests/e2e/README.md](/tests/e2e/README.md) for detailed e2e environment set
 1. `npm run test:e2e-setup`
 1. `npm run test:e2e-up`
 
+> [!TIP]
+> In case some tests fail due to the lack of `data-test-id` attributes, you'll need to run `npm start` or `NODE_ENV=test npm run build:client` to re-build the assets.
+
 ## Running Playwright e2e tests
 
 -   `npm run test:e2e-pw` headless run from within a linux docker container.

@@ -26,7 +26,7 @@ interface Props {
 	currentPage: CurrentPage;
 	actions?: React.ComponentProps< typeof BannerNotice >[ 'actions' ];
 	isDetailsView?: boolean;
-	isOnboardingTestMode?: boolean;
+	isTestModeOnboarding?: boolean;
 }
 
 const nounToUse = {
@@ -50,11 +50,11 @@ const verbToUse = {
 const getNoticeContent = (
 	currentPage: CurrentPage,
 	isDetailsView: boolean,
-	isOnboardingTestMode: boolean
+	isTestModeOnboarding: boolean
 ): JSX.Element => {
 	switch ( currentPage ) {
 		case 'overview':
-			return isOnboardingTestMode ? (
+			return isTestModeOnboarding ? (
 				<>
 					{ interpolateComponents( {
 						mixedString: sprintf(
@@ -163,7 +163,7 @@ export const TestModeNotice: React.FC< Props > = ( {
 	currentPage,
 	actions,
 	isDetailsView = false,
-	isOnboardingTestMode = false,
+	isTestModeOnboarding = false,
 } ) => {
 	if ( ! isInTestMode() ) return null;
 
@@ -176,7 +176,7 @@ export const TestModeNotice: React.FC< Props > = ( {
 			{ getNoticeContent(
 				currentPage,
 				isDetailsView,
-				isOnboardingTestMode
+				isTestModeOnboarding
 			) }
 		</BannerNotice>
 	);

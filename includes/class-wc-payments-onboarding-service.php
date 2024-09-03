@@ -236,25 +236,31 @@ class WC_Payments_Onboarding_Service {
 
 	/**
 	 * Set onboarding test mode.
-	 * Will also switch WC_Payments mode immediately.
+	 *
+	 * Will also switch the WC_Payments onboarding mode immediately.
 	 *
 	 * @param boolean $test_mode Whether to enable test mode.
 	 * @return void
 	 */
 	public static function set_test_mode( bool $test_mode ): void {
-		update_option( self::TEST_MODE_OPTION, $test_mode );
+		update_option( self::TEST_MODE_OPTION, $test_mode ? 'yes' : 'no', true );
 
 		// Switch WC_Payments onboarding mode immediately.
-		\WC_Payments::mode()->set_test_mode_onboarding( $test_mode );
+		if ( $test_mode ) {
+			\WC_Payments::mode()->test_mode_onboarding();
+		} else {
+			\WC_Payments::mode()->live_mode_onboarding();
+		}
 	}
 
 	/**
-	 * Returns whether onboarding test mode is enabled.
+	 * Determine if test mode onboarding is enabled.
 	 *
-	 * @return bool
+	 * @return bool Whether test mode onboarding is enabled or not.
 	 */
 	public static function is_test_mode_enabled(): bool {
-		return get_option( self::TEST_MODE_OPTION, false );
+		// We support the `1` option value also for backward compatibility with version 8.1.0.
+		return in_array( get_option( self::TEST_MODE_OPTION, 'no' ), [ 'yes', '1' ], true );
 	}
 
 	/**

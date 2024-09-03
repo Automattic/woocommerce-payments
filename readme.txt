@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.3
-Stable tag: 8.1.0
+Stable tag: 8.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -94,6 +94,11 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.1.1 - 2024-08-29 =
+* Fix - Ensure 55px is the maximum height for Apple Pay button.
+* Fix - Fixed sandbox mode accounts being able to disable test mode for the payment gateway settings.
+
+
 = 8.1.0 - 2024-08-21 =
 * Add - Add button rules to appearance
 * Add - Add heading rules to appearance
@@ -114,7 +119,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix uncaught error on the block based Cart page when WooPayments is disabled.
 * Fix - Fix WooPay checkboxes while signed in.
 * Fix - If a payment method fails to be created in the frontend during checkout, forward the errors to the server so it can be recorded in an order.
-* Fix - Migrate to Docker Compose V2 for test runner environment setup scripts
 * Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
 * Fix - Translate hardcoded strings on the Connect page
 * Update - refactor: separate BNPL methods from settings list
@@ -126,6 +130,7 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Match the Node version in nvm with the minimum version in package.json.
 * Dev - Remove unnecessary console.warn statements added in #9121.
 * Dev - Update bundle size checker workflow to support node v20
+* Dev - Migrate to Docker Compose V2 for test runner environment setup scripts
 
 = 8.0.2 - 2024-08-07 =
 * Fix - Add opt-in checks to prevent blocking customers using other payment methods.

@@ -123,6 +123,27 @@ export const appearanceSelectors = {
 		buttonSelectors: [ '.wc-block-cart__submit-button' ],
 		linkSelectors: [ 'a' ],
 	},
+	wooPayClassicCheckout: {
+		appendTarget: '.woocommerce-billing-fields__field-wrapper',
+		upeThemeInputSelector: '#billing_first_name',
+		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
+		rowElement: 'p',
+		validClasses: [ 'form-row' ],
+		invalidClasses: [
+			'form-row',
+			'woocommerce-invalid',
+			'woocommerce-invalid-required-field',
+		],
+		backgroundSelectors: [
+			'#customer_details',
+			'#order_review',
+			'form.checkout',
+			'body',
+		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '#place_order' ],
+		linkSelectors: [ 'a' ],
+	},
 
 	/**
 	 * Update selectors to use alternate if not present on DOM.
@@ -174,6 +195,9 @@ export const appearanceSelectors = {
 				break;
 			case 'bnpl_cart_block':
 				appearanceSelector = this.bnplCartBlock;
+				break;
+			case 'woopay_shortcode_checkout':
+				appearanceSelector = this.wooPayClassicCheckout;
 				break;
 		}
 
