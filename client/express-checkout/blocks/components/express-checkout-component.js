@@ -40,7 +40,10 @@ const adjustButtonHeights = ( buttonOptions, expressPaymentMethod ) => {
 	// Apple Pay has a nearly imperceptible height difference. We increase it by 1px here.
 	if ( buttonOptions.buttonTheme.applePay === 'black' ) {
 		if ( expressPaymentMethod === 'applePay' ) {
-			buttonOptions.buttonHeight = buttonOptions.buttonHeight + 0.4;
+			buttonOptions.buttonHeight = Math.min(
+				buttonOptions.buttonHeight + 0.4,
+				55
+			);
 		}
 	}
 
