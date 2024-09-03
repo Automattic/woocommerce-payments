@@ -8,9 +8,13 @@ export { default as WizardTask } from 'wcpay/additional-methods-setup/wizard/tas
 export { default as WizardTaskItem } from 'wcpay/additional-methods-setup/wizard/task-item';
 export { default as WizardTaskList } from 'wcpay/additional-methods-setup/wizard/task-list';
 // wcpay/components/*
+export { default as ConfirmationModal } from 'wcpay/components/confirmation-modal';
 export { default as Page } from 'wcpay/components/page';
-export { default as Search } from 'wcpay/components/search';
 export { LoadableBlock } from 'wcpay/components/loadable';
+// wcpay/settings/*
+export { default as PaymentMethodIcon } from 'wcpay/settings/payment-method-icon';
+export { default as SettingsLayout } from 'wcpay/settings/settings-layout';
+export { default as SettingsSection } from 'wcpay/settings/settings-section';
 
 /**
  * Dependencies from MCCY to WooPayments.
