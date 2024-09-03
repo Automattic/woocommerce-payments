@@ -26,9 +26,7 @@ import {
 } from 'multi-currency/data';
 
 // eslint-disable-next-line max-len
-// TODO: Migrate to 'multi-currency/settings/enabled-currencies-list/modal-checkbox-list'.
 import EnabledCurrenciesModalCheckboxList from 'multi-currency/settings/multi-currency/enabled-currencies-list/modal-checkbox-list';
-// TODO: Migrate to 'multi-currency/settings/enabled-currencies-list/modal-checkbox'.
 import EnabledCurrenciesModalCheckbox from 'multi-currency/settings/multi-currency/enabled-currencies-list/modal-checkbox';
 
 import { recommendedCurrencyCodes, numberWords } from './constants';

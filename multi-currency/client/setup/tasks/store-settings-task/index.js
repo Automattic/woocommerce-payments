@@ -15,7 +15,6 @@ import {
 } from 'multi-currency/interface/components';
 import { WizardTaskContext } from 'multi-currency/interface/functions';
 import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
-// TODO: Migrate to 'multi-currency/preview-modal'.
 import PreviewModal from 'multi-currency/components/preview-modal';
 import './index.scss';
 
