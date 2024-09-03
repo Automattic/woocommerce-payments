@@ -17,7 +17,7 @@ jobs:
       matrix:
         woocommerce: [ 'latest' ]
         wordpress:   [ 'latest' ]
-        php:         [ '7.4' ]
+        php:         [ '7.4', '8.1' ]
         directory:   [ 'includes', 'src' ]
     env:
       WP_VERSION:   ${{ matrix.wordpress }}
