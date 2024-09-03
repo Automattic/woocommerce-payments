@@ -170,7 +170,7 @@ export const displayLoginConfirmation = (
 };
 
 type ButtonAttributesType =
-	| { height: string; borderRadius: string; darkMode: boolean }
+	| { height: string; borderRadius: string }
 	| undefined;
 
 /**

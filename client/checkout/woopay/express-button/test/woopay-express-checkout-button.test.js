@@ -139,7 +139,6 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				buttonAttributes={ {
 					height: '55',
 					borderRadius: '20',
-					darkMode: true,
 				} }
 			/>
 		);
@@ -148,7 +147,6 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		expect( button.getAttribute( 'style' ) ).toBe(
 			'height: 55px; border-radius: 20px;'
 		);
-		expect( button.getAttribute( 'data-theme' ) ).toBe( 'light' );
 	} );
 
 	test( 'does not prefetch session data by default', async () => {

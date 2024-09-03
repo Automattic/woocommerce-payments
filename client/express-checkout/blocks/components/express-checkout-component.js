@@ -122,7 +122,6 @@ const ExpressCheckoutComponent = ( {
 		const override = {};
 		if ( typeof buttonAttributes !== 'undefined' ) {
 			override.buttonHeight = Number( buttonAttributes.height );
-			override.theme = buttonAttributes?.darkMode ? 'light' : 'dark';
 		}
 		return {
 			...buttonOptions,

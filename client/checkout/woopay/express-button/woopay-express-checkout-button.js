@@ -65,7 +65,6 @@ export const WoopayExpressCheckoutButton = ( {
 	if ( typeof buttonAttributes !== 'undefined' ) {
 		buttonHeight = buttonAttributes.height || buttonHeight;
 		borderRadius = buttonAttributes.borderRadius || borderRadius;
-		theme = buttonAttributes?.darkMode ? 'light' : 'dark';
 	}
 
 	const buttonText =
