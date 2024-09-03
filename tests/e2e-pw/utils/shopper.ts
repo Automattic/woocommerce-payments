@@ -37,8 +37,17 @@ export const fillBillingAddress = async (
 	await page.locator( '#billing_email' ).fill( billingAddress.email );
 };
 
+// This is currently the source of some flaky tests since sometimes the form is not submitted
+// after the first click, so we retry until the ui is blocked.
 export const placeOrder = async ( page: Page ) => {
-	await page.locator( '#place_order' ).click();
+	let orderPlaced = false;
+	while ( ! orderPlaced ) {
+		await page.locator( '#place_order' ).click();
+
+		if ( await page.$( '.blockUI' ) ) {
+			orderPlaced = true;
+		}
+	}
 };
 
 export const addCartProduct = async (
