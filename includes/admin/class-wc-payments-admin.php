@@ -331,7 +331,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( ! $this->account->is_stripe_connected() ) {
+		if ( ! $this->account->is_stripe_account_valid() ) {
 			wc_admin_register_page(
 				[
 					'id'         => 'wc-payments-onboarding',
@@ -858,6 +858,7 @@ class WC_Payments_Admin {
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'                 => WC_Payments_Account::is_on_boarding_disabled(),
 			'onboardingFieldsData'               => $this->onboarding_service->get_fields_data( get_user_locale() ),
+			'onboardingFlowState'                => $this->onboarding_service->get_onboarding_flow_state(),
 			'errorMessage'                       => $error_message,
 			'featureFlags'                       => $this->get_frontend_feature_flags(),
 			'isSubscriptionsActive'              => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),

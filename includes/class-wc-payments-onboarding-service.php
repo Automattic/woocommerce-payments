@@ -22,6 +22,7 @@ class WC_Payments_Onboarding_Service {
 
 	const TEST_MODE_OPTION                    = 'wcpay_onboarding_test_mode';
 	const ONBOARDING_ELIGIBILITY_MODAL_OPTION = 'wcpay_onboarding_eligibility_modal_dismissed';
+	const ONBOARDING_FLOW_STATE_OPTION        = 'wcpay_onboarding_flow_state';
 
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
@@ -239,6 +240,9 @@ class WC_Payments_Onboarding_Service {
 			throw new API_Exception( __( 'Failed to finalize onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
 		}
 
+		self::clear_onboarding_flow_state();
+		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
+
 		return [
 			'success'           => $success,
 			'details_submitted' => $details_submitted,
@@ -422,6 +426,34 @@ class WC_Payments_Onboarding_Service {
 			'referer'           => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
 			'onboarding_source' => self::get_source(),
 		];
+	}
+
+	/**
+	 * Get the onboarding flow state.
+	 *
+	 * @return ?array The onboarding flow state, or null if not set.
+	 */
+	public function get_onboarding_flow_state(): ?array {
+		return get_option( self::ONBOARDING_FLOW_STATE_OPTION, null );
+	}
+
+	/**
+	 * Set the onboarding flow state.
+	 *
+	 * @param array $value The onboarding flow state.
+	 * @return bool Whether the option was updated successfully.
+	 */
+	public function set_onboarding_flow_state( array $value ): bool {
+		return update_option( self::ONBOARDING_FLOW_STATE_OPTION, $value );
+	}
+
+	/**
+	 * Clear the onboarding flow state.
+	 *
+	 * @return boolean Whether the option was deleted successfully.
+	 */
+	public static function clear_onboarding_flow_state(): bool {
+		return delete_option( self::ONBOARDING_FLOW_STATE_OPTION );
 	}
 
 	/**
