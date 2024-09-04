@@ -898,6 +898,45 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Get the name for the Core Payments task onboarding flow experiment.
+	 *
+	 * @return string
+	 */
+	public static function get_core_payments_task_onboarding_flow_abtest_name(): string {
+		return 'woopayments_core_payments_task_onboarding_flow_2024_v1';
+	}
+
+	/**
+	 * Get the shortname for the Core Payments task onboarding flow experiment.
+	 *
+	 * This will be used in our Tracks tracking, for brevity.
+	 *
+	 * @return string
+	 */
+	public static function get_core_payments_task_onboarding_flow_abtest_shortname(): string {
+		return 'cptof_2024_v1';
+	}
+
+	/**
+	 * Check to see if the current user is in Core Payments task onboarding flow experiment treatment mode.
+	 *
+	 * @return bool
+	 */
+	public static function is_in_core_payments_task_onboarding_flow_treatment_mode(): bool {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking', 'no' )
+		);
+
+		return 'treatment' === $abtest->get_variation( self::get_core_payments_task_onboarding_flow_abtest_name() );
+	}
+
+	/**
 	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
 	 * @return boolean
