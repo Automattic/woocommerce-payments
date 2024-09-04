@@ -903,8 +903,9 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Redirects connect page (payments/connect) to the overview page for stores that
-	 * have a working Jetpack connection and a valid Stripe account.
+	 * Maybe redirects the connect page (payments/connect)
+	 *
+	 * We redirect to the overview page for stores that have a working Jetpack connection and a valid Stripe account.
 	 *
 	 * Note: Connect _page_ links are not the same as connect links.
 	 *       Connect links are used to start/re-start/continue the onboarding flow and they are independent of
@@ -935,6 +936,30 @@ class WC_Payments_Account {
 		// If everything is in good working condition, redirect to Payments Overview page.
 		if ( $this->has_working_jetpack_connection() && $this->is_stripe_account_valid() ) {
 			$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE );
+			return true;
+		}
+
+		// Determine from where the merchant was directed to the Connect page.
+		$from = WC_Payments_Onboarding_Service::get_from();
+
+		// If the user came from the core Payments task list item,
+		// we run an experiment to skip the Connect page
+		// and go directly to the Jetpack connection flow and/or onboarding wizard.
+		if ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK === $from
+			&& WC_Payments_Utils::is_in_core_payments_task_onboarding_flow_treatment_mode() ) {
+
+			// We use a connect link to allow our logic to determine what comes next:
+			// the Jetpack connection setup and/or onboarding wizard (MOX).
+			$this->redirect_service->redirect_to_wcpay_connect(
+				// The next step should treat the merchant as coming from the Payments task list item,
+				// not the Connect page.
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+				[
+					'source' => WC_Payments_Onboarding_Service::get_source(),
+					'abt'    => WC_Payments_Utils::get_core_payments_task_onboarding_flow_abtest_shortname(),
+					'abt_v'  => 'treatment',
+				]
+			);
 			return true;
 		}
 
