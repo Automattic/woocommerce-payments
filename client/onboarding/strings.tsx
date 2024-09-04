@@ -159,4 +159,5 @@ export default {
 	},
 	continue: __( 'Continue', 'woocommerce-payments' ),
 	back: __( 'Back', 'woocommerce-payments' ),
+	cancel: __( 'Cancel', 'woocommerce-payments' ),
 };
