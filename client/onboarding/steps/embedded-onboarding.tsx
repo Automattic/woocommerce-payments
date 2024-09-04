@@ -29,11 +29,11 @@ import {
 	PoEligibleResult,
 } from 'wcpay/onboarding/types';
 import { fromDotNotation } from 'wcpay/onboarding/utils';
-import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
+import { getOverviewUrl } from 'wcpay/utils';
 
 type AccountSessionData = AccountSession;
 
-interface FinalizeRepsonse {
+interface FinalizeResponse {
 	success: boolean;
 	params: Record< string, string >;
 }
@@ -170,7 +170,7 @@ const EmbeddedOnboarding: React.FC = () => {
 									?.replace( /[^\w-]+/g, '' ) || 'unknown';
 							try {
 								const response = await apiFetch<
-									FinalizeRepsonse
+									FinalizeResponse
 								>( {
 									path: `${ NAMESPACE }/onboarding/finalize`,
 									method: 'POST',
