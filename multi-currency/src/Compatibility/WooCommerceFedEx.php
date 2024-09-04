@@ -20,7 +20,7 @@ class WooCommerceFedEx extends BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	protected function init() {
+	public function init() {
 		// Add needed actions and filters if FedEx is active.
 		if ( class_exists( 'WC_Shipping_Fedex_Init' ) ) {
 			add_filter( MultiCurrency::FILTER_PREFIX . 'should_return_store_currency', [ $this, 'should_return_store_currency' ] );

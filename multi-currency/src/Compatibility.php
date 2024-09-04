@@ -39,7 +39,7 @@ class Compatibility extends BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	protected function init() {
+	public function init() {
 		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
 
 		if ( defined( 'DOING_CRON' ) ) {

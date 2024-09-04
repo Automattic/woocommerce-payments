@@ -39,7 +39,7 @@ class WooCommerceBookings extends BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	protected function init() {
+	public function init() {
 		// Add needed actions and filters if Bookings is active.
 		if ( class_exists( 'WC_Bookings' ) ) {
 			if ( ! is_admin() || wp_doing_ajax() ) {

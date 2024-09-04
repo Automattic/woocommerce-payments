@@ -20,7 +20,7 @@ class WooCommerceDeposits extends BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	protected function init() {
+	public function init() {
 		if ( class_exists( 'WC_Deposits' ) ) {
 			/*
 			 * Multi-currency support was added to WooCommerce Deposits in version 2.0.1.
