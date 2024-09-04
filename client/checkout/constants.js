@@ -1,23 +1,21 @@
-export const PAYMENT_METHOD_NAME_CARD = 'woocommerce_payments';
-export const PAYMENT_METHOD_NAME_BANCONTACT = 'woocommerce_payments_bancontact';
-export const PAYMENT_METHOD_NAME_BECS = 'woocommerce_payments_au_becs_debit';
-export const PAYMENT_METHOD_NAME_EPS = 'woocommerce_payments_eps';
-export const PAYMENT_METHOD_NAME_GIROPAY = 'woocommerce_payments_giropay';
-export const PAYMENT_METHOD_NAME_IDEAL = 'woocommerce_payments_ideal';
-export const PAYMENT_METHOD_NAME_P24 = 'woocommerce_payments_p24';
-export const PAYMENT_METHOD_NAME_SEPA = 'woocommerce_payments_sepa_debit';
-export const PAYMENT_METHOD_NAME_SOFORT = 'woocommerce_payments_sofort';
-export const PAYMENT_METHOD_NAME_AFFIRM = 'woocommerce_payments_affirm';
-export const PAYMENT_METHOD_NAME_AFTERPAY =
-	'woocommerce_payments_afterpay_clearpay';
-export const PAYMENT_METHOD_NAME_KLARNA = 'woocommerce_payments_klarna';
+export const PAYMENT_METHOD_NAME_CARD = 'woo_payments';
+export const PAYMENT_METHOD_NAME_BANCONTACT = 'woo_payments_bancontact';
+export const PAYMENT_METHOD_NAME_BECS = 'woo_payments_au_becs_debit';
+export const PAYMENT_METHOD_NAME_EPS = 'woo_payments_eps';
+export const PAYMENT_METHOD_NAME_GIROPAY = 'woo_payments_giropay';
+export const PAYMENT_METHOD_NAME_IDEAL = 'woo_payments_ideal';
+export const PAYMENT_METHOD_NAME_P24 = 'woo_payments_p24';
+export const PAYMENT_METHOD_NAME_SEPA = 'woo_payments_sepa_debit';
+export const PAYMENT_METHOD_NAME_SOFORT = 'woo_payments_sofort';
+export const PAYMENT_METHOD_NAME_AFFIRM = 'woo_payments_affirm';
+export const PAYMENT_METHOD_NAME_AFTERPAY = 'woo_payments_afterpay_clearpay';
+export const PAYMENT_METHOD_NAME_KLARNA = 'woo_payments_klarna';
 export const PAYMENT_METHOD_NAME_PAYMENT_REQUEST =
-	'woocommerce_payments_payment_request';
-export const PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT =
-	'woocommerce_payments_express_checkout';
+	'woo_payments_payment_request';
+export const PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT = 'woo_payments';
 export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =
-	'woocommerce_payments_woopay_express_checkout';
-export const PAYMENT_METHOD_ERROR = 'woocommerce_payments_payment_method_error';
+	'woo_payments_woopay';
+export const PAYMENT_METHOD_ERROR = 'woo_payments_payment_method_error';
 export const WC_STORE_CART = 'wc/store/cart';
 
 export function getPaymentMethodsConstants() {

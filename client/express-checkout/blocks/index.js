@@ -10,6 +10,10 @@ import GooglePayPreview from './components/google-pay-preview';
 const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
+	title: 'WooPayments - ApplePay',
+	description:
+		'You need to be on a Safari browser, logged in with your Apple ID to preview the ApplePay button.',
+	gatewayId: 'woocommerce_payments',
 	content: (
 		<ExpressCheckoutContainer api={ api } expressPaymentMethod="applePay" />
 	),
@@ -29,6 +33,10 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 const expressCheckoutElementGooglePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
+	title: 'WooPayments - GooglePay',
+	description:
+		'You need to be logged in with your Google Account and have an active payment method to preview the GooglePay button.',
+	gatewayId: 'woocommerce_payments',
 	content: (
 		<ExpressCheckoutContainer
 			api={ api }
