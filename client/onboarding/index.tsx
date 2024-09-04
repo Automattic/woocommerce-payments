@@ -30,6 +30,8 @@ const OnboardingStepper = () => {
 				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
 				'unknown',
 			from: 'WCPAY_ONBOARDING_WIZARD',
+			abt: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || false,
+			abt_v: urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || false,
 		} );
 	};
 
@@ -78,10 +80,7 @@ const initialData = {
 
 const OnboardingPage: React.FC = () => {
 	useEffect( () => {
-		const urlParams = new URLSearchParams( window.location.search );
-		const source =
-			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
-		trackStarted( source );
+		trackStarted();
 
 		// Remove loading class and add those required for full screen.
 		document.body.classList.remove( 'woocommerce-admin-is-loading' );

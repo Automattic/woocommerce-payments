@@ -23,11 +23,18 @@ const stepElapsed = () => {
 	return result;
 };
 
-export const trackStarted = ( source: string ): void => {
+export const trackStarted = (): void => {
+	// Initialize the elapsed time tracking
 	startTime = stepStartTime = Date.now();
 
+	const urlParams = new URLSearchParams( window.location.search );
+
 	recordEvent( 'wcpay_onboarding_flow_started', {
-		source,
+		source:
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
+		abtest: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || '',
+		abtest_variation:
+			urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || '',
 	} );
 };
 
@@ -42,14 +49,17 @@ export const trackStepCompleted = ( step: string ): void => {
 	trackedSteps.add( step );
 };
 
-export const trackRedirected = (
-	isEligible: boolean,
-	source: string
-): void => {
+export const trackRedirected = ( isPoEligible: boolean ): void => {
+	const urlParams = new URLSearchParams( window.location.search );
+
 	recordEvent( 'wcpay_onboarding_flow_redirected', {
-		is_po_eligible: isEligible,
+		is_po_eligible: isPoEligible,
 		elapsed: elapsed( startTime ),
-		source,
+		source:
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
+		abtest: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || '',
+		abtest_variation:
+			urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || '',
 	} );
 };
 
