@@ -17,7 +17,7 @@ jobs:
       matrix:
         woocommerce: [ 'latest' ]
         wordpress:   [ 'latest' ]
-        php:         [ '7.4' ]
+        php:         [ '7.4', '8.1' ]
         directory:   [ 'includes', 'src' ]
     env:
       WP_VERSION:   ${{ matrix.wordpress }}
@@ -36,6 +36,6 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    xdebug2
+          coverage:    xdebug
       # run CI checks
       - run: bash bin/run-ci-tests-check-coverage.bash

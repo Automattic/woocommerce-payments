@@ -14,14 +14,3 @@
 	margin: 24px 0 !important;
 	height: 20px;
 }
-
-// Checkout Block
-.wc-block-components-express-payment--checkout {
-	.wc-block-components-express-payment__event-buttons {
-		grid-gap: 12px !important;
-		grid-template-columns: repeat(
-			auto-fit,
-			minmax( 232px, 1fr )
-		) !important;
-	}
-}
