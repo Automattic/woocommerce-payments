@@ -13,6 +13,8 @@ const WCPaySettingsContext = createContext( {
 		woopay: false,
 		isStripeEceEnabled: false,
 	},
+	hasChanges: false,
+	setHasChanges: () => null,
 } );
 
 export default WCPaySettingsContext;

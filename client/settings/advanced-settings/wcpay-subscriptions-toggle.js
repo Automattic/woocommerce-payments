@@ -3,13 +3,14 @@
  */
 import { CheckboxControl, ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect, useRef, useContext } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useWCPaySubscriptions } from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const WCPaySubscriptionsToggle = () => {
 	const [
@@ -20,6 +21,8 @@ const WCPaySubscriptionsToggle = () => {
 
 	const headingRef = useRef( null );
 
+	const { setHasChanges } = useContext( WCPaySettingsContext );
+
 	useEffect( () => {
 		if ( ! headingRef.current ) return;
 
@@ -28,6 +31,7 @@ const WCPaySubscriptionsToggle = () => {
 
 	const handleWCPaySubscriptionsStatusChange = ( value ) => {
 		updateIsWCPaySubscriptionsEnabled( value );
+		setHasChanges( true );
 	};
 
 	/**

@@ -8,9 +8,11 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useAccountBusinessSupportEmail, useGetSavingError } from 'wcpay/data';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useContext } from 'react';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const SupportEmailInput = ( { setInputVallid } ) => {
+	const { setHasChanges } = useContext( WCPaySettingsContext );
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
 
 	let supportEmailError = useGetSavingError()?.data?.details
@@ -23,6 +25,11 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 			'woocommerce-payments'
 		);
 	}
+
+	const handleChange = ( value ) => {
+		setSupportEmail( value );
+		setHasChanges( true );
+	};
 
 	useEffect( () => {
 		if ( setInputVallid ) {
@@ -46,7 +53,7 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 				) }
 				label={ __( 'Support email', 'woocommerce-payments' ) }
 				value={ supportEmail }
-				onChange={ setSupportEmail }
+				onChange={ handleChange }
 				data-testid={ 'account-business-support-email-input' }
 			/>
 		</>

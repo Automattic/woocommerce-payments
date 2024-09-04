@@ -130,9 +130,11 @@ const PaymentMethod = ( {
 		upeCapabilityStatuses.INACTIVE === status || isPoInProgress;
 	const {
 		accountFees,
-	}: { accountFees: Record< string, FeeStructure > } = useContext(
-		WCPaySettingsContext
-	);
+		setHasChanges,
+	}: {
+		accountFees: Record< string, FeeStructure >;
+		setHasChanges: ( hasChanges: boolean ) => void;
+	} = useContext( WCPaySettingsContext );
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
 	const needsMoreInformation = [
@@ -163,6 +165,8 @@ const PaymentMethod = ( {
 		if ( locked ) {
 			return;
 		}
+
+		setHasChanges( true );
 
 		if ( newStatus ) {
 			return onCheckClick( id );

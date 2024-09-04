@@ -47,6 +47,7 @@ const monthlyAnchors = [
 } ) );
 
 const CustomizeDepositSchedule = () => {
+	const { setHasChanges } = useContext( WCPaySettingsContext );
 	const [
 		depositScheduleInterval,
 		setDepositScheduleInterval,
@@ -78,6 +79,16 @@ const CustomizeDepositSchedule = () => {
 		}
 
 		setDepositScheduleInterval( newInterval );
+		setHasChanges( true );
+	};
+
+	const handleMonthlyWeeklyChange = ( newValue ) => {
+		if ( depositScheduleInterval === 'monthly' ) {
+			setDepositScheduleMonthlyAnchor( newValue );
+		} else if ( depositScheduleInterval === 'weekly' ) {
+			setDepositScheduleWeeklyAnchor( newValue );
+		}
+		setHasChanges( true );
 	};
 
 	let depositIntervalsOptions = [
@@ -113,7 +124,7 @@ const CustomizeDepositSchedule = () => {
 					<SelectControl
 						label={ __( 'Date', 'woocommerce-payments' ) }
 						value={ depositScheduleMonthlyAnchor }
-						onChange={ setDepositScheduleMonthlyAnchor }
+						onChange={ handleMonthlyWeeklyChange }
 						options={ monthlyAnchors }
 					/>
 				) }
@@ -121,7 +132,7 @@ const CustomizeDepositSchedule = () => {
 					<SelectControl
 						label={ __( 'Day', 'woocommerce-payments' ) }
 						value={ depositScheduleWeeklyAnchor }
-						onChange={ setDepositScheduleWeeklyAnchor }
+						onChange={ handleMonthlyWeeklyChange }
 						options={ daysOfWeek }
 					/>
 				) }

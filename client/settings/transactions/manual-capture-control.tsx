@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
 import { useState } from '@wordpress/element';
@@ -13,8 +13,13 @@ import { useManualCapture, useCardPresentEligible } from '../../data';
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import interpolateComponents from '@automattic/interpolate-components';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const ManualCaptureControl = (): JSX.Element => {
+	const { setHasChanges } = useContext( WCPaySettingsContext ) as {
+		setHasChanges: ( value: boolean ) => void;
+	};
+
 	const [
 		isManualCaptureEnabled,
 		setIsManualCaptureEnabled,
@@ -27,6 +32,7 @@ const ManualCaptureControl = (): JSX.Element => {
 	] = useState( false );
 
 	const handleCheckboxToggle = ( isChecked: boolean ) => {
+		setHasChanges( true );
 		// toggling from "manual" capture to "automatic" capture - no need to show the modal.
 		if ( ! isChecked ) {
 			setIsManualCaptureEnabled( isChecked );

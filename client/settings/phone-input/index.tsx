@@ -1,10 +1,11 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import intlTelInput from 'intl-tel-input';
 import './style.scss';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 /**
  * Internal dependencies
@@ -44,7 +45,12 @@ const PhoneNumberInput = ( {
 	] = useState< intlTelInput.Plugin | null >( null );
 	const inputRef = useRef< HTMLInputElement >( null );
 
+	const { setHasChanges } = useContext( WCPaySettingsContext ) as {
+		setHasChanges: ( value: boolean ) => void;
+	};
+
 	const handlePhoneNumberInputChange = () => {
+		setHasChanges( true );
 		if ( inputInstance ) {
 			onValueChange( inputInstance.getNumber() );
 			onValidationChange( inputInstance.isValidNumber() );

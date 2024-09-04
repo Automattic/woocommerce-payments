@@ -15,6 +15,7 @@ import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const id = 'apple_pay_google_pay';
@@ -31,6 +32,15 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	} = useContext( DuplicatedPaymentMethodsContext );
 	const isDuplicate = Object.keys( duplicates ).includes( id );
 
+	const { setHasChanges } = useContext( WCPaySettingsContext ) as {
+		setHasChanges: ( value: boolean ) => void;
+	};
+
+	const handleChange = ( isEnabled: boolean ) => {
+		updateIsPaymentRequestEnabled( isEnabled );
+		setHasChanges( true );
+	};
+
 	return (
 		<li
 			className="express-checkout"
@@ -44,7 +54,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 							'woocommerce-payments'
 						) }
 						checked={ isPaymentRequestEnabled }
-						onChange={ updateIsPaymentRequestEnabled }
+						onChange={ handleChange }
 					/>
 				</div>
 				<div className="express-checkout__text-container">
