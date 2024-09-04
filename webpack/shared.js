@@ -26,11 +26,11 @@ module.exports = {
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',
 			'payment-gateways': './client/payment-gateways/index.js',
-			'multi-currency': './client/multi-currency/index.js',
+			'multi-currency': './multi-currency/client/index.js',
 			'multi-currency-switcher-block':
-				'./client/multi-currency/blocks/currency-switcher.js',
+				'./multi-currency/client/blocks/currency-switcher.js',
 			'multi-currency-analytics':
-				'./client/multi-currency-analytics/index.js',
+				'./multi-currency/client/analytics/index.js',
 			order: './client/order/index.js',
 			'subscriptions-empty-state':
 				'./client/subscriptions-empty-state/index.js',

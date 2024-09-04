@@ -12,7 +12,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { DisputesFilters } from '../';
-import { formatCurrencyName } from '../../../utils/currency';
+import { formatCurrencyName } from 'multi-currency/interface/functions';
 
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
 jest.mock( '@woocommerce/settings', () => ( {
