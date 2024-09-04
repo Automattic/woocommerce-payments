@@ -10,6 +10,7 @@ import {
 	isColorLight,
 	getBackgroundColor,
 } from './utils.js';
+import supportedClassesPerProperty from './supported-classes-per-property.json';
 
 export const appearanceSelectors = {
 	default: {
@@ -512,5 +513,21 @@ export const getAppearance = ( elementsLocation ) => {
 	};
 	// Remove hidden fields from DOM.
 	hiddenElementsForUPE.cleanup();
+
+	// Remove properties that are not supported by Stripe.
+	Object.keys( appearance.rules ).forEach( function ( key ) {
+		const properties = Object.keys( appearance.rules[ key ] );
+		const className = key.match( /(?<=\.)\w+/ ).at( -1 );
+
+		properties.forEach( function ( property ) {
+			if (
+				! supportedClassesPerProperty[ property ] ||
+				! supportedClassesPerProperty[ property ].includes( className )
+			) {
+				delete appearance.rules[ key ][ property ];
+			}
+		} );
+	} );
+
 	return appearance;
 };
