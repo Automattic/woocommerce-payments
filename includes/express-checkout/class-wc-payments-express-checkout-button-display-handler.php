@@ -108,6 +108,11 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		if ( $this->is_pay_for_order_flow_supported() ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'add_pay_for_order_params_to_js_config' ], 5 );
 		}
+
+		add_filter('the_content', function ( $content ) {
+			$content .= '<div id="express-checkout-check-availability-container" style="min-height:40px"></div>';
+			return $content;
+		}, 10, 1);
 	}
 
 	/**
