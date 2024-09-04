@@ -12,7 +12,7 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
 	title: 'WooPayments - ApplePay',
 	description:
-		'You need to be on a Safari browser, logged in with your Apple ID to preview the ApplePay button.',
+		'The ApplePay with show to users on a Sarari or iOS device with an active Apple account.',
 	gatewayId: 'woocommerce_payments',
 	content: (
 		<ExpressCheckoutContainer api={ api } expressPaymentMethod="applePay" />
@@ -35,7 +35,7 @@ const expressCheckoutElementGooglePay = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
 	title: 'WooPayments - GooglePay',
 	description:
-		'You need to be logged in with your Google Account and have an active payment method to preview the GooglePay button.',
+		'The GooglePay button will show to users signed in to their Google account.',
 	gatewayId: 'woocommerce_payments',
 	content: (
 		<ExpressCheckoutContainer

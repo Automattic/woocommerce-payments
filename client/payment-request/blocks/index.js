@@ -14,7 +14,8 @@ const ApplePayPreview = () => <img src={ applePayImage } alt="" />;
 const paymentRequestPaymentMethod = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
 	title: 'WooPayments - Payment Request',
-	description: 'Pay with Apple Pay, Google Pay, or Stripe Link',
+	description:
+		'This will show users the ApplePay, GooglePay, or Stripe Link button depending on their browser and logged in status.',
 	gatewayId: 'woocommerce_payments',
 	content: (
 		<PaymentRequestExpress api={ api } stripe={ api.loadStripe( true ) } />
