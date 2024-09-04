@@ -109,10 +109,16 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			add_action( 'wp_enqueue_scripts', [ $this, 'add_pay_for_order_params_to_js_config' ], 5 );
 		}
 
-		add_filter('the_content', function ( $content ) {
-			$content .= '<div id="express-checkout-check-availability-container" style="min-height:40px"></div>';
-			return $content;
-		}, 10, 1);
+		add_filter(
+			'the_content',
+			function ( $content ) {
+				$content = '<div id="express-checkout-check-availability-container-applePay" style="height: 0; opacity: 0; pointer-events: none;"></div>' . $content;
+				$content = '<div id="express-checkout-check-availability-container-googlePay" style="height: 0; opacity: 0; pointer-events: none;"></div>' . $content;
+				return $content;
+			},
+			10,
+			1
+		);
 	}
 
 	/**

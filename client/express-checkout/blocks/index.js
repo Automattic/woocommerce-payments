@@ -2,8 +2,7 @@
  * External dependencies
  */
 import ReactDOM from 'react-dom';
-import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
+import { ExpressCheckoutElement, Elements } from '@stripe/react-stripe-js';
 
 /**
  * Internal dependencies
@@ -17,6 +16,8 @@ import { isLinkEnabled } from 'wcpay/checkout/utils/upe';
 import request from 'wcpay/checkout/utils/request';
 import WCPayAPI from 'wcpay/checkout/api';
 
+const running = { applePay: false, googlePay: false };
+
 const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
@@ -27,12 +28,14 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 	supports: {
 		features: getConfig( 'features' ),
 	},
-	canMakePayment: () => {
-		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+	canMakePayment: ( { cart } ) => {
+		if ( running.applePay ) {
 			return false;
 		}
-
-		return true;
+		running.applePay = true;
+		return new Promise( ( resolve ) => {
+			checkPaymentMethodIsAvailable( 'applePay', cart, resolve );
+		} );
 	},
 } );
 
@@ -51,71 +54,80 @@ const expressCheckoutElementGooglePay = ( api ) => {
 			features: getConfig( 'features' ),
 		},
 		canMakePayment: ( { cart } ) => {
-			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			if ( running.googlePay ) {
 				return false;
 			}
-
-			const root = ReactDOM.createRoot(
-				document.getElementById(
-					'express-checkout-check-availability-container'
-				)
-			);
-
-			// Create an API object, which will be used throughout the checkout.
-			const enabledPaymentMethodsConfig = getUPEConfig(
-				'paymentMethodsConfig'
-			);
-			const isStripeLinkEnabled = isLinkEnabled(
-				enabledPaymentMethodsConfig
-			);
-
-			const api = new WCPayAPI(
-				{
-					publishableKey: getUPEConfig( 'publishableKey' ),
-					accountId: getUPEConfig( 'accountId' ),
-					forceNetworkSavedCards: getUPEConfig(
-						'forceNetworkSavedCards'
-					),
-					locale: getUPEConfig( 'locale' ),
-					isStripeLinkEnabled,
-				},
-				request
-			);
-
-			const options = {
-				mode: 'payment',
-				paymentMethodCreation: 'manual',
-				amount: Number( cart.cartTotals.total_price ),
-				currency: cart.cartTotals.currency_code.toLowerCase(),
-			};
-
-			const stripePromise = api.loadStripe();
-			const onElementsReady = () => {
-				console.log( 'ready!' );
-			};
-
-			const eceOptions = {
-				paymentMethods: {
-					amazonPay: 'never',
-					applePay: 'never',
-					googlePay: 'always',
-					link: 'never',
-					paypal: 'never',
-				},
-			};
-
-			root.render(
-				<Elements stripe={ stripePromise } options={ options }>
-					<ExpressCheckoutElement
-						onReady={ onElementsReady }
-						options={ eceOptions }
-					/>
-				</Elements>
-			);
-
-			return true;
+			running.googlePay = true;
+			return new Promise( ( resolve ) => {
+				checkPaymentMethodIsAvailable( 'googlePay', cart, resolve );
+			} );
 		},
 	};
 };
+
+function checkPaymentMethodIsAvailable( paymentMethod, cart, resolve ) {
+	if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+		return false;
+	}
+
+	const root = ReactDOM.createRoot(
+		document.getElementById(
+			`express-checkout-check-availability-container-${ paymentMethod }`
+		)
+	);
+
+	// Create an API object, which will be used throughout the checkout.
+	const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+	const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
+
+	const api = new WCPayAPI(
+		{
+			publishableKey: getUPEConfig( 'publishableKey' ),
+			accountId: getUPEConfig( 'accountId' ),
+			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
+			locale: getUPEConfig( 'locale' ),
+			isStripeLinkEnabled,
+		},
+		request
+	);
+
+	const stripePromise = api.loadStripe();
+	const options = {
+		mode: 'payment',
+		paymentMethodCreation: 'manual',
+		amount: Number( cart.cartTotals.total_price ),
+		currency: cart.cartTotals.currency_code.toLowerCase(),
+	};
+
+	const eceOptions = {
+		paymentMethods: {
+			amazonPay: 'never',
+			applePay: paymentMethod === 'applePay' ? 'always' : 'never',
+			googlePay: paymentMethod === 'googlePay' ? 'always' : 'never',
+			link: 'never',
+			paypal: 'never',
+		},
+	};
+
+	const onElementsReadyHandler = () => {
+		setTimeout( () => {
+			const iframeHeight = document
+				.querySelector(
+					`#express-checkout-check-availability-container-${ paymentMethod } iframe`
+				)
+				.getBoundingClientRect().height;
+			resolve( iframeHeight < 40 ? false : true );
+		}, 2000 );
+	};
+
+	root.render(
+		<Elements stripe={ stripePromise } options={ options }>
+			<ExpressCheckoutElement
+				options={ eceOptions }
+				onReady={ onElementsReadyHandler }
+			/>
+		</Elements>
+	);
+}
 
 export { expressCheckoutElementApplePay, expressCheckoutElementGooglePay };
