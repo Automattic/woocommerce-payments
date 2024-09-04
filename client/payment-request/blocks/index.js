@@ -1,6 +1,11 @@
 /* global wcpayConfig, wcpayPaymentRequestParams */
 
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { PAYMENT_METHOD_NAME_PAYMENT_REQUEST } from '../../checkout/constants';
@@ -14,8 +19,10 @@ const ApplePayPreview = () => <img src={ applePayImage } alt="" />;
 const paymentRequestPaymentMethod = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
 	title: 'WooPayments - Payment Request',
-	description:
+	description: __(
 		'This will show users the ApplePay, GooglePay, or Stripe Link button depending on their browser and logged in status.',
+		'woocommerce-payments'
+	),
 	gatewayId: 'woocommerce_payments',
 	content: (
 		<PaymentRequestExpress api={ api } stripe={ api.loadStripe( true ) } />

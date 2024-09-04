@@ -3,6 +3,7 @@
  */
 import { useCallback } from 'react';
 import ReactDOM from 'react-dom';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -45,7 +46,10 @@ const WooPayExpressCheckoutButtonContainer = () => {
 const wooPayExpressCheckoutPaymentMethod = () => ( {
 	name: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	title: 'WooPayments - WooPay',
-	description: 'This will show users the WooPay button.',
+	description: __(
+		'This will show users the WooPay button.',
+		'woocommerce-payments'
+	),
 	gatewayId: 'woocommerce_payments',
 	content: <WooPayExpressCheckoutButtonContainer />,
 	edit: (
