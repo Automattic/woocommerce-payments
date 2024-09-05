@@ -38,7 +38,13 @@ interface FinalizeResponse {
 	params: Record< string, string >;
 }
 
-const EmbeddedOnboarding: React.FC = () => {
+interface Props {
+	continueOnboarding?: boolean;
+}
+
+const EmbeddedOnboarding: React.FC< Props > = ( {
+	continueOnboarding = false,
+} ) => {
 	const { data } = useOnboardingContext();
 	const [ publishableKey, setPublishableKey ] = useState( '' );
 	const [ locale, setLocale ] = useState( '' );
@@ -80,22 +86,28 @@ const EmbeddedOnboarding: React.FC = () => {
 					go_live_timeframe: data.go_live_timeframe,
 				},
 			};
-			const eligibleResult = await apiFetch< PoEligibleResult >( {
-				path: '/wc/v3/payments/onboarding/router/po_eligible',
-				method: 'POST',
-				data: eligibilityDetails,
-			} );
 
-			return 'eligible' === eligibleResult.result;
+			try {
+				const eligibleResult = await apiFetch< PoEligibleResult >( {
+					path: '/wc/v3/payments/onboarding/router/po_eligible',
+					method: 'POST',
+					data: eligibilityDetails,
+				} );
+
+				return 'eligible' === eligibleResult.result;
+			} catch ( error ) {
+				// Fall back to full KYC scenario.
+				return false;
+			}
 		};
 
 		const fetchKeys = async () => {
-			let isEligible;
-			try {
+			// By default, we assume the merchant is not eligible for PO.
+			let isEligible = false;
+
+			// If we are resuming an onboarding session, we don't need to check for PO eligibility again.
+			if ( ! continueOnboarding ) {
 				isEligible = await isEligibleForPo();
-			} catch ( error ) {
-				// fall back to full KYC scenario.
-				isEligible = false;
 			}
 
 			const path = addQueryArgs( `${ NAMESPACE }/onboarding/session`, {
@@ -127,7 +139,7 @@ const EmbeddedOnboarding: React.FC = () => {
 		};
 
 		fetchKeys();
-	}, [ data ] );
+	}, [ data, continueOnboarding ] );
 
 	// Initialize the Stripe Connect instance only once when publishableKey and clientSecret are ready
 	useEffect( () => {

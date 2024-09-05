@@ -69,7 +69,7 @@ const ContinueOnboardingPage: React.FC = () => {
 				</div>
 				<div className="stepper__wrapper">
 					<div className="stepper__content">
-						<EmbeddedOnboarding />
+						<EmbeddedOnboarding continueOnboarding={ true } />
 					</div>
 				</div>
 			</OnboardingContextProvider>
