@@ -183,14 +183,14 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	private function add_html_container_for_test_express_checkout_buttons() {
-		// Restrict adding these HTML containers to only the necessary pages.
 		add_filter(
 			'the_content',
 			function ( $content ) {
 				$supported_payment_methods = [ 'applePay' , 'googlePay' ];
+				// Restrict adding these HTML containers to only the necessary pages.
 				if ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) {
 					foreach ( $supported_payment_methods as $value ) {
-						// The inline styles ensure that the HTML elements don’t occupy space on the page.
+						// The inline styles ensure that the HTML elements don't occupy space on the page.
 						$content = '<div id="express-checkout-check-availability-container-' . $value . '" style="height: 0; float:left; opacity: 0; pointer-events: none;"></div>' . $content;
 					}
 				}
