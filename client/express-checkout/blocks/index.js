@@ -15,7 +15,7 @@ import GooglePayPreview from './components/google-pay-preview';
 const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
-	title: 'WooPayments - ApplePay',
+	title: 'WooPayments - Apple Pay',
 	description: __(
 		'Apple Pay will be displayed to users on Safari or iOS devices with an active Apple account.',
 		'woocommerce-payments'
