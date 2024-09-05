@@ -33,7 +33,10 @@ import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
 import WooPaymentsLogo from 'assets/images/logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
-import { isInTestModeOnboarding } from 'wcpay/utils';
+import {
+	isInTestModeOnboarding,
+	objectRemoveEmptyProperties,
+} from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { trackAccountReset } from 'wcpay/onboarding/tracking';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
@@ -193,6 +196,12 @@ const ConnectAccountPage: React.FC = () => {
 					'wcpay-sandbox-success': 'true',
 					source: determineTrackingSource(),
 					from: 'WCPAY_CONNECT',
+					abt:
+						urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) ||
+						null,
+					abt_v:
+						urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) ||
+						null,
 				} );
 			} else {
 				setTimeout( checkAccountStatus, 2000 );
@@ -266,10 +275,18 @@ const ConnectAccountPage: React.FC = () => {
 						// This URL is generally a Connect page URL.
 						window.location.href = addQueryArgs(
 							response.data.redirect_to,
-							{
+							objectRemoveEmptyProperties( {
 								test_drive: 'true',
 								test_drive_error: 'true',
-							}
+								abt:
+									urlParams
+										.get( 'abt' )
+										?.replace( /[^\w-]+/g, '' ) || null,
+								abt_v:
+									urlParams
+										.get( 'abt_v' )
+										?.replace( /[^\w-]+/g, '' ) || null,
+							} )
 						);
 					}
 				} )
@@ -281,9 +298,18 @@ const ConnectAccountPage: React.FC = () => {
 				} );
 		} else {
 			// Redirect to the connect URL to set up the Jetpack connection.
-			window.location.href = addQueryArgs( customizedConnectUrl, {
-				auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
-			} );
+			window.location.href = addQueryArgs(
+				customizedConnectUrl,
+				objectRemoveEmptyProperties( {
+					auto_start_test_drive_onboarding: 'true', // This is a flag to start the onboarding automatically.
+					abt:
+						urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) ||
+						null,
+					abt_v:
+						urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) ||
+						null,
+				} )
+			);
 		}
 	};
 
@@ -322,10 +348,19 @@ const ConnectAccountPage: React.FC = () => {
 		};
 		// Redirect the merchant if merchant decided to continue
 		const handleModalConfirmed = () => {
-			window.location.href = addQueryArgs( connectUrl, {
-				source: determineTrackingSource(),
-				from: 'WCPAY_CONNECT',
-			} );
+			window.location.href = addQueryArgs(
+				connectUrl,
+				objectRemoveEmptyProperties( {
+					source: determineTrackingSource(),
+					from: 'WCPAY_CONNECT',
+					abt:
+						urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) ||
+						null,
+					abt_v:
+						urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) ||
+						null,
+				} )
+			);
 		};
 
 		// Populate translated list of supported countries we want to render in the modal window.
@@ -374,20 +409,32 @@ const ConnectAccountPage: React.FC = () => {
 			return handleLocationCheck();
 		}
 
-		window.location.href = addQueryArgs( connectUrl, {
-			source: determineTrackingSource(),
-			from: 'WCPAY_CONNECT',
-		} );
+		window.location.href = addQueryArgs(
+			connectUrl,
+			objectRemoveEmptyProperties( {
+				source: determineTrackingSource(),
+				from: 'WCPAY_CONNECT',
+				abt: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || null,
+				abt_v:
+					urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || null,
+			} )
+		);
 	};
 
 	const handleReset = () => {
 		trackAccountReset();
 
-		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-			'wcpay-reset-account': 'true',
-			from: 'WCPAY_CONNECT',
-			source: determineTrackingSource(),
-		} );
+		window.location.href = addQueryArgs(
+			wcpaySettings.connectUrl,
+			objectRemoveEmptyProperties( {
+				'wcpay-reset-account': 'true',
+				from: 'WCPAY_CONNECT',
+				source: determineTrackingSource(),
+				abt: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || null,
+				abt_v:
+					urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || null,
+			} )
+		);
 	};
 
 	let isAccountSetupSessionError = false;

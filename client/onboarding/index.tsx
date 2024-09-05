@@ -16,23 +16,26 @@ import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import LoadingStep from './steps/loading';
 import { trackStarted } from './tracking';
-import { getAdminUrl } from 'wcpay/utils';
+import { getAdminUrl, objectRemoveEmptyProperties } from 'wcpay/utils';
 import './style.scss';
 
 const OnboardingStepper = () => {
 	const handleExit = () => {
 		const urlParams = new URLSearchParams( window.location.search );
 
-		window.location.href = getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/connect',
-			source:
-				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
-				'unknown',
-			from: 'WCPAY_ONBOARDING_WIZARD',
-			abt: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || false,
-			abt_v: urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || false,
-		} );
+		window.location.href = getAdminUrl(
+			objectRemoveEmptyProperties( {
+				page: 'wc-admin',
+				path: '/payments/connect',
+				source:
+					urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+					'unknown',
+				from: 'WCPAY_ONBOARDING_WIZARD',
+				abt: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || null,
+				abt_v:
+					urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || null,
+			} )
+		);
 	};
 
 	const handleStepChange = () => window.scroll( 0, 0 );
