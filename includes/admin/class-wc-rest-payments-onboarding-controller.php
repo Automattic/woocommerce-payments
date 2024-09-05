@@ -203,18 +203,13 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'callback'            => [ $this, 'update_flow_state' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'current_step' => [
-						'required'    => true,
-						'description' => 'The current step of the onboarding process.',
-						'type'        => 'string',
-					],
-					'data'         => [
+					'data' => [
 						'required'    => true,
 						'description' => 'The onboarding context data.',
 						'type'        => 'object',
 					],
 				],
-			],
+			]
 		);
 	}
 

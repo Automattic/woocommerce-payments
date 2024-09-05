@@ -108,7 +108,6 @@ declare global {
 			industry_to_mcc: { [ key: string ]: string };
 		};
 		onboardingFlowState?: {
-			current_step: string;
 			data: OnboardingFields;
 		};
 		storeCurrency: string;

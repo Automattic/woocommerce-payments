@@ -29,6 +29,7 @@ import CapitalPage from 'capital';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
 import OnboardingPage from 'onboarding';
+import ContinueOnboardingPage from 'onboarding/continue-onboarding';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
 
@@ -65,6 +66,20 @@ addFilter(
 			],
 			navArgs: {
 				id: 'wc-payments-onboarding',
+			},
+			capability: 'manage_woocommerce',
+		} );
+
+		pages.push( {
+			container: ContinueOnboardingPage,
+			path: '/payments/onboarding/continue',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Continue onboarding', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-continue-onboarding',
 			},
 			capability: 'manage_woocommerce',
 		} );

@@ -347,6 +347,22 @@ class WC_Payments_Admin {
 			remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
 		}
 
+		// TODO GH-9357 register page only in necessary cases.
+		wc_admin_register_page(
+			[
+				'id'         => 'wc-payments-continue-onboarding',
+				'title'      => __( 'Continue onboarding', 'woocommerce-payments' ),
+				'parent'     => 'wc-payments',
+				'path'       => '/payments/onboarding/continue',
+				'capability' => 'manage_woocommerce',
+				'nav_args'   => [
+					'parent' => 'wc-payments',
+				],
+			]
+		);
+		remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding/continue' );
+		remove_submenu_page( 'wc-admin&path=/payments/overview', 'wc-admin&path=/payments/onboarding/continue' );
+
 		if ( $should_render_full_menu ) {
 			if ( $this->account->is_card_present_eligible() && $this->account->has_card_readers_available() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [

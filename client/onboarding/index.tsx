@@ -7,9 +7,9 @@ import React, { useEffect } from 'react';
  * Internal dependencies
  */
 import Page from 'components/page';
-import { OnboardingContextProvider } from './context';
+import { OnboardingContextProvider, useOnboardingContext } from './context';
 import { Stepper } from 'components/stepper';
-import { getMccFromIndustry } from 'onboarding/utils';
+import { getMccFromIndustry, persistFlowState } from 'onboarding/utils';
 import { OnboardingForm } from './form';
 import Step from './step';
 import BusinessDetails from './steps/business-details';
@@ -20,6 +20,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 
 const OnboardingStepper = () => {
+	const { data } = useOnboardingContext();
 	const handleExit = () => {
 		const urlParams = new URLSearchParams( window.location.search );
 
@@ -33,7 +34,12 @@ const OnboardingStepper = () => {
 		} );
 	};
 
-	const handleStepChange = () => window.scroll( 0, 0 );
+	const handleStepChange = ( step: string ) => {
+		window.scroll( 0, 0 );
+		if ( step === 'embedded' ) {
+			persistFlowState( data );
+		}
+	};
 
 	return (
 		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
