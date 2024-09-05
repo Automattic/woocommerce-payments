@@ -1,11 +1,7 @@
 /**
  * Internal dependencies
  */
-import type {
-	MccsDisplayTreeItem,
-	Country,
-	OnboardingFields,
-} from 'onboarding/types';
+import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 
 declare global {
@@ -106,9 +102,6 @@ declare global {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
 			industry_to_mcc: { [ key: string ]: string };
-		};
-		onboardingFlowState?: {
-			data: OnboardingFields;
 		};
 		storeCurrency: string;
 		isMultiCurrencyEnabled: string;
