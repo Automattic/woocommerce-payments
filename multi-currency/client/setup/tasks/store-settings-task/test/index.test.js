@@ -9,8 +9,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import { useCurrencies, useStoreSettings } from 'multi-currency/data';
 import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
-import { WizardTaskContext } from 'multi-currency/interface/functions';
 import StoreSettingsTask from '..';
+import {
+	WooPaymentsContext,
+	WooPaymentsContextV1,
+} from 'multi-currency/interface/contexts';
 
 jest.mock( 'multi-currency/data', () => ( {
 	useStoreSettings: jest.fn(),
@@ -59,11 +62,20 @@ const setCompletedMock = jest.fn();
 
 const createContainer = () => {
 	const { container } = render(
-		<WizardTaskContext.Provider
-			value={ { isActive: true, setCompleted: setCompletedMock } }
-		>
-			<StoreSettingsTask />
-		</WizardTaskContext.Provider>
+		<WooPaymentsContextV1>
+			<WooPaymentsContext.Consumer>
+				{ ( { WizardTaskContext } ) => (
+					<WizardTaskContext.Provider
+						value={ {
+							isActive: true,
+							setCompleted: setCompletedMock,
+						} }
+					>
+						<StoreSettingsTask />
+					</WizardTaskContext.Provider>
+				) }
+			</WooPaymentsContext.Consumer>
+		</WooPaymentsContextV1>
 	);
 	return container;
 };

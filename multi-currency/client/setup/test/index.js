@@ -10,6 +10,7 @@ import MultiCurrencySetup from '../tasks/multi-currency-setup';
  * Internal dependencies
  */
 import MultiCurrencySetupPage from '..';
+import { WooPaymentsContextV1 } from 'multi-currency/interface/contexts';
 
 jest.mock( '../tasks/multi-currency-setup', () => jest.fn() );
 
@@ -29,7 +30,11 @@ describe( 'MultiCurrencySetupPage()', () => {
 			},
 		};
 
-		render( <MultiCurrencySetupPage /> );
+		render(
+			<WooPaymentsContextV1>
+				<MultiCurrencySetupPage />
+			</WooPaymentsContextV1>
+		);
 
 		expect(
 			screen.queryByText( 'Multi-Currency setup page' )
