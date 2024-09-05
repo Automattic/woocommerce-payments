@@ -529,5 +529,12 @@ export const getAppearance = ( elementsLocation ) => {
 		} );
 	} );
 
+	// Remove empty rules.
+	Object.keys( appearance.rules ).forEach( function ( key ) {
+		if ( Object.keys( appearance.rules[ key ] ).length === 0 ) {
+			delete appearance.rules[ key ];
+		}
+	} );
+
 	return appearance;
 };
