@@ -11,6 +11,7 @@ import { useStepperContext } from 'components/stepper';
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
 import { recordEvent } from 'tracks';
+import { objectRemoveEmptyProperties } from 'wcpay/utils';
 
 const trackedSteps: Set< string > = new Set();
 let startTime: number;
@@ -29,13 +30,17 @@ export const trackStarted = (): void => {
 
 	const urlParams = new URLSearchParams( window.location.search );
 
-	recordEvent( 'wcpay_onboarding_flow_started', {
-		source:
-			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
-		abtest: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || '',
-		abtest_variation:
-			urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || '',
-	} );
+	recordEvent(
+		'wcpay_onboarding_flow_started',
+		objectRemoveEmptyProperties( {
+			source:
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown',
+			abtest: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || null,
+			abtest_variation:
+				urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || null,
+		} )
+	);
 };
 
 export const trackStepCompleted = ( step: string ): void => {
@@ -52,15 +57,19 @@ export const trackStepCompleted = ( step: string ): void => {
 export const trackRedirected = ( isPoEligible: boolean ): void => {
 	const urlParams = new URLSearchParams( window.location.search );
 
-	recordEvent( 'wcpay_onboarding_flow_redirected', {
-		is_po_eligible: isPoEligible,
-		elapsed: elapsed( startTime ),
-		source:
-			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
-		abtest: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || '',
-		abtest_variation:
-			urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || '',
-	} );
+	recordEvent(
+		'wcpay_onboarding_flow_redirected',
+		objectRemoveEmptyProperties( {
+			is_po_eligible: isPoEligible,
+			elapsed: elapsed( startTime ),
+			source:
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown',
+			abtest: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || null,
+			abtest_variation:
+				urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || null,
+		} )
+	);
 };
 
 export const trackAccountReset = (): void =>
@@ -93,17 +102,21 @@ export const useTrackAbandoned = (): {
 
 		const urlParams = new URLSearchParams( window.location.search );
 
-		recordEvent( event, {
-			step,
-			errored,
-			elapsed: elapsed( startTime ),
-			source:
-				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
-				'unknown',
-			abtest: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || '',
-			abtest_variation:
-				urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || '',
-		} );
+		recordEvent(
+			event,
+			objectRemoveEmptyProperties( {
+				step,
+				errored,
+				elapsed: elapsed( startTime ),
+				source:
+					urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+					'unknown',
+				abtest:
+					urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || null,
+				abtest_variation:
+					urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || null,
+			} )
+		);
 	};
 
 	const listener = () => {
