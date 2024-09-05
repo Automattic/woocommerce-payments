@@ -20,7 +20,7 @@ const paymentRequestPaymentMethod = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
 	title: 'WooPayments - Payment Request',
 	description: __(
-		'This will show users the ApplePay, GooglePay, or Stripe Link button depending on their browser and logged in status.',
+		'Display the Apple Pay, Google Pay, or Stripe Link button to users based on their browser and login status.',
 		'woocommerce-payments'
 	),
 	gatewayId: 'woocommerce_payments',
