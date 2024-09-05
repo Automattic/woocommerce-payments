@@ -2,18 +2,24 @@
 /**
  * External dependencies
  */
+import React, { useContext } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
+
+/**
+ * Internal dependencies
+ */
 import {
 	ConfirmationModal,
 	PaymentMethodIcon,
 } from 'multi-currency/interface/components';
 import CurrencyDeleteIllustration from 'multi-currency/components/currency-delete-illustration';
-import { paymentMethodsMap } from 'multi-currency/interface/assets';
+import { WooPaymentsContext } from 'multi-currency/interface/contexts';
 
 const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
+	const { paymentMethodsMap } = useContext( WooPaymentsContext );
 	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
 		false
 	);
