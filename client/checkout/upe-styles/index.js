@@ -37,6 +37,7 @@ export const appearanceSelectors = {
 			'form.checkout',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '#place_order' ],
 		linkSelectors: [ 'a' ],
 	},
@@ -61,6 +62,7 @@ export const appearanceSelectors = {
 			'.wc-block-checkout',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
 		linkSelectors: [ 'a' ],
 	},
@@ -78,6 +80,7 @@ export const appearanceSelectors = {
 			'#main',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.single_add_to_cart_button' ],
 		linkSelectors: [ 'a' ],
 	},
@@ -95,6 +98,7 @@ export const appearanceSelectors = {
 			'#main',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.checkout-button' ],
 		linkSelectors: [ 'a' ],
 	},
@@ -116,6 +120,7 @@ export const appearanceSelectors = {
 			'.wp-block-woocommerce-cart',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.wc-block-cart__submit-button' ],
 		linkSelectors: [ 'a' ],
 	},
@@ -136,6 +141,7 @@ export const appearanceSelectors = {
 			'form.checkout',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '#place_order' ],
 		linkSelectors: [ 'a' ],
 	},
@@ -470,6 +476,7 @@ export const getAppearance = ( elementsLocation ) => {
 	};
 
 	const backgroundColor = getBackgroundColor( selectors.backgroundSelectors );
+	const headingRules = getFieldStyles( selectors.headingSelectors, '.Label' );
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
 		'.Block',
@@ -499,6 +506,7 @@ export const getAppearance = ( elementsLocation ) => {
 			'.TabIcon--selected': selectedTabIconRules,
 			'.Text': labelRules,
 			'.Text--redirect': labelRules,
+			'.Heading': headingRules,
 			'.Button': buttonRules,
 			'.Link': linkRules,
 		},
