@@ -276,3 +276,15 @@ export const getExportLanguageOptions = () => {
 		},
 	];
 };
+
+/**
+ * Given an object, remove all properties with null or undefined values.
+ *
+ * @param {Object} obj The object to remove empty properties from.
+ * @return {Object|any} A new object with all properties with null or undefined values removed.
+ */
+export const objectRemoveEmptyProperties = ( obj ) => {
+	return Object.keys( obj )
+		.filter( ( k ) => obj[ k ] !== null && obj[ k ] !== undefined )
+		.reduce( ( a, k ) => ( { ...a, [ k ]: obj[ k ] } ), {} );
+};
