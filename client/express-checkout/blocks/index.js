@@ -16,8 +16,6 @@ import { isLinkEnabled } from 'wcpay/checkout/utils/upe';
 import request from 'wcpay/checkout/utils/request';
 import WCPayAPI from 'wcpay/checkout/api';
 
-const running = { applePay: false, googlePay: false };
-
 const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
@@ -29,10 +27,6 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 		features: getConfig( 'features' ),
 	},
 	canMakePayment: ( { cart } ) => {
-		if ( running.applePay ) {
-			return false;
-		}
-		running.applePay = true;
 		return new Promise( ( resolve ) => {
 			checkPaymentMethodIsAvailable( 'applePay', cart, resolve );
 		} );
@@ -54,10 +48,6 @@ const expressCheckoutElementGooglePay = ( api ) => {
 			features: getConfig( 'features' ),
 		},
 		canMakePayment: ( { cart } ) => {
-			if ( running.googlePay ) {
-				return false;
-			}
-			running.googlePay = true;
 			return new Promise( ( resolve ) => {
 				checkPaymentMethodIsAvailable( 'googlePay', cart, resolve );
 			} );
@@ -109,15 +99,16 @@ function checkPaymentMethodIsAvailable( paymentMethod, cart, resolve ) {
 		},
 	};
 
-	const onElementsReadyHandler = () => {
-		setTimeout( () => {
-			const iframeHeight = document
-				.querySelector(
-					`#express-checkout-check-availability-container-${ paymentMethod } iframe`
-				)
-				.getBoundingClientRect().height;
-			resolve( iframeHeight < 40 ? false : true );
-		}, 2000 );
+	const onElementsReadyHandler = ( event ) => {
+		let canMakePayment = false;
+		if ( event.availablePaymentMethods ) {
+			canMakePayment = event.availablePaymentMethods[ paymentMethod ];
+		}
+		console.log(
+			`Payment method ${ paymentMethod }, is available? `,
+			canMakePayment
+		);
+		resolve( canMakePayment );
 	};
 
 	root.render(
