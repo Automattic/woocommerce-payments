@@ -8,13 +8,13 @@ import React, { useEffect } from 'react';
  */
 import Page from 'wcpay/components/page';
 import { OnboardingContextProvider } from 'wcpay/onboarding/context';
-import EmbeddedOnboarding from 'wcpay/onboarding/steps/embedded-onboarding';
+import EmbeddedKyc from 'wcpay/onboarding/steps/embedded-kyc';
 import Logo from 'assets/images/woopayments.svg';
 import { closeSmall, Icon } from '@wordpress/icons';
 import strings from 'wcpay/onboarding/strings';
 import { getConnectUrl } from 'wcpay/utils';
 
-const ContinueOnboardingPage: React.FC = () => {
+const OnboardingKycPage: React.FC = () => {
 	const handleExit = () => {
 		const urlParams = new URLSearchParams( window.location.search );
 
@@ -24,7 +24,7 @@ const ContinueOnboardingPage: React.FC = () => {
 					urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
 					'unknown',
 			},
-			'WCPAY_ONBOARDING_WIZARD'
+			'WCPAY_ONBOARDING_KYC'
 		);
 	};
 
@@ -67,11 +67,11 @@ const ContinueOnboardingPage: React.FC = () => {
 				</div>
 				<div className="stepper__wrapper">
 					<div className="stepper__content">
-						<EmbeddedOnboarding continueOnboarding={ true } />
+						<EmbeddedKyc continueKyc={ true } />
 					</div>
 				</div>
 			</OnboardingContextProvider>
 		</Page>
 	);
 };
-export default ContinueOnboardingPage;
+export default OnboardingKycPage;

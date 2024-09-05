@@ -971,7 +971,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Initialize the embedded onboarding flow, returning a session object which is used by the frontend.
+	 * Initialize the onboarding embedded KYC flow, returning a session object which is used by the frontend.
 	 *
 	 * @param bool  $live_account Whether to create live account.
 	 * @param array $site_data Site data.
@@ -985,7 +985,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception
 	 */
-	public function initialize_embedded_onboarding( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function initialize_onboarding_embedded_kyc( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1009,7 +1009,7 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Finalize the embedded onboarding flow.
+	 * Finalize the onboarding embedded KYC flow.
 	 *
 	 * @param string $locale         The locale to use to i18n the data.
 	 * @param string $source         The source of the onboarding flow.
@@ -1018,7 +1018,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception
 	 */
-	public function finalize_embedded_onboarding( string $locale, string $source, array $actioned_notes ): array {
+	public function finalize_onboarding_embedded_kyc( string $locale, string $source, array $actioned_notes ): array {
 		$request_args = [
 			'locale'         => $locale,
 			'source'         => $source,

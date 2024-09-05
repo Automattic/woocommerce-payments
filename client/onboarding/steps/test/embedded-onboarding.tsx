@@ -9,7 +9,7 @@ import { loadConnectAndInitialize } from '@stripe/connect-js';
 /**
  * Internal dependencies
  */
-import EmbeddedOnboarding from '../embedded-onboarding';
+import EmbeddedKyc from '../embedded-kyc';
 
 jest.mock( '@wordpress/api-fetch' );
 jest.mock( '@stripe/connect-js', () => ( {
@@ -54,7 +54,7 @@ describe( 'EmbeddedOnboarding', () => {
 			success: false,
 		} );
 
-		render( <EmbeddedOnboarding /> );
+		render( <EmbeddedKyc /> );
 
 		await waitFor( () =>
 			expect(
@@ -76,7 +76,7 @@ describe( 'EmbeddedOnboarding', () => {
 		};
 		jest.mocked( apiFetch ).mockResolvedValueOnce( mockAccountSessionData );
 
-		render( <EmbeddedOnboarding /> );
+		render( <EmbeddedKyc /> );
 
 		await waitFor( () =>
 			expect( loadConnectAndInitialize ).toHaveBeenCalledWith( {

@@ -24,14 +24,14 @@ import BannerNotice from 'wcpay/components/banner-notice';
 import LoadBar from 'wcpay/components/load-bar';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import {
-	AccountSession,
+	AccountKycSession,
 	PoEligibleData,
 	PoEligibleResult,
 } from 'wcpay/onboarding/types';
 import { fromDotNotation } from 'wcpay/onboarding/utils';
-import { getOverviewUrl } from 'wcpay/utils';
+import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
 
-type AccountSessionData = AccountSession;
+type AccountKycSessionData = AccountKycSession;
 
 interface FinalizeResponse {
 	success: boolean;
@@ -39,12 +39,10 @@ interface FinalizeResponse {
 }
 
 interface Props {
-	continueOnboarding?: boolean;
+	continueKyc?: boolean;
 }
 
-const EmbeddedOnboarding: React.FC< Props > = ( {
-	continueOnboarding = false,
-} ) => {
+const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 	const { data } = useOnboardingContext();
 	const [ publishableKey, setPublishableKey ] = useState( '' );
 	const [ locale, setLocale ] = useState( '' );
@@ -106,15 +104,18 @@ const EmbeddedOnboarding: React.FC< Props > = ( {
 			let isEligible = false;
 
 			// If we are resuming an onboarding session, we don't need to check for PO eligibility again.
-			if ( ! continueOnboarding ) {
+			if ( ! continueKyc ) {
 				isEligible = await isEligibleForPo();
 			}
 
-			const path = addQueryArgs( `${ NAMESPACE }/onboarding/session`, {
-				self_assessment: fromDotNotation( data ),
-				progressive: isEligible,
-			} );
-			const accountSession = await apiFetch< AccountSessionData >( {
+			const path = addQueryArgs(
+				`${ NAMESPACE }/onboarding/kyc/session`,
+				{
+					self_assessment: fromDotNotation( data ),
+					progressive: isEligible,
+				}
+			);
+			const accountSession = await apiFetch< AccountKycSessionData >( {
 				path: path,
 				method: 'GET',
 			} );
@@ -139,7 +140,7 @@ const EmbeddedOnboarding: React.FC< Props > = ( {
 		};
 
 		fetchKeys();
-	}, [ data, continueOnboarding ] );
+	}, [ data, continueKyc ] );
 
 	// Initialize the Stripe Connect instance only once when publishableKey and clientSecret are ready
 	useEffect( () => {
@@ -184,7 +185,7 @@ const EmbeddedOnboarding: React.FC< Props > = ( {
 								const response = await apiFetch<
 									FinalizeResponse
 								>( {
-									path: `${ NAMESPACE }/onboarding/finalize`,
+									path: `${ NAMESPACE }/onboarding/kyc/finalize`,
 									method: 'POST',
 									data: {
 										source: urlSource,
@@ -195,24 +196,30 @@ const EmbeddedOnboarding: React.FC< Props > = ( {
 
 								if ( response.success ) {
 									window.location.href = getOverviewUrl(
-										response.params,
+										{
+											...response.params,
+											'wcpay-connection-success': '1',
+										},
 										'WCPAY_ONBOARDING_WIZARD'
 									);
 								} else {
-									// If a non-success response is received we should redirect to the overview page with an error flag:
-									window.location.href = getOverviewUrl(
+									// If a non-success response is received we should redirect to the Connect page with an error flag:
+									window.location.href = getConnectUrl(
 										{
 											...response.params,
-											onboardingError: true,
+											'wcpay-connection-error': '1',
 										},
 										'WCPAY_ONBOARDING_WIZARD'
 									);
 								}
 							} catch ( error ) {
-								// If an error response is received we should redirect to the overview page with an error flag:
+								// If an error response is received we should redirect to the Connect page with an error flag:
 								// Note that this should never happen, since we always expect a response from the server.
-								window.location.href = getOverviewUrl(
-									{ onboardingError: true },
+								window.location.href = getConnectUrl(
+									{
+										'wcpay-connection-error': '1',
+										source: urlSource,
+									},
 									'WCPAY_ONBOARDING_WIZARD'
 								);
 							}
@@ -224,4 +231,4 @@ const EmbeddedOnboarding: React.FC< Props > = ( {
 	);
 };
 
-export default EmbeddedOnboarding;
+export default EmbeddedKyc;

@@ -28,7 +28,7 @@ class WC_Payments_Account {
 	const ONBOARDING_DISABLED_TRANSIENT                         = 'wcpay_on_boarding_disabled';
 	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
-	const ONBOARDING_IN_PROGRESS_OPTION                         = 'wcpay_onboarding_in_progress';
+	const EMBEDDED_KYC_IN_PROGRESS_OPTION                       = 'wcpay_onboarding_embedded_kyc_in_progress';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
@@ -1173,7 +1173,7 @@ class WC_Payments_Account {
 				|| ( WC_Payments_Onboarding_Service::FROM_STRIPE === $from && ! empty( $_GET['wcpay-connection-error'] ) ) ) {
 
 				delete_transient( self::ONBOARDING_STATE_TRANSIENT );
-				delete_option( self::ONBOARDING_IN_PROGRESS_OPTION );
+				delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 			}
 
 			// Make changes to account data as instructed by action GET params.
@@ -1400,7 +1400,7 @@ class WC_Payments_Account {
 				if ( $create_test_drive_account ) {
 					// Since there should be no Stripe KYC needed, make sure we start with a clean state.
 					delete_transient( self::ONBOARDING_STATE_TRANSIENT );
-					delete_option( self::ONBOARDING_IN_PROGRESS_OPTION );
+					delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 
 					// If we have the auto_start_test_drive_onboarding flag, we redirect to the Connect page
 					// to let the JS logic take control and orchestrate things.
@@ -1562,7 +1562,7 @@ class WC_Payments_Account {
 		// Discard any ongoing onboarding session.
 		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
 		delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
-		delete_option( self::ONBOARDING_IN_PROGRESS_OPTION );
+		delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 		delete_transient( 'woopay_enabled_by_default' );
 
 		// Clear the cache to avoid stale data.
@@ -1747,16 +1747,16 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Get the URL to continue the onboarding flow on WooPayments (embedded onboarding).
+	 * Get the URL to the embedded onboarding KYC page.
 	 *
-	 * @param array $additional_args - Additional query args to add to the return URL.
+	 * @param array $additional_args Additional query args to add to the URL.
 	 *
 	 * @return string
 	 */
-	private function get_onboarding_continue_url( array $additional_args = [] ): string {
+	private function get_onboarding_kyc_url( array $additional_args = [] ): string {
 		$params = [
 			'page' => 'wc-admin',
-			'path' => '/payments/onboarding/continue',
+			'path' => '/payments/onboarding/kyc',
 		];
 
 		$params = array_merge( $params, $additional_args );
@@ -1851,7 +1851,7 @@ class WC_Payments_Account {
 
 			// Clean up any existing onboarding state.
 			delete_transient( self::ONBOARDING_STATE_TRANSIENT );
-			delete_option( self::ONBOARDING_IN_PROGRESS_OPTION );
+			delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 
 			return add_query_arg(
 				[ 'wcpay-connection-success' => '1' ],

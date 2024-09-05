@@ -29,7 +29,7 @@ import CapitalPage from 'capital';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
 import OnboardingPage from 'onboarding';
-import ContinueOnboardingPage from 'onboarding/continue-onboarding';
+import OnboardingKycPage from 'onboarding/kyc';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
 
@@ -71,8 +71,8 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: ContinueOnboardingPage,
-			path: '/payments/onboarding/continue',
+			container: OnboardingKycPage,
+			path: '/payments/onboarding/kyc',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
 				rootLink,
