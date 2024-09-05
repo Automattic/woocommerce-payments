@@ -347,21 +347,22 @@ class WC_Payments_Admin {
 			remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
 		}
 
-		// TODO GH-9357 register page only in necessary cases.
-		wc_admin_register_page(
-			[
-				'id'         => 'wc-payments-continue-onboarding',
-				'title'      => __( 'Continue onboarding', 'woocommerce-payments' ),
-				'parent'     => 'wc-payments',
-				'path'       => '/payments/onboarding/continue',
-				'capability' => 'manage_woocommerce',
-				'nav_args'   => [
-					'parent' => 'wc-payments',
-				],
-			]
-		);
-		remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding/continue' );
-		remove_submenu_page( 'wc-admin&path=/payments/overview', 'wc-admin&path=/payments/onboarding/continue' );
+		// Register /payments/onboarding/continue only for account that have the Stripe account, but KYC is not finished (details not submitted).
+		if ( $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
+			wc_admin_register_page(
+				[
+					'id'         => 'wc-payments-continue-onboarding',
+					'title'      => __( 'Continue onboarding', 'woocommerce-payments' ),
+					'parent'     => 'wc-payments',
+					'path'       => '/payments/onboarding/continue',
+					'capability' => 'manage_woocommerce',
+					'nav_args'   => [
+						'parent' => 'wc-payments',
+					],
+				]
+			);
+			remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding/continue' );
+		}
 
 		if ( $should_render_full_menu ) {
 			if ( $this->account->is_card_present_eligible() && $this->account->has_card_readers_available() ) {
@@ -874,7 +875,7 @@ class WC_Payments_Admin {
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'                 => WC_Payments_Account::is_on_boarding_disabled(),
 			'onboardingFieldsData'               => $this->onboarding_service->get_fields_data( get_user_locale() ),
-			'onboardingFlowState'                => $this->onboarding_service->get_onboarding_flow_state(),
+			'onboardingInProgress'               => $this->onboarding_service->is_onboarding_in_progress(),
 			'errorMessage'                       => $error_message,
 			'featureFlags'                       => $this->get_frontend_feature_flags(),
 			'isSubscriptionsActive'              => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
