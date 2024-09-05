@@ -40,7 +40,7 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 const expressCheckoutElementGooglePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
-	title: 'WooPayments - GooglePay',
+	title: 'WooPayments - Google Pay',
 	description: __(
 		'The GooglePay button will show to users signed in to their Google account.',
 		'woocommerce-payments'
