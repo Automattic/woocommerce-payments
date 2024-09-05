@@ -109,16 +109,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			add_action( 'wp_enqueue_scripts', [ $this, 'add_pay_for_order_params_to_js_config' ], 5 );
 		}
 
-		add_filter(
-			'the_content',
-			function ( $content ) {
-				$content = '<div id="express-checkout-check-availability-container-applePay" style="height: 0; float:left; opacity: 0; pointer-events: none;"></div>' . $content;
-				$content = '<div id="express-checkout-check-availability-container-googlePay" style="height: 0; float:right; opacity: 0; pointer-events: none;"></div>' . $content;
-				return $content;
-			},
-			10,
-			1
-		);
+		$this->add_html_container_for_test_express_checkout_buttons();
 	}
 
 	/**
@@ -183,6 +174,31 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 */
 	public function add_order_attribution_inputs() {
 		echo '<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>';
+	}
+
+
+	/**
+	 * Add HTML containers to be used by the Express Checkout buttons that check if the payment method is available.
+	 *
+	 * @return void
+	 */
+	private function add_html_container_for_test_express_checkout_buttons() {
+		// Restrict adding these HTML containers to only the necessary pages.
+		add_filter(
+			'the_content',
+			function ( $content ) {
+				$supported_payment_methods = [ 'applePay' , 'googlePay' ];
+				if ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) {
+					foreach ( $supported_payment_methods as $value ) {
+						// The inline styles ensure that the HTML elements don’t occupy space on the page.
+						$content = '<div id="express-checkout-check-availability-container-' . $value . '" style="height: 0; float:left; opacity: 0; pointer-events: none;"></div>' . $content;
+					}
+				}
+				return $content;
+			},
+			10,
+			1
+		);
 	}
 
 	/**
