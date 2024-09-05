@@ -68,6 +68,7 @@ export const checkPaymentMethodIsAvailable = memoize(
 							canMakePayment =
 								event.availablePaymentMethods[ paymentMethod ];
 						}
+						// eslint-disable-next-line no-console
 						console.log(
 							`Payment method ${ paymentMethod }, is available? `,
 							canMakePayment
