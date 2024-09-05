@@ -17,7 +17,7 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
 	title: 'WooPayments - ApplePay',
 	description: __(
-		'The ApplePay with show to users on a Sarari or iOS device with an active Apple account.',
+		'Apple Pay will be displayed to users on Safari or iOS devices with an active Apple account.',
 		'woocommerce-payments'
 	),
 	gatewayId: 'woocommerce_payments',
