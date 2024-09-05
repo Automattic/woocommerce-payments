@@ -12,20 +12,20 @@ import EmbeddedOnboarding from 'wcpay/onboarding/steps/embedded-onboarding';
 import Logo from 'assets/images/woopayments.svg';
 import { closeSmall, Icon } from '@wordpress/icons';
 import strings from 'wcpay/onboarding/strings';
-import { getAdminUrl } from 'wcpay/utils';
+import { getConnectUrl } from 'wcpay/utils';
 
 const ContinueOnboardingPage: React.FC = () => {
 	const handleExit = () => {
 		const urlParams = new URLSearchParams( window.location.search );
 
-		window.location.href = getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/connect',
-			source:
-				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
-				'unknown',
-			from: 'WCPAY_ONBOARDING_WIZARD',
-		} );
+		window.location.href = getConnectUrl(
+			{
+				source:
+					urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+					'unknown',
+			},
+			'WCPAY_ONBOARDING_WIZARD'
+		);
 	};
 
 	useEffect( () => {
