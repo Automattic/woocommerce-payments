@@ -17,6 +17,7 @@ import {
 } from 'multi-currency/data';
 
 import MultiCurrencySettingsContext from 'multi-currency/context';
+import { WooPaymentsContextV1 } from 'multi-currency/interface/contexts';
 
 jest.mock( 'multi-currency/data', () => ( {
 	useAvailableCurrencies: jest.fn(),
@@ -194,9 +195,11 @@ const containerContext = {
 
 const getContainer = () => {
 	return render(
-		<MultiCurrencySettingsContext.Provider value={ containerContext }>
-			<EnabledCurrencies />
-		</MultiCurrencySettingsContext.Provider>
+		<WooPaymentsContextV1>
+			<MultiCurrencySettingsContext.Provider value={ containerContext }>
+				<EnabledCurrencies />
+			</MultiCurrencySettingsContext.Provider>
+		</WooPaymentsContextV1>
 	);
 };
 
