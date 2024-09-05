@@ -13,8 +13,7 @@ import {
 	CollapsibleBody,
 	WizardTaskItem,
 } from 'multi-currency/interface/components';
-import { WizardTaskContext } from 'multi-currency/interface/functions';
-import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
+import { WooPaymentsContext } from 'multi-currency/interface/contexts';
 import PreviewModal from 'multi-currency/components/preview-modal';
 import './index.scss';
 
@@ -22,6 +21,9 @@ import { useStoreSettings } from 'multi-currency/data';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
+	const { useSettings, useMultiCurrency, WizardTaskContext } = useContext(
+		WooPaymentsContext
+	);
 	const { saveSettings, isSaving } = useSettings();
 	const [
 		isMultiCurrencyEnabled,
