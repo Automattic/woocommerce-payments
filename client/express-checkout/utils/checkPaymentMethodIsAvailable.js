@@ -69,6 +69,7 @@ export const checkPaymentMethodIsAvailable = memoize(
 								event.availablePaymentMethods[ paymentMethod ];
 						}
 						resolve( canMakePayment );
+						root.unmount();
 					} }
 				/>
 			</Elements>
