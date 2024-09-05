@@ -42,7 +42,7 @@ const expressCheckoutElementGooglePay = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
 	title: 'WooPayments - Google Pay',
 	description: __(
-		'The GooglePay button will show to users signed in to their Google account.',
+		'The Google Pay button will be displayed to users who are signed in to their Google account.',
 		'woocommerce-payments'
 	),
 	gatewayId: 'woocommerce_payments',
