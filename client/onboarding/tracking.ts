@@ -76,13 +76,13 @@ export const trackEligibilityModalClosed = (
 	} );
 
 export const useTrackAbandoned = (): {
-	trackAbandoned: ( method: 'hide' | 'exit', source: string ) => void;
+	trackAbandoned: ( method: 'hide' | 'exit' ) => void;
 	removeTrackListener: () => void;
 } => {
 	const { errors, touched } = useOnboardingContext();
 	const { currentStep: step } = useStepperContext();
 
-	const trackEvent = ( method = 'hide', source = 'unknown' ) => {
+	const trackEvent = ( method = 'hide' ) => {
 		const event =
 			method === 'hide'
 				? 'wcpay_onboarding_flow_hidden'
@@ -91,21 +91,24 @@ export const useTrackAbandoned = (): {
 			( field ) => touched[ field as keyof OnboardingFields ]
 		);
 
+		const urlParams = new URLSearchParams( window.location.search );
+
 		recordEvent( event, {
 			step,
 			errored,
 			elapsed: elapsed( startTime ),
-			source,
+			source:
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown',
+			abtest: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || '',
+			abtest_variation:
+				urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || '',
 		} );
 	};
 
 	const listener = () => {
 		if ( document.visibilityState === 'hidden' ) {
-			const urlParams = new URLSearchParams( window.location.search );
-			const source =
-				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
-				'unknown';
-			trackEvent( 'hide', source );
+			trackEvent( 'hide' );
 		}
 	};
 
@@ -118,8 +121,8 @@ export const useTrackAbandoned = (): {
 	}, [ step, errors, touched ] );
 
 	return {
-		trackAbandoned: ( method: string, source = 'unknown' ) => {
-			trackEvent( method, source );
+		trackAbandoned: ( method: string ) => {
+			trackEvent( method );
 			document.removeEventListener( 'visibilitychange', listener );
 		},
 		removeTrackListener: () =>
