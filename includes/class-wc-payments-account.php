@@ -931,6 +931,25 @@ class WC_Payments_Account {
 			return false;
 		}
 
+		// There are certain cases where it is best to refresh the account data
+		// to be sure we are dealing with the current account state on the Connect page:
+		// - When the merchant is coming from the onboarding wizard it is best to refresh the account data because
+		// the merchant might have started the embedded Stripe KYC.
+		// - When the merchant is coming from the embedded KYC, definitely refresh the account data.
+		// The account data shouldn't be refreshed with force disconnected option enabled.
+		if ( ! WC_Payments_Utils::force_disconnected_enabled()
+			&& in_array(
+				WC_Payments_Onboarding_Service::get_from(),
+				[
+					WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
+					WC_Payments_Onboarding_Service::FROM_ONBOARDING_KYC,
+				],
+				true
+			) ) {
+
+			$this->refresh_account_data();
+		}
+
 		// If everything is in good working condition, redirect to Payments Overview page.
 		if ( $this->has_working_jetpack_connection() && $this->is_stripe_account_valid() ) {
 			$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE );
@@ -1795,12 +1814,15 @@ class WC_Payments_Account {
 			WC_Payments_Onboarding_Service::set_onboarding_eligibility_modal_dismissed();
 		}
 
-		// If we are in the middle of an embedded onboarding, go to the continue page.
+		// If we are in the middle of an embedded onboarding, go to the KYC page.
 		// In this case, we don't need to generate a return URL from Stripe, and we
 		// can rely on the JS logic to generate the session.
-		if ( WC_Payments_Onboarding_Service::is_onboarding_in_progress() ) {
-			$return_url = $this->get_onboarding_continue_url( $additional_args );
-			return $return_url;
+		if ( WC_Payments_Onboarding_Service::is_embedded_kyc_in_progress() ) {
+			// We want to carry over the connect link from value because with embedded KYC
+			// there is no interim step for the user.
+			$additional_args['from'] = WC_Payments_Onboarding_Service::get_from();
+
+			return $this->get_onboarding_kyc_url( $additional_args );
 		}
 
 		// Else, go on with the normal onboarding redirect logic.
