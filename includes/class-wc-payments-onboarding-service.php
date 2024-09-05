@@ -240,9 +240,6 @@ class WC_Payments_Onboarding_Service {
 			throw new API_Exception( __( 'Failed to finalize onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
 		}
 
-		self::clear_onboarding_flow_state();
-		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
-
 		return [
 			'success'           => $success,
 			'details_submitted' => $details_submitted,

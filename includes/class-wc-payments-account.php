@@ -887,6 +887,16 @@ class WC_Payments_Account {
 		}
 
 		// Merchants with an invalid Stripe account, need to go to the Stripe KYC, not our onboarding wizard.
+		if ( ! $this->is_stripe_account_valid() ) {
+			$this->redirect_service->redirect_to_connect_page(
+				null,
+				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
+				[ 'source' => $onboarding_source ]
+			);
+			return true;
+		}
+
+		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD );
 		return true;
 	}
 
@@ -1471,12 +1481,7 @@ class WC_Payments_Account {
 					wp_send_json_success( [ 'redirect_to' => $redirect_to ] );
 				} else {
 					// Redirect the user to where our Stripe onboarding instructed.
-					$this->redirect_service->redirect_to_onboarding_wizard(
-						$from,
-						[
-							'source' => $onboarding_source,
-						]
-					);
+					$this->redirect_service->redirect_to( $redirect_to );
 				}
 			} catch ( API_Exception $e ) {
 				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
@@ -1551,7 +1556,6 @@ class WC_Payments_Account {
 		update_option( '_wcpay_onboarding_stripe_connected', [] );
 		update_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' );
 
-		WC_Payments_Onboarding_Service::clear_onboarding_flow_state();
 		// Discard any ongoing onboarding session.
 		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
 		delete_transient( self::ONBOARDING_STARTED_TRANSIENT );

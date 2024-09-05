@@ -331,7 +331,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( ! $this->account->is_stripe_account_valid() ) {
+		if ( ! $this->account->is_stripe_connected() ) {
 			wc_admin_register_page(
 				[
 					'id'         => 'wc-payments-onboarding',
