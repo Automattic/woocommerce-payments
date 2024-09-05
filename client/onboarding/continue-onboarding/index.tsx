@@ -44,9 +44,7 @@ const ContinueOnboardingPage: React.FC = () => {
 	}, [] );
 	return (
 		<Page className="wcpay-onboarding-prototype">
-			<OnboardingContextProvider
-				initialData={ wcpaySettings.onboardingFlowState?.data }
-			>
+			<OnboardingContextProvider>
 				<div className="stepper__nav">
 					<button
 						type="button"
