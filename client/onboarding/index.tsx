@@ -7,9 +7,9 @@ import React, { useEffect } from 'react';
  * Internal dependencies
  */
 import Page from 'components/page';
-import { OnboardingContextProvider, useOnboardingContext } from './context';
+import { OnboardingContextProvider } from './context';
 import { Stepper } from 'components/stepper';
-import { getMccFromIndustry, persistFlowState } from 'onboarding/utils';
+import { getMccFromIndustry } from 'onboarding/utils';
 import { OnboardingForm } from './form';
 import Step from './step';
 import BusinessDetails from './steps/business-details';
@@ -20,7 +20,6 @@ import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 
 const OnboardingStepper = () => {
-	const { data } = useOnboardingContext();
 	const handleExit = () => {
 		const urlParams = new URLSearchParams( window.location.search );
 
@@ -34,19 +33,10 @@ const OnboardingStepper = () => {
 		} );
 	};
 
-	const handleStepChange = ( step: string ) => {
-		window.scroll( 0, 0 );
-		if ( step === 'embedded' ) {
-			persistFlowState( step, data );
-		}
-	};
+	const handleStepChange = () => window.scroll( 0, 0 );
 
 	return (
-		<Stepper
-			initialStep={ wcpaySettings.onboardingFlowState?.current_step }
-			onStepChange={ handleStepChange }
-			onExit={ handleExit }
-		>
+		<Stepper onStepChange={ handleStepChange } onExit={ handleExit }>
 			<Step name="business">
 				<OnboardingForm>
 					<BusinessDetails />
@@ -78,7 +68,7 @@ const getComingSoonShareKey = () => {
 	return shareKey ? '?woo-share=' + shareKey : '';
 };
 
-const initialData = wcpaySettings.onboardingFlowState?.data ?? {
+const initialData = {
 	business_name: wcSettings?.siteTitle,
 	mcc: getMccFromIndustry(),
 	url:
