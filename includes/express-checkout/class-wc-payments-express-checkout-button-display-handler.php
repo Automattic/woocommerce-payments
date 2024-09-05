@@ -112,8 +112,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		add_filter(
 			'the_content',
 			function ( $content ) {
-				$content = '<div id="express-checkout-check-availability-container-applePay" style="height: 0; opacity: 0; pointer-events: none;"></div>' . $content;
-				$content = '<div id="express-checkout-check-availability-container-googlePay" style="height: 0; opacity: 0; pointer-events: none;"></div>' . $content;
+				$content = '<div id="express-checkout-check-availability-container-applePay" style="height: 0; float:left; opacity: 0; pointer-events: none;"></div>' . $content;
+				$content = '<div id="express-checkout-check-availability-container-googlePay" style="height: 0; float:right; opacity: 0; pointer-events: none;"></div>' . $content;
 				return $content;
 			},
 			10,
