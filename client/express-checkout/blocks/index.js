@@ -27,6 +27,10 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 		features: getConfig( 'features' ),
 	},
 	canMakePayment: ( { cart } ) => {
+		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			return false;
+		}
+
 		return new Promise( ( resolve ) => {
 			checkPaymentMethodIsAvailable( 'applePay', cart, resolve );
 		} );
@@ -48,6 +52,10 @@ const expressCheckoutElementGooglePay = ( api ) => {
 			features: getConfig( 'features' ),
 		},
 		canMakePayment: ( { cart } ) => {
+			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+				return false;
+			}
+
 			return new Promise( ( resolve ) => {
 				checkPaymentMethodIsAvailable( 'googlePay', cart, resolve );
 			} );
