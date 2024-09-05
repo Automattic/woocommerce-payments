@@ -1,6 +1,4 @@
 /**
  * External Dependencies
  */
-import paymentMethodsMap from 'wcpay/payment-methods-map';
-
-export { paymentMethodsMap };
+export { default as paymentMethodsMap } from 'wcpay/payment-methods-map';
