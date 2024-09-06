@@ -911,26 +911,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Get the name for the Core Payments task onboarding flow experiment.
-	 *
-	 * @return string
-	 */
-	public static function get_core_payments_task_onboarding_flow_abtest_name(): string {
-		return 'woopayments_core_payments_task_onboarding_flow_2024_v1';
-	}
-
-	/**
-	 * Get the shortname for the Core Payments task onboarding flow experiment.
-	 *
-	 * This will be used in our Tracks tracking, for brevity.
-	 *
-	 * @return string
-	 */
-	public static function get_core_payments_task_onboarding_flow_abtest_shortname(): string {
-		return 'cptof_2024_v1';
-	}
-
-	/**
 	 * Check to see if the current user is in Core Payments task onboarding flow experiment treatment mode.
 	 *
 	 * @return bool
@@ -946,7 +926,7 @@ class WC_Payments_Utils {
 			'yes' === get_option( 'woocommerce_allow_tracking', 'no' )
 		);
 
-		return 'treatment' === $abtest->get_variation( self::get_core_payments_task_onboarding_flow_abtest_name() );
+		return 'treatment' === $abtest->get_variation( 'woopayments_core_payments_task_onboarding_flow_2024_v1' );
 	}
 
 	/**

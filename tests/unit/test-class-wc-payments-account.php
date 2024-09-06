@@ -242,8 +242,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 				[
 					'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
-					'abt'    => false,
-					'abt_v'  => false,
 				]
 			);
 
@@ -627,8 +625,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE,
 				[
 					'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
-					'abt'    => false,
-					'abt_v'  => false,
 				]
 			);
 

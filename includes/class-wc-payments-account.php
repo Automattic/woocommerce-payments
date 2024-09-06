@@ -974,8 +974,6 @@ class WC_Payments_Account {
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
 				[
 					'source' => WC_Payments_Onboarding_Service::get_source(),
-					'abt'    => WC_Payments_Utils::get_core_payments_task_onboarding_flow_abtest_shortname(),
-					'abt_v'  => 'treatment',
 				]
 			);
 			return true;
@@ -1054,10 +1052,6 @@ class WC_Payments_Account {
 		$from = WC_Payments_Onboarding_Service::get_from();
 		// Determine the original/initial place from where the merchant entered the onboarding flow.
 		$onboarding_source = WC_Payments_Onboarding_Service::get_source();
-
-		// Determine if the user is part of an active experiment variation (aka treatment).
-		$abtest     = ! empty( $_GET['abt'] ) ? sanitize_text_field( wp_unslash( $_GET['abt'] ) ) : false;
-		$abtest_var = ! empty( $_GET['abt_v'] ) ? sanitize_text_field( wp_unslash( $_GET['abt_v'] ) ) : false;
 
 		/**
 		 * ==================
@@ -1192,13 +1186,6 @@ class WC_Payments_Account {
 				'from'      => $from,
 				'source'    => $onboarding_source,
 			];
-			// Attach experiments related props to the Tracks event.
-			if ( ! empty( $abtest ) ) {
-				$tracks_props['abtest'] = $abtest;
-			}
-			if ( ! empty( $abtest_var ) ) {
-				$tracks_props['abtest_variation'] = $abtest_var;
-			}
 
 			// Handle the return from Stripe KYC flow (via a connect link).
 			// The state of the WPCOM/Jetpack connection should not matter - if we received the state data,
@@ -1213,8 +1200,6 @@ class WC_Payments_Account {
 					[
 						'from'                  => $from,
 						'source'                => $onboarding_source,
-						'abt'                   => $abtest,
-						'abt_v'                 => $abtest_var,
 						// Carry over some parameters as they may be used by our frontend logic.
 						'wcpay-sandbox-success' => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
 						'test_drive_error'      => ! empty( $_GET['test_drive_error'] ) ? 'true' : false,
@@ -1317,8 +1302,6 @@ class WC_Payments_Account {
 						WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 						[
 							'source' => $onboarding_source,
-							'abt'    => $abtest,
-							'abt_v'  => $abtest_var,
 						]
 					);
 
@@ -1387,8 +1370,6 @@ class WC_Payments_Account {
 						'progressive'                 => $progressive ? 'true' : false,
 						'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
 						'source'                      => $onboarding_source,
-						'abt'                         => $abtest,
-						'abt_v'                       => $abtest_var,
 					]
 				);
 				return;
@@ -1418,8 +1399,6 @@ class WC_Payments_Account {
 							'auto_start_test_drive_onboarding' => $auto_start_test_drive_onboarding ? 'true' : false,
 							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							'source'                      => $onboarding_source,
-							'abt'                         => $abtest,
-							'abt_v'                       => $abtest_var,
 
 						],
 						self::get_connect_url( $wcpay_connect_param ) // Instruct Jetpack to return here (connect link).
@@ -1434,8 +1413,6 @@ class WC_Payments_Account {
 					WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 					[
 						'source' => $onboarding_source,
-						'abt'    => $abtest,
-						'abt_v'  => $abtest_var,
 					]
 				);
 				return;
@@ -1454,8 +1431,6 @@ class WC_Payments_Account {
 					! empty( $from ) ? $from : $next_step_from,
 					[
 						'source' => $onboarding_source,
-						'abt'    => $abtest,
-						'abt_v'  => $abtest_var,
 					]
 				);
 				return;
@@ -1494,8 +1469,6 @@ class WC_Payments_Account {
 								'auto_start_test_drive_onboarding' => 'true', // This is critical.
 								'test_mode'  => $should_onboard_in_test_mode ? 'true' : false,
 								'source'     => $onboarding_source,
-								'abt'        => $abtest,
-								'abt_v'      => $abtest_var,
 							]
 						);
 						return;
@@ -1518,8 +1491,6 @@ class WC_Payments_Account {
 							'from'                        => $from, // Use the same from.
 							'source'                      => $onboarding_source,
 							'wcpay-discard-started-onboarding' => 'true',
-							'abt'                         => $abtest,
-							'abt_v'                       => $abtest_var,
 
 						],
 						self::get_connect_url( $wcpay_connect_param ) // Instruct Jetpack to return here (connect link).
@@ -1549,8 +1520,6 @@ class WC_Payments_Account {
 						'progressive' => $progressive ? 'true' : false,
 						'source'      => $onboarding_source,
 						'from'        => WC_Payments_Onboarding_Service::FROM_STRIPE,
-						'abt'         => $abtest,
-						'abt_v'       => $abtest_var,
 					]
 				);
 
@@ -1588,8 +1557,6 @@ class WC_Payments_Account {
 					null,
 					[
 						'source' => $onboarding_source,
-						'abt'    => $abtest,
-						'abt_v'  => $abtest_var,
 					]
 				);
 				return;
@@ -1629,8 +1596,6 @@ class WC_Payments_Account {
 				[
 					'from'   => $from,
 					'source' => $onboarding_source,
-					'abt'    => $abtest,
-					'abt_v'  => $abtest_var,
 				]
 			);
 
@@ -2067,13 +2032,6 @@ class WC_Payments_Account {
 			'from'      => $additional_args['from'] ?? '',
 			'source'    => $additional_args['source'] ?? '',
 		];
-		// Attach experiments related props to the Tracks event.
-		if ( ! empty( $additional_args['abt'] ) ) {
-			$tracks_props['abtest'] = $additional_args['abt'];
-		}
-		if ( ! empty( $additional_args['abt_v'] ) ) {
-			$tracks_props['abtest_variation'] = $additional_args['abt_v'];
-		}
 		$this->tracks_event(
 			self::TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED,
 			$tracks_props

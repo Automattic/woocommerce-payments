@@ -16,7 +16,7 @@ import BusinessDetails from './steps/business-details';
 import EmbeddedKyc from './steps/embedded-kyc';
 import StoreDetails from './steps/store-details';
 import { trackStarted } from './tracking';
-import { getAdminUrl, objectRemoveEmptyProperties } from 'wcpay/utils';
+import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 import LoadingStep from 'wcpay/onboarding/steps/loading';
 
@@ -24,19 +24,14 @@ const OnboardingStepper = () => {
 	const handleExit = () => {
 		const urlParams = new URLSearchParams( window.location.search );
 
-		window.location.href = getAdminUrl(
-			objectRemoveEmptyProperties( {
-				page: 'wc-admin',
-				path: '/payments/connect',
-				source:
-					urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
-					'unknown',
-				from: 'WCPAY_ONBOARDING_WIZARD',
-				abt: urlParams.get( 'abt' )?.replace( /[^\w-]+/g, '' ) || null,
-				abt_v:
-					urlParams.get( 'abt_v' )?.replace( /[^\w-]+/g, '' ) || null,
-			} )
-		);
+		window.location.href = getAdminUrl( {
+			page: 'wc-admin',
+			path: '/payments/connect',
+			source:
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown',
+			from: 'WCPAY_ONBOARDING_WIZARD',
+		} );
 	};
 
 	const handleStepChange = () => window.scroll( 0, 0 );
