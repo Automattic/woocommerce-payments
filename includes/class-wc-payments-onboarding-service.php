@@ -242,7 +242,7 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		// Clear the onboarding in progress option, since the onboarding flow is now complete.
-		self::clear_embedded_kyc_in_progress();
+		$this->clear_embedded_kyc_in_progress();
 
 		return [
 			'success'           => $success,
@@ -434,7 +434,7 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return bool True if embedded KYC is in progress, false otherwise.
 	 */
-	public static function is_embedded_kyc_in_progress(): bool {
+	public function is_embedded_kyc_in_progress(): bool {
 		return in_array( get_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'no' ), [ 'yes', '1' ], true );
 	}
 
@@ -443,7 +443,7 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return bool Whether we successfully marked the flow as in progress.
 	 */
-	public static function set_embedded_kyc_in_progress(): bool {
+	public function set_embedded_kyc_in_progress(): bool {
 		return update_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'yes' );
 	}
 
@@ -452,7 +452,7 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return boolean Whether we successfully cleared the flags.
 	 */
-	public static function clear_embedded_kyc_in_progress(): bool {
+	public function clear_embedded_kyc_in_progress(): bool {
 		return delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 	}
 
