@@ -132,7 +132,7 @@ const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 				setLoading( false );
 				setLoadErrorMessage(
 					__(
-						"Failed to create account session. Please check that you're using the latest version of WooCommerce Payments.",
+						"Failed to create account session. Please check that you're using the latest version of WooPayments.",
 						'woocommerce-payments'
 					)
 				);
