@@ -2,17 +2,17 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
+import { closeSmall, Icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import Page from 'wcpay/components/page';
-import { OnboardingContextProvider } from 'wcpay/onboarding/context';
-import EmbeddedKyc from 'wcpay/onboarding/steps/embedded-kyc';
 import Logo from 'assets/images/woopayments.svg';
-import { closeSmall, Icon } from '@wordpress/icons';
-import strings from 'wcpay/onboarding/strings';
-import { getConnectUrl } from 'wcpay/utils';
+import Page from 'components/page';
+import { OnboardingContextProvider } from 'onboarding/context';
+import EmbeddedKyc from 'onboarding/steps/embedded-kyc';
+import strings from 'onboarding/strings';
+import { getConnectUrl } from 'utils';
 
 const OnboardingKycPage: React.FC = () => {
 	const handleExit = () => {
