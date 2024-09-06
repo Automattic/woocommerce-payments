@@ -60,6 +60,8 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	define( 'WCPAY_STRIPE_LIVE_PUBLIC_KEY', 'pk_live_XXXXXXX' );
 	define( 'WCPAY_STRIPE_LIVE_SECRET_KEY', 'sk_live_XXXXXXX' );
 	define( 'WCPAY_ONBOARDING_ENCRYPT_KEY', str_repeat( 'a', SODIUM_CRYPTO_SECRETBOX_KEYBYTES ) );
+	define( 'WOOPAY_URL', 'https://pay.woo.com' );
+	define( 'WOOPAY_BLOG_ID', '$E2E_WOOPAY_BLOG_ID' );
 	"
 	printf "$SECRETS" > "local/secrets.php"
 	echo "Secrets created"

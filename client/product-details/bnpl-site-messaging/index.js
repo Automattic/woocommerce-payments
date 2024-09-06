@@ -8,14 +8,6 @@ import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import apiRequest from 'wcpay/checkout/utils/request';
 
-/**
- * Initializes the appearance of the payment element by retrieving the UPE configuration
- * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
- * it is simply returned.
- *
- * @param {Object} api The API object used to save the UPE configuration.
- * @return {Promise<Object>} The appearance object for the UPE.
- */
 const elementsLocations = {
 	bnplProductPage: {
 		configKey: 'upeBnplProductPageAppearance',
@@ -27,6 +19,16 @@ const elementsLocations = {
 	},
 };
 
+/**
+ * Initializes the appearance of the payment element by retrieving the UPE configuration
+ * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
+ * it is simply returned.
+ *
+ * @param {Object} api The API object used to save the UPE configuration.
+ * @param {string} location The location of the UPE.
+ *
+ * @return {Promise<Object>} The appearance object for the UPE.
+ */
 async function initializeAppearance( api, location ) {
 	const { configKey, appearanceKey } = elementsLocations[ location ];
 
@@ -53,16 +55,25 @@ export const initializeBnplSiteMessaging = async () => {
 		isCart,
 		isCartBlock,
 		cartTotal,
+		minimumOrderAmount,
 	} = window.wcpayStripeSiteMessaging;
 
 	let amount;
 	let elementLocation = 'bnplProductPage';
+	const minOrderAmount = parseInt( minimumOrderAmount, 10 ) || 0;
+	const paymentMessageContainer = document.getElementById(
+		'payment-method-message'
+	);
 
 	if ( isCart || isCartBlock ) {
 		amount = parseInt( cartTotal, 10 ) || 0;
 		elementLocation = 'bnplClassicCart';
 	} else {
 		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
+
+		if ( amount < minOrderAmount ) {
+			paymentMessageContainer.style.setProperty( 'display', 'none' );
+		}
 	}
 
 	let paymentMessageElement;
@@ -140,9 +151,6 @@ export const initializeBnplSiteMessaging = async () => {
 		}
 
 		// Set the `--wc-bnpl-margin-bottom` CSS variable to the computed bottom margin of the price element.
-		const paymentMessageContainer = document.getElementById(
-			'payment-method-message'
-		);
 		paymentMessageContainer.style.setProperty(
 			'--wc-bnpl-margin-bottom',
 			bottomMargin
@@ -208,7 +216,7 @@ export const initializeBnplSiteMessaging = async () => {
 					pmme.style.setProperty( '--wc-bnpl-margin-bottom', '-4px' );
 				}, 2000 );
 			} else {
-				paymentMessageLoading.remove();
+				paymentMessageLoading?.remove();
 			}
 		} );
 	}

@@ -931,6 +931,12 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $result );
 	}
 
+	public function test_get_cached_minimum_amount_returns_amount_fallbacking_from_stripe_list() {
+		delete_transient( 'wcpay_minimum_amount_usd' );
+		$result = WC_Payments_Utils::get_cached_minimum_amount( 'usd', true );
+		$this->assertSame( 50, $result );
+	}
+
 	public function test_get_last_refund_from_order_id_returns_correct_refund() {
 		$order    = WC_Helper_Order::create_order();
 		$refund_1 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
