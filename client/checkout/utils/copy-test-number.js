@@ -42,7 +42,6 @@ document.addEventListener(
 					context: 'wc/checkout/payments',
 				}
 			);
-		copyNumberButton.classList.remove( 'state--success' );
 		copyNumberButton.classList.add( 'state--success' );
 		clearTimeout( previousTimeoutRef );
 		previousTimeoutRef = setTimeout( () => {
