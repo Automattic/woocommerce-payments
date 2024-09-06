@@ -186,4 +186,11 @@ declare global {
 		homeUrl: string;
 		siteTitle: string;
 	};
+
+	interface Window {
+		wcpaySettings: typeof wcpaySettings;
+		wc: typeof wc;
+		wcTracks: typeof wcTracks;
+		wcSettings: typeof wcSettings;
+	}
 }
