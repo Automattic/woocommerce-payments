@@ -50,11 +50,11 @@ const OnboardingStepper = () => {
 			</Step>
 			{ wcpaySettings &&
 			wcpaySettings.featureFlags.isEmbeddedKycEnabled ? (
-				<LoadingStep name={ 'loading' } />
-			) : (
 				<Step name="embedded" showHeading={ false }>
 					<EmbeddedKyc />
 				</Step>
+			) : (
+				<LoadingStep name={ 'loading' } />
 			) }
 		</Stepper>
 	);
