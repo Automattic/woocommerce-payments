@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid unnecessary account data cache refresh on WooPayments pages refresh.
