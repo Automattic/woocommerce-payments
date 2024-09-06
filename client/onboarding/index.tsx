@@ -48,8 +48,7 @@ const OnboardingStepper = () => {
 					<StoreDetails />
 				</OnboardingForm>
 			</Step>
-			{ wcpaySettings &&
-			wcpaySettings.featureFlags.isEmbeddedKycEnabled ? (
+			{ wcpaySettings?.featureFlags?.isEmbeddedKycEnabled ? (
 				<Step name="embedded" showHeading={ false }>
 					<EmbeddedKyc />
 				</Step>
