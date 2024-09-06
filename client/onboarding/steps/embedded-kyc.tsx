@@ -19,7 +19,7 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { NAMESPACE } from 'data/constants';
-import appearance from '../embedded-appearance';
+import appearance from '../kyc/appearance';
 import BannerNotice from 'wcpay/components/banner-notice';
 import LoadBar from 'wcpay/components/load-bar';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
