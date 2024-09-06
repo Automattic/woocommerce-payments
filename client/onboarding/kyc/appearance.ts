@@ -41,7 +41,8 @@ export default {
 		badgeBorderRadius: '2px',
 		overlayBorderRadius: '8px',
 		spacingUnit: '10px',
-		fontFamily: 'SF Pro Text, Helvetica, Arial, sans-serif',
+		fontFamily:
+			"-apple-system, BlinkMacSystemFont, 'system-ui', 'Segoe UI', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial', sans-serif",
 		fontSizeBase: '16px',
 		headingXlFontSize: '32px',
 		headingXlFontWeight: '400',
