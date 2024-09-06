@@ -140,4 +140,87 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 			$response->get_data()
 		);
 	}
+
+	public function test_get_embedded_kyc_session() {
+		$kyc_session = [
+			'clientSecret'   => 'accs_secret__XXX',
+			'expiresAt'      => time() + 120,
+			'accountId'      => 'acct_XXX',
+			'isLive'         => false,
+			'accountCreated' => true,
+			'publishableKey' => 'pk_test_XXX',
+		];
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'create_embedded_kyc_session' )
+			->willReturn(
+				$kyc_session
+			);
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'set_embedded_kyc_in_progress' );
+
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_query_params(
+			[
+				'progressive'         => true,
+				'create_live_account' => true,
+			]
+		);
+
+		$response = $this->controller->get_embedded_kyc_session( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			array_merge(
+				$kyc_session,
+				[
+					'locale' => 'en_US',
+				]
+			),
+			$response->get_data()
+		);
+	}
+
+	public function test_finalize_embedded_kyc() {
+		$response_data = [
+			'success'           => true,
+			'account_id'        => 'acct_1PvxJQQujq4nxoo6',
+			'details_submitted' => true,
+			'mode'              => 'test',
+			'promotion_id'      => null,
+		];
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'finalize_embedded_kyc' )
+			->willReturn(
+				$response_data
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'source' => 'embedded',
+				'from'   => 'wcpay-connect',
+			]
+		);
+
+		$response = $this->controller->finalize_embedded_kyc( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			array_merge(
+				$response_data,
+				[
+					'params' => [
+						'promo'                    => '',
+						'from'                     => 'wcpay-connect',
+						'source'                   => 'embedded',
+						'wcpay-connection-success' => '1',
+					],
+				]
+			),
+			$response->get_data()
+		);
+	}
 }

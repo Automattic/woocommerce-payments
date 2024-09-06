@@ -3,9 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 
+let previousTimeoutRef = null;
+
 document.addEventListener(
 	'click',
 	function ( event ) {
+		// using "closest", just in case the user clicks on the icon.
 		const copyNumberButton = event.target?.closest(
 			'.js-woopayments-copy-test-number'
 		);
@@ -14,9 +17,7 @@ document.addEventListener(
 		}
 
 		event.preventDefault();
-		const number = copyNumberButton.parentElement.querySelector(
-			'.js-woopayments-test-number'
-		).innerText;
+		const number = copyNumberButton.querySelector( 'span' ).innerText;
 
 		if ( ! navigator.clipboard ) {
 			prompt(
@@ -41,6 +42,11 @@ document.addEventListener(
 					context: 'wc/checkout/payments',
 				}
 			);
+		copyNumberButton.classList.add( 'state--success' );
+		clearTimeout( previousTimeoutRef );
+		previousTimeoutRef = setTimeout( () => {
+			copyNumberButton.classList.remove( 'state--success' );
+		}, 2000 );
 	},
 	false
 );
