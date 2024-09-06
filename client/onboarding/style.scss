@@ -24,18 +24,24 @@ body.wcpay-onboarding__body {
 				z-index: 10;
 
 				&-button {
+					color: var(
+						--wp-components-color-accent,
+						var( --wp-admin-theme-color, #3858e9 )
+					);
 					cursor: pointer;
 					background-color: transparent;
 					border: none;
 					display: flex;
 					align-items: center;
 					padding: $gap-large;
-					color: #3858e9;
 					font-size: 14px;
 
 					.gridicons-chevron-left {
+						fill: var(
+							--wp-components-color-accent,
+							var( --wp-admin-theme-color, #3858e9 )
+						);
 						margin-right: 2px;
-						fill: #3858e9;
 					}
 
 					&:last-child {

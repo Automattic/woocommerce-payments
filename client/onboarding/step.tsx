@@ -13,6 +13,7 @@ import { useTrackAbandoned } from './tracking';
 import strings from './strings';
 import WooLogo from 'assets/images/woo-logo.svg';
 import './style.scss';
+import { Button } from '@wordpress/components';
 
 interface Props {
 	name: OnboardingSteps;
