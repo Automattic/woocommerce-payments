@@ -7,8 +7,6 @@
 
 namespace WCPay\MultiCurrency;
 
-use WC_Deposits;
-use WC_Deposits_Product_Manager;
 use WC_Order;
 use WC_Order_Refund;
 use WCPay\MultiCurrency\Compatibility\BaseCompatibility;
@@ -41,7 +39,7 @@ class Compatibility extends BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	protected function init() {
+	public function init() {
 		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
 
 		if ( defined( 'DOING_CRON' ) ) {

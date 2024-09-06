@@ -13,16 +13,16 @@ namespace WCPay\MultiCurrency;
 class Logger {
 
 	/**
+	 * Log source identifier.
+	 */
+	const LOG_FILE = 'woopayments-multi-currency';
+
+	/**
 	 * The WooCommerce logger instance.
 	 *
 	 * @var \WC_Logger|null
 	 */
 	private $logger;
-
-	/**
-	 * Log source identifier.
-	 */
-	const LOG_FILE = 'woopayments-multi-currency';
 
 	/**
 	 * Log a debug message.

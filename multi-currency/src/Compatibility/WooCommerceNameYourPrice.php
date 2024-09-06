@@ -21,7 +21,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	 *
 	 * @return  void
 	 */
-	protected function init() {
+	public function init() {
 		// Add needed actions and filters if Name Your Price is active.
 		if ( class_exists( 'WC_Name_Your_Price' ) ) {
 			// Convert meta prices.

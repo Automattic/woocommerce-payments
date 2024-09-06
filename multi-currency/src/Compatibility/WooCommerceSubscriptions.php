@@ -59,7 +59,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * @return  void
 	 */
-	protected function init() {
+	public function init() {
 		// Add needed actions and filters if WC Subscriptions or WCPay Subscriptions are active.
 		if ( class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Payments_Subscriptions' ) ) {
 			if ( ! is_admin() && ! defined( 'DOING_CRON' ) ) {

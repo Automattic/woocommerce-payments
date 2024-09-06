@@ -491,8 +491,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 		include_once __DIR__ . '/class-compatibility-service.php';
-		include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
-		include_once __DIR__ . '/class-wc-payments-currency-manager.php';
+		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
+		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
 		include_once __DIR__ . '/class-duplicates-detection-service.php';
 
 		self::$woopay_checkout_service = new Checkout_Service();
