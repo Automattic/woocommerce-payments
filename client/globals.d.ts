@@ -16,6 +16,7 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
+			isEmbeddedKycEnabled?: boolean;
 		};
 		fraudServices: unknown[];
 		testMode: boolean;

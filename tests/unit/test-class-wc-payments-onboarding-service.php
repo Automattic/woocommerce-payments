@@ -35,6 +35,13 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_database_cache;
 
 	/**
+	 * Mock WC_Payments_Session_Service
+	 *
+	 * @var MockObject
+	 */
+	private $mock_session_service;
+
+	/**
 	 * Example business types array.
 	 *
 	 * @var array
@@ -129,10 +136,11 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client     = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_database_cache = $this->createMock( Database_Cache::class );
+		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_database_cache  = $this->createMock( Database_Cache::class );
+		$this->mock_session_service = $this->createMock( WC_Payments_Session_Service::class );
 
-		$this->onboarding_service = new WC_Payments_Onboarding_Service( $this->mock_api_client, $this->mock_database_cache );
+		$this->onboarding_service = new WC_Payments_Onboarding_Service( $this->mock_api_client, $this->mock_database_cache, $this->mock_session_service );
 		$this->onboarding_service->init_hooks();
 	}
 
@@ -200,6 +208,18 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'no', get_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' ) );
 
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_is_embedded_kyc_in_progress() {
+		$this->assertFalse( $this->onboarding_service->is_embedded_kyc_in_progress() );
+
+		$this->onboarding_service->set_embedded_kyc_in_progress();
+
+		$this->assertTrue( $this->onboarding_service->is_embedded_kyc_in_progress() );
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		$this->assertFalse( $this->onboarding_service->is_embedded_kyc_in_progress() );
 	}
 
 	/**

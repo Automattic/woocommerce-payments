@@ -17,9 +17,10 @@ import './style.scss';
 
 interface Props {
 	name: OnboardingSteps;
+	showHeading?: boolean;
 }
 
-const Step: React.FC< Props > = ( { name, children } ) => {
+const Step: React.FC< Props > = ( { name, children, showHeading = true } ) => {
 	const { trackAbandoned } = useTrackAbandoned();
 	const { prevStep, exit } = useStepperContext();
 	const handleExit = () => {
@@ -36,7 +37,9 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 			<div className="stepper__nav">
 				<button
 					type="button"
-					className="stepper__nav-button"
+					className={ `stepper__nav-button ${
+						name === 'embedded' ? 'hide' : ''
+					}` }
 					onClick={ prevStep }
 				>
 					<ChevronLeft />
@@ -56,12 +59,16 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 				</button>
 			</div>
 			<div className="stepper__wrapper">
-				<h1 className="stepper__heading">
-					{ strings.steps[ name ].heading }
-				</h1>
-				<h2 className="stepper__subheading">
-					{ strings.steps[ name ].subheading }
-				</h2>
+				{ showHeading && (
+					<>
+						<h1 className="stepper__heading">
+							{ strings.steps[ name ].heading }
+						</h1>
+						<h2 className="stepper__subheading">
+							{ strings.steps[ name ].subheading }
+						</h2>
+					</>
+				) }
 				<div className="stepper__content">{ children }</div>
 			</div>
 		</>
