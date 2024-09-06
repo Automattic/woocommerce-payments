@@ -16,6 +16,7 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
+			isEmbeddedKycEnabled?: boolean;
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
@@ -185,4 +186,11 @@ declare global {
 		homeUrl: string;
 		siteTitle: string;
 	};
+
+	interface Window {
+		wcpaySettings: typeof wcpaySettings;
+		wc: typeof wc;
+		wcTracks: typeof wcTracks;
+		wcSettings: typeof wcSettings;
+	}
 }
