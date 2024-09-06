@@ -4,7 +4,13 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { useState, useCallback, useEffect, useRef } from '@wordpress/element';
+import {
+	useState,
+	useCallback,
+	useEffect,
+	useRef,
+	useContext,
+} from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -19,10 +25,13 @@ import EnabledCurrenciesModalCheckbox from './modal-checkbox';
 import { ConfirmationModal } from 'multi-currency/interface/components';
 import Search from 'multi-currency/components/search';
 import './style.scss';
+import MultiCurrencySettingsContext from '../../context';
 
 // TODO: This works when saving, but list does not refresh.
 // TODO: Should we reset selected currencies on modal close?
 const EnabledCurrenciesModal = ( { className } ) => {
+	const { setHasChanges } = useContext( MultiCurrencySettingsContext );
+
 	const availableCurrencies = useAvailableCurrencies();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
 	const enabledCurrenciesList = useRef( null );
@@ -115,6 +124,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		newCurrencies.push( defaultCurrencyCode );
 		newCurrencies.sort();
 		submitEnabledCurrenciesUpdate( newCurrencies );
+		setHasChanges( true );
 	};
 
 	const handleCurrenciesListWidth = () => {

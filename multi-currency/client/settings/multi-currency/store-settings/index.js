@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
@@ -10,13 +10,13 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import './style.scss';
-
 import { useStoreSettings } from 'multi-currency/data';
 import {
 	LoadableBlock,
 	SettingsSection,
 } from 'multi-currency/interface/components';
 import PreviewModal from 'multi-currency/components/preview-modal';
+import MultiCurrencySettingsContext from 'multi-currency/context';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
@@ -71,6 +71,10 @@ const StoreSettings = () => {
 
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
+	const { hasChanges, setHasChanges } = useContext(
+		MultiCurrencySettingsContext
+	);
+
 	useEffect( () => {
 		if ( Object.keys( storeSettings ).length ) {
 			setIsStorefrontSwitcherEnabledValue(
@@ -88,10 +92,12 @@ const StoreSettings = () => {
 
 	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
 		setIsAutomaticSwitchEnabledValue( value );
+		setHasChanges( true );
 	};
 
 	const handleIsStorefrontSwitcherEnabledClick = ( value ) => {
 		setIsStorefrontSwitcherEnabledValue( value );
+		setHasChanges( true );
 	};
 
 	const saveSettings = () => {
@@ -192,7 +198,7 @@ const StoreSettings = () => {
 				<Button
 					isPrimary
 					isBusy={ isSavingSettings }
-					disabled={ isSavingSettings }
+					disabled={ isSavingSettings || ! hasChanges }
 					onClick={ saveSettings }
 				>
 					{ __( 'Save changes', 'woocommerce-payments' ) }

@@ -37,6 +37,8 @@ const SingleCurrencySettings = () => {
 	const {
 		currencyCodeToShowSettingsFor,
 		closeSingleCurrencySettings,
+		hasChanges,
+		setHasChanges,
 	} = useContext( MultiCurrencySettingsContext );
 
 	const currency = currencyCodeToShowSettingsFor;
@@ -218,11 +220,14 @@ const SingleCurrencySettings = () => {
 															exchangeRateType ===
 															'automatic'
 														}
-														onChange={ () =>
+														onChange={ () => {
 															setExchangeRateType(
 																'automatic'
-															)
-														}
+															);
+															setHasChanges(
+																true
+															);
+														} }
 													/>
 													<h4>
 														{ __(
@@ -290,6 +295,9 @@ const SingleCurrencySettings = () => {
 																	? manualRate
 																	: targetCurrency.rate
 															);
+															setHasChanges(
+																true
+															);
 														} }
 													/>
 													<h4>
@@ -330,14 +338,15 @@ const SingleCurrencySettings = () => {
 															? manualRate
 															: targetCurrency.rate
 													}
-													onChange={ ( event ) =>
+													onChange={ ( event ) => {
 														setManualRate(
 															event.target.value.replace(
 																/,/g,
 																'.'
 															)
-														)
-													}
+														);
+														setHasChanges( true );
+													} }
 												/>
 												<p
 													className={
@@ -376,11 +385,12 @@ const SingleCurrencySettings = () => {
 													priceRoundingType
 												) }
 												data-testid={ 'price_rounding' }
-												onChange={ ( event ) =>
+												onChange={ ( event ) => {
 													setPriceRoundingType(
 														event.target.value
-													)
-												}
+													);
+													setHasChanges( true );
+												} }
 											>
 												{ /* eslint-enable jsx-a11y/no-onchange */ }
 												{ Object.keys(
@@ -444,11 +454,12 @@ const SingleCurrencySettings = () => {
 													priceCharmType
 												) }
 												data-testid={ 'price_charm' }
-												onChange={ ( event ) =>
+												onChange={ ( event ) => {
 													setPriceCharmType(
 														event.target.value
-													)
-												}
+													);
+													setHasChanges( true );
+												} }
 											>
 												{ /* eslint-enable jsx-a11y/no-onchange */ }
 												{ Object.keys(
@@ -524,7 +535,7 @@ const SingleCurrencySettings = () => {
 					<Button
 						isPrimary
 						isBusy={ isSaving }
-						disabled={ isSaving }
+						disabled={ isSaving || ! hasChanges }
 						onClick={ saveSingleCurrencySettings }
 					>
 						{ __( 'Save changes', 'woocommerce-payments' ) }

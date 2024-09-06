@@ -32,6 +32,8 @@ const MultiCurrencySettingsPage = () => {
 		setCurrencyCodeToShowSettingsFor( null );
 	};
 
+	const [ hasChanges, setHasChanges ] = useState( false );
+
 	return (
 		<MultiCurrencySettingsContext.Provider
 			value={ {
@@ -39,6 +41,8 @@ const MultiCurrencySettingsPage = () => {
 				currencyCodeToShowSettingsFor: currencyCodeToShowSettingsFor,
 				openSingleCurrencySettings: handleOpenSingleCurrencySettings,
 				closeSingleCurrencySettings: handleCloseSingleCurrencySettings,
+				hasChanges,
+				setHasChanges,
 			} }
 		>
 			{ ! isSingleCurrencyScreenOpen ? (

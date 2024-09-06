@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { sprintf, __ } from '@wordpress/i18n';
 import { Card, CardBody, CardDivider } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
@@ -22,6 +22,7 @@ import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
 import { SettingsSection } from 'multi-currency/interface/components';
+import MultiCurrencySettingsContext from 'multi-currency/context';
 
 const EnabledCurrenciesSettingsDescription = () => {
 	const LEARN_MORE_URL =
@@ -66,10 +67,13 @@ const EnabledCurrencies = () => {
 	} = useEnabledCurrencies();
 	const classBase = 'wcpay-multi-currency';
 
+	const { setHasChanges } = useContext( MultiCurrencySettingsContext );
+
 	const handleDeleteClick = ( code ) => {
 		const newCurrencies = Object.keys( enabledCurrencies );
 		newCurrencies.splice( newCurrencies.indexOf( code ), 1 );
 		submitEnabledCurrenciesUpdate( newCurrencies );
+		setHasChanges( true );
 	};
 
 	const enabledKeys = enabledCurrencies
