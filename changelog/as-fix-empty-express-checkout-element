@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Check payment method is available before rendering it.

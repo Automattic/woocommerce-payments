@@ -14,3 +14,10 @@
 	margin: 24px 0 !important;
 	height: 20px;
 }
+
+.wc-block-components-express-payment
+	.wc-block-components-express-payment__event-buttons
+	> li {
+	margin-left: 1px !important;
+	width: 99% !important;
+}
