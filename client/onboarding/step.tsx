@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import { Icon, closeSmall } from '@wordpress/icons';
 import ChevronLeft from 'gridicons/dist/chevron-left';
 
 /**
