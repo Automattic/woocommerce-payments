@@ -36,6 +36,10 @@ body.wcpay-onboarding__body {
 					&:last-child {
 						justify-self: end;
 					}
+
+					&.hide {
+						visibility: hidden;
+					}
 				}
 
 				&-logo {
