@@ -348,7 +348,7 @@ class WC_Payments_Admin {
 		}
 
 		// Register /payments/onboarding/kyc only when we have a Stripe account, but the Stripe KYC is not finished (details not submitted).
-		if ( $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
+		if ( WC_Payments_Features::is_embedded_kyc_enabled() && $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
 			wc_admin_register_page(
 				[
 					'id'         => 'wc-payments-onboarding-kyc',
