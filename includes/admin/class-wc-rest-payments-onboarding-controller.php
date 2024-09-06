@@ -50,10 +50,10 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/session',
+			'/' . $this->rest_base . '/kyc/session',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_onboarding_session' ],
+				'callback'            => [ $this, 'get_embedded_kyc_session' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
 					'progressive'                 => [
@@ -67,7 +67,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 						'type'        => 'string',
 					],
 					'self_assessment'             => [
-						'required'    => true,
+						'required'    => false,
 						'description' => 'The self-assessment data.',
 						'type'        => 'object',
 						'properties'  => [
@@ -109,10 +109,10 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/finalize',
+			'/' . $this->rest_base . '/kyc/finalize',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'finalize_embedded_onboarding' ],
+				'callback'            => [ $this, 'finalize_embedded_kyc' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
 					'source' => [
@@ -197,14 +197,14 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
-	 * Create an account session via the API.
+	 * Create an account embedded KYC session via the API.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
 	 * @return WP_Error|WP_REST_Response
 	 */
-	public function get_onboarding_session( WP_REST_Request $request ) {
-		$account_session = $this->onboarding_service->create_embedded_onboarding_session(
+	public function get_embedded_kyc_session( WP_REST_Request $request ) {
+		$account_session = $this->onboarding_service->create_embedded_kyc_session(
 			! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [],
 			! empty( $request->get_param( 'progressive' ) ) && 'true' === $request->get_param( 'progressive' ),
 			! empty( $request->get_param( 'collect_payout_requirements' ) ) && 'true' === $request->get_param( 'collect_payout_requirements' )
@@ -214,24 +214,27 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			$account_session['locale'] = get_user_locale();
 		}
 
+		// Set the onboarding in progress option.
+		$this->onboarding_service->set_embedded_kyc_in_progress();
+
 		return rest_ensure_response( $account_session );
 	}
 
 	/**
-	 * Finalize the embedded onboarding session via the API.
+	 * Finalize the embedded KYC session via the API.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
 	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
 	 */
-	public function finalize_embedded_onboarding( WP_REST_Request $request ) {
+	public function finalize_embedded_kyc( WP_REST_Request $request ) {
 		$source         = $request->get_param( 'source' ) ?? '';
 		$from           = $request->get_param( 'from' ) ?? '';
 		$actioned_notes = WC_Payments_Onboarding_Service::get_actioned_notes();
 
 		// Call the API to finalize the onboarding.
 		try {
-			$response = $this->onboarding_service->finalize_embedded_onboarding(
+			$response = $this->onboarding_service->finalize_embedded_kyc(
 				get_user_locale(),
 				$source,
 				$actioned_notes

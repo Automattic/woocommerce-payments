@@ -55,6 +55,7 @@ class WC_Payments_Onboarding_Service {
 	const FROM_OVERVIEW_PAGE     = 'WCPAY_OVERVIEW';
 	const FROM_ACCOUNT_DETAILS   = 'WCPAY_ACCOUNT_DETAILS';
 	const FROM_ONBOARDING_WIZARD = 'WCPAY_ONBOARDING_WIZARD';
+	const FROM_ONBOARDING_KYC    = 'WCPAY_ONBOARDING_KYC'; // The embedded Stripe KYC step/page.
 	const FROM_SETTINGS          = 'WCPAY_SETTINGS';
 	const FROM_PAYOUTS           = 'WCPAY_PAYOUTS';
 	const FROM_TEST_TO_LIVE      = 'WCPAY_TEST_TO_LIVE';
@@ -150,7 +151,8 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Retrieve the onboarding session and handle initial account creation (if necessary).
+	 * Retrieve the embedded KYC session and handle initial account creation (if necessary).
+	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
 	 *
 	 * @param array   $self_assessment_data Self assessment data.
@@ -161,7 +163,7 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @throws API_Exception
 	 */
-	public function create_embedded_onboarding_session( array $self_assessment_data, bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, bool $collect_payout_requirements = false ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -188,7 +190,7 @@ class WC_Payments_Onboarding_Service {
 		$actioned_notes = self::get_actioned_notes();
 
 		try {
-			$account_session = $this->payments_api_client->initialize_embedded_onboarding(
+			$account_session = $this->payments_api_client->initialize_onboarding_embedded_kyc(
 				'live' === $setup_mode,
 				$site_data,
 				array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
@@ -213,7 +215,7 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Finalize the embedded onboarding session.
+	 * Finalize the embedded KYC session.
 	 *
 	 * @param string $locale The locale to use to i18n the data.
 	 * @param string $source The source of the onboarding flow.
@@ -223,14 +225,14 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @throws API_Exception
 	 */
-	public function finalize_embedded_onboarding( string $locale, string $source, array $actioned_notes ): array {
+	public function finalize_embedded_kyc( string $locale, string $source, array $actioned_notes ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [
 				'success' => false,
 			];
 		}
 
-		$result = $this->payments_api_client->finalize_embedded_onboarding( $locale, $source, $actioned_notes );
+		$result = $this->payments_api_client->finalize_onboarding_embedded_kyc( $locale, $source, $actioned_notes );
 
 		$success           = $result['success'] ?? false;
 		$details_submitted = $result['details_submitted'] ?? false;
@@ -238,6 +240,9 @@ class WC_Payments_Onboarding_Service {
 		if ( ! $result || ! $success ) {
 			throw new API_Exception( __( 'Failed to finalize onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
 		}
+
+		// Clear the onboarding in progress option, since the onboarding flow is now complete.
+		$this->clear_embedded_kyc_in_progress();
 
 		return [
 			'success'           => $success,
@@ -422,6 +427,33 @@ class WC_Payments_Onboarding_Service {
 			'referer'           => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
 			'onboarding_source' => self::get_source(),
 		];
+	}
+
+	/**
+	 * Determine whether an embedded KYC flow is in progress.
+	 *
+	 * @return bool True if embedded KYC is in progress, false otherwise.
+	 */
+	public function is_embedded_kyc_in_progress(): bool {
+		return in_array( get_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'no' ), [ 'yes', '1' ], true );
+	}
+
+	/**
+	 * Mark the embedded KYC flow as in progress.
+	 *
+	 * @return bool Whether we successfully marked the flow as in progress.
+	 */
+	public function set_embedded_kyc_in_progress(): bool {
+		return update_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'yes' );
+	}
+
+	/**
+	 * Clear any embedded KYC in progress flags.
+	 *
+	 * @return boolean Whether we successfully cleared the flags.
+	 */
+	public function clear_embedded_kyc_in_progress(): bool {
+		return delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 	}
 
 	/**

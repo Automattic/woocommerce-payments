@@ -796,6 +796,69 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->maybe_handle_onboarding();
 	}
 
+	public function test_maybe_handle_onboarding_init_embedded_kyc() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page'] = 'wc-admin';
+		$_GET['path'] = '/payments/some-bogus-page';
+		// We need to come from the onboarding wizard to initialize an account!
+		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE;
+		// Make sure important flags are carried over.
+		$_GET['promo']       = 'incentive_id';
+		$_GET['progressive'] = 'true';
+		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
+
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn( [] ); // Empty array means no Stripe account connected.
+
+		// Assert.
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_overview_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_onboarding_wizard' );
+
+		// If embedded KYC is in progress, we expect different URL.
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'is_embedded_kyc_in_progress' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_onboarding_data' );
+
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with(
+				$this->logicalOr(
+					$this->stringContains( 'page=wc-admin&path=/payments/onboarding/kyc' ),
+					$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Fonboarding%2Fkyc' )
+				)
+			);
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
 	public function test_maybe_handle_onboarding_init_stripe_onboarding_existing_account() {
 		// Arrange.
 		// We need to be in the WP admin dashboard.

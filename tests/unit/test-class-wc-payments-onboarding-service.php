@@ -210,6 +210,18 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 	}
 
+	public function test_is_embedded_kyc_in_progress() {
+		$this->assertFalse( $this->onboarding_service->is_embedded_kyc_in_progress() );
+
+		$this->onboarding_service->set_embedded_kyc_in_progress();
+
+		$this->assertTrue( $this->onboarding_service->is_embedded_kyc_in_progress() );
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		$this->assertFalse( $this->onboarding_service->is_embedded_kyc_in_progress() );
+	}
+
 	/**
 	 * @dataProvider data_get_from
 	 */
