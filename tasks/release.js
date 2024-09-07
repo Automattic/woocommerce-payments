@@ -18,7 +18,6 @@ const filesToCopy = [
 	'includes',
 	'languages',
 	'lib',
-	'multi-currency',
 	'src',
 	'templates',
 	'vendor',
@@ -43,6 +42,10 @@ rm( 'dist/*.map' );
 
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
+
+// copy the multi-currency files
+mkdir( '-p', targetFolder + '/multi-currency' );
+cp( '-R', 'multi-currency/src', targetFolder + '/multi-currency/src' );
 
 const output = fs.createWriteStream(
 	releaseFolder + '/' + pluginSlug + '.zip'
