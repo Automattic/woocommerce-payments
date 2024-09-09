@@ -9,6 +9,8 @@ const FraudPreventionSettingsContext = createContext( {
 	setProtectionSettingsUI: () => null,
 	protectionSettingsChanged: false,
 	setProtectionSettingsChanged: () => false,
+	hasChanges: false,
+	setHasChanges: () => null,
 } as FraudPreventionSettingsContextType );
 
 export default FraudPreventionSettingsContext;
