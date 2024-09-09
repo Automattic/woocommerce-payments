@@ -24,11 +24,7 @@ const Step: React.FC< Props > = ( { name, children, showHeading = true } ) => {
 	const { trackAbandoned } = useTrackAbandoned();
 	const { prevStep, exit } = useStepperContext();
 	const handleExit = () => {
-		const urlParams = new URLSearchParams( window.location.search );
-		const source =
-			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
-
-		trackAbandoned( 'exit', source );
+		trackAbandoned( 'exit' );
 		exit();
 	};
 

@@ -201,13 +201,17 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider data_maybe_redirect_from_payments_admin_child_pages
 	 */
-	public function test_maybe_redirect_from_payments_admin_child_pages( $expected_times_redirect_called, $is_stripe_connected, $get_params ) {
+	public function test_maybe_redirect_from_payments_admin_child_pages( $expected_times_redirect_called, $has_working_jetpack_connection, $is_stripe_account_valid, $get_params ) {
 		$this->mock_current_user_is_admin();
 		$_GET = $get_params;
 
 		$this->mock_account
-			->method( 'is_stripe_connected' )
-			->willReturn( $is_stripe_connected );
+			->method( 'has_working_jetpack_connection' )
+			->willReturn( $has_working_jetpack_connection );
+
+		$this->mock_account
+			->method( 'is_stripe_account_valid' )
+			->willReturn( $is_stripe_account_valid );
 
 		$this->mock_account
 			->expects( $this->exactly( $expected_times_redirect_called ) )
@@ -224,10 +228,12 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			'no_get_params'        => [
 				0,
 				false,
+				false,
 				[],
 			],
 			'empty_page_param'     => [
 				0,
+				false,
 				false,
 				[
 					'path' => '/payments/overview',
@@ -235,6 +241,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_page_param' => [
 				0,
+				false,
 				false,
 				[
 					'page' => 'wc-settings',
@@ -244,6 +251,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			'empty_path_param'     => [
 				0,
 				false,
+				false,
 				[
 					'page' => 'wc-admin',
 				],
@@ -251,25 +259,37 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			'incorrect_path_param' => [
 				0,
 				false,
+				false,
 				[
 					'page' => 'wc-admin',
 					'path' => '/payments/does-not-exist',
 				],
 			],
-			'stripe_connected'     => [
-				0,
-				true,
-				[
-					'page' => 'wc-admin',
-					'path' => '/payments/overview',
-				],
-			],
-			'happy_path'           => [
+			'working Jetpack connection - invalid Stripe account' => [
 				1,
+				true,
 				false,
 				[
 					'page' => 'wc-admin',
-					'path' => '/payments/overview',
+					'path' => '/payments/deposits',
+				],
+			],
+			'not working Jetpack connection - valid Stripe account' => [
+				1,
+				false,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/deposits',
+				],
+			],
+			'working Jetpack connection - valid Stripe account' => [
+				0,
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/transactions',
 				],
 			],
 		];

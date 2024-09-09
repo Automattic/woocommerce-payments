@@ -57,26 +57,26 @@ const LoadingStep: React.FC< Props > = () => {
 	const handleComplete = async () => {
 		const { connectUrl } = wcpaySettings;
 
-		const urlParams = new URLSearchParams( window.location.search );
-		const urlSource =
-			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
-
-		let isEligible;
+		let isPoEligible;
 		try {
-			isEligible = await isEligibleForPo();
+			isPoEligible = await isEligibleForPo();
 		} catch ( error ) {
 			// fall back to full KYC scenario.
 			// TODO maybe log these errors in future, e.g. with tracks.
-			isEligible = false;
+			isPoEligible = false;
 		}
 
-		trackRedirected( isEligible, urlSource );
+		trackRedirected( isPoEligible );
 		removeTrackListener();
+
+		const urlParams = new URLSearchParams( window.location.search );
 
 		window.location.href = addQueryArgs( connectUrl, {
 			self_assessment: fromDotNotation( data ),
-			progressive: isEligible,
-			source: urlSource,
+			progressive: isPoEligible,
+			source:
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown',
 			from: 'WCPAY_ONBOARDING_WIZARD',
 		} );
 	};

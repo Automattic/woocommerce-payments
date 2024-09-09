@@ -37,8 +37,17 @@ export const fillBillingAddress = async (
 	await page.locator( '#billing_email' ).fill( billingAddress.email );
 };
 
+// This is currently the source of some flaky tests since sometimes the form is not submitted
+// after the first click, so we retry until the ui is blocked.
 export const placeOrder = async ( page: Page ) => {
-	await page.locator( '#place_order' ).click();
+	let orderPlaced = false;
+	while ( ! orderPlaced ) {
+		await page.locator( '#place_order' ).click();
+
+		if ( await page.$( '.blockUI' ) ) {
+			orderPlaced = true;
+		}
+	}
 };
 
 export const addCartProduct = async (
@@ -192,19 +201,19 @@ export const setupCheckout = async (
 /**
  * Sets up checkout with any number of products.
  *
- * @param {CustomerAddress} billingAddress The billing address to use for the checkout.
  * @param {Array<[string, number]>} lineItems A 2D array of line items where each line item is an array
  * that contains the product title as the first element, and the quantity as the second.
  * For example, if you want to checkout x2 "Hoodie" and x3 "Belt" then set this parameter like this:
  *
  * `[ [ "Hoodie", 2 ], [ "Belt", 3 ] ]`.
+ * @param {CustomerAddress} billingAddress The billing address to use for the checkout.
  */
 export async function setupProductCheckout(
 	page: Page,
-	billingAddress: CustomerAddress,
 	lineItems: Array< [ string, number ] > = [
 		[ config.products.simple.name, 1 ],
-	]
+	],
+	billingAddress: CustomerAddress = config.addresses.customer.billing
 ) {
 	const cartSizeText = await page
 		.locator( '.cart-contents .count' )
@@ -241,9 +250,7 @@ export const placeOrderWithCurrency = async (
 	currency: string
 ) => {
 	await navigation.goToShopWithCurrency( page, currency );
-	await setupProductCheckout( page, config.addresses.customer.billing, [
-		[ config.products.simple.name, 1 ],
-	] );
+	await setupProductCheckout( page, [ [ config.products.simple.name, 1 ] ] );
 	await fillCardDetails( page, config.cards.basic );
 	// Takes off the focus out of the Stripe elements to let Stripe logic
 	// wrap up and make sure the Place Order button is clickable.
