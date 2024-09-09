@@ -47,7 +47,7 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 	name: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	title: 'WooPayments - WooPay',
 	description: __(
-		'This will show users the WooPay button.',
+		'A one-click, high-converting, secure checkout built for Woo — themed to your brand.',
 		'woocommerce-payments'
 	),
 	gatewayId: 'woocommerce_payments',

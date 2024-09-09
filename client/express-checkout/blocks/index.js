@@ -17,7 +17,7 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
 	title: 'WooPayments - Apple Pay',
 	description: __(
-		'Apple Pay will be displayed to users on Safari or iOS devices with an active Apple account.',
+		"An easy, secure way to pay that's accepted on millions of stores.",
 		'woocommerce-payments'
 	),
 	gatewayId: 'woocommerce_payments',
@@ -42,7 +42,7 @@ const expressCheckoutElementGooglePay = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
 	title: 'WooPayments - Google Pay',
 	description: __(
-		'The Google Pay button will be displayed to users who are signed in to their Google account.',
+		'Simplify checkout with fewer steps to pay.',
 		'woocommerce-payments'
 	),
 	gatewayId: 'woocommerce_payments',
