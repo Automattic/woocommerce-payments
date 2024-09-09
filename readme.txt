@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.2.0 - 2024-09-11 =
+= 8.2.0-test-3 - unreleased =
 * Add - add: test instructions icon animation
 * Add - Added Embdedded KYC, currently behind feature flag.
 * Fix - Avoid unnecessary account data cache refresh on WooPayments pages refresh.
