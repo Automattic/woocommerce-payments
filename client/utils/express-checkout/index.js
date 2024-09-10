@@ -30,7 +30,7 @@ export const getDefaultBorderRadius = () => {
 	}
 
 	return parseInt(
-		wcpaySettings?.defaultExpressCheckoutBorderRadius ?? 4,
+		window?.wcpaySettings?.defaultExpressCheckoutBorderRadius || 4,
 		10
 	);
 };

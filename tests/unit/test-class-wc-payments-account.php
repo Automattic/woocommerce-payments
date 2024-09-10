@@ -51,11 +51,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	private $mock_action_scheduler_service;
 
 	/**
-	 * Mock WC_Payments_Session_Service.
+	 * Mock WC_Payments_Onboarding_Service.
 	 *
-	 * @var WC_Payments_Session_Service|MockObject
+	 * @var WC_Payments_Onboarding_Service|MockObject
 	 */
-	private $mock_session_service;
+	private $mock_onboarding_service;
 
 	/**
 	 * Mock WC_Payments_Redirect_Service.
@@ -82,10 +82,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client               = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
-		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
+		$this->mock_onboarding_service       = $this->createMock( WC_Payments_Onboarding_Service::class );
 		$this->mock_redirect_service         = $this->createMock( WC_Payments_Redirect_Service::class );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service );
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_onboarding_service, $this->mock_redirect_service );
 		$this->wcpay_account->init_hooks();
 	}
 
@@ -95,6 +95,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		unset( $_GET );
 		unset( $_REQUEST );
 		parent::tear_down();
+		delete_option( '_wcpay_feature_embedded_kyc' );
 	}
 
 	public function test_filters_registered_properly() {
@@ -239,7 +240,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->with(
 				'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooPayments.',
 				WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
-				[ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE ]
+				[
+					'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				]
 			);
 
 		// Act.
@@ -268,7 +271,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->onlyMethods( [ 'redirect_to' ] )
 			->getMock();
-		$wcpay_account         = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $mock_redirect_service );
+		$wcpay_account         = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_onboarding_service, $mock_redirect_service );
 
 		$_GET['wcpay-connect'] = 'connect-from';
 		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
@@ -618,7 +621,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_onboarding_wizard' )
-			->with( WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE, [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS ] );
+			->with(
+				WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE,
+				[
+					'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
+				]
+			);
 
 		// Act.
 		$this->wcpay_account->maybe_handle_onboarding();
@@ -791,6 +799,71 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'redirect_to' )
 			->with( 'https://connect.stripe.com/something' );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_init_embedded_kyc() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page'] = 'wc-admin';
+		$_GET['path'] = '/payments/some-bogus-page';
+		// We need to come from the onboarding wizard to initialize an account!
+		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
+		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE;
+		// Make sure important flags are carried over.
+		$_GET['promo']       = 'incentive_id';
+		$_GET['progressive'] = 'true';
+		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
+
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn( [] ); // Empty array means no Stripe account connected.
+
+		// Assert.
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_overview_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_onboarding_wizard' );
+
+		update_option( '_wcpay_feature_embedded_kyc', '1' );
+
+		// If embedded KYC is in progress, we expect different URL.
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'is_embedded_kyc_in_progress' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_onboarding_data' );
+
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with(
+				$this->logicalOr(
+					$this->stringContains( 'page=wc-admin&path=/payments/onboarding/kyc' ),
+					$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Fonboarding%2Fkyc' )
+				)
+			);
 
 		// Act.
 		$this->wcpay_account->maybe_handle_onboarding();

@@ -9,23 +9,44 @@
 	border: none !important;
 	// some themes might override the color on all `button`s - whose selector has higher specificity and our class selector.
 	background-color: transparent !important;
-	padding: 3px;
+	font-weight: normal;
+	display: inline-flex;
+	cursor: pointer;
+	color: inherit;
+	font-size: initial;
+	padding: 2px 1px;
+	align-items: center;
+
+	span {
+		margin-right: 4px;
+	}
 
 	i {
-		display: inline-block;
+		order: 1;
+		display: block;
 		width: 1.2em;
 		height: 1.2em;
-
 		background: url( 'assets/images/icons/copy.svg?asset' ) no-repeat center;
 		background-size: contain;
 	}
 
 	&:hover {
 		background-color: transparent;
+		filter: invert( 0.3 );
+
+		i {
+			filter: invert( 0.3 );
+		}
 	}
 
 	&:active i {
 		transform: scale( 0.9 );
+	}
+
+	&.state--success {
+		i {
+			background-image: url( 'assets/images/icons/check-green.svg?asset' );
+		}
 	}
 
 	.theme--night & {
