@@ -238,14 +238,13 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			'stylesheet',
 			function ( $theme ) use ( $stylesheet ) {
 				return $stylesheet;
-			},
-			404 // 404 is used to be able to use remove_all_filters later.
+			}
 		);
 	}
 
 	// Removes all stylesheet/theme name filters.
 	private function remove_stylesheet_filters(): void {
-		remove_all_filters( 'stylesheet', 404 );
+		remove_all_filters( 'stylesheet' );
 	}
 
 	/**
@@ -262,14 +261,13 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			'option_active_plugins',
 			function ( $active_plugins ) use ( $plugins ) {
 				return $plugins;
-			},
-			404 // 404 is used to be able to use remove_all_filters later.
+			}
 		);
 	}
 
 	// Removes all active plugin filters.
 	private function remove_option_active_plugins_filters() {
-		remove_all_filters( 'option_active_plugins', [ $this, 'active_plugins_filter_return' ], 404 );
+		remove_all_filters( 'option_active_plugins' );
 	}
 
 	// Used to purposely delete the active_plugins option in WP.

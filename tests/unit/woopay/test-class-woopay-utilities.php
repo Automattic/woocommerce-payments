@@ -24,6 +24,7 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+
 		parent::tear_down();
 	}
 

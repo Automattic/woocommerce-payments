@@ -67,6 +67,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+
 		parent::tear_down();
 	}
 
@@ -302,26 +303,14 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_embedded_kyc_enabled_returns_true() {
-		add_filter(
-			'pre_option_' . WC_Payments_Features::EMBEDDED_KYC_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '1';
-			},
-			10,
-			3
-		);
+		$this->set_feature_flag_option( WC_Payments_Features::EMBEDDED_KYC_FLAG_NAME, '1' );
+
 		$this->assertTrue( WC_Payments_Features::is_embedded_kyc_enabled() );
 	}
 
 	public function test_is_embedded_kyc_enabled_returns_false_when_flag_is_false() {
-		add_filter(
-			'pre_option_' . WC_Payments_Features::EMBEDDED_KYC_FLAG_NAME,
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
+		$this->set_feature_flag_option( WC_Payments_Features::EMBEDDED_KYC_FLAG_NAME, '0' );
+
 		$this->assertFalse( WC_Payments_Features::is_embedded_kyc_enabled() );
 		$this->assertArrayNotHasKey( 'isEmbeddedKycEnabled', WC_Payments_Features::to_array() );
 	}
