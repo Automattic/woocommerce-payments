@@ -244,6 +244,13 @@ jQuery( ( $ ) => {
 
 			wcpayECE.showButton( eceButton );
 
+			eceButton.on( 'loaderror', () => {
+				wcPayECEError = __(
+					'The cart is incompatible with express checkout.',
+					'woocommerce-payments'
+				);
+			} );
+
 			eceButton.on( 'click', function ( event ) {
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( getExpressCheckoutData( 'login_confirmation' ) ) {
