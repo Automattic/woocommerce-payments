@@ -41,6 +41,7 @@ class WC_Payments_Incentives_Service {
 		add_action( 'admin_menu', [ $this, 'add_payments_menu_badge' ] );
 		add_filter( 'woocommerce_admin_allowed_promo_notes', [ $this, 'allowed_promo_notes' ] );
 		add_filter( 'woocommerce_admin_woopayments_onboarding_task_badge', [ $this, 'onboarding_task_badge' ] );
+		add_filter( 'woocommerce_admin_woopayments_onboarding_task_additional_data', [ $this, 'onboarding_task_additional_data' ], 20 );
 	}
 
 	/**
@@ -103,6 +104,28 @@ class WC_Payments_Incentives_Service {
 		}
 
 		return $incentive['task_badge'] ?? $badge;
+	}
+
+	/**
+	 * Filter the onboarding task additional data to add the WooPayments incentive data to it.
+	 *
+	 * @param ?array $additional_data The current task additional data.
+	 *
+	 * @return ?array The filtered task additional data.
+	 */
+	public function onboarding_task_additional_data( ?array $additional_data ): ?array {
+		$incentive = $this->get_cached_connect_incentive();
+		// Return early if there is no eligible incentive.
+		if ( empty( $incentive['id'] ) ) {
+			return $additional_data;
+		}
+
+		if ( empty( $additional_data ) ) {
+			$additional_data = [];
+		}
+		$additional_data['wooPaymentsIncentiveId'] = $incentive['id'];
+
+		return $additional_data;
 	}
 
 	/**

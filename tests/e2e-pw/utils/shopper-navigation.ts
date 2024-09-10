@@ -7,6 +7,10 @@ import { Page } from 'playwright/test';
  */
 import { isUIUnblocked } from './shopper';
 
+export const goToShop = async ( page: Page ) => {
+	await page.goto( `/shop/`, { waitUntil: 'load' } );
+};
+
 export const goToShopWithCurrency = async ( page: Page, currency: string ) => {
 	await page.goto( `/shop/?currency=${ currency }`, { waitUntil: 'load' } );
 };

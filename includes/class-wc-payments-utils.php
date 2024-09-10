@@ -555,6 +555,19 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Checks if the currently displayed page is the WooPayments onboarding page.
+	 *
+	 * @return bool
+	 */
+	public static function is_onboarding_page(): bool {
+		return (
+			is_admin()
+			&& isset( $_GET['page'] ) && 'wc-admin' === $_GET['page']  // phpcs:ignore WordPress.Security.NonceVerification
+			&& isset( $_GET['path'] ) && '/payments/onboarding' === $_GET['path']  // phpcs:ignore WordPress.Security.NonceVerification
+		);
+	}
+
+	/**
 	 * Converts a locale to the closest supported by Stripe.js.
 	 *
 	 * Stripe.js supports only a subset of IETF language tags, if a country specific locale is not supported we use
@@ -895,6 +908,25 @@ class WC_Payments_Utils {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Check to see if the current user is in Core Payments task onboarding flow experiment treatment mode.
+	 *
+	 * @return bool
+	 */
+	public static function is_in_core_payments_task_onboarding_flow_treatment_mode(): bool {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking', 'no' )
+		);
+
+		return 'treatment' === $abtest->get_variation( 'woopayments_core_payments_task_onboarding_flow_2024_v1' );
 	}
 
 	/**

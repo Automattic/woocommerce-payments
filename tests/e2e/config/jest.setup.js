@@ -36,7 +36,8 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'Failed to load resource: the server responded with a status of 400 (Bad Request)',
 	'No Amplitude API key provided',
 	'is registered with an invalid category',
-	'"Heading" is not a supported class',
+	'is not a supported class', // Silence stripe.js warnings regarding styles.
+	'is not a supported property for', // Silence stripe.js warnings regarding styles.
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {

@@ -100,6 +100,40 @@ export const getDocumentUrl = ( documentId ) => {
 	);
 };
 
+export const getConnectUrl = ( urlParams, from ) => {
+	// Ensure urlParams is an object.
+	const queryParams = typeof urlParams === 'object' ? urlParams : {};
+
+	const baseParams = {
+		page: 'wc-admin',
+		path: '/payments/connect',
+		source: queryParams.source?.replace( /[^\w-]+/g, '' ) || 'unknown',
+		from: from,
+	};
+
+	// Merge queryParams and baseParams into baseParams, ensuring baseParams takes precedence.
+	const params = { ...queryParams, ...baseParams };
+
+	return getAdminUrl( params );
+};
+
+export const getOverviewUrl = ( urlParams, from ) => {
+	// Ensure urlParams is an object.
+	const queryParams = typeof urlParams === 'object' ? urlParams : {};
+
+	const baseParams = {
+		page: 'wc-admin',
+		path: '/payments/overview',
+		source: queryParams.source?.replace( /[^\w-]+/g, '' ) || 'unknown',
+		from: from,
+	};
+
+	// Merge queryParams and baseParams into baseParams, ensuring baseParams takes precedence.
+	const params = { ...queryParams, ...baseParams };
+
+	return getAdminUrl( params );
+};
+
 /**
  * Returns the URL to the WooPayments settings.
  *
@@ -275,4 +309,16 @@ export const getExportLanguageOptions = () => {
 			value: wcpaySettings.locale.code,
 		},
 	];
+};
+
+/**
+ * Given an object, remove all properties with null or undefined values.
+ *
+ * @param {Object} obj The object to remove empty properties from.
+ * @return {Object|any} A new object with all properties with null or undefined values removed.
+ */
+export const objectRemoveEmptyProperties = ( obj ) => {
+	return Object.keys( obj )
+		.filter( ( k ) => obj[ k ] !== null && obj[ k ] !== undefined )
+		.reduce( ( a, k ) => ( { ...a, [ k ]: obj[ k ] } ), {} );
 };
