@@ -44,12 +44,12 @@ const expressCheckoutElementGooglePay = ( api ) => {
 	return {
 		paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 		name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
-    title: 'WooPayments - Google Pay',
-    description: __(
-      'Simplify checkout with fewer steps to pay.',
-      'woocommerce-payments'
-    ),
-    gatewayId: 'woocommerce_payments',
+		title: 'WooPayments - Google Pay',
+		description: __(
+			'Simplify checkout with fewer steps to pay.',
+			'woocommerce-payments'
+		),
+		gatewayId: 'woocommerce_payments',
 		content: (
 			<ExpressCheckoutContainer
 				api={ api }
