@@ -14,7 +14,6 @@ import {
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useContext } from '@wordpress/element';
-import { ADMIN_URL, getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
@@ -166,10 +165,6 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 		isPaymentRequestEnabled &&
 		isWooPayFeatureFlagEnabled;
 
-	const checkoutPageUrl = `${ ADMIN_URL }post.php?post=${
-		getSetting( 'storePages' )?.checkout?.id
-	}&action=edit`;
-
 	return (
 		<CardBody>
 			{ showWarning && (
@@ -194,11 +189,8 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 						isDismissible={ false }
 					>
 						{ __(
-							'Some appearance settings may be overridden by the express payment section of the'
-						) }{ ' ' }
-						<a href={ checkoutPageUrl }>
-							{ __( 'Cart & Checkout blocks.' ) }
-						</a>
+							'Some appearance settings may be overridden in the express payment section of the Cart & Checkout blocks.'
+						) }
 					</InlineNotice>
 				</>
 			) }
