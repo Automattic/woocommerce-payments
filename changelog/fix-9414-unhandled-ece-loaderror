@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Handle loadError in ECE for Block Context Initialization.
