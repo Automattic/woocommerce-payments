@@ -110,6 +110,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix shipping rates retrieval method for shortcode cart/checkout.
 * Fix - Fix support for merchant site styling when initializing WooPay via classic checkout
 * Fix - Fix WooPay direct checkout.
+* Fix - Handle loadError in ECE for Block Context Initialization.
 * Fix - Move woopay theme support checkbox to the appearance section.
 * Fix - Pass appearance data when initiating WooPay via the email input flow
 * Fix - Prevent preload of BNPL messaging if minimum order amount isn't hit.
