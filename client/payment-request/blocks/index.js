@@ -52,6 +52,7 @@ const paymentRequestPaymentMethod = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
 	supports: {
 		features: getConfig( 'features' ),
+		style: [ 'height' ],
 	},
 } );
 

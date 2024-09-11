@@ -17,6 +17,7 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 	edit: <ApplePayPreview />,
 	supports: {
 		features: getConfig( 'features' ),
+		style: [ 'height', 'borderRadius' ],
 	},
 	canMakePayment: ( { cart } ) => {
 		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
@@ -42,6 +43,7 @@ const expressCheckoutElementGooglePay = ( api ) => {
 		edit: <GooglePayPreview />,
 		supports: {
 			features: getConfig( 'features' ),
+			style: [ 'height', 'borderRadius' ],
 		},
 		canMakePayment: ( { cart } ) => {
 			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
