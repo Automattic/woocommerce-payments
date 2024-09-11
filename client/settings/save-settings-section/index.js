@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -14,10 +14,13 @@ import { recordEvent } from '../../tracks';
 import SettingsSection from '../settings-section';
 import './style.scss';
 import WooPayDisableFeedback from '../woopay-disable-feedback';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const SaveSettingsSection = ( { disabled = false } ) => {
 	const { saveSettings, isSaving, isLoading } = useSettings();
 	const settings = useGetSettings();
+
+	const { hasChanges } = useContext( WCPaySettingsContext );
 
 	// Keep the inital value of is_payment_request_enabled
 	// in state for recording its track on change.
@@ -111,7 +114,7 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 			<Button
 				isPrimary
 				isBusy={ isSaving }
-				disabled={ isSaving || isLoading || disabled }
+				disabled={ isSaving || isLoading || disabled || ! hasChanges }
 				onClick={ saveOnClick }
 			>
 				{ __( 'Save changes', 'woocommerce-payments' ) }

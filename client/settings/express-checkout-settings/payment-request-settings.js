@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CheckboxControl } from '@wordpress/components';
 
@@ -15,6 +15,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
 } from 'wcpay/data';
+import WCPaySettingsContext from '../wcpay-settings-context';
 
 const PaymentRequestSettings = ( { section } ) => {
 	const [
@@ -27,6 +28,8 @@ const PaymentRequestSettings = ( { section } ) => {
 		updatePaymentRequestLocations,
 	] = usePaymentRequestLocations();
 
+	const { setHasChanges } = useContext( WCPaySettingsContext );
+
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		if ( isChecked ) {
 			updatePaymentRequestLocations( [
@@ -38,6 +41,7 @@ const PaymentRequestSettings = ( { section } ) => {
 				paymentRequestLocations.filter( ( name ) => name !== location )
 			);
 		}
+		setHasChanges( true );
 	};
 
 	return (
@@ -46,7 +50,10 @@ const PaymentRequestSettings = ( { section } ) => {
 				<CardBody>
 					<CheckboxControl
 						checked={ isPaymentRequestEnabled }
-						onChange={ updateIsPaymentRequestEnabled }
+						onChange={ ( value ) => {
+							updateIsPaymentRequestEnabled( value );
+							setHasChanges( true );
+						} }
 						label={ __(
 							'Enable Apple Pay / Google Pay',
 							'woocommerce-payments'

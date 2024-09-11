@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
  */
 import SaveSettingsSection from '..';
 import { useSettings } from '../../../data';
+import WCPaySettingsContext from '../../wcpay-settings-context';
 
 jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
@@ -46,7 +47,11 @@ describe( 'SaveSettingsSection', () => {
 			saveSettings: saveSettingsMock,
 		} );
 
-		render( <SaveSettingsSection /> );
+		render(
+			<WCPaySettingsContext.Provider value={ { hasChanges: true } }>
+				<SaveSettingsSection />
+			</WCPaySettingsContext.Provider>
+		);
 
 		const saveChangesButton = screen.getByText( 'Save changes' );
 
