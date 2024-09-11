@@ -70,7 +70,11 @@ describe( 'ExpressCheckout', () => {
 			)
 		);
 
-		const context = { featureFlags: { woopay: true } };
+		const context = {
+			featureFlags: { woopay: true },
+			hasChanges: false,
+			setHasChanges: jest.fn(),
+		};
 
 		render(
 			<WCPaySettingsContext.Provider value={ context }>
@@ -84,7 +88,11 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'has the correct href links to the express checkout settings pages', async () => {
-		const context = { featureFlags: { woopay: true } };
+		const context = {
+			featureFlags: { woopay: true },
+			hasChanges: false,
+			setHasChanges: jest.fn(),
+		};
 
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
@@ -112,7 +120,11 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'hide link payment if card payment method is inactive', async () => {
-		const context = { featureFlags: { woopay: true } };
+		const context = {
+			featureFlags: { woopay: true },
+			hasChanges: false,
+			setHasChanges: jest.fn(),
+		};
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'link' ] ] );
 
@@ -126,7 +138,11 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'show link payment if card payment method is active', async () => {
-		const context = { featureFlags: { woopay: true } };
+		const context = {
+			featureFlags: { woopay: true },
+			hasChanges: false,
+			setHasChanges: jest.fn(),
+		};
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
@@ -140,7 +156,11 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'test stripe link checkbox checked', async () => {
-		const context = { featureFlags: { woopay: true } };
+		const context = {
+			featureFlags: { woopay: true },
+			hasChanges: false,
+			setHasChanges: jest.fn(),
+		};
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
@@ -154,7 +174,11 @@ describe( 'ExpressCheckout', () => {
 	} );
 
 	it( 'test stripe link checkbox not checked', async () => {
-		const context = { featureFlags: { woopay: true } };
+		const context = {
+			featureFlags: { woopay: true },
+			hasChanges: false,
+			setHasChanges: jest.fn(),
+		};
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
@@ -172,7 +196,11 @@ describe( 'ExpressCheckout', () => {
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( false, updateIsWooPayEnabledHandler )
 		);
-		const context = { featureFlags: { woopay: true } };
+		const context = {
+			featureFlags: { woopay: true },
+			hasChanges: false,
+			setHasChanges: jest.fn(),
+		};
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
@@ -200,7 +228,11 @@ describe( 'ExpressCheckout', () => {
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( false, updateIsWooPayEnabledHandler )
 		);
-		const context = { featureFlags: { woopay: true } };
+		const context = {
+			featureFlags: { woopay: true },
+			hasChanges: false,
+			setHasChanges: jest.fn(),
+		};
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
