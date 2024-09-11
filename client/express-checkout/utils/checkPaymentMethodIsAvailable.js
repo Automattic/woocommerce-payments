@@ -15,11 +15,11 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 
 export const checkPaymentMethodIsAvailable = memoize(
 	( paymentMethod, cart, resolve ) => {
-		const root = ReactDOM.createRoot(
-			document.getElementById(
-				`express-checkout-check-availability-container-${ paymentMethod }`
-			)
-		);
+		// Create the DIV container on the fly
+		const containerlEl = document.createElement( 'div' );
+		document.querySelector( 'body' ).appendChild( containerlEl );
+
+		const root = ReactDOM.createRoot( containerlEl );
 
 		const api = new WCPayAPI(
 			{
