@@ -1021,12 +1021,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the order status was updated to processing status.
 		$this->assertTrue( $this->order->has_status( [ Order_Status::PROCESSING ] ) );
 
-		remove_filter(
-			'wcpay_terminal_payment_completed_order_status',
-			function () {
-				return Order_Status::PROCESSING;
-			}
-		);
+		remove_all_filters( 'wcpay_terminal_payment_completed_order_status' );
 	}
 
 	/**

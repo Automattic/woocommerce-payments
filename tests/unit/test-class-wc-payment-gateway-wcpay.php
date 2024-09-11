@@ -3767,6 +3767,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->expect_router_factor( Factor::WCPAY_SUBSCRIPTION_SIGNUP(), false );
 		$this->card_gateway->should_use_new_process( $order );
+
+		remove_filter( 'wcpay_is_wcpay_subscriptions_enabled', '__return_true' );
 	}
 
 	public function test_new_process_payment() {
