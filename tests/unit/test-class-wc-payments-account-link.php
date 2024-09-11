@@ -48,11 +48,11 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 	private $mock_action_scheduler_service;
 
 	/**
-	 * Mock WC_Payments_Session_Service.
+	 * Mock WC_Payments_Onboarding_Service.
 	 *
-	 * @var WC_Payments_Session_Service|MockObject
+	 * @var WC_Payments_Onboarding_Service|MockObject
 	 */
-	private $mock_session_service;
+	private $mock_onboarding_service;
 
 	/**
 	 * Mock WC_Payments_Redirect_Service.
@@ -78,13 +78,13 @@ class WC_Payments_Account_Server_Links_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client               = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
 		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
-		$this->mock_session_service          = $this->createMock( WC_Payments_Session_Service::class );
+		$this->mock_onboarding_service       = $this->createMock( WC_Payments_Onboarding_Service::class );
 		$this->mock_redirect_service         = $this->createMock( WC_Payments_Redirect_Service::class );
 
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->setMethods( [ 'init_hooks' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_session_service, $this->mock_redirect_service ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service, $this->mock_onboarding_service, $this->mock_redirect_service ] )
 			->getMock();
 
 		$this->wcpay_account->init_hooks();

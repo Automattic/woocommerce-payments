@@ -24,16 +24,6 @@ import {
 	SofortIcon,
 } from 'wcpay/payment-methods-icons';
 
-declare global {
-	interface Window {
-		wcpaySettings: {
-			accountStatus: {
-				country: string;
-			};
-		};
-	}
-}
-
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
 
 export interface PaymentMethodMapEntry {

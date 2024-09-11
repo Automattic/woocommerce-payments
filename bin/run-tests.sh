@@ -24,13 +24,11 @@ if $WATCH_FLAG; then
 	# Change directory to WooCommerce Payments' root in order to have access to .phpunit-watcher.yml
 	docker compose exec -u www-data wordpress bash -c \
 		"cd /var/www/html/wp-content/plugins/woocommerce-payments && \
-		php -d xdebug.remote_autostart=on \
 		./vendor/bin/phpunit-watcher watch --configuration ./phpunit.xml.dist $*"
 else
 	echo "Running the tests..."
 
-	docker compose exec -u www-data wordpress \
-		php -d xdebug.remote_autostart=on \
+	docker-compose exec -u www-data wordpress \
 		/var/www/html/wp-content/plugins/woocommerce-payments/vendor/bin/phpunit \
 		--configuration /var/www/html/wp-content/plugins/woocommerce-payments/phpunit.xml.dist \
 		$*

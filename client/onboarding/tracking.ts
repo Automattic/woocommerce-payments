@@ -23,11 +23,15 @@ const stepElapsed = () => {
 	return result;
 };
 
-export const trackStarted = ( source: string ): void => {
+export const trackStarted = (): void => {
+	// Initialize the elapsed time tracking
 	startTime = stepStartTime = Date.now();
 
+	const urlParams = new URLSearchParams( window.location.search );
+
 	recordEvent( 'wcpay_onboarding_flow_started', {
-		source,
+		source:
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
 	} );
 };
 
@@ -42,14 +46,14 @@ export const trackStepCompleted = ( step: string ): void => {
 	trackedSteps.add( step );
 };
 
-export const trackRedirected = (
-	isEligible: boolean,
-	source: string
-): void => {
+export const trackRedirected = ( isPoEligible: boolean ): void => {
+	const urlParams = new URLSearchParams( window.location.search );
+
 	recordEvent( 'wcpay_onboarding_flow_redirected', {
-		is_po_eligible: isEligible,
+		is_po_eligible: isPoEligible,
 		elapsed: elapsed( startTime ),
-		source,
+		source:
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
 	} );
 };
 
@@ -66,13 +70,13 @@ export const trackEligibilityModalClosed = (
 	} );
 
 export const useTrackAbandoned = (): {
-	trackAbandoned: ( method: 'hide' | 'exit', source: string ) => void;
+	trackAbandoned: ( method: 'hide' | 'exit' ) => void;
 	removeTrackListener: () => void;
 } => {
 	const { errors, touched } = useOnboardingContext();
 	const { currentStep: step } = useStepperContext();
 
-	const trackEvent = ( method = 'hide', source = 'unknown' ) => {
+	const trackEvent = ( method = 'hide' ) => {
 		const event =
 			method === 'hide'
 				? 'wcpay_onboarding_flow_hidden'
@@ -81,21 +85,21 @@ export const useTrackAbandoned = (): {
 			( field ) => touched[ field as keyof OnboardingFields ]
 		);
 
+		const urlParams = new URLSearchParams( window.location.search );
+
 		recordEvent( event, {
 			step,
 			errored,
 			elapsed: elapsed( startTime ),
-			source,
+			source:
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown',
 		} );
 	};
 
 	const listener = () => {
 		if ( document.visibilityState === 'hidden' ) {
-			const urlParams = new URLSearchParams( window.location.search );
-			const source =
-				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
-				'unknown';
-			trackEvent( 'hide', source );
+			trackEvent( 'hide' );
 		}
 	};
 
@@ -108,8 +112,8 @@ export const useTrackAbandoned = (): {
 	}, [ step, errors, touched ] );
 
 	return {
-		trackAbandoned: ( method: string, source = 'unknown' ) => {
-			trackEvent( method, source );
+		trackAbandoned: ( method: string ) => {
+			trackEvent( method );
 			document.removeEventListener( 'visibilitychange', listener );
 		},
 		removeTrackListener: () =>

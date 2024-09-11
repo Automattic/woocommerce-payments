@@ -7,7 +7,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalNumberControl as NumberControl,
-	CheckboxControl,
 	SelectControl,
 	RadioControl,
 	RangeControl,
@@ -32,7 +31,6 @@ import {
 	usePaymentRequestButtonBorderRadius,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
-	useWooPayGlobalThemeSupportEnabledSettings,
 } from 'wcpay/data';
 
 const makeButtonSizeText = ( string ) =>
@@ -167,11 +165,6 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 		isPaymentRequestEnabled &&
 		isWooPayFeatureFlagEnabled;
 
-	const [
-		isWooPayGlobalThemeSupportEnabled,
-		updateIsWooPayGlobalThemeSupportEnabled,
-	] = useWooPayGlobalThemeSupportEnabledSettings();
-
 	return (
 		<CardBody>
 			{ showWarning && (
@@ -267,30 +260,6 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					</p>
 				</>
 			) }
-			{ wcpaySettings.isWooPayGlobalThemeSupportEligible &&
-				type === 'woopay' && (
-					<>
-						<h4>
-							{ __(
-								'WooPay Global Theme Support',
-								'woocommerce-payments'
-							) }
-						</h4>
-						<div className="test">
-							<CheckboxControl
-								disabled={ ! isWooPayEnabled }
-								checked={ isWooPayGlobalThemeSupportEnabled }
-								onChange={
-									updateIsWooPayGlobalThemeSupportEnabled
-								}
-								label={ __(
-									'Enable WooPay Global Theme Support',
-									'woocommerce-payments'
-								) }
-							/>
-						</div>
-					</>
-				) }
 			<h4>{ __( 'Preview', 'woocommerce-payments' ) }</h4>
 			<div className="payment-method-settings__option-help-text">
 				{ __(

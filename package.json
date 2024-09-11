@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "8.1.1",
+  "version": "8.2.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -77,6 +77,8 @@
   "dependencies": {
     "@automattic/interpolate-components": "1.2.1",
     "@fingerprintjs/fingerprintjs": "3.4.1",
+    "@stripe/connect-js": "3.3.12",
+    "@stripe/react-connect-js": "3.3.13",
     "@stripe/react-stripe-js": "2.5.1",
     "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "2.3.0",

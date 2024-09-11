@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.3
-Stable tag: 8.1.1
+Stable tag: 8.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -94,6 +94,37 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.2.0 - 2024-09-11 =
+* Add - add: test instructions icon animation
+* Add - Added Embdedded KYC, currently behind feature flag.
+* Fix - Avoid unnecessary account data cache refresh on WooPayments pages refresh.
+* Fix - Check payment method is available before rendering it.
+* Fix - Disables custom checkout field detection due to compatibility issues and false positives.
+* Fix - Disables testing instructions clipboard button on HTTP sites when navigator.clipboard is undefined.
+* Fix - fix: missing translations on testing instructions.
+* Fix - fix: platform_global_theme_support_enabled undefined index
+* Fix - fix: testing instructions dark theme support
+* Fix - Fix caching with tracking cookie.
+* Fix - Fixed an issue where the Connect page would scroll to the top upon clicking the Enable Sandbox Mode button.
+* Fix - Fixed default borderRadius value for the express checkout buttons
+* Fix - Fix shipping rates retrieval method for shortcode cart/checkout.
+* Fix - Fix support for merchant site styling when initializing WooPay via classic checkout
+* Fix - Fix WooPay direct checkout.
+* Fix - Handle loadError in ECE for Block Context Initialization.
+* Fix - Move woopay theme support checkbox to the appearance section.
+* Fix - Pass appearance data when initiating WooPay via the email input flow
+* Fix - Prevent preload of BNPL messaging if minimum order amount isn't hit.
+* Fix - Redirect user to WooPay OTP when the email is saved.
+* Fix - Remove obsolete ApplePay warning on wp-admin for test sites.
+* Fix - Update cache after persisting the User session via WooPay
+* Fix - Updates test mode instructions copy for cards at checkout.
+* Update - update: payment method fees in one line
+* Update - Update Jetpack packages to the latest versions
+* Dev - Fix failing e2e tests for saved cards.
+* Dev - Fix Klarna product page message E2E test after the contents inside the iframe were updated.
+* Dev - Migrate Klarna E2E tests to playwright. Reduce noise in E2E tests console output.
+* Dev - Migrate multi-currency e2e tests to Playwright.
+
 = 8.1.1 - 2024-08-29 =
 * Fix - Ensure 55px is the maximum height for Apple Pay button.
 * Fix - Fixed sandbox mode accounts being able to disable test mode for the payment gateway settings.
@@ -119,7 +150,6 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix uncaught error on the block based Cart page when WooPayments is disabled.
 * Fix - Fix WooPay checkboxes while signed in.
 * Fix - If a payment method fails to be created in the frontend during checkout, forward the errors to the server so it can be recorded in an order.
-* Fix - Migrate to Docker Compose V2 for test runner environment setup scripts
 * Fix - Reverts changes related to Direct Checkout that broke the PayPal extension.
 * Fix - Translate hardcoded strings on the Connect page
 * Update - refactor: separate BNPL methods from settings list
@@ -131,6 +161,7 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Match the Node version in nvm with the minimum version in package.json.
 * Dev - Remove unnecessary console.warn statements added in #9121.
 * Dev - Update bundle size checker workflow to support node v20
+* Dev - Migrate to Docker Compose V2 for test runner environment setup scripts
 
 = 8.0.2 - 2024-08-07 =
 * Fix - Add opt-in checks to prevent blocking customers using other payment methods.

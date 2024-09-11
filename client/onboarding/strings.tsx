@@ -44,6 +44,16 @@ export default {
 				'woocommerce-payments'
 			),
 		},
+		embedded: {
+			heading: __(
+				'One last step! Verify your identity with our partner',
+				'woocommerce-payments'
+			),
+			subheading: __(
+				'This info will verify your account',
+				'woocommerce-payments'
+			),
+		},
 	},
 	fields: {
 		country: __(

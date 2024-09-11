@@ -95,6 +95,10 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$is_woopay_enabled          = WC_Payments_Features::is_woopay_enabled();
 		$is_payment_request_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
 
+		if ( $is_payment_request_enabled ) {
+			$this->add_html_container_for_test_express_checkout_buttons();
+		}
+
 		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
 			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_ajax_handler, 'ajax_add_to_cart' ] );
 			add_action( 'wc_ajax_wcpay_empty_cart', [ $this->express_checkout_ajax_handler, 'ajax_empty_cart' ] );
@@ -137,7 +141,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 
 		// When Payment Request button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any payment request methods to display.
 		// More details: https://github.com/Automattic/woocommerce-payments/pull/5399#discussion_r1073633776.
-		$separator_starts_hidden = ( $should_show_payment_request || $should_show_express_checkout_button ) && ! $should_show_woopay;
+		$separator_starts_hidden = ! $should_show_woopay;
 		if ( $should_show_woopay || $should_show_payment_request || $should_show_express_checkout_button ) {
 			?>
 			<div class='wcpay-payment-request-wrapper' >
@@ -172,6 +176,31 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 */
 	public function add_order_attribution_inputs() {
 		echo '<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>';
+	}
+
+
+	/**
+	 * Add HTML containers to be used by the Express Checkout buttons that check if the payment method is available.
+	 *
+	 * @return void
+	 */
+	private function add_html_container_for_test_express_checkout_buttons() {
+		add_filter(
+			'the_content',
+			function ( $content ) {
+				$supported_payment_methods = [ 'applePay' , 'googlePay' ];
+				// Restrict adding these HTML containers to only the necessary pages.
+				if ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) {
+					foreach ( $supported_payment_methods as $value ) {
+						// The inline styles ensure that the HTML elements don't occupy space on the page.
+						$content = '<div id="express-checkout-check-availability-container-' . $value . '" style="height: 0; float:left; opacity: 0; pointer-events: none;"></div>' . $content;
+					}
+				}
+				return $content;
+			},
+			10,
+			1
+		);
 	}
 
 	/**
