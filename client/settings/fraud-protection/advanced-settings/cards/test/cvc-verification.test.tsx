@@ -42,7 +42,6 @@ describe( 'CVC verification card', () => {
 			setProtectionSettingsUI: setSettings,
 			protectionSettingsChanged: false,
 			setProtectionSettingsChanged: jest.fn(),
-			hasChanges: false,
 			setHasChanges: jest.fn(),
 		};
 		const { container } = render(
@@ -75,7 +74,6 @@ describe( 'CVC verification card', () => {
 			setProtectionSettingsUI: setSettings,
 			protectionSettingsChanged: false,
 			setProtectionSettingsChanged: jest.fn(),
-			hasChanges: false,
 			setHasChanges: jest.fn(),
 		};
 		const { container } = render(

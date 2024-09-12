@@ -344,7 +344,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 				setProtectionSettingsUI,
 				protectionSettingsChanged,
 				setProtectionSettingsChanged,
-				hasChanges,
 				setHasChanges,
 			} }
 		>
