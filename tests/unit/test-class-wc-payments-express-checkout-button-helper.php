@@ -133,7 +133,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function tear_down() {
-		parent::tear_down();
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
@@ -142,6 +141,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_filter( 'wc_tax_enabled', '__return_false' );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_excl' ] );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
+
+		parent::tear_down();
 	}
 
 	public function __return_excl() {
@@ -240,6 +241,8 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$result = $this->mock_express_checkout_helper->get_total_label();
 
 		$this->assertEquals( 'Google Pay (via WooPayments)', $result );
+
+		remove_all_filters( 'wcpay_payment_request_total_label_suffix' );
 	}
 
 	public function test_filter_cart_needs_shipping_address_returns_false() {

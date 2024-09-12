@@ -190,7 +190,7 @@ export const handleWooPayEmailInput = async (
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
 					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-						? getAppearance( appearanceType )
+						? getAppearance( appearanceType, true )
 						: null,
 				}
 			).then( ( response ) => {

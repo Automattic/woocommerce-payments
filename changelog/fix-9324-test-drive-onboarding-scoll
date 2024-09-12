@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixed an issue where the Connect page would scroll to the top upon clicking the Enable Sandbox Mode button.

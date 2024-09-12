@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix support for merchant site styling when initializing WooPay via classic checkout

@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Update cache after persisting the User session via WooPay
