@@ -13,16 +13,7 @@ export type OnboardingFields = {
 	go_live_timeframe?: string;
 };
 
-export interface OnboardingProps {
-	country?: string;
-	type?: string;
-	structure?: string;
-	mcc?: string;
-	annual_revenue?: string;
-	go_live_timeframe?: string;
-}
-
-export interface PoEligibleResult {
+export interface PoEligibleResponse {
 	result: 'eligible' | 'not_eligible';
 }
 
@@ -65,6 +56,10 @@ export interface MccsDisplayTreeItem {
 	keywords?: string[];
 }
 
+export interface AccountKycData {
+	self_assessment: Record< string, unknown >;
+}
+
 export interface AccountKycSession {
 	clientSecret: string;
 	expiresAt: number;
@@ -73,4 +68,9 @@ export interface AccountKycSession {
 	accountCreated: boolean;
 	publishableKey: string;
 	locale: string;
+}
+
+export interface FinalizeOnboardingResponse {
+	success: boolean;
+	params: Record< string, string >;
 }
