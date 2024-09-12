@@ -8,6 +8,7 @@
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Compatibility_Service;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
@@ -126,7 +127,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$order_service                           = new WC_Payments_Order_Service( $this->mock_api_client );
 		$customer_service                        = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache, $this->mock_session_service, $order_service );
 		$token_service                           = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
-		$action_scheduler_service                = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
+		$compatibility_service                   = new Compatibility_Service( $this->mock_api_client );
+		$action_scheduler_service                = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service, $compatibility_service );
 		$mock_rate_limiter                       = $this->createMock( Session_Rate_Limiter::class );
 		$mock_dpps                               = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 		$this->mock_localization_service         = $this->createMock( WC_Payments_Localization_Service::class );
