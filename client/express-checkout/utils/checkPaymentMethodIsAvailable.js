@@ -17,6 +17,19 @@ export const checkPaymentMethodIsAvailable = memoize(
 	( paymentMethod, cart, resolve ) => {
 		// Create the DIV container on the fly
 		const containerlEl = document.createElement( 'div' );
+
+		// Ensure the element is hidden and doesn’t interfere with the page layout.
+		containerlEl.style.border = 0;
+		containerlEl.style.height = '0';
+		containerlEl.style.margin = '0';
+		containerlEl.style.overflow = 'hidden';
+		containerlEl.style.padding = '0';
+		containerlEl.style.position = 'absolute';
+		containerlEl.style.width = '0';
+		containerlEl.style.float = 'left';
+		containerlEl.style.opacity = '0';
+		containerlEl.style.pointerEvents = 'none';
+
 		document.querySelector( 'body' ).appendChild( containerlEl );
 
 		const root = ReactDOM.createRoot( containerlEl );
