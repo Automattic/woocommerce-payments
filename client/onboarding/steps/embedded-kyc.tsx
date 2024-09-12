@@ -30,6 +30,7 @@ interface Props {
 	continueKyc?: boolean;
 }
 
+// TODO: extract this logic and move it to a generic component to be used for all embedded components, not just onboarding.
 const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 	const { data } = useOnboardingContext();
 	const [ locale, setLocale ] = useState( '' );
