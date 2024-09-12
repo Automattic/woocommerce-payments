@@ -94,7 +94,8 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.2.1 - 2024-09-12 =
+= 8.2.1 - 2024-09-13 =
+* Fix - Create div container element with JS dynamically.
 
 
 = 8.2.0 - 2024-09-11 =
