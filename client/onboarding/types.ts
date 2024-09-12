@@ -56,10 +56,6 @@ export interface MccsDisplayTreeItem {
 	keywords?: string[];
 }
 
-export interface AccountKycData {
-	self_assessment: Record< string, unknown >;
-}
-
 export interface AccountKycSession {
 	clientSecret: string;
 	expiresAt: number;
