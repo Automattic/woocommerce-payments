@@ -16,23 +16,23 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 export const checkPaymentMethodIsAvailable = memoize(
 	( paymentMethod, cart, resolve ) => {
 		// Create the DIV container on the fly
-		const containerlEl = document.createElement( 'div' );
+		const containerEl = document.createElement( 'div' );
 
 		// Ensure the element is hidden and doesn’t interfere with the page layout.
-		containerlEl.style.border = 0;
-		containerlEl.style.height = '0';
-		containerlEl.style.margin = '0';
-		containerlEl.style.overflow = 'hidden';
-		containerlEl.style.padding = '0';
-		containerlEl.style.position = 'absolute';
-		containerlEl.style.width = '0';
-		containerlEl.style.float = 'left';
-		containerlEl.style.opacity = '0';
-		containerlEl.style.pointerEvents = 'none';
+		containerEl.style.border = 0;
+		containerEl.style.height = '0';
+		containerEl.style.margin = '0';
+		containerEl.style.overflow = 'hidden';
+		containerEl.style.padding = '0';
+		containerEl.style.position = 'absolute';
+		containerEl.style.width = '0';
+		containerEl.style.float = 'left';
+		containerEl.style.opacity = '0';
+		containerEl.style.pointerEvents = 'none';
 
-		document.querySelector( 'body' ).appendChild( containerlEl );
+		document.querySelector( 'body' ).appendChild( containerEl );
 
-		const root = ReactDOM.createRoot( containerlEl );
+		const root = ReactDOM.createRoot( containerEl );
 
 		const api = new WCPayAPI(
 			{
@@ -84,7 +84,7 @@ export const checkPaymentMethodIsAvailable = memoize(
 						}
 						resolve( canMakePayment );
 						root.unmount();
-						containerlEl.remove();
+						containerEl.remove();
 					} }
 				/>
 			</Elements>
