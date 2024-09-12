@@ -9,12 +9,12 @@ import { test, expect, Page, Browser } from '@playwright/test';
 import * as shopper from '../../utils/shopper';
 import { config } from '../../config/default';
 import { getAnonymousShopper, getMerchant } from '../../utils/helpers';
-import { goToOrder } from '../../utils/merchant-navigation';
+import { goToOrder, goToPaymentDetails } from '../../utils/merchant-navigation';
 
 /**
  * Navigates to the payment details page for a given disputed order.
  */
-async function goToPaymentDetails(
+async function goToPaymentDetailsForOrder(
 	/** The merchant page object. */
 	merchantPage: Page,
 	/** The ID of the disputed order. */
@@ -25,12 +25,15 @@ async function goToPaymentDetails(
 		async () => {
 			await goToOrder( merchantPage, orderId );
 
-			// Click the order dispute notice to navigate to the payment details screen.
-			await merchantPage
-				.getByRole( 'button', {
-					name: 'Respond now',
+			// Get the order payment intent ID.
+			const paymentIntentId = await merchantPage
+				.locator( '#order_data' )
+				.getByRole( 'link', {
+					name: /pi_/,
 				} )
-				.click();
+				.innerText();
+
+			await goToPaymentDetails( merchantPage, paymentIntentId );
 
 			// Store the current URL for later use.
 			const currentUrl = merchantPage.url();
@@ -149,7 +152,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 			const orderId = await createDisputedOrder( browser );
 
-			const paymentDetailsLink = await goToPaymentDetails(
+			const paymentDetailsLink = await goToPaymentDetailsForOrder(
 				merchantPage,
 				orderId
 			);
@@ -272,7 +275,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 			const orderId = await createDisputedOrder( browser );
 
-			const paymentDetailsLink = await goToPaymentDetails(
+			const paymentDetailsLink = await goToPaymentDetailsForOrder(
 				merchantPage,
 				orderId
 			);
@@ -367,7 +370,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 		const orderId = await createDisputedOrder( browser );
 
-		const paymentDetailsLink = await goToPaymentDetails(
+		const paymentDetailsLink = await goToPaymentDetailsForOrder(
 			merchantPage,
 			orderId
 		);
