@@ -19,16 +19,7 @@ export const checkPaymentMethodIsAvailable = memoize(
 		const containerEl = document.createElement( 'div' );
 
 		// Ensure the element is hidden and doesn’t interfere with the page layout.
-		containerEl.style.border = 0;
-		containerEl.style.height = '0';
-		containerEl.style.margin = '0';
-		containerEl.style.overflow = 'hidden';
-		containerEl.style.padding = '0';
-		containerEl.style.position = 'absolute';
-		containerEl.style.width = '0';
-		containerEl.style.float = 'left';
-		containerEl.style.opacity = '0';
-		containerEl.style.pointerEvents = 'none';
+		containerEl.style.display = 'none';
 
 		document.querySelector( 'body' ).appendChild( containerEl );
 
