@@ -2,13 +2,23 @@
  * External dependencies
  */
 import { set, toPairs } from 'lodash';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
+import { NAMESPACE } from 'data/constants';
 import { ListItem } from 'components/grouped-select-control';
 import businessTypeDescriptionStrings from './translations/descriptions';
-import { Country } from './types';
+import {
+	AccountKycSession,
+	Country,
+	OnboardingFields,
+	PoEligibleData,
+	PoEligibleResponse,
+	FinalizeOnboardingResponse,
+} from './types';
+import { addQueryArgs } from '@wordpress/url';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
@@ -16,6 +26,9 @@ export const fromDotNotation = (
 	toPairs( record ).reduce( ( result, [ key, value ] ) => {
 		return value != null ? set( result, key, value ) : result;
 	}, {} );
+
+const hasUndefinedValues = ( obj: Record< string, any > ): boolean =>
+	Object.values( obj ).some( ( value ) => value === undefined );
 
 export const getAvailableCountries = (): Country[] =>
 	Object.entries( wcpaySettings?.connect.availableCountries || [] )
@@ -40,6 +53,86 @@ export const getBusinessTypes = (): Country[] => {
 			} ) )
 			.sort( ( a, b ) => a.name.localeCompare( b.name ) ) || []
 	);
+};
+
+/**
+ * Make an API request to create an account session.
+ *
+ * @param data The form data.
+ * @param isPoEligible Whether the user is eligible for a PO account.
+ * @param collectPayoutRequirements Whether to collect payout requirements.
+ */
+export const createAccountSession = async (
+	data: OnboardingFields,
+	isPoEligible: boolean,
+	collectPayoutRequirements = false
+): Promise< AccountKycSession > => {
+	return await apiFetch< AccountKycSession >( {
+		path: addQueryArgs( `${ NAMESPACE }/onboarding/kyc/session`, {
+			self_assessment: fromDotNotation( data ),
+			progressive: isPoEligible,
+			collect_payout_requirements: collectPayoutRequirements,
+		} ),
+		method: 'GET',
+	} );
+};
+
+/**
+ * Make an API request to finalize the onboarding process.
+ *
+ * @param urlSource The source URL.
+ */
+export const finalizeOnboarding = async ( urlSource: string ) => {
+	return await apiFetch< FinalizeOnboardingResponse >( {
+		path: `${ NAMESPACE }/onboarding/kyc/finalize`,
+		method: 'POST',
+		data: {
+			source: urlSource,
+			from: 'WCPAY_ONBOARDING_WIZARD',
+		},
+	} );
+};
+
+/**
+ * Make an API request to determine if the user is eligible for a PO account.
+ *
+ * @param onboardingFields The form data, used to determine eligibility.
+ */
+export const isPoEligible = async (
+	onboardingFields: OnboardingFields
+): Promise< boolean > => {
+	// Check if any required property is undefined
+	if (
+		hasUndefinedValues( {
+			country: onboardingFields.country,
+			business_type: onboardingFields.business_type,
+			mcc: onboardingFields.mcc,
+			annual_revenue: onboardingFields.annual_revenue,
+			go_live_timeframe: onboardingFields.go_live_timeframe,
+		} )
+	) {
+		return false;
+	}
+
+	const eligibilityData: PoEligibleData = {
+		business: {
+			country: onboardingFields.country as string,
+			type: onboardingFields.business_type as string,
+			mcc: onboardingFields.mcc as string,
+		},
+		store: {
+			annual_revenue: onboardingFields.annual_revenue as string,
+			go_live_timeframe: onboardingFields.go_live_timeframe as string,
+		},
+	};
+
+	const response: PoEligibleResponse = await apiFetch( {
+		path: `${ NAMESPACE }/onboarding/router/po_eligible`,
+		method: 'POST',
+		data: eligibilityData,
+	} );
+
+	return response.result === 'eligible';
 };
 
 /**

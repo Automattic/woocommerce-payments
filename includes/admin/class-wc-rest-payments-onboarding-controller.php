@@ -204,10 +204,14 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 * @return WP_Error|WP_REST_Response
 	 */
 	public function get_embedded_kyc_session( WP_REST_Request $request ) {
+		$self_assessment_data        = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
+		$progressive                 = ! empty( $request->get_param( 'progressive' ) ) && 'true' === $request->get_param( 'progressive' );
+		$collect_payout_requirements = ! empty( $request->get_param( 'collect_payout_requirements' ) ) && 'true' === $request->get_param( 'collect_payout_requirements' );
+
 		$account_session = $this->onboarding_service->create_embedded_kyc_session(
-			! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [],
-			! empty( $request->get_param( 'progressive' ) ) && 'true' === $request->get_param( 'progressive' ),
-			! empty( $request->get_param( 'collect_payout_requirements' ) ) && 'true' === $request->get_param( 'collect_payout_requirements' )
+			$self_assessment_data,
+			$progressive,
+			$collect_payout_requirements
 		);
 
 		if ( $account_session ) {
