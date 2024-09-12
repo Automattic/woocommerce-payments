@@ -16,7 +16,6 @@ export const receiveSettings = (
 	state = defaultState,
 	{ type, ...action }
 ) => {
-	console.log( '###', type );
 	switch ( type ) {
 		case ACTION_TYPES.SET_SETTINGS:
 			return {
