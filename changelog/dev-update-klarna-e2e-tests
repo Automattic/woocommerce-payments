@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Migrate Klarna E2E tests to playwright. Reduce noise in E2E tests console output.

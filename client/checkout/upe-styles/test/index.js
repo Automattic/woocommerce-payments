@@ -119,7 +119,10 @@ describe( 'Getting styles for automated theming', () => {
 			return mockCSStyleDeclaration;
 		} );
 
-		const appearance = upeStyles.getAppearance( 'shortcode_checkout' );
+		const appearance = upeStyles.getAppearance(
+			'shortcode_checkout',
+			true
+		);
 		expect( appearance ).toEqual( {
 			variables: {
 				colorBackground: '#ffffff',

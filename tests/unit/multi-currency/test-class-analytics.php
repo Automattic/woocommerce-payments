@@ -67,12 +67,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$this->add_mock_order_with_meta();
 		$this->set_is_admin( true );
 		$this->set_is_rest_request( true );
-		add_filter(
-			'woocommerce_is_rest_api_request',
-			function () {
-				return true;
-			}
-		);
+		add_filter( 'woocommerce_is_rest_api_request', '__return_true' );
 		// Add manage_woocommerce capability to user.
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
@@ -98,8 +93,11 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	 * Post-test tear down.
 	 */
 	public function tear_down() {
-		parent::tear_down();
 		$this->delete_mock_orders();
+
+		remove_filter( 'woocommerce_is_rest_api_request', '__return_true' );
+
+		parent::tear_down();
 	}
 
 	/**
@@ -273,6 +271,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = [ 'Santa Claus', 'Mrs. Claus' ];
 		add_filter( 'wcpay_multi_currency_disable_filter_select_clauses', '__return_true' );
 		$this->assertEquals( $expected, $this->analytics->filter_select_clauses( $expected, 'orders_stats' ) );
+
+		remove_filter( 'wcpay_multi_currency_disable_filter_select_clauses', '__return_true' );
 	}
 
 	public function test_filter_select_clauses_return_filter() {
@@ -285,6 +285,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			}
 		);
 		$this->assertEquals( $expected, $this->analytics->filter_select_clauses( $clauses, 'orders_stats' ) );
+
+		remove_all_filters( 'wcpay_multi_currency_filter_select_clauses' );
 	}
 
 	public function test_filter_where_clauses_when_no_currency_provided() {
@@ -417,6 +419,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$_GET['currency_is'] = [ 'USD' ];
 
 		$this->assertEquals( $expected, $this->analytics->filter_where_clauses( $expected ) );
+
+		remove_filter( 'wcpay_multi_currency_disable_filter_where_clauses', '__return_true' );
 	}
 
 	/**
@@ -461,6 +465,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = [ 'Santa Claus', 'Mrs. Claus' ];
 		add_filter( 'wcpay_multi_currency_disable_filter_join_clauses', '__return_true' );
 		$this->assertEquals( $expected, $this->analytics->filter_join_clauses( $expected, 'orders_stats' ) );
+
+		remove_filter( 'wcpay_multi_currency_disable_filter_join_clauses', '__return_true' );
 	}
 
 	public function test_filter_join_clauses_return_filter() {
@@ -473,6 +479,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			}
 		);
 		$this->assertEquals( $expected, $this->analytics->filter_join_clauses( $clauses, 'orders_stats' ) );
+
+		remove_all_filters( 'wcpay_multi_currency_filter_join_clauses' );
 	}
 
 	/**
@@ -513,6 +521,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$expected = [ 'Santa Claus', 'Mrs. Claus' ];
 		add_filter( 'wcpay_multi_currency_disable_filter_select_orders_clauses', '__return_true' );
 		$this->assertEquals( $expected, $this->analytics->filter_select_orders_clauses( $expected ) );
+
+		remove_filter( 'wcpay_multi_currency_disable_filter_select_orders_clauses', '__return_true' );
 	}
 
 	public function test_filter_select_orders_clauses_return_filter() {
@@ -525,6 +535,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			}
 		);
 		$this->assertEquals( $expected, $this->analytics->filter_select_orders_clauses( $clauses ) );
+
+		remove_all_filters( 'wcpay_multi_currency_filter_select_orders_clauses' );
 	}
 
 	private function order_args_provider( $order_id, $parent_id, $num_items_sold, $total_sales, $tax_total, $shipping_total, $net_total ) {

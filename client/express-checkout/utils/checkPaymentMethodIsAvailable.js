@@ -47,6 +47,7 @@ export const checkPaymentMethodIsAvailable = memoize(
 				} }
 			>
 				<ExpressCheckoutElement
+					onLoadError={ () => resolve( false ) }
 					options={ {
 						paymentMethods: {
 							amazonPay: 'never',

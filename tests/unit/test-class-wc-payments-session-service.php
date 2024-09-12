@@ -53,6 +53,11 @@ class WC_Payments_Session_Service_Test extends WCPAY_UnitTestCase {
 		add_filter( 'pre_option_' . WC_Payments_Session_Service::SESSION_STORE_ID_OPTION, [ $this, 'mock_session_store_id' ] );
 	}
 
+	/**
+	 * Clean up after each test.
+	 *
+	 * @return void
+	 */
 	public function tear_down() {
 		parent::tear_down();
 

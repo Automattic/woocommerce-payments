@@ -232,7 +232,7 @@ export const WoopayExpressCheckoutButton = ( {
 						appearance: getConfig(
 							'isWooPayGlobalThemeSupportEnabled'
 						)
-							? getAppearance( appearanceType )
+							? getAppearance( appearanceType, true )
 							: null,
 					} )
 						.then( async ( response ) => {
@@ -278,7 +278,7 @@ export const WoopayExpressCheckoutButton = ( {
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
 					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-						? getAppearance( appearanceType )
+						? getAppearance( appearanceType, true )
 						: null,
 				} )
 					.then( async ( response ) => {

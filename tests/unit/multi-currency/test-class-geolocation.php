@@ -26,13 +26,25 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 	private $geolocation;
 
 	/**
-	 * Pre-test setup
+	 * Pre-test setup.
 	 */
 	public function set_up() {
 		parent::set_up();
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->geolocation               = new WCPay\MultiCurrency\Geolocation( $this->mock_localization_service );
+	}
+
+	/**
+	 * Post-test cleanup.
+	 *
+	 * @return void
+	 */
+	public function tear_down() {
+		remove_all_filters( 'woocommerce_geolocate_ip' );
+		remove_all_filters( 'woocommerce_customer_default_location' );
+
+		parent::tear_down();
 	}
 
 	public function test_get_country_by_customer_location_returns_geolocation_country() {
