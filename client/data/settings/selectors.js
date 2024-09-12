@@ -49,6 +49,10 @@ export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
 };
 
+export const isDirty = ( state ) => {
+	return getSettingsState( state ).isDirty || false;
+};
+
 export const getAccountStatementDescriptor = ( state ) => {
 	return getSettings( state ).account_statement_descriptor || '';
 };

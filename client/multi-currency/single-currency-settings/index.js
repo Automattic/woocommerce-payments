@@ -42,6 +42,7 @@ const SingleCurrencySettings = () => {
 	const { currencies } = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
 	const { storeSettings } = useStoreSettings();
+	const [ isDirty, setIsDirty ] = useState( false );
 
 	const {
 		currencySettings,
@@ -82,6 +83,10 @@ const SingleCurrencySettings = () => {
 	const [ isSaving, setIsSaving ] = useState( false );
 
 	useEffect( () => {
+		setIsDirty( true );
+	}, [ exchangeRateType, manualRate, priceCharmType ] );
+
+	useEffect( () => {
 		if ( currencySettings[ currency ] ) {
 			setExchangeRateType(
 				currencySettings[ currency ].exchange_rate_type ||
@@ -98,6 +103,7 @@ const SingleCurrencySettings = () => {
 				currencySettings[ currency ].price_charm ||
 					initialPriceCharmType
 			);
+			setIsDirty( false );
 		}
 	}, [ currencySettings, currency, initialPriceRoundingType ] );
 
@@ -162,6 +168,7 @@ const SingleCurrencySettings = () => {
 		}
 
 		setIsSaving( false );
+		setIsDirty( false );
 	};
 
 	return (
@@ -522,7 +529,7 @@ const SingleCurrencySettings = () => {
 					<Button
 						isPrimary
 						isBusy={ isSaving }
-						disabled={ isSaving }
+						disabled={ isSaving || ! isDirty }
 						onClick={ saveSingleCurrencySettings }
 					>
 						{ __( 'Save changes', 'woocommerce-payments' ) }

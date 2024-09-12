@@ -69,6 +69,7 @@ export type AdvancedFraudPreventionSettingsHook = [
 
 export interface SettingsHook {
 	isSaving: boolean;
+	isDirty: boolean;
 	isLoading: boolean;
 	saveSettings: () => void;
 }

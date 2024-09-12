@@ -173,6 +173,7 @@ describe( 'Disputes list', () => {
 		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
 
 		mockUseSettings.mockReturnValue( {
+			isDirty: false,
 			isLoading: false,
 			isSaving: false,
 			saveSettings: ( a ) => a,
