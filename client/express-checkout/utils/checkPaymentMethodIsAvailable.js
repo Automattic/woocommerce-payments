@@ -71,6 +71,7 @@ export const checkPaymentMethodIsAvailable = memoize(
 						}
 						resolve( canMakePayment );
 						root.unmount();
+						containerlEl.remove();
 					} }
 				/>
 			</Elements>
