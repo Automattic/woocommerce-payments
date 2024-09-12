@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Create express checkout test div using wp_footer instead of the_content
