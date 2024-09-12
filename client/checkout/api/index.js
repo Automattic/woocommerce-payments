@@ -466,7 +466,7 @@ export default class WCPayAPI {
 			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
 				_wpnonce: nonce,
 				appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-					? getAppearance( appearanceType )
+					? getAppearance( appearanceType, true )
 					: null,
 				email: userEmail,
 				user_session: woopayUserSession,

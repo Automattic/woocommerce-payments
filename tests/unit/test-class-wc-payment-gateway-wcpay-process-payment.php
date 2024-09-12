@@ -217,9 +217,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function tear_down() {
-		parent::tear_down();
 		WC_Payments::set_gateway( $this->wcpay_gateway );
 		WC()->session->set( 'wc_notices', [] );
+
+		parent::tear_down();
 	}
 
 	/**
@@ -755,6 +756,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Assert: woocommerce_order_status_pending was not called.
 		$this->assertFalse( $results['has_called_woocommerce_order_status_pending'] );
+
+		remove_all_actions( 'woocommerce_order_status_pending' );
+		remove_all_filters( 'woocommerce_default_order_status' );
 	}
 
 	/**

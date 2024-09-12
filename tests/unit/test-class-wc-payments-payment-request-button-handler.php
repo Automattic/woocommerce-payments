@@ -162,7 +162,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	}
 
 	public function tear_down() {
-		parent::tear_down();
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
@@ -178,6 +177,9 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		remove_filter( 'wc_tax_enabled', '__return_true' );
 		remove_filter( 'wc_tax_enabled', '__return_false' );
 		remove_filter( 'wc_shipping_enabled', '__return_false' );
+		remove_all_filters( 'woocommerce_find_rates' );
+
+		parent::tear_down();
 	}
 
 	public function __return_yes() {
@@ -661,6 +663,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		// Restore the sign-up fee after the test.
 		WC_Subscriptions_Product::set_sign_up_fee( 0 );
+
+		remove_all_filters( 'test_deposit_get_product' );
 	}
 
 	public function test_get_product_price_includes_variable_subscription_sign_up_fee() {
@@ -679,6 +683,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		// Restore the sign-up fee after the test.
 		WC_Subscriptions_Product::set_sign_up_fee( 0 );
+
+		remove_all_filters( 'test_deposit_get_product' );
 	}
 
 	public function test_get_product_price_throws_exception_for_products_without_prices() {
@@ -709,6 +715,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		// Restore the sign-up fee after the test.
 		WC_Subscriptions_Product::set_sign_up_fee( 0 );
+
+		remove_all_filters( 'test_deposit_get_product' );
 	}
 
 	private function create_mock_subscription( $type ) {
