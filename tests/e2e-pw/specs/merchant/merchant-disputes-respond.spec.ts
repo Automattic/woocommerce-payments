@@ -73,6 +73,7 @@ async function createDisputedOrder( browser: Browser ) {
 }
 
 test.describe( 'Disputes > Respond to a dispute', () => {
+	// Allow all tests within this describe block to run in parallel.
 	test.describe.configure( { mode: 'parallel' } );
 
 	test(
@@ -423,7 +424,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		);
 
 		await test.step(
-			'Verify the previously selected challenge is saved',
+			'Verify the previously selected challenge product type is saved',
 			async () => {
 				await expect(
 					merchantPage.getByTestId(
