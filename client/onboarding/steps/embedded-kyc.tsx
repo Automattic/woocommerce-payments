@@ -6,7 +6,6 @@ import {
 	loadConnectAndInitialize,
 	StripeConnectInstance,
 } from '@stripe/connect-js';
-import { LoadError } from '@stripe/connect-js/types/config';
 import {
 	ConnectAccountOnboarding,
 	ConnectComponentsProvider,
@@ -33,6 +32,7 @@ interface Props {
 
 const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 	const { data } = useOnboardingContext();
+	const [ locale, setLocale ] = useState( '' );
 	const [ publishableKey, setPublishableKey ] = useState( '' );
 	const [ clientSecret, setClientSecret ] = useState<
 		( () => Promise< string > ) | null
@@ -43,8 +43,6 @@ const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 	] = useState< StripeConnectInstance | null >( null );
 	const [ loading, setLoading ] = useState( true );
 	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
-
-	const localeRef = useRef( '' ); // useRef to keep track of the locale
 
 	const fetchAccountSession = useCallback( async () => {
 		try {
@@ -93,7 +91,7 @@ const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 			try {
 				const accountSession = await fetchAccountSession();
 				if ( accountSession ) {
-					localeRef.current = accountSession.locale;
+					setLocale( accountSession.locale );
 					setPublishableKey( accountSession.publishableKey );
 					setClientSecret( () => fetchClientSecret );
 				}
@@ -118,12 +116,12 @@ const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 		if ( publishableKey && clientSecret && ! stripeConnectInstance ) {
 			const stripeInstance = loadConnectAndInitialize( {
 				publishableKey,
-				fetchClientSecret, // Reuse the fetchClientSecret function here
+				fetchClientSecret,
 				appearance: {
 					overlays: 'drawer',
 					variables: appearance.variables,
 				},
-				locale: localeRef.current.replace( '_', '-' ),
+				locale: locale.replace( '_', '-' ),
 			} );
 
 			setStripeConnectInstance( stripeInstance );
@@ -133,6 +131,7 @@ const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 		clientSecret,
 		stripeConnectInstance,
 		fetchClientSecret,
+		locale,
 	] );
 
 	const handleOnExit = async () => {
