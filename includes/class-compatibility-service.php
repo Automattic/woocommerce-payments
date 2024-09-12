@@ -47,7 +47,7 @@ class Compatibility_Service {
 	}
 
 	/**
-	 * Schedules the sending of the compatibility data to 5 minutes to send only the last update in 5 minutes.
+	 * Schedules the sending of the compatibility data to send only the last update in T minutes.
 	 *
 	 * @return void
 	 */
