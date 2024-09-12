@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, Browser } from '@playwright/test';
 
 /**
  * Internal dependencies
  */
 import * as shopper from '../../utils/shopper';
 import { config } from '../../config/default';
-import { getMerchant, getShopper } from '../../utils/helpers';
+import { getAnonymousShopper, getMerchant } from '../../utils/helpers';
 import { goToOrder } from '../../utils/merchant-navigation';
 
 /**
@@ -41,39 +41,39 @@ async function goToPaymentDetails(
 	return paymentDetailsLink;
 }
 
+async function createDisputedOrder( browser: Browser ) {
+	const { shopperPage } = await getAnonymousShopper( browser );
+
+	const orderId = await test.step(
+		'Place an order as shopper, to be automatically disputed',
+		async () => {
+			await shopperPage.goto( '/cart/' );
+			await shopper.addCartProduct( shopperPage );
+
+			await shopperPage.goto( '/checkout/' );
+			await shopper.fillBillingAddress(
+				shopperPage,
+				config.addresses.customer.billing
+			);
+			await shopper.fillCardDetails(
+				shopperPage,
+				config.cards[ 'disputed-fraudulent' ]
+			);
+			await shopper.placeOrder( shopperPage );
+
+			// Get the order ID
+			const orderIdField = shopperPage.locator(
+				'.woocommerce-order-overview__order.order > strong'
+			);
+			return orderIdField.innerText();
+		}
+	);
+
+	return orderId;
+}
+
 test.describe( 'Disputes > Respond to a dispute', () => {
-	let orderId: string;
-
 	test.describe.configure( { mode: 'parallel' } );
-
-	test.beforeEach( async ( { browser } ) => {
-		const { shopperPage } = await getShopper( browser );
-
-		await test.step(
-			'Place an order as shopper, to be automatically disputed',
-			async () => {
-				await shopperPage.goto( '/cart/' );
-				await shopper.addCartProduct( shopperPage );
-
-				await shopperPage.goto( '/checkout/' );
-				await shopper.fillBillingAddress(
-					shopperPage,
-					config.addresses.customer.billing
-				);
-				await shopper.fillCardDetails(
-					shopperPage,
-					config.cards[ 'disputed-fraudulent' ]
-				);
-				await shopper.placeOrder( shopperPage );
-
-				// Get the order ID
-				const orderIdField = shopperPage.locator(
-					'.woocommerce-order-overview__order.order > strong'
-				);
-				orderId = await orderIdField.innerText();
-			}
-		);
-	} );
 
 	test(
 		'Accept a dispute',
@@ -82,6 +82,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		},
 		async ( { browser } ) => {
 			const { merchantPage } = await getMerchant( browser );
+
+			const orderId = await createDisputedOrder( browser );
 
 			await goToPaymentDetails( merchantPage, orderId );
 
@@ -143,6 +145,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		},
 		async ( { browser } ) => {
 			const { merchantPage } = await getMerchant( browser );
+
+			const orderId = await createDisputedOrder( browser );
 
 			const paymentDetailsLink = await goToPaymentDetails(
 				merchantPage,
@@ -265,6 +269,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		async ( { browser } ) => {
 			const { merchantPage } = await getMerchant( browser );
 
+			const orderId = await createDisputedOrder( browser );
+
 			const paymentDetailsLink = await goToPaymentDetails(
 				merchantPage,
 				orderId
@@ -357,6 +363,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		browser,
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );
+
+		const orderId = await createDisputedOrder( browser );
 
 		const paymentDetailsLink = await goToPaymentDetails(
 			merchantPage,
