@@ -188,7 +188,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 				className="payment-method-settings__cta-selection"
 				label={ __( 'Call to action', 'woocommerce-payments' ) }
 				help={ __(
-					'Select a button label that fits best wit the flow of purchase or payment experience on your store.',
+					'Select a button label that fits best with the flow of purchase or payment experience on your store.',
 					'woocommerce-payments'
 				) }
 				hideLabelFromVision
