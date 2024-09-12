@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useState } from '@wordpress/element';
@@ -20,6 +20,7 @@ import { ProtectionLevel } from '../../advanced-settings/constants';
 import InlineNotice from 'components/inline-notice';
 import { recordEvent } from 'tracks';
 import { CurrentProtectionLevelHook } from '../../interfaces';
+import WCPaySettingsContext from '../../../wcpay-settings-context';
 
 const ProtectionLevels: React.FC = () => {
 	const [ isBasicModalOpen, setBasicModalOpen ] = useState( false );

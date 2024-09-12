@@ -87,8 +87,8 @@ describe( 'FraudProtection', () => {
 		] );
 		mockUseSettings.mockReturnValue( {
 			settings: {},
-			isDirty: false,
 			isSaving: false,
+			isDirty: false,
 			saveSettings: jest.fn(),
 			isLoading: false,
 		} );

@@ -67,6 +67,8 @@ describe( 'Purchase price threshold card', () => {
 		setProtectionSettingsUI: setSettings,
 		protectionSettingsChanged: false,
 		setProtectionSettingsChanged: jest.fn(),
+		hasChanges: false,
+		setHasChanges: jest.fn(),
 	};
 	test( 'renders correctly', () => {
 		const { container } = render(

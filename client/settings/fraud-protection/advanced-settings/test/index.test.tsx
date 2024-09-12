@@ -29,6 +29,7 @@ jest.mock( '@wordpress/data', () => ( {
 		createSuccessNotice: jest.fn(),
 		createErrorNotice: jest.fn(),
 		onLoad: jest.fn(),
+		onHistoryChange: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
@@ -186,8 +187,8 @@ describe( 'Advanced fraud protection settings', () => {
 				advanced_fraud_protection_settings: 'error',
 			},
 			saveSettings: jest.fn(),
-			isDirty: false,
 			isSaving: false,
+			isDirty: false,
 			isLoading: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
@@ -243,8 +244,8 @@ describe( 'Advanced fraud protection settings', () => {
 			},
 			saveSettings: jest.fn(),
 			isLoading: false,
-			isDirty: false,
 			isSaving: false,
+			isDirty: false,
 		} );
 
 		container = render(
@@ -256,6 +257,11 @@ describe( 'Advanced fraud protection settings', () => {
 			</div>
 		);
 
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		expect( mockUseSettings().saveSettings.mock.calls.length ).toBe( 0 );
@@ -303,6 +309,12 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
+
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
@@ -364,6 +376,12 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
+
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
@@ -429,6 +447,12 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
+
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
@@ -477,7 +501,13 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+
 		saveButton.click();
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(

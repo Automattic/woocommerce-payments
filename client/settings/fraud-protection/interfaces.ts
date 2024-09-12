@@ -36,6 +36,8 @@ export interface FraudPreventionSettingsContextType {
 	setProtectionSettingsUI: ( settings: ProtectionSettingsUI ) => void;
 	protectionSettingsChanged: boolean;
 	setProtectionSettingsChanged: Dispatch< SetStateAction< boolean > >;
+	hasChanges: boolean;
+	setHasChanges: Dispatch< SetStateAction< boolean > >;
 }
 
 export interface FraudProtectionSettingsSingleCheck {
@@ -69,7 +71,6 @@ export type AdvancedFraudPreventionSettingsHook = [
 
 export interface SettingsHook {
 	isSaving: boolean;
-	isDirty: boolean;
 	isLoading: boolean;
 	saveSettings: () => void;
 }

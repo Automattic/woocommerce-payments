@@ -38,6 +38,8 @@ export const receiveSettings = (
 		case ACTION_TYPES.SET_IS_SAVING_SETTINGS:
 			return {
 				...state,
+				isDirty:
+					action.isSaving || action.error ? state.isDirty : false,
 				isSaving: action.isSaving,
 				savingError: action.error,
 			};
