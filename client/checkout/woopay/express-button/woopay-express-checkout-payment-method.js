@@ -25,20 +25,24 @@ const api = new WCPayAPI(
 	request
 );
 
-const WooPayExpressCheckoutButtonContainer = () => {
-	const onRefChange = useCallback( ( node ) => {
-		if ( node ) {
-			const root = ReactDOM.createRoot( node );
+const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
+	const onRefChange = useCallback(
+		( node ) => {
+			if ( node ) {
+				const root = ReactDOM.createRoot( node );
 
-			root.render(
-				<WoopayExpressCheckoutButton
-					buttonSettings={ getConfig( 'woopayButton' ) }
-					api={ api }
-					emailSelector="#email"
-				/>
-			);
-		}
-	}, [] );
+				root.render(
+					<WoopayExpressCheckoutButton
+						buttonSettings={ getConfig( 'woopayButton' ) }
+						api={ api }
+						emailSelector="#email"
+						buttonAttributes={ buttonAttributes }
+					/>
+				);
+			}
+		},
+		[ buttonAttributes ]
+	);
 
 	return <span ref={ onRefChange } />;
 };
