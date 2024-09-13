@@ -49,22 +49,23 @@ class WC_Payments_Redirect_Service {
 	}
 
 	/**
-	 * Redirects to the wcpay-connect URL, which then redirects to the KYC flow.
+	 * Redirects to a wcpay-connect URL which then handles the next step for the onboarding flow.
 	 *
-	 * This URL is used by the KYC reminder email. We can't take the merchant
-	 * directly to the wcpay-connect URL because it's nonced, and the
-	 * nonce will likely be expired by the time the user follows the link.
-	 * That's why we need this middleman instead.
+	 * This is a sure way to ensure that the user is redirected to the correct URL to continue their onboarding.
 	 *
-	 * @param string $from Source of the redirect.
+	 * @param string $from              Source of the redirect.
+	 * @param array  $additional_params Optional. Additional URL params to add to the redirect URL.
 	 */
-	public function redirect_to_wcpay_connect( string $from = '' ): void {
+	public function redirect_to_wcpay_connect( string $from = '', array $additional_params = [] ): void {
 		// Take the user to the 'wcpay-connect' URL.
 		// We handle creating and redirecting to the account link there.
 		$params = [
 			'wcpay-connect' => '1',
 			'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
 		];
+
+		$params = array_merge( $params, $additional_params );
+
 		if ( '' !== $from ) {
 			$params['from'] = $from;
 		}

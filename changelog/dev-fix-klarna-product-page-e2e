@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix Klarna product page message E2E test after the contents inside the iframe were updated.

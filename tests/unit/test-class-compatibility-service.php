@@ -120,21 +120,53 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
-	public function test_update_compatibility_data() {
-		// Arrange: Create the expected value to be passed to update_compatibility_data.
-		$expected = $this->get_mock_compatibility_data();
-
-		// Arrange/Assert: Set the expectations for update_compatibility_data.
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'update_compatibility_data' )
-			->with( $expected );
+	public function test_update_compatibility_data_adds_scheduled_job() {
+		// Arrange: Clear all previously scheduled compatibility update jobs.
+		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
 
 		// Act: Call the method we're testing.
 		$this->compatibility_service->update_compatibility_data();
+
+		// Assert: Test the scheduled actions.
+		$actions = as_get_scheduled_actions(
+			[
+				'hook'   => Compatibility_Service::UPDATE_COMPATIBILITY_DATA,
+				'status' => ActionScheduler_Store::STATUS_PENDING,
+				'group'  => WC_Payments_Action_Scheduler_Service::GROUP_ID,
+			]
+		);
+
+		$this->assertCount( 1, $actions );
+		$action = array_pop( $actions );
+		$this->assertInstanceOf( ActionScheduler_Action::class, $action );
 	}
 
-	public function test_update_compatibility_data_active_plugins_false() {
+	public function test_update_compatibility_data_adds_a_single_scheduled_job() {
+
+		// Arrange: Clear all previously scheduled compatibility update jobs.
+		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
+
+		// Act: Call the method we're testing.
+		$this->compatibility_service->update_compatibility_data();
+		$this->compatibility_service->update_compatibility_data();
+		$this->compatibility_service->update_compatibility_data();
+		$this->compatibility_service->update_compatibility_data();
+
+		// Assert: Test the scheduled actions.
+		$actions = as_get_scheduled_actions(
+			[
+				'hook'   => Compatibility_Service::UPDATE_COMPATIBILITY_DATA,
+				'status' => ActionScheduler_Store::STATUS_PENDING,
+				'group'  => WC_Payments_Action_Scheduler_Service::GROUP_ID,
+			]
+		);
+
+		$this->assertCount( 1, $actions );
+		$action = array_pop( $actions );
+		$this->assertInstanceOf( ActionScheduler_Action::class, $action );
+	}
+
+	public function test_update_compatibility_data_hook_active_plugins_false() {
 		// Arrange: Create the expected value to be passed to update_compatibility_data.
 		$expected = $this->get_mock_compatibility_data(
 			[
@@ -152,7 +184,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			->with( $expected );
 
 		// Act: Call the method we're testing.
-		$this->compatibility_service->update_compatibility_data();
+		$this->compatibility_service->update_compatibility_data_hook();
 
 		// Arrange: Fix the broke active_plugins option in WP.
 		$this->fix_active_plugins_option();
@@ -163,7 +195,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @dataProvider provider_update_compatibility_data_permalinks_not_set
 	 */
-	public function test_update_compatibility_data_permalinks_not_set( $page_name ) {
+	public function test_update_compatibility_data_hook_permalinks_not_set( $page_name ) {
 		// Arrange: Create the expected value to be passed to update_compatibility_data.
 		$expected = $this->get_mock_compatibility_data(
 			[
@@ -181,7 +213,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			->with( $expected );
 
 		// Act: Call the method we're testing.
-		$this->compatibility_service->update_compatibility_data();
+		$this->compatibility_service->update_compatibility_data_hook();
 	}
 
 	public function provider_update_compatibility_data_permalinks_not_set(): array {
@@ -238,14 +270,13 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			'stylesheet',
 			function ( $theme ) use ( $stylesheet ) {
 				return $stylesheet;
-			},
-			404 // 404 is used to be able to use remove_all_filters later.
+			}
 		);
 	}
 
 	// Removes all stylesheet/theme name filters.
 	private function remove_stylesheet_filters(): void {
-		remove_all_filters( 'stylesheet', 404 );
+		remove_all_filters( 'stylesheet' );
 	}
 
 	/**
@@ -262,14 +293,13 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			'option_active_plugins',
 			function ( $active_plugins ) use ( $plugins ) {
 				return $plugins;
-			},
-			404 // 404 is used to be able to use remove_all_filters later.
+			}
 		);
 	}
 
 	// Removes all active plugin filters.
 	private function remove_option_active_plugins_filters() {
-		remove_all_filters( 'option_active_plugins', [ $this, 'active_plugins_filter_return' ], 404 );
+		remove_all_filters( 'option_active_plugins' );
 	}
 
 	// Used to purposely delete the active_plugins option in WP.

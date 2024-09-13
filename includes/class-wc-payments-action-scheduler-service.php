@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Compatibility_Service;
 use WCPay\Constants\Order_Mode;
 
 defined( 'ABSPATH' ) || exit;
@@ -30,19 +31,28 @@ class WC_Payments_Action_Scheduler_Service {
 	 */
 	private $order_service;
 
+	/**
+	 * Compatibility service instance for updating compatibility data.
+	 *
+	 * @var Compatibility_Service
+	 */
+	private $compatibility_service;
 
 	/**
 	 * Constructor for WC_Payments_Action_Scheduler_Service.
 	 *
 	 * @param WC_Payments_API_Client    $payments_api_client - WooCommerce Payments API client.
 	 * @param WC_Payments_Order_Service $order_service - Order Service.
+	 * @param Compatibility_Service     $compatibility_service - Compatibility service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		Compatibility_Service $compatibility_service
 	) {
-		$this->payments_api_client = $payments_api_client;
-		$this->order_service       = $order_service;
+		$this->payments_api_client   = $payments_api_client;
+		$this->order_service         = $order_service;
+		$this->compatibility_service = $compatibility_service;
 
 		$this->add_action_scheduler_hooks();
 	}
@@ -56,6 +66,7 @@ class WC_Payments_Action_Scheduler_Service {
 		add_action( 'wcpay_track_new_order', [ $this, 'track_new_order_action' ] );
 		add_action( 'wcpay_track_update_order', [ $this, 'track_update_order_action' ] );
 		add_action( WC_Payments_Order_Service::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this->order_service, 'add_fee_breakdown_to_order_notes' ], 10, 3 );
+		add_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->compatibility_service, 'update_compatibility_data_hook' ], 10, 0 );
 	}
 
 	/**

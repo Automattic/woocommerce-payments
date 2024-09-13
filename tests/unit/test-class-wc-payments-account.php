@@ -240,7 +240,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->with(
 				'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooPayments.',
 				WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
-				[ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE ]
+				[
+					'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				]
 			);
 
 		// Act.
@@ -619,7 +621,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_onboarding_wizard' )
-			->with( WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE, [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS ] );
+			->with(
+				WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE,
+				[
+					'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
+				]
+			);
 
 		// Act.
 		$this->wcpay_account->maybe_handle_onboarding();
@@ -1287,6 +1294,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+
+		remove_filter( 'user_has_cap', $cb );
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_stripe_disconnected_and_onboarding_disabled_redirects() {
@@ -1316,6 +1325,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+
+		remove_filter( 'user_has_cap', $cb );
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_account_error() {
@@ -1342,6 +1353,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+
+		remove_filter( 'user_has_cap', $cb );
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_account_valid() {
@@ -1377,6 +1390,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+
+		remove_filter( 'user_has_cap', $cb );
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_with_non_admin_user() {
@@ -1396,6 +1411,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// The option should NOT be updated.
 		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+
+		remove_filter( 'user_has_cap', $cb );
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_checks_the_account_once() {
@@ -1433,6 +1450,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_after_plugin_activation() );
 		// The option should be updated.
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+
+		remove_filter( 'user_has_cap', $cb );
 	}
 
 	public function test_maybe_redirect_after_plugin_activation_returns_true_and_onboarding_re_enabled() {
@@ -1489,6 +1508,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Second call, on-boarding re-enabled.
 		$this->wcpay_account->maybe_redirect_after_plugin_activation();
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
+
+		remove_filter( 'user_has_cap', $cb );
 	}
 
 	public function test_maybe_redirect_to_wcpay_connect_do_redirect() {

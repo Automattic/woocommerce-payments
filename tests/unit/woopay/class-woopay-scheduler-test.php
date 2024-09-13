@@ -57,6 +57,8 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 		$this->scheduler->update_compatibility_and_maybe_show_incompatibility_warning();
 
 		$this->assertTrue( get_option( WooPay_Scheduler::INVALID_EXTENSIONS_FOUND_OPTION_NAME, null ) );
+
+		remove_filter( 'pre_option_active_plugins', $active_plugins_mock );
 	}
 
 	/**
@@ -82,6 +84,8 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 		$this->scheduler->update_compatibility_and_maybe_show_incompatibility_warning();
 
 		$this->assertNull( get_option( WooPay_Scheduler::INVALID_EXTENSIONS_FOUND_OPTION_NAME, null ) );
+
+		remove_filter( 'pre_option_active_plugins', $active_plugins_mock );
 	}
 
 	/**
@@ -127,6 +131,8 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 		$this->scheduler->hide_warning_when_incompatible_extension_is_disabled( 'test-extension/test-extension.php' );
 
 		$this->assertNull( get_option( WooPay_Scheduler::INVALID_EXTENSIONS_FOUND_OPTION_NAME, null ) );
+
+		remove_filter( 'pre_option_active_plugins', $active_plugins_mock );
 	}
 
 	/**
@@ -154,6 +160,8 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 		$this->scheduler->hide_warning_when_incompatible_extension_is_disabled( 'test-extension/test-extension.php' );
 
 		$this->assertTrue( get_option( WooPay_Scheduler::INVALID_EXTENSIONS_FOUND_OPTION_NAME, null ) );
+
+		remove_filter( 'pre_option_active_plugins', $active_plugins_mock );
 	}
 
 	/**
@@ -218,6 +226,8 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 		$this->assertEquals( get_option( WooPay_Scheduler::ADAPTED_EXTENSIONS_LIST_OPTION_NAME ), $adapted_extensions );
 		$this->assertEquals( get_option( WooPay_Utilities::AVAILABLE_COUNTRIES_OPTION_NAME ), '["US","BR"]' );
 		$this->assertEquals( get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] ), [ 'test-extension' ] );
+
+		remove_filter( 'pre_option_active_plugins', $active_plugins_mock );
 	}
 
 	/**

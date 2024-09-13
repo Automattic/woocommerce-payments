@@ -511,7 +511,8 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
 		self::$order_service                        = new WC_Payments_Order_Service( self::$api_client );
-		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
+		self::$compatibility_service                = new Compatibility_Service( self::$api_client );
+		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service, self::$compatibility_service );
 		self::$session_service                      = new WC_Payments_Session_Service( self::$api_client );
 		self::$redirect_service                     = new WC_Payments_Redirect_Service( self::$api_client );
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache, self::$session_service );
@@ -528,7 +529,6 @@ class WC_Payments {
 		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
-		self::$compatibility_service                = new Compatibility_Service( self::$api_client );
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();

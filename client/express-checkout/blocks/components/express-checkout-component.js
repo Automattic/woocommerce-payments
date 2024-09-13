@@ -40,11 +40,7 @@ const adjustButtonHeights = ( buttonOptions, expressPaymentMethod ) => {
 	// Apple Pay has a nearly imperceptible height difference. We increase it by 1px here.
 	if ( buttonOptions.buttonTheme.applePay === 'black' ) {
 		if ( expressPaymentMethod === 'applePay' ) {
-			// The maximum allowed size is 55px.
-			buttonOptions.buttonHeight = Math.min(
-				buttonOptions.buttonHeight + 0.4,
-				55
-			);
+			buttonOptions.buttonHeight = buttonOptions.buttonHeight + 0.4;
 		}
 	}
 
@@ -56,6 +52,11 @@ const adjustButtonHeights = ( buttonOptions, expressPaymentMethod ) => {
 		buttonOptions.buttonHeight = buttonOptions.buttonHeight - 2;
 	}
 
+	// Clamp the button height to the allowed range 40px to 55px.
+	buttonOptions.buttonHeight = Math.max(
+		40,
+		Math.min( buttonOptions.buttonHeight, 55 )
+	);
 	return buttonOptions;
 };
 
@@ -74,6 +75,7 @@ const ExpressCheckoutComponent = ( {
 	onClick,
 	onClose,
 	expressPaymentMethod = '',
+	buttonAttributes,
 } ) => {
 	const {
 		buttonOptions,
@@ -115,10 +117,27 @@ const ExpressCheckoutComponent = ( {
 		onReady( event );
 	};
 
+	// The Cart & Checkout blocks provide unified styles across all buttons,
+	// which should override the extension specific settings.
+	const withBlockOverride = () => {
+		const override = {};
+		if ( typeof buttonAttributes !== 'undefined' ) {
+			override.buttonHeight = Number( buttonAttributes.height );
+		}
+		return {
+			...buttonOptions,
+			...override,
+		};
+	};
+
 	return (
 		<ExpressCheckoutElement
 			options={ {
-				...adjustButtonHeights( buttonOptions, expressPaymentMethod ),
+				...withBlockOverride( buttonOptions ),
+				...adjustButtonHeights(
+					withBlockOverride( buttonOptions ),
+					expressPaymentMethod
+				),
 				...getPaymentMethodsOverride( expressPaymentMethod ),
 			} }
 			onClick={ onButtonClick }
