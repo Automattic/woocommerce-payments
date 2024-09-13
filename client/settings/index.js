@@ -35,24 +35,14 @@ const expressCheckoutSettingsContainer = document.getElementById(
 	'wcpay-express-checkout-settings-container'
 );
 if ( expressCheckoutSettingsContainer ) {
-	const ExpressCheckoutSettingsWrapper = () => {
-		const methodId = expressCheckoutSettingsContainer.dataset.methodId;
-
-		return (
-			<WCPaySettingsContext.Provider
-				value={ {
-					...wcpaySettings,
-				} }
-			>
-				<ErrorBoundary>
-					<ExpressCheckoutSettings methodId={ methodId } />
-				</ErrorBoundary>
-			</WCPaySettingsContext.Provider>
-		);
-	};
+	const methodId = expressCheckoutSettingsContainer.dataset.methodId;
 
 	ReactDOM.render(
-		<ExpressCheckoutSettingsWrapper />,
+		<WCPaySettingsContext.Provider value={ wcpaySettings }>
+			<ErrorBoundary>
+				<ExpressCheckoutSettings methodId={ methodId } />
+			</ErrorBoundary>
+		</WCPaySettingsContext.Provider>,
 		expressCheckoutSettingsContainer
 	);
 }

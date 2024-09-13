@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React from 'react';
 import classNames from 'classnames';
 import { __ } from '@wordpress/i18n';
 import {
@@ -30,7 +30,6 @@ import {
 } from 'wcpay/data';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
-import WCPaySettingsContext from '../wcpay-settings-context';
 
 const WooPaySettings = ( { section } ) => {
 	const [
@@ -52,8 +51,6 @@ const WooPaySettings = ( { section } ) => {
 
 	const [ woopayLocations, updateWooPayLocations ] = useWooPayLocations();
 
-	const { setisDirty } = useContext( WCPaySettingsContext );
-
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		if ( isChecked ) {
 			updateWooPayLocations( [ ...woopayLocations, location ] );
@@ -62,7 +59,6 @@ const WooPaySettings = ( { section } ) => {
 				woopayLocations.filter( ( name ) => name !== location )
 			);
 		}
-		setisDirty( true );
 	};
 
 	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
@@ -81,10 +77,7 @@ const WooPaySettings = ( { section } ) => {
 					) }
 					<CheckboxControl
 						checked={ isWooPayEnabled }
-						onChange={ ( value ) => {
-							updateIsWooPayEnabled( value );
-							setisDirty( true );
-						} }
+						onChange={ updateIsWooPayEnabled }
 						label={ __( 'Enable WooPay', 'woocommerce-payments' ) }
 						help={
 							/* eslint-disable jsx-a11y/anchor-has-content */
@@ -213,10 +206,7 @@ const WooPaySettings = ( { section } ) => {
 							) }
 							purpose="business_logo"
 							fileID={ woopayStoreLogo }
-							updateFileID={ ( fileID ) => {
-								setWooPayStoreLogo( fileID );
-								setisDirty( true );
-							} }
+							updateFileID={ setWooPayStoreLogo }
 						/>
 					</div>
 					{ wcpaySettings.isWooPayGlobalThemeSupportEligible && (
@@ -233,12 +223,9 @@ const WooPaySettings = ( { section } ) => {
 									checked={
 										isWooPayGlobalThemeSupportEnabled
 									}
-									onChange={ ( value ) => {
-										updateIsWooPayGlobalThemeSupportEnabled(
-											value
-										);
-										setisDirty( true );
-									} }
+									onChange={
+										updateIsWooPayGlobalThemeSupportEnabled
+									}
 									label={ __(
 										'Enable WooPay Global Theme Support',
 										'woocommerce-payments'
@@ -279,10 +266,7 @@ const WooPaySettings = ( { section } ) => {
 								}
 							} ) }
 							value={ woopayCustomMessage }
-							onChange={ ( value ) => {
-								setWooPayCustomMessage( value );
-								setisDirty( true );
-							} }
+							onChange={ setWooPayCustomMessage }
 						/>
 					</div>
 				</CardBody>
