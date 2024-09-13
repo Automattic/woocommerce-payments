@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 8.2.1 - 2024-09-13 =
+* Fix - Create div container element with JS dynamically.
+
 = 8.2.0 - 2024-09-11 =
 * Add - add: test instructions icon animation
 * Add - Added Embdedded KYC, currently behind feature flag.
