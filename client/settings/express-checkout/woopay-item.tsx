@@ -43,15 +43,6 @@ const WooPayExpressCheckoutItem = (): React.ReactElement => {
 		featureFlags: { woopay: isWooPayFeatureFlagEnabled },
 	} = useContext( WCPaySettingsContext );
 
-	const { setHasChanges } = useContext( WCPaySettingsContext ) as {
-		setHasChanges: ( value: boolean ) => void;
-	};
-
-	const handleChange = ( isEnabled: boolean ) => {
-		updateIsWooPayEnabled( isEnabled );
-		setHasChanges( true );
-	};
-
 	return (
 		<>
 			{ isWooPayFeatureFlagEnabled && (
@@ -87,7 +78,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement => {
 										'woocommerce-payments'
 									) }
 									checked={ isWooPayEnabled }
-									onChange={ handleChange }
+									onChange={ updateIsWooPayEnabled }
 								/>
 							) }
 						</div>

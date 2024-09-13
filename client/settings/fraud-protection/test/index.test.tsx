@@ -50,6 +50,7 @@ const mockUseSettings = useSettings as jest.MockedFunction<
 	() => {
 		settings: any;
 		isLoading: boolean;
+		isDirty: boolean;
 		saveSettings: () => void;
 		isSaving: boolean;
 	}
@@ -71,6 +72,7 @@ describe( 'FraudProtection', () => {
 		mockUseSettings.mockReturnValue( {
 			settings: {},
 			isSaving: false,
+			isDirty: false,
 			saveSettings: jest.fn(),
 			isLoading: false,
 		} );

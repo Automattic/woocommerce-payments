@@ -19,7 +19,6 @@ const mockContext = {
 	protectionSettingsChanged: false,
 	setProtectionSettingsUI: jest.fn(),
 	setProtectionSettingsChanged: jest.fn(),
-	hasChanges: false,
 	setHasChanges: jest.fn(),
 };
 

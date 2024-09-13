@@ -86,6 +86,7 @@ const mockUseSettings = useSettings as jest.MockedFunction<
 	() => {
 		settings: any;
 		isLoading: boolean;
+		isDirty: boolean;
 		saveSettings: jest.Mock;
 		isSaving: boolean;
 	}
@@ -171,6 +172,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isSaving: false,
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			[],
@@ -187,6 +189,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isSaving: false,
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			'error',
@@ -242,6 +245,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isLoading: false,
 			isSaving: false,
+			isDirty: false,
 		} );
 
 		container = render(
@@ -291,6 +295,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isSaving: false,
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
@@ -357,6 +362,7 @@ describe( 'Advanced fraud protection settings', () => {
 			isSaving: false,
 			saveSettings: jest.fn(),
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
@@ -427,6 +433,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isSaving: false,
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
@@ -480,6 +487,7 @@ describe( 'Advanced fraud protection settings', () => {
 			isSaving: false,
 			saveSettings: jest.fn(),
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,

@@ -24,17 +24,15 @@ import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
 import SupportPhoneInput from 'wcpay/settings/support-phone-input';
 import SupportEmailInput from 'wcpay/settings/support-email-input';
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { select } from '@wordpress/data';
 import { STORE_NAME } from 'wcpay/data/constants';
-import WCPaySettingsContext from '../wcpay-settings-context';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 const ACCOUNT_STATEMENT_MAX_LENGTH_KANJI = 17;
 const ACCOUNT_STATEMENT_MAX_LENGTH_KANA = 22;
 
 const Transactions = ( { setTransactionInputsValid } ) => {
-	const { setHasChanges } = useContext( WCPaySettingsContext );
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
 	const [
 		accountStatementDescriptor,
@@ -55,21 +53,6 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );
 	const settings = select( STORE_NAME ).getSettings();
 
-	const handleSavedCardsChange = ( isEnabled ) => {
-		setIsSavedCardsEnabled( isEnabled );
-		setHasChanges( true );
-	};
-
-	const handleAccountStatementDescriptorChange = ( value ) => {
-		setAccountStatementDescriptor( value );
-		setHasChanges( true );
-	};
-
-	const handleAccountStatementDescriptorKanjiChange = ( value ) => {
-		setAccountStatementDescriptorKanji( value );
-		setHasChanges( true );
-	};
-
 	useEffect( () => {
 		if ( setTransactionInputsValid ) {
 			setTransactionInputsValid( isEmailInputValid && isPhoneInputValid );
@@ -84,7 +67,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 				</h4>
 				<CheckboxControl
 					checked={ isSavedCardsEnabled }
-					onChange={ handleSavedCardsChange }
+					onChange={ setIsSavedCardsEnabled }
 					label={ __(
 						'Enable payments via saved cards',
 						'woocommerce-payments'
@@ -128,7 +111,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 							'woocommerce-payments'
 						) }
 						value={ accountStatementDescriptor }
-						onChange={ handleAccountStatementDescriptorChange }
+						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						data-testid={ 'store-name-bank-statement' }
 					/>
@@ -150,7 +133,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									) }
 									value={ accountStatementDescriptorKanji }
 									onChange={
-										handleAccountStatementDescriptorKanjiChange
+										setAccountStatementDescriptorKanji
 									}
 									maxLength={
 										ACCOUNT_STATEMENT_MAX_LENGTH_KANJI

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useLayoutEffect, useContext } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
@@ -31,7 +31,6 @@ import {
 import FraudProtection from '../fraud-protection';
 import { isDefaultSiteLanguage } from 'wcpay/utils';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
-import WCPaySettingsContext from '../wcpay-settings-context';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -162,7 +161,6 @@ const SettingsManager = () => {
 	);
 
 	const { isLoading } = useSettings();
-	const { hasChanges } = useContext( WCPaySettingsContext );
 
 	useLayoutEffect( () => {
 		const { anchor } = getQuery();
@@ -284,9 +282,7 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SaveSettingsSection
-				disabled={ ! isTransactionInputsValid || ! hasChanges }
-			/>
+			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>
 	);
 };

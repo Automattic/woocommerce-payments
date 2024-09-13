@@ -11,7 +11,6 @@ import userEvent from '@testing-library/user-event';
  */
 import SaveSettingsSection from '..';
 import { useSettings } from '../../../data';
-import WCPaySettingsContext from '../../wcpay-settings-context';
 
 jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
@@ -22,6 +21,16 @@ describe( 'SaveSettingsSection', () => {
 	it( 'disables the button when loading data', () => {
 		useSettings.mockReturnValue( {
 			isLoading: true,
+		} );
+
+		render( <SaveSettingsSection /> );
+
+		expect( screen.getByText( 'Save changes' ) ).toBeDisabled();
+	} );
+
+	it( 'disables the button by default', () => {
+		useSettings.mockReturnValue( {
+			isDirty: false,
 		} );
 
 		render( <SaveSettingsSection /> );
@@ -44,14 +53,11 @@ describe( 'SaveSettingsSection', () => {
 		useSettings.mockReturnValue( {
 			isSaving: false,
 			isLoading: false,
+			isDirty: true,
 			saveSettings: saveSettingsMock,
 		} );
 
-		render(
-			<WCPaySettingsContext.Provider value={ { hasChanges: true } }>
-				<SaveSettingsSection />
-			</WCPaySettingsContext.Provider>
-		);
+		render( <SaveSettingsSection /> );
 
 		const saveChangesButton = screen.getByText( 'Save changes' );
 

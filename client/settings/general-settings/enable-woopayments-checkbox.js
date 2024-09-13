@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { CheckboxControl } from '@wordpress/components';
 
@@ -12,17 +12,14 @@ import { useIsWCPayEnabled } from 'wcpay/data';
 import { recordEvent } from 'tracks';
 import DisableConfirmationModal from 'wcpay/disable-confirmation-modal';
 import useToggle from 'wcpay/utils/use-toggle';
-import WCPaySettingsContext from '../wcpay-settings-context';
 
 const EnableWooPaymentsCheckbox = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
 	const [ isConfirmationModalVisible, toggleModalVisibility ] = useToggle(
 		false
 	);
-	const { setHasChanges } = useContext( WCPaySettingsContext );
 
 	const handleCheckboxClick = ( enableWCPay ) => {
-		setHasChanges( true );
 		if ( ! enableWCPay ) {
 			toggleModalVisibility();
 			return;

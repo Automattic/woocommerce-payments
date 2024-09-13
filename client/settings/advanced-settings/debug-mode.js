@@ -3,23 +3,15 @@
  */
 import { CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useContext } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useDebugLog, useDevMode } from 'wcpay/data';
-import WCPaySettingsContext from '../wcpay-settings-context';
 
 const DebugMode = () => {
 	const isDevModeEnabled = useDevMode();
 	const [ isLoggingChecked, setIsLoggingChecked ] = useDebugLog();
-	const { setHasChanges } = useContext( WCPaySettingsContext );
-
-	const handleChange = ( value ) => {
-		setIsLoggingChecked( value );
-		setHasChanges( true );
-	};
 
 	return (
 		<>
@@ -41,7 +33,7 @@ const DebugMode = () => {
 				) }
 				disabled={ isDevModeEnabled }
 				checked={ isDevModeEnabled || isLoggingChecked }
-				onChange={ handleChange }
+				onChange={ setIsLoggingChecked }
 			/>
 		</>
 	);

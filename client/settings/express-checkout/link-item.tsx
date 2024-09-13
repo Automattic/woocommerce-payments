@@ -1,11 +1,10 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import WCPaySettingsContext from '../wcpay-settings-context';
 
 /**
  * Internal dependencies
@@ -48,15 +47,6 @@ const LinkExpressCheckoutItem = (): React.ReactElement => {
 		}
 	};
 
-	const { setHasChanges } = useContext( WCPaySettingsContext ) as {
-		setHasChanges: ( value: boolean ) => void;
-	};
-
-	const handleChange = ( isEnabled: boolean ) => {
-		updateStripeLinkCheckout( isEnabled );
-		setHasChanges( true );
-	};
-
 	const displayLinkPaymentMethod =
 		enabledMethodIds.includes( 'card' ) &&
 		availablePaymentMethodIds.includes( 'link' );
@@ -97,7 +87,7 @@ const LinkExpressCheckoutItem = (): React.ReactElement => {
 										'woocommerce-payments'
 									) }
 									checked={ isStripeLinkEnabled }
-									onChange={ handleChange }
+									onChange={ updateStripeLinkCheckout }
 								/>
 							) }
 						</div>

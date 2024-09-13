@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useState } from '@wordpress/element';
@@ -20,7 +20,6 @@ import { ProtectionLevel } from '../../advanced-settings/constants';
 import InlineNotice from 'components/inline-notice';
 import { recordEvent } from 'tracks';
 import { CurrentProtectionLevelHook } from '../../interfaces';
-import WCPaySettingsContext from '../../../wcpay-settings-context';
 
 const ProtectionLevels: React.FC = () => {
 	const [ isBasicModalOpen, setBasicModalOpen ] = useState( false );
@@ -38,16 +37,11 @@ const ProtectionLevels: React.FC = () => {
 		Array.isArray( advancedFraudProtectionSettings ) &&
 		0 < advancedFraudProtectionSettings.length;
 
-	const { setHasChanges } = useContext( WCPaySettingsContext ) as {
-		setHasChanges: ( value: boolean ) => void;
-	};
-
 	const handleLevelChange = ( level: string ) => () => {
 		recordEvent( 'wcpay_fraud_protection_risk_level_preset_enabled', {
 			preset: level,
 		} );
 		updateProtectionLevel( level );
-		setHasChanges( true );
 	};
 
 	const handleBasicModalOpen = () => {

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Card, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -16,14 +16,12 @@ import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live
 import TestModeConfirmationModal from './test-mode-confirm-modal';
 import EnableWooPaymentsCheckbox from './enable-woopayments-checkbox';
 import { recordEvent } from 'wcpay/tracks';
-import WCPaySettingsContext from '../wcpay-settings-context';
 
 const GeneralSettings = () => {
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
 	const [ modalVisible, setModalVisible ] = useState( false );
 	const isTestModeOnboarding = useTestModeOnboarding();
 	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
-	const { setHasChanges } = useContext( WCPaySettingsContext );
 
 	return (
 		<>
@@ -50,7 +48,6 @@ const GeneralSettings = () => {
 
 										updateIsTestModeEnabled( false );
 									}
-									setHasChanges( true );
 								} }
 								label={ __(
 									'Enable test mode',

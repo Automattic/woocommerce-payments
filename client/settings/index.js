@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 
 /**
@@ -21,25 +21,14 @@ const settingsContainer = document.getElementById(
 	'wcpay-account-settings-container'
 );
 if ( settingsContainer ) {
-	const SettingsWrapper = () => {
-		const [ hasChanges, setHasChanges ] = useState( false );
-
-		return (
-			<WCPaySettingsContext.Provider
-				value={ {
-					...wcpaySettings,
-					hasChanges,
-					setHasChanges,
-				} }
-			>
-				<ErrorBoundary>
-					<SettingsManager />
-				</ErrorBoundary>
-			</WCPaySettingsContext.Provider>
-		);
-	};
-
-	ReactDOM.render( <SettingsWrapper />, settingsContainer );
+	ReactDOM.render(
+		<WCPaySettingsContext.Provider value={ wcpaySettings }>
+			<ErrorBoundary>
+				<SettingsManager />
+			</ErrorBoundary>
+		</WCPaySettingsContext.Provider>,
+		settingsContainer
+	);
 }
 
 const expressCheckoutSettingsContainer = document.getElementById(
@@ -47,15 +36,12 @@ const expressCheckoutSettingsContainer = document.getElementById(
 );
 if ( expressCheckoutSettingsContainer ) {
 	const ExpressCheckoutSettingsWrapper = () => {
-		const [ hasChanges, setHasChanges ] = useState( false );
 		const methodId = expressCheckoutSettingsContainer.dataset.methodId;
 
 		return (
 			<WCPaySettingsContext.Provider
 				value={ {
 					...wcpaySettings,
-					hasChanges,
-					setHasChanges,
 				} }
 			>
 				<ErrorBoundary>

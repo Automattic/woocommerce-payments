@@ -3,14 +3,13 @@
  */
 import { CheckboxControl, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef, useContext } from '@wordpress/element';
+import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useMultiCurrency } from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
-import WCPaySettingsContext from '../wcpay-settings-context';
 
 const MultiCurrencyToggle = () => {
 	const [
@@ -20,8 +19,6 @@ const MultiCurrencyToggle = () => {
 
 	const headingRef = useRef( null );
 
-	const { setHasChanges } = useContext( WCPaySettingsContext );
-
 	useEffect( () => {
 		if ( ! headingRef.current ) return;
 
@@ -30,7 +27,6 @@ const MultiCurrencyToggle = () => {
 
 	const handleMultiCurrencyStatusChange = ( value ) => {
 		updateIsMultiCurrencyEnabled( value );
-		setHasChanges( true );
 	};
 
 	return (
