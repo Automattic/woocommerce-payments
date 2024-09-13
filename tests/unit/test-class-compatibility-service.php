@@ -81,11 +81,11 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 * Post-test anarchy
 	 */
 	public function tear_down() {
-		parent::tear_down();
-
 		$this->remove_stylesheet_filters();
 		$this->remove_option_active_plugins_filters();
 		$this->delete_test_posts();
+
+		parent::tear_down();
 	}
 
 	/**
@@ -122,6 +122,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_update_compatibility_data_adds_scheduled_job() {
 		// Arrange: Clear all previously scheduled compatibility update jobs.
+		require_once WC_ABSPATH . 'packages/action-scheduler/action-scheduler.php';
 		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
 
 		// Act: Call the method we're testing.
