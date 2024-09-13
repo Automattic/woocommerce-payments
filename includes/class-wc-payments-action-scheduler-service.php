@@ -184,4 +184,29 @@ class WC_Payments_Action_Scheduler_Service {
 
 		return ( is_countable( $actions ) ? count( $actions ) : 0 ) > 0;
 	}
+
+	/**
+	 * Schedule an action while unscheduling any scheduled actions that are exactly the same.
+	 *
+	 * We will look for scheduled actions with the same name, args and group when unscheduling.
+	 *
+	 * @param int    $timestamp When the action will run.
+	 * @param string $action    The action name to schedule.
+	 * @param array  $args      Optional. An array containing the arguments to be passed to the action.
+	 *                          Defaults to an empty array.
+	 * @param string $group     Optional. The ActionScheduler group the action will be created under.
+	 *                          Defaults to 'woocommerce_payments'.
+	 *
+	 * @return void
+	 */
+	private function schedule_action_and_prevent_duplicates( int $timestamp, string $action, array $args = [], string $group = self::GROUP_ID ) {
+		// Unschedule any previously scheduled actions with the same name, args, and group combination.
+		// It is more efficient/performant to check if the action is already scheduled before unscheduling it.
+		// @see https://github.com/Automattic/woocommerce-payments/issues/6662.
+		if ( as_has_scheduled_action( $action, $args, $group ) ) {
+			as_unschedule_action( $action, $args, $group );
+		}
+
+		as_schedule_single_action( $timestamp, $action, $args, $group );
+	}
 }
