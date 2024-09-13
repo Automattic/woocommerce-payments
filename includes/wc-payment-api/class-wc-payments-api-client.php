@@ -979,23 +979,21 @@ class WC_Payments_API_Client {
 	 * @param array $account_data Account data to be prefilled.
 	 * @param array $actioned_notes Actioned notes to be sent.
 	 * @param bool  $progressive Whether progressive onboarding should be enabled for this onboarding.
-	 * @param bool  $collect_payout_requirements Whether we need to collect payout requirements.
 	 *
 	 * @return array
 	 *
 	 * @throws API_Exception
 	 */
-	public function initialize_onboarding_embedded_kyc( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function initialize_onboarding_embedded_kyc( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false ): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
-				'site_data'                   => $site_data,
-				'user_data'                   => $user_data,
-				'account_data'                => $account_data,
-				'actioned_notes'              => $actioned_notes,
-				'create_live_account'         => $live_account,
-				'progressive'                 => $progressive,
-				'collect_payout_requirements' => $collect_payout_requirements,
+				'site_data'           => $site_data,
+				'user_data'           => $user_data,
+				'account_data'        => $account_data,
+				'actioned_notes'      => $actioned_notes,
+				'create_live_account' => $live_account,
+				'progressive'         => $progressive,
 			]
 		);
 

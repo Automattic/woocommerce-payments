@@ -348,8 +348,9 @@ class WC_Payments_Admin {
 			remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
 		}
 
-		// Register /payments/onboarding/kyc only when we have a Stripe account, but the Stripe KYC is not finished (details not submitted).
-		if ( WC_Payments_Features::is_embedded_kyc_enabled() && $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
+		// Register /payments/onboarding/kyc only when we have a Stripe account, but the Stripe KYC is not finished (details not submitted), or the account is PO.
+		$is_onboarding_in_progress = $this->account->is_stripe_connected() && ! $this->account->is_details_submitted();
+		if ( WC_Payments_Features::is_embedded_kyc_enabled() && ( $is_onboarding_in_progress || $this->account->is_progressive_onboarding_in_progress() ) ) {
 			wc_admin_register_page(
 				[
 					'id'         => 'wc-payments-onboarding-kyc',

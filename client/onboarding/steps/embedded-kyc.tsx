@@ -28,10 +28,14 @@ import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
 
 interface Props {
 	continueKyc?: boolean;
+	collectPayoutRequirements?: boolean;
 }
 
 // TODO: extract this logic and move it to a generic component to be used for all embedded components, not just onboarding.
-const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
+const EmbeddedKyc: React.FC< Props > = ( {
+	continueKyc = false,
+	collectPayoutRequirements = false,
+} ) => {
 	const { data } = useOnboardingContext();
 	const [ locale, setLocale ] = useState( '' );
 	const [ publishableKey, setPublishableKey ] = useState( '' );
@@ -188,6 +192,12 @@ const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 							)
 						}
 						onExit={ handleOnExit }
+						collectionOptions={ {
+							fields: collectPayoutRequirements
+								? 'eventually_due'
+								: 'currently_due',
+							futureRequirements: 'omit',
+						} }
 					/>
 				</ConnectComponentsProvider>
 			) }

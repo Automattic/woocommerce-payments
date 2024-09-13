@@ -15,17 +15,31 @@ import strings from 'onboarding/strings';
 import { getConnectUrl } from 'utils';
 
 const OnboardingKycPage: React.FC = () => {
-	const handleExit = () => {
-		const urlParams = new URLSearchParams( window.location.search );
+	const { detailsSubmitted: detailsSubmitted } = wcpaySettings.accountStatus;
+	const urlParams = new URLSearchParams( window.location.search );
+	const collectPayoutRequirements = !! urlParams.get(
+		'collect_payout_requirements'
+	);
 
-		window.location.href = getConnectUrl(
-			{
-				source:
-					urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
-					'unknown',
-			},
-			'WCPAY_ONBOARDING_KYC'
-		);
+	const handleExit = () => {
+		const source =
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
+
+		if ( ! detailsSubmitted ) {
+			window.location.href = getConnectUrl(
+				{
+					source: source,
+				},
+				'WCPAY_ONBOARDING_KYC'
+			);
+		} else {
+			window.location.href = getConnectUrl(
+				{
+					source: source,
+				},
+				'WCPAY_ONBOARDING_KYC'
+			);
+		}
 	};
 
 	useEffect( () => {
@@ -67,7 +81,12 @@ const OnboardingKycPage: React.FC = () => {
 				</div>
 				<div className="stepper__wrapper">
 					<div className="stepper__content">
-						<EmbeddedKyc continueKyc={ true } />
+						<EmbeddedKyc
+							continueKyc={ true }
+							collectPayoutRequirements={
+								collectPayoutRequirements
+							}
+						/>
 					</div>
 				</div>
 			</OnboardingContextProvider>
