@@ -71,9 +71,7 @@ const StoreSettings = () => {
 
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
-	const { hasChanges, setHasChanges } = useContext(
-		MultiCurrencySettingsContext
-	);
+	const { isDirty, setisDirty } = useContext( MultiCurrencySettingsContext );
 
 	useEffect( () => {
 		if ( Object.keys( storeSettings ).length ) {
@@ -92,12 +90,12 @@ const StoreSettings = () => {
 
 	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
 		setIsAutomaticSwitchEnabledValue( value );
-		setHasChanges( true );
+		setisDirty( true );
 	};
 
 	const handleIsStorefrontSwitcherEnabledClick = ( value ) => {
 		setIsStorefrontSwitcherEnabledValue( value );
-		setHasChanges( true );
+		setisDirty( true );
 	};
 
 	const saveSettings = () => {
@@ -198,7 +196,7 @@ const StoreSettings = () => {
 				<Button
 					isPrimary
 					isBusy={ isSavingSettings }
-					disabled={ isSavingSettings || ! hasChanges }
+					disabled={ isSavingSettings || ! isDirty }
 					onClick={ saveSettings }
 				>
 					{ __( 'Save changes', 'woocommerce-payments' ) }

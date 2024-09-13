@@ -30,7 +30,7 @@ import MultiCurrencySettingsContext from '../../context';
 // TODO: This works when saving, but list does not refresh.
 // TODO: Should we reset selected currencies on modal close?
 const EnabledCurrenciesModal = ( { className } ) => {
-	const { setHasChanges } = useContext( MultiCurrencySettingsContext );
+	const { setisDirty } = useContext( MultiCurrencySettingsContext );
 
 	const availableCurrencies = useAvailableCurrencies();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
@@ -124,7 +124,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		newCurrencies.push( defaultCurrencyCode );
 		newCurrencies.sort();
 		submitEnabledCurrenciesUpdate( newCurrencies );
-		setHasChanges( true );
+		setisDirty( true );
 	};
 
 	const handleCurrenciesListWidth = () => {

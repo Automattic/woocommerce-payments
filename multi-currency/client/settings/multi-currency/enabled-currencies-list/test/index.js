@@ -190,8 +190,8 @@ const containerContext = {
 	currencyCodeToShowSettingsFor: null,
 	openSingleCurrencySettings: jest.fn(),
 	closeSingleCurrencySettings: jest.fn(),
-	hasChanges: false,
-	setHasChanges: jest.fn(),
+	isDirty: false,
+	setisDirty: jest.fn(),
 };
 
 const getContainer = () => {

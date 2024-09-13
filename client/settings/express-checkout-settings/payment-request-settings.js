@@ -28,7 +28,7 @@ const PaymentRequestSettings = ( { section } ) => {
 		updatePaymentRequestLocations,
 	] = usePaymentRequestLocations();
 
-	const { setHasChanges } = useContext( WCPaySettingsContext );
+	const { setisDirty } = useContext( WCPaySettingsContext );
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		if ( isChecked ) {
@@ -41,7 +41,7 @@ const PaymentRequestSettings = ( { section } ) => {
 				paymentRequestLocations.filter( ( name ) => name !== location )
 			);
 		}
-		setHasChanges( true );
+		setisDirty( true );
 	};
 
 	return (
@@ -52,7 +52,7 @@ const PaymentRequestSettings = ( { section } ) => {
 						checked={ isPaymentRequestEnabled }
 						onChange={ ( value ) => {
 							updateIsPaymentRequestEnabled( value );
-							setHasChanges( true );
+							setisDirty( true );
 						} }
 						label={ __(
 							'Enable Apple Pay / Google Pay',

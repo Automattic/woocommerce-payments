@@ -216,7 +216,10 @@ describe( 'PaymentRequestSettings', () => {
 			} ),
 			'book'
 		);
-		expect( setButtonTypeMock ).toHaveBeenCalledWith( 'book' );
+		expect( setButtonTypeMock ).toHaveBeenCalledWith(
+			'book',
+			expect.anything()
+		);
 
 		userEvent.click( screen.getByLabelText( 'Large (55 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );

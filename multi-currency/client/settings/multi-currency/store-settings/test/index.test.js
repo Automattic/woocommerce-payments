@@ -20,9 +20,9 @@ const containerContext = {
 	currencyCodeToShowSettingsFor: 'EUR',
 	openSingleCurrencySettings: jest.fn(),
 	closeSingleCurrencySettings: jest.fn(),
-	hasChanges: false,
-	setHasChanges: jest.fn().mockImplementation( ( value ) => {
-		containerContext.hasChanges = value;
+	isDirty: false,
+	setisDirty: jest.fn().mockImplementation( ( value ) => {
+		containerContext.isDirty = value;
 	} ),
 };
 
@@ -79,7 +79,7 @@ describe( 'Multi-Currency store settings', () => {
 	test( 'store settings are saved with continue button click', () => {
 		createContainer();
 		const { submitStoreSettingsUpdate } = useStoreSettings();
-		containerContext.setHasChanges( true );
+		containerContext.setisDirty( true );
 		fireEvent.click(
 			screen.getByRole( 'button', {
 				name: /Save changes/,

@@ -145,7 +145,6 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 			woopay: isWooPayFeatureFlagEnabled,
 			isStripeEceEnabled: isEceEnabled,
 		},
-		setHasChanges,
 	} = useContext( WCPaySettingsContext );
 
 	const stripePromise = useMemo( () => {
@@ -206,28 +205,19 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 				hideLabelFromVision
 				value={ buttonType }
 				options={ buttonActionOptions }
-				onChange={ ( val ) => {
-					setButtonType( val );
-					setHasChanges( true );
-				} }
+				onChange={ setButtonType }
 			/>
 			<h4>{ __( 'Button size', 'woocommerce-payments' ) }</h4>
 			<RadioControl
 				selected={ size }
 				options={ buttonSizeOptions }
-				onChange={ ( value ) => {
-					setSize( value );
-					setHasChanges( true );
-				} }
+				onChange={ setSize }
 			/>
 			<h4>{ __( 'Theme', 'woocommerce-payments' ) }</h4>
 			<RadioControl
 				selected={ theme }
 				options={ buttonThemeOptions }
-				onChange={ ( value ) => {
-					setTheme( value );
-					setHasChanges( value );
-				} }
+				onChange={ setTheme }
 			/>
 			{ isEceEnabled && (
 				<>
@@ -251,8 +241,6 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 								} else {
 									setRadius( value );
 								}
-
-								setHasChanges( true );
 							} }
 							suffix={
 								<div className="payment-method-settings__border-radius__number-control__suffix">
@@ -272,10 +260,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 							max={ 30 }
 							min={ 0 }
 							withInputField={ false }
-							onChange={ ( value ) => {
-								setRadius( value );
-								setHasChanges( true );
-							} }
+							onChange={ setRadius }
 						/>
 					</div>
 					<p className="payment-method-settings__option-help-text">

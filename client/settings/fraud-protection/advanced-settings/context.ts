@@ -9,7 +9,7 @@ const FraudPreventionSettingsContext = createContext( {
 	setProtectionSettingsUI: () => null,
 	protectionSettingsChanged: false,
 	setProtectionSettingsChanged: () => false,
-	setHasChanges: () => null,
+	setisDirty: () => null,
 } as FraudPreventionSettingsContextType );
 
 export default FraudPreventionSettingsContext;

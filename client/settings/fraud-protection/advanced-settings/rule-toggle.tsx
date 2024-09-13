@@ -58,7 +58,7 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 		protectionSettingsUI,
 		setProtectionSettingsUI,
 		setProtectionSettingsChanged,
-		setHasChanges,
+		setisDirty,
 	} = useContext( FraudPreventionSettingsContext );
 
 	const { isFRTReviewFeatureActive } = wcpaySettings;
@@ -101,7 +101,7 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 
 	const handleToggleChange = () => {
 		setToggleState( ( value ) => ! value );
-		setHasChanges( true );
+		setisDirty( true );
 	};
 
 	if ( ! protectionSettingsUI ) {

@@ -67,13 +67,13 @@ const EnabledCurrencies = () => {
 	} = useEnabledCurrencies();
 	const classBase = 'wcpay-multi-currency';
 
-	const { setHasChanges } = useContext( MultiCurrencySettingsContext );
+	const { setisDirty } = useContext( MultiCurrencySettingsContext );
 
 	const handleDeleteClick = ( code ) => {
 		const newCurrencies = Object.keys( enabledCurrencies );
 		newCurrencies.splice( newCurrencies.indexOf( code ), 1 );
 		submitEnabledCurrenciesUpdate( newCurrencies );
-		setHasChanges( true );
+		setisDirty( true );
 	};
 
 	const enabledKeys = enabledCurrencies

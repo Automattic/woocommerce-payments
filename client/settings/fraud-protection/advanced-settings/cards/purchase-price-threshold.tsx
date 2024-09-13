@@ -56,7 +56,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 		protectionSettingsUI,
 		setProtectionSettingsUI,
 		setProtectionSettingsChanged,
-		setHasChanges,
+		setisDirty,
 	} = useContext( FraudPreventionSettingsContext );
 
 	const settingUI = useMemo(
@@ -114,7 +114,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 						value={ minAmount.toString() }
 						onChange={ ( val ) => {
 							setMinAmount( Number( val ) );
-							setHasChanges( true );
+							setisDirty( true );
 						} }
 						help={ __(
 							'Leave blank for no limit',
@@ -136,7 +136,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 						value={ maxAmount.toString() }
 						onChange={ ( val ) => {
 							setMaxAmount( Number( val ) );
-							setHasChanges( true );
+							setisDirty( true );
 						} }
 						help={ __(
 							'Leave blank for no limit',

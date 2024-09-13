@@ -52,7 +52,7 @@ const WooPaySettings = ( { section } ) => {
 
 	const [ woopayLocations, updateWooPayLocations ] = useWooPayLocations();
 
-	const { setHasChanges } = useContext( WCPaySettingsContext );
+	const { setisDirty } = useContext( WCPaySettingsContext );
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		if ( isChecked ) {
@@ -62,7 +62,7 @@ const WooPaySettings = ( { section } ) => {
 				woopayLocations.filter( ( name ) => name !== location )
 			);
 		}
-		setHasChanges( true );
+		setisDirty( true );
 	};
 
 	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
@@ -83,7 +83,7 @@ const WooPaySettings = ( { section } ) => {
 						checked={ isWooPayEnabled }
 						onChange={ ( value ) => {
 							updateIsWooPayEnabled( value );
-							setHasChanges( true );
+							setisDirty( true );
 						} }
 						label={ __( 'Enable WooPay', 'woocommerce-payments' ) }
 						help={
@@ -215,7 +215,7 @@ const WooPaySettings = ( { section } ) => {
 							fileID={ woopayStoreLogo }
 							updateFileID={ ( fileID ) => {
 								setWooPayStoreLogo( fileID );
-								setHasChanges( true );
+								setisDirty( true );
 							} }
 						/>
 					</div>
@@ -237,7 +237,7 @@ const WooPaySettings = ( { section } ) => {
 										updateIsWooPayGlobalThemeSupportEnabled(
 											value
 										);
-										setHasChanges( true );
+										setisDirty( true );
 									} }
 									label={ __(
 										'Enable WooPay Global Theme Support',
@@ -281,7 +281,7 @@ const WooPaySettings = ( { section } ) => {
 							value={ woopayCustomMessage }
 							onChange={ ( value ) => {
 								setWooPayCustomMessage( value );
-								setHasChanges( true );
+								setisDirty( true );
 							} }
 						/>
 					</div>
