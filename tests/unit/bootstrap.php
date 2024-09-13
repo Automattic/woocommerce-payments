@@ -168,3 +168,5 @@ function wcpay_get_test_container() {
 
 	return $extended_container;
 }
+
+ActionScheduler::init( WC_ABSPATH . 'packages/action-scheduler/action-scheduler.php' );
