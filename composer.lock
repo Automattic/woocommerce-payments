@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ef9fe43c4fffc996cf70034d89fea352",
+    "content-hash": "595a21dda8d9c0943a32df05723b0e28",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -58,16 +58,16 @@
         },
         {
             "name": "automattic/jetpack-admin-ui",
-            "version": "v0.4.4",
+            "version": "v0.4.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-admin-ui.git",
-                "reference": "18ea3a92f910f7afa9641dadb956b95b75ce6e0f"
+                "reference": "7d5b8485ebe5984774375468ae52efe5c2849369"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-admin-ui/zipball/18ea3a92f910f7afa9641dadb956b95b75ce6e0f",
-                "reference": "18ea3a92f910f7afa9641dadb956b95b75ce6e0f",
+                "url": "https://api.github.com/repos/Automattic/jetpack-admin-ui/zipball/7d5b8485ebe5984774375468ae52efe5c2849369",
+                "reference": "7d5b8485ebe5984774375468ae52efe5c2849369",
                 "shasum": ""
             },
             "require": {
@@ -108,22 +108,22 @@
             ],
             "description": "Generic Jetpack wp-admin UI elements",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-admin-ui/tree/v0.4.4"
+                "source": "https://github.com/Automattic/jetpack-admin-ui/tree/v0.4.5"
             },
-            "time": "2024-08-29T08:39:06+00:00"
+            "time": "2024-09-05T12:38:36+00:00"
         },
         {
             "name": "automattic/jetpack-assets",
-            "version": "v2.3.5",
+            "version": "v2.3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-assets.git",
-                "reference": "e869f7a7780da9b0c1ff9612701fcffde83cda12"
+                "reference": "3ddaff78c82ed7663b61961356585061dbb3410a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/e869f7a7780da9b0c1ff9612701fcffde83cda12",
-                "reference": "e869f7a7780da9b0c1ff9612701fcffde83cda12",
+                "url": "https://api.github.com/repos/Automattic/jetpack-assets/zipball/3ddaff78c82ed7663b61961356585061dbb3410a",
+                "reference": "3ddaff78c82ed7663b61961356585061dbb3410a",
                 "shasum": ""
             },
             "require": {
@@ -165,9 +165,9 @@
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-assets/tree/v2.3.5"
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v2.3.8"
             },
-            "time": "2024-08-29T08:39:36+00:00"
+            "time": "2024-09-10T11:21:54+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
@@ -648,16 +648,16 @@
         },
         {
             "name": "automattic/jetpack-status",
-            "version": "v3.3.4",
+            "version": "v3.3.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-status.git",
-                "reference": "cf023b164ded674d66998b5b5870a3b6cf26679a"
+                "reference": "69d5d8a8f31adf2b297a539bcddd9a9162d1320b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/cf023b164ded674d66998b5b5870a3b6cf26679a",
-                "reference": "cf023b164ded674d66998b5b5870a3b6cf26679a",
+                "url": "https://api.github.com/repos/Automattic/jetpack-status/zipball/69d5d8a8f31adf2b297a539bcddd9a9162d1320b",
+                "reference": "69d5d8a8f31adf2b297a539bcddd9a9162d1320b",
                 "shasum": ""
             },
             "require": {
@@ -703,9 +703,9 @@
             ],
             "description": "Used to retrieve information about the current status of Jetpack and the site overall.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-status/tree/v3.3.4"
+                "source": "https://github.com/Automattic/jetpack-status/tree/v3.3.5"
             },
-            "time": "2024-08-23T14:28:43+00:00"
+            "time": "2024-09-10T17:55:40+00:00"
         },
         {
             "name": "automattic/jetpack-sync",
@@ -938,6 +938,13 @@
                 "reference": "81d809a476e87c260492d4cc0413818d85e123cc",
                 "shasum": ""
             },
+            "archive": {
+                "exclude": [
+                    "!/build",
+                    "*.zip",
+                    "node_modules"
+                ]
+            },
             "require": {
                 "composer/installers": "~1.2",
                 "php": "^7.1"
@@ -951,13 +958,6 @@
             "type": "wordpress-plugin",
             "extra": {
                 "phpcodesniffer-search-depth": 2
-            },
-            "archive": {
-                "exclude": [
-                    "!/build",
-                    "*.zip",
-                    "node_modules"
-                ]
             },
             "scripts": {
                 "phpcs": [
@@ -2370,16 +2370,16 @@
         },
         {
             "name": "netresearch/jsonmapper",
-            "version": "v4.4.1",
+            "version": "v4.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cweiske/jsonmapper.git",
-                "reference": "132c75c7dd83e45353ebb9c6c9f591952995bbf0"
+                "reference": "8e76efb98ee8b6afc54687045e1b8dba55ac76e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cweiske/jsonmapper/zipball/132c75c7dd83e45353ebb9c6c9f591952995bbf0",
-                "reference": "132c75c7dd83e45353ebb9c6c9f591952995bbf0",
+                "url": "https://api.github.com/repos/cweiske/jsonmapper/zipball/8e76efb98ee8b6afc54687045e1b8dba55ac76e5",
+                "reference": "8e76efb98ee8b6afc54687045e1b8dba55ac76e5",
                 "shasum": ""
             },
             "require": {
@@ -2415,9 +2415,9 @@
             "support": {
                 "email": "cweiske@cweiske.de",
                 "issues": "https://github.com/cweiske/jsonmapper/issues",
-                "source": "https://github.com/cweiske/jsonmapper/tree/v4.4.1"
+                "source": "https://github.com/cweiske/jsonmapper/tree/v4.5.0"
             },
-            "time": "2024-01-31T06:18:54+00:00"
+            "time": "2024-09-08T10:13:13+00:00"
         },
         {
             "name": "nikic/php-parser",
@@ -3344,16 +3344,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "1.30.0",
+            "version": "1.30.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "5ceb0e384997db59f38774bf79c2a6134252c08f"
+                "reference": "51b95ec8670af41009e2b2b56873bad96682413e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/5ceb0e384997db59f38774bf79c2a6134252c08f",
-                "reference": "5ceb0e384997db59f38774bf79c2a6134252c08f",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/51b95ec8670af41009e2b2b56873bad96682413e",
+                "reference": "51b95ec8670af41009e2b2b56873bad96682413e",
                 "shasum": ""
             },
             "require": {
@@ -3385,9 +3385,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.30.0"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.30.1"
             },
-            "time": "2024-08-29T09:54:52+00:00"
+            "time": "2024-09-07T20:13:05+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -5335,16 +5335,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v5.4.42",
+            "version": "v5.4.43",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "cef62396a0477e94fc52e87a17c6e5c32e226b7f"
+                "reference": "e86f8554de667c16dde8aeb89a3990cfde924df9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/cef62396a0477e94fc52e87a17c6e5c32e226b7f",
-                "reference": "cef62396a0477e94fc52e87a17c6e5c32e226b7f",
+                "url": "https://api.github.com/repos/symfony/console/zipball/e86f8554de667c16dde8aeb89a3990cfde924df9",
+                "reference": "e86f8554de667c16dde8aeb89a3990cfde924df9",
                 "shasum": ""
             },
             "require": {
@@ -5414,7 +5414,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v5.4.42"
+                "source": "https://github.com/symfony/console/tree/v5.4.43"
             },
             "funding": [
                 {
@@ -5430,7 +5430,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-26T12:21:55+00:00"
+            "time": "2024-08-13T16:31:56+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -5501,16 +5501,16 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v5.4.42",
+            "version": "v5.4.43",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
-                "reference": "0724c51fa067b198e36506d2864e09a52180998a"
+                "reference": "ae25a9145a900764158d439653d5630191155ca0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/0724c51fa067b198e36506d2864e09a52180998a",
-                "reference": "0724c51fa067b198e36506d2864e09a52180998a",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/ae25a9145a900764158d439653d5630191155ca0",
+                "reference": "ae25a9145a900764158d439653d5630191155ca0",
                 "shasum": ""
             },
             "require": {
@@ -5544,7 +5544,7 @@
             "description": "Finds files and directories via an intuitive fluent interface",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/finder/tree/v5.4.42"
+                "source": "https://github.com/symfony/finder/tree/v5.4.43"
             },
             "funding": [
                 {
@@ -5560,24 +5560,24 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-22T08:53:29+00:00"
+            "time": "2024-08-13T14:03:51+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.30.0",
+            "version": "v1.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
-                "reference": "0424dff1c58f028c451efff2045f5d92410bd540"
+                "reference": "a3cc8b044a6ea513310cbd48ef7333b384945638"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/0424dff1c58f028c451efff2045f5d92410bd540",
-                "reference": "0424dff1c58f028c451efff2045f5d92410bd540",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/a3cc8b044a6ea513310cbd48ef7333b384945638",
+                "reference": "a3cc8b044a6ea513310cbd48ef7333b384945638",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1"
+                "php": ">=7.2"
             },
             "provide": {
                 "ext-ctype": "*"
@@ -5623,7 +5623,7 @@
                 "portable"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.30.0"
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.31.0"
             },
             "funding": [
                 {
@@ -5639,24 +5639,24 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-05-31T15:07:36+00:00"
+            "time": "2024-09-09T11:45:10+00:00"
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
-            "version": "v1.30.0",
+            "version": "v1.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
-                "reference": "64647a7c30b2283f5d49b874d84a18fc22054b7a"
+                "reference": "b9123926e3b7bc2f98c02ad54f6a4b02b91a8abe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/64647a7c30b2283f5d49b874d84a18fc22054b7a",
-                "reference": "64647a7c30b2283f5d49b874d84a18fc22054b7a",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/b9123926e3b7bc2f98c02ad54f6a4b02b91a8abe",
+                "reference": "b9123926e3b7bc2f98c02ad54f6a4b02b91a8abe",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1"
+                "php": ">=7.2"
             },
             "suggest": {
                 "ext-intl": "For best performance"
@@ -5701,7 +5701,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.30.0"
+                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.31.0"
             },
             "funding": [
                 {
@@ -5717,24 +5717,24 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-05-31T15:07:36+00:00"
+            "time": "2024-09-09T11:45:10+00:00"
         },
         {
             "name": "symfony/polyfill-intl-normalizer",
-            "version": "v1.30.0",
+            "version": "v1.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-normalizer.git",
-                "reference": "a95281b0be0d9ab48050ebd988b967875cdb9fdb"
+                "reference": "3833d7255cc303546435cb650316bff708a1c75c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-normalizer/zipball/a95281b0be0d9ab48050ebd988b967875cdb9fdb",
-                "reference": "a95281b0be0d9ab48050ebd988b967875cdb9fdb",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-normalizer/zipball/3833d7255cc303546435cb650316bff708a1c75c",
+                "reference": "3833d7255cc303546435cb650316bff708a1c75c",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1"
+                "php": ">=7.2"
             },
             "suggest": {
                 "ext-intl": "For best performance"
@@ -5782,7 +5782,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.30.0"
+                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.31.0"
             },
             "funding": [
                 {
@@ -5798,24 +5798,24 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-05-31T15:07:36+00:00"
+            "time": "2024-09-09T11:45:10+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.30.0",
+            "version": "v1.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "fd22ab50000ef01661e2a31d850ebaa297f8e03c"
+                "reference": "85181ba99b2345b0ef10ce42ecac37612d9fd341"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/fd22ab50000ef01661e2a31d850ebaa297f8e03c",
-                "reference": "fd22ab50000ef01661e2a31d850ebaa297f8e03c",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/85181ba99b2345b0ef10ce42ecac37612d9fd341",
+                "reference": "85181ba99b2345b0ef10ce42ecac37612d9fd341",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1"
+                "php": ">=7.2"
             },
             "provide": {
                 "ext-mbstring": "*"
@@ -5862,7 +5862,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.30.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.31.0"
             },
             "funding": [
                 {
@@ -5878,24 +5878,24 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-06-19T12:30:46+00:00"
+            "time": "2024-09-09T11:45:10+00:00"
         },
         {
             "name": "symfony/polyfill-php73",
-            "version": "v1.30.0",
+            "version": "v1.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php73.git",
-                "reference": "ec444d3f3f6505bb28d11afa41e75faadebc10a1"
+                "reference": "0f68c03565dcaaf25a890667542e8bd75fe7e5bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php73/zipball/ec444d3f3f6505bb28d11afa41e75faadebc10a1",
-                "reference": "ec444d3f3f6505bb28d11afa41e75faadebc10a1",
+                "url": "https://api.github.com/repos/symfony/polyfill-php73/zipball/0f68c03565dcaaf25a890667542e8bd75fe7e5bb",
+                "reference": "0f68c03565dcaaf25a890667542e8bd75fe7e5bb",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1"
+                "php": ">=7.2"
             },
             "type": "library",
             "extra": {
@@ -5938,7 +5938,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php73/tree/v1.30.0"
+                "source": "https://github.com/symfony/polyfill-php73/tree/v1.31.0"
             },
             "funding": [
                 {
@@ -5954,24 +5954,24 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-05-31T15:07:36+00:00"
+            "time": "2024-09-09T11:45:10+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.30.0",
+            "version": "v1.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
-                "reference": "77fa7995ac1b21ab60769b7323d600a991a90433"
+                "reference": "60328e362d4c2c802a54fcbf04f9d3fb892b4cf8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/77fa7995ac1b21ab60769b7323d600a991a90433",
-                "reference": "77fa7995ac1b21ab60769b7323d600a991a90433",
+                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/60328e362d4c2c802a54fcbf04f9d3fb892b4cf8",
+                "reference": "60328e362d4c2c802a54fcbf04f9d3fb892b4cf8",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1"
+                "php": ">=7.2"
             },
             "type": "library",
             "extra": {
@@ -6018,7 +6018,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.30.0"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.31.0"
             },
             "funding": [
                 {
@@ -6034,7 +6034,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-05-31T15:07:36+00:00"
+            "time": "2024-09-09T11:45:10+00:00"
         },
         {
             "name": "symfony/process",
@@ -6183,16 +6183,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v5.4.42",
+            "version": "v5.4.43",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "909cec913edea162a3b2836788228ad45fcab337"
+                "reference": "8be1d484951ff5ca995eaf8edcbcb8b9a5888450"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/909cec913edea162a3b2836788228ad45fcab337",
-                "reference": "909cec913edea162a3b2836788228ad45fcab337",
+                "url": "https://api.github.com/repos/symfony/string/zipball/8be1d484951ff5ca995eaf8edcbcb8b9a5888450",
+                "reference": "8be1d484951ff5ca995eaf8edcbcb8b9a5888450",
                 "shasum": ""
             },
             "require": {
@@ -6249,7 +6249,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v5.4.42"
+                "source": "https://github.com/symfony/string/tree/v5.4.43"
             },
             "funding": [
                 {
@@ -6265,20 +6265,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-20T18:38:32+00:00"
+            "time": "2024-08-01T10:24:28+00:00"
         },
         {
             "name": "symfony/yaml",
-            "version": "v5.4.40",
+            "version": "v5.4.43",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "81cad0ceab3d61fe14fe941ff18a230ac9c80f83"
+                "reference": "62f96e1cfd4cf518882a36bfedcf1fe4093c1299"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/81cad0ceab3d61fe14fe941ff18a230ac9c80f83",
-                "reference": "81cad0ceab3d61fe14fe941ff18a230ac9c80f83",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/62f96e1cfd4cf518882a36bfedcf1fe4093c1299",
+                "reference": "62f96e1cfd4cf518882a36bfedcf1fe4093c1299",
                 "shasum": ""
             },
             "require": {
@@ -6324,7 +6324,7 @@
             "description": "Loads and dumps YAML files",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/yaml/tree/v5.4.40"
+                "source": "https://github.com/symfony/yaml/tree/v5.4.43"
             },
             "funding": [
                 {
@@ -6340,7 +6340,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-05-31T14:33:22+00:00"
+            "time": "2024-08-11T17:40:32+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -6664,22 +6664,26 @@
         },
         {
             "name": "woocommerce/action-scheduler",
-            "version": "3.1.6",
+            "version": "3.8.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/action-scheduler.git",
-                "reference": "275d0ba54b1c263dfc62688de2fa9a25a373edf8"
+                "reference": "2bc91d88fdbc2c07ab899cbb56b983e11e62cf69"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/275d0ba54b1c263dfc62688de2fa9a25a373edf8",
-                "reference": "275d0ba54b1c263dfc62688de2fa9a25a373edf8",
+                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/2bc91d88fdbc2c07ab899cbb56b983e11e62cf69",
+                "reference": "2bc91d88fdbc2c07ab899cbb56b983e11e62cf69",
                 "shasum": ""
             },
+            "require": {
+                "php": ">=7.0"
+            },
             "require-dev": {
-                "phpunit/phpunit": "^5.6",
-                "woocommerce/woocommerce-sniffs": "0.0.8",
-                "wp-cli/wp-cli": "~1.5.1"
+                "phpunit/phpunit": "^7.5",
+                "woocommerce/woocommerce-sniffs": "0.1.0",
+                "wp-cli/wp-cli": "~2.5.0",
+                "yoast/phpunit-polyfills": "^2.0"
             },
             "type": "wordpress-plugin",
             "extra": {
@@ -6697,9 +6701,9 @@
             "homepage": "https://actionscheduler.org/",
             "support": {
                 "issues": "https://github.com/woocommerce/action-scheduler/issues",
-                "source": "https://github.com/woocommerce/action-scheduler/tree/master"
+                "source": "https://github.com/woocommerce/action-scheduler/tree/3.8.2"
             },
-            "time": "2020-05-12T16:22:33+00:00"
+            "time": "2024-09-12T23:12:58+00:00"
         },
         {
             "name": "woocommerce/qit-cli",
@@ -6972,5 +6976,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.0.0"
 }
