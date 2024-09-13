@@ -348,10 +348,31 @@ class WC_Payments_Admin {
 			remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
 		}
 
+		// We handle how we register this page slightly differently depending on if details are submitted or not.
+		if ( WC_Payments_Features::is_embedded_kyc_enabled() && $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
+			wc_admin_register_page(
+				[
+					'id'         => 'wc-payments-onboarding-kyc',
+					'title'      => __( 'Continue onboarding', 'woocommerce-payments' ),
+					'parent'     => 'wc-payments',
+					'path'       => '/payments/onboarding/kyc',
+					'capability' => 'manage_woocommerce',
+					'nav_args'   => [
+						'parent' => 'wc-payments',
+						'order'  => 50,
+					],
+				]
+			);
+			remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding/kyc' );
+		}
+
 		if ( $should_render_full_menu ) {
-			// Register /payments/onboarding/kyc only when we have a Stripe account, but the Stripe KYC is not finished (details not submitted), or the account is PO.
-			$is_onboarding_in_progress = $this->account->is_stripe_connected() && ! $this->account->is_details_submitted();
-			if ( WC_Payments_Features::is_embedded_kyc_enabled() && ( $is_onboarding_in_progress || $this->account->is_progressive_onboarding_in_progress() ) ) {
+			// Only register if details are submitted and the account is PO.
+			if ( WC_Payments_Features::is_embedded_kyc_enabled()
+				&& $this->account->is_stripe_connected()
+				&& $this->account->is_details_submitted()
+				&& $this->account->is_progressive_onboarding_in_progress()
+			) {
 				$this->admin_child_pages['wc-payments-onboarding-kyc'] = [
 					'id'         => 'wc-payments-onboarding-kyc',
 					'title'      => __( 'Continue onboarding', 'woocommerce-payments' ),
