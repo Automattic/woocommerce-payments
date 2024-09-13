@@ -62,21 +62,18 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	private $test_posts = [];
 
-	public static function setUpBeforeClass(): void {
-		if ( ! ActionScheduler::is_initialized() ) {
-			ActionScheduler::init( WCPAY_PLUGIN_FILE );
-		}
-	}
-
 	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
+		add_action( 'hook_with_callback', [ __CLASS__, 'empty_callback' ] );
+
 		parent::set_up();
 
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->compatibility_service = new Compatibility_Service( $this->mock_api_client );
 		$this->compatibility_service->init_hooks();
+		ActionScheduler::store();
 
 		$this->add_stylesheet_filter();
 		$this->add_option_active_plugins_filter();
@@ -89,10 +86,14 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 
+		remove_action( 'hook_with_callback', [ __CLASS__, 'empty_callback' ] );
+
 		$this->remove_stylesheet_filters();
 		$this->remove_option_active_plugins_filters();
 		$this->delete_test_posts();
 	}
+
+	public static function empty_callback() {}
 
 	/**
 	 * Tests to make sure filters are registered correctly.
