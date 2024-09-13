@@ -147,23 +147,34 @@ class WC_Payments_Action_Scheduler_Service {
 	}
 
 	/**
-	 * Schedule an action scheduler job. Also unschedules (replaces) any previous instances of the same job.
-	 * This prevents duplicate jobs, for example when multiple events fire as part of the order update process.
-	 * The `as_unschedule_action` function will only replace a job which has the same $hook, $args AND $group.
+	 * Schedule an action scheduler job.
 	 *
-	 * @param int    $timestamp - When the job will run.
-	 * @param string $hook      - The hook to trigger.
-	 * @param array  $args      - An array containing the arguments to be passed to the hook.
-	 * @param string $group     - The AS group the action will be created under.
+	 * Also, unschedules (replaces) any previous instances of the same job.
+	 * This prevents duplicate jobs, for example when multiple events fire as part of the order update process.
+	 * We will only replace a job which has the same $hook, $args AND $group.
+	 *
+	 * @param int    $timestamp When the job will run.
+	 * @param string $hook      The hook to trigger.
+	 * @param array  $args      Optional. An array containing the arguments to be passed to the hook.
+	 *                          Defaults to an empty array.
+	 * @param string $group     Optional. The AS group the action will be created under.
+	 *                          Defaults to 'woocommerce_payments'.
 	 *
 	 * @return void
 	 */
 	public function schedule_job( int $timestamp, string $hook, array $args = [], string $group = self::GROUP_ID ) {
-		// Unschedule any previously scheduled instances of this particular job.
-		as_unschedule_action( $hook, $args, $group );
-
-		// Schedule the job.
-		as_schedule_single_action( $timestamp, $hook, $args, $group );
+		// If the ActionScheduler is already initialized, schedule the job.
+		if ( did_action( 'action_scheduler_init' ) ) {
+			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+		} else {
+			// The ActionScheduler is not initialized yet; we need to schedule the job when it fires the init hook.
+			add_action(
+				'action_scheduler_init',
+				function () use ( $timestamp, $hook, $args, $group ) {
+					$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+				}
+			);
+		}
 	}
 
 	/**
