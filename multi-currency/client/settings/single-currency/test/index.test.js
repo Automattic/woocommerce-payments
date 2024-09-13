@@ -131,10 +131,6 @@ const containerContext = {
 	currencyCodeToShowSettingsFor: 'EUR',
 	openSingleCurrencySettings: jest.fn(),
 	closeSingleCurrencySettings: jest.fn(),
-	hasChanges: false,
-	setHasChanges: jest.fn().mockImplementation( ( value ) => {
-		containerContext.hasChanges = value;
-	} ),
 };
 
 const getContainer = () => {
@@ -217,8 +213,6 @@ describe( 'Single currency settings screen', () => {
 			},
 		} );
 
-		containerContext.setHasChanges( true );
-
 		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
 			'€18.00'
 		);
@@ -242,12 +236,9 @@ describe( 'Single currency settings screen', () => {
 		// Submit settings test.
 		const { submitCurrencySettings } = useCurrencySettings();
 
-		// Select the button
-		const saveButton = screen.getByRole( 'button', {
-			name: /Save Changes/i,
-		} );
-
-		fireEvent.click( saveButton );
+		fireEvent.click(
+			screen.getByRole( 'button', { name: /Save Changes/i } )
+		);
 
 		expect( submitCurrencySettings ).toHaveBeenCalledWith( 'EUR', {
 			exchange_rate_type: 'manual',

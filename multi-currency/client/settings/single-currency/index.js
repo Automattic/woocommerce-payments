@@ -37,9 +37,9 @@ const SingleCurrencySettings = () => {
 	const {
 		currencyCodeToShowSettingsFor,
 		closeSingleCurrencySettings,
-		hasChanges,
-		setHasChanges,
 	} = useContext( MultiCurrencySettingsContext );
+
+	const [ isDirty, setIsDirty ] = useState( false );
 
 	const currency = currencyCodeToShowSettingsFor;
 
@@ -166,6 +166,7 @@ const SingleCurrencySettings = () => {
 		}
 
 		setIsSaving( false );
+		setIsDirty( false );
 	};
 
 	return (
@@ -224,9 +225,7 @@ const SingleCurrencySettings = () => {
 															setExchangeRateType(
 																'automatic'
 															);
-															setHasChanges(
-																true
-															);
+															setIsDirty( true );
 														} }
 													/>
 													<h4>
@@ -295,9 +294,7 @@ const SingleCurrencySettings = () => {
 																	? manualRate
 																	: targetCurrency.rate
 															);
-															setHasChanges(
-																true
-															);
+															setIsDirty( true );
 														} }
 													/>
 													<h4>
@@ -345,7 +342,7 @@ const SingleCurrencySettings = () => {
 																'.'
 															)
 														);
-														setHasChanges( true );
+														setIsDirty( true );
 													} }
 												/>
 												<p
@@ -389,7 +386,7 @@ const SingleCurrencySettings = () => {
 													setPriceRoundingType(
 														event.target.value
 													);
-													setHasChanges( true );
+													setIsDirty( true );
 												} }
 											>
 												{ /* eslint-enable jsx-a11y/no-onchange */ }
@@ -458,7 +455,7 @@ const SingleCurrencySettings = () => {
 													setPriceCharmType(
 														event.target.value
 													);
-													setHasChanges( true );
+													setIsDirty( true );
 												} }
 											>
 												{ /* eslint-enable jsx-a11y/no-onchange */ }
@@ -535,7 +532,7 @@ const SingleCurrencySettings = () => {
 					<Button
 						isPrimary
 						isBusy={ isSaving }
-						disabled={ isSaving || ! hasChanges }
+						disabled={ isSaving || ! isDirty }
 						onClick={ saveSingleCurrencySettings }
 					>
 						{ __( 'Save changes', 'woocommerce-payments' ) }
