@@ -166,6 +166,7 @@ class WC_Payments_Action_Scheduler_Service {
 		// If the ActionScheduler is already initialized, schedule the job.
 		if ( did_action( 'action_scheduler_init' ) ) {
 			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+			var_dump( 'Sync schedule_job' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
 		} else {
 			// The ActionScheduler is not initialized yet; we need to schedule the job when it fires the init hook.
 			add_action(
@@ -174,6 +175,7 @@ class WC_Payments_Action_Scheduler_Service {
 					$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 				}
 			);
+			var_dump( 'Async schedule_job' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
 		}
 	}
 
