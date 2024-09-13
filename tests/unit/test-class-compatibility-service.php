@@ -63,7 +63,9 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	private $test_posts = [];
 
 	public static function setUpBeforeClass(): void {
-		ActionScheduler::init( WCPAY_PLUGIN_FILE );
+		if ( ! ActionScheduler::is_initialized() ) {
+			ActionScheduler::init( WCPAY_PLUGIN_FILE );
+		}
 	}
 
 	/**
