@@ -168,20 +168,31 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	return (
 		<CardBody>
 			{ showWarning && (
-				<InlineNotice
-					status="warning"
-					icon={ true }
-					isDismissible={ false }
-				>
-					{ sprintf(
-						/* translators: %s type of button to which the settings will be applied */
-						__(
-							'These settings will also apply to the %s on your store.',
-							'woocommerce-payments'
-						),
-						otherButtons
-					) }
-				</InlineNotice>
+				<>
+					<InlineNotice
+						status="warning"
+						icon={ true }
+						isDismissible={ false }
+					>
+						{ sprintf(
+							/* translators: %s type of button to which the settings will be applied */
+							__(
+								'These settings will also apply to the %s on your store.',
+								'woocommerce-payments'
+							),
+							otherButtons
+						) }
+					</InlineNotice>
+					<InlineNotice
+						status="warning"
+						icon={ true }
+						isDismissible={ false }
+					>
+						{ __(
+							'Some appearance settings may be overridden in the express payment section of the Cart & Checkout blocks.'
+						) }
+					</InlineNotice>
+				</>
 			) }
 			<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 			<SelectControl
