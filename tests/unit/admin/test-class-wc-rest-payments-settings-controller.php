@@ -550,7 +550,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_settings_saves_payment_request_button_type() {
-		$this->assertEquals( 'buy', $this->gateway->get_option( 'payment_request_button_type' ) );
+		$this->assertEquals( 'default', $this->gateway->get_option( 'payment_request_button_type' ) );
 
 		$request = new WP_REST_Request();
 		$request->set_param( 'payment_request_button_type', 'book' );
