@@ -73,7 +73,8 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->compatibility_service = new Compatibility_Service( $this->mock_api_client );
 		$this->compatibility_service->init_hooks();
-		ActionScheduler::store();
+
+		ActionScheduler_Versions::initialize_latest_version();
 
 		$this->add_stylesheet_filter();
 		$this->add_option_active_plugins_filter();
