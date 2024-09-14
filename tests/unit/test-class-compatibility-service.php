@@ -88,8 +88,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$this->delete_test_posts();
 	}
 
-	public static function empty_callback() {}
-
 	/**
 	 * Tests to make sure filters are registered correctly.
 	 *
@@ -124,7 +122,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_update_compatibility_data_adds_scheduled_job() {
 		// Arrange: Clear all previously scheduled compatibility update jobs.
-		if ( ! ActionScheduler::is_initialized() ) {
+		if ( ! ActionScheduler::is_initialized() || ! did_action( 'action_scheduler_init' ) ) {
 			$this->fail( 'Action scheduler is not initialized.' );
 		}
 
@@ -148,7 +146,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_compatibility_data_adds_a_single_scheduled_job() {
-		if ( ! ActionScheduler::is_initialized() ) {
+		if ( ! ActionScheduler::is_initialized() || ! did_action( 'action_scheduler_init' ) ) {
 			$this->fail( 'Action scheduler is not initialized.' );
 		}
 
