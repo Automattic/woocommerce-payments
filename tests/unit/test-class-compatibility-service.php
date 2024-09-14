@@ -8,6 +8,8 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Compatibility_Service;
 
+require_once dirname( WC_PLUGIN_FILE ) . '/packages/action-scheduler/action-scheduler.php';
+
 /**
  * Unit tests related to the Compatibility_Service class.
  */
@@ -74,8 +76,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$this->compatibility_service = new Compatibility_Service( $this->mock_api_client );
 		$this->compatibility_service->init_hooks();
 
-		ActionScheduler_Versions::initialize_latest_version();
-
 		$this->add_stylesheet_filter();
 		$this->add_option_active_plugins_filter();
 		$this->insert_test_posts();
@@ -130,7 +130,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_update_compatibility_data_adds_scheduled_job() {
 		// Arrange: Clear all previously scheduled compatibility update jobs.
-		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
+		ActionScheduler_Store::instance()->cancel_actions_by_hook( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
 
 		// Act: Call the method we're testing.
 		$this->compatibility_service->update_compatibility_data();
