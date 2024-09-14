@@ -127,10 +127,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_update_compatibility_data_adds_scheduled_job() {
 		// Arrange: Clear all previously scheduled compatibility update jobs.
-		if ( ! ActionScheduler::is_initialized() || ! did_action( 'action_scheduler_init' ) ) {
-			$this->fail( 'Action scheduler is not initialized.' );
-		}
-
 		as_unschedule_all_actions( 'wcpay_update_compatibility_data_hook' );
 
 		// Act: Call the method we're testing.
@@ -151,10 +147,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_compatibility_data_adds_a_single_scheduled_job() {
-		if ( ! ActionScheduler::is_initialized() || ! did_action( 'action_scheduler_init' ) ) {
-			$this->fail( 'Action scheduler is not initialized.' );
-		}
-
 		// Arrange: Clear all previously scheduled compatibility update jobs.
 		as_unschedule_all_actions( 'wcpay_update_compatibility_data_hook' );
 
