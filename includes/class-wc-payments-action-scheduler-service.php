@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Compatibility_Service;
 use WCPay\Constants\Order_Mode;
 
 defined( 'ABSPATH' ) || exit;
@@ -174,15 +173,38 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return bool
 	 */
 	public function pending_action_exists( string $hook ): bool {
-		$actions = as_get_scheduled_actions(
+		$actions = $this->get_pending_actions( $hook, ARRAY_A );
+		return ( is_countable( $actions ) ? count( $actions ) : 0 ) > 0;
+	}
+
+	/**
+	 * Find scheduled actions
+	 *
+	 * @param string $hook The name of the pending action that will be returned.
+	 * @param string $return_format OBJECT, ARRAY_A, or ids.
+	 *
+	 * @return array
+	 **/
+	public function get_pending_actions( string $hook, $return_format = OBJECT ) {
+		return as_get_scheduled_actions(
 			[
 				'hook'   => $hook,
 				'status' => ActionScheduler_Store::STATUS_PENDING,
 				'group'  => self::GROUP_ID,
-			]
+			],
+			$return_format
 		);
+	}
 
-		return ( is_countable( $actions ) ? count( $actions ) : 0 ) > 0;
+	/**
+	 * Cancels all scheduled actions with the given hook.
+	 *
+	 * @param   string $hook  The name of the pending actions to cance.
+	 *
+	 * @return  void
+	 */
+	public function cancel_actions_by_hook( string $hook ) {
+		as_unschedule_all_actions( $hook );
 	}
 
 	/**

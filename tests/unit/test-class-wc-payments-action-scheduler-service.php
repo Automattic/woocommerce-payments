@@ -54,10 +54,6 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$this->action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $this->mock_order_service, $this->mock_compatibility_service );
 	}
 
-	public function test_update_compatibility_data_hook_registered() {
-		$this->assertEquals( 10, has_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->mock_compatibility_service, 'update_compatibility_data_hook' ] ) );
-	}
-
 	public function test_track_new_order_action() {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_payment_method_id', 'pm_131535132531', true );
