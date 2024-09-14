@@ -75,6 +75,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$this->add_stylesheet_filter();
 		$this->add_option_active_plugins_filter();
 		$this->insert_test_posts();
+		$this->setup_action_scheduler();
 	}
 
 	/**
@@ -417,5 +418,15 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		}
 
 		return $page_ids;
+	}
+
+	private function setup_action_scheduler() {
+		// Support usage in themes - load this version if no plugin has loaded a version yet.
+		if ( did_action( 'plugins_loaded' ) && ! doing_action( 'plugins_loaded' ) && ! class_exists( 'ActionScheduler', false ) ) {
+			require_once dirname( WCPAY_PLUGIN_FILE ) . '/vendor/woocommerce/action-scheduler/classes/abstracts/ActionScheduler.php';
+			ActionScheduler::init( dirname( WCPAY_PLUGIN_FILE ) . '/vendor/woocommerce/action-scheduler/action-scheduler.php' );
+			do_action( 'action_scheduler_pre_theme_init' );
+			ActionScheduler_Versions::initialize_latest_version();
+		}
 	}
 }
