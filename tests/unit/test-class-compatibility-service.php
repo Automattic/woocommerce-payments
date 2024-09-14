@@ -8,8 +8,6 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Compatibility_Service;
 
-require_once dirname( WC_PLUGIN_FILE ) . '/packages/action-scheduler/action-scheduler.php';
-
 /**
  * Unit tests related to the Compatibility_Service class.
  */
@@ -68,8 +66,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 * Pre-test setup
 	 */
 	public function set_up() {
-		add_action( 'hook_with_callback', [ __CLASS__, 'empty_callback' ] );
-
 		parent::set_up();
 
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
@@ -86,8 +82,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		parent::tear_down();
-
-		remove_action( 'hook_with_callback', [ __CLASS__, 'empty_callback' ] );
 
 		$this->remove_stylesheet_filters();
 		$this->remove_option_active_plugins_filters();
@@ -130,7 +124,11 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_update_compatibility_data_adds_scheduled_job() {
 		// Arrange: Clear all previously scheduled compatibility update jobs.
-		ActionScheduler_Store::instance()->cancel_actions_by_hook( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
+		if ( ! ActionScheduler::is_initialized() ) {
+			$this->fail( 'Action scheduler is not initialized.' );
+		}
+
+		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
 
 		// Act: Call the method we're testing.
 		$this->compatibility_service->update_compatibility_data();
@@ -150,6 +148,9 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_compatibility_data_adds_a_single_scheduled_job() {
+		if ( ! ActionScheduler::is_initialized() ) {
+			$this->fail( 'Action scheduler is not initialized.' );
+		}
 
 		// Arrange: Clear all previously scheduled compatibility update jobs.
 		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
