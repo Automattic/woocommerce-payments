@@ -1,7 +1,7 @@
 /** @format */
 
 /**
- * External depencencies
+ * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -10,7 +10,7 @@ import './account-fees.scss';
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { formatFee } from 'utils/fees';
 import React from 'react';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
