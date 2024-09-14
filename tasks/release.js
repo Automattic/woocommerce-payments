@@ -21,6 +21,7 @@ const filesToCopy = [
 	'src',
 	'templates',
 	'vendor',
+	'multi-currency',
 	'woocommerce-payments.php',
 	'changelog.txt',
 	'readme.txt',
@@ -44,8 +45,8 @@ rm( 'dist/*.map' );
 cp( '-Rf', filesToCopy, targetFolder );
 
 // copy the multi-currency files
-mkdir( '-p', targetFolder + '/multi-currency' );
-cp( '-R', 'multi-currency/src', targetFolder + '/multi-currency/src' );
+// mkdir( '-p', targetFolder + '/multi-currency' );
+// cp( '-R', 'multi-currency/src', targetFolder + '/multi-currency/src' );
 
 const output = fs.createWriteStream(
 	releaseFolder + '/' + pluginSlug + '.zip'
