@@ -17,8 +17,6 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * Class to send compatibility data to the server.
  */
 class Compatibility_Service {
-	const UPDATE_COMPATIBILITY_DATA = 'wcpay_update_compatibility_data';
-
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -44,6 +42,7 @@ class Compatibility_Service {
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'update_compatibility_data' ] );
 		add_action( 'after_switch_theme', [ $this, 'update_compatibility_data' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'add_compatibility_onboarding_data' ] );
+		add_action( 'wcpay_update_compatibility_data_hook', [ $this, 'update_compatibility_data_callback' ], 10, 0 );
 	}
 
 	/**
@@ -53,7 +52,7 @@ class Compatibility_Service {
 	 */
 	public function update_compatibility_data() {
 		// This will delete the previous compatibility requests in the last two minutes, and only send the last update to the server, ensuring there's only one update in two minutes.
-		WC_Payments::get_action_scheduler_service()->schedule_job( time() + 2 * MINUTE_IN_SECONDS, self::UPDATE_COMPATIBILITY_DATA );
+		WC_Payments::get_action_scheduler_service()->schedule_job( time() + 2 * MINUTE_IN_SECONDS, 'wcpay_update_compatibility_data_hook' );
 	}
 
 	/**
@@ -61,7 +60,7 @@ class Compatibility_Service {
 	 *
 	 * @return  void
 	 */
-	public function update_compatibility_data_hook() {
+	public function update_compatibility_data_callback() {
 		$this->payments_api_client->update_compatibility_data( $this->get_compatibility_data() );
 	}
 
