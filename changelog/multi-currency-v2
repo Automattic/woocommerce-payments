@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Decoupled Multi-currency module from gateway dependencies.

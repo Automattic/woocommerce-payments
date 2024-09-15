@@ -42,6 +42,7 @@ use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
+use WCPay\WC_Payments_Currency_Manager;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -300,6 +301,13 @@ class WC_Payments {
 	private static $duplicates_detection_service;
 
 	/**
+	 * Instance of WC_Payments_Currency_Manager, created in init function
+	 *
+	 * @var WC_Payments_Currency_Manager
+	 */
+	private static $currency_manager;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -483,7 +491,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 		include_once __DIR__ . '/class-compatibility-service.php';
-		include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
+		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
+		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
 		include_once __DIR__ . '/class-duplicates-detection-service.php';
 
 		self::$woopay_checkout_service = new Checkout_Service();
@@ -575,6 +584,9 @@ class WC_Payments {
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
+
+		self::$currency_manager = new WC_Payments_Currency_Manager( self::get_gateway() );
+		self::$currency_manager->init_hooks();
 
 		// Only register hooks of the new `src` service with the same feature of Duplicate_Payment_Prevention_Service.
 		// To avoid register the same hooks twice.
@@ -1396,6 +1408,22 @@ class WC_Payments {
 	 */
 	public static function get_session_service() {
 		return self::$session_service;
+	}
+
+	/**
+	 * Returns gateway context variables needed for multi-currency support.
+	 *
+	 * @return array
+	 */
+	public static function get_context_for_multi_currency() {
+		// While multi-currency is being decoupled from WooPayments into a separate module, it is still rendered within the plugin.
+		// We don't want to reference WCPAY constants from within the module, therefore, we need a few variables from the gateway,
+		// as reflected in the array below.
+		return [
+			'plugin_version'   => WCPAY_VERSION_NUMBER,
+			'plugin_file_path' => WCPAY_PLUGIN_FILE,
+			'is_dev_mode'      => self::mode()->is_dev(),
+		];
 	}
 
 	/**
