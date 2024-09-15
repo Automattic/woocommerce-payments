@@ -63,13 +63,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	private $test_posts = [];
 
 	/**
-	 * Action scheduler service.
-	 *
-	 * @var WC_Payments_Action_Scheduler_Service
-	 */
-	private $action_scheduler;
-
-	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -78,12 +71,10 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->compatibility_service = new Compatibility_Service( $this->mock_api_client );
 		$this->compatibility_service->init_hooks();
-		$this->action_scheduler = WC_Payments::get_action_scheduler_service();
 
 		$this->add_stylesheet_filter();
 		$this->add_option_active_plugins_filter();
 		$this->insert_test_posts();
-		$this->setup_action_scheduler();
 	}
 
 	/**
@@ -126,22 +117,24 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 				'filter' => 'wc_payments_get_onboarding_data_args',
 				'method' => 'add_compatibility_onboarding_data',
 			],
-			'wcpay_update_compatibility_data_hook'   => [
-				'filter' => 'wcpay_update_compatibility_data_hook',
-				'method' => 'update_compatibility_data_callback',
-			],
 		];
 	}
 
 	public function test_update_compatibility_data_adds_scheduled_job() {
 		// Arrange: Clear all previously scheduled compatibility update jobs.
-		$this->action_scheduler->cancel_actions_by_hook( 'wcpay_update_compatibility_data_hook' );
+		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
 
 		// Act: Call the method we're testing.
 		$this->compatibility_service->update_compatibility_data();
 
 		// Assert: Test the scheduled actions.
-		$actions = $this->action_scheduler->get_pending_actions( 'wcpay_update_compatibility_data_hook' );
+		$actions = as_get_scheduled_actions(
+			[
+				'hook'   => Compatibility_Service::UPDATE_COMPATIBILITY_DATA,
+				'status' => ActionScheduler_Store::STATUS_PENDING,
+				'group'  => WC_Payments_Action_Scheduler_Service::GROUP_ID,
+			]
+		);
 
 		$this->assertCount( 1, $actions );
 		$action = array_pop( $actions );
@@ -149,8 +142,9 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_compatibility_data_adds_a_single_scheduled_job() {
+
 		// Arrange: Clear all previously scheduled compatibility update jobs.
-		$this->action_scheduler->cancel_actions_by_hook( 'wcpay_update_compatibility_data_hook' );
+		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
 
 		// Act: Call the method we're testing.
 		$this->compatibility_service->update_compatibility_data();
@@ -159,14 +153,20 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		$this->compatibility_service->update_compatibility_data();
 
 		// Assert: Test the scheduled actions.
-		$actions = $this->action_scheduler->get_pending_actions( 'wcpay_update_compatibility_data_hook' );
+		$actions = as_get_scheduled_actions(
+			[
+				'hook'   => Compatibility_Service::UPDATE_COMPATIBILITY_DATA,
+				'status' => ActionScheduler_Store::STATUS_PENDING,
+				'group'  => WC_Payments_Action_Scheduler_Service::GROUP_ID,
+			]
+		);
 
 		$this->assertCount( 1, $actions );
 		$action = array_pop( $actions );
 		$this->assertInstanceOf( ActionScheduler_Action::class, $action );
 	}
 
-	public function test_update_compatibility_data_callback_active_plugins_false() {
+	public function test_update_compatibility_data_hook_active_plugins_false() {
 		// Arrange: Create the expected value to be passed to update_compatibility_data.
 		$expected = $this->get_mock_compatibility_data(
 			[
@@ -184,7 +184,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			->with( $expected );
 
 		// Act: Call the method we're testing.
-		$this->compatibility_service->update_compatibility_data_callback();
+		$this->compatibility_service->update_compatibility_data_hook();
 
 		// Arrange: Fix the broke active_plugins option in WP.
 		$this->fix_active_plugins_option();
@@ -195,7 +195,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @dataProvider provider_update_compatibility_data_permalinks_not_set
 	 */
-	public function test_update_compatibility_data_callback_permalinks_not_set( $page_name ) {
+	public function test_update_compatibility_data_hook_permalinks_not_set( $page_name ) {
 		// Arrange: Create the expected value to be passed to update_compatibility_data.
 		$expected = $this->get_mock_compatibility_data(
 			[
@@ -213,7 +213,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 			->with( $expected );
 
 		// Act: Call the method we're testing.
-		$this->compatibility_service->update_compatibility_data_callback();
+		$this->compatibility_service->update_compatibility_data_hook();
 	}
 
 	public function provider_update_compatibility_data_permalinks_not_set(): array {
@@ -410,15 +410,5 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		}
 
 		return $page_ids;
-	}
-
-	private function setup_action_scheduler() {
-		// Support usage in themes - load this version if no plugin has loaded a version yet.
-		if ( did_action( 'plugins_loaded' ) && ! doing_action( 'plugins_loaded' ) && ! class_exists( 'ActionScheduler', false ) ) {
-			require_once dirname( WCPAY_PLUGIN_FILE ) . '/vendor/woocommerce/action-scheduler/classes/abstracts/ActionScheduler.php';
-			ActionScheduler::init( dirname( WCPAY_PLUGIN_FILE ) . '/vendor/woocommerce/action-scheduler/action-scheduler.php' );
-			do_action( 'action_scheduler_pre_theme_init' );
-			ActionScheduler_Versions::initialize_latest_version();
-		}
 	}
 }
