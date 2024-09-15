@@ -191,7 +191,7 @@ const containerContext = {
 	openSingleCurrencySettings: jest.fn(),
 	closeSingleCurrencySettings: jest.fn(),
 	isDirty: false,
-	setisDirty: jest.fn(),
+	setIsDirty: jest.fn(),
 };
 
 const getContainer = () => {

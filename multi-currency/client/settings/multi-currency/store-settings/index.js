@@ -71,7 +71,7 @@ const StoreSettings = () => {
 
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
-	const { isDirty, setisDirty } = useContext( MultiCurrencySettingsContext );
+	const { isDirty, setIsDirty } = useContext( MultiCurrencySettingsContext );
 
 	useEffect( () => {
 		if ( Object.keys( storeSettings ).length ) {
@@ -90,12 +90,12 @@ const StoreSettings = () => {
 
 	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
 		setIsAutomaticSwitchEnabledValue( value );
-		setisDirty( true );
+		setIsDirty( true );
 	};
 
 	const handleIsStorefrontSwitcherEnabledClick = ( value ) => {
 		setIsStorefrontSwitcherEnabledValue( value );
-		setisDirty( true );
+		setIsDirty( true );
 	};
 
 	const saveSettings = () => {
@@ -105,6 +105,7 @@ const StoreSettings = () => {
 			isStorefrontSwitcherEnabledValue
 		);
 		setIsSavingSettings( false );
+		setIsDirty( false );
 	};
 
 	return (

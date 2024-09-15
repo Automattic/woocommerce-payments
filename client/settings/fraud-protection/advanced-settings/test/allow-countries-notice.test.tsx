@@ -19,7 +19,7 @@ const mockContext = {
 	protectionSettingsChanged: false,
 	setProtectionSettingsUI: jest.fn(),
 	setProtectionSettingsChanged: jest.fn(),
-	setisDirty: jest.fn(),
+	setIsDirty: jest.fn(),
 };
 
 declare const global: {

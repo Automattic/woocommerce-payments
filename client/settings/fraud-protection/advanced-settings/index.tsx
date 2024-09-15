@@ -102,7 +102,7 @@ const SaveFraudProtectionSettingsButton: React.FC = ( { children } ) => {
 };
 
 const FraudProtectionAdvancedSettingsPage: React.FC = () => {
-	const [ isDirty, setisDirty ] = useState( false );
+	const [ isDirty, setIsDirty ] = useState( false );
 
 	const { saveSettings, isLoading, isSaving } = useSettings() as SettingsHook;
 
@@ -344,7 +344,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 				setProtectionSettingsUI,
 				protectionSettingsChanged,
 				setProtectionSettingsChanged,
-				setisDirty,
+				setIsDirty,
 			} }
 		>
 			<SettingsLayout displayBanner={ false }>

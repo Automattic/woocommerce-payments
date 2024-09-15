@@ -26,7 +26,7 @@ interface mockContext {
 	protectionSettingsChanged: boolean;
 	setProtectionSettingsUI: jest.Mock;
 	setProtectionSettingsChanged: jest.Mock;
-	setisDirty: jest.Mock;
+	setIsDirty: jest.Mock;
 }
 
 describe( 'Fraud protection rule toggle tests', () => {
@@ -44,7 +44,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 		protectionSettingsChanged: false,
 		setProtectionSettingsUI: jest.fn(),
 		setProtectionSettingsChanged: jest.fn(),
-		setisDirty: jest.fn(),
+		setIsDirty: jest.fn(),
 	};
 
 	beforeEach( () => {
@@ -58,7 +58,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 			protectionSettingsChanged: false,
 			setProtectionSettingsUI: jest.fn(),
 			setProtectionSettingsChanged: jest.fn(),
-			setisDirty: jest.fn(),
+			setIsDirty: jest.fn(),
 		};
 	} );
 

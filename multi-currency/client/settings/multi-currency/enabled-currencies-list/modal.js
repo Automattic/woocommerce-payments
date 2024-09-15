@@ -25,12 +25,12 @@ import EnabledCurrenciesModalCheckbox from './modal-checkbox';
 import { ConfirmationModal } from 'multi-currency/interface/components';
 import Search from 'multi-currency/components/search';
 import './style.scss';
-import MultiCurrencySettingsContext from '../../context';
+import MultiCurrencySettingsContext from 'multi-currency/context';
 
 // TODO: This works when saving, but list does not refresh.
 // TODO: Should we reset selected currencies on modal close?
 const EnabledCurrenciesModal = ( { className } ) => {
-	const { setisDirty } = useContext( MultiCurrencySettingsContext );
+	const { setIsDirty } = useContext( MultiCurrencySettingsContext );
 
 	const availableCurrencies = useAvailableCurrencies();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );
@@ -124,7 +124,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		newCurrencies.push( defaultCurrencyCode );
 		newCurrencies.sort();
 		submitEnabledCurrenciesUpdate( newCurrencies );
-		setisDirty( true );
+		setIsDirty( true );
 	};
 
 	const handleCurrenciesListWidth = () => {

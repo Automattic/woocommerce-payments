@@ -9,7 +9,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import { useStoreSettings } from 'multi-currency/data';
 import StoreSettings from '..';
-import MultiCurrencySettingsContext from '../../../context';
+import MultiCurrencySettingsContext from 'multi-currency/context';
 
 jest.mock( 'multi-currency/data', () => ( {
 	useStoreSettings: jest.fn(),
@@ -21,7 +21,7 @@ const containerContext = {
 	openSingleCurrencySettings: jest.fn(),
 	closeSingleCurrencySettings: jest.fn(),
 	isDirty: false,
-	setisDirty: jest.fn().mockImplementation( ( value ) => {
+	setIsDirty: jest.fn().mockImplementation( ( value ) => {
 		containerContext.isDirty = value;
 	} ),
 };
@@ -79,7 +79,7 @@ describe( 'Multi-Currency store settings', () => {
 	test( 'store settings are saved with continue button click', () => {
 		createContainer();
 		const { submitStoreSettingsUpdate } = useStoreSettings();
-		containerContext.setisDirty( true );
+		containerContext.setIsDirty( true );
 		fireEvent.click(
 			screen.getByRole( 'button', {
 				name: /Save changes/,
