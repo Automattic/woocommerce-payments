@@ -142,7 +142,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_compatibility_data_adds_a_single_scheduled_job() {
-
 		// Arrange: Clear all previously scheduled compatibility update jobs.
 		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
 
