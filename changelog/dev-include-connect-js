@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Change redirect to Stripe KYC to the embedded Stripe component
