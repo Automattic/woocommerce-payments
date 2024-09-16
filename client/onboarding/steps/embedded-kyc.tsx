@@ -19,26 +19,30 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { NAMESPACE } from 'data/constants';
-import appearance from '../embedded-appearance';
+import appearance from '../kyc/appearance';
 import BannerNotice from 'wcpay/components/banner-notice';
 import LoadBar from 'wcpay/components/load-bar';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import {
-	AccountSession,
+	AccountKycSession,
 	PoEligibleData,
 	PoEligibleResult,
 } from 'wcpay/onboarding/types';
 import { fromDotNotation } from 'wcpay/onboarding/utils';
-import { getOverviewUrl } from 'wcpay/utils';
+import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
 
-type AccountSessionData = AccountSession;
+type AccountKycSessionData = AccountKycSession;
 
 interface FinalizeResponse {
 	success: boolean;
 	params: Record< string, string >;
 }
 
-const EmbeddedOnboarding: React.FC = () => {
+interface Props {
+	continueKyc?: boolean;
+}
+
+const EmbeddedKyc: React.FC< Props > = ( { continueKyc = false } ) => {
 	const { data } = useOnboardingContext();
 	const [ publishableKey, setPublishableKey ] = useState( '' );
 	const [ locale, setLocale ] = useState( '' );
@@ -80,29 +84,38 @@ const EmbeddedOnboarding: React.FC = () => {
 					go_live_timeframe: data.go_live_timeframe,
 				},
 			};
-			const eligibleResult = await apiFetch< PoEligibleResult >( {
-				path: '/wc/v3/payments/onboarding/router/po_eligible',
-				method: 'POST',
-				data: eligibilityDetails,
-			} );
 
-			return 'eligible' === eligibleResult.result;
+			try {
+				const eligibleResult = await apiFetch< PoEligibleResult >( {
+					path: '/wc/v3/payments/onboarding/router/po_eligible',
+					method: 'POST',
+					data: eligibilityDetails,
+				} );
+
+				return 'eligible' === eligibleResult.result;
+			} catch ( error ) {
+				// Fall back to full KYC scenario.
+				return false;
+			}
 		};
 
 		const fetchKeys = async () => {
-			let isEligible;
-			try {
+			// By default, we assume the merchant is not eligible for PO.
+			let isEligible = false;
+
+			// If we are resuming an onboarding session, we don't need to check for PO eligibility again.
+			if ( ! continueKyc ) {
 				isEligible = await isEligibleForPo();
-			} catch ( error ) {
-				// fall back to full KYC scenario.
-				isEligible = false;
 			}
 
-			const path = addQueryArgs( `${ NAMESPACE }/onboarding/session`, {
-				self_assessment: fromDotNotation( data ),
-				progressive: isEligible,
-			} );
-			const accountSession = await apiFetch< AccountSessionData >( {
+			const path = addQueryArgs(
+				`${ NAMESPACE }/onboarding/kyc/session`,
+				{
+					self_assessment: fromDotNotation( data ),
+					progressive: isEligible,
+				}
+			);
+			const accountSession = await apiFetch< AccountKycSessionData >( {
 				path: path,
 				method: 'GET',
 			} );
@@ -127,7 +140,7 @@ const EmbeddedOnboarding: React.FC = () => {
 		};
 
 		fetchKeys();
-	}, [ data ] );
+	}, [ data, continueKyc ] );
 
 	// Initialize the Stripe Connect instance only once when publishableKey and clientSecret are ready
 	useEffect( () => {
@@ -172,7 +185,7 @@ const EmbeddedOnboarding: React.FC = () => {
 								const response = await apiFetch<
 									FinalizeResponse
 								>( {
-									path: `${ NAMESPACE }/onboarding/finalize`,
+									path: `${ NAMESPACE }/onboarding/kyc/finalize`,
 									method: 'POST',
 									data: {
 										source: urlSource,
@@ -183,24 +196,30 @@ const EmbeddedOnboarding: React.FC = () => {
 
 								if ( response.success ) {
 									window.location.href = getOverviewUrl(
-										response.params,
+										{
+											...response.params,
+											'wcpay-connection-success': '1',
+										},
 										'WCPAY_ONBOARDING_WIZARD'
 									);
 								} else {
-									// If a non-success response is received we should redirect to the overview page with an error flag:
-									window.location.href = getOverviewUrl(
+									// If a non-success response is received we should redirect to the Connect page with an error flag:
+									window.location.href = getConnectUrl(
 										{
 											...response.params,
-											onboardingError: true,
+											'wcpay-connection-error': '1',
 										},
 										'WCPAY_ONBOARDING_WIZARD'
 									);
 								}
 							} catch ( error ) {
-								// If an error response is received we should redirect to the overview page with an error flag:
+								// If an error response is received we should redirect to the Connect page with an error flag:
 								// Note that this should never happen, since we always expect a response from the server.
-								window.location.href = getOverviewUrl(
-									{ onboardingError: true },
+								window.location.href = getConnectUrl(
+									{
+										'wcpay-connection-error': '1',
+										source: urlSource,
+									},
 									'WCPAY_ONBOARDING_WIZARD'
 								);
 							}
@@ -212,4 +231,4 @@ const EmbeddedOnboarding: React.FC = () => {
 	);
 };
 
-export default EmbeddedOnboarding;
+export default EmbeddedKyc;

@@ -28,6 +28,7 @@ class WC_Payments_Account {
 	const ONBOARDING_DISABLED_TRANSIENT                         = 'wcpay_on_boarding_disabled';
 	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
+	const EMBEDDED_KYC_IN_PROGRESS_OPTION                       = 'wcpay_onboarding_embedded_kyc_in_progress';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
@@ -930,6 +931,25 @@ class WC_Payments_Account {
 			return false;
 		}
 
+		// There are certain cases where it is best to refresh the account data
+		// to be sure we are dealing with the current account state on the Connect page:
+		// - When the merchant is coming from the onboarding wizard it is best to refresh the account data because
+		// the merchant might have started the embedded Stripe KYC.
+		// - When the merchant is coming from the embedded KYC, definitely refresh the account data.
+		// The account data shouldn't be refreshed with force disconnected option enabled.
+		if ( ! WC_Payments_Utils::force_disconnected_enabled()
+			&& in_array(
+				WC_Payments_Onboarding_Service::get_from(),
+				[
+					WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
+					WC_Payments_Onboarding_Service::FROM_ONBOARDING_KYC,
+				],
+				true
+			) ) {
+
+			$this->refresh_account_data();
+		}
+
 		// If everything is in good working condition, redirect to Payments Overview page.
 		if ( $this->has_working_jetpack_connection() && $this->is_stripe_account_valid() ) {
 			$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE );
@@ -1172,6 +1192,7 @@ class WC_Payments_Account {
 				|| ( WC_Payments_Onboarding_Service::FROM_STRIPE === $from && ! empty( $_GET['wcpay-connection-error'] ) ) ) {
 
 				delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+				delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 			}
 
 			// Make changes to account data as instructed by action GET params.
@@ -1398,6 +1419,7 @@ class WC_Payments_Account {
 				if ( $create_test_drive_account ) {
 					// Since there should be no Stripe KYC needed, make sure we start with a clean state.
 					delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+					delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 
 					// If we have the auto_start_test_drive_onboarding flag, we redirect to the Connect page
 					// to let the JS logic take control and orchestrate things.
@@ -1480,7 +1502,7 @@ class WC_Payments_Account {
 				if ( $create_test_drive_account && ! empty( $redirect_to ) ) {
 					wp_send_json_success( [ 'redirect_to' => $redirect_to ] );
 				} else {
-					// Redirect the user to where our Stripe onboarding instructed.
+					// Redirect the user to where our Stripe onboarding instructed (or to our own embedded Stripe KYC).
 					$this->redirect_service->redirect_to( $redirect_to );
 				}
 			} catch ( API_Exception $e ) {
@@ -1559,6 +1581,7 @@ class WC_Payments_Account {
 		// Discard any ongoing onboarding session.
 		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
 		delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+		delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 		delete_transient( 'woopay_enabled_by_default' );
 
 		// Clear the cache to avoid stale data.
@@ -1743,6 +1766,24 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get the URL to the embedded onboarding KYC page.
+	 *
+	 * @param array $additional_args Additional query args to add to the URL.
+	 *
+	 * @return string
+	 */
+	private function get_onboarding_kyc_url( array $additional_args = [] ): string {
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/onboarding/kyc',
+		];
+
+		$params = array_merge( $params, $additional_args );
+
+		return admin_url( add_query_arg( $params, 'admin.php' ) );
+	}
+
+	/**
 	 * Initializes the onboarding flow by fetching the URL from the API and redirecting to it.
 	 *
 	 * @param string $setup_mode         The onboarding setup mode. It should only be `live`, `test`, or `test_drive`.
@@ -1773,6 +1814,18 @@ class WC_Payments_Account {
 			WC_Payments_Onboarding_Service::set_onboarding_eligibility_modal_dismissed();
 		}
 
+		// If we are in the middle of an embedded onboarding, go to the KYC page.
+		// In this case, we don't need to generate a return URL from Stripe, and we
+		// can rely on the JS logic to generate the session.
+		if ( $this->onboarding_service->is_embedded_kyc_in_progress() ) {
+			// We want to carry over the connect link from value because with embedded KYC
+			// there is no interim step for the user.
+			$additional_args['from'] = WC_Payments_Onboarding_Service::get_from();
+
+			return $this->get_onboarding_kyc_url( $additional_args );
+		}
+
+		// Else, go on with the normal onboarding redirect logic.
 		$return_url = $this->get_onboarding_return_url( $wcpay_connect_from );
 		if ( ! empty( $additional_args ) ) {
 			$return_url = add_query_arg( $additional_args, $return_url );
@@ -1820,6 +1873,7 @@ class WC_Payments_Account {
 
 			// Clean up any existing onboarding state.
 			delete_transient( self::ONBOARDING_STATE_TRANSIENT );
+			delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 
 			return add_query_arg(
 				[ 'wcpay-connection-success' => '1' ],

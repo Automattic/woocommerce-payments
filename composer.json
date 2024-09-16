@@ -20,7 +20,7 @@
         }
     },
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.3",
         "ext-json": "*",
         "automattic/jetpack-connection": "2.12.4",
         "automattic/jetpack-config": "2.0.4",

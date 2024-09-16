@@ -13,7 +13,7 @@ import { getMccFromIndustry } from 'onboarding/utils';
 import { OnboardingForm } from './form';
 import Step from './step';
 import BusinessDetails from './steps/business-details';
-import EmbeddedOnboarding from './steps/embedded-onboarding';
+import EmbeddedKyc from './steps/embedded-kyc';
 import StoreDetails from './steps/store-details';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
@@ -48,7 +48,7 @@ const OnboardingStepper = () => {
 				</OnboardingForm>
 			</Step>
 			<Step name="embedded" showHeading={ false }>
-				<EmbeddedOnboarding />
+				<EmbeddedKyc />
 			</Step>
 		</Stepper>
 	);

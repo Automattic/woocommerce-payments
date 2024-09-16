@@ -1,8 +1,11 @@
 /* eslint-disable max-len */
 
+/**
+ * Customised appearance variables for the external KYC flow.
+ */
 export default {
 	variables: {
-		colorPrimary: '#3858E9',
+		colorPrimary: '#3C2861',
 		colorBackground: '#FFFFFF',
 		buttonPrimaryColorBackground: '#3858E9',
 		buttonPrimaryColorBorder: '#3858E9',

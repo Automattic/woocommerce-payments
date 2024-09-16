@@ -65,7 +65,7 @@ export interface MccsDisplayTreeItem {
 	keywords?: string[];
 }
 
-export interface AccountSession {
+export interface AccountKycSession {
 	clientSecret: string;
 	expiresAt: number;
 	accountId: string;
