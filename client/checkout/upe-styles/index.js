@@ -443,7 +443,7 @@ export const getFontRulesFromPage = () => {
 	return fontRules;
 };
 
-export const getAppearance = ( elementsLocation ) => {
+export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	const selectors = appearanceSelectors.getSelectors( elementsLocation );
 
 	// Add hidden fields to DOM for generating styles.
@@ -505,11 +505,18 @@ export const getAppearance = ( elementsLocation ) => {
 			'.TabIcon--selected': selectedTabIconRules,
 			'.Text': labelRules,
 			'.Text--redirect': labelRules,
+		},
+	};
+
+	if ( forWooPay ) {
+		appearance.rules = {
+			...appearance.rules,
 			'.Heading': headingRules,
 			'.Button': buttonRules,
 			'.Link': linkRules,
-		},
-	};
+		};
+	}
+
 	// Remove hidden fields from DOM.
 	hiddenElementsForUPE.cleanup();
 	return appearance;

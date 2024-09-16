@@ -36,7 +36,6 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'Failed to load resource: the server responded with a status of 400 (Bad Request)',
 	'No Amplitude API key provided',
 	'is registered with an invalid category',
-	'"Heading" is not a supported class',
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {

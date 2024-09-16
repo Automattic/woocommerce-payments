@@ -18,6 +18,7 @@ import StoreDetails from './steps/store-details';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
+import LoadingStep from 'wcpay/onboarding/steps/loading';
 
 const OnboardingStepper = () => {
 	const handleExit = () => {
@@ -47,9 +48,13 @@ const OnboardingStepper = () => {
 					<StoreDetails />
 				</OnboardingForm>
 			</Step>
-			<Step name="embedded" showHeading={ false }>
-				<EmbeddedKyc />
-			</Step>
+			{ wcpaySettings?.featureFlags?.isEmbeddedKycEnabled ? (
+				<Step name="embedded" showHeading={ false }>
+					<EmbeddedKyc />
+				</Step>
+			) : (
+				<LoadingStep name={ 'loading' } />
+			) }
 		</Stepper>
 	);
 };
@@ -80,10 +85,7 @@ const initialData = {
 
 const OnboardingPage: React.FC = () => {
 	useEffect( () => {
-		const urlParams = new URLSearchParams( window.location.search );
-		const source =
-			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
-		trackStarted( source );
+		trackStarted();
 
 		// Remove loading class and add those required for full screen.
 		document.body.classList.remove( 'woocommerce-admin-is-loading' );

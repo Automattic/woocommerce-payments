@@ -9,12 +9,12 @@ import { buildAjaxURL } from 'utils/express-checkout';
 import { getAppearance } from 'checkout/upe-styles';
 import {
 	getTargetElement,
-	getAppearanceType,
 	validateEmail,
 	appendRedirectionParams,
 	shouldSkipWooPay,
 	deleteSkipWooPayCookie,
 } from './utils';
+import { getAppearanceType } from '../utils';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -190,7 +190,7 @@ export const handleWooPayEmailInput = async (
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
 					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-						? getAppearance( appearanceType )
+						? getAppearance( appearanceType, true )
 						: null,
 				}
 			).then( ( response ) => {

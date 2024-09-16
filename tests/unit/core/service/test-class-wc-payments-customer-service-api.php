@@ -74,11 +74,12 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	 * Post-test teardown
 	 */
 	public function tear_down() {
-		parent::tear_down();
 		remove_filter(
 			'wc_payments_http',
 			[ $this, 'replace_http_client' ]
 		);
+
+		parent::tear_down();
 	}
 
 	/**

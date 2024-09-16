@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Pass appearance data when initiating WooPay via the email input flow

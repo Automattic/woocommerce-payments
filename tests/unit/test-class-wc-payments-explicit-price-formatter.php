@@ -230,7 +230,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( $wcpay_account_connected );
+		$this->mock_account->method( 'is_provider_connected' )->willReturn( $wcpay_account_connected );
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
 
@@ -248,7 +248,10 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 		$this->mock_database_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
 
-		$this->multi_currency = new MultiCurrency( $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service, $this->mock_database_cache );
+		$gateway_context      = [
+			'is_dev_mode' => true,
+		];
+		$this->multi_currency = new MultiCurrency( $gateway_context, $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service, $this->mock_database_cache );
 		$this->multi_currency->init();
 
 		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->multi_currency );

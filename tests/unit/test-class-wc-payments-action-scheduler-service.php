@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Compatibility_Service;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -34,15 +35,27 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_order_service;
 
 	/**
+	 * Mock Compatibility_Service.
+	 *
+	 * @var Compatibility_Service|MockObject
+	 */
+	private $mock_compatibility_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client    = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
+		$this->mock_api_client            = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_order_service         = $this->createMock( WC_Payments_Order_Service::class );
+		$this->mock_compatibility_service = $this->createMock( Compatibility_Service::class );
 
-		$this->action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $this->mock_order_service );
+		$this->action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $this->mock_order_service, $this->mock_compatibility_service );
+	}
+
+	public function test_update_compatibility_data_hook_registered() {
+		$this->assertEquals( 10, has_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->mock_compatibility_service, 'update_compatibility_data_hook' ] ) );
 	}
 
 	public function test_track_new_order_action() {

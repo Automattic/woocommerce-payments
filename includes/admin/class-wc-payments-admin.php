@@ -202,7 +202,8 @@ class WC_Payments_Admin {
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_from_payments_admin_child_pages' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
+		// Run this after the redirects in WC_Payments_Account.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_payments_admin_child_pages' ], 16 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ], 9 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 9 );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
@@ -348,7 +349,7 @@ class WC_Payments_Admin {
 		}
 
 		// Register /payments/onboarding/kyc only when we have a Stripe account, but the Stripe KYC is not finished (details not submitted).
-		if ( $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
+		if ( WC_Payments_Features::is_embedded_kyc_enabled() && $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
 			wc_admin_register_page(
 				[
 					'id'         => 'wc-payments-onboarding-kyc',
@@ -1120,44 +1121,56 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * If the user is attempting to view a WCPay admin page without a connected Stripe account,
-	 * redirect them to the connect account page.
+	 * Redirects WCPay admin pages to the Connect page for stores that
+	 * don't have a working Jetpack connection or a valid connected Stripe account.
+	 *
+	 * Please note that the overview page is handled separately in the
+	 * `WC_Payments_Account::maybe_redirect_from_overview_page` method, before this method is called (priority 15 vs 16).
+	 *
+	 * IMPORTANT: The logic should be kept in sync with the one in maybe_redirect_from_connect_page to avoid loops.
+	 *
+	 * @see WC_Payments_Account::maybe_redirect_from_overview_page() for overview page handling.
+	 * @see WC_Payments_Account::maybe_handle_onboarding() for connect links handling.
+	 *
+	 * @return bool True if a redirection happened, false otherwise.
 	 */
-	public function maybe_redirect_from_payments_admin_child_pages() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return;
-		}
-		if ( wp_doing_ajax() ) {
-			return;
+	public function maybe_redirect_from_payments_admin_child_pages(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
 		}
 
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
-
 		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page'] ) {
-			return;
+			return false;
 		}
 
 		$current_path = ! empty( $url_params['path'] ) ? $url_params['path'] : '';
-
 		if ( empty( $current_path ) ) {
-			return;
+			return false;
 		}
 
+		// If the current path doesn't match any of the paths we're interested in, do not redirect.
 		$page_paths = [];
-
 		foreach ( $this->admin_child_pages as $payments_child_page ) {
 			$page_paths[] = preg_quote( $payments_child_page['path'], '/' );
 		}
-
 		if ( ! preg_match( '/^(' . implode( '|', $page_paths ) . ')/', $current_path ) ) {
-			return;
+			return false;
 		}
 
-		if ( $this->account->is_stripe_connected( true, true ) ) {
-			return;
+		// If everything is NOT in good working condition, redirect to Payments Connect page.
+		if ( ! $this->account->has_working_jetpack_connection() || ! $this->account->is_stripe_account_valid() ) {
+			$this->account->redirect_to_onboarding_welcome_page(
+				sprintf(
+				/* translators: 1: WooPayments. */
+					__( 'Please <b>complete your %1$s setup</b> to continue using it.', 'woocommerce-payments' ),
+					'WooPayments'
+				)
+			);
+			return true;
 		}
 
-		$this->account->redirect_to_onboarding_welcome_page();
+		return false;
 	}
 
 	/**
