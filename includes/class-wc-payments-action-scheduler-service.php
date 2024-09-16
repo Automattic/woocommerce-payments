@@ -168,6 +168,10 @@ class WC_Payments_Action_Scheduler_Service {
 			echo 'Versions: ' . wp_json_encode( $versions );
 			ActionScheduler_Versions::initialize_latest_version();
 		}
+
+		$refl_func = new ReflectionFunction( 'as_schedule_single_action' );
+		echo ' Location of "as_schedule_single_action()": ' . $refl_func->getFileName() . ':' . $refl_func->getStartLine();
+
 		// If the ActionScheduler is already initialized, schedule the job.
 		if ( did_action( 'action_scheduler_init' ) ) {
 			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
