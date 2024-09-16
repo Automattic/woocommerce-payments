@@ -170,7 +170,11 @@ class WC_Payments_Action_Scheduler_Service {
 		}
 
 		$refl_func = new ReflectionFunction( 'as_schedule_single_action' );
-		echo ' Location of "as_schedule_single_action()": ' . $refl_func->getFileName() . ':' . $refl_func->getStartLine();
+		echo ' Location of "as_schedule_single_action()": ' . $refl_func->getFileName() . ':' . $refl_func->getStartLine() . ' ';
+		echo ' WC version: ' . WC()->version . ' ';
+		if ( defined( 'WC_ABSPATH' ) ) {
+			echo ' WC version: ' . WC_ABSPATH . ' ';
+		}
 
 		// If the ActionScheduler is already initialized, schedule the job.
 		if ( did_action( 'action_scheduler_init' ) ) {
