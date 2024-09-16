@@ -163,6 +163,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	public function schedule_job( int $timestamp, string $hook, array $args = [], string $group = self::GROUP_ID ) {
+		// The `action_scheduler_init` hook was introduced in ActionScheduler 3.5.5 (WooCommerce 7.9.0).
 		if ( version_compare( WC()->version, '7.9.0', '>=' ) ) {
 			// If the ActionScheduler is already initialized, schedule the job.
 			if ( did_action( 'action_scheduler_init' ) ) {
