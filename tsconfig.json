@@ -15,8 +15,9 @@
     "paths": {
       "assets/*": [ "../assets/*" ],
       "wcpay/*": [ "./*" ],
+      "multi-currency/*": [ "../multi-currency/client/*" ],
       "iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ],
-      "react": ["../node_modules/@types/react"]
+      "react": [ "../node_modules/@types/react" ]
     },
     "types": [
       "node",

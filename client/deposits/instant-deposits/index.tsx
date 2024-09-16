@@ -12,7 +12,7 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import './style.scss';
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import InstantDepositModal from './modal';
 import { useInstantDeposit } from 'wcpay/data';
 import type * as AccountOverview from 'wcpay/types/account-overview';
