@@ -8,7 +8,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  * Internal dependencies
  */
 import { useSelectedCurrency } from 'overview/hooks';
-import { getCurrency } from 'utils/currency';
+import { getCurrency } from 'multi-currency/interface/functions';
 import InlineLabelSelect from '../inline-label-select';
 import { recordEvent } from 'tracks';
 

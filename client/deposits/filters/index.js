@@ -8,7 +8,7 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { filters, advancedFilters } from './config';
-import { formatCurrencyName } from '../../utils/currency';
+import { formatCurrencyName } from 'multi-currency/interface/functions';
 
 export const DepositsFilters = ( props ) => {
 	const populateDepositCurrencies = ( filtersConfiguration ) => {
