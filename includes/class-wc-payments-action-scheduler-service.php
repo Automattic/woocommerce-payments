@@ -163,17 +163,21 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return void
 	 */
 	public function schedule_job( int $timestamp, string $hook, array $args = [], string $group = self::GROUP_ID ) {
-		// If the ActionScheduler is already initialized, schedule the job.
-		if ( did_action( 'action_scheduler_init' ) ) {
-			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+		if ( version_compare( WC()->version, '7.9.0', '>=' ) ) {
+			// If the ActionScheduler is already initialized, schedule the job.
+			if ( did_action( 'action_scheduler_init' ) ) {
+				$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+			} else {
+				// The ActionScheduler is not initialized yet; we need to schedule the job when it fires the init hook.
+				add_action(
+					'action_scheduler_init',
+					function () use ( $timestamp, $hook, $args, $group ) {
+						$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+					}
+				);
+			}
 		} else {
-			// The ActionScheduler is not initialized yet; we need to schedule the job when it fires the init hook.
-			add_action(
-				'action_scheduler_init',
-				function () use ( $timestamp, $hook, $args, $group ) {
-					$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
-				}
-			);
+			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
 		}
 	}
 

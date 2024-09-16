@@ -121,10 +121,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_compatibility_data_adds_scheduled_job() {
-		if ( ! did_action( 'action_scheduler_init' ) ) {
-			do_action( 'action_scheduler_init' );
-		}
-
 		// Arrange: Clear all previously scheduled compatibility update jobs.
 		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
 
@@ -146,11 +142,6 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_compatibility_data_adds_a_single_scheduled_job() {
-
-		if ( ! did_action( 'action_scheduler_init' ) ) {
-			do_action( 'action_scheduler_init' );
-		}
-
 		// Arrange: Clear all previously scheduled compatibility update jobs.
 		as_unschedule_all_actions( Compatibility_Service::UPDATE_COMPATIBILITY_DATA );
 
