@@ -94,6 +94,15 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.3.0-test-1 - unreleased =
+* Add - Add compatibility with the buttonAttributes API from Woo Blocks
+* Add - Add rate limiter to compatibility data updates
+* Fix - Fixed invalid appearance warnings
+* Fix - Handle loadError in ECE for Block Context Initialization.
+* Update - Decoupled Multi-currency module from gateway dependencies.
+* Update - Update express payment methods with a title, description and gatewayId
+* Dev - Some refactors to embedded KYC logic.
+
 = 8.2.1 - 2024-09-13 =
 * Fix - Create div container element with JS dynamically.
 
