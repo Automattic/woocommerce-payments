@@ -13,33 +13,26 @@ import { OnboardingContextProvider } from 'onboarding/context';
 import EmbeddedKyc from 'onboarding/steps/embedded-kyc';
 import strings from 'onboarding/strings';
 import { getConnectUrl } from 'utils';
+import { trackKycExit } from 'wcpay/onboarding/tracking';
 
 const OnboardingKycPage: React.FC = () => {
-	const { detailsSubmitted: detailsSubmitted } = wcpaySettings.accountStatus;
 	const urlParams = new URLSearchParams( window.location.search );
 	const collectPayoutRequirements = !! urlParams.get(
 		'collect_payout_requirements'
 	);
 
 	const handleExit = () => {
-		const source =
-			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
+		trackKycExit();
 
-		if ( ! detailsSubmitted ) {
-			window.location.href = getConnectUrl(
-				{
-					source: source,
-				},
-				'WCPAY_ONBOARDING_KYC'
-			);
-		} else {
-			window.location.href = getConnectUrl(
-				{
-					source: source,
-				},
-				'WCPAY_ONBOARDING_KYC'
-			);
-		}
+		// Let the connect logic determine where the merchant should end up.
+		window.location.href = getConnectUrl(
+			{
+				source:
+					urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+					'unknown',
+			},
+			'WCPAY_ONBOARDING_KYC'
+		);
 	};
 
 	useEffect( () => {
