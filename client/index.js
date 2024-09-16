@@ -91,20 +91,6 @@ addFilter(
 		}
 
 		pages.push( {
-			container: OnboardingKycPage,
-			path: '/payments/onboarding/kyc',
-			wpOpenMenu: menuID,
-			breadcrumbs: [
-				rootLink,
-				__( 'Continue onboarding', 'woocommerce-payments' ),
-			],
-			navArgs: {
-				id: 'wc-payments-continue-onboarding',
-			},
-			capability: 'manage_woocommerce',
-		} );
-
-		pages.push( {
 			container: OverviewPage,
 			path: '/payments/overview',
 			wpOpenMenu: menuID,
