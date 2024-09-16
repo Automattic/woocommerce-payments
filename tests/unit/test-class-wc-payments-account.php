@@ -843,8 +843,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'redirect_to_onboarding_wizard' );
 
-		update_option( '_wcpay_feature_embedded_kyc', '1' );
-
 		// If embedded KYC is in progress, we expect different URL.
 		$this->mock_onboarding_service
 			->expects( $this->once() )

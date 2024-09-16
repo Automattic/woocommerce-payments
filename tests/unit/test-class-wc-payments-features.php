@@ -302,23 +302,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_frt_review_feature_active() );
 	}
 
-	public function test_is_embedded_kyc_enabled_returns_true() {
-		$this->set_feature_flag_option( WC_Payments_Features::EMBEDDED_KYC_FLAG_NAME, '1' );
-
-		$this->assertTrue( WC_Payments_Features::is_embedded_kyc_enabled() );
-	}
-
-	public function test_is_embedded_kyc_enabled_returns_false_when_flag_is_false() {
-		$this->set_feature_flag_option( WC_Payments_Features::EMBEDDED_KYC_FLAG_NAME, '0' );
-
-		$this->assertFalse( WC_Payments_Features::is_embedded_kyc_enabled() );
-		$this->assertArrayNotHasKey( 'isEmbeddedKycEnabled', WC_Payments_Features::to_array() );
-	}
-
-	public function test_is_embedded_kyc_enabled_returns_false_when_flag_is_not_set() {
-		$this->assertFalse( WC_Payments_Features::is_embedded_kyc_enabled() );
-	}
-
 	private function setup_enabled_flags( array $enabled_flags ) {
 		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			add_filter(
