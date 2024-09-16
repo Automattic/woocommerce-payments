@@ -57,6 +57,15 @@ export const trackRedirected = ( isPoEligible: boolean ): void => {
 	} );
 };
 
+export const trackKycExit = (): void => {
+	const urlParams = new URLSearchParams( window.location.search );
+
+	recordEvent( 'wcpay_onboarding_kyc_exit', {
+		source:
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
+	} );
+};
+
 export const trackAccountReset = (): void =>
 	recordEvent( 'wcpay_onboarding_flow_reset' );
 

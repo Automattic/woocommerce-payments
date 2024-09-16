@@ -60,18 +60,15 @@ export const getBusinessTypes = (): Country[] => {
  *
  * @param data The form data.
  * @param isPoEligible Whether the user is eligible for a PO account.
- * @param collectPayoutRequirements Whether to collect payout requirements.
  */
 export const createAccountSession = async (
 	data: OnboardingFields,
-	isPoEligible: boolean,
-	collectPayoutRequirements = false
+	isPoEligible: boolean
 ): Promise< AccountKycSession > => {
 	return await apiFetch< AccountKycSession >( {
 		path: addQueryArgs( `${ NAMESPACE }/onboarding/kyc/session`, {
 			self_assessment: fromDotNotation( data ),
 			progressive: isPoEligible,
-			collect_payout_requirements: collectPayoutRequirements,
 		} ),
 		method: 'GET',
 	} );

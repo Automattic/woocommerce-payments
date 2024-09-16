@@ -157,13 +157,12 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @param array   $self_assessment_data Self assessment data.
 	 * @param boolean $progressive Whether the onboarding is progressive.
-	 * @param boolean $collect_payout_requirements Whether to collect payout requirements.
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -171,15 +170,6 @@ class WC_Payments_Onboarding_Service {
 
 		// Make sure the onboarding test mode DB flag is set.
 		self::set_test_mode( 'live' !== $setup_mode );
-
-		if ( ! $collect_payout_requirements ) {
-			// Clear onboarding related account options if this is an initial onboarding attempt.
-			self::clear_account_options();
-		} else {
-			// Since we assume user has already either gotten here from the eligibility modal,
-			// or has already dismissed it, we should set the modal as dismissed so it doesn't display again.
-			self::set_onboarding_eligibility_modal_dismissed();
-		}
 
 		$site_data      = [
 			'site_username' => wp_get_current_user()->user_login,
@@ -196,8 +186,7 @@ class WC_Payments_Onboarding_Service {
 				array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
-				$progressive,
-				$collect_payout_requirements
+				$progressive
 			);
 		} catch ( API_Exception $e ) {
 			// If we fail to create the session, return an empty array.
