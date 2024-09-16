@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ef9fe43c4fffc996cf70034d89fea352",
+    "content-hash": "595a21dda8d9c0943a32df05723b0e28",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -6664,22 +6664,26 @@
         },
         {
             "name": "woocommerce/action-scheduler",
-            "version": "3.1.6",
+            "version": "3.8.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/action-scheduler.git",
-                "reference": "275d0ba54b1c263dfc62688de2fa9a25a373edf8"
+                "reference": "2bc91d88fdbc2c07ab899cbb56b983e11e62cf69"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/275d0ba54b1c263dfc62688de2fa9a25a373edf8",
-                "reference": "275d0ba54b1c263dfc62688de2fa9a25a373edf8",
+                "url": "https://api.github.com/repos/woocommerce/action-scheduler/zipball/2bc91d88fdbc2c07ab899cbb56b983e11e62cf69",
+                "reference": "2bc91d88fdbc2c07ab899cbb56b983e11e62cf69",
                 "shasum": ""
             },
+            "require": {
+                "php": ">=7.0"
+            },
             "require-dev": {
-                "phpunit/phpunit": "^5.6",
-                "woocommerce/woocommerce-sniffs": "0.0.8",
-                "wp-cli/wp-cli": "~1.5.1"
+                "phpunit/phpunit": "^7.5",
+                "woocommerce/woocommerce-sniffs": "0.1.0",
+                "wp-cli/wp-cli": "~2.5.0",
+                "yoast/phpunit-polyfills": "^2.0"
             },
             "type": "wordpress-plugin",
             "extra": {
@@ -6697,9 +6701,9 @@
             "homepage": "https://actionscheduler.org/",
             "support": {
                 "issues": "https://github.com/woocommerce/action-scheduler/issues",
-                "source": "https://github.com/woocommerce/action-scheduler/tree/master"
+                "source": "https://github.com/woocommerce/action-scheduler/tree/3.8.2"
             },
-            "time": "2020-05-12T16:22:33+00:00"
+            "time": "2024-09-12T23:12:58+00:00"
         },
         {
             "name": "woocommerce/qit-cli",
