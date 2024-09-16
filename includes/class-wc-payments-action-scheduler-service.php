@@ -164,6 +164,8 @@ class WC_Payments_Action_Scheduler_Service {
 	 */
 	public function schedule_job( int $timestamp, string $hook, array $args = [], string $group = self::GROUP_ID ) {
 		if ( did_action( 'plugins_loaded' ) && ! did_action( 'action_scheduler_init' ) && class_exists( 'ActionScheduler_Versions' ) ) {
+			$latest_version = ActionScheduler_Versions::instance()->latest_version();
+			echo 'Latest version: ' . $latest_version ? $latest_version : 'false';
 			ActionScheduler_Versions::initialize_latest_version();
 		}
 		// If the ActionScheduler is already initialized, schedule the job.
