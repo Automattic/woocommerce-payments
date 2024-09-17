@@ -5,7 +5,6 @@ import { upeRestrictedProperties } from './upe-styles';
 import {
 	generateHoverRules,
 	generateOutlineStyle,
-	maybeConvertRGBAtoRGB,
 	dashedToCamelCase,
 	isColorLight,
 	getBackgroundColor,
@@ -380,8 +379,8 @@ export const getFieldStyles = (
 	for ( let i = 0; i < styles.length; i++ ) {
 		const camelCase = dashedToCamelCase( styles[ i ] );
 		if ( validProperties.includes( camelCase ) ) {
-			filteredStyles[ camelCase ] = maybeConvertRGBAtoRGB(
-				styles.getPropertyValue( styles[ i ] )
+			filteredStyles[ camelCase ] = styles.getPropertyValue(
+				styles[ i ]
 			);
 		}
 	}
