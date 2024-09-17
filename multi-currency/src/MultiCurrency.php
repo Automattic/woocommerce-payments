@@ -1120,7 +1120,7 @@ class MultiCurrency {
 		$script_file       = $script . '.js';
 		$script_src_url    = plugins_url( $script_file, $this->gateway_context['plugin_file_path'] );
 		$script_asset_path = plugin_dir_path( $this->gateway_context['plugin_file_path'] ) . $script . '.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ]; // nosemgrep: audit.php.lang.security.file.inclusion-arg -- server generated path is used.
 		$all_dependencies  = array_merge( $script_asset['dependencies'], $additional_dependencies );
 
 		wp_register_script(
