@@ -208,6 +208,19 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Backwards compatibility for the old `instance()` static method.
+	 *
+	 * We need to use this as some plugins still call `MultiCurrency::instance()` directly.
+	 *
+	 * @return null|MultiCurrency - Main instance.
+	 */
+	public static function instance() {
+		if ( function_exists( 'WC_Payments_Multi_Currency' ) ) {
+			return WC_Payments_Multi_Currency();
+		}
+	}
+
+	/**
 	 * Initializes this class' WP hooks.
 	 *
 	 * @return void
