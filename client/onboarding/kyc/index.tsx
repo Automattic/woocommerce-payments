@@ -12,11 +12,18 @@ import { OnboardingContextProvider } from 'onboarding/context';
 import EmbeddedKyc from 'onboarding/steps/embedded-kyc';
 import strings from 'onboarding/strings';
 import { getConnectUrl } from 'utils';
+import { trackKycExit } from 'wcpay/onboarding/tracking';
 
 const OnboardingKycPage: React.FC = () => {
-	const handleExit = () => {
-		const urlParams = new URLSearchParams( window.location.search );
+	const urlParams = new URLSearchParams( window.location.search );
+	const collectPayoutRequirements = !! urlParams.get(
+		'collect_payout_requirements'
+	);
 
+	const handleExit = () => {
+		trackKycExit();
+
+		// Let the connect logic determine where the merchant should end up.
 		window.location.href = getConnectUrl(
 			{
 				source:
@@ -66,7 +73,12 @@ const OnboardingKycPage: React.FC = () => {
 				</div>
 				<div className="stepper__wrapper">
 					<div className="stepper__content">
-						<EmbeddedKyc continueKyc={ true } />
+						<EmbeddedKyc
+							continueKyc={ true }
+							collectPayoutRequirements={
+								collectPayoutRequirements
+							}
+						/>
 					</div>
 				</div>
 			</OnboardingContextProvider>
