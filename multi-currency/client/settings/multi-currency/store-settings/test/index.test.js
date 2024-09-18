@@ -9,22 +9,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import { useStoreSettings } from 'multi-currency/data';
 import StoreSettings from '..';
-import MultiCurrencySettingsContext from 'multi-currency/context';
 
 jest.mock( 'multi-currency/data', () => ( {
 	useStoreSettings: jest.fn(),
 } ) );
-
-const containerContext = {
-	isSingleCurrencyScreenOpen: true,
-	currencyCodeToShowSettingsFor: 'EUR',
-	openSingleCurrencySettings: jest.fn(),
-	closeSingleCurrencySettings: jest.fn(),
-	isDirty: false,
-	setIsDirty: jest.fn().mockImplementation( ( value ) => {
-		containerContext.isDirty = value;
-	} ),
-};
 
 const changeableSettings = [
 	'enable_storefront_switcher',
@@ -41,11 +29,7 @@ useStoreSettings.mockReturnValue( {
 } );
 
 const createContainer = () => {
-	const { container } = render(
-		<MultiCurrencySettingsContext.Provider value={ containerContext }>
-			<StoreSettings />
-		</MultiCurrencySettingsContext.Provider>
-	);
+	const { container } = render( <StoreSettings /> );
 	return container;
 };
 
@@ -76,16 +60,16 @@ describe( 'Multi-Currency store settings', () => {
 		} );
 	} );
 
+	test( 'store settings button is diabled by default', () => {
+		createContainer();
+		expect(
+			screen.getByRole( 'button', { name: /Save changes/ } )
+		).toBeDisabled();
+	} );
+
 	test( 'store settings are saved with continue button click', () => {
 		createContainer();
 		const { submitStoreSettingsUpdate } = useStoreSettings();
-		containerContext.setIsDirty( true );
-		fireEvent.click(
-			screen.getByRole( 'button', {
-				name: /Save changes/,
-			} )
-		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith( false, false );
 
 		changeableSettings.forEach( ( setting ) => {
 			fireEvent.click( screen.getByTestId( setting ) );

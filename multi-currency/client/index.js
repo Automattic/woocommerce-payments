@@ -32,8 +32,6 @@ const MultiCurrencySettingsPage = () => {
 		setCurrencyCodeToShowSettingsFor( null );
 	};
 
-	const [ isDirty, setIsDirty ] = useState( false );
-
 	return (
 		<MultiCurrencySettingsContext.Provider
 			value={ {
@@ -41,8 +39,6 @@ const MultiCurrencySettingsPage = () => {
 				currencyCodeToShowSettingsFor: currencyCodeToShowSettingsFor,
 				openSingleCurrencySettings: handleOpenSingleCurrencySettings,
 				closeSingleCurrencySettings: handleCloseSingleCurrencySettings,
-				isDirty,
-				setIsDirty,
 			} }
 		>
 			{ ! isSingleCurrencyScreenOpen ? (

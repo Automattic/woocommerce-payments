@@ -5,9 +5,6 @@
  */
 import { createContext } from 'react';
 
-const MultiCurrencySettingsContext = createContext( {
-	isDirty: false,
-	setIsDirty: () => null,
-} );
+const MultiCurrencySettingsContext = createContext();
 
 export default MultiCurrencySettingsContext;

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
@@ -16,7 +16,6 @@ import {
 	SettingsSection,
 } from 'multi-currency/interface/components';
 import PreviewModal from 'multi-currency/components/preview-modal';
-import MultiCurrencySettingsContext from 'multi-currency/context';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
@@ -71,7 +70,7 @@ const StoreSettings = () => {
 
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
-	const { isDirty, setIsDirty } = useContext( MultiCurrencySettingsContext );
+	const [ isDirty, setIsDirty ] = useState( false );
 
 	useEffect( () => {
 		if ( Object.keys( storeSettings ).length ) {
