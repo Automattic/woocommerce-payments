@@ -95,7 +95,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		unset( $_GET );
 		unset( $_REQUEST );
 		parent::tear_down();
-		delete_option( '_wcpay_feature_embedded_kyc' );
 	}
 
 	public function test_filters_registered_properly() {
