@@ -401,7 +401,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'title'       => __( 'Button type', 'woocommerce-payments' ),
 				'type'        => 'select',
 				'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
-				'default'     => 'buy',
+				'default'     => 'default',
 				'desc_tip'    => true,
 				'options'     => [
 					'default' => __( 'Only icon', 'woocommerce-payments' ),

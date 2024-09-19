@@ -190,7 +190,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	public function test_common_get_button_settings() {
 		$this->assertEquals(
 			[
-				'type'   => 'buy',
+				'type'   => 'default',
 				'theme'  => 'dark',
 				'height' => '48',
 				'radius' => '',
