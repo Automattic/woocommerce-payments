@@ -419,12 +419,10 @@ export const TransactionsList = (
 			return {
 				value: feeAmount,
 				display: clickable(
-					0 !== feeAmount
-						? formatCurrency(
-								isCardReader ? txn.amount : txn.fees * -1,
-								currency
-						  )
-						: __( 'N/A', 'woocommerce-payments' )
+					formatCurrency(
+						isCardReader ? txn.amount : txn.fees * -1,
+						currency
+					)
 				),
 			};
 		};
