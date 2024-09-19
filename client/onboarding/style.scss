@@ -26,7 +26,7 @@ body.wcpay-onboarding__body {
 				&-button {
 					color: var(
 						--wp-components-color-accent,
-						var( --wp-admin-theme-color, #3858e9 )
+						$gutenberg-blueberry
 					);
 					cursor: pointer;
 					background-color: transparent;
@@ -39,7 +39,7 @@ body.wcpay-onboarding__body {
 					.gridicons-chevron-left {
 						fill: var(
 							--wp-components-color-accent,
-							var( --wp-admin-theme-color, #3858e9 )
+							$gutenberg-blueberry
 						);
 						margin-right: 2px;
 					}
@@ -97,6 +97,16 @@ body.wcpay-onboarding__body {
 				width: 100%;
 				height: 40px; // Matching the updated WP Component. We can remove this when we update Components version.
 				margin-top: $gap-large;
+				background: var(
+					--wp-components-color-accent,
+					$gutenberg-blueberry
+				); // override the MOX CTA to use Gutenberg Blueberry.
+				&:hover {
+					background: var(
+						--wp-components-color-accent,
+						darken( $gutenberg-blueberry, 10% )
+					); // 10% darker Gutenberg Blueberry on hover.
+				}
 			}
 		}
 
