@@ -103,26 +103,6 @@ export const dashedToCamelCase = ( string ) => {
 };
 
 /**
- * Converts rgba to rgb format, since Stripe Appearances API does not accept rgba format for background.
- *
- * @param {string} color CSS color value.
- * @return {string} Accepted CSS color value.
- */
-export const maybeConvertRGBAtoRGB = ( color ) => {
-	const colorParts = color.match(
-		/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0?(\.\d+)?|1?(\.0+)?)\s*\)$/
-	);
-	if ( colorParts ) {
-		const alpha = colorParts[ 4 ] || 1;
-		const newColorParts = colorParts.slice( 1, 4 ).map( ( part ) => {
-			return Math.round( part * alpha + 255 * ( 1 - alpha ) );
-		} );
-		color = `rgb(${ newColorParts.join( ', ' ) })`;
-	}
-	return color;
-};
-
-/**
  * Searches through array of CSS selectors and returns first visible background color.
  *
  * @param {Array} selectors List of CSS selectors to check.
