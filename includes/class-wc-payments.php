@@ -1544,7 +1544,7 @@ class WC_Payments {
 	 * @return bool Normal WCPay behavior (false, default) or TRUE if the site should only use network-wide saved payment methods.
 	 */
 	public static function is_network_saved_cards_enabled() {
-		return apply_filters( 'wcpay_force_network_saved_cards', false );
+		return Payment_Method::CARD === self::$card_gateway->get_selected_stripe_payment_type_id() && apply_filters( 'wcpay_force_network_saved_cards', false );
 	}
 
 	/**
