@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Remove feature flag to make embedded KYC enabled by default

@@ -18,7 +18,6 @@ import StoreDetails from './steps/store-details';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
-import LoadingStep from 'wcpay/onboarding/steps/loading';
 
 const OnboardingStepper = () => {
 	const handleExit = () => {
@@ -48,13 +47,9 @@ const OnboardingStepper = () => {
 					<StoreDetails />
 				</OnboardingForm>
 			</Step>
-			{ wcpaySettings?.featureFlags?.isEmbeddedKycEnabled ? (
-				<Step name="embedded" showHeading={ false }>
-					<EmbeddedKyc />
-				</Step>
-			) : (
-				<LoadingStep name={ 'loading' } />
-			) }
+			<Step name="embedded" showHeading={ false }>
+				<EmbeddedKyc />
+			</Step>
 		</Stepper>
 	);
 };

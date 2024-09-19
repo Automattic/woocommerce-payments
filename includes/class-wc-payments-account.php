@@ -1877,9 +1877,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		/*
 		 * If we are in the middle of an embedded onboarding, or this is an attempt to finalize PO, go to the KYC page.
 		 * In this case, we don't need to generate a return URL from Stripe, and we can rely on the JS logic to generate the session.
-		 * Currently under feature flag.
 		 */
-		if ( WC_Payments_Features::is_embedded_kyc_enabled() && ( $this->onboarding_service->is_embedded_kyc_in_progress() || $collect_payout_requirements ) ) {
+		if ( $this->onboarding_service->is_embedded_kyc_in_progress() || $collect_payout_requirements ) {
 			// We want to carry over the connect link from value because with embedded KYC
 			// there is no interim step for the user.
 			$additional_args['from'] = WC_Payments_Onboarding_Service::get_from();
