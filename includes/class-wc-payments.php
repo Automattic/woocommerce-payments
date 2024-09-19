@@ -1841,6 +1841,9 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function load_stripe_bnpl_site_messaging() {
+		if ( ! self::get_gateway()->is_enabled() ) {
+			return;
+		}
 		// The messaging element shall not be shown for subscription products.
 		// As we are not too deep into subscriptions API, we follow simplistic approach for now.
 		$is_subscription           = false;
