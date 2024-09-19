@@ -86,20 +86,24 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		rememberMe.removeAttribute( 'disabled', 'disabled' );
 	}, [ checkoutIsProcessing, isBlocksCheckout ] );
 
-	const getPhoneFieldValue = useCallback( () => {
-		let phoneFieldValue = '';
+	const getPhoneField = useCallback( () => {
+		let phoneField = null;
 		if ( isBlocksCheckout ) {
-			phoneFieldValue =
-				document.getElementById( 'phone' )?.value ||
-				document.getElementById( 'shipping-phone' )?.value ||
+			phoneField =
+				document.getElementById( 'phone' ) ||
+				document.getElementById( 'shipping-phone' ) ||
 				// in case of virtual products, the shipping phone is not available. So we also need to check the billing phone.
-				document.getElementById( 'billing-phone' )?.value ||
-				'';
+				document.getElementById( 'billing-phone' );
 		} else {
 			// for classic checkout.
-			phoneFieldValue =
-				document.getElementById( 'billing_phone' )?.value || '';
+			phoneField = document.getElementById( 'billing_phone' );
 		}
+
+		return phoneField;
+	}, [ isBlocksCheckout ] );
+
+	const getPhoneFieldValue = useCallback( () => {
+		let phoneFieldValue = getPhoneField()?.value || '';
 
 		// Take out any non-digit characters, except +.
 		phoneFieldValue = phoneFieldValue.replace( /[^\d+]*/g, '' );
@@ -109,7 +113,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		}
 
 		return phoneFieldValue;
-	}, [ isBlocksCheckout ] );
+	}, [ getPhoneField ] );
 
 	const sendExtensionData = useCallback(
 		( shouldClearData = false ) => {
@@ -221,6 +225,28 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	useEffect( () => {
 		setPhoneNumber( getPhoneFieldValue() );
 	}, [ getPhoneFieldValue, isWCPayWithNewTokenChosen ] );
+
+	useEffect( () => {
+		const phoneField = getPhoneField();
+
+		if ( ! phoneField ) {
+			return;
+		}
+
+		const phoneFieldBlurHandler = () => {
+			// Add timeout to prevent cart update racing condition
+			// while updating the billing phone.
+			setTimeout( () => {
+				setPhoneNumber( getPhoneFieldValue() );
+			}, 0 );
+		};
+
+		phoneField.addEventListener( 'blur', phoneFieldBlurHandler );
+
+		return () => {
+			phoneField.removeEventListener( 'blur', phoneFieldBlurHandler );
+		};
+	}, [ getPhoneField, getPhoneFieldValue, isBlocksCheckout ] );
 
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
