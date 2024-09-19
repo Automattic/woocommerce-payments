@@ -16,7 +16,7 @@ import './style.scss';
 import WooPayDisableFeedback from '../woopay-disable-feedback';
 
 const SaveSettingsSection = ( { disabled = false } ) => {
-	const { saveSettings, isSaving, isLoading } = useSettings();
+	const { saveSettings, isSaving, isLoading, isDirty } = useSettings();
 	const settings = useGetSettings();
 
 	// Keep the inital value of is_payment_request_enabled
@@ -111,7 +111,7 @@ const SaveSettingsSection = ( { disabled = false } ) => {
 			<Button
 				isPrimary
 				isBusy={ isSaving }
-				disabled={ isSaving || isLoading || disabled }
+				disabled={ isSaving || isLoading || disabled || ! isDirty }
 				onClick={ saveOnClick }
 			>
 				{ __( 'Save changes', 'woocommerce-payments' ) }

@@ -37,6 +37,7 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 		protectionSettingsUI,
 		setProtectionSettingsUI,
 		setProtectionSettingsChanged,
+		setIsDirty,
 	} = useContext( FraudPreventionSettingsContext );
 
 	const settingUI = useMemo(
@@ -97,7 +98,10 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						placeholder={ '0' }
 						value={ minItemsCount }
 						type="number"
-						onChange={ setMinItemsCount }
+						onChange={ ( value ) => {
+							setMinItemsCount( value );
+							setIsDirty( true );
+						} }
 						onKeyDown={ ( e ) =>
 							/^[+-.,e]$/m.test( e.key ) && e.preventDefault()
 						}
@@ -121,7 +125,10 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						placeholder={ '0' }
 						type="number"
 						value={ maxItemsCount }
-						onChange={ setMaxItemsCount }
+						onChange={ ( value ) => {
+							setMaxItemsCount( value );
+							setIsDirty( true );
+						} }
 						onKeyDown={ ( e ) =>
 							/^[+-.,e]$/m.test( e.key ) && e.preventDefault()
 						}
