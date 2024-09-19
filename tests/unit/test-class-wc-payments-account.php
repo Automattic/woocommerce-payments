@@ -95,7 +95,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		unset( $_GET );
 		unset( $_REQUEST );
 		parent::tear_down();
-		delete_option( '_wcpay_feature_embedded_kyc' );
 	}
 
 	public function test_filters_registered_properly() {
@@ -842,8 +841,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_onboarding_wizard' );
-
-		update_option( '_wcpay_feature_embedded_kyc', '1' );
 
 		// If embedded KYC is in progress, we expect different URL.
 		$this->mock_onboarding_service

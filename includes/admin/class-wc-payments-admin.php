@@ -349,7 +349,7 @@ class WC_Payments_Admin {
 		}
 
 		// We handle how we register this page slightly differently depending on if details are submitted or not.
-		if ( WC_Payments_Features::is_embedded_kyc_enabled() && $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
+		if ( $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
 			wc_admin_register_page(
 				[
 					'id'         => 'wc-payments-onboarding-kyc',
@@ -368,8 +368,7 @@ class WC_Payments_Admin {
 
 		if ( $should_render_full_menu ) {
 			// Only register if details are submitted and the account is PO.
-			if ( WC_Payments_Features::is_embedded_kyc_enabled()
-				&& $this->account->is_stripe_connected()
+			if ( $this->account->is_stripe_connected()
 				&& $this->account->is_details_submitted()
 				&& $this->account->is_progressive_onboarding_in_progress()
 			) {

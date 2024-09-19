@@ -56,6 +56,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 		protectionSettingsUI,
 		setProtectionSettingsUI,
 		setProtectionSettingsChanged,
+		setIsDirty,
 	} = useContext( FraudPreventionSettingsContext );
 
 	const settingUI = useMemo(
@@ -111,7 +112,10 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 						prefix={ currencySymbol }
 						placeholder={ '0.00' }
 						value={ minAmount.toString() }
-						onChange={ ( val ) => setMinAmount( Number( val ) ) }
+						onChange={ ( val ) => {
+							setMinAmount( Number( val ) );
+							setIsDirty( true );
+						} }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
@@ -130,7 +134,10 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 						prefix={ currencySymbol }
 						placeholder={ '0.00' }
 						value={ maxAmount.toString() }
-						onChange={ ( val ) => setMaxAmount( Number( val ) ) }
+						onChange={ ( val ) => {
+							setMaxAmount( Number( val ) );
+							setIsDirty( true );
+						} }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'

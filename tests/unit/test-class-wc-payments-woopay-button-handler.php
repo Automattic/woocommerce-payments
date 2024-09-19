@@ -521,7 +521,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals(
 			[
-				'type'    => 'buy',
+				'type'    => 'default',
 				'theme'   => 'dark',
 				'height'  => '48',
 				'size'    => 'medium',
