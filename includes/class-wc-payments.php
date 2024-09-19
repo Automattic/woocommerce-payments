@@ -649,6 +649,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-giropay-deprecation-settings-update.php';
 		require_once __DIR__ . '/migrations/class-erase-bnpl-announcement-meta.php';
 		require_once __DIR__ . '/migrations/class-erase-deprecated-flags-and-options.php';
+		require_once __DIR__ . '/migrations/class-manual-capture-payment-method-settings-update.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -659,6 +660,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Giropay_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();

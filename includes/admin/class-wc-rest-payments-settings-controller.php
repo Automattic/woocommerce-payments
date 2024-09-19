@@ -603,6 +603,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$payment_method_ids_to_enable = $request->get_param( 'enabled_payment_method_ids' );
 		$available_payment_methods    = $this->wcpay_gateway->get_upe_available_payment_methods();
 
+		if ( $request->has_param( 'is_manual_capture_enabled' ) && $request->get_param( 'is_manual_capture_enabled' ) ) {
+			$payment_method_ids_to_enable = array_intersect( $payment_method_ids_to_enable, [ 'card', 'link' ] );
+		}
+
 		$payment_method_ids_to_enable = array_values(
 			array_filter(
 				$payment_method_ids_to_enable,
