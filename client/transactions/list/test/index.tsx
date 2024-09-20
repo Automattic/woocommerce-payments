@@ -621,7 +621,7 @@ describe( 'Transactions list', () => {
 
 			const expected = [
 				'"Transaction Id"',
-				'"Date / Time (UTC)"',
+				'"Date / Time"',
 				'Type',
 				'Channel',
 				'"Paid Currency"',
