@@ -252,6 +252,12 @@ class MultiCurrency {
 			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
 
+		if ( ! \WC_Payments_Utils::is_store_api_request() && WC()->is_rest_api_request() ) {
+			// If the request is a REST API request, ensure we default to the store currency and leave price as-is.
+			add_filter( self::FILTER_PREFIX . 'should_return_store_currency', '__return_true' );
+			add_filter( self::FILTER_PREFIX . 'should_convert_product_price', '__return_false' );
+		}
+
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_props_to_wcpay_js_config' ] );
 
 		$this->currency_switcher_block->init_hooks();
