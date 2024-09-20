@@ -802,11 +802,11 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		$this->assertEquals(
 			[
-				'type'         => 'buy',
+				'type'         => 'default',
 				'theme'        => 'dark',
 				'height'       => '48',
 				'locale'       => 'en',
-				'branded_type' => 'long',
+				'branded_type' => 'short',
 				'radius'       => '',
 			],
 			$this->pr->get_button_settings()
