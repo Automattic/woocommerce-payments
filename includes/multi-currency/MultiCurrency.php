@@ -256,6 +256,10 @@ class MultiCurrency {
 			// If the request is a REST API request, ensure we default to the store currency and leave price as-is.
 			add_filter( self::FILTER_PREFIX . 'should_return_store_currency', '__return_true' );
 			add_filter( self::FILTER_PREFIX . 'should_convert_product_price', '__return_false' );
+			$get_default_currency_code = function () {
+				return $this->get_default_currency()->get_code();
+			};
+			add_filter( self::FILTER_PREFIX . 'override_selected_currency', $get_default_currency_code );
 		}
 
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_props_to_wcpay_js_config' ] );
