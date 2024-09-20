@@ -88,13 +88,9 @@ describe( 'Admin merchant progressive onboarding', () => {
 			}
 		);
 
-		// Loading screen before redirect to Stripe.
-		await expect( page ).toMatchElement( 'h1.stepper__heading', {
-			text: 'One last step! Verify your identity with our partner',
-		} );
-
-		// Merchant is redirected away to payments/connect again (because of force fisconnected option)
-		// todo at some point test real Stripe KYC
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		// Check that Stripe Embedded KYC iframe is loaded.
+		await page.waitForSelector(
+			'iframe[data-testid="stripe-connect-ui-layer-stripe-connect-account-onboarding"]'
+		);
 	} );
 } );

@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import { Icon, closeSmall } from '@wordpress/icons';
 import ChevronLeft from 'gridicons/dist/chevron-left';
 
 /**
@@ -12,7 +11,7 @@ import { useStepperContext } from 'components/stepper';
 import { OnboardingSteps } from './types';
 import { useTrackAbandoned } from './tracking';
 import strings from './strings';
-import Logo from 'assets/images/woopayments.svg';
+import WooLogo from 'assets/images/woo-logo.svg';
 import './style.scss';
 
 interface Props {
@@ -41,17 +40,13 @@ const Step: React.FC< Props > = ( { name, children, showHeading = true } ) => {
 					<ChevronLeft />
 					{ strings.back }
 				</button>
-				<img
-					src={ Logo }
-					alt="WooPayments"
-					className="stepper__nav-logo"
-				/>
+				<img src={ WooLogo } alt="Woo" className="stepper__nav-logo" />
 				<button
 					type="button"
 					className="stepper__nav-button"
 					onClick={ handleExit }
 				>
-					<Icon icon={ closeSmall } />
+					{ strings.cancel }
 				</button>
 			</div>
 			<div className="stepper__wrapper">

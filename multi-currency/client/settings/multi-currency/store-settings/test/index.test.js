@@ -60,15 +60,16 @@ describe( 'Multi-Currency store settings', () => {
 		} );
 	} );
 
+	test( 'store settings button is diabled by default', () => {
+		createContainer();
+		expect(
+			screen.getByRole( 'button', { name: /Save changes/ } )
+		).toBeDisabled();
+	} );
+
 	test( 'store settings are saved with continue button click', () => {
 		createContainer();
 		const { submitStoreSettingsUpdate } = useStoreSettings();
-		fireEvent.click(
-			screen.getByRole( 'button', {
-				name: /Save changes/,
-			} )
-		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith( false, false );
 
 		changeableSettings.forEach( ( setting ) => {
 			fireEvent.click( screen.getByTestId( setting ) );
