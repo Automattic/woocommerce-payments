@@ -11,12 +11,6 @@ use WCPay\MultiCurrency\FrontendCurrencies;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
-require_once __DIR__ . '/../helpers/class-wc-helper-order.php';
-require_once __DIR__ . '/../helpers/class-wc-helper-product.php';
-require_once __DIR__ . '/../helpers/class-wc-helper-subscriptions-product.php';
-require_once __DIR__ . '/../helpers/class-wc-helper-shipping.php';
-require_once __DIR__ . '/../helpers/class-phpunit-utils.php';
-
 /**
  * FrontendCurrencies unit tests.
  *
