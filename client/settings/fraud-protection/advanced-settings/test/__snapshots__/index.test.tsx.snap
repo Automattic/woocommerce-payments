@@ -4743,6 +4743,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
             </a>
             <button
               class="components-button is-primary"
+              disabled=""
               type="button"
             >
               Save Changes
@@ -5568,6 +5569,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
           </a>
           <button
             class="components-button is-primary"
+            disabled=""
             type="button"
           >
             Save Changes

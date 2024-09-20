@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Disable save changes button until a setting has changed.

@@ -40,6 +40,7 @@ describe( 'International billing address card', () => {
 		setProtectionSettingsUI: setSettings,
 		protectionSettingsChanged: false,
 		setProtectionSettingsChanged: jest.fn(),
+		setIsDirty: jest.fn(),
 	};
 	global.wcSettings = {
 		admin: {
