@@ -734,7 +734,7 @@ export const TransactionsList = (
 		} else {
 			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
 				if ( column.labelInCsv ) {
-					column.label = column.labelInCsv;
+					return { ...column, label: column.labelInCsv };
 				}
 				return column;
 			} );
