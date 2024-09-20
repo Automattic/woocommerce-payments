@@ -9,7 +9,7 @@ import { recordEvent } from 'wcpay/tracks';
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'multi-currency/interface/functions';
+import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from '../loadable';
 import './style.scss';
 

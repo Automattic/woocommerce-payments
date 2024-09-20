@@ -37,10 +37,7 @@ import Page from 'components/page';
 import { TestModeNotice } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
-import {
-	formatExplicitCurrency,
-	formatExportAmount,
-} from 'multi-currency/interface/functions';
+import { formatExplicitCurrency, formatExportAmount } from 'utils/currency';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';

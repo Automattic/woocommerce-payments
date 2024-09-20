@@ -11,6 +11,7 @@ import { useDispatch } from '@wordpress/data';
 import FraudProtection from '..';
 import {
 	useCurrentProtectionLevel,
+	useCurrencies,
 	useAdvancedFraudProtectionSettings,
 	useSettings,
 } from 'wcpay/data';
@@ -28,6 +29,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useAdvancedFraudProtectionSettings: jest.fn(),
 	useCurrentProtectionLevel: jest.fn(),
 	useSettings: jest.fn(),
+	useCurrencies: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -40,6 +42,10 @@ jest.mock( '@woocommerce/components', () => ( {
 
 const mockUseCurrentProtectionLevel = useCurrentProtectionLevel as jest.MockedFunction<
 	() => [ string, ( level: string ) => void ]
+>;
+
+const mockUseCurrencies = useCurrencies as jest.MockedFunction<
+	() => { currencies: Record< string, any >; isLoading: boolean }
 >;
 
 const mockUseAdvancedFraudProtectionSettings = useAdvancedFraudProtectionSettings as jest.MockedFunction<
@@ -64,6 +70,16 @@ describe( 'FraudProtection', () => {
 			'standard',
 			jest.fn(),
 		] );
+		mockUseCurrencies.mockReturnValue( {
+			isLoading: false,
+			currencies: {
+				available: {
+					EUR: { name: 'Euro', symbol: '€' },
+					USD: { name: 'US Dollar', symbol: '$' },
+					PLN: { name: 'Polish złoty', symbol: 'zł' },
+				},
+			},
+		} );
 
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			[],
