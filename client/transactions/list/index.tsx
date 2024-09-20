@@ -94,6 +94,7 @@ interface Column extends TableCardColumn {
 		| 'deposit';
 	visible?: boolean;
 	cellClassName?: string;
+	labelInCsv?: string;
 }
 
 const getPaymentSourceDetails = ( txn: Transaction ) => {
@@ -156,11 +157,9 @@ const getColumns = (
 		},
 		{
 			key: 'date',
-			label: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
-			screenReaderLabel: __(
-				'Date and time (UTC)',
-				'woocommerce-payments'
-			),
+			label: __( 'Date / Time', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
+			labelInCsv: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',
@@ -717,7 +716,7 @@ export const TransactionsList = (
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
+		const downloadType = 1 > rows.length ? 'endpoint' : 'browser';
 
 		recordEvent( 'wcpay_transactions_download_csv_click', {
 			location: props.depositId ? 'deposit_details' : 'transactions',
@@ -733,9 +732,15 @@ export const TransactionsList = (
 				endpointExport( '' );
 			}
 		} else {
+			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
+				if ( column.labelInCsv ) {
+					column.label = column.labelInCsv;
+				}
+				return column;
+			} );
 			downloadCSVFile(
 				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( columnsToDisplay, rows )
+				generateCSVDataFromTable( columnsToDisplayInCsv, rows )
 			);
 		}
 
