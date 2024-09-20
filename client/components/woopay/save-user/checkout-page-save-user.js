@@ -13,6 +13,7 @@ import {
 import {
 	VALIDATION_STORE_KEY,
 	CHECKOUT_STORE_KEY,
+	CART_STORE_KEY,
 } from '@woocommerce/block-data'; // eslint-disable-line import/no-unresolved
 
 /**
@@ -45,6 +46,16 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 	const checkoutIsProcessing = useSelect( ( select ) =>
 		select( CHECKOUT_STORE_KEY ).isProcessing()
+	);
+
+	const { billingAddressPhone, isCustomerDataUpdating } = useSelect(
+		( select ) => {
+			const store = select( CART_STORE_KEY );
+			return {
+				billingAddressPhone: store.getCartData()?.billingAddress?.phone,
+				isCustomerDataUpdating: store.isCustomerDataUpdating(),
+			};
+		}
 	);
 
 	const isRegisteredUser = useWooPayUser();
@@ -226,27 +237,19 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		setPhoneNumber( getPhoneFieldValue() );
 	}, [ getPhoneFieldValue, isWCPayWithNewTokenChosen ] );
 
+	// Update the phone number when the billing phone is updated.
 	useEffect( () => {
-		const phoneField = getPhoneField();
-
-		if ( ! phoneField ) {
-			return;
-		}
-
-		const phoneFieldBlurHandler = () => {
-			// Add timeout to prevent cart update racing condition
-			// while updating the billing phone.
+		if ( isCustomerDataUpdating ) {
 			setTimeout( () => {
 				setPhoneNumber( getPhoneFieldValue() );
 			}, 0 );
-		};
-
-		phoneField.addEventListener( 'blur', phoneFieldBlurHandler );
-
-		return () => {
-			phoneField.removeEventListener( 'blur', phoneFieldBlurHandler );
-		};
-	}, [ getPhoneField, getPhoneFieldValue, isBlocksCheckout ] );
+		}
+	}, [
+		billingAddressPhone,
+		setPhoneNumber,
+		getPhoneFieldValue,
+		isCustomerDataUpdating,
+	] );
 
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
