@@ -46,7 +46,7 @@ class FrontendPrices {
 	 * @return void
 	 */
 	public function init_hooks() {
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() && ! WC()->is_rest_api_request() ) {
+		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! WC()->is_rest_api_request() ) {
 			// Simple product price hooks.
 			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 99, 2 );
 			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price_string' ], 99, 2 );
