@@ -716,7 +716,7 @@ export const TransactionsList = (
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
-		const downloadType = 1 > rows.length ? 'endpoint' : 'browser';
+		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
 		recordEvent( 'wcpay_transactions_download_csv_click', {
 			location: props.depositId ? 'deposit_details' : 'transactions',
