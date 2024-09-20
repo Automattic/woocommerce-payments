@@ -48,14 +48,13 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		select( CHECKOUT_STORE_KEY ).isProcessing()
 	);
 
-	const { billingAddressPhone, isCustomerDataUpdating } = useSelect(
-		( select ) => {
-			const store = select( CART_STORE_KEY );
-			return {
-				billingAddressPhone: store.getCartData()?.billingAddress?.phone,
-				isCustomerDataUpdating: store.isCustomerDataUpdating(),
-			};
-		}
+	const billingAddressPhone = useSelect(
+		( select ) =>
+			select( CART_STORE_KEY ).getCartData()?.billingAddress?.phone
+	);
+
+	const isCustomerDataUpdating = useSelect( ( select ) =>
+		select( CART_STORE_KEY ).isCustomerDataUpdating()
 	);
 
 	const isRegisteredUser = useWooPayUser();
