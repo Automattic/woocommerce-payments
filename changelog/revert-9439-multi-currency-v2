@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Revert "Decoupled Multi-currency module from gateway dependencies."
+
+

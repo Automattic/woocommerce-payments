@@ -11,10 +11,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import {
-	formatCurrency,
-	formatExplicitCurrency,
-} from 'multi-currency/interface/functions';
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import './style.scss';
 
