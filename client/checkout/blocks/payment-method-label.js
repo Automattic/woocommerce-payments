@@ -68,6 +68,8 @@ export default ( {
 		window.wcBlocksCheckoutData?.storeCountry ||
 		'US';
 
+	const isCardPaymentMethod = upeName === 'card';
+
 	return (
 		<>
 			<div className="payment-method-label">
@@ -79,11 +81,23 @@ export default ( {
 						{ __( 'Test Mode', 'woocommerce-payments' ) }
 					</span>
 				) }
-				<WooPaymentMethodsLogos
-					maxElements={ 4 }
-					paymentMethods={ paymentMethods }
-					breakpointConfigs={ breakpointConfigs }
-				/>
+				{ isCardPaymentMethod ? (
+					<WooPaymentMethodsLogos
+						maxElements={ 4 }
+						paymentMethods={ paymentMethods }
+						breakpointConfigs={ breakpointConfigs }
+					/>
+				) : (
+					<img
+						className="payment-methods--logos"
+						src={
+							upeAppearanceTheme === 'night'
+								? upeConfig.darkIcon
+								: upeConfig.icon
+						}
+						alt={ upeConfig.title }
+					/>
+				) }
 			</div>
 			{ bnplMethods.includes( upeName ) &&
 				( upeConfig.countries.length === 0 ||
