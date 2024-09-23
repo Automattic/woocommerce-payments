@@ -9,13 +9,16 @@ import { normalizeCurrencyToMinorUnit } from '../utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
-import { WooPaymentMethodsLogos } from 'wcpay/components/woo-payment-methods-logos';
+import { WooPaymentMethodsLogos } from 'components/woo-payment-methods-logos';
 import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
 import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
 import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
 import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
+import JCBCard from 'assets/images/payment-method-icons/jcb.svg?asset';
+import CartesBancaires from 'assets/images/payment-method-icons/cartes_bancaires.svg?asset';
+import UnionPay from 'assets/images/payment-method-icons/unionpay.svg?asset';
 
-const paymentMethods = [
+const creditCardPaymentMethods = [
 	{
 		name: 'visa',
 		component: Visa,
@@ -32,8 +35,18 @@ const paymentMethods = [
 		name: 'discover',
 		component: Discover,
 	},
-	// TODO: Missing Diners Club
-	// TODO: What other card payment methods should be here?
+	{
+		name: 'jcb',
+		component: JCBCard,
+	},
+	{
+		name: 'cartes_bancaires',
+		component: CartesBancaires,
+	},
+	{
+		name: 'unionpay',
+		component: UnionPay,
+	},
 ];
 
 const breakpointConfigs = [
@@ -84,7 +97,7 @@ export default ( {
 				{ isCardPaymentMethod ? (
 					<WooPaymentMethodsLogos
 						maxElements={ 4 }
-						paymentMethods={ paymentMethods }
+						paymentMethods={ creditCardPaymentMethods }
 						breakpointConfigs={ breakpointConfigs }
 					/>
 				) : (
