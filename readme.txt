@@ -94,6 +94,24 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.3.0-test-2 - unreleased =
+* Add - Add compatibility with the buttonAttributes API from Woo Blocks
+* Add - Add rate limiter to compatibility data updates
+* Add - Disable save changes button until a setting has changed.
+* Add - Updates to the Embedded KYC to ensure compatibility with Progressive Onboarding
+* Fix - Fixed CC form input fields appearance when using RGBA
+* Fix - Fixed invalid appearance warnings
+* Fix - Fix WooPay pre-checking place order bug when buying a subscription.
+* Fix - Handle loadError in ECE for Block Context Initialization.
+* Fix - Prevent failures and notices related to trying to schedule AS jobs before init.
+* Update - Default express checkout button label to "Only icon".
+* Update - Remove feature flag to make embedded KYC enabled by default
+* Update - Some minor styling updates on the Onboarding form.
+* Update - Update express payment methods with a title, description and gatewayId
+* Dev - Fix gutenberg blueberry focus color
+* Dev - Fix progressive onboarding e2e test
+* Dev - Some refactors to embedded KYC logic.
+
 = 8.2.1 - 2024-09-13 =
 * Fix - Create div container element with JS dynamically.
 
