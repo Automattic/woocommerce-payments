@@ -57,17 +57,17 @@ button.wcpay-stripelink-modal-trigger:hover {
 			width: 100%;
 
 			> .payment-method-label__label {
-				grid-area: label;
+				grid-area: label !important;
 				width: 100%;
 			}
 
-			.payment-methods--logos {
-				grid-area: logos;
+			> .payment-methods--logos {
+				grid-area: logos !important;
 				justify-self: end;
 			}
 
-			.test-mode.badge {
-				grid-area: badge;
+			> .test-mode.badge {
+				grid-area: badge !important;
 				background-color: #fff2d7;
 				border-radius: 4px;
 				padding: 4px 6px;

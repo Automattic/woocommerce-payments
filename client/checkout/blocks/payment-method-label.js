@@ -9,51 +9,7 @@ import { normalizeCurrencyToMinorUnit } from '../utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
-import { WooPaymentMethodsLogos } from 'components/woo-payment-methods-logos';
-import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
-import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
-import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
-import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
-import JCBCard from 'assets/images/payment-method-icons/jcb.svg?asset';
-import CartesBancaires from 'assets/images/payment-method-icons/cartes_bancaires.svg?asset';
-import UnionPay from 'assets/images/payment-method-icons/unionpay.svg?asset';
-
-const creditCardPaymentMethods = [
-	{
-		name: 'visa',
-		component: Visa,
-	},
-	{
-		name: 'mastercard',
-		component: Mastercard,
-	},
-	{
-		name: 'amex',
-		component: Amex,
-	},
-	{
-		name: 'discover',
-		component: Discover,
-	},
-	{
-		name: 'jcb',
-		component: JCBCard,
-	},
-	{
-		name: 'cartes_bancaires',
-		component: CartesBancaires,
-	},
-	{
-		name: 'unionpay',
-		component: UnionPay,
-	},
-];
-
-const breakpointConfigs = [
-	{ breakpoint: 550, maxElements: 2 },
-	{ breakpoint: 833, maxElements: 4 },
-	{ breakpoint: 960, maxElements: 2 },
-];
+import GenericCardIcon from 'assets/images/payment-method-icons/generic-card.svg?asset';
 
 export default ( {
 	api,
@@ -81,7 +37,11 @@ export default ( {
 		window.wcBlocksCheckoutData?.storeCountry ||
 		'US';
 
-	const isCardPaymentMethod = upeName === 'card';
+	let icon =
+		upeAppearanceTheme === 'night' ? upeConfig.darkIcon : upeConfig.icon;
+	if ( upeName === 'card' ) {
+		icon = GenericCardIcon;
+	}
 
 	return (
 		<>
@@ -94,23 +54,11 @@ export default ( {
 						{ __( 'Test Mode', 'woocommerce-payments' ) }
 					</span>
 				) }
-				{ isCardPaymentMethod ? (
-					<WooPaymentMethodsLogos
-						maxElements={ 4 }
-						paymentMethods={ creditCardPaymentMethods }
-						breakpointConfigs={ breakpointConfigs }
-					/>
-				) : (
-					<img
-						className="payment-methods--logos"
-						src={
-							upeAppearanceTheme === 'night'
-								? upeConfig.darkIcon
-								: upeConfig.icon
-						}
-						alt={ upeConfig.title }
-					/>
-				) }
+				<img
+					className="payment-methods--logos"
+					src={ icon }
+					alt={ upeConfig.title }
+				/>
 			</div>
 			{ bnplMethods.includes( upeName ) &&
 				( upeConfig.countries.length === 0 ||
