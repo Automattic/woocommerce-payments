@@ -25,6 +25,8 @@ import {
 import './style.scss';
 import { recordEvent } from 'tracks';
 import InlineNotice from 'components/inline-notice';
+import { DepositFailureNotice } from 'components/deposits-overview/deposit-notices';
+import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 
 const daysOfWeek = [
 	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
@@ -208,6 +210,17 @@ const Deposits = () => {
 		accountStatus: { accountLink },
 	} = useContext( WCPaySettingsContext );
 
+	const { account, overview } = useSelectedCurrencyOverview();
+	const selectedCurrency =
+		overview?.currency || wcpaySettings.accountDefaultCurrency;
+
+	const hasErroredExternalAccount =
+		account?.default_external_accounts?.some(
+			( externalAccount ) =>
+				externalAccount.currency === selectedCurrency &&
+				externalAccount.status === 'errored'
+		) ?? false;
+
 	return (
 		<Card className="deposits">
 			<CardBody>
@@ -219,31 +232,35 @@ const Deposits = () => {
 					<h4>
 						{ __( 'Deposit bank account', 'woocommerce-payments' ) }
 					</h4>
-					<p className="deposits__bank-information-help">
-						{ __(
-							'Manage and update your deposit account information to receive payments and deposits.',
-							'woocommerce-payments'
-						) }{ ' ' }
-						{ accountLink && (
-							<ExternalLink
-								href={ accountLink }
-								onClick={ () => {
-									recordEvent(
-										'wcpay_settings_deposits_manage_in_stripe_click'
-									);
-									recordEvent(
-										'wcpay_account_details_link_clicked',
-										{ source: 'settings-deposits' }
-									);
-								} }
-							>
-								{ __(
-									'Manage in Stripe',
-									'woocommerce-payments'
-								) }
-							</ExternalLink>
-						) }
-					</p>
+					{ hasErroredExternalAccount ? (
+						<DepositFailureNotice currency={ selectedCurrency } />
+					) : (
+						<p className="deposits__bank-information-help">
+							{ __(
+								'Manage and update your deposit account information to receive payments and deposits.',
+								'woocommerce-payments'
+							) }{ ' ' }
+							{ accountLink && (
+								<ExternalLink
+									href={ accountLink }
+									onClick={ () => {
+										recordEvent(
+											'wcpay_settings_deposits_manage_in_stripe_click'
+										);
+										recordEvent(
+											'wcpay_account_details_link_clicked',
+											{ source: 'settings-deposits' }
+										);
+									} }
+								>
+									{ __(
+										'Manage in Stripe',
+										'woocommerce-payments'
+									) }
+								</ExternalLink>
+							) }
+						</p>
+					) }
 				</div>
 			</CardBody>
 		</Card>
