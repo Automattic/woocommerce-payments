@@ -9,7 +9,7 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { getFilters, getAdvancedFilters } from './config';
-import { formatCurrencyName } from 'multi-currency/interface/functions';
+import { formatCurrencyName } from '../../utils/currency';
 import { recordEvent } from 'tracks';
 
 interface TransactionsFiltersProps {

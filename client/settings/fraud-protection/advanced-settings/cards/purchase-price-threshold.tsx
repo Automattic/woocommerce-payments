@@ -15,7 +15,7 @@ import AmountInput from 'wcpay/components/amount-input';
 /**
  * Internal dependencies
  */
-import { getCurrency } from 'multi-currency/interface/functions';
+import { getCurrency } from 'utils/currency';
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudProtectionRuleDescription from '../rule-description';
