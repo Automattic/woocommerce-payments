@@ -5,14 +5,12 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
  * WC_Payments_Localization_Service.
  */
-class WC_Payments_Localization_Service implements MultiCurrencyLocalizationInterface {
+class WC_Payments_Localization_Service {
 	const WCPAY_CURRENCY_FORMAT_TRANSIENT = 'wcpay_currency_format';
 	const WCPAY_LOCALE_INFO_TRANSIENT     = 'wcpay_locale_info';
 

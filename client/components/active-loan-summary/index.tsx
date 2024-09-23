@@ -18,7 +18,7 @@ import { dateI18n } from '@wordpress/date';
 /**
  * Internal dependencies.
  */
-import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+import { formatExplicitCurrency } from 'utils/currency';
 import Loadable from 'components/loadable';
 import { useActiveLoanSummary } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';

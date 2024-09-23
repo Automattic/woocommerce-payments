@@ -16,7 +16,7 @@ import OrderLink from 'components/order-link';
 import { getDetailsURL } from 'components/details-link';
 import { reasons } from '../strings';
 import { formatStringValue } from 'utils';
-import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+import { formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 import Loadable from 'components/loadable';
 import { Dispute } from 'wcpay/types/disputes';

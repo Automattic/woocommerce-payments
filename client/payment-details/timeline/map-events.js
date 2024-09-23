@@ -26,7 +26,7 @@ import {
 	formatCurrency,
 	formatFX,
 	formatExplicitCurrency,
-} from 'multi-currency/interface/functions';
+} from 'utils/currency';
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
