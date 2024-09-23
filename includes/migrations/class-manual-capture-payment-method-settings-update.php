@@ -7,6 +7,7 @@
 
 namespace WCPay\Migrations;
 
+use WCPay\Constants\Payment_Method;
 use WC_Payment_Gateway_WCPay;
 
 defined( 'ABSPATH' ) || exit;
@@ -72,13 +73,13 @@ class Manual_Capture_Payment_Method_Settings_Update {
 			$filtered_payment_methods = array_filter(
 				$enabled_payment_methods,
 				function ( $method ) {
-					return in_array( $method, [ 'card', 'link' ], true );
+					return in_array( $method, [ Payment_Method::CARD, Payment_Method::LINK ], true );
 				}
 			);
 
 			foreach ( $this->all_registered_gateways as $gateway ) {
 				$stripe_id = $gateway->get_stripe_id();
-				if ( 'card' !== $stripe_id && 'link' !== $stripe_id ) {
+				if ( Payment_Method::CARD !== $stripe_id && Payment_Method::LINK !== $stripe_id ) {
 					$gateway->disable();
 				}
 				$gateway->update_option( 'upe_enabled_payment_method_ids', $filtered_payment_methods );
