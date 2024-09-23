@@ -44,44 +44,57 @@ button.wcpay-stripelink-modal-trigger:hover {
 
 .wc-block-checkout__payment-method {
 	.wc-block-components-radio-control__label {
-		display: grid !important;
-		justify-content: normal !important;
-		grid-template-columns: max-content auto;
-		grid-template-areas: 'label badge logos';
-		align-items: center;
-		gap: 8px;
 		width: 100%;
+		display: block !important;
 
-		> .payment-method-label__label {
-			grid-area: label;
+		> .payment-method-label {
+			display: grid !important;
+			justify-content: normal !important;
+			grid-template-columns: max-content auto;
+			grid-template-areas: 'label badge logos';
+			align-items: center;
+			gap: 8px;
 			width: 100%;
-		}
 
-		.payment-methods--logos {
-			grid-area: logos;
-			justify-self: end;
-		}
-
-		.test-mode.badge {
-			grid-area: badge;
-			background-color: #fff2d7;
-			border-radius: 4px;
-			padding: 4px 6px;
-			font-size: 12px;
-			font-weight: 400;
-			line-height: 16px;
-			color: #4d3716;
-			justify-self: start;
-			width: max-content;
-		}
-
-		@include breakpoint( '<480px' ) {
-			grid-template-areas: 'label logos' 'badge badge';
-			grid-template-columns: 1fr auto;
-			align-items: start;
+			> .payment-method-label__label {
+				grid-area: label;
+				width: 100%;
+			}
 
 			.payment-methods--logos {
+				grid-area: logos;
 				justify-self: end;
+			}
+
+			.test-mode.badge {
+				grid-area: badge;
+				background-color: #fff2d7;
+				border-radius: 4px;
+				padding: 4px 6px;
+				font-size: 12px;
+				font-weight: 400;
+				line-height: 16px;
+				color: #4d3716;
+				justify-self: start;
+				width: max-content;
+			}
+
+			@include breakpoint( '<480px' ) {
+				grid-template-areas: 'label logos' 'badge badge';
+				grid-template-columns: 1fr auto;
+				align-items: start;
+
+				.payment-methods--logos {
+					justify-self: end;
+				}
+			}
+		}
+
+		.bnpl-message {
+			width: 100%;
+
+			@include breakpoint( '<480px' ) {
+				margin-top: 8px;
 			}
 		}
 	}

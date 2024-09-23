@@ -70,44 +70,46 @@ export default ( {
 
 	return (
 		<>
-			<span className="payment-method-label__label">
-				{ upeConfig.title }
-			</span>
-			{ isTestMode && (
-				<span className="test-mode badge">
-					{ __( 'Test Mode', 'woocommerce-payments' ) }
+			<div className="payment-method-label">
+				<span className="payment-method-label__label">
+					{ upeConfig.title }
 				</span>
-			) }
-			<WooPaymentMethodsLogos
-				maxElements={ 4 }
-				paymentMethods={ paymentMethods }
-				breakpointConfigs={ breakpointConfigs }
-			/>
-			{/*{ bnplMethods.includes( upeName ) &&*/}
-			{/*	( upeConfig.countries.length === 0 ||*/}
-			{/*		upeConfig.countries.includes( currentCountry ) ) &&*/}
-			{/*	amount > 0 &&*/}
-			{/*	currentCountry && (*/}
-			{/*		<>*/}
-			{/*			<Elements*/}
-			{/*				stripe={ api.getStripeForUPE( upeName ) }*/}
-			{/*				options={ {*/}
-			{/*					appearance: stripeAppearance ?? {},*/}
-			{/*				} }*/}
-			{/*			>*/}
-			{/*				<PaymentMethodMessagingElement*/}
-			{/*					options={ {*/}
-			{/*						amount: amount || 0,*/}
-			{/*						currency:*/}
-			{/*							cartData.totals.currency_code || 'USD',*/}
-			{/*						paymentMethodTypes: [ upeName ],*/}
-			{/*						countryCode: currentCountry,*/}
-			{/*						displayType: 'promotional_text',*/}
-			{/*					} }*/}
-			{/*				/>*/}
-			{/*			</Elements>*/}
-			{/*		</>*/}
-			{/*	) }*/}
+				{ isTestMode && (
+					<span className="test-mode badge">
+						{ __( 'Test Mode', 'woocommerce-payments' ) }
+					</span>
+				) }
+				<WooPaymentMethodsLogos
+					maxElements={ 4 }
+					paymentMethods={ paymentMethods }
+					breakpointConfigs={ breakpointConfigs }
+				/>
+			</div>
+			{ bnplMethods.includes( upeName ) &&
+				( upeConfig.countries.length === 0 ||
+					upeConfig.countries.includes( currentCountry ) ) &&
+				amount > 0 &&
+				currentCountry && (
+					<div className="bnpl-message">
+						<Elements
+							stripe={ api.getStripeForUPE( upeName ) }
+							options={ {
+								appearance: stripeAppearance ?? {},
+							} }
+						>
+							<PaymentMethodMessagingElement
+								options={ {
+									amount: amount || 0,
+									currency:
+										cartData.totals.currency_code || 'USD',
+									paymentMethodTypes: [ upeName ],
+									countryCode: currentCountry,
+									displayType: 'promotional_text',
+								} }
+							/>
+						</Elements>
+					</div>
+				) }
 		</>
 	);
 };
