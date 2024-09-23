@@ -13,7 +13,7 @@ import { Button } from '@wordpress/components';
  */
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
-import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+import { formatExplicitCurrency } from 'utils/currency';
 import { recordEvent } from 'tracks';
 import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';

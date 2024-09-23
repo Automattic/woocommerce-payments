@@ -9,11 +9,11 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { useAccountDomesticCurrency } from '../../data';
 import {
+	useAccountDomesticCurrency,
 	useCurrencies,
 	useEnabledCurrencies,
-} from 'multi-currency/interface/data';
+} from '../../data';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import InlineNotice from 'components/inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
