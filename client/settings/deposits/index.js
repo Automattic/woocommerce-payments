@@ -233,7 +233,9 @@ const Deposits = () => {
 						{ __( 'Deposit bank account', 'woocommerce-payments' ) }
 					</h4>
 					{ hasErroredExternalAccount ? (
-						<DepositFailureNotice currency={ selectedCurrency } />
+						<DepositFailureNotice
+							updateAccountLink={ accountLink }
+						/>
 					) : (
 						<p className="deposits__bank-information-help">
 							{ __(

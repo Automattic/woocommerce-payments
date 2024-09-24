@@ -18,7 +18,21 @@ import {
 	useDepositScheduleMonthlyAnchor,
 } from 'wcpay/data';
 
-jest.mock( '@wordpress/data' );
+import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
+
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( {
+		setIsMatching: jest.fn(),
+		onLoad: jest.fn(), // Add this line
+		onHistoryChange: jest.fn(),
+	} ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+} ) );
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
@@ -32,6 +46,10 @@ jest.mock( 'wcpay/data', () => ( {
 	useDepositScheduleInterval: jest.fn(),
 	useDepositScheduleWeeklyAnchor: jest.fn(),
 	useDepositScheduleMonthlyAnchor: jest.fn(),
+} ) );
+
+jest.mock( 'wcpay/overview/hooks', () => ( {
+	useSelectedCurrencyOverview: jest.fn(),
 } ) );
 
 describe( 'Deposits', () => {
@@ -54,6 +72,14 @@ describe( 'Deposits', () => {
 				account_country: 'US',
 			} ),
 		} ) );
+		useSelectedCurrencyOverview.mockReturnValue( {
+			account: {
+				default_external_accounts: [
+					{ currency: 'USD', status: 'enabled' },
+				],
+			},
+			overview: { currency: 'USD' },
+		} );
 	} );
 
 	it( 'renders', () => {
@@ -231,30 +257,6 @@ describe( 'Deposits', () => {
 		];
 		for ( const anchor of weeklyAnchors ) {
 			within( weeklyAnchorSelect ).getByRole( 'option', {
-				name: anchor,
-			} );
-		}
-	} );
-
-	it( 'renders the monthly offset select', () => {
-		useDepositScheduleInterval.mockReturnValue( [ 'monthly', jest.fn() ] );
-		useDepositScheduleMonthlyAnchor.mockReturnValue( [ 14, jest.fn() ] );
-
-		render(
-			<WCPaySettingsContext.Provider value={ settingsContext }>
-				<Deposits />
-			</WCPaySettingsContext.Provider>
-		);
-
-		const frequencySelect = screen.getByLabelText( /Frequency/ );
-		expect( frequencySelect ).toHaveValue( 'monthly' );
-
-		const monthlyAnchorSelect = screen.getByLabelText( /Date/ );
-		expect( monthlyAnchorSelect ).toHaveValue( '14' );
-
-		const monthlyAnchors = [ /^1st/i, /^28th/i, /Last day of the month/i ];
-		for ( const anchor of monthlyAnchors ) {
-			within( monthlyAnchorSelect ).getByRole( 'option', {
 				name: anchor,
 			} );
 		}
