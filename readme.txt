@@ -95,6 +95,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 8.2.2 - 2024-09-24 =
+* Fix - Fix WooPay pre-checking place order bug when buying a subscription.
 
 
 = 8.2.1 - 2024-09-13 =
