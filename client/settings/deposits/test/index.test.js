@@ -261,4 +261,63 @@ describe( 'Deposits', () => {
 			} );
 		}
 	} );
+
+	it( 'renders the deposit failure notice if there is an errored bank account', () => {
+		useSelectedCurrencyOverview.mockReturnValue( {
+			account: {
+				default_external_accounts: [
+					{ currency: 'USD', status: 'errored' },
+				],
+			},
+			overview: { currency: 'USD' },
+		} );
+
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		const depositsMessage = screen.getByText(
+			/Deposits are currently paused because a recent deposit failed./,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+		expect( depositsMessage ).toBeInTheDocument();
+
+		expect(
+			screen.queryByText(
+				/Manage and update your deposit account information to receive payments and deposits./,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeFalsy();
+	} );
+
+	it( 'does not render the deposit failure notice if there is no errored bank account', () => {
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				/Deposits are currently paused because a recent deposit failed./,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeFalsy();
+
+		const depositsMessage = screen.getByText(
+			/Manage and update your deposit account information to receive payments and deposits./,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+		expect( depositsMessage ).toBeInTheDocument();
+	} );
 } );
