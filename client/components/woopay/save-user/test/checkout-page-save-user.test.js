@@ -323,23 +323,23 @@ describe( 'CheckoutPageSaveUser', () => {
 		userEvent.click( saveMyInfoCheckbox );
 		expect( saveMyInfoCheckbox ).toBeChecked();
 		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
+			'2015555553'
+		);
+
+		userEvent.click( saveMyInfoCheckbox );
+		document.getElementById( 'billing-phone' ).remove();
+		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
+
+		// click on the checkbox to hide/show it again (and reset the previously entered values)
+		userEvent.click( saveMyInfoCheckbox );
+		expect( saveMyInfoCheckbox ).toBeChecked();
+		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
 			'2015555552'
 		);
 
 		// click on the checkbox to hide/show it again (and reset the previously entered values)
 		userEvent.click( saveMyInfoCheckbox );
 		document.getElementById( 'shipping-phone' ).remove();
-		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
-
-		userEvent.click( saveMyInfoCheckbox );
-		expect( saveMyInfoCheckbox ).toBeChecked();
-		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
-			'2015555553'
-		);
-
-		// click on the checkbox to hide/show it again (and reset the previously entered values)
-		userEvent.click( saveMyInfoCheckbox );
-		document.getElementById( 'billing-phone' ).remove();
 		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
 
 		userEvent.click( saveMyInfoCheckbox );

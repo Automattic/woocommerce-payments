@@ -49,6 +49,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		select( CHECKOUT_STORE_KEY ).isProcessing()
 	);
 
+	const isBillingSameAsShipping = useSelect( ( select ) =>
+		select( CHECKOUT_STORE_KEY ).getUseShippingAsBilling()
+	);
+
 	const billingAddressPhone = useSelect(
 		( select ) =>
 			select( CART_STORE_KEY ).getCartData()?.billingAddress?.phone
@@ -97,24 +101,19 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		rememberMe.removeAttribute( 'disabled', 'disabled' );
 	}, [ checkoutIsProcessing, isBlocksCheckout ] );
 
-	const getPhoneField = useCallback( () => {
-		let phoneField = null;
+	const getPhoneFieldValue = useCallback( () => {
+		let phoneFieldValue = '';
 		if ( isBlocksCheckout ) {
-			phoneField =
-				document.getElementById( 'phone' ) ||
-				document.getElementById( 'shipping-phone' ) ||
-				// in case of virtual products, the shipping phone is not available. So we also need to check the billing phone.
-				document.getElementById( 'billing-phone' );
+			phoneFieldValue =
+				document.getElementById( 'phone' )?.value ||
+				document.getElementById( 'billing-phone' )?.value ||
+				document.getElementById( 'shipping-phone' )?.value ||
+				'';
 		} else {
 			// for classic checkout.
-			phoneField = document.getElementById( 'billing_phone' );
+			phoneFieldValue =
+				document.getElementById( 'billing_phone' )?.value || '';
 		}
-
-		return phoneField;
-	}, [ isBlocksCheckout ] );
-
-	const getPhoneFieldValue = useCallback( () => {
-		let phoneFieldValue = getPhoneField()?.value || '';
 
 		// Take out any non-digit characters, except +.
 		phoneFieldValue = phoneFieldValue.replace( /[^\d+]*/g, '' );
@@ -124,7 +123,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		}
 
 		return phoneFieldValue;
-	}, [ getPhoneField ] );
+	}, [ isBlocksCheckout ] );
 
 	const sendExtensionData = useCallback(
 		( shouldClearData = false ) => {
@@ -237,9 +236,51 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		setPhoneNumber( getPhoneFieldValue() );
 	}, [ getPhoneFieldValue, isWCPayWithNewTokenChosen ] );
 
-	// Update the phone number when the billing phone is updated.
+	const updatePhoneNumber = useCallback( () => {
+		setPhoneNumber( getPhoneFieldValue() );
+	}, [ setPhoneNumber, getPhoneFieldValue ] );
+
+	// When using billing same as shipping, we need to add the blur event to
+	// the billing phone field to update the phone number when it changes because
+	// it does not trigger the update customer data event.
 	useEffect( () => {
-		if ( isPhoneNumberTouched ) {
+		if ( ! isBlocksCheckout ) {
+			return;
+		}
+
+		if ( isBillingSameAsShipping ) {
+			document
+				.querySelector( '#billing-phone' )
+				?.removeEventListener( 'blur', updatePhoneNumber );
+
+			if ( ! isPhoneNumberTouched ) {
+				setTimeout( () => {
+					setPhoneNumber( getPhoneFieldValue() );
+				}, 0 );
+			}
+			return;
+		}
+
+		document
+			.querySelector( '#billing-phone' )
+			?.addEventListener( 'blur', updatePhoneNumber );
+	}, [
+		isBillingSameAsShipping,
+		updatePhoneNumber,
+		isPhoneNumberTouched,
+		getPhoneFieldValue,
+		isBlocksCheckout,
+	] );
+
+	// When not using billing same as shipping, we need to update the phone number
+	// when update customer data is triggered, it will not work as expected when
+	// adding a blur event.
+	useEffect( () => {
+		if (
+			! isBlocksCheckout ||
+			isPhoneNumberTouched ||
+			! isBillingSameAsShipping
+		) {
 			return;
 		}
 
@@ -254,6 +295,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		getPhoneFieldValue,
 		isCustomerDataUpdating,
 		isPhoneNumberTouched,
+		isBillingSameAsShipping,
+		isBlocksCheckout,
 	] );
 
 	if (
