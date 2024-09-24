@@ -8,7 +8,10 @@ import { Elements } from '@stripe/react-stripe-js';
  * Internal dependencies
  */
 import ExpressCheckoutComponent from './express-checkout-component';
-import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
+import {
+	getExpressCheckoutButtonAppearance,
+	getExpressCheckoutData,
+} from 'wcpay/express-checkout/utils';
 import '../express-checkout-element.scss';
 
 const ExpressCheckoutContainer = ( props ) => {
@@ -24,6 +27,7 @@ const ExpressCheckoutContainer = ( props ) => {
 		amount: billing.cartTotal.value,
 		currency: billing.currency.code.toLowerCase(),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
+		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};
 
 	return (

@@ -39,6 +39,7 @@ describe( 'Order items threshold card', () => {
 		setProtectionSettingsUI: setSettings,
 		protectionSettingsChanged: false,
 		setProtectionSettingsChanged: jest.fn(),
+		setIsDirty: jest.fn(),
 	};
 	test( 'renders correctly', () => {
 		const { container } = render(

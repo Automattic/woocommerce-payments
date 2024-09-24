@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\MultiCurrency\Currency;
+
 /**
  * WCPay\MultiCurrency\Settings unit tests.
  */

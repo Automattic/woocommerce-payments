@@ -42,7 +42,6 @@ use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\WC_Payments_Currency_Manager;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -301,13 +300,6 @@ class WC_Payments {
 	private static $duplicates_detection_service;
 
 	/**
-	 * Instance of WC_Payments_Currency_Manager, created in init function
-	 *
-	 * @var WC_Payments_Currency_Manager
-	 */
-	private static $currency_manager;
-
-	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -491,8 +483,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 		include_once __DIR__ . '/class-compatibility-service.php';
-		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
-		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
+		include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		include_once __DIR__ . '/class-duplicates-detection-service.php';
 
 		self::$woopay_checkout_service = new Checkout_Service();
@@ -585,9 +576,6 @@ class WC_Payments {
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
 
-		self::$currency_manager = new WC_Payments_Currency_Manager( self::get_gateway() );
-		self::$currency_manager->init_hooks();
-
 		// Only register hooks of the new `src` service with the same feature of Duplicate_Payment_Prevention_Service.
 		// To avoid register the same hooks twice.
 		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
@@ -613,16 +601,18 @@ class WC_Payments {
 			}
 		);
 
-		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
-		$enabled_bnpl_payment_methods = array_intersect(
-			Payment_Method::BNPL_PAYMENT_METHODS,
-			self::get_gateway()->get_upe_enabled_payment_method_ids()
-		);
-		if ( [] !== $enabled_bnpl_payment_methods ) {
-			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
-			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 5 );
-			add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
-			add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
+		if ( self::get_gateway()->is_enabled() ) {
+			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
+			$enabled_bnpl_payment_methods = array_intersect(
+				Payment_Method::BNPL_PAYMENT_METHODS,
+				self::get_gateway()->get_upe_enabled_payment_method_ids()
+			);
+			if ( [] !== $enabled_bnpl_payment_methods ) {
+				add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
+				add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 5 );
+				add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
+				add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
+			}
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -649,6 +639,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-giropay-deprecation-settings-update.php';
 		require_once __DIR__ . '/migrations/class-erase-bnpl-announcement-meta.php';
 		require_once __DIR__ . '/migrations/class-erase-deprecated-flags-and-options.php';
+		require_once __DIR__ . '/migrations/class-manual-capture-payment-method-settings-update.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -659,6 +650,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Giropay_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -1408,22 +1400,6 @@ class WC_Payments {
 	 */
 	public static function get_session_service() {
 		return self::$session_service;
-	}
-
-	/**
-	 * Returns gateway context variables needed for multi-currency support.
-	 *
-	 * @return array
-	 */
-	public static function get_context_for_multi_currency() {
-		// While multi-currency is being decoupled from WooPayments into a separate module, it is still rendered within the plugin.
-		// We don't want to reference WCPAY constants from within the module, therefore, we need a few variables from the gateway,
-		// as reflected in the array below.
-		return [
-			'plugin_version'   => WCPAY_VERSION_NUMBER,
-			'plugin_file_path' => WCPAY_PLUGIN_FILE,
-			'is_dev_mode'      => self::mode()->is_dev(),
-		];
 	}
 
 	/**

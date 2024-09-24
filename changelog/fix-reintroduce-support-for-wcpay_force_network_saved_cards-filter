@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Allow the network saved card payment method setting to be overridden by the `wcpay_force_network_saved_cards` filter

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Update payment methods when manual capture is enabled.
