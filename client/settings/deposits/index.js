@@ -6,11 +6,11 @@ import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { Card, SelectControl, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import { STORE_NAME } from 'wcpay/data/constants';
 
 /**
  * Internal dependencies
  */
+import { STORE_NAME } from 'wcpay/data/constants';
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
