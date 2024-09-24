@@ -601,16 +601,18 @@ class WC_Payments {
 			}
 		);
 
-		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
-		$enabled_bnpl_payment_methods = array_intersect(
-			Payment_Method::BNPL_PAYMENT_METHODS,
-			self::get_gateway()->get_upe_enabled_payment_method_ids()
-		);
-		if ( [] !== $enabled_bnpl_payment_methods ) {
-			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
-			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 5 );
-			add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
-			add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
+		if ( self::get_gateway()->is_enabled() ) {
+			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
+			$enabled_bnpl_payment_methods = array_intersect(
+				Payment_Method::BNPL_PAYMENT_METHODS,
+				self::get_gateway()->get_upe_enabled_payment_method_ids()
+			);
+			if ( [] !== $enabled_bnpl_payment_methods ) {
+				add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
+				add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 5 );
+				add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
+				add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
+			}
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
