@@ -107,7 +107,7 @@ class FrontendCurrencies {
 	 * @return void
 	 */
 	public function init_hooks() {
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() && ! WC()->is_rest_api_request() ) {
+		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Currency hooks.
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 900 );
 			add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );

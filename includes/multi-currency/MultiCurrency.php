@@ -253,13 +253,17 @@ class MultiCurrency {
 		}
 
 		if ( ! \WC_Payments_Utils::is_store_api_request() && WC()->is_rest_api_request() ) {
-			// If the request is a REST API request, ensure we default to the store currency and leave price as-is.
-			add_filter( self::FILTER_PREFIX . 'should_return_store_currency', '__return_true' );
-			add_filter( self::FILTER_PREFIX . 'should_convert_product_price', '__return_false' );
-			$get_default_currency_code = function () {
-				return $this->get_default_currency()->get_code();
-			};
-			add_filter( self::FILTER_PREFIX . 'override_selected_currency', $get_default_currency_code );
+			if ( isset( $_GET['currency'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+				add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
+			} else {
+				// If the request is a REST API request, ensure we default to the store currency and leave price as-is.
+				add_filter( self::FILTER_PREFIX . 'should_return_store_currency', '__return_true' );
+				add_filter( self::FILTER_PREFIX . 'should_convert_product_price', '__return_false' );
+				$get_default_currency_code = function () {
+					return $this->get_default_currency()->get_code();
+				};
+				add_filter( self::FILTER_PREFIX . 'override_selected_currency', $get_default_currency_code );
+			}
 		}
 
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_props_to_wcpay_js_config' ] );
