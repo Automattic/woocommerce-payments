@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 8.2.2 - 2024-09-24 =
+* Fix - Fix WooPay pre-checking place order bug when buying a subscription.
+
 = 8.2.1 - 2024-09-13 =
 * Fix - Create div container element with JS dynamically.
 
