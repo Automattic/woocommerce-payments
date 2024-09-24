@@ -21,12 +21,11 @@ use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
-use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 
 /**
  * Communicates with WooCommerce Payments API.
  */
-class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
+class WC_Payments_API_Client {
 
 	const ENDPOINT_BASE          = 'https://public-api.wordpress.com/wpcom/v2';
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
@@ -192,7 +191,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 *
 	 * @return bool
 	 */
-	public function is_server_connected(): bool {
+	public function is_server_connected() {
 		return $this->http_client->is_connected();
 	}
 
@@ -858,7 +857,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 *
 	 * @throws API_Exception - Error contacting the API.
 	 */
-	public function get_currency_rates( string $currency_from, $currencies_to = null ): array {
+	public function get_currency_rates( string $currency_from, $currencies_to = null ) {
 		if ( empty( $currency_from ) ) {
 			throw new API_Exception(
 				__( 'Currency From parameter is required', 'woocommerce-payments' ),

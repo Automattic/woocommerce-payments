@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import ProgressBar from 'components/progress-bar';
-import { formatCurrency } from 'multi-currency/interface/functions';
+import { formatCurrency } from 'utils/currency';
 
 const ExpirationBar = ( {
 	feeData: {

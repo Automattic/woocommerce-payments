@@ -37,10 +37,7 @@ import { HorizontalList, HorizontalListItem } from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
-import {
-	formatCurrency,
-	formatExplicitCurrency,
-} from 'multi-currency/interface/functions';
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
 import DisputeStatusChip from 'components/dispute-status-chip';
