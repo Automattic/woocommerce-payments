@@ -43,6 +43,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
+	const [ isPhoneNumberTouched, setPhoneNumberTouched ] = useState( false );
 
 	const checkoutIsProcessing = useSelect( ( select ) =>
 		select( CHECKOUT_STORE_KEY ).isProcessing()
@@ -238,6 +239,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 	// Update the phone number when the billing phone is updated.
 	useEffect( () => {
+		if ( isPhoneNumberTouched ) {
+			return;
+		}
+
 		if ( isCustomerDataUpdating ) {
 			setTimeout( () => {
 				setPhoneNumber( getPhoneFieldValue() );
@@ -248,6 +253,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		setPhoneNumber,
 		getPhoneFieldValue,
 		isCustomerDataUpdating,
+		isPhoneNumberTouched,
 	] );
 
 	if (
@@ -341,6 +347,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								onCountryDropdownClick={
 									handleCountryDropdownClick
 								}
+								onClick={ () => setPhoneNumberTouched( true ) }
 								inputProps={ {
 									name:
 										'woopay_user_phone_field[no-country-code]',
