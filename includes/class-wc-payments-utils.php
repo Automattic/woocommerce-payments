@@ -38,6 +38,8 @@ class WC_Payments_Utils {
 	 */
 	const STORE_API_ROUTE_PATTERNS = [
 		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/add-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-item$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
 		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
@@ -49,7 +51,7 @@ class WC_Payments_Utils {
 		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
 		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
 		// By adding it to this list, we're able to identify the user and load the correct session for this route.
-		'@^\/wc\/v3\/woopay\/session$@',
+		'@^\/payments\/woopay\/session$@',
 	];
 
 	/**
@@ -396,8 +398,9 @@ class WC_Payments_Utils {
 	/**
 	 * Apply a callback on every value in an array, regardless of the number of array dimensions.
 	 *
-	 * @param array    $array The array to map.
+	 * @param array    $array    The array to map.
 	 * @param callable $callback The callback to apply.
+	 *
 	 * @return array The mapped array.
 	 */
 	public static function array_map_recursive( array $array, callable $callback ): array {
@@ -412,6 +415,101 @@ class WC_Payments_Utils {
 		}
 
 		return $array;
+	}
+
+	/**
+	 * Filter a multidimensional array.
+	 *
+	 * It works just like array_filter, but it also filters multidimensional/nested arrays, regardless of depth.
+	 *
+	 * @see https://www.php.net/manual/en/function.array-filter.php
+	 *
+	 * @param array         $array    The array to filter.
+	 * @param callable|null $callback Optional. The callback to apply.
+	 *                                The callback should return true to keep the value, false otherwise.
+	 *                                If no callback is provided, all non-truthy values will be removed.
+	 *
+	 * @return array The filtered array.
+	 */
+	public static function array_filter_recursive( array $array, callable $callback = null ): array {
+		foreach ( $array as $key => &$value ) { // Mind the use of a reference.
+			if ( \is_array( $value ) ) {
+				$value = self::array_filter_recursive( $value, $callback );
+				if ( ! $value ) {
+					unset( $array[ $key ] );
+				}
+			} elseif ( ! is_null( $callback ) ) {
+				if ( ! $callback( $value ) ) {
+					unset( $array[ $key ] );
+				}
+			} elseif ( ! $value ) {
+				unset( $array[ $key ] );
+			}
+		}
+		unset( $value ); // Kill the reference to avoid memory leaks.
+
+		return $array;
+	}
+
+	/**
+	 * Merge arrays recursively like array_merge.
+	 *
+	 * This method merges any number of arrays recursively, replacing entries with string keys with values from latter arrays.
+	 * If the entry or the next value to be assigned is an array, then it automagically treats both arguments as an array.
+	 * Numeric entries are appended, not replaced, but only if they are unique.
+	 * If the entry or the next value to be assigned is null, it will not overwrite non-null entries.
+	 *
+	 * Note that this does not work the same as array_merge_recursive:
+	 * array_merge_recursive has a behavior that is not quite helpful, especially around overwriting values
+	 * with the same string keys (it will not overwrite, but gather them in an array).
+	 *
+	 * @link http://www.php.net/manual/en/function.array-merge-recursive.php#96201 (initial source)
+	 *
+	 * @return array
+	 */
+	public static function array_merge_recursive_distinct(): array {
+		$arrays = func_get_args();
+		$base   = array_shift( $arrays );
+
+		// Make sure the base is an array.
+		if ( ! is_array( $base ) ) {
+			$base = empty( $base ) ? [] : [ $base ];
+		}
+
+		foreach ( $arrays as $append ) {
+			// Coerce single values to array.
+			if ( ! is_array( $append ) ) {
+				$append = [ $append ];
+			}
+
+			foreach ( $append as $key => $value ) {
+				if ( ! array_key_exists( $key, $base ) && ! is_numeric( $key ) ) {
+					$base[ $key ] = $value;
+					continue;
+				}
+
+				// We include null values only when using string keys that don't exist in the base.
+				// For the rest of the scenarios, null entries are ignored.
+				if ( is_null( $value ) ) {
+					continue;
+				}
+
+				if ( is_array( $value ) || ( array_key_exists( $key, $base ) && is_array( $base[ $key ] ) ) ) {
+					if ( ! isset( $base[ $key ] ) ) {
+						$base[ $key ] = [];
+					}
+					$base[ $key ] = self::array_merge_recursive_distinct( $base[ $key ], $value );
+				} elseif ( is_numeric( $key ) ) {
+					if ( ! in_array( $value, $base, true ) ) {
+						$base[] = $value;
+					}
+				} else {
+					$base[ $key ] = $value;
+				}
+			}
+		}
+
+		return $base;
 	}
 
 	/**
@@ -453,6 +551,19 @@ class WC_Payments_Utils {
 			&& $current_tab && $current_section
 			&& 'checkout' === $current_tab
 			&& 0 === strpos( $current_section, 'woocommerce_payments' )
+		);
+	}
+
+	/**
+	 * Checks if the currently displayed page is the WooPayments onboarding page.
+	 *
+	 * @return bool
+	 */
+	public static function is_onboarding_page(): bool {
+		return (
+			is_admin()
+			&& isset( $_GET['page'] ) && 'wc-admin' === $_GET['page']  // phpcs:ignore WordPress.Security.NonceVerification
+			&& isset( $_GET['path'] ) && '/payments/onboarding' === $_GET['path']  // phpcs:ignore WordPress.Security.NonceVerification
 		);
 	}
 
@@ -605,6 +716,62 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Retrieves Stripe minimum order value authorized per currency.
+	 * The values are based on Stripe's recommendations.
+	 * See https://docs.stripe.com/currencies#minimum-and-maximum-charge-amounts.
+	 *
+	 * @param string $currency The currency.
+	 *
+	 * @return int The minimum amount.
+	 */
+	public static function get_stripe_minimum_amount( $currency ) {
+		switch ( $currency ) {
+			case 'AED':
+			case 'MYR':
+			case 'PLN':
+			case 'RON':
+				$minimum_amount = 200;
+				break;
+			case 'BGN':
+				$minimum_amount = 100;
+				break;
+			case 'CZK':
+				$minimum_amount = 1500;
+				break;
+			case 'DKK':
+				$minimum_amount = 250;
+				break;
+			case 'GBP':
+				$minimum_amount = 30;
+				break;
+			case 'HKD':
+				$minimum_amount = 400;
+				break;
+			case 'HUF':
+				$minimum_amount = 17500;
+				break;
+			case 'JPY':
+				$minimum_amount = 5000;
+				break;
+			case 'MXN':
+			case 'THB':
+				$minimum_amount = 1000;
+				break;
+			case 'NOK':
+			case 'SEK':
+				$minimum_amount = 300;
+				break;
+			default:
+				$minimum_amount = 50;
+				break;
+		}
+
+		self::cache_minimum_amount( $currency, $minimum_amount );
+
+		return $minimum_amount;
+	}
+
+	/**
 	 * Saves the minimum amount required for transactions in a given currency.
 	 *
 	 * @param string $currency The currency.
@@ -618,12 +785,20 @@ class WC_Payments_Utils {
 	 * Checks if there is a minimum amount required for transactions in a given currency.
 	 *
 	 * @param string $currency The currency to check for.
+	 * @param bool   $fallback_to_local_list Whether to fallback to the local Stripe list if the cached value is not available.
 	 *
 	 * @return int|null Either the minimum amount, or `null` if not available.
 	 */
-	public static function get_cached_minimum_amount( $currency ) {
+	public static function get_cached_minimum_amount( $currency, $fallback_to_local_list = false ) {
 		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
-		return (int) $cached ? (int) $cached : null;
+
+		if ( (int) $cached ) {
+			return (int) $cached;
+		} elseif ( $fallback_to_local_list ) {
+			return self::get_stripe_minimum_amount( $currency );
+		}
+
+		return null;
 	}
 
 	/**
@@ -736,12 +911,31 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Check to see if the current user is in Core Payments task onboarding flow experiment treatment mode.
+	 *
+	 * @return bool
+	 */
+	public static function is_in_core_payments_task_onboarding_flow_treatment_mode(): bool {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking', 'no' )
+		);
+
+		return 'treatment' === $abtest->get_variation( 'woopayments_core_payments_task_onboarding_flow_2024_v1' );
+	}
+
+	/**
 	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
-		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
+		if ( apply_filters( 'wcpay_disable_new_onboarding', defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) ) {
 			return false;
 		}
 
@@ -1082,7 +1276,7 @@ class WC_Payments_Utils {
 			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
 		} else {
 			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = rtrim( $url_parts['path'], '/' );
+			$request_path = $url_parts ? rtrim( $url_parts['path'], '/' ) : '';
 			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
 		}
 

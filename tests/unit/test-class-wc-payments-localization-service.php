@@ -31,6 +31,8 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 0 );
 		remove_all_filters( 'locale' );
 		remove_all_filters( 'wcpay_eur_format' );
+
+		parent::tear_down();
 	}
 
 	public function test_get_currency_format_returns_default_format() {

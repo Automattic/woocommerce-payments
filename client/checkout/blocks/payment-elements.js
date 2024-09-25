@@ -90,6 +90,7 @@ const PaymentElements = ( { api, ...props } ) => {
 					errorMessage={ errorMessage }
 					fingerprint={ fingerprint }
 					onLoadError={ setPaymentProcessorLoadErrorMessage }
+					theme={ appearance?.theme }
 					{ ...props }
 				/>
 			</Elements>

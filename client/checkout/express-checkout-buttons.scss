@@ -3,8 +3,20 @@
 	width: 100%;
 	clear: both;
 
-	&:first-child {
+	.woocommerce-cart & {
+		margin-bottom: 0;
+	}
+
+	.woocommerce-checkout & {
 		margin-top: 0;
+	}
+
+	> div {
+		margin-bottom: 12px;
+
+		&:last-of-type {
+			margin-bottom: 0;
+		}
 	}
 }
 
@@ -15,12 +27,4 @@
 		max-width: unset;
 	}
 	list-style: none;
-}
-
-.woocommerce-checkout .wcpay-payment-request-wrapper {
-	margin-bottom: 1.5em;
-}
-
-.wcpay-payment-request-wrapper > div:not( :last-child ) {
-	margin-bottom: 1em;
 }

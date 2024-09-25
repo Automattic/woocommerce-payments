@@ -117,6 +117,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		if ( WC()->cart->needs_shipping() ) {
 			$shipping_tax = $this->cart_prices_include_tax() ? WC()->cart->shipping_tax_total : 0;
 			$items[]      = [
+				'key'    => 'total_shipping',
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $shipping + $shipping_tax, $currency ),
 			];
@@ -124,6 +125,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		if ( WC()->cart->has_discount() ) {
 			$items[] = [
+				'key'    => 'total_discount',
 				'label'  => esc_html( __( 'Discount', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $discounts, $currency ),
 			];

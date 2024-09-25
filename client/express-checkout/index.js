@@ -14,7 +14,10 @@ import {
 	normalizeLineItems,
 } from './utils/index';
 import {
+	onAbortPaymentHandler,
+	onCancelHandler,
 	onClickHandler,
+	onCompletePaymentHandler,
 	onConfirmHandler,
 	onReadyHandler,
 	shippingAddressChangeHandler,
@@ -98,7 +101,7 @@ jQuery( ( $ ) => {
 		 */
 		abortPayment: ( payment, message ) => {
 			payment.paymentFailed( { reason: 'fail' } );
-			wcpayECE.unblock();
+			onAbortPaymentHandler( payment, message );
 
 			$( '.woocommerce-error' ).remove();
 
@@ -126,22 +129,8 @@ jQuery( ( $ ) => {
 		 * @param {string} url Order thank you page URL.
 		 */
 		completePayment: ( url ) => {
-			wcpayECE.block();
+			onCompletePaymentHandler( url );
 			window.location = url;
-		},
-
-		block: () => {
-			$.blockUI( {
-				message: null,
-				overlayCSS: {
-					background: '#fff',
-					opacity: 0.6,
-				},
-			} );
-		},
-
-		unblock: () => {
-			$.unblockUI();
 		},
 
 		/**
@@ -221,10 +210,7 @@ jQuery( ( $ ) => {
 				}
 
 				return options.displayItems
-					.filter(
-						( i ) =>
-							i.label === __( 'Shipping', 'woocommerce-payments' )
-					)
+					.filter( ( i ) => i.key === 'total_shipping' )
 					.map( ( i ) => ( {
 						id: `rate-${ i.label }`,
 						amount: i.amount,
@@ -239,7 +225,7 @@ jQuery( ( $ ) => {
 			// Relying on what's provided in the cart response seems safest since it should always include a valid shipping
 			// rate if one is required and available.
 			// If no shipping rate is found we can't render the button so we just exit.
-			if ( options.requestShipping && ! shippingRates ) {
+			if ( options.requestShipping && ! shippingRates.length ) {
 				return;
 			}
 
@@ -249,6 +235,7 @@ jQuery( ( $ ) => {
 				currency: options?.currency,
 				paymentMethodCreation: 'manual',
 				appearance: getExpressCheckoutButtonAppearance(),
+				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );
 
 			const eceButton = wcpayECE.createButton(
@@ -256,7 +243,17 @@ jQuery( ( $ ) => {
 				getExpressCheckoutButtonStyleSettings()
 			);
 
-			wcpayECE.showButton( eceButton );
+			wcpayECE.renderButton( eceButton );
+
+			eceButton.on( 'loaderror', () => {
+				wcPayECEError = __(
+					'The cart is incompatible with express checkout.',
+					'woocommerce-payments'
+				);
+				if ( ! document.getElementById( 'wcpay-woopay-button' ) ) {
+					wcpayECE?.getButtonSeparator()?.hide();
+				}
+			} );
 
 			eceButton.on( 'click', function ( event ) {
 				// If login is required for checkout, display redirect confirmation dialog.
@@ -308,7 +305,7 @@ jQuery( ( $ ) => {
 					phoneNumberRequired: options.requestPhone,
 					shippingRates,
 				};
-				wcpayECE.block();
+
 				onClickHandler( event );
 				event.resolve( clickOptions );
 			} );
@@ -337,10 +334,22 @@ jQuery( ( $ ) => {
 
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.paymentAborted = true;
-				wcpayECE.unblock();
+				onCancelHandler();
 			} );
 
-			eceButton.on( 'ready', onReadyHandler );
+			eceButton.on( 'ready', ( onReadyParams ) => {
+				onReadyHandler( onReadyParams );
+
+				if (
+					onReadyParams?.availablePaymentMethods &&
+					Object.values(
+						onReadyParams.availablePaymentMethods
+					).filter( Boolean ).length
+				) {
+					wcpayECE.show();
+					wcpayECE.getButtonSeparator().show();
+				}
+			} );
 
 			if ( getExpressCheckoutData( 'is_product_page' ) ) {
 				wcpayECE.attachProductPageEventListeners( elements );
@@ -534,18 +543,24 @@ jQuery( ( $ ) => {
 		},
 
 		getElements: () => {
-			return $(
-				'.wcpay-payment-request-wrapper,#wcpay-express-checkout-button-separator'
-			);
+			return $( '#wcpay-express-checkout-element' );
+		},
+
+		getButtonSeparator: () => {
+			return $( '#wcpay-express-checkout-button-separator' );
 		},
 
 		show: () => {
 			wcpayECE.getElements().show();
 		},
 
-		showButton: ( eceButton ) => {
+		hide: () => {
+			wcpayECE.getElements().hide();
+			wcpayECE.getButtonSeparator().hide();
+		},
+
+		renderButton: ( eceButton ) => {
 			if ( $( '#wcpay-express-checkout-element' ).length ) {
-				wcpayECE.show();
 				eceButton.mount( '#wcpay-express-checkout-element' );
 			}
 		},

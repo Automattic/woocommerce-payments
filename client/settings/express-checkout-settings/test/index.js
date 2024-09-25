@@ -23,17 +23,17 @@ jest.mock( '../../../data', () => ( {
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ true, jest.fn() ] ),
 	useWooPayCustomMessage: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
 	useWooPayStoreLogo: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
-	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	usePaymentRequestButtonBorderRadius: jest.fn().mockReturnValue( [ 4 ] ),
+	useWooPayGlobalThemeSupportEnabledSettings: jest
+		.fn()
+		.mockReturnValue( [ false, jest.fn() ] ),
 	useWooPayLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
-	useExpressCheckoutShowIncompatibilityNotice: jest
-		.fn()
-		.mockReturnValue( false ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {

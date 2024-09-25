@@ -40,6 +40,7 @@ export const WoopayExpressCheckoutButton = ( {
 	api,
 	isProductPage = false,
 	emailSelector = '#email',
+	buttonAttributes,
 } ) => {
 	const buttonWidthTypes = {
 		narrow: 'narrow',
@@ -48,10 +49,9 @@ export const WoopayExpressCheckoutButton = ( {
 	const onClickCallbackRef = useRef( null );
 	const buttonRef = useRef( null );
 	const isLoadingRef = useRef( false );
-	const {
+	let {
+		height: buttonHeight,
 		type: buttonType,
-		height,
-		size,
 		theme,
 		context,
 		radius: borderRadius,
@@ -60,6 +60,18 @@ export const WoopayExpressCheckoutButton = ( {
 	const [ buttonWidthType, setButtonWidthType ] = useState(
 		buttonWidthTypes.wide
 	);
+	const buttonSizeMap = new Map();
+	buttonSizeMap.set( '40', 'small' );
+	buttonSizeMap.set( '48', 'medium' );
+	buttonSizeMap.set( '55', 'large' );
+
+	// If we are on the checkout block, we receive button attributes which overwrite the extension specific settings
+	if ( typeof buttonAttributes !== 'undefined' ) {
+		buttonHeight = buttonAttributes.height || buttonHeight;
+		borderRadius = buttonAttributes.borderRadius || borderRadius;
+	}
+
+	const buttonSize = buttonSizeMap.get( buttonHeight );
 
 	const buttonText =
 		ButtonTypeTextMap[ buttonType || 'default' ] ??
@@ -229,7 +241,11 @@ export const WoopayExpressCheckoutButton = ( {
 					}
 					WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
 						_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-						appearance: getAppearance( appearanceType ),
+						appearance: getConfig(
+							'isWooPayGlobalThemeSupportEnabled'
+						)
+							? getAppearance( appearanceType, true )
+							: null,
 					} )
 						.then( async ( response ) => {
 							if (
@@ -273,7 +289,9 @@ export const WoopayExpressCheckoutButton = ( {
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
-					appearance: getAppearance( appearanceType ),
+					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+						? getAppearance( appearanceType, true )
+						: null,
 				} )
 					.then( async ( response ) => {
 						if ( response?.blog_id && response?.data?.session ) {
@@ -347,18 +365,18 @@ export const WoopayExpressCheckoutButton = ( {
 	return (
 		<button
 			ref={ buttonRef }
-			key={ `${ buttonType }-${ theme }-${ size }` }
+			key={ `${ buttonType }-${ theme }-${ buttonSize }` }
 			aria-label={ buttonText }
 			onClick={ ( e ) => onClickCallbackRef.current( e ) }
 			className={ classNames( 'woopay-express-button', {
 				'is-loading': isLoading,
 			} ) }
 			data-type={ buttonType }
-			data-size={ size }
+			data-size={ buttonSize }
 			data-theme={ theme }
 			data-width-type={ buttonWidthType }
 			style={ {
-				height: `${ height }px`,
+				height: `${ buttonHeight }px`,
 				borderRadius: `${ borderRadius }px`,
 			} }
 			disabled={ isLoading }

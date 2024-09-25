@@ -35,6 +35,31 @@ const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
 	};
 };
 
+// Visual adjustments to horizontally align the buttons.
+const adjustButtonHeights = ( buttonOptions, expressPaymentMethod ) => {
+	// Apple Pay has a nearly imperceptible height difference. We increase it by 1px here.
+	if ( buttonOptions.buttonTheme.applePay === 'black' ) {
+		if ( expressPaymentMethod === 'applePay' ) {
+			buttonOptions.buttonHeight = buttonOptions.buttonHeight + 0.4;
+		}
+	}
+
+	// GooglePay with the white theme has a 2px height difference due to its border.
+	if (
+		expressPaymentMethod === 'googlePay' &&
+		buttonOptions.buttonTheme.googlePay === 'white'
+	) {
+		buttonOptions.buttonHeight = buttonOptions.buttonHeight - 2;
+	}
+
+	// Clamp the button height to the allowed range 40px to 55px.
+	buttonOptions.buttonHeight = Math.max(
+		40,
+		Math.min( buttonOptions.buttonHeight, 55 )
+	);
+	return buttonOptions;
+};
+
 /**
  * ExpressCheckout express payment method component.
  *
@@ -50,6 +75,7 @@ const ExpressCheckoutComponent = ( {
 	onClick,
 	onClose,
 	expressPaymentMethod = '',
+	buttonAttributes,
 } ) => {
 	const {
 		buttonOptions,
@@ -84,17 +110,34 @@ const ExpressCheckoutComponent = ( {
 			paymentMethodContainer &&
 			! availablePaymentMethods[ expressPaymentMethod ]
 		) {
-			paymentMethodContainer.style.display = 'none';
+			paymentMethodContainer.remove();
 		}
 
 		// Any actions that WooPayments needs to perform.
 		onReady( event );
 	};
 
+	// The Cart & Checkout blocks provide unified styles across all buttons,
+	// which should override the extension specific settings.
+	const withBlockOverride = () => {
+		const override = {};
+		if ( typeof buttonAttributes !== 'undefined' ) {
+			override.buttonHeight = Number( buttonAttributes.height );
+		}
+		return {
+			...buttonOptions,
+			...override,
+		};
+	};
+
 	return (
 		<ExpressCheckoutElement
 			options={ {
-				...buttonOptions,
+				...withBlockOverride( buttonOptions ),
+				...adjustButtonHeights(
+					withBlockOverride( buttonOptions ),
+					expressPaymentMethod
+				),
 				...getPaymentMethodsOverride( expressPaymentMethod ),
 			} }
 			onClick={ onButtonClick }

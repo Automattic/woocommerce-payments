@@ -23,11 +23,15 @@ const stepElapsed = () => {
 	return result;
 };
 
-export const trackStarted = ( source: string ): void => {
+export const trackStarted = (): void => {
+	// Initialize the elapsed time tracking
 	startTime = stepStartTime = Date.now();
 
+	const urlParams = new URLSearchParams( window.location.search );
+
 	recordEvent( 'wcpay_onboarding_flow_started', {
-		source,
+		source:
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
 	} );
 };
 
@@ -42,10 +46,23 @@ export const trackStepCompleted = ( step: string ): void => {
 	trackedSteps.add( step );
 };
 
-export const trackRedirected = ( isEligible: boolean ): void => {
+export const trackRedirected = ( isPoEligible: boolean ): void => {
+	const urlParams = new URLSearchParams( window.location.search );
+
 	recordEvent( 'wcpay_onboarding_flow_redirected', {
-		is_po_eligible: isEligible,
+		is_po_eligible: isPoEligible,
 		elapsed: elapsed( startTime ),
+		source:
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
+	} );
+};
+
+export const trackKycExit = (): void => {
+	const urlParams = new URLSearchParams( window.location.search );
+
+	recordEvent( 'wcpay_onboarding_kyc_exit', {
+		source:
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
 	} );
 };
 
@@ -53,10 +70,12 @@ export const trackAccountReset = (): void =>
 	recordEvent( 'wcpay_onboarding_flow_reset' );
 
 export const trackEligibilityModalClosed = (
-	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only'
+	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only',
+	source: string
 ): void =>
 	recordEvent( 'wcpay_onboarding_flow_eligibility_modal_closed', {
 		action,
+		source,
 	} );
 
 export const useTrackAbandoned = (): {
@@ -75,16 +94,21 @@ export const useTrackAbandoned = (): {
 			( field ) => touched[ field as keyof OnboardingFields ]
 		);
 
+		const urlParams = new URLSearchParams( window.location.search );
+
 		recordEvent( event, {
 			step,
 			errored,
 			elapsed: elapsed( startTime ),
+			source:
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown',
 		} );
 	};
 
 	const listener = () => {
 		if ( document.visibilityState === 'hidden' ) {
-			trackEvent();
+			trackEvent( 'hide' );
 		}
 	};
 

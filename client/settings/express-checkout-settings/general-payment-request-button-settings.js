@@ -9,7 +9,6 @@ import {
 	__experimentalNumberControl as NumberControl,
 	SelectControl,
 	RadioControl,
-	Notice,
 	RangeControl,
 } from '@wordpress/components';
 import { Elements } from '@stripe/react-stripe-js';
@@ -21,10 +20,10 @@ import { useContext } from '@wordpress/element';
  */
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getPaymentRequestData } from 'utils/express-checkout';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import InlineNotice from 'wcpay/components/inline-notice';
 import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
@@ -169,23 +168,12 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	return (
 		<CardBody>
 			{ showWarning && (
-				<Notice
-					status="warning"
-					isDismissible={ false }
-					className="express-checkout__notice"
-				>
-					<span>
-						<NoticeOutlineIcon
-							style={ {
-								color: '#F0B849',
-								fill: 'currentColor',
-								marginBottom: '-5px',
-								marginRight: '10px',
-							} }
-							size={ 20 }
-						/>
-					</span>
-					<span>
+				<>
+					<InlineNotice
+						status="warning"
+						icon={ true }
+						isDismissible={ false }
+					>
 						{ sprintf(
 							/* translators: %s type of button to which the settings will be applied */
 							__(
@@ -194,15 +182,24 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 							),
 							otherButtons
 						) }
-					</span>
-				</Notice>
+					</InlineNotice>
+					<InlineNotice
+						status="warning"
+						icon={ true }
+						isDismissible={ false }
+					>
+						{ __(
+							'Some appearance settings may be overridden in the express payment section of the Cart & Checkout blocks.'
+						) }
+					</InlineNotice>
+				</>
 			) }
 			<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 			<SelectControl
 				className="payment-method-settings__cta-selection"
 				label={ __( 'Call to action', 'woocommerce-payments' ) }
 				help={ __(
-					'Select a button label that fits best wit the flow of purchase or payment experience on your store.',
+					'Select a button label that fits best with the flow of purchase or payment experience on your store.',
 					'woocommerce-payments'
 				) }
 				hideLabelFromVision

@@ -176,6 +176,7 @@ describe( 'Disputes list', () => {
 			isLoading: false,
 			isSaving: false,
 			saveSettings: ( a ) => a,
+			isDirty: false,
 		} );
 
 		global.wcpaySettings = {

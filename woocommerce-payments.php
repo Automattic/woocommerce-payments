@@ -8,10 +8,10 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 9.1.2
+ * WC tested up to: 9.3.1
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 7.9.2
+ * Version: 8.2.2
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -43,7 +43,7 @@ function wcpay_activated() {
 		// Only redirect to onboarding when activated on its own. Either with a link...
 		isset( $_GET['action'] ) && 'activate' === $_GET['action'] // phpcs:ignore WordPress.Security.NonceVerification
 		// ...or with a bulk action.
-		|| isset( $_POST['checked'] ) && is_array( $_POST['checked'] ) && 1 === count( $_POST['checked'] ) // phpcs:ignore WordPress.Security.NonceVerification
+		|| isset( $_POST['checked'] ) && is_array( $_POST['checked'] ) && 1 === count( $_POST['checked'] ) // phpcs:ignore WordPress.Security.NonceVerification, Generic.CodeAnalysis.RequireExplicitBooleanOperatorPrecedence.MissingParentheses
 	) {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 	}
@@ -55,8 +55,6 @@ function wcpay_activated() {
 function wcpay_deactivated() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::remove_woo_admin_notes();
-	delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );
-	delete_transient( 'wcpay_bnpl_april15_successful_purchases_count' );
 }
 
 register_activation_hook( __FILE__, 'wcpay_activated' );
@@ -101,30 +99,18 @@ function wcpay_jetpack_init() {
 	);
 
 	// When only WooPayments is active, minimize the data to send back to WPCOM, tied to merchant's privacy settings.
-	$sync_modules = [
-		'Automattic\\Jetpack\\Sync\\Modules\\Options',
-		'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
-	];
-	if ( class_exists( 'WC_Site_Tracking' ) && WC_Site_Tracking::is_tracking_enabled() ) {
-		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce';
-		if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
-			try {
-				$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class );
-				if ( $cot_controller->custom_orders_table_usage_is_enabled() ) {
-					$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce_HPOS_Orders';
-				}
-			} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-				// Do nothing.
-			}
-		}
-	}
-
 	$jetpack_config->ensure(
 		'sync',
 		array_merge_recursive(
 			\Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS,
 			[
-				'jetpack_sync_modules'           => $sync_modules,
+				'jetpack_sync_modules'           =>
+					[
+						'Automattic\Jetpack\Sync\Modules\Full_Sync_Immediately',
+						'Automattic\Jetpack\Sync\Modules\Options',
+						'Automattic\Jetpack\Sync\Modules\Posts',
+						'Automattic\Jetpack\Sync\Modules\Meta',
+					],
 				'jetpack_sync_options_whitelist' =>
 					[
 						'active_plugins',
@@ -162,12 +148,16 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
  */
 function wcpay_init() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
+	require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session.php';
 	WC_Payments::init();
 	/**
 	 * Needs to be loaded as soon as possible
 	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
+	if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
+		( new WC_Payments_Payment_Request_Session() )->init();
+	}
 }
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.

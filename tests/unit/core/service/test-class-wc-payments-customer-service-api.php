@@ -52,6 +52,10 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		// Reset the mode.
+		WC_Payments::mode()->live();
+
 		// mock WC_Payments_Http and use it to set up system under test.
 		$this->mock_http_client = $this
 			->getMockBuilder( 'WC_Payments_Http' )
@@ -70,11 +74,12 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	 * Post-test teardown
 	 */
 	public function tear_down() {
-		parent::tear_down();
 		remove_filter(
 			'wc_payments_http',
 			[ $this, 'replace_http_client' ]
 		);
+
+		parent::tear_down();
 	}
 
 	/**

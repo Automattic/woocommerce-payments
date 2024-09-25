@@ -43,6 +43,8 @@ describe( 'International IP address card', () => {
 		setProtectionSettingsUI: setSettings,
 		protectionSettingsChanged: false,
 		setProtectionSettingsChanged: jest.fn(),
+		isDirty: false,
+		setIsDirty: jest.fn(),
 	};
 	global.wcSettings = {
 		admin: {

@@ -140,8 +140,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu['wc-admin&path=/payments/overview'], 0, 2 );
@@ -155,28 +155,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
-		$this->payments_admin->add_payments_menu();
-
-		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
-		$this->assertEquals( 'Payments', $item_names_by_urls['wc-admin&path=/payments/overview'] );
-		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/connect', $item_names_by_urls );
-	}
-
-	public function test_it_refreshes_the_cache_if_get_param_exists() {
-		global $menu;
-		$this->mock_current_user_is_admin();
-		$_GET = [
-			'page'                   => 'wc-admin',
-			'path'                   => '/payments/overview',
-			'wcpay-connection-error' => '1',
-		];
-
-		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
-		$this->mock_account->expects( $this->once() )->method( 'refresh_account_data' );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
@@ -189,8 +169,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu without submenu items.
-		$this->mock_account->method( 'is_details_submitted' )->willReturn( false );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( false );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( false );
 		update_option( 'wcpay_activation_timestamp', time() - ( 3 * DAY_IN_SECONDS ) );
 		$this->payments_admin->add_payments_menu();
 
@@ -204,8 +183,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu without submenu items.
-		$this->mock_account->method( 'is_details_submitted' )->willReturn( false );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( false );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( false );
 		update_option( 'wcpay_menu_badge_hidden', 'no' );
 		update_option( 'wcpay_activation_timestamp', time() - ( DAY_IN_SECONDS * 2 ) );
 		$this->payments_admin->add_payments_menu();
@@ -223,13 +201,17 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider data_maybe_redirect_from_payments_admin_child_pages
 	 */
-	public function test_maybe_redirect_from_payments_admin_child_pages( $expected_times_redirect_called, $is_stripe_connected, $get_params ) {
+	public function test_maybe_redirect_from_payments_admin_child_pages( $expected_times_redirect_called, $has_working_jetpack_connection, $is_stripe_account_valid, $get_params ) {
 		$this->mock_current_user_is_admin();
 		$_GET = $get_params;
 
 		$this->mock_account
-			->method( 'is_stripe_connected' )
-			->willReturn( $is_stripe_connected );
+			->method( 'has_working_jetpack_connection' )
+			->willReturn( $has_working_jetpack_connection );
+
+		$this->mock_account
+			->method( 'is_stripe_account_valid' )
+			->willReturn( $is_stripe_account_valid );
 
 		$this->mock_account
 			->expects( $this->exactly( $expected_times_redirect_called ) )
@@ -246,10 +228,12 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			'no_get_params'        => [
 				0,
 				false,
+				false,
 				[],
 			],
 			'empty_page_param'     => [
 				0,
+				false,
 				false,
 				[
 					'path' => '/payments/overview',
@@ -257,6 +241,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_page_param' => [
 				0,
+				false,
 				false,
 				[
 					'page' => 'wc-settings',
@@ -266,6 +251,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			'empty_path_param'     => [
 				0,
 				false,
+				false,
 				[
 					'page' => 'wc-admin',
 				],
@@ -273,25 +259,37 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			'incorrect_path_param' => [
 				0,
 				false,
+				false,
 				[
 					'page' => 'wc-admin',
 					'path' => '/payments/does-not-exist',
 				],
 			],
-			'stripe_connected'     => [
-				0,
-				true,
-				[
-					'page' => 'wc-admin',
-					'path' => '/payments/overview',
-				],
-			],
-			'happy_path'           => [
+			'working Jetpack connection - invalid Stripe account' => [
 				1,
+				true,
 				false,
 				[
 					'page' => 'wc-admin',
-					'path' => '/payments/overview',
+					'path' => '/payments/deposits',
+				],
+			],
+			'not working Jetpack connection - valid Stripe account' => [
+				1,
+				false,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/deposits',
+				],
+			],
+			'working Jetpack connection - valid Stripe account' => [
+				0,
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/transactions',
 				],
 			],
 		];
@@ -319,8 +317,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
@@ -361,8 +359,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
@@ -405,8 +403,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
@@ -451,8 +449,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'is_details_submitted' )->willReturn( true );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls     = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );

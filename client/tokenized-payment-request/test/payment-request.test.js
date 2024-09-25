@@ -61,6 +61,9 @@ describe( 'WooPaymentsPaymentRequest', () => {
 		global.$ = jQueryMock;
 		global.jQuery = jQueryMock;
 		global.wcpayPaymentRequestParams = {
+			nonce: {
+				store_api_nonce: 'global_store_api_nonce',
+			},
 			button_context: 'cart',
 			checkout: {
 				needs_payer_phone: true,
@@ -68,7 +71,7 @@ describe( 'WooPaymentsPaymentRequest', () => {
 				currency_code: 'usd',
 			},
 			total_label: 'wcpay.test (via WooCommerce)',
-			button: { type: 'buy', theme: 'dark', height: '48' },
+			button: { type: 'default', theme: 'dark', height: '48' },
 		};
 		wcpayApi = {
 			getStripe: () => ( {
@@ -97,20 +100,21 @@ describe( 'WooPaymentsPaymentRequest', () => {
 		const headers = new Headers();
 		headers.append( 'Nonce', 'nonce-value' );
 
-		const responseData = {
-			needs_shipping: false,
-			totals: {
-				currency_code: 'USD',
-				total_price: '20',
-				total_tax: '0',
-				total_shipping: '5',
-			},
-			items: [ { name: 'Shirt', quantity: 1, prices: { price: '15' } } ],
-		};
-
 		apiFetch.mockResolvedValue( {
 			headers: headers,
-			json: () => Promise.resolve( responseData ),
+			json: () =>
+				Promise.resolve( {
+					needs_shipping: false,
+					totals: {
+						currency_code: 'USD',
+						total_price: '20',
+						total_tax: '0',
+						total_shipping: '5',
+					},
+					items: [
+						{ name: 'Shirt', quantity: 1, prices: { price: '15' } },
+					],
+				} ),
 		} );
 		const paymentRequestAvailabilityCallback = jest.fn();
 		addAction(

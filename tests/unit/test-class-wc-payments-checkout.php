@@ -374,7 +374,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->willReturn( $payment_methods );
 
 		$this->assertSame(
-			$this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig'],
 			[
 				'card' => [
 					'isReusable'             => true,
@@ -383,7 +382,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
-					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'testingInstructions'    => '<strong>Test mode:</strong> use test card <button type="button" class="js-woopayments-copy-test-number" aria-label="Click to copy the test number to clipboard" title="Copy to clipboard"><i></i><span>4242 4242 4242 4242</button> or refer to our <a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">testing guide</a>.',
 					'forceNetworkSavedCards' => false,
 				],
 				'link' => [
@@ -396,7 +395,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'testingInstructions'    => '',
 					'forceNetworkSavedCards' => false,
 				],
-			]
+			],
+			$this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig']
 		);
 	}
 

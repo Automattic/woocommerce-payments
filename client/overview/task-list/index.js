@@ -12,7 +12,7 @@ import { useCallback, useEffect, useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { TIME } from '../../constants';
+import { TIME } from 'wcpay/constants/time';
 
 const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const { createNotice } = useDispatch( 'core/notices' );

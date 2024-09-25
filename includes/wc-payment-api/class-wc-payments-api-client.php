@@ -43,7 +43,7 @@ class WC_Payments_API_Client {
 	const CAPABILITIES_API             = 'accounts/capabilities';
 	const WOOPAY_ACCOUNTS_API          = 'accounts/platform_checkout';
 	const WOOPAY_COMPATIBILITY_API     = 'woopay/compatibility';
-	const APPLE_PAY_API                = 'apple_pay';
+	const DOMAIN_REGISTRATION_API      = 'payment_method_domains';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
 	const TERMINAL_LOCATIONS_API       = 'terminal/locations';
@@ -889,7 +889,7 @@ class WC_Payments_API_Client {
 	public function get_woopay_eligibility() {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
+				'test_mode' => WC_Payments::mode()->is_test_mode_onboarding(), // only send a test mode request if in test mode onboarding.
 			],
 			self::WOOPAY_ACCOUNTS_API,
 			self::GET
@@ -908,7 +908,7 @@ class WC_Payments_API_Client {
 	public function update_woopay( $data ) {
 		return $this->request(
 			array_merge(
-				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
+				[ 'test_mode' => WC_Payments::mode()->is_test_mode_onboarding() ],
 				$data
 			),
 			self::WOOPAY_ACCOUNTS_API,
@@ -940,18 +940,19 @@ class WC_Payments_API_Client {
 	/**
 	 * Get data needed to initialize the onboarding flow
 	 *
-	 * @param string $return_url                  - URL to redirect to at the end of the flow.
-	 * @param array  $site_data                   - Data to track ToS agreement.
-	 * @param array  $user_data                   - Data about the user doing the onboarding (location and device).
-	 * @param array  $account_data                - Data to prefill the onboarding.
-	 * @param array  $actioned_notes              - Actioned WCPay note names to be sent to the onboarding flow.
-	 * @param bool   $progressive                 - Whether we need to enable progressive onboarding prefill.
-	 * @param bool   $collect_payout_requirements - Whether we need to redirect user to Stripe KYC to complete their payouts data.
+	 * @param bool   $live_account                Whether to get the onboarding data for a live mode or test mode account.
+	 * @param string $return_url                  URL to redirect to at the end of the flow.
+	 * @param array  $site_data                   Data to track ToS agreement.
+	 * @param array  $user_data                   Data about the user doing the onboarding (location and device).
+	 * @param array  $account_data                Data to prefill the onboarding.
+	 * @param array  $actioned_notes              Actioned WCPay note names to be sent to the onboarding flow.
+	 * @param bool   $progressive                 Whether we need to enable progressive onboarding prefill.
+	 * @param bool   $collect_payout_requirements Whether we need to redirect user to Stripe KYC to complete their payouts data.
 	 *
-	 * @throws API_Exception Exception thrown on request failure.
 	 * @return array An array containing the url and state fields.
+	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_data( string $return_url, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function get_onboarding_data( bool $live_account, string $return_url, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -960,13 +961,69 @@ class WC_Payments_API_Client {
 				'user_data'                   => $user_data,
 				'account_data'                => $account_data,
 				'actioned_notes'              => $actioned_notes,
-				'create_live_account'         => ! WC_Payments::mode()->is_dev(),
+				'create_live_account'         => $live_account,
 				'progressive'                 => $progressive,
 				'collect_payout_requirements' => $collect_payout_requirements,
 			]
 		);
 
 		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
+	}
+
+	/**
+	 * Initialize the onboarding embedded KYC flow, returning a session object which is used by the frontend.
+	 *
+	 * @param bool  $live_account Whether to create live account.
+	 * @param array $site_data Site data.
+	 * @param array $user_data User data.
+	 * @param array $account_data Account data to be prefilled.
+	 * @param array $actioned_notes Actioned notes to be sent.
+	 * @param bool  $progressive Whether progressive onboarding should be enabled for this onboarding.
+	 *
+	 * @return array
+	 *
+	 * @throws API_Exception
+	 */
+	public function initialize_onboarding_embedded_kyc( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false ): array {
+		$request_args = apply_filters(
+			'wc_payments_get_onboarding_data_args',
+			[
+				'site_data'           => $site_data,
+				'user_data'           => $user_data,
+				'account_data'        => $account_data,
+				'actioned_notes'      => $actioned_notes,
+				'create_live_account' => $live_account,
+				'progressive'         => $progressive,
+			]
+		);
+
+		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
+
+		if ( ! is_array( $session ) ) {
+			return [];
+		}
+
+		return $session;
+	}
+
+	/**
+	 * Finalize the onboarding embedded KYC flow.
+	 *
+	 * @param string $locale         The locale to use to i18n the data.
+	 * @param string $source         The source of the onboarding flow.
+	 * @param array  $actioned_notes The actioned notes on the account related to this onboarding.
+	 * @return array
+	 *
+	 * @throws API_Exception
+	 */
+	public function finalize_onboarding_embedded_kyc( string $locale, string $source, array $actioned_notes ): array {
+		$request_args = [
+			'locale'         => $locale,
+			'source'         => $source,
+			'actioned_notes' => $actioned_notes,
+		];
+
+		return $this->request( $request_args, self::ONBOARDING_API . '/embedded/finalize', self::POST, true, true );
 	}
 
 	/**
@@ -1603,22 +1660,28 @@ class WC_Payments_API_Client {
 		);
 	}
 
+
 	/**
-	 * Registers a new domain with Apple Pay.
+	 * Registers a Payment Method Domain.
 	 *
-	 * @param string $domain_name Domain name which to register for Apple Pay.
+	 * @param string $domain_name Domain name which to register for the account.
 	 *
-	 * @return array An array containing an id in case it has succeeded, or an error message in case it has failed.
+	 * @return array An array containing an id and the bool property 'enabled' indicating
+	 * whether the domain is enabled for the account. Each Payment Method
+	 * (apple_pay, google_pay, link, paypal) in the array have a 'status'
+	 * property with the possible values 'active' and 'inactive'.
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	public function register_domain_with_apple( $domain_name ) {
+	public function register_domain( $domain_name ) {
 		return $this->request(
 			[
-				'test_mode'   => false, // Force live mode - Domain registration doesn't work in test mode.
 				'domain_name' => $domain_name,
+				// The value needs to be a string.
+				// If it's a boolean, it gets serialized as an integer (1), causing an invalid request error.
+				'enabled'     => 'true',
 			],
-			self::APPLE_PAY_API . '/domains',
+			self::DOMAIN_REGISTRATION_API,
 			self::POST
 		);
 	}

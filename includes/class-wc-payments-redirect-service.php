@@ -49,22 +49,23 @@ class WC_Payments_Redirect_Service {
 	}
 
 	/**
-	 * Redirects to the wcpay-connect URL, which then redirects to the KYC flow.
+	 * Redirects to a wcpay-connect URL which then handles the next step for the onboarding flow.
 	 *
-	 * This URL is used by the KYC reminder email. We can't take the merchant
-	 * directly to the wcpay-connect URL because it's nonced, and the
-	 * nonce will likely be expired by the time the user follows the link.
-	 * That's why we need this middleman instead.
+	 * This is a sure way to ensure that the user is redirected to the correct URL to continue their onboarding.
 	 *
-	 * @param string $from Source of the redirect.
+	 * @param string $from              Source of the redirect.
+	 * @param array  $additional_params Optional. Additional URL params to add to the redirect URL.
 	 */
-	public function redirect_to_wcpay_connect( string $from = '' ): void {
+	public function redirect_to_wcpay_connect( string $from = '', array $additional_params = [] ): void {
 		// Take the user to the 'wcpay-connect' URL.
 		// We handle creating and redirecting to the account link there.
 		$params = [
 			'wcpay-connect' => '1',
 			'_wpnonce'      => wp_create_nonce( 'wcpay-connect' ),
 		];
+
+		$params = array_merge( $params, $additional_params );
+
 		if ( '' !== $from ) {
 			$params['from'] = $from;
 		}
@@ -118,18 +119,15 @@ class WC_Payments_Redirect_Service {
 	}
 
 	/**
-	 * Function to immediately redirect to the main "Welcome to WooPayments" connect page.
+	 * Immediately redirect to the Connect page.
+	 *
 	 * Note that this function immediately ends the execution.
 	 *
-	 * @param string|null $error_message Optional error message to show in a notice.
-	 * @param string|null $from Optional source of the redirect.
-	 *                     Will fall back to keeping the `from` parameter in the current request URL, if present.
+	 * @param string|null $error_message     Optional. Error message to show in a notice.
+	 * @param string|null $from              Optional. Source of the redirect.
+	 * @param array       $additional_params Optional. Additional URL params to add to the redirect URL.
 	 */
-	public function redirect_to_connect_page( ?string $error_message = null, ?string $from = null ): void {
-		if ( isset( $error_message ) ) {
-			set_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
-		}
-
+	public function redirect_to_connect_page( ?string $error_message = null, ?string $from = null, array $additional_params = [] ): void {
 		$params = [
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
@@ -140,10 +138,40 @@ class WC_Payments_Redirect_Service {
 			return;
 		}
 
-		// If we were not given a source, try to get it from the request URL.
-		if ( ! isset( $from ) && isset( $_GET['from'] ) ) {
-			$from = sanitize_text_field( wp_unslash( $_GET['from'] ) );
+		// If we were given an error message, store it in a very short-lived transient to show it on the page.
+		if ( ! empty( $error_message ) ) {
+			set_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
+
+		$params = array_merge( $params, $additional_params );
+
+		if ( ! empty( $from ) ) {
+			$params['from'] = $from;
+		}
+
+		$this->redirect_to( admin_url( add_query_arg( $params, 'admin.php' ) ) );
+	}
+
+	/**
+	 * Immediately redirect to the onboarding wizard.
+	 *
+	 * Note that this function immediately ends the execution.
+	 *
+	 * @param string|null $from              Optional. Source of the redirect.
+	 * @param array       $additional_params Optional. Additional URL params to add to the redirect URL.
+	 */
+	public function redirect_to_onboarding_wizard( ?string $from = null, array $additional_params = [] ): void {
+		$params = [
+			'page' => 'wc-admin',
+			'path' => '/payments/onboarding',
+		];
+
+		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			// We are already in the onboarding wizard. Do nothing.
+			return;
+		}
+
+		$params = array_merge( $params, $additional_params );
 
 		if ( ! empty( $from ) ) {
 			$params['from'] = $from;
@@ -155,14 +183,16 @@ class WC_Payments_Redirect_Service {
 	/**
 	 * Redirect to the overview page.
 	 *
-	 * @param string $from Source of the redirect.
-	 */
-	public function redirect_to_overview_page( string $from = '' ): void {
-		$overview_page_url = WC_Payments_Account::get_overview_page_url();
+	 * @param string $from              Optional. Source of the redirect.
+	 * @param array  $additional_params Optional. Additional URL params to add to the redirect URL.
+	 * */
+	public function redirect_to_overview_page( string $from = '', array $additional_params = [] ): void {
+		$params = $additional_params;
 		if ( '' !== $from ) {
-			$overview_page_url = add_query_arg( 'from', $from, $overview_page_url );
+			$params['from'] = $from;
 		}
-		$this->redirect_to( $overview_page_url );
+
+		$this->redirect_to( add_query_arg( $params, WC_Payments_Account::get_overview_page_url() ) );
 	}
 
 	/**

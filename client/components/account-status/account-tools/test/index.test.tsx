@@ -3,67 +3,43 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
 import { AccountTools } from '..';
 
-const accountLink = '/onboarding';
 const openModal = jest.fn();
 
 declare const global: {
 	wcpaySettings: {
-		devMode: boolean;
+		testModeOnboarding: boolean;
 	};
 };
 
 describe( 'AccountTools', () => {
-	it( 'should render in live mode', () => {
+	it( 'should NOT render in live mode', () => {
 		global.wcpaySettings = {
-			devMode: false,
+			testModeOnboarding: false,
 		};
 
 		const { container } = render(
-			<AccountTools
-				accountLink={ accountLink }
-				detailsSubmitted={ false }
-				openModal={ openModal }
-			/>
-		);
-		expect( container ).toMatchSnapshot();
-	} );
-
-	it( 'should render in sandbox mode', () => {
-		global.wcpaySettings = {
-			devMode: true,
-		};
-
-		const { container } = render(
-			<AccountTools
-				accountLink={ accountLink }
-				detailsSubmitted={ false }
-				openModal={ openModal }
-			/>
+			<AccountTools openModal={ openModal } />
 		);
 
 		expect( container ).toMatchSnapshot();
 	} );
 
-	it( 'should render in sandbox mode for details submitted account without finish setup button', () => {
+	it( 'should render in test/sandbox mode onboarding', () => {
 		global.wcpaySettings = {
-			devMode: true,
+			testModeOnboarding: true,
 		};
 
-		render(
-			<AccountTools
-				accountLink={ accountLink }
-				detailsSubmitted={ true }
-				openModal={ openModal }
-			/>
+		const { container } = render(
+			<AccountTools openModal={ openModal } />
 		);
 
-		expect( screen.queryByText( 'Finish setup' ) ).not.toBeInTheDocument();
+		expect( container ).toMatchSnapshot();
 	} );
 } );

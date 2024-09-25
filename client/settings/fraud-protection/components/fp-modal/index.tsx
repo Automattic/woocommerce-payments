@@ -80,7 +80,7 @@ export const BasicFraudProtectionModal: React.FC< BasicFraudProtectionModalProps
 						<Button
 							className="component-modal__button--confirm"
 							onClick={ () => setBasicModalOpen( false ) }
-							isTertiary
+							variant="secondary"
 						>
 							{ __( 'Got it', 'woocommerce-payments' ) }
 						</Button>

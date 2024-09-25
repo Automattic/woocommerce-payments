@@ -137,6 +137,7 @@ exports[`Multi-Currency store settings store settings task renders correctly: sn
     >
       <button
         class="components-button is-primary"
+        disabled=""
         type="button"
       >
         Save changes

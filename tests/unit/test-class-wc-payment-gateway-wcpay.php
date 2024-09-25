@@ -216,6 +216,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'create_and_confirm_setup_intent',
 					'get_payment_method',
 					'get_timeline',
+					'get_latest_fraud_ruleset',
 				]
 			)
 			->getMock();
@@ -2572,6 +2573,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
+	public function test_process_payment_for_order_rejects_if_the_payment_information_has_an_error() {
+		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+
+		$order = WC_Helper_Order::create_order();
+		$pi    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi->set_error( new \WP_Error( 'invalid_card', 'Invalid Card' ) );
+
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid Card' );
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
 	public function test_process_payment_for_order_rejects_with_order_id_mismatch() {
 		$order                = WC_Helper_Order::create_order();
 		$intent_meta_order_id = 0;
@@ -2776,6 +2789,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_gateway_enabled_when_payment_method_is_enabled() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
 		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
 		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
 		$this->prepare_gateway_for_availability_testing( $afterpay );
@@ -2784,8 +2798,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_gateway_disabled_when_payment_method_is_disabled() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
 		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
 		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$this->prepare_gateway_for_availability_testing( $afterpay );
+
+		$this->assertFalse( $afterpay->is_available() );
+	}
+
+	public function test_gateway_disabled_when_card_gateway_is_disabled() {
+		$this->card_gateway->update_option( 'enabled', 'no' );
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
 		$this->prepare_gateway_for_availability_testing( $afterpay );
 
 		$this->assertFalse( $afterpay->is_available() );
@@ -3429,7 +3453,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mode->dev();
 		$this->assertTrue( $this->card_gateway->is_in_dev_mode() );
 
-		$mode->test();
+		$mode->live_mode_onboarding();
 		$this->assertFalse( $this->card_gateway->is_in_dev_mode() );
 
 		$mode->live();
@@ -3443,6 +3467,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mode = WC_Payments::mode();
 
 		$mode->dev();
+		$this->assertTrue( $this->card_gateway->is_in_test_mode() );
+
+		$mode->test_mode_onboarding();
 		$this->assertTrue( $this->card_gateway->is_in_test_mode() );
 
 		$mode->test();
@@ -3751,6 +3778,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->expect_router_factor( Factor::WCPAY_SUBSCRIPTION_SIGNUP(), false );
 		$this->card_gateway->should_use_new_process( $order );
+
+		remove_filter( 'wcpay_is_wcpay_subscriptions_enabled', '__return_true' );
 	}
 
 	public function test_new_process_payment() {
@@ -3925,7 +3954,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private function prepare_gateway_for_availability_testing( $gateway ) {
 		WC_Payments::mode()->test();
 		$current_currency = strtolower( get_woocommerce_currency() );
-		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_customer_supported_currencies' )->will(
+		$this->mock_wcpay_account->expects( $this->any() )->method( 'get_account_customer_supported_currencies' )->will(
 			$this->returnValue(
 				[
 					$current_currency,

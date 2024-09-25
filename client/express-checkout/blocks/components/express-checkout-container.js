@@ -8,10 +8,14 @@ import { Elements } from '@stripe/react-stripe-js';
  * Internal dependencies
  */
 import ExpressCheckoutComponent from './express-checkout-component';
-import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
+import {
+	getExpressCheckoutButtonAppearance,
+	getExpressCheckoutData,
+} from 'wcpay/express-checkout/utils';
+import '../express-checkout-element.scss';
 
 const ExpressCheckoutContainer = ( props ) => {
-	const { api, billing } = props;
+	const { api, billing, buttonAttributes } = props;
 
 	const stripePromise = useMemo( () => {
 		return api.loadStripe( true );
@@ -22,11 +26,12 @@ const ExpressCheckoutContainer = ( props ) => {
 		paymentMethodCreation: 'manual',
 		amount: billing.cartTotal.value,
 		currency: billing.currency.code.toLowerCase(),
-		appearance: getExpressCheckoutButtonAppearance(),
+		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
+		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};
 
 	return (
-		<div style={ { minHeight: '50px' } }>
+		<div style={ { minHeight: '40px' } }>
 			<Elements stripe={ stripePromise } options={ options }>
 				<ExpressCheckoutComponent { ...props } />
 			</Elements>

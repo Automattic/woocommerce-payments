@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
@@ -474,61 +475,62 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		return new WP_REST_Response(
 			[
-				'enabled_payment_method_ids'           => $enabled_payment_methods,
-				'available_payment_method_ids'         => $available_upe_payment_methods,
-				'payment_method_statuses'              => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
-				'duplicated_payment_method_ids'        => $this->wcpay_gateway->find_duplicates(),
-				'is_wcpay_enabled'                     => $this->wcpay_gateway->is_enabled(),
-				'is_manual_capture_enabled'            => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
-				'is_test_mode_enabled'                 => WC_Payments::mode()->is_test(),
-				'is_dev_mode_enabled'                  => WC_Payments::mode()->is_dev(),
-				'is_multi_currency_enabled'            => WC_Payments_Features::is_customer_multi_currency_enabled(),
-				'is_wcpay_subscriptions_enabled'       => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
-				'is_stripe_billing_enabled'            => WC_Payments_Features::is_stripe_billing_enabled(),
-				'is_wcpay_subscriptions_eligible'      => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
-				'is_subscriptions_plugin_active'       => $this->wcpay_gateway->is_subscriptions_plugin_active(),
-				'account_country'                      => $this->wcpay_gateway->get_option( 'account_country' ),
-				'account_statement_descriptor'         => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
-				'account_statement_descriptor_kanji'   => $this->wcpay_gateway->get_option( 'account_statement_descriptor_kanji' ),
-				'account_statement_descriptor_kana'    => $this->wcpay_gateway->get_option( 'account_statement_descriptor_kana' ),
-				'account_business_name'                => $this->wcpay_gateway->get_option( 'account_business_name' ),
-				'account_business_url'                 => $this->wcpay_gateway->get_option( 'account_business_url' ),
-				'account_business_support_address'     => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
-				'account_business_support_email'       => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
-				'account_business_support_phone'       => $this->wcpay_gateway->get_option( 'account_business_support_phone' ),
-				'account_branding_logo'                => $this->wcpay_gateway->get_option( 'account_branding_logo' ),
-				'account_branding_icon'                => $this->wcpay_gateway->get_option( 'account_branding_icon' ),
-				'account_branding_primary_color'       => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
-				'account_branding_secondary_color'     => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
-				'account_domestic_currency'            => $this->wcpay_gateway->get_option( 'account_domestic_currency' ),
-				'is_payment_request_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
-				'is_debug_log_enabled'                 => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
-				'payment_request_enabled_locations'    => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
-				'payment_request_button_size'          => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
-				'payment_request_button_type'          => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
-				'payment_request_button_theme'         => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
-				'payment_request_button_border_radius' => WC_Payments_Features::is_stripe_ece_enabled() ? $this->wcpay_gateway->get_option( 'payment_request_button_border_radius', WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX ) : WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
-				'is_saved_cards_enabled'               => $this->wcpay_gateway->is_saved_cards_enabled(),
-				'is_card_present_eligible'             => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
-				'is_woopay_enabled'                    => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
-				'show_woopay_incompatibility_notice'   => get_option( 'woopay_invalid_extension_found', false ),
-				'show_express_checkout_incompatibility_notice' => $this->should_show_express_checkout_incompatibility_notice(),
-				'woopay_custom_message'                => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
-				'woopay_store_logo'                    => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
-				'woopay_enabled_locations'             => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ) ),
-				'deposit_schedule_interval'            => $this->wcpay_gateway->get_option( 'deposit_schedule_interval' ),
-				'deposit_schedule_monthly_anchor'      => $this->wcpay_gateway->get_option( 'deposit_schedule_monthly_anchor' ),
-				'deposit_schedule_weekly_anchor'       => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),
-				'deposit_delay_days'                   => $this->wcpay_gateway->get_option( 'deposit_delay_days' ),
-				'deposit_status'                       => $this->wcpay_gateway->get_option( 'deposit_status' ),
-				'deposit_restrictions'                 => $this->wcpay_gateway->get_option( 'deposit_restrictions' ),
-				'deposit_completed_waiting_period'     => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
-				'reporting_export_language'            => $this->wcpay_gateway->get_option( 'reporting_export_language' ),
-				'current_protection_level'             => $this->wcpay_gateway->get_option( 'current_protection_level' ),
-				'advanced_fraud_protection_settings'   => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
-				'is_migrating_stripe_billing'          => $is_migrating_stripe_billing ?? false,
-				'stripe_billing_subscription_count'    => $stripe_billing_subscription_count ?? 0,
-				'stripe_billing_migrated_count'        => $stripe_billing_migrated_count ?? 0,
+				'enabled_payment_method_ids'             => $enabled_payment_methods,
+				'available_payment_method_ids'           => $available_upe_payment_methods,
+				'payment_method_statuses'                => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
+				'duplicated_payment_method_ids'          => $this->wcpay_gateway->find_duplicates(),
+				'is_wcpay_enabled'                       => $this->wcpay_gateway->is_enabled(),
+				'is_manual_capture_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
+				'is_test_mode_enabled'                   => WC_Payments::mode()->is_test(),
+				'is_test_mode_onboarding'                => WC_Payments::mode()->is_test_mode_onboarding(),
+				'is_dev_mode_enabled'                    => WC_Payments::mode()->is_dev(),
+				'is_multi_currency_enabled'              => WC_Payments_Features::is_customer_multi_currency_enabled(),
+				'is_wcpay_subscriptions_enabled'         => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
+				'is_stripe_billing_enabled'              => WC_Payments_Features::is_stripe_billing_enabled(),
+				'is_wcpay_subscriptions_eligible'        => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
+				'is_subscriptions_plugin_active'         => $this->wcpay_gateway->is_subscriptions_plugin_active(),
+				'is_woopay_global_theme_support_enabled' => $this->wcpay_gateway->is_woopay_global_theme_support_enabled(),
+				'account_country'                        => $this->wcpay_gateway->get_option( 'account_country' ),
+				'account_statement_descriptor'           => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
+				'account_statement_descriptor_kanji'     => $this->wcpay_gateway->get_option( 'account_statement_descriptor_kanji' ),
+				'account_statement_descriptor_kana'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor_kana' ),
+				'account_business_name'                  => $this->wcpay_gateway->get_option( 'account_business_name' ),
+				'account_business_url'                   => $this->wcpay_gateway->get_option( 'account_business_url' ),
+				'account_business_support_address'       => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
+				'account_business_support_email'         => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
+				'account_business_support_phone'         => $this->wcpay_gateway->get_option( 'account_business_support_phone' ),
+				'account_branding_logo'                  => $this->wcpay_gateway->get_option( 'account_branding_logo' ),
+				'account_branding_icon'                  => $this->wcpay_gateway->get_option( 'account_branding_icon' ),
+				'account_branding_primary_color'         => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
+				'account_branding_secondary_color'       => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
+				'account_domestic_currency'              => $this->wcpay_gateway->get_option( 'account_domestic_currency' ),
+				'is_payment_request_enabled'             => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
+				'is_debug_log_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
+				'payment_request_enabled_locations'      => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
+				'payment_request_button_size'            => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
+				'payment_request_button_type'            => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
+				'payment_request_button_theme'           => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
+				'payment_request_button_border_radius'   => WC_Payments_Features::is_stripe_ece_enabled() ? $this->wcpay_gateway->get_option( 'payment_request_button_border_radius', WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX ) : WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
+				'is_saved_cards_enabled'                 => $this->wcpay_gateway->is_saved_cards_enabled(),
+				'is_card_present_eligible'               => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
+				'is_woopay_enabled'                      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'show_woopay_incompatibility_notice'     => get_option( 'woopay_invalid_extension_found', false ),
+				'woopay_custom_message'                  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
+				'woopay_store_logo'                      => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
+				'woopay_enabled_locations'               => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', array_keys( $wcpay_form_fields['payment_request_button_locations']['options'] ) ),
+				'deposit_schedule_interval'              => $this->wcpay_gateway->get_option( 'deposit_schedule_interval' ),
+				'deposit_schedule_monthly_anchor'        => $this->wcpay_gateway->get_option( 'deposit_schedule_monthly_anchor' ),
+				'deposit_schedule_weekly_anchor'         => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),
+				'deposit_delay_days'                     => $this->wcpay_gateway->get_option( 'deposit_delay_days' ),
+				'deposit_status'                         => $this->wcpay_gateway->get_option( 'deposit_status' ),
+				'deposit_restrictions'                   => $this->wcpay_gateway->get_option( 'deposit_restrictions' ),
+				'deposit_completed_waiting_period'       => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
+				'reporting_export_language'              => $this->wcpay_gateway->get_option( 'reporting_export_language' ),
+				'current_protection_level'               => $this->wcpay_gateway->get_option( 'current_protection_level' ),
+				'advanced_fraud_protection_settings'     => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
+				'is_migrating_stripe_billing'            => $is_migrating_stripe_billing ?? false,
+				'stripe_billing_subscription_count'      => $stripe_billing_subscription_count ?? 0,
+				'stripe_billing_migrated_count'          => $stripe_billing_migrated_count ?? 0,
 			]
 		);
 	}
@@ -551,6 +553,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
 		$this->update_is_woopay_enabled( $request );
+		$this->update_is_woopay_global_theme_support_enabled( $request );
 		$this->update_reporting_export_language( $request );
 		$this->update_woopay_store_logo( $request );
 		$this->update_woopay_custom_message( $request );
@@ -601,6 +604,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$payment_method_ids_to_enable = $request->get_param( 'enabled_payment_method_ids' );
 		$available_payment_methods    = $this->wcpay_gateway->get_upe_available_payment_methods();
 
+		// Only 'card' and 'link' support manual capture. Leave them enabled if they're already enabled.
+		if ( $request->has_param( 'is_manual_capture_enabled' ) && $request->get_param( 'is_manual_capture_enabled' ) ) {
+			$payment_method_ids_to_enable = array_intersect( $payment_method_ids_to_enable, [ Payment_Method::CARD, Payment_Method::LINK ] );
+		}
+
 		$payment_method_ids_to_enable = array_values(
 			array_filter(
 				$payment_method_ids_to_enable,
@@ -608,6 +616,18 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					return in_array( $payment_method, $available_payment_methods, true );
 				}
 			)
+		);
+
+		$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
+		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
+		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
+
+		$payment_method_ids_to_enable = array_filter(
+			$payment_method_ids_to_enable,
+			function ( $payment_method_id_to_enable ) use ( $capability_key_map, $payment_method_statuses ) {
+				$stripe_key = $capability_key_map[ $payment_method_id_to_enable ] ?? null;
+				return array_key_exists( $stripe_key, $payment_method_statuses ) && 'active' === $payment_method_statuses[ $stripe_key ]['status'];
+			}
 		);
 
 		$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
@@ -647,10 +667,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		// Keep the enabled payment method IDs list synchronized across gateway setting objects unless we remove this list with all dependencies.
 		foreach ( WC_Payments::get_payment_gateway_map() as $payment_gateway ) {
 			$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
-		}
-
-		if ( $payment_method_ids_to_enable ) {
-			$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
 		}
 	}
 
@@ -874,6 +890,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Updates the WooPay Global Theme Support enable/disable settings.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_woopay_global_theme_support_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_woopay_global_theme_support_enabled' ) ) {
+			return;
+		}
+
+		$value = $request->get_param( 'is_woopay_global_theme_support_enabled' );
+
+		$this->wcpay_gateway->update_is_woopay_global_theme_support_enabled( $value );
+	}
+
+	/**
 	 * Updates the custom message that will appear for woopay customers.
 	 *
 	 * @param WP_REST_Request $request Request object.
@@ -1083,39 +1114,5 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$reporting_export_language = $request->get_param( 'reporting_export_language' );
 
 		$this->wcpay_gateway->update_option( 'reporting_export_language', $reporting_export_language );
-	}
-
-	/**
-	 * Whether to show the express checkout incompatibility notice.
-	 *
-	 * @return bool
-	 */
-	private function should_show_express_checkout_incompatibility_notice() {
-		// Apply filters to empty arrays to check if any plugin is modifying the checkout fields.
-		$after_apply_billing  = apply_filters( 'woocommerce_billing_fields', [], '' );
-		$after_apply_shipping = apply_filters( 'woocommerce_shipping_fields', [], '' );
-		$after_apply_checkout = array_filter(
-			apply_filters(
-				'woocommerce_checkout_fields',
-				[
-					'billing'  => [],
-					'shipping' => [],
-					'account'  => [],
-					'order'    => [],
-				]
-			)
-		);
-		// All the input values are empty, so if any of them is not empty, it means that the checkout fields are being modified.
-		$is_modifying_checkout_fields = ! empty(
-			array_filter(
-				[
-					'after_apply_billing'  => $after_apply_billing,
-					'after_apply_shipping' => $after_apply_shipping,
-					'after_apply_checkout' => $after_apply_checkout,
-				]
-			)
-		);
-
-		return $is_modifying_checkout_fields;
 	}
 }
