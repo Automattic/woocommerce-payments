@@ -9,7 +9,6 @@ import { normalizeCurrencyToMinorUnit } from '../utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
-import GenericCardIcon from 'assets/images/payment-method-icons/generic-card.svg?asset';
 
 export default ( {
 	api,
@@ -37,12 +36,6 @@ export default ( {
 		window.wcBlocksCheckoutData?.storeCountry ||
 		'US';
 
-	let icon =
-		upeAppearanceTheme === 'night' ? upeConfig.darkIcon : upeConfig.icon;
-	if ( upeName === 'card' ) {
-		icon = GenericCardIcon;
-	}
-
 	return (
 		<>
 			<div className="payment-method-label">
@@ -56,7 +49,11 @@ export default ( {
 				) }
 				<img
 					className="payment-methods--logos"
-					src={ icon }
+					src={
+						upeAppearanceTheme === 'night'
+							? upeConfig.darkIcon
+							: upeConfig.icon
+					}
 					alt={ upeConfig.title }
 				/>
 			</div>
