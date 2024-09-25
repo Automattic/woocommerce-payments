@@ -254,7 +254,11 @@ class MultiCurrency {
 
 		if ( ! \WC_Payments_Utils::is_store_api_request() && WC()->is_rest_api_request() ) {
 			if ( isset( $_GET['currency'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-				add_action( 'init', [ $this, 'update_selected_currency_by_url' ], 11 );
+				$get_currency_from_query_param = function () {
+					$currency = sanitize_text_field( wp_unslash( $_GET['currency'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+					return strtoupper( $currency );
+				};
+				add_filter( self::FILTER_PREFIX . 'override_selected_currency', $get_currency_from_query_param );
 			} else {
 				// If the request is a REST API request, ensure we default to the store currency and leave price as-is.
 				add_filter( self::FILTER_PREFIX . 'should_return_store_currency', '__return_true' );
