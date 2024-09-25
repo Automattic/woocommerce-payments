@@ -32,6 +32,7 @@ export const getBlockedListColumns = (): Column[] =>
 			key: 'created',
 			label: __( 'Date / Time', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Date / Time', 'woocommerce-payments' ),
+			labelInCsv: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',

@@ -2789,6 +2789,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_gateway_enabled_when_payment_method_is_enabled() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
 		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
 		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
 		$this->prepare_gateway_for_availability_testing( $afterpay );
@@ -2797,8 +2798,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_gateway_disabled_when_payment_method_is_disabled() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
 		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
 		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+		$this->prepare_gateway_for_availability_testing( $afterpay );
+
+		$this->assertFalse( $afterpay->is_available() );
+	}
+
+	public function test_gateway_disabled_when_card_gateway_is_disabled() {
+		$this->card_gateway->update_option( 'enabled', 'no' );
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
 		$this->prepare_gateway_for_availability_testing( $afterpay );
 
 		$this->assertFalse( $afterpay->is_available() );
@@ -3943,7 +3954,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private function prepare_gateway_for_availability_testing( $gateway ) {
 		WC_Payments::mode()->test();
 		$current_currency = strtolower( get_woocommerce_currency() );
-		$this->mock_wcpay_account->expects( $this->once() )->method( 'get_account_customer_supported_currencies' )->will(
+		$this->mock_wcpay_account->expects( $this->any() )->method( 'get_account_customer_supported_currencies' )->will(
 			$this->returnValue(
 				[
 					$current_currency,

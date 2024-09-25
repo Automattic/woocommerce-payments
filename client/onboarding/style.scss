@@ -104,8 +104,8 @@ body.wcpay-onboarding__body {
 				&:hover {
 					background: var(
 						--wp-components-color-accent,
-						darken( $gutenberg-blueberry, 10% )
-					); // 10% darker Gutenberg Blueberry on hover.
+						$gutenberg-blueberry-focus
+					);
 				}
 			}
 		}
