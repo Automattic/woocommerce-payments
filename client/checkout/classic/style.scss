@@ -36,7 +36,7 @@
 			display: grid;
 			grid-template-columns: 0fr auto auto 1fr;
 			grid-template-rows: max-content;
-			grid-column-gap: 3px;
+			grid-gap: 3px;
 
 			.test-mode.badge {
 				align-self: flex-start;
