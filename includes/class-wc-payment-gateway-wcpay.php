@@ -573,6 +573,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the gateway title
+	 *
+	 * @return string
+	 * */
+	public function get_title() {
+		$title = parent::get_title();
+
+		if ( WC_Payments::mode()->is_test() && is_checkout() ) {
+			return $title . ' <span class="test-mode badge">Test Mode</span>';
+		}
+
+		return $title;
+	}
+
+	/**
 	 * Updates icon and title using the account country.
 	 * This method runs on init is not in the controller because get_account_country might
 	 * make a request to the API if the account data is not cached.

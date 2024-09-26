@@ -31,12 +31,23 @@
 }
 
 #payment .payment_methods {
-	li label img {
-		float: right;
-		border: 0;
-		padding: 0;
-		height: 24px !important;
-		max-height: 24px !important;
+	li label {
+		.test-mode.badge {
+			background-color: #fff2d7;
+			border-radius: 4px;
+			padding: 4px 6px;
+			font-size: 12px;
+			font-weight: 400;
+			line-height: 16px;
+			color: #4d3716;
+		}
+		img {
+			float: right;
+			border: 0;
+			padding: 0;
+			height: 24px !important;
+			max-height: 24px !important;
+		}
 	}
 }
 
