@@ -581,7 +581,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$title = parent::get_title();
 
 		if ( WC_Payments::mode()->is_test() && is_checkout() ) {
-			return $title . ' <span class="test-mode badge">Test Mode</span>';
+			return '<span class="payment-method-title">' . $title . '</span><span class="test-mode badge">Test Mode</span>';
 		}
 
 		return $title;
