@@ -10,7 +10,7 @@ import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+import { formatExplicitCurrency } from 'utils/currency';
 import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';
 import { getDetailsURL } from '../../components/details-link';
@@ -32,6 +32,7 @@ export const getBlockedListColumns = (): Column[] =>
 			key: 'created',
 			label: __( 'Date / Time', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Date / Time', 'woocommerce-payments' ),
+			labelInCsv: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',

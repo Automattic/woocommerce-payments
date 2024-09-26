@@ -14,11 +14,11 @@ const targetFolder = 'release/' + pluginSlug;
 const filesToCopy = [
 	'assets',
 	'dist',
-	'i18n',
 	'includes',
+	'i18n',
 	'languages',
-	'lib',
 	'src',
+	'lib',
 	'templates',
 	'vendor',
 	'woocommerce-payments.php',
@@ -42,10 +42,6 @@ rm( 'dist/*.map' );
 
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
-
-// copy the multi-currency files
-mkdir( '-p', targetFolder + '/multi-currency' );
-cp( '-R', 'multi-currency/src', targetFolder + '/multi-currency/src' );
 
 const output = fs.createWriteStream(
 	releaseFolder + '/' + pluginSlug + '.zip'

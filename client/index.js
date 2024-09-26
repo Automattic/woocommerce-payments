@@ -23,7 +23,7 @@ import DisputesPage from 'disputes';
 import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
 import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
-import { MultiCurrencySetupPage } from 'multi-currency/interface/components';
+import MultiCurrencySetupPage from 'wcpay/multi-currency-setup';
 import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
 import OverviewPage from 'overview';
@@ -70,25 +70,19 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 
-		// Currently under feature flag.
-		if (
-			wcpaySettings &&
-			wcpaySettings.featureFlags.isEmbeddedKycEnabled
-		) {
-			pages.push( {
-				container: OnboardingKycPage,
-				path: '/payments/onboarding/kyc',
-				wpOpenMenu: menuID,
-				breadcrumbs: [
-					rootLink,
-					__( 'Continue onboarding', 'woocommerce-payments' ),
-				],
-				navArgs: {
-					id: 'wc-payments-continue-onboarding',
-				},
-				capability: 'manage_woocommerce',
-			} );
-		}
+		pages.push( {
+			container: OnboardingKycPage,
+			path: '/payments/onboarding/kyc',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Continue onboarding', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-continue-onboarding',
+			},
+			capability: 'manage_woocommerce',
+		} );
 
 		pages.push( {
 			container: OverviewPage,
