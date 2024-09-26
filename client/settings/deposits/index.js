@@ -21,12 +21,12 @@ import {
 	useDepositStatus,
 	useCompletedWaitingPeriod,
 	useDepositRestrictions,
+	useAllDepositsOverviews,
 } from '../../data';
 import './style.scss';
 import { recordEvent } from 'tracks';
 import InlineNotice from 'components/inline-notice';
 import { DepositFailureNotice } from 'components/deposits-overview/deposit-notices';
-import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 
 const daysOfWeek = [
 	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
@@ -210,15 +210,11 @@ const Deposits = () => {
 		accountStatus: { accountLink },
 	} = useContext( WCPaySettingsContext );
 
-	const { account, overview } = useSelectedCurrencyOverview();
-	const selectedCurrency =
-		overview?.currency || wcpaySettings.accountDefaultCurrency;
+	const { overviews } = useAllDepositsOverviews();
 
 	const hasErroredExternalAccount =
-		account?.default_external_accounts?.some(
-			( externalAccount ) =>
-				externalAccount.currency === selectedCurrency &&
-				externalAccount.status === 'errored'
+		overviews.account?.default_external_accounts?.some(
+			( externalAccount ) => externalAccount.status === 'errored'
 		) ?? false;
 
 	return (
