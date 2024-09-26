@@ -148,18 +148,19 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @param bool   $record_on_frontend whether to record the event on the frontend to prevent cache break.
 	 */
 	public function maybe_record_wcpay_shopper_event( $event, $data = [], $record_on_frontend = true ) {
-		// Top level events should not be namespaced.
-		if ( '_aliasUser' !== $event ) {
-			$event = self::$user_prefix . '_' . $event;
-		}
-
 		$is_admin_event      = false;
 		$track_on_all_stores = true;
 
+		// Record the event immediately.
 		if ( ! $record_on_frontend ) {
+			// Top level events should not be namespaced.
+			if ( '_aliasUser' !== $event ) {
+				$event = self::$user_prefix . '_' . $event;
+			}
 			return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores );
 		}
 
+		// Route the event through frontend to avoid setting cookies on page load.
 		$data['record_event_data'] = compact( 'is_admin_event', 'track_on_all_stores' );
 
 		add_filter(
