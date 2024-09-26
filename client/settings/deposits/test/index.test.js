@@ -16,9 +16,8 @@ import {
 	useDepositScheduleInterval,
 	useDepositScheduleWeeklyAnchor,
 	useDepositScheduleMonthlyAnchor,
+	useAllDepositsOverviews,
 } from 'wcpay/data';
-
-import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
@@ -46,10 +45,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useDepositScheduleInterval: jest.fn(),
 	useDepositScheduleWeeklyAnchor: jest.fn(),
 	useDepositScheduleMonthlyAnchor: jest.fn(),
-} ) );
-
-jest.mock( 'wcpay/overview/hooks', () => ( {
-	useSelectedCurrencyOverview: jest.fn(),
+	useAllDepositsOverviews: jest.fn(),
 } ) );
 
 describe( 'Deposits', () => {
@@ -72,13 +68,17 @@ describe( 'Deposits', () => {
 				account_country: 'US',
 			} ),
 		} ) );
-		useSelectedCurrencyOverview.mockReturnValue( {
-			account: {
-				default_external_accounts: [
-					{ currency: 'USD', status: 'enabled' },
-				],
+		useAllDepositsOverviews.mockReturnValue( {
+			overviews: {
+				account: {
+					default_external_accounts: [
+						{
+							currency: 'usd',
+							status: 'enabled',
+						},
+					],
+				},
 			},
-			overview: { currency: 'USD' },
 		} );
 	} );
 
@@ -263,13 +263,19 @@ describe( 'Deposits', () => {
 	} );
 
 	it( 'renders the deposit failure notice if there is an errored bank account', () => {
-		useSelectedCurrencyOverview.mockReturnValue( {
-			account: {
-				default_external_accounts: [
-					{ currency: 'USD', status: 'errored' },
-				],
+		useDepositStatus.mockReturnValue( 'enabled' );
+		useCompletedWaitingPeriod.mockReturnValue( true );
+		useAllDepositsOverviews.mockReturnValue( {
+			overviews: {
+				account: {
+					default_external_accounts: [
+						{
+							currency: 'usd',
+							status: 'errored',
+						},
+					],
+				},
 			},
-			overview: { currency: 'USD' },
 		} );
 
 		render(
@@ -297,6 +303,90 @@ describe( 'Deposits', () => {
 	} );
 
 	it( 'does not render the deposit failure notice if there is no errored bank account', () => {
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				/Deposits are currently paused because a recent deposit failed./,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeFalsy();
+
+		const depositsMessage = screen.getByText(
+			/Manage and update your deposit account information to receive payments and deposits./,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+		expect( depositsMessage ).toBeInTheDocument();
+	} );
+
+	it( 'renders deposit failure notice with at least one errored default account in multicurrency', () => {
+		useAllDepositsOverviews.mockReturnValue( {
+			overviews: {
+				account: {
+					default_external_accounts: [
+						{
+							currency: 'usd',
+							status: 'errored',
+						},
+						{
+							currency: 'eur',
+							status: 'enabled',
+						},
+					],
+				},
+			},
+		} );
+
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		const depositsMessage = screen.getByText(
+			/Deposits are currently paused because a recent deposit failed./,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+		expect( depositsMessage ).toBeInTheDocument();
+
+		expect(
+			screen.queryByText(
+				/Manage and update your deposit account information to receive payments and deposits./,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeFalsy();
+	} );
+
+	it( 'renders deposit failure notice with all enabled default accounts in multicurrency', () => {
+		useAllDepositsOverviews.mockReturnValue( {
+			overviews: {
+				account: {
+					default_external_accounts: [
+						{
+							currency: 'usd',
+							status: 'enabled',
+						},
+						{
+							currency: 'eur',
+							status: 'enabled',
+						},
+					],
+				},
+			},
+		} );
+
 		render(
 			<WCPaySettingsContext.Provider value={ settingsContext }>
 				<Deposits />
