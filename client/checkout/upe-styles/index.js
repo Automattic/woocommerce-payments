@@ -15,6 +15,7 @@ export const appearanceSelectors = {
 		hiddenContainer: '#wcpay-hidden-div',
 		hiddenInput: '#wcpay-hidden-input',
 		hiddenInvalidInput: '#wcpay-hidden-invalid-input',
+		hiddenValidActiveLabel: '#wcpay-hidden-valid-active-label',
 	},
 	classicCheckout: {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
@@ -40,16 +41,15 @@ export const appearanceSelectors = {
 		linkSelectors: [ 'a' ],
 	},
 	blocksCheckout: {
-		appendTarget: '#billing.wc-block-components-address-form',
-		upeThemeInputSelector: '#billing-first_name',
-		upeThemeLabelSelector:
-			'.wc-block-components-checkout-step__description',
+		appendTarget: '#contact-fields',
+		upeThemeInputSelector: '.wc-block-components-text-input #email',
+		upeThemeLabelSelector: '.wc-block-components-text-input label',
 		rowElement: 'div',
-		validClasses: [ 'wc-block-components-text-input' ],
+		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
 		alternateSelectors: {
-			appendTarget: '#shipping.wc-block-components-address-form',
-			upeThemeInputSelector: '#shipping-first_name',
+			appendTarget: '#billing.wc-block-components-address-form',
+			upeThemeInputSelector: '#billing-first_name',
 			upeThemeLabelSelector:
 				'.wc-block-components-checkout-step__description',
 		},
@@ -326,6 +326,13 @@ const hiddenElementsForUPE = {
 			selectors.hiddenInput
 		);
 
+		// Clone & append target label to hidden valid row.
+		this.appendClone(
+			hiddenValidRow,
+			selectors.upeThemeLabelSelector,
+			selectors.hiddenValidActiveLabel
+		);
+
 		// Clone & append target input  to hidden invalid row.
 		this.appendClone(
 			hiddenInvalidRow,
@@ -442,7 +449,79 @@ export const getFontRulesFromPage = () => {
 	return fontRules;
 };
 
-export const getAppearance = ( elementsLocation, forWooPay = false ) => {
+const handleAppearanceForFloatingLabel = ( appearance, selectors ) => {
+	// Add floating label styles.
+	appearance.rules[ '.Label--floating' ] = getFieldStyles(
+		selectors.hiddenValidActiveLabel,
+		'.Label--floating'
+	);
+
+	// Update line-height for floating label to account for scaling.
+	if (
+		appearance.rules[ '.Label--floating' ].transform &&
+		appearance.rules[ '.Label--floating' ].transform !== 'none'
+	) {
+		// Extract the scaling factors from the matrix
+		const transformMatrix =
+			appearance.rules[ '.Label--floating' ].transform;
+		const matrixValues = transformMatrix
+			.match( /matrix\((.+)\)/ )[ 1 ]
+			.split( ', ' );
+		const scaleX = parseFloat( matrixValues[ 0 ] );
+		const scaleY = parseFloat( matrixValues[ 3 ] );
+		const scale = ( scaleX + scaleY ) / 2;
+
+		const lineHeight = parseFloat(
+			appearance.rules[ '.Label--floating' ].lineHeight
+		);
+		const newLineHeight = Math.floor( lineHeight * scale );
+		appearance.rules[
+			'.Label--floating'
+		].lineHeight = `${ newLineHeight }px`;
+		appearance.rules[
+			'.Label--floating'
+		].fontSize = `${ newLineHeight }px`;
+		delete appearance.rules[ '.Label--floating' ].transform;
+	}
+
+	// Subtract the label's lineHeight from padding-top to account for floating label height.
+	// Minus 4px which is a constant value added by stripe to the padding-top.
+	// Minus 1px for each vertical padding to account for the unpredictable input height
+	// (see https://github.com/Automattic/woocommerce-payments/issues/9476#issuecomment-2374766540).
+	// When the result is less than 0, it will automatically use 0.
+	if ( appearance.rules[ '.Input' ].paddingTop ) {
+		appearance.rules[
+			'.Input'
+			// eslint-disable-next-line max-len
+		].paddingTop = `calc(${ appearance.rules[ '.Input' ].paddingTop } - ${ appearance.rules[ '.Label--floating' ].lineHeight } - 4px - 1px)`;
+	}
+	if ( appearance.rules[ '.Input' ].paddingBottom ) {
+		const originalPaddingBottom = parseFloat(
+			appearance.rules[ '.Input' ].paddingBottom
+		);
+		appearance.rules[
+			'.Input'
+			// eslint-disable-next-line max-len
+		].paddingBottom = `${ originalPaddingBottom - 1 }px`;
+
+		const originalLabelMarginTop =
+			appearance.rules[ '.Label' ].marginTop ?? '0';
+		appearance.rules[ '.Label' ].marginTop = `${ Math.floor(
+			( originalPaddingBottom - 1 ) / 3
+		) }px`;
+		appearance.rules[
+			'.Label--floating'
+		].marginTop = originalLabelMarginTop;
+	}
+
+	return appearance;
+};
+
+export const getAppearance = (
+	elementsLocation,
+	forWooPay = false,
+	isFloatingLabel = false
+) => {
 	const selectors = appearanceSelectors.getSelectors( elementsLocation );
 
 	// Add hidden fields to DOM for generating styles.
@@ -489,23 +568,31 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		fontSizeBase: labelRules.fontSize,
 	};
 
-	const appearance = {
+	let appearance = {
 		variables: globalRules,
 		theme: isColorLight( backgroundColor ) ? 'stripe' : 'night',
-		rules: {
-			'.Input': inputRules,
-			'.Input--invalid': inputInvalidRules,
-			'.Label': labelRules,
-			'.Block': blockRules,
-			'.Tab': tabRules,
-			'.Tab:hover': tabHoverRules,
-			'.Tab--selected': selectedTabRules,
-			'.TabIcon:hover': tabIconHoverRules,
-			'.TabIcon--selected': selectedTabIconRules,
-			'.Text': labelRules,
-			'.Text--redirect': labelRules,
-		},
+		labels: isFloatingLabel ? 'floating' : 'above',
+		// We need to clone the object to avoid modifying other rules when updating the appearance for floating labels.
+		rules: JSON.parse(
+			JSON.stringify( {
+				'.Input': inputRules,
+				'.Input--invalid': inputInvalidRules,
+				'.Label': labelRules,
+				'.Block': blockRules,
+				'.Tab': tabRules,
+				'.Tab:hover': tabHoverRules,
+				'.Tab--selected': selectedTabRules,
+				'.TabIcon:hover': tabIconHoverRules,
+				'.TabIcon--selected': selectedTabIconRules,
+				'.Text': labelRules,
+				'.Text--redirect': labelRules,
+			} )
+		),
 	};
+
+	if ( isFloatingLabel ) {
+		appearance = handleAppearanceForFloatingLabel( appearance, selectors );
+	}
 
 	if ( forWooPay ) {
 		appearance.rules = {
