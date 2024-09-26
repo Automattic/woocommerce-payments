@@ -4089,9 +4089,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			)
 		);
 
-		$methods_with_fees = array_keys( $this->account->get_fees() );
+		// $methods_with_fees = array_keys( $this->account->get_fees() );
 
-		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
+		// return array_values( array_intersect( $available_methods, $methods_with_fees ) );
+		return $available_methods;
 	}
 
 	/**
