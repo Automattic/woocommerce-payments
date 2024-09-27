@@ -11,7 +11,6 @@ use WC_Payments_Token_Service;
 use WC_Payments_Utils;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
-use WCPay\MultiCurrency\MultiCurrency;
 
 /**
  * Affirm Payment Method class extending UPE base class
@@ -34,7 +33,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/klarna-pill.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING, Currency_Code::EURO, Currency_Code::DANISH_KRONE, Currency_Code::NORWEGIAN_KRONE, Currency_Code::SWEDISH_KRONA ];
 		$this->accept_only_domestic_payment = true;
-		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM, Country_Code::AUSTRIA, Country_Code::GERMANY, Country_Code::NETHERLANDS, Country_Code::BELGIUM, Country_Code::SPAIN, Country_Code::ITALY, Country_Code::IRELAND, Country_Code::DENMARK, Country_Code::FINLAND, Country_Code::NORWAY, Country_Code::SWEDEN ];
+		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM, Country_Code::AUSTRIA, Country_Code::GERMANY, Country_Code::NETHERLANDS, Country_Code::BELGIUM, Country_Code::SPAIN, Country_Code::ITALY, Country_Code::IRELAND, Country_Code::DENMARK, Country_Code::FINLAND, Country_Code::NORWAY, Country_Code::SWEDEN, Country_Code::FRANCE ];
 		$this->limits_per_currency          = [
 			Currency_Code::UNITED_STATES_DOLLAR => [
 				Country_Code::UNITED_STATES => [
@@ -80,6 +79,10 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 				Country_Code::ITALY       => [
 					'min' => 0,
 					'max' => 1000000,
+				],
+				Country_Code::FRANCE      => [
+					'min' => 3500,
+					'max' => 400000,
 				],
 			],
 			Currency_Code::DANISH_KRONE         => [
