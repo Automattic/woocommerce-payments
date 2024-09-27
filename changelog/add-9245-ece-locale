@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Provide locale to Express Checkout Element.
