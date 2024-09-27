@@ -90,10 +90,6 @@ jest.mock(
 	{ virtual: true }
 );
 
-jest.mock( 'utils/express-checkout', () => ( {
-	buildAjaxURL: () => 'false',
-} ) );
-
 const BlocksCheckoutEnvironmentMock = ( { children } ) => (
 	<div>
 		<button className="wc-block-components-checkout-place-order-button">
@@ -221,15 +217,6 @@ describe( 'CheckoutPageSaveUser', () => {
 	} );
 
 	it( 'should render the save user form when checkbox is checked for blocks checkout', () => {
-		// getConfig.mockImplementation( ( setting ) => {
-		// 	switch ( setting ) {
-		// 		case 'forceNetworkSavedCards':
-		// 			return true;
-		// 		case 'wcAjaxUrl':
-		// 			return 'false';
-		// 	}
-		// } );
-
 		render( <CheckoutPageSaveUser isBlocksCheckout={ true } />, {
 			wrapper: BlocksCheckoutEnvironmentMock,
 		} );
@@ -251,17 +238,6 @@ describe( 'CheckoutPageSaveUser', () => {
 	} );
 
 	it( 'should not call `request` on classic checkout when checkbox is clicked', () => {
-		// buildAjaxURL.mockImplementation( () => 'false' );
-		getConfig.mockImplementation( ( setting ) => {
-			switch ( setting ) {
-				case 'forceNetworkSavedCards':
-					return true;
-				case 'wcAjaxUrl':
-					return 'false';
-			}
-		} );
-		request.mockResolvedValue( {} );
-
 		render( <CheckoutPageSaveUser isBlocksCheckout={ false } /> );
 
 		expect( request ).not.toHaveBeenCalled();
