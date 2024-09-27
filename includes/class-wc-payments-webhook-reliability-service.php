@@ -151,7 +151,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 */
 	private function schedule_process_event( string $event_id ) {
 		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_PROCESS_EVENT_ACTION, [ 'event_id' => $event_id ] );
-		Logger::info( 'Successfully schedule a job to processing event: ' . $event_id );
+		Logger::info( 'Successfully scheduled a job to process event: ' . $event_id );
 	}
 
 	/**
@@ -162,14 +162,8 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * @return void
 	 */
 	private function schedule_fetch_events() {
-		// If the ActionScheduler is not initialized, we will get a fatal error when trying to schedule.
-		if ( ! ActionScheduler::is_initialized() ) {
-			Logger::info( 'Skipping scheduling a job to fetch failed events from the server: ActionScheduler is not initialized.' );
-			return;
-		}
-
 		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_FETCH_EVENTS_ACTION );
-		Logger::info( 'Successfully schedule a job to fetch failed events from the server.' );
+		Logger::info( 'Successfully scheduled a job to fetch failed events from the server.' );
 	}
 
 	/**

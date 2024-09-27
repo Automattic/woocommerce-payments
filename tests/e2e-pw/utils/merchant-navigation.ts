@@ -8,6 +8,15 @@ export const goToOrder = async ( page: Page, orderId: string ) => {
 	await page.goto( `/wp-admin/post.php?post=${ orderId }&action=edit` );
 };
 
+export const goToPaymentDetails = async (
+	page: Page,
+	paymentIntentId: string
+) => {
+	await page.goto(
+		`/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=${ paymentIntentId }`
+	);
+};
+
 export const goToWooPaymentsSettings = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments'

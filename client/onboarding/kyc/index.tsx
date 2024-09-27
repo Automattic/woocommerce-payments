@@ -2,22 +2,28 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
-import { closeSmall, Icon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import Logo from 'assets/images/woopayments.svg';
+import WooLogo from 'assets/images/woo-logo.svg';
 import Page from 'components/page';
 import { OnboardingContextProvider } from 'onboarding/context';
 import EmbeddedKyc from 'onboarding/steps/embedded-kyc';
 import strings from 'onboarding/strings';
 import { getConnectUrl } from 'utils';
+import { trackKycExit } from 'wcpay/onboarding/tracking';
 
 const OnboardingKycPage: React.FC = () => {
-	const handleExit = () => {
-		const urlParams = new URLSearchParams( window.location.search );
+	const urlParams = new URLSearchParams( window.location.search );
+	const collectPayoutRequirements = !! urlParams.get(
+		'collect_payout_requirements'
+	);
 
+	const handleExit = () => {
+		trackKycExit();
+
+		// Let the connect logic determine where the merchant should end up.
 		window.location.href = getConnectUrl(
 			{
 				source:
@@ -53,8 +59,8 @@ const OnboardingKycPage: React.FC = () => {
 						{ strings.back }
 					</button>
 					<img
-						src={ Logo }
-						alt="WooPayments"
+						src={ WooLogo }
+						alt="Woo"
 						className="stepper__nav-logo"
 					/>
 					<button
@@ -62,12 +68,17 @@ const OnboardingKycPage: React.FC = () => {
 						className="stepper__nav-button"
 						onClick={ handleExit }
 					>
-						<Icon icon={ closeSmall } />
+						{ strings.cancel }
 					</button>
 				</div>
 				<div className="stepper__wrapper">
 					<div className="stepper__content">
-						<EmbeddedKyc continueKyc={ true } />
+						<EmbeddedKyc
+							continueKyc={ true }
+							collectPayoutRequirements={
+								collectPayoutRequirements
+							}
+						/>
 					</div>
 				</div>
 			</OnboardingContextProvider>

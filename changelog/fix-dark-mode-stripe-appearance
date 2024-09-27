@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed CC form input fields appearance when using RGBA

@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Show a notice in Payments > Settings > Deposits if there is an error with the bank account.

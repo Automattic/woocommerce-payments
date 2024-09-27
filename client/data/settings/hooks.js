@@ -328,6 +328,7 @@ export const useSettings = () => {
 	const isSaving = useSelect( ( select ) =>
 		select( STORE_NAME ).isSavingSettings()
 	);
+	const isDirty = useSelect( ( select ) => select( STORE_NAME ).isDirty() );
 
 	const isLoading = useSelect( ( select ) => {
 		select( STORE_NAME ).getSettings();
@@ -342,6 +343,7 @@ export const useSettings = () => {
 		isLoading,
 		saveSettings,
 		isSaving,
+		isDirty,
 	};
 };
 

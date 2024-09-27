@@ -71,6 +71,8 @@ const StoreSettings = () => {
 
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
+	const [ isDirty, setIsDirty ] = useState( false );
+
 	useEffect( () => {
 		if ( Object.keys( storeSettings ).length ) {
 			setIsStorefrontSwitcherEnabledValue(
@@ -88,10 +90,12 @@ const StoreSettings = () => {
 
 	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
 		setIsAutomaticSwitchEnabledValue( value );
+		setIsDirty( true );
 	};
 
 	const handleIsStorefrontSwitcherEnabledClick = ( value ) => {
 		setIsStorefrontSwitcherEnabledValue( value );
+		setIsDirty( true );
 	};
 
 	const saveSettings = () => {
@@ -101,6 +105,7 @@ const StoreSettings = () => {
 			isStorefrontSwitcherEnabledValue
 		);
 		setIsSavingSettings( false );
+		setIsDirty( false );
 	};
 
 	return (
@@ -192,7 +197,7 @@ const StoreSettings = () => {
 				<Button
 					isPrimary
 					isBusy={ isSavingSettings }
-					disabled={ isSavingSettings }
+					disabled={ isSavingSettings || ! isDirty }
 					onClick={ saveSettings }
 				>
 					{ __( 'Save changes', 'woocommerce-payments' ) }

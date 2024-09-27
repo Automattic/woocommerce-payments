@@ -102,6 +102,8 @@ const SaveFraudProtectionSettingsButton: React.FC = ( { children } ) => {
 };
 
 const FraudProtectionAdvancedSettingsPage: React.FC = () => {
+	const [ isDirty, setIsDirty ] = useState( false );
+
 	const { saveSettings, isLoading, isSaving } = useSettings() as SettingsHook;
 
 	const cardObserver = useRef< IntersectionObserver >();
@@ -327,7 +329,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 			disabled={
 				isSaving ||
 				isLoading ||
-				'error' === advancedFraudProtectionSettings
+				'error' === advancedFraudProtectionSettings ||
+				! isDirty
 			}
 		>
 			{ __( 'Save Changes', 'woocommerce-payments' ) }
@@ -341,6 +344,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 				setProtectionSettingsUI,
 				protectionSettingsChanged,
 				setProtectionSettingsChanged,
+				setIsDirty,
 			} }
 		>
 			<SettingsLayout displayBanner={ false }>
