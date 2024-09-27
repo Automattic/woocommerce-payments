@@ -16,6 +16,11 @@ export const displayType = {
 	withdrawal: __( 'Withdrawal', 'woocommerce-payments' ),
 };
 
+/**
+ * Display status strings for each deposit status.
+ *
+ * 'deducted' is a display status representing a deposit of the type 'withdrawal' and status 'paid'.
+ */
 export const displayStatus: Record< DepositStatus | 'deducted', string > = {
 	paid: __( 'Paid', 'woocommerce-payments' ),
 	deducted: __( 'Deducted', 'woocommerce-payments' ),

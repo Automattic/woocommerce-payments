@@ -9,9 +9,10 @@ import { getSetting } from '@woocommerce/settings';
  */
 import { displayStatus } from 'deposits/strings';
 
-const depositStatusOptions = Object.entries(
-	displayStatus
-).map( ( [ status, label ] ) => ( { label, value: status } ) );
+const depositStatusOptions = Object.entries( displayStatus )
+	// Ignore the 'deducted' status, which is only a display status and not to be used in filters.
+	.filter( ( [ status ] ) => status !== 'deducted' )
+	.map( ( [ status, label ] ) => ( { label, value: status } ) );
 
 export const filters = [
 	{
