@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Do not display BNPL methods and PMME when WooPayments is disabled

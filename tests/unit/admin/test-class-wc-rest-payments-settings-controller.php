@@ -377,11 +377,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
 
 		$request = new WP_REST_Request();
+
+		// Ideal will not have the capability status, 'active', and will therefore not added to the list of enabled payment methods.
 		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::IDEAL ] );
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::IDEAL ], WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' ) );
+		$this->assertEquals( [ Payment_Method::CARD ], WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
 
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {
