@@ -239,9 +239,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		updatePhoneNumber();
 	}, [ updatePhoneNumber ] );
 
-	// When using billing same as shipping, we need to add the blur event to
-	// the billing phone field to update the phone number when it changes because
-	// it does not trigger the update customer data event.
+	// Update the WooPay phone number on the phone field blur event.
 	useEffect( () => {
 		if ( ! isBlocksCheckout ) {
 			document
