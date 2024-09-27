@@ -16,8 +16,9 @@ export const displayType = {
 	withdrawal: __( 'Withdrawal', 'woocommerce-payments' ),
 };
 
-export const displayStatus: Record< DepositStatus, string > = {
+export const displayStatus: Record< DepositStatus | 'deducted', string > = {
 	paid: __( 'Paid', 'woocommerce-payments' ),
+	deducted: __( 'Deducted', 'woocommerce-payments' ),
 	pending: __( 'Pending', 'woocommerce-payments' ),
 	in_transit: __( 'In transit', 'woocommerce-payments' ),
 	canceled: __( 'Canceled', 'woocommerce-payments' ),

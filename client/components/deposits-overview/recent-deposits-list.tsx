@@ -51,7 +51,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 				</Link>
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
-				<DepositStatusChip status={ deposit.status } />
+				<DepositStatusChip deposit={ deposit } />
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				{ formatCurrency( deposit.amount, deposit.currency ) }

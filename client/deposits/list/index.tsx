@@ -156,9 +156,7 @@ export const DepositsList = (): JSX.Element => {
 			},
 			status: {
 				value: displayStatus[ deposit.status ],
-				display: clickable(
-					<DepositStatusChip status={ deposit.status } />
-				),
+				display: clickable( <DepositStatusChip deposit={ deposit } /> ),
 			},
 			bankAccount: {
 				value: deposit.bankAccount,
