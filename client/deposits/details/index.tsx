@@ -116,9 +116,15 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 		);
 	}
 
-	const depositDateLabel = deposit.automatic
-		? __( 'Deposit date', 'woocommerce-payments' )
-		: __( 'Instant deposit date', 'woocommerce-payments' );
+	const isWithdrawal = deposit.type === 'withdrawal';
+
+	let depositDateLabel = __( 'Deposit date', 'woocommerce-payments' );
+	if ( ! deposit.automatic ) {
+		depositDateLabel = __( 'Instant deposit date', 'woocommerce-payments' );
+	}
+	if ( isWithdrawal ) {
+		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
+	}
 
 	const depositDateItem = (
 		<SummaryItem
@@ -152,16 +158,30 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 				</Card>
 			) : (
 				<SummaryList
-					label={ __( 'Deposit overview', 'woocommerce-payments' ) }
+					label={
+						isWithdrawal
+							? __(
+									'Withdrawal overview',
+									'woocommerce-payments'
+							  )
+							: __( 'Deposit overview', 'woocommerce-payments' )
+					}
 				>
 					{ () => [
 						depositDateItem,
 						<SummaryItem
 							key="depositAmount"
-							label={ __(
-								'Deposit amount',
-								'woocommerce-payments'
-							) }
+							label={
+								isWithdrawal
+									? __(
+											'Withdrawal amount',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Deposit amount',
+											'woocommerce-payments'
+									  )
+							}
 							value={ formatExplicitCurrency(
 								deposit.amount + deposit.fee,
 								deposit.currency
@@ -184,10 +204,17 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 						/>,
 						<SummaryItem
 							key="netDepositAmount"
-							label={ __(
-								'Net deposit amount',
-								'woocommerce-payments'
-							) }
+							label={
+								isWithdrawal
+									? __(
+											'Net withdrawal amount',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Net deposit amount',
+											'woocommerce-payments'
+									  )
+							}
 							value={ formatExplicitCurrency(
 								deposit.amount,
 								deposit.currency
@@ -255,7 +282,10 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 							</CardBody>
 						</Card>
 					) : (
-						<TransactionsList depositId={ depositId } />
+						<TransactionsList
+							depositId={ depositId }
+							depositType={ deposit.type }
+						/>
 					) }
 				</ErrorBoundary>
 			) }
