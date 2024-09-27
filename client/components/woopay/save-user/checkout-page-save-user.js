@@ -3,17 +3,13 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
-import {
-	extensionCartUpdate,
-	ValidationInputError,
-} from '@woocommerce/blocks-checkout'; // eslint-disable-line import/no-unresolved
+import { ValidationInputError } from '@woocommerce/blocks-checkout'; // eslint-disable-line import/no-unresolved
 import {
 	VALIDATION_STORE_KEY,
 	CHECKOUT_STORE_KEY,
-	CART_STORE_KEY,
 } from '@woocommerce/block-data'; // eslint-disable-line import/no-unresolved
 
 /**
@@ -21,10 +17,12 @@ import {
  */
 import PhoneNumberInput from 'settings/phone-input';
 import { getConfig } from 'utils/checkout';
+import { buildAjaxURL } from 'utils/express-checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
 import Container from './container';
 import useWooPayUser from '../hooks/use-woopay-user';
+import request from '../../../checkout/utils/request';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { recordUserEvent } from 'tracks';
 import './style.scss';
@@ -43,7 +41,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
-	const [ isPhoneNumberTouched, setPhoneNumberTouched ] = useState( false );
+	const isPhoneNumberTouched = useRef( false );
 
 	const checkoutIsProcessing = useSelect( ( select ) =>
 		select( CHECKOUT_STORE_KEY ).isProcessing()
@@ -51,15 +49,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 	const isBillingSameAsShipping = useSelect( ( select ) =>
 		select( CHECKOUT_STORE_KEY ).getUseShippingAsBilling()
-	);
-
-	const billingAddressPhone = useSelect(
-		( select ) =>
-			select( CART_STORE_KEY ).getCartData()?.billingAddress?.phone
-	);
-
-	const isCustomerDataUpdating = useSelect( ( select ) =>
-		select( CART_STORE_KEY ).isCustomerDataUpdating()
 	);
 
 	const isRegisteredUser = useWooPayUser();
@@ -128,22 +117,28 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const sendExtensionData = useCallback(
 		( shouldClearData = false ) => {
 			const data = shouldClearData
-				? {}
+				? { empty: 1 }
 				: {
-						save_user_in_woopay: isSaveDetailsChecked,
+						save_user_in_woopay: isSaveDetailsChecked ? 1 : 0,
 						woopay_source_url:
 							wcSettings?.storePages?.checkout?.permalink,
-						woopay_is_blocks: true,
+						woopay_is_blocks: 1,
 						woopay_viewport: `${ viewportWidth }x${ viewportHeight }`,
 						woopay_user_phone_field: {
 							full: phoneNumber,
 						},
 				  };
 
-			extensionCartUpdate( {
-				namespace: 'woopay',
-				data: data,
-			} )?.then( () => {
+			request(
+				buildAjaxURL(
+					getConfig( 'wcAjaxUrl' ),
+					'set_woopay_phone_number'
+				),
+				{
+					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+					...data,
+				}
+			).then( () => {
 				setUserDataSent( ! shouldClearData );
 			} );
 		},
@@ -232,34 +227,45 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		? isWCPayChosen
 		: isWCPayChosen && isNewPaymentTokenChosen;
 
-	useEffect( () => {
-		setPhoneNumber( getPhoneFieldValue() );
-	}, [ getPhoneFieldValue, isWCPayWithNewTokenChosen ] );
-
 	const updatePhoneNumber = useCallback( () => {
+		if ( isPhoneNumberTouched.current ) {
+			return;
+		}
+
 		setPhoneNumber( getPhoneFieldValue() );
-	}, [ setPhoneNumber, getPhoneFieldValue ] );
+	}, [ setPhoneNumber, getPhoneFieldValue, isPhoneNumberTouched ] );
+
+	useEffect( () => {
+		updatePhoneNumber();
+	}, [ updatePhoneNumber ] );
 
 	// When using billing same as shipping, we need to add the blur event to
 	// the billing phone field to update the phone number when it changes because
 	// it does not trigger the update customer data event.
 	useEffect( () => {
 		if ( ! isBlocksCheckout ) {
+			document
+				.querySelector( '#billing_phone' )
+				?.addEventListener( 'blur', updatePhoneNumber );
 			return;
 		}
+
+		updatePhoneNumber();
 
 		if ( isBillingSameAsShipping ) {
 			document
 				.querySelector( '#billing-phone' )
 				?.removeEventListener( 'blur', updatePhoneNumber );
 
-			if ( ! isPhoneNumberTouched ) {
-				setTimeout( () => {
-					setPhoneNumber( getPhoneFieldValue() );
-				}, 0 );
-			}
+			document
+				.querySelector( '#shipping-phone' )
+				?.addEventListener( 'blur', updatePhoneNumber );
 			return;
 		}
+
+		document
+			.querySelector( '#shipping-phone' )
+			?.removeEventListener( 'blur', updatePhoneNumber );
 
 		document
 			.querySelector( '#billing-phone' )
@@ -269,33 +275,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		updatePhoneNumber,
 		isPhoneNumberTouched,
 		getPhoneFieldValue,
-		isBlocksCheckout,
-	] );
-
-	// When not using billing same as shipping, we need to update the phone number
-	// when update customer data is triggered, it will not work as expected when
-	// adding a blur event.
-	useEffect( () => {
-		if (
-			! isBlocksCheckout ||
-			isPhoneNumberTouched ||
-			! isBillingSameAsShipping
-		) {
-			return;
-		}
-
-		if ( isCustomerDataUpdating ) {
-			setTimeout( () => {
-				setPhoneNumber( getPhoneFieldValue() );
-			}, 0 );
-		}
-	}, [
-		billingAddressPhone,
-		setPhoneNumber,
-		getPhoneFieldValue,
-		isCustomerDataUpdating,
-		isPhoneNumberTouched,
-		isBillingSameAsShipping,
 		isBlocksCheckout,
 	] );
 
@@ -390,7 +369,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								onCountryDropdownClick={
 									handleCountryDropdownClick
 								}
-								onClick={ () => setPhoneNumberTouched( true ) }
+								onClick={ () =>
+									( isPhoneNumberTouched.current = true )
+								}
 								inputProps={ {
 									name:
 										'woopay_user_phone_field[no-country-code]',
