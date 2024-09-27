@@ -3,7 +3,6 @@
 /**
  * External dependencies
  */
-import { DepositsTableHeader } from 'wcpay/types/deposits';
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
 import { useMemo } from '@wordpress/element';
@@ -19,10 +18,12 @@ import {
 } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import { parseInt } from 'lodash';
 
 /**
  * Internal dependencies.
  */
+import type { DepositsTableHeader } from 'wcpay/types/deposits';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { useReportingExportLanguage } from 'data/index';
 import { displayType, displayStatus } from '../strings';
@@ -44,7 +45,6 @@ import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
-import { parseInt } from 'lodash';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
