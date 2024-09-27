@@ -41,9 +41,26 @@ import './style.scss';
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
  */
-const Status: React.FC< { status: string } > = ( { status } ) => (
-	<OrderStatus order={ { status } } orderStatusMap={ displayStatus } />
-);
+const DepositStatusIndicator: React.FC< {
+	deposit: Pick< CachedDeposit, 'status' | 'type' >;
+} > = ( { deposit } ) => {
+	let displayStatusMap = displayStatus;
+
+	// Withdrawals are displayed as 'Deducted' instead of 'Paid' when the status is 'paid'.
+	if ( deposit.type === 'withdrawal' ) {
+		displayStatusMap = {
+			...displayStatus,
+			paid: displayStatus.deducted,
+		};
+	}
+
+	return (
+		<OrderStatus
+			order={ { status: deposit.status } }
+			orderStatusMap={ displayStatusMap }
+		/>
+	);
+};
 
 interface SummaryItemProps {
 	label: string;
@@ -114,7 +131,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 				)
 			}
-			value={ <Status status={ deposit.status } /> }
+			value={ <DepositStatusIndicator deposit={ deposit } /> }
 			detail={ deposit.bankAccount }
 		/>
 	);
