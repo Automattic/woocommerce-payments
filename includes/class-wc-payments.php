@@ -1495,20 +1495,21 @@ class WC_Payments {
 	 * Removes WCPay notes from the WC-Admin inbox.
 	 */
 	public static function remove_woo_admin_notes() {
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			self::$remote_note_service->delete_notes();
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
-			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
-
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
-			WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
-
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
-			WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
-
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
-			WC_Payments_Notes_Set_Up_StripeLink::possibly_delete_note();
+		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '4.4.0', '<' ) ) {
+			return;
 		}
+		self::$remote_note_service->delete_notes();
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
+		WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
+		WC_Payments_Notes_Set_Https_For_Checkout::possibly_delete_note();
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
+		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_delete_note();
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
+		WC_Payments_Notes_Set_Up_StripeLink::possibly_delete_note();
 	}
 
 	/**

@@ -24,9 +24,13 @@ define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscriptions-core/' );
 
+// TODO: check if autoloader is needed that early.
 require_once __DIR__ . '/vendor/autoload_packages.php';
+// Do we need features in all contexts?
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
+// Probably not needed in every context, so should be moved to a more specific hook.
 require_once __DIR__ . '/includes/woopay-user/class-woopay-extension.php';
+// That loads the class before even init called, but it's never used before that.
 require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
 
 /**
@@ -57,6 +61,7 @@ function wcpay_deactivated() {
 	WC_Payments::remove_woo_admin_notes();
 }
 
+// Worth moving plugin activation/deactivation hooks and code to its own file to keep this one clean.
 register_activation_hook( __FILE__, 'wcpay_activated' );
 register_deactivation_hook( __FILE__, 'wcpay_deactivated' );
 
@@ -66,7 +71,8 @@ if ( ! $is_autoloading_ready ) {
 	return;
 }
 
-
+// TODO: Move all Jetpack loading code into its own file.
+// Do we need connection on all pages and requests?
 /**
  * Initialize the Jetpack functionalities: connection, identity crisis, etc.
  *
@@ -160,10 +166,13 @@ function wcpay_init() {
 	}
 }
 
+// TODO: Why to hook into plugins_loaded, and not init?
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
 // If you change the priority of this action, you'll need to change it in the wcpay_check_old_jetpack_version function too.
 add_action( 'plugins_loaded', 'wcpay_init', 11 );
 
+// TODO: Move subs init into separate file.
+// TODO: In which context is it needed?
 if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 
 	/**
@@ -252,8 +261,11 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 		new WC_Subscriptions_Core_Plugin();
 	}
 }
+// If the function already exists (checked above), do we need to hook it here? Will it be called twice?
 add_action( 'plugins_loaded', 'wcpay_init_subscriptions_core', 0 );
 
+
+// TODO: Do we stil need this check?
 /**
  * Check if WCPay is installed alongside an old version of Jetpack (8.1 or earlier). Due to the autoloader code in those old
  * versions, the Jetpack Config initialization code would just crash the site.
@@ -393,6 +405,7 @@ function wcpay_tasks_init() {
 	}
 }
 
+// Is it needed anywhere outside WP_ADMIN page flow?
 add_action( 'plugins_loaded', 'wcpay_tasks_init' );
 
 /**
@@ -402,8 +415,11 @@ function register_woopay_extension() {
 	( new WooPay_Extension() )->register_extend_rest_api_update_callback();
 }
 
+// That's Woo specific hook, so worth moving to its separate file.
+// Is it needed in front end pages only? Is it needed in admin pages? Probably not needed in API requests (rest and ajax) and cron.
 add_action( 'woocommerce_blocks_loaded', 'register_woopay_extension' );
 
+// That's Woo specific hook, so worth moving to its separate file.
 /**
  * As the class is defined in later versions of WC, Psalm infers error.
  *
