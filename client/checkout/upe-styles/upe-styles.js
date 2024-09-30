@@ -76,6 +76,7 @@ const upeSupportedProperties = {
 		...paddingColorProps.slice( 1 ), // Remove color
 		...borderOutlineBackgroundProps.slice( 1 ), // Remove backgroundColor
 	],
+	'.Container': [ ...borderOutlineBackgroundProps ],
 };
 
 // Restricted properties allowed to generate the automated theming of UPE.
@@ -109,4 +110,5 @@ export const upeRestrictedProperties = {
 	'.TabIcon--selected': [ ...restrictedTabIconSelectedProperties ],
 	'.TabLabel': upeSupportedProperties[ '.TabLabel' ],
 	'.Block': upeSupportedProperties[ '.Block' ],
+	'.Container': upeSupportedProperties[ '.Container' ],
 };
