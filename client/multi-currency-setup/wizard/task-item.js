@@ -15,8 +15,8 @@ const WizardTaskItem = ( {
 	children,
 	title,
 	index,
-	className,
 	visibleDescription,
+	className = '',
 } ) => {
 	const { isCompleted, isActive } = useContext( WizardTaskContext );
 
