@@ -1,6 +1,6 @@
 *** WooPayments Changelog ***
 
-= 8.3.0 - 2024-10-02 =
+= 8.3.0-test-3 - unreleased =
 * Add - Add compatibility with the buttonAttributes API from Woo Blocks
 * Add - Add rate limiter to compatibility data updates
 * Add - Add UTC to the date time column header of transactions list page.
