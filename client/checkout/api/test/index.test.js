@@ -42,6 +42,7 @@ const mockAppearance = {
 		'.Heading': {},
 		'.Button': {},
 		'.Link': {},
+		'.Container': {},
 	},
 	theme: 'stripe',
 	variables: {
