@@ -464,23 +464,24 @@ const handleAppearanceForFloatingLabel = ( appearance, selectors ) => {
 		// Extract the scaling factors from the matrix
 		const transformMatrix =
 			appearance.rules[ '.Label--floating' ].transform;
-		const matrixValues = transformMatrix
-			.match( /matrix\((.+)\)/ )[ 1 ]
-			.split( ', ' );
-		const scaleX = parseFloat( matrixValues[ 0 ] );
-		const scaleY = parseFloat( matrixValues[ 3 ] );
-		const scale = ( scaleX + scaleY ) / 2;
+		const matrixValues = transformMatrix.match( /matrix\((.+)\)/ )[ 1 ];
+		if ( matrixValues ) {
+			const splitMatrixValues = matrixValues.split( ', ' );
+			const scaleX = parseFloat( splitMatrixValues[ 0 ] );
+			const scaleY = parseFloat( splitMatrixValues[ 3 ] );
+			const scale = ( scaleX + scaleY ) / 2;
 
-		const lineHeight = parseFloat(
-			appearance.rules[ '.Label--floating' ].lineHeight
-		);
-		const newLineHeight = Math.floor( lineHeight * scale );
-		appearance.rules[
-			'.Label--floating'
-		].lineHeight = `${ newLineHeight }px`;
-		appearance.rules[
-			'.Label--floating'
-		].fontSize = `${ newLineHeight }px`;
+			const lineHeight = parseFloat(
+				appearance.rules[ '.Label--floating' ].lineHeight
+			);
+			const newLineHeight = Math.floor( lineHeight * scale );
+			appearance.rules[
+				'.Label--floating'
+			].lineHeight = `${ newLineHeight }px`;
+			appearance.rules[
+				'.Label--floating'
+			].fontSize = `${ newLineHeight }px`;
+		}
 		delete appearance.rules[ '.Label--floating' ].transform;
 	}
 
@@ -517,11 +518,7 @@ const handleAppearanceForFloatingLabel = ( appearance, selectors ) => {
 	return appearance;
 };
 
-export const getAppearance = (
-	elementsLocation,
-	forWooPay = false,
-	isFloatingLabel = false
-) => {
+export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	const selectors = appearanceSelectors.getSelectors( elementsLocation );
 
 	// Add hidden fields to DOM for generating styles.
@@ -567,6 +564,9 @@ export const getAppearance = (
 		fontFamily: labelRules.fontFamily,
 		fontSizeBase: labelRules.fontSize,
 	};
+
+	const isFloatingLabel =
+		elementsLocation === 'blocks_checkout' ? 'floating' : 'above';
 
 	let appearance = {
 		variables: globalRules,
