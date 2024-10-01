@@ -582,7 +582,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( is_checkout() || is_add_payment_method_page() ) {
 			if ( WC_Payments::mode()->is_test() ) {
-				$test_mode_badge = '<span class="test-mode badge">Test Mode</span>';
+				$test_mode_badge = '<span class="test-mode badge">' . __( 'Test Mode', 'woocommerce-payments' ) . '</span>';
 			} else {
 				$test_mode_badge = '<span></span>'; // Empty span to maintain layout.
 			}
