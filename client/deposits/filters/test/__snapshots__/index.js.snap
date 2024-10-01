@@ -5,7 +5,7 @@ HTMLOptionsCollection [
   <option
     value="paid"
   >
-    Paid
+    Paid / Deducted
   </option>,
   <option
     value="pending"
