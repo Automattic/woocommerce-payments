@@ -15,8 +15,10 @@ export const appearanceSelectors = {
 	default: {
 		hiddenContainer: '#wcpay-hidden-div',
 		hiddenInput: '#wcpay-hidden-input',
+		hiddenInputLabel: '#wcpay-hidden-valid-active-label',
+		hiddenTextSelector: '#wcpay-hidden-text',
 		hiddenInvalidInput: '#wcpay-hidden-invalid-input',
-		hiddenValidActiveLabel: '#wcpay-hidden-valid-active-label',
+		hiddenInvalidInputLabel: '#wcpay-hidden-invalid-input-label',
 	},
 	classicCheckout: {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
@@ -62,6 +64,7 @@ export const appearanceSelectors = {
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		themeTextSelector: '.wc-block-components-checkout-step__description',
 		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
 		linkSelectors: [ 'a' ],
 	},
@@ -216,7 +219,7 @@ const hiddenElementsForUPE = {
 	 *
 	 * @return {Object} Object of the created hidden container element.
 	 */
-	getHiddenContainer: function ( elementID ) {
+	createHiddenContainer: function ( elementID ) {
 		const hiddenDiv = document.createElement( 'div' );
 		hiddenDiv.setAttribute( 'id', this.getIDFromSelector( elementID ) );
 		hiddenDiv.style.border = 0;
@@ -295,57 +298,54 @@ const hiddenElementsForUPE = {
 			return;
 		}
 
-		// Remove hidden container is already present on DOM.
+		// Remove hidden container if already present on DOM.
 		if ( document.querySelector( selectors.hiddenContainer ) ) {
 			this.cleanup();
 		}
 
 		// Create hidden container & append to target.
-		const hiddenContainer = this.getHiddenContainer(
+		const hiddenContainer = this.createHiddenContainer(
 			selectors.hiddenContainer
 		);
 		appendTarget.appendChild( hiddenContainer );
 
-		// Create hidden valid row & append to hidden container.
+		// Create hidden `valid` input and label.
 		const hiddenValidRow = this.createRow(
 			selectors.rowElement,
 			selectors.validClasses
 		);
 		hiddenContainer.appendChild( hiddenValidRow );
-
-		// Create hidden invalid row & append to hidden container.
-		const hiddenInvalidRow = this.createRow(
-			selectors.rowElement,
-			selectors.invalidClasses
-		);
-		hiddenContainer.appendChild( hiddenInvalidRow );
-
-		// Clone & append target input  to hidden valid row.
 		this.appendClone(
 			hiddenValidRow,
 			selectors.upeThemeInputSelector,
 			selectors.hiddenInput
 		);
-
-		// Clone & append target label to hidden valid row.
 		this.appendClone(
 			hiddenValidRow,
 			selectors.upeThemeLabelSelector,
-			selectors.hiddenValidActiveLabel
+			selectors.hiddenInputLabel
+		);
+		this.appendClone(
+			hiddenValidRow,
+			selectors.themeTextSelector,
+			selectors.hiddenTextSelector
 		);
 
-		// Clone & append target input  to hidden invalid row.
+		// Create hidden `invalid` input and label.
+		const hiddenInvalidRow = this.createRow(
+			selectors.rowElement,
+			selectors.invalidClasses
+		);
+		hiddenContainer.appendChild( hiddenInvalidRow );
 		this.appendClone(
 			hiddenInvalidRow,
 			selectors.upeThemeInputSelector,
 			selectors.hiddenInvalidInput
 		);
-
-		// Clone & append target label to hidden invalid row.
 		this.appendClone(
 			hiddenInvalidRow,
 			selectors.upeThemeLabelSelector,
-			selectors.hiddenInvalidInput
+			selectors.hiddenInvalidInputLabel
 		);
 
 		// Remove transitions & focus on hidden element.
@@ -462,10 +462,7 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		'.Input'
 	);
 
-	const labelRules = getFieldStyles(
-		selectors.upeThemeLabelSelector,
-		'.Label'
-	);
+	const labelRules = getFieldStyles( selectors.hiddenInputLabel, '.Label' );
 
 	const tabRules = getFieldStyles( selectors.upeThemeInputSelector, '.Tab' );
 	const selectedTabRules = getFieldStyles(
@@ -482,14 +479,13 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	};
 
 	const backgroundColor = getBackgroundColor( selectors.backgroundSelectors );
-	const headingRules = getFieldStyles( selectors.headingSelectors, '.Label' );
+
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
 		'.Block',
 		backgroundColor
 	);
-	const buttonRules = getFieldStyles( selectors.buttonSelectors, '.Input' );
-	const linkRules = getFieldStyles( selectors.linkSelectors, '.Label' );
+
 	const globalRules = {
 		colorBackground: backgroundColor,
 		colorText: labelRules.color,
@@ -503,42 +499,55 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		variables: globalRules,
 		theme: isColorLight( backgroundColor ) ? 'stripe' : 'night',
 		labels: isFloatingLabel ? 'floating' : 'above',
-		// We need to clone the object to avoid modifying other rules when updating the appearance for floating labels.
-		rules: JSON.parse(
-			JSON.stringify( {
-				'.Input': inputRules,
-				'.Input--invalid': inputInvalidRules,
-				'.Label': labelRules,
-				'.Block': blockRules,
-				'.Tab': tabRules,
-				'.Tab:hover': tabHoverRules,
-				'.Tab--selected': selectedTabRules,
-				'.TabIcon:hover': tabIconHoverRules,
-				'.TabIcon--selected': selectedTabIconRules,
-				'.Text': labelRules,
-				'.Text--redirect': labelRules,
-			} )
-		),
+		rules: {
+			'.Input': inputRules,
+			'.Input--invalid': inputInvalidRules,
+			'.Label': labelRules,
+			'.Block': blockRules,
+			'.Tab': tabRules,
+			'.Tab:hover': tabHoverRules,
+			'.Tab--selected': selectedTabRules,
+			'.TabIcon:hover': tabIconHoverRules,
+			'.TabIcon--selected': selectedTabIconRules,
+			'.Text': labelRules,
+			'.Text--redirect': labelRules,
+		},
 	};
 
 	if ( isFloatingLabel ) {
 		appearance = handleAppearanceForFloatingLabel(
 			appearance,
-			getFieldStyles(
-				selectors.hiddenValidActiveLabel,
-				'.Label--floating'
-			)
+			getFieldStyles( selectors.hiddenInputLabel, '.Label--floating' )
 		);
 	}
 
 	if ( forWooPay ) {
+		const invalidLabelRules = getFieldStyles(
+			selectors.hiddenInvalidInputLabel,
+			'.Label'
+		);
+
+		const headingRules = getFieldStyles(
+			selectors.headingSelectors,
+			'.Label'
+		);
+		const buttonRules = getFieldStyles(
+			selectors.buttonSelectors,
+			'.Input'
+		);
+		const linkRules = getFieldStyles( selectors.linkSelectors, '.Label' );
+
 		appearance.rules = {
 			...appearance.rules,
 			'.Heading': headingRules,
 			'.Button': buttonRules,
 			'.Link': linkRules,
+			'.Label--invalid': invalidLabelRules,
 		};
 	}
+
+	// We need to clone the object to avoid modifying other rules when updating the appearance for floating labels.
+	appearance.rules = JSON.parse( JSON.stringify( appearance.rules ) );
 
 	// Remove hidden fields from DOM.
 	hiddenElementsForUPE.cleanup();
