@@ -90,6 +90,15 @@ const mockDeposits = [
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
 	} as CachedDeposit,
+	{
+		id: 'po_mock3',
+		date: '2020-01-04 17:46:02',
+		type: 'withdrawal',
+		amount: 4000,
+		status: 'paid',
+		bankAccount: 'MOCK BANK •••• 1234 (USD)',
+		currency: 'USD',
+	} as CachedDeposit,
 ];
 
 // Creates a mock Overview object for the given currency code and balance amounts.
