@@ -161,9 +161,9 @@ export const handleAppearanceForFloatingLabel = (
 		// Extract the scaling factors from the matrix
 		const transformMatrix =
 			appearance.rules[ '.Label--floating' ].transform;
-		const matrixValues = transformMatrix.match( /matrix\((.+)\)/ )[ 1 ];
-		if ( matrixValues ) {
-			const splitMatrixValues = matrixValues.split( ', ' );
+		const matrixValues = transformMatrix.match( /matrix\((.+)\)/ );
+		if ( matrixValues && matrixValues[ 1 ] ) {
+			const splitMatrixValues = matrixValues[ 1 ].split( ', ' );
 			const scaleX = parseFloat( splitMatrixValues[ 0 ] );
 			const scaleY = parseFloat( splitMatrixValues[ 3 ] );
 			const scale = ( scaleX + scaleY ) / 2;
