@@ -267,10 +267,40 @@ describe( 'Transactions list', () => {
 			isLoading: false,
 		} );
 
-		const { container } = render(
+		const { container, getByRole } = render(
 			<TransactionsList depositId="po_mock" />
 		);
 		expect( container ).toMatchSnapshot();
+		getByRole( 'heading', { name: 'Deposit transactions' } );
+		expect( mockUseTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
+	} );
+
+	test( 'renders correctly when filtered by deposit of type withdrawal', () => {
+		mockUseTransactions.mockReturnValue( {
+			transactions: getMockTransactions().filter(
+				( txn: Transaction ) => 'po_mock' === txn.deposit_id
+			),
+			transactionsError: undefined,
+			isLoading: false,
+		} );
+
+		mockUseTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 3,
+				currency: 'usd',
+				store_currencies: [ 'usd' ],
+				fees: 30,
+				total: 300,
+				net: 270,
+			},
+			isLoading: false,
+		} );
+
+		const { container, getByRole } = render(
+			<TransactionsList depositId="po_mock" depositType="withdrawal" />
+		);
+		expect( container ).toMatchSnapshot();
+		getByRole( 'heading', { name: 'Withdrawal transactions' } );
 		expect( mockUseTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
 	} );
 

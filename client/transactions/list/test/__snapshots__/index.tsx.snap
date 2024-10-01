@@ -131,7 +131,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                         aria-haspopup="true"
                         autocomplete="off"
                         class="woocommerce-select-control__control-input"
-                        id="woocommerce-select-control-15__control-input"
+                        id="woocommerce-select-control-16__control-input"
                         placeholder=""
                         role="combobox"
                         type="text"
@@ -139,7 +139,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       />
                       <span
                         class="screen-reader-text"
-                        id="search-inline-input-15"
+                        id="search-inline-input-16"
                       >
                         Move backward for selected items
                       </span>
@@ -208,14 +208,14 @@ exports[`Transactions list renders correctly when can filter by several currenci
           data-wp-component="CardBody"
         >
           <div
-            aria-labelledby="caption-15"
+            aria-labelledby="caption-16"
             class="woocommerce-table__table"
             role="group"
           >
             <table>
               <caption
                 class="woocommerce-table__caption screen-reader-text"
-                id="caption-15"
+                id="caption-16"
               >
                 Transactions
               </caption>
@@ -228,7 +228,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-15-0"
+                      aria-describedby="header-16-0"
                       class="components-button"
                       type="button"
                     >
@@ -257,7 +257,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-15-0"
+                      id="header-16-0"
                     >
                       Sort by Date and time in ascending order
                     </span>
@@ -301,7 +301,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-15-3"
+                      aria-describedby="header-16-3"
                       class="components-button"
                       type="button"
                     >
@@ -330,7 +330,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-15-3"
+                      id="header-16-3"
                     >
                       Sort by Amount in Deposit Curency in descending order
                     </span>
@@ -342,7 +342,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-15-4"
+                      aria-describedby="header-16-4"
                       class="components-button"
                       type="button"
                     >
@@ -371,7 +371,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-15-4"
+                      id="header-16-4"
                     >
                       Sort by Fees in descending order
                     </span>
@@ -383,7 +383,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-15-5"
+                      aria-describedby="header-16-5"
                       class="components-button"
                       type="button"
                     >
@@ -412,7 +412,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-15-5"
+                      id="header-16-5"
                     >
                       Sort by Net in descending order
                     </span>
@@ -1119,7 +1119,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                         aria-haspopup="true"
                         autocomplete="off"
                         class="woocommerce-select-control__control-input"
-                        id="woocommerce-select-control-16__control-input"
+                        id="woocommerce-select-control-17__control-input"
                         placeholder=""
                         role="combobox"
                         type="text"
@@ -1127,7 +1127,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       />
                       <span
                         class="screen-reader-text"
-                        id="search-inline-input-16"
+                        id="search-inline-input-17"
                       >
                         Move backward for selected items
                       </span>
@@ -1196,14 +1196,14 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-labelledby="caption-16"
+            aria-labelledby="caption-17"
             class="woocommerce-table__table"
             role="group"
           >
             <table>
               <caption
                 class="woocommerce-table__caption screen-reader-text"
-                id="caption-16"
+                id="caption-17"
               >
                 Transactions
               </caption>
@@ -1216,7 +1216,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-16-0"
+                      aria-describedby="header-17-0"
                       class="components-button"
                       type="button"
                     >
@@ -1245,7 +1245,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-16-0"
+                      id="header-17-0"
                     >
                       Sort by Date and time in ascending order
                     </span>
@@ -1289,7 +1289,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-16-3"
+                      aria-describedby="header-17-3"
                       class="components-button"
                       type="button"
                     >
@@ -1318,7 +1318,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-16-3"
+                      id="header-17-3"
                     >
                       Sort by Amount in Deposit Curency in descending order
                     </span>
@@ -1330,7 +1330,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-16-4"
+                      aria-describedby="header-17-4"
                       class="components-button"
                       type="button"
                     >
@@ -1359,7 +1359,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-16-4"
+                      id="header-17-4"
                     >
                       Sort by Fees in descending order
                     </span>
@@ -1371,7 +1371,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-16-5"
+                      aria-describedby="header-17-5"
                       class="components-button"
                       type="button"
                     >
@@ -1400,7 +1400,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-16-5"
+                      id="header-17-5"
                     >
                       Sort by Net in descending order
                     </span>
@@ -2677,6 +2677,637 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
 </div>
 `;
 
+exports[`Transactions list renders correctly when filtered by deposit of type withdrawal 1`] = `
+<div>
+  <div
+    class=" woocommerce-payments-page"
+  >
+    <div
+      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <h2
+            class="components-truncate components-text css-1s1vggh-View-Text-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Text"
+          >
+            Withdrawal transactions
+          </h2>
+          <div
+            class="woocommerce-table__actions"
+          >
+            <div>
+              <div>
+                <div
+                  class="woocommerce-select-control woocommerce-search is-searchable"
+                >
+                  <div
+                    class="components-base-control woocommerce-select-control__control empty"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="woocommerce-select-control__control-icon"
+                      focusable="false"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
+                      />
+                    </svg>
+                    <div
+                      class="components-base-control__field"
+                    >
+                      <input
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-haspopup="true"
+                        autocomplete="off"
+                        class="woocommerce-select-control__control-input"
+                        id="woocommerce-select-control-1__control-input"
+                        placeholder=""
+                        role="combobox"
+                        type="text"
+                        value=""
+                      />
+                      <span
+                        class="screen-reader-text"
+                        id="search-inline-input-1"
+                      >
+                        Move backward for selected items
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              class="components-button woocommerce-table__download-button"
+              type="button"
+            >
+              <svg
+                class="gridicon gridicons-cloud-download"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M18 9c-.009 0-.017.002-.025.003A6.496 6.496 0 005 9.5a6.5 6.5 0 00.186 1.519C5.123 11.016 5.064 11 5 11a4 4 0 00-4 4c0 1.202.541 2.267 1.38 3h18.593C22.196 17.089 23 15.643 23 14a5 5 0 00-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
+                  />
+                </g>
+              </svg>
+              <span
+                class="woocommerce-table__download-button__label"
+              >
+                Download
+              </span>
+            </button>
+          </div>
+          <div
+            class="woocommerce-ellipsis-menu"
+          >
+            <div
+              class="components-dropdown"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-ellipsis-menu__toggle"
+                title="Choose which values to display"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-ellipsis"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M7 12a2 2 0 11-4.001-.001A2 2 0 017 12zm12-2a2 2 0 10.001 4.001A2 2 0 0019 10zm-7 0a2 2 0 10.001 4.001A2 2 0 0012 10z"
+                    />
+                  </g>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div
+            aria-labelledby="caption-1"
+            class="woocommerce-table__table"
+            role="group"
+          >
+            <table>
+              <caption
+                class="woocommerce-table__caption screen-reader-text"
+                id="caption-1"
+              >
+                Withdrawal transactions
+              </caption>
+              <tbody>
+                <tr>
+                  <th
+                    aria-sort="descending"
+                    class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <button
+                      aria-describedby="header-1-0"
+                      class="components-button"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                      <span
+                        aria-hidden="true"
+                      >
+                        Date / Time
+                      </span>
+                      <span
+                        class="screen-reader-text"
+                      >
+                        Date and time
+                      </span>
+                    </button>
+                    <span
+                      class="screen-reader-text"
+                      id="header-1-0"
+                    >
+                      Sort by Date and time in ascending order
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-left-aligned"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Type
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Type
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-left-aligned"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Channel
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Channel
+                    </span>
+                  </th>
+                  <th
+                    aria-sort="none"
+                    class="woocommerce-table__header is-sortable is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <button
+                      aria-describedby="header-1-3"
+                      class="components-button"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                      <span
+                        aria-hidden="true"
+                      >
+                        Amount
+                      </span>
+                      <span
+                        class="screen-reader-text"
+                      >
+                        Amount in Deposit Curency
+                      </span>
+                    </button>
+                    <span
+                      class="screen-reader-text"
+                      id="header-1-3"
+                    >
+                      Sort by Amount in Deposit Curency in descending order
+                    </span>
+                  </th>
+                  <th
+                    aria-sort="none"
+                    class="woocommerce-table__header is-sortable is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <button
+                      aria-describedby="header-1-4"
+                      class="components-button"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                      <span
+                        aria-hidden="true"
+                      >
+                        Fees
+                      </span>
+                      <span
+                        class="screen-reader-text"
+                      >
+                        Fees
+                      </span>
+                    </button>
+                    <span
+                      class="screen-reader-text"
+                      id="header-1-4"
+                    >
+                      Sort by Fees in descending order
+                    </span>
+                  </th>
+                  <th
+                    aria-sort="none"
+                    class="woocommerce-table__header is-sortable is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <button
+                      aria-describedby="header-1-5"
+                      class="components-button"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                      <span
+                        aria-hidden="true"
+                      >
+                        Net
+                      </span>
+                      <span
+                        class="screen-reader-text"
+                      >
+                        Net
+                      </span>
+                    </button>
+                    <span
+                      class="screen-reader-text"
+                      id="header-1-5"
+                    >
+                      Sort by Net in descending order
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-left-aligned"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Order #
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Order number
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-center-aligned is-left-aligned"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Payment Method
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Payment Method
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-left-aligned"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Customer
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Customer
+                    </span>
+                  </th>
+                </tr>
+                <tr>
+                  <th
+                    class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                    scope="row"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                      tabindex="-1"
+                    >
+                      Jan 4, 2020 / 11:22PM
+                    </a>
+                  </th>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                      tabindex="-1"
+                    >
+                      Charge
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                      tabindex="-1"
+                    >
+                      Online
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                      tabindex="-1"
+                    >
+                      <div
+                        class="converted-amount converted-amount--fallback"
+                      >
+                        <span
+                          class="conversion-indicator"
+                          data-testid="conversion-indicator"
+                          style="height: 18px; width: 18px;"
+                        >
+                          <svg
+                            class="gridicon gridicons-sync"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            width="18"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <g>
+                              <path
+                                d="M23.5 13.5l-3.086 3.086L19 18l-4.5-4.5 1.414-1.414L18 14.172V12c0-3.308-2.692-6-6-6V4a8 8 0 018 8v2.172l2.086-2.086L23.5 13.5zM6 12V9.828l2.086 2.086L9.5 10.5 5 6 3.586 7.414.5 10.5l1.414 1.414L4 9.828V12a8 8 0 008 8v-2c-3.308 0-6-2.692-6-6z"
+                              />
+                            </g>
+                          </svg>
+                        </span>
+                        $15.00
+                      </div>
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                      tabindex="-1"
+                    >
+                      -$0.50
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                      tabindex="-1"
+                    >
+                      $14.50
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      data-link-type="external"
+                      href="https://example.com/order/125"
+                    >
+                      125
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-center-aligned is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                      tabindex="-1"
+                    >
+                      <span
+                        class="payment-method-details-list-item"
+                      >
+                        <button
+                          class="wcpay-tooltip__content-wrapper"
+                          type="button"
+                        >
+                          <div
+                            class="wcpay-tooltip__content-wrapper"
+                          >
+                            <span
+                              aria-label="Mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard"
+                            />
+                          </div>
+                        </button>
+                         •••• 
+                         
+                        1234
+                      </span>
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      data-link-type="wc-admin"
+                      href="https://example.com/customer/my-name"
+                    >
+                      My name
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div
+          class="components-flex components-card__footer components-card-footer css-142znvl-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardFooter"
+        >
+          <ul
+            class="woocommerce-table__summary"
+            role="complementary"
+          >
+            <li
+              class="woocommerce-table__summary-item"
+            >
+              <span
+                class="woocommerce-table__summary-value"
+              >
+                3
+              </span>
+              <span
+                class="woocommerce-table__summary-label"
+              >
+                transactions
+              </span>
+            </li>
+            <li
+              class="woocommerce-table__summary-item"
+            >
+              <span
+                class="woocommerce-table__summary-value"
+              >
+                $3.00
+              </span>
+              <span
+                class="woocommerce-table__summary-label"
+              >
+                total
+              </span>
+            </li>
+            <li
+              class="woocommerce-table__summary-item"
+            >
+              <span
+                class="woocommerce-table__summary-value"
+              >
+                $0.30
+              </span>
+              <span
+                class="woocommerce-table__summary-label"
+              >
+                fees
+              </span>
+            </li>
+            <li
+              class="woocommerce-table__summary-item"
+            >
+              <span
+                class="woocommerce-table__summary-value"
+              >
+                $2.70
+              </span>
+              <span
+                class="woocommerce-table__summary-label"
+              >
+                net
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Transactions list subscription column renders correctly 1`] = `
 <div>
   <div
@@ -2780,7 +3411,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                         aria-haspopup="true"
                         autocomplete="off"
                         class="woocommerce-select-control__control-input"
-                        id="woocommerce-select-control-14__control-input"
+                        id="woocommerce-select-control-15__control-input"
                         placeholder=""
                         role="combobox"
                         type="text"
@@ -2788,7 +3419,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       />
                       <span
                         class="screen-reader-text"
-                        id="search-inline-input-14"
+                        id="search-inline-input-15"
                       >
                         Move backward for selected items
                       </span>
@@ -2857,14 +3488,14 @@ exports[`Transactions list subscription column renders correctly 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-labelledby="caption-14"
+            aria-labelledby="caption-15"
             class="woocommerce-table__table"
             role="group"
           >
             <table>
               <caption
                 class="woocommerce-table__caption screen-reader-text"
-                id="caption-14"
+                id="caption-15"
               >
                 Transactions
               </caption>
@@ -2877,7 +3508,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-14-0"
+                      aria-describedby="header-15-0"
                       class="components-button"
                       type="button"
                     >
@@ -2906,7 +3537,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-14-0"
+                      id="header-15-0"
                     >
                       Sort by Date and time in ascending order
                     </span>
@@ -2950,7 +3581,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-14-3"
+                      aria-describedby="header-15-3"
                       class="components-button"
                       type="button"
                     >
@@ -2979,7 +3610,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-14-3"
+                      id="header-15-3"
                     >
                       Sort by Amount in Deposit Curency in descending order
                     </span>
@@ -2991,7 +3622,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-14-4"
+                      aria-describedby="header-15-4"
                       class="components-button"
                       type="button"
                     >
@@ -3020,7 +3651,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-14-4"
+                      id="header-15-4"
                     >
                       Sort by Fees in descending order
                     </span>
@@ -3032,7 +3663,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-14-5"
+                      aria-describedby="header-15-5"
                       class="components-button"
                       type="button"
                     >
@@ -3061,7 +3692,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-14-5"
+                      id="header-15-5"
                     >
                       Sort by Net in descending order
                     </span>
@@ -3842,7 +4473,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                         aria-haspopup="true"
                         autocomplete="off"
                         class="woocommerce-select-control__control-input"
-                        id="woocommerce-select-control-1__control-input"
+                        id="woocommerce-select-control-2__control-input"
                         placeholder=""
                         role="combobox"
                         type="text"
@@ -3850,7 +4481,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       />
                       <span
                         class="screen-reader-text"
-                        id="search-inline-input-1"
+                        id="search-inline-input-2"
                       >
                         Move backward for selected items
                       </span>
@@ -3919,14 +4550,14 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
           data-wp-component="CardBody"
         >
           <div
-            aria-labelledby="caption-1"
+            aria-labelledby="caption-2"
             class="woocommerce-table__table"
             role="group"
           >
             <table>
               <caption
                 class="woocommerce-table__caption screen-reader-text"
-                id="caption-1"
+                id="caption-2"
               >
                 Transactions
               </caption>
@@ -3939,7 +4570,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-1-0"
+                      aria-describedby="header-2-0"
                       class="components-button"
                       type="button"
                     >
@@ -3968,7 +4599,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-1-0"
+                      id="header-2-0"
                     >
                       Sort by Date and time in ascending order
                     </span>
@@ -4012,7 +4643,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-1-3"
+                      aria-describedby="header-2-3"
                       class="components-button"
                       type="button"
                     >
@@ -4041,7 +4672,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-1-3"
+                      id="header-2-3"
                     >
                       Sort by Amount in Deposit Curency in descending order
                     </span>
@@ -4053,7 +4684,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-1-4"
+                      aria-describedby="header-2-4"
                       class="components-button"
                       type="button"
                     >
@@ -4082,7 +4713,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-1-4"
+                      id="header-2-4"
                     >
                       Sort by Fees in descending order
                     </span>
@@ -4094,7 +4725,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-1-5"
+                      aria-describedby="header-2-5"
                       class="components-button"
                       type="button"
                     >
@@ -4123,7 +4754,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-1-5"
+                      id="header-2-5"
                     >
                       Sort by Net in descending order
                     </span>
@@ -4872,7 +5503,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                         aria-haspopup="true"
                         autocomplete="off"
                         class="woocommerce-select-control__control-input"
-                        id="woocommerce-select-control-11__control-input"
+                        id="woocommerce-select-control-12__control-input"
                         placeholder=""
                         role="combobox"
                         type="text"
@@ -4880,7 +5511,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       />
                       <span
                         class="screen-reader-text"
-                        id="search-inline-input-11"
+                        id="search-inline-input-12"
                       >
                         Move backward for selected items
                       </span>
@@ -4949,14 +5580,14 @@ exports[`Transactions list when not filtered by deposit renders table summary on
           data-wp-component="CardBody"
         >
           <div
-            aria-labelledby="caption-11"
+            aria-labelledby="caption-12"
             class="woocommerce-table__table"
             role="group"
           >
             <table>
               <caption
                 class="woocommerce-table__caption screen-reader-text"
-                id="caption-11"
+                id="caption-12"
               >
                 Transactions
               </caption>
@@ -4969,7 +5600,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-11-0"
+                      aria-describedby="header-12-0"
                       class="components-button"
                       type="button"
                     >
@@ -4998,7 +5629,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-11-0"
+                      id="header-12-0"
                     >
                       Sort by Date and time in ascending order
                     </span>
@@ -5042,7 +5673,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-11-3"
+                      aria-describedby="header-12-3"
                       class="components-button"
                       type="button"
                     >
@@ -5071,7 +5702,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-11-3"
+                      id="header-12-3"
                     >
                       Sort by Amount in Deposit Curency in descending order
                     </span>
@@ -5083,7 +5714,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-11-4"
+                      aria-describedby="header-12-4"
                       class="components-button"
                       type="button"
                     >
@@ -5112,7 +5743,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-11-4"
+                      id="header-12-4"
                     >
                       Sort by Fees in descending order
                     </span>
@@ -5124,7 +5755,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     scope="col"
                   >
                     <button
-                      aria-describedby="header-11-5"
+                      aria-describedby="header-12-5"
                       class="components-button"
                       type="button"
                     >
@@ -5153,7 +5784,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     </button>
                     <span
                       class="screen-reader-text"
-                      id="header-11-5"
+                      id="header-12-5"
                     >
                       Sort by Net in descending order
                     </span>
