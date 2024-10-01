@@ -26,7 +26,7 @@ import { parseInt } from 'lodash';
 import type { DepositsTableHeader } from 'wcpay/types/deposits';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { useReportingExportLanguage } from 'data/index';
-import { displayType, displayStatus } from '../strings';
+import { displayType, depositStatusLabels } from '../strings';
 import { formatExplicitCurrency, formatExportAmount } from 'utils/currency';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
@@ -155,7 +155,7 @@ export const DepositsList = (): JSX.Element => {
 				),
 			},
 			status: {
-				value: displayStatus[ deposit.status ],
+				value: depositStatusLabels[ deposit.status ],
 				display: clickable( <DepositStatusChip deposit={ deposit } /> ),
 			},
 			bankAccount: {

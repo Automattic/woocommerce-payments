@@ -35,7 +35,7 @@ import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InlineNotice from 'components/inline-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
-import { displayStatus } from '../strings';
+import { depositStatusLabels } from '../strings';
 import './style.scss';
 
 /**
@@ -44,13 +44,13 @@ import './style.scss';
 const DepositStatusIndicator: React.FC< {
 	deposit: Pick< CachedDeposit, 'status' | 'type' >;
 } > = ( { deposit } ) => {
-	let displayStatusMap = displayStatus;
+	let displayStatusMap = depositStatusLabels;
 
 	// Withdrawals are displayed as 'Deducted' instead of 'Paid' when the status is 'paid'.
 	if ( deposit.type === 'withdrawal' ) {
 		displayStatusMap = {
-			...displayStatus,
-			paid: displayStatus.deducted,
+			...displayStatusMap,
+			paid: displayStatusMap.deducted,
 		};
 	}
 

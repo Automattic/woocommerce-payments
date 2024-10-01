@@ -17,11 +17,14 @@ export const displayType = {
 };
 
 /**
- * Display status strings for each deposit status.
+ * Labels to display for each deposit status.
  *
- * 'deducted' is a display status representing a deposit of the type 'withdrawal' and status 'paid'.
+ * 'deducted' represents a deposit of the type 'withdrawal' and status 'paid'.
  */
-export const displayStatus: Record< DepositStatus | 'deducted', string > = {
+export const depositStatusLabels: Record<
+	DepositStatus | 'deducted',
+	string
+> = {
 	paid: __( 'Paid', 'woocommerce-payments' ),
 	deducted: __( 'Deducted', 'woocommerce-payments' ),
 	pending: __( 'Pending', 'woocommerce-payments' ),
