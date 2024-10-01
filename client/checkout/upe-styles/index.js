@@ -497,8 +497,7 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		fontSizeBase: labelRules.fontSize,
 	};
 
-	const isFloatingLabel =
-		elementsLocation === 'blocks_checkout' ? 'floating' : 'above';
+	const isFloatingLabel = elementsLocation === 'blocks_checkout';
 
 	let appearance = {
 		variables: globalRules,
