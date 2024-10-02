@@ -50,6 +50,7 @@ const mockAppearance = {
 		fontFamily: undefined,
 		fontSizeBase: undefined,
 	},
+	labels: 'above',
 };
 
 describe( 'WCPayAPI', () => {
