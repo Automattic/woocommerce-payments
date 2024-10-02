@@ -44,7 +44,7 @@ export default ( {
 				<span className="payment-method-label__label">
 					{ upeConfig.title }
 				</span>
-				{ isTestMode && isCreditCard && (
+				{ isCreditCard && isTestMode && (
 					<span className="test-mode badge">
 						{ __( 'Test Mode', 'woocommerce-payments' ) }
 					</span>
