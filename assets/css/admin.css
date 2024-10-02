@@ -234,6 +234,10 @@
 	margin: 0 0 6px;
 }
 
+.wcpay-fraud-risk-action > p:last-child {
+	margin-bottom: 0;
+}
+
 .wcpay-fraud-risk-meta-allow,
 .wcpay-fraud-risk-meta-review,
 .wcpay-fraud-risk-meta-blocked {
@@ -259,8 +263,4 @@
 
 .wcpay-fraud-risk-meta-blocked {
 	color: #b32d2e;
-}
-
-.wcpay-fraud-risk-meta-link {
-	margin-top: 10px;
 }

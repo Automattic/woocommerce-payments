@@ -95,7 +95,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			],
 			'Fraud_Meta_Box_Type_REVIEW'           => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock&#038;status_is=review&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.</p><p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock&#038;status_is=review&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">Review payment</a></p>',
 			],
 			'Fraud_Meta_Box_Type_REVIEW_ALLOWED'   => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_ALLOWED,
@@ -103,15 +103,15 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			],
 			'Fraud_Meta_Box_Type_REVIEW_BLOCKED'   => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_BLOCKED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>This transaction was held for review by your risk filters, and the charge was manually blocked after review.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>This transaction was held for review by your risk filters, and the charge was manually blocked after review.</p><p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a></p>',
 			],
 			'Fraud_Meta_Box_Type_REVIEW_EXPIRED'   => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_EXPIRED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have expired.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have expired.</p><p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a></p>',
 			],
 			'Fraud_Meta_Box_Type_REVIEW_FAILED'    => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::REVIEW_FAILED,
-				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have failed.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a>',
+				'expected_output' => '<p class="wcpay-fraud-risk-meta-review"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-orange.svg', WCPAY_PLUGIN_FILE ) . '" alt="Orange shield outline"> Held for review</p><p>The payment for this order was held for review by your risk filtering. The authorization for the charge appears to have failed.</p><p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_mock" target="_blank" rel="noopener noreferrer">Review payment</a></p>',
 			],
 			'Fraud_Meta_Box_Type_TERMINAL_PAYMENT' => [
 				'meta_box_type'   => Fraud_Meta_Box_Type::TERMINAL_PAYMENT,
@@ -171,7 +171,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
 
 		// Assert: Check to make sure the expected string has been output.
-		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE ) . '" alt="Red shield outline"> Blocked</p><p>The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=' . $this->order->get_id() . '&#038;status_is=block&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">View more details</a>' ) );
+		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-blocked"><img src="' . plugins_url( 'assets/images/icons/shield-stroke-red.svg', WCPAY_PLUGIN_FILE ) . '" alt="Red shield outline"> Blocked</p><p>The payment for this order was blocked by your risk filtering. There is no pending authorization, and the order can be cancelled to reduce any held stock.</p><p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=' . $this->order->get_id() . '&#038;status_is=block&#038;type_is=meta_box" target="_blank" rel="noopener noreferrer">View more details</a></p>' ) );
 	}
 
 	/**
@@ -210,7 +210,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
 
 		// Assert: Check to make sure the expected string has been output.
-		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( $expected_output ) );
+		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( $expected_output, false ) );
 	}
 
 	public function display_order_fraud_and_risk_meta_box_message_not_card_provider() {
@@ -218,17 +218,17 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			'simulate legacy UPE Popular payment methods' => [
 				'payment_method_id'    => 'woocommerce_payments',
 				'payment_method_title' => 'Popular payment methods',
-				'expected_output'      => '<p>Risk filtering is only available for orders processed using credit cards with WooPayments.</p><a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/?status_is=fraud-meta-box-not-wcpay-learn-more" target="_blank" rel="noopener noreferrer">Learn more</a>',
+				'expected_output'      => '<p>Risk filtering is only available for orders processed using credit cards with WooPayments.</p><p><a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/?status_is=fraud-meta-box-not-wcpay-learn-more" target="_blank" rel="noopener noreferrer">Learn more</a></p>',
 			],
 			'simulate legacy UPE Bancontact'              => [
 				'payment_method_id'    => 'woocommerce_payments',
 				'payment_method_title' => 'Bancontact',
-				'expected_output'      => '<p>Risk filtering is only available for orders processed using credit cards with WooPayments. This order was processed with Bancontact.</p><a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/?status_is=fraud-meta-box-not-wcpay-learn-more" target="_blank" rel="noopener noreferrer">Learn more</a>',
+				'expected_output'      => '<p>Risk filtering is only available for orders processed using credit cards with WooPayments. This order was processed with Bancontact.</p><p><a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/?status_is=fraud-meta-box-not-wcpay-learn-more" target="_blank" rel="noopener noreferrer">Learn more</a></p>',
 			],
 			'simulate split UPE Bancontact'               => [
 				'payment_method_id'    => 'woocommerce_payments_bancontact',
 				'payment_method_title' => 'Bancontact',
-				'expected_output'      => '<p>Risk filtering is only available for orders processed using credit cards with WooPayments. This order was processed with Bancontact.</p><a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/?status_is=fraud-meta-box-not-wcpay-learn-more" target="_blank" rel="noopener noreferrer">Learn more</a>',
+				'expected_output'      => '<p>Risk filtering is only available for orders processed using credit cards with WooPayments. This order was processed with Bancontact.</p><p><a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/?status_is=fraud-meta-box-not-wcpay-learn-more" target="_blank" rel="noopener noreferrer">Learn more</a></p>',
 			],
 		];
 	}
@@ -263,7 +263,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
 
 		// Assert: Check to make sure the expected string has been output.
-		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( '<p>Risk filtering is only available for orders processed using credit cards with WooPayments. This order was processed with Direct bank transfer.</p><a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/?status_is=fraud-meta-box-not-wcpay-learn-more" target="_blank" rel="noopener noreferrer">Learn more</a>' ) );
+		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( '<p>Risk filtering is only available for orders processed using credit cards with WooPayments. This order was processed with Direct bank transfer.</p><p><a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/?status_is=fraud-meta-box-not-wcpay-learn-more" target="_blank" rel="noopener noreferrer">Learn more</a></p>', false ) );
 	}
 
 	public function test_display_order_fraud_and_risk_meta_box_message_default() {
@@ -432,10 +432,14 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		return $output;
 	}
 
-	private function compose_fraud_and_risk_actions_block( $content ) {
+	private function compose_fraud_and_risk_actions_block( $content, $show_adjust_risk_filters_link = true ) {
 		$output  = '<div class="wcpay-fraud-risk-action">';
 		$output .= $content;
-		$output .= '<a class="wcpay-fraud-risk-meta-link" href="http://example.org/wp-admin/admin.php?page=wc-settings&#038;tab=checkout&#038;section=woocommerce_payments&#038;anchor=%23fp-settings" target="_blank" rel="noopener noreferrer">Adjust risk filters</a>';
+
+		if ( $show_adjust_risk_filters_link ) {
+			$output .= '<p><a href="http://example.org/wp-admin/admin.php?page=wc-settings&#038;tab=checkout&#038;section=woocommerce_payments&#038;anchor=%23fp-settings" target="_blank" rel="noopener noreferrer">Adjust risk filters</a></p>';
+		}
+
 		$output .= '</div>';
 
 		return $output;
