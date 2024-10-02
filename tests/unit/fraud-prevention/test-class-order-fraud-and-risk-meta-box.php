@@ -71,6 +71,11 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			->method( 'get_fraud_meta_box_type_for_order' )
 			->willReturn( $meta_box_type );
 
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
+
 		// Act: Call the method to display the meta box.
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
 
@@ -129,6 +134,10 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'get_fraud_meta_box_type_for_order' );
 
+		$this->mock_order_service
+			->expects( $this->never() )
+			->method( 'get_charge_risk_level_for_order' );
+
 		// Act: Call the method to display the meta box.
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( 'fake_order' );
 
@@ -152,6 +161,11 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_fraud_meta_box_type_for_order' )
 			->willReturn( Fraud_Meta_Box_Type::BLOCK );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
 
 		// Act: Call the method to display the meta box.
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
@@ -181,6 +195,11 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_fraud_meta_box_type_for_order' )
 			->willReturn( Fraud_Meta_Box_Type::NOT_CARD );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
 
 		// Arrange: Update the order's payment method.
 		$this->order->set_payment_method( $payment_method_id );
@@ -231,6 +250,11 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			->method( 'get_fraud_meta_box_type_for_order' )
 			->willReturn( '' );
 
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
+
 		// Arrange: Update the order's payment method.
 		$this->order->set_payment_method( 'bacs' );
 		$this->order->save();
@@ -259,11 +283,153 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 			->method( 'get_fraud_meta_box_type_for_order' )
 			->willReturn( '' );
 
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( '' );
+
 		// Act: Call the method to display the meta box.
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
 
 		// Assert: Check to make sure the expected string has been output.
 		$this->expectOutputString( $this->compose_fraud_and_risk_actions_block( '<p>Risk filtering through WooPayments was not found on this order, it may have been created while filtering was not enabled.</p>' ) );
+	}
+
+	public function test_display_risk_level_normal_in_order_fraud_and_risk_meta_box() {
+		// Arrange: Set the return results for the order service methods.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::ALLOW );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( 'normal' );
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: Check to make sure the expected string has been output.
+		$risk_level_block   = $this->compose_fraud_and_risk_level_block( 'normal', 'Normal', 'This payment shows a lower than normal risk of fraudulent activity.' );
+		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
+
+		$this->expectOutputString( $risk_level_block . $risk_actions_block );
+	}
+
+	public function test_display_risk_level_elevated_in_order_fraud_and_risk_meta_box() {
+		// Arrange: Set the return results for the order service methods.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::ALLOW );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( 'elevated' );
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: Check to make sure the expected string has been output.
+		$risk_level_block   = $this->compose_fraud_and_risk_level_block( 'elevated', 'Elevated', 'This order has a moderate risk of being fraudulent. We suggest contacting the customer to confirm their details before fulfilling it.' );
+		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
+
+		$this->expectOutputString( $risk_level_block . $risk_actions_block );
+	}
+
+	public function test_display_risk_level_highest_in_order_fraud_and_risk_meta_box() {
+		// Arrange: Set the return results for the order service methods.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::ALLOW );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( 'highest' );
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: Check to make sure the expected string has been output.
+		$risk_level_block   = $this->compose_fraud_and_risk_level_block( 'highest', 'High', 'This order has a high risk of being fraudulent. We suggest contacting the customer to confirm their details before fulfilling it.' );
+		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
+
+		$this->expectOutputString( $risk_level_block . $risk_actions_block );
+	}
+
+	public function test_do_not_display_risk_level_in_order_fraud_and_risk_meta_box_with_invalid_risk_level() {
+		// Arrange: Set the return results for the order service methods.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_intent_id_for_order' )
+			->willReturn( 'pi_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_id_for_order' )
+			->willReturn( 'ch_mock' );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_fraud_meta_box_type_for_order' )
+			->willReturn( Fraud_Meta_Box_Type::ALLOW );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'get_charge_risk_level_for_order' )
+			->willReturn( 'unknown' );
+
+		// Act: Call the method to display the meta box.
+		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $this->order );
+
+		// Assert: Check to make sure the expected string has been output.
+		$risk_actions_block = $this->compose_fraud_and_risk_actions_block( '<p class="wcpay-fraud-risk-meta-allow"><img src="' . plugins_url( 'assets/images/icons/check-green.svg', WCPAY_PLUGIN_FILE ) . '" alt="Green check mark"> No action taken</p><p>The payment for this order passed your risk filtering.</p>' );
+
+		$this->expectOutputString( $risk_actions_block );
+	}
+
+	private function compose_fraud_and_risk_level_block( $risk_level, $title, $description ) {
+		$output  = '<div class="wcpay-fraud-risk-level wcpay-fraud-risk-level--' . $risk_level . '">';
+		$output .= '<p class="wcpay-fraud-risk-level__title">' . $title . '</p>';
+		$output .= '<div class="wcpay-fraud-risk-level__bar"></div>';
+		$output .= '<p>' . $description . '</p>';
+		$output .= '</div>';
+
+		return $output;
 	}
 
 	private function compose_fraud_and_risk_actions_block( $content ) {
