@@ -96,9 +96,8 @@ export const CompanyDataTask = ( {
 				'Confirm your business details',
 				'woocommerce-payments'
 			) }
-			className={ null }
 		>
-			<CollapsibleBody className={ null }>
+			<CollapsibleBody>
 				<TextControl
 					label={ __( 'Business name', 'woocommerce-payments' ) }
 					value={ companyName }

@@ -223,6 +223,7 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 				},
 			},
+			labels: 'above',
 		} );
 	} );
 
