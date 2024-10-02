@@ -36,13 +36,15 @@ export default ( {
 		window.wcBlocksCheckoutData?.storeCountry ||
 		'US';
 
+	const isCreditCard = upeName === 'card';
+
 	return (
 		<>
 			<div className="payment-method-label">
 				<span className="payment-method-label__label">
 					{ upeConfig.title }
 				</span>
-				{ isTestMode && (
+				{ isTestMode && isCreditCard && (
 					<span className="test-mode badge">
 						{ __( 'Test Mode', 'woocommerce-payments' ) }
 					</span>
