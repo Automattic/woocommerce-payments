@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Default classNames prop to null so components are more flexible/easier to use.
+Migrate WizardTaskItem and CollapsibleBody components to TypeScript, making the className prop optional.
