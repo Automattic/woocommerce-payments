@@ -282,10 +282,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 							</CardBody>
 						</Card>
 					) : (
-						<TransactionsList
-							depositId={ depositId }
-							depositType={ deposit.type }
-						/>
+						<TransactionsList depositId={ depositId } />
 					) }
 				</ErrorBoundary>
 			) }

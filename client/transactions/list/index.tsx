@@ -73,7 +73,6 @@ import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/i
 
 interface TransactionsListProps {
 	depositId?: string;
-	depositType?: 'deposit' | 'withdrawal';
 }
 
 interface Column extends TableCardColumn {
@@ -598,14 +597,7 @@ export const TransactionsList = (
 				'woocommerce-payments'
 		  );
 
-	let title = __( 'Transactions', 'woocommerce-payments' );
-	if ( props.depositId ) {
-		if ( props.depositType === 'withdrawal' ) {
-			title = __( 'Withdrawal transactions', 'woocommerce-payments' );
-		} else {
-			title = __( 'Deposit transactions', 'woocommerce-payments' );
-		}
-	}
+	const title = __( 'Transactions', 'woocommerce-payments' );
 
 	const downloadable = !! rows.length;
 
