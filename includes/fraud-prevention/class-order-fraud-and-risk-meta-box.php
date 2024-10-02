@@ -54,7 +54,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 		// Get the order edit screen to be able to add the meta box to.
 		$wc_screen_id = \wc_get_page_screen_id( 'shop-order' );
 
-		add_meta_box( 'wcpay_order_fraud_and_risk_meta_box', __( 'Fraud &amp; Risk', 'woocommerce-payments' ), [ $this, 'display_order_fraud_and_risk_meta_box_message' ], $wc_screen_id, 'side', 'default' );
+		add_meta_box( 'wcpay-order-fraud-and-risk-meta-box', __( 'Fraud &amp; Risk', 'woocommerce-payments' ), [ $this, 'display_order_fraud_and_risk_meta_box_message' ], $wc_screen_id, 'side', 'default' );
 	}
 
 	/**
