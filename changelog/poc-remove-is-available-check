@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: remove main gateway is_enabled check on is_available
