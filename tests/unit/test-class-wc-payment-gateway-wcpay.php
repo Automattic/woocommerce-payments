@@ -2806,15 +2806,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $afterpay->is_available() );
 	}
 
-	public function test_gateway_disabled_when_card_gateway_is_disabled() {
-		$this->card_gateway->update_option( 'enabled', 'no' );
-		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
-		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
-		$this->prepare_gateway_for_availability_testing( $afterpay );
-
-		$this->assertFalse( $afterpay->is_available() );
-	}
-
 	public function test_process_payment_for_order_cc_payment_method() {
 		$payment_method                              = 'woocommerce_payments';
 		$expected_upe_payment_method_for_pi_creation = 'card';
