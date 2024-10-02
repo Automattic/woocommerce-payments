@@ -7,7 +7,7 @@
 
 namespace WCPay\Fraud_Prevention;
 
-use WC_Payments_Features;
+use WC_Payments_Admin_Settings;
 use WC_Payments_Order_Service;
 use WC_Payments_Utils;
 use WCPay\Constants\Fraud_Meta_Box_Type;
@@ -74,6 +74,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 		$intent_id      = $this->order_service->get_intent_id_for_order( $order );
 		$charge_id      = $this->order_service->get_charge_id_for_order( $order );
 		$meta_box_type  = $this->order_service->get_fraud_meta_box_type_for_order( $order );
+		$risk_level     = $this->order_service->get_charge_risk_level_for_order( $order );
 		$payment_method = $order->get_payment_method();
 
 		if ( strstr( $payment_method, 'woocommerce_payments_' ) ) {
@@ -103,6 +104,13 @@ class Order_Fraud_And_Risk_Meta_Box {
 			'held_for_review' => __( 'Held for review', 'woocommerce-payments' ),
 			'no_action_taken' => __( 'No action taken', 'woocommerce-payments' ),
 		];
+
+		$risk_filters_callout = __( 'Adjust risk filters', 'woocommerce-payments' );
+		$risk_filters_url     = WC_Payments_Admin_Settings::get_settings_url( [ 'anchor' => '%23fp-settings' ] );
+
+		$this->maybe_print_risk_level_block( $risk_level );
+
+		echo '<div class="wcpay-fraud-risk-action">';
 
 		switch ( $meta_box_type ) {
 			case Fraud_Meta_Box_Type::ALLOW:
@@ -194,6 +202,42 @@ class Order_Fraud_And_Risk_Meta_Box {
 				echo '<p>' . esc_html( $description ) . '</p>';
 				break;
 		}
+
+		echo '<a class="wcpay-fraud-risk-meta-link" href="' . esc_url( $risk_filters_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $risk_filters_callout ) . '</a>';
+		echo '</div>';
+	}
+
+	/**
+	 * Prints the risk level block.
+	 *
+	 * @param string $risk_level The risk level to display.
+	 *
+	 * @return void
+	 */
+	private function maybe_print_risk_level_block( $risk_level ) {
+		$valid_risk_levels = [ 'normal', 'elevated', 'highest' ];
+
+		if ( ! in_array( $risk_level, $valid_risk_levels, true ) ) {
+			return;
+		}
+
+		$titles = [
+			'normal'   => __( 'Normal', 'woocommerce-payments' ),
+			'elevated' => __( 'Elevated', 'woocommerce-payments' ),
+			'highest'  => __( 'High', 'woocommerce-payments' ),
+		];
+
+		$descriptions = [
+			'normal'   => __( 'This payment shows a lower than normal risk of fraudulent activity.', 'woocommerce-payments' ),
+			'elevated' => __( 'This order has a moderate risk of being fraudulent. We suggest contacting the customer to confirm their details before fulfilling it.', 'woocommerce-payments' ),
+			'highest'  => __( 'This order has a high risk of being fraudulent. We suggest contacting the customer to confirm their details before fulfilling it.', 'woocommerce-payments' ),
+		];
+
+		echo '<div class="wcpay-fraud-risk-level wcpay-fraud-risk-level--' . esc_attr( $risk_level ) . '">';
+		echo '<p class="wcpay-fraud-risk-level__title">' . esc_html( $titles[ $risk_level ] ) . '</p>';
+		echo '<div class="wcpay-fraud-risk-level__bar"></div>';
+		echo '<p>' . esc_html( $descriptions[ $risk_level ] ) . '</p>';
+		echo '</div>';
 	}
 
 	/**
