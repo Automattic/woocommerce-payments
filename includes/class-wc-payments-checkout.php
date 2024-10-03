@@ -332,7 +332,9 @@ class WC_Payments_Checkout {
 					'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
 				]
 			);
-			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
+
+			$should_enable_network_saved_cards                        = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
+			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
 		}
 
 		return $settings;

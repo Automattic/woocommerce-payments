@@ -392,7 +392,62 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$this->assertEquals( null, $this->frontend_currencies->get_order_currency() );
 	}
 
-	public function test_maybe_clear_order_currency_after_formatted_order_total() {
+	public function rest_api_ensure_filter_vals_provider() {
+		return [
+			// phpcs:ignore Squiz.PHP.CommentedOutCode.Found
+			// [ $request_uri, $store_currency_args, $product_price_args ]
+			[ '', [ false ], [ true ] ],
+			[ '/wp-json/wc/v2/products/1', [ true ], [ false ] ],
+		];
+	}
+
+	/**
+	 * @dataProvider rest_api_ensure_filter_vals_provider
+	 */
+	public function test_rest_api_ensure_should_return_store_currency_and_should_convert_product_price_vals( $request_uri, $store_currency_args, $product_price_args ) {
+		// Arrange.
+		$original_request_uri   = $_SERVER['REQUEST_URI'];
+		$_SERVER['REQUEST_URI'] = $request_uri;
+
+		$mccy = new WCPay\MultiCurrency\MultiCurrency(
+			WC_Payments::get_payments_api_client(),
+			WC_Payments::get_account_service(),
+			WC_Payments::get_localization_service(),
+			WC_Payments::get_database_cache()
+		);
+		$mccy->init_hooks();
+
+		$price        = 10.0;
+		$mock_product = new WC_Product();
+		$mock_product->set_price( $price );
+		$mock_product->save();
+
+		$fn_pass_param = function ( $bool ) {
+			return $bool;
+		};
+
+		$spy_return_store_currency    = PHPUnit_Utils::function_spy();
+		$should_return_store_currency = ( $spy_return_store_currency->computed_fn )( $fn_pass_param );
+		add_filter( 'wcpay_multi_currency_should_return_store_currency', $should_return_store_currency, 999 );
+
+		$spy_convert_product_price    = PHPUnit_Utils::function_spy();
+		$should_convert_product_price = ( $spy_convert_product_price->computed_fn )( $fn_pass_param );
+		add_filter( 'wcpay_multi_currency_should_convert_product_price', $should_convert_product_price, 999 );
+
+		// Act.
+		$price_html = $mock_product->get_price_html();
+
+		// Assert.
+		$this->assertEquals( $store_currency_args, ( $spy_return_store_currency->received_args )() );
+		$this->assertEquals( $product_price_args, ( $spy_convert_product_price->received_args )() );
+
+		// Clean up.
+		remove_filter( 'wcpay_multi_currency_should_return_store_currency', $should_return_store_currency, 999 );
+		remove_filter( 'wcpay_multi_currency_should_convert_product_price', $should_convert_product_price, 999 );
+		$_SERVER['REQUEST_URI'] = $original_request_uri;
+	}
+
+	public function test_maybe_clear_order_currrency_after_formatted_order_total() {
 		// Arrange: Set the expected calls and/or returns for is_page_with_vars and is_call_in_backtrace within should_use_order_currency.
 		// Noting that the count is set to 2 due to maybe_init_order_currency_from_order_total_prop is called to set the order_currency.
 		$this->mock_utils

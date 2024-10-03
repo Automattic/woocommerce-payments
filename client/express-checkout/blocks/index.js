@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
@@ -11,6 +16,12 @@ import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvai
 const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
+	title: 'WooPayments - Apple Pay',
+	description: __(
+		"An easy, secure way to pay that's accepted on millions of stores.",
+		'woocommerce-payments'
+	),
+	gatewayId: 'woocommerce_payments',
 	content: (
 		<ExpressCheckoutContainer api={ api } expressPaymentMethod="applePay" />
 	),
@@ -33,6 +44,12 @@ const expressCheckoutElementGooglePay = ( api ) => {
 	return {
 		paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 		name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
+		title: 'WooPayments - Google Pay',
+		description: __(
+			'Simplify checkout with fewer steps to pay.',
+			'woocommerce-payments'
+		),
+		gatewayId: 'woocommerce_payments',
 		content: (
 			<ExpressCheckoutContainer
 				api={ api }

@@ -9,7 +9,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { useOnboardingContext } from '../context';
-import { PoEligibleData, PoEligibleResult } from '../types';
+import { PoEligibleData, PoEligibleResponse } from '../types';
 import { fromDotNotation } from '../utils';
 import { trackRedirected, useTrackAbandoned } from '../tracking';
 import LoadBar from 'components/load-bar';
@@ -45,7 +45,7 @@ const LoadingStep: React.FC< Props > = () => {
 				go_live_timeframe: data.go_live_timeframe,
 			},
 		};
-		const eligibleResult = await apiFetch< PoEligibleResult >( {
+		const eligibleResult = await apiFetch< PoEligibleResponse >( {
 			path: '/wc/v3/payments/onboarding/router/po_eligible',
 			method: 'POST',
 			data: eligibilityDetails,

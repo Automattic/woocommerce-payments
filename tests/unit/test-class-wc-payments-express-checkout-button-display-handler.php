@@ -201,6 +201,17 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 	}
 
 	/**
+	 * Clean up after each test.
+	 *
+	 * @return void
+	 */
+	public function tear_down() {
+		remove_all_filters( 'woocommerce_available_payment_gateways' );
+
+		parent::tear_down();
+	}
+
+	/**
 	 * @return WC_Payment_Gateway_WCPay
 	 */
 	private function make_wcpay_gateway() {

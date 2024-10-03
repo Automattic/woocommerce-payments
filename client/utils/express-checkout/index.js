@@ -23,6 +23,12 @@ export const getExpressCheckoutConfig = ( key ) => {
 };
 
 export const getDefaultBorderRadius = () => {
+	// If wcpaySettings isn't loaded on the page where this is called we can
+	// safely return the default value of 4.
+	if ( typeof wcpaySettings === 'undefined' ) {
+		return 4;
+	}
+
 	return parseInt(
 		window?.wcpaySettings?.defaultExpressCheckoutBorderRadius || 4,
 		10

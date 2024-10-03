@@ -3,6 +3,7 @@
  */
 import { useCallback } from 'react';
 import ReactDOM from 'react-dom';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -24,26 +25,36 @@ const api = new WCPayAPI(
 	request
 );
 
-const WooPayExpressCheckoutButtonContainer = () => {
-	const onRefChange = useCallback( ( node ) => {
-		if ( node ) {
-			const root = ReactDOM.createRoot( node );
+const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
+	const onRefChange = useCallback(
+		( node ) => {
+			if ( node ) {
+				const root = ReactDOM.createRoot( node );
 
-			root.render(
-				<WoopayExpressCheckoutButton
-					buttonSettings={ getConfig( 'woopayButton' ) }
-					api={ api }
-					emailSelector="#email"
-				/>
-			);
-		}
-	}, [] );
+				root.render(
+					<WoopayExpressCheckoutButton
+						buttonSettings={ getConfig( 'woopayButton' ) }
+						api={ api }
+						emailSelector="#email"
+						buttonAttributes={ buttonAttributes }
+					/>
+				);
+			}
+		},
+		[ buttonAttributes ]
+	);
 
 	return <span ref={ onRefChange } />;
 };
 
 const wooPayExpressCheckoutPaymentMethod = () => ( {
 	name: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
+	title: 'WooPayments - WooPay',
+	description: __(
+		'A one-click, high-converting, secure checkout built for Woo — themed to your brand.',
+		'woocommerce-payments'
+	),
+	gatewayId: 'woocommerce_payments',
 	content: <WooPayExpressCheckoutButtonContainer />,
 	edit: (
 		<WoopayExpressCheckoutButton

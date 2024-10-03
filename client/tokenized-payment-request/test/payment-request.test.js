@@ -71,7 +71,7 @@ describe( 'WooPaymentsPaymentRequest', () => {
 				currency_code: 'usd',
 			},
 			total_label: 'wcpay.test (via WooCommerce)',
-			button: { type: 'buy', theme: 'dark', height: '48' },
+			button: { type: 'default', theme: 'dark', height: '48' },
 		};
 		wcpayApi = {
 			getStripe: () => ( {

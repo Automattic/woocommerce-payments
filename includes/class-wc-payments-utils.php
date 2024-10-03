@@ -1290,6 +1290,24 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns true if the request that's currently being processed is a Store API batch request, false
+	 * otherwise.
+	 *
+	 * @return bool True if the request is a Store API batch request, false otherwise.
+	 */
+	public static function is_store_batch_request(): bool {
+		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
+		} else {
+			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$request_path = $url_parts ? rtrim( $url_parts['path'], '/' ) : '';
+			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		}
+
+		return 1 === preg_match( '@^\/wc\/store(\/v[\d]+)?\/batch@', $rest_route );
+	}
+
+	/**
 	 * Gets the current active theme transient for a given location
 	 * Falls back to 'stripe' if no transients are set.
 	 *

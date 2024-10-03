@@ -5,7 +5,6 @@ import { upeRestrictedProperties } from './upe-styles';
 import {
 	generateHoverRules,
 	generateOutlineStyle,
-	maybeConvertRGBAtoRGB,
 	dashedToCamelCase,
 	isColorLight,
 	getBackgroundColor,
@@ -380,8 +379,8 @@ export const getFieldStyles = (
 	for ( let i = 0; i < styles.length; i++ ) {
 		const camelCase = dashedToCamelCase( styles[ i ] );
 		if ( validProperties.includes( camelCase ) ) {
-			filteredStyles[ camelCase ] = maybeConvertRGBAtoRGB(
-				styles.getPropertyValue( styles[ i ] )
+			filteredStyles[ camelCase ] = styles.getPropertyValue(
+				styles[ i ]
 			);
 		}
 	}
@@ -443,7 +442,7 @@ export const getFontRulesFromPage = () => {
 	return fontRules;
 };
 
-export const getAppearance = ( elementsLocation ) => {
+export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	const selectors = appearanceSelectors.getSelectors( elementsLocation );
 
 	// Add hidden fields to DOM for generating styles.
@@ -505,11 +504,18 @@ export const getAppearance = ( elementsLocation ) => {
 			'.TabIcon--selected': selectedTabIconRules,
 			'.Text': labelRules,
 			'.Text--redirect': labelRules,
+		},
+	};
+
+	if ( forWooPay ) {
+		appearance.rules = {
+			...appearance.rules,
 			'.Heading': headingRules,
 			'.Button': buttonRules,
 			'.Link': linkRules,
-		},
-	};
+		};
+	}
+
 	// Remove hidden fields from DOM.
 	hiddenElementsForUPE.cleanup();
 	return appearance;

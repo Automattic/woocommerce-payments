@@ -36,18 +36,30 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		$this->incentives_service  = new WC_Payments_Incentives_Service( $this->mock_database_cache );
 		$this->incentives_service->init_hooks();
 
+		// Ensure the Payments menu is present.
 		global $menu;
 		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$menu = [
 			[ 'Payments', null, 'wc-admin&path=/payments/connect' ],
 		];
+
+		// Ensure no payment gateways are available.
+		add_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
 	}
 
+	/**
+	 * Clean up after each test.
+	 *
+	 * @return void
+	 */
 	public function tear_down() {
-		parent::tear_down();
-
 		global $menu;
 		$menu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		remove_all_filters( 'pre_http_request' );
+		remove_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
+
+		parent::tear_down();
 	}
 
 	public function test_filters_registered_properly() {
@@ -127,6 +139,8 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertNull( $this->incentives_service->get_cached_connect_incentive() );
+
+		remove_all_filters( 'woocommerce_countries_base_country' );
 	}
 
 	public function test_get_cached_connect_incentive_cached_error() {

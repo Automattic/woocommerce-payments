@@ -303,6 +303,12 @@ class WC_Payments {
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
+		// in TeamCity tests, there might be multiple instances of WC_Payments initialized.
+		// This prevents the hooks from being registered multiple times, which can cause issues.
+		if ( defined( 'WCPAY_VERSION_NUMBER' ) ) {
+			return;
+		}
+
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
@@ -502,7 +508,8 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
 		self::$order_service                        = new WC_Payments_Order_Service( self::$api_client );
-		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
+		self::$compatibility_service                = new Compatibility_Service( self::$api_client );
+		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service, self::$compatibility_service );
 		self::$session_service                      = new WC_Payments_Session_Service( self::$api_client );
 		self::$redirect_service                     = new WC_Payments_Redirect_Service( self::$api_client );
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache, self::$session_service );
@@ -519,7 +526,6 @@ class WC_Payments {
 		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
-		self::$compatibility_service                = new Compatibility_Service( self::$api_client );
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
@@ -601,16 +607,18 @@ class WC_Payments {
 			}
 		);
 
-		// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
-		$enabled_bnpl_payment_methods = array_intersect(
-			Payment_Method::BNPL_PAYMENT_METHODS,
-			self::get_gateway()->get_upe_enabled_payment_method_ids()
-		);
-		if ( [] !== $enabled_bnpl_payment_methods ) {
-			add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
-			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 5 );
-			add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
-			add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
+		if ( self::get_gateway()->is_enabled() ) {
+			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
+			$enabled_bnpl_payment_methods = array_intersect(
+				Payment_Method::BNPL_PAYMENT_METHODS,
+				self::get_gateway()->get_upe_enabled_payment_method_ids()
+			);
+			if ( [] !== $enabled_bnpl_payment_methods ) {
+				add_action( 'woocommerce_single_product_summary', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 10 );
+				add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 5 );
+				add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
+				add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
+			}
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -637,6 +645,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-giropay-deprecation-settings-update.php';
 		require_once __DIR__ . '/migrations/class-erase-bnpl-announcement-meta.php';
 		require_once __DIR__ . '/migrations/class-erase-deprecated-flags-and-options.php';
+		require_once __DIR__ . '/migrations/class-manual-capture-payment-method-settings-update.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -647,6 +656,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Giropay_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -1532,6 +1542,7 @@ class WC_Payments {
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_woopay', [ WooPay_Session::class, 'ajax_init_woopay' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_session', [ WooPay_Session::class, 'ajax_get_woopay_session' ] );
+			add_action( 'wc_ajax_wcpay_set_woopay_phone_number', [ WooPay_Session::class, 'ajax_set_woopay_phone_number' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_minimum_session_data', [ WooPay_Session::class, 'ajax_get_woopay_minimum_session_data' ] );
 

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
@@ -603,6 +604,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$payment_method_ids_to_enable = $request->get_param( 'enabled_payment_method_ids' );
 		$available_payment_methods    = $this->wcpay_gateway->get_upe_available_payment_methods();
 
+		// Only 'card' and 'link' support manual capture. Leave them enabled if they're already enabled.
+		if ( $request->has_param( 'is_manual_capture_enabled' ) && $request->get_param( 'is_manual_capture_enabled' ) ) {
+			$payment_method_ids_to_enable = array_intersect( $payment_method_ids_to_enable, [ Payment_Method::CARD, Payment_Method::LINK ] );
+		}
+
 		$payment_method_ids_to_enable = array_values(
 			array_filter(
 				$payment_method_ids_to_enable,
@@ -610,6 +616,18 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					return in_array( $payment_method, $available_payment_methods, true );
 				}
 			)
+		);
+
+		$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
+		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
+		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
+
+		$payment_method_ids_to_enable = array_filter(
+			$payment_method_ids_to_enable,
+			function ( $payment_method_id_to_enable ) use ( $capability_key_map, $payment_method_statuses ) {
+				$stripe_key = $capability_key_map[ $payment_method_id_to_enable ] ?? null;
+				return array_key_exists( $stripe_key, $payment_method_statuses ) && 'active' === $payment_method_statuses[ $stripe_key ]['status'];
+			}
 		);
 
 		$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
@@ -649,10 +667,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		// Keep the enabled payment method IDs list synchronized across gateway setting objects unless we remove this list with all dependencies.
 		foreach ( WC_Payments::get_payment_gateway_map() as $payment_gateway ) {
 			$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
-		}
-
-		if ( $payment_method_ids_to_enable ) {
-			$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
 		}
 	}
 

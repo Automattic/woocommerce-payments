@@ -27,7 +27,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 		$this->title       = __( 'Credit card / debit card', 'woocommerce-payments' );
 		$this->is_reusable = true;
 		$this->currencies  = [];// All currencies are supported.
-		$this->icon_url    = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/generic-card.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
