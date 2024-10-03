@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.3.0 - 2024-10-02 =
+= 8.3.0 - 2024-10-03 =
 * Add - Add compatibility with the buttonAttributes API from Woo Blocks
 * Add - Add rate limiter to compatibility data updates
 * Add - Add UTC to the date time column header of transactions list page.
@@ -114,12 +114,14 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Prevent failures and notices related to trying to schedule AS jobs before init.
 * Fix - Prevent multi-currency conversion during a REST API request.
 * Fix - Remove text color from WooPay component.
+* Fix - Rendering Test Model badge only for Credit Card
 * Fix - Sync phone changes with WooPay phone field.
 * Fix - Update payment methods when manual capture is enabled.
 * Update - Default express checkout button label to "Only icon".
 * Update - Remove feature flag to make embedded KYC enabled by default
 * Update - Some minor styling updates on the Onboarding form.
 * Update - Update express payment methods with a title, description and gatewayId
+* Dev - fix: prevent multiple instances of WC_Payments_Apple_Pay_Registration
 * Dev - Fix gutenberg blueberry focus color
 * Dev - Fix progressive onboarding e2e test
 * Dev - Some refactors to embedded KYC logic.
