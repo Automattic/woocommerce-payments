@@ -303,6 +303,12 @@ class WC_Payments {
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
+		// in TeamCity tests, there might be multiple instances of WC_Payments initialized.
+		// This prevents the hooks from being registered multiple times, which can cause issues.
+		if ( defined( 'WCPAY_VERSION_NUMBER' ) ) {
+			return;
+		}
+
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
@@ -580,12 +586,8 @@ class WC_Payments {
 		// To avoid register the same hooks twice.
 		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
 
-		// in TeamCity tests, there might be multiple instances of WC_Payments initialized.
-		// This prevents the ApplePay-related hooks from being registered multiple times, which can cause issues.
-		if ( ! self::$apple_pay_registration ) {
-			self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
-			self::$apple_pay_registration->init_hooks();
-		}
+		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+		self::$apple_pay_registration->init_hooks();
 
 		$express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
 		self::set_express_checkout_helper( $express_checkout_helper );
