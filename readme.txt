@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.3.0 - 2024-10-03 =
+= 8.3.0-test-4 - unreleased =
 * Add - Add compatibility with the buttonAttributes API from Woo Blocks
 * Add - Add rate limiter to compatibility data updates
 * Add - Add UTC to the date time column header of transactions list page.
