@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent failures and notices related to trying to schedule AS jobs before init.
