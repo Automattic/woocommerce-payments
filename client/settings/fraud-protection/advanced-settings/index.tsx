@@ -313,6 +313,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	useEffect( confirmLeaveCallback, [
 		confirmLeaveCallback,
+		protectionSettingsUI,
 		advancedFraudProtectionSettings,
 	] );
 
