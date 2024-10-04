@@ -122,10 +122,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState<
 		ProtectionSettingsUI
 	>( {} );
-	const [
-		protectionSettingsChanged,
-		setProtectionSettingsChanged,
-	] = useState( false );
 
 	useEffect( () => {
 		setProtectionSettingsUI(
@@ -317,7 +313,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	useEffect( confirmLeaveCallback, [
 		confirmLeaveCallback,
-		protectionSettingsChanged,
 		advancedFraudProtectionSettings,
 	] );
 
@@ -342,8 +337,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 			value={ {
 				protectionSettingsUI,
 				setProtectionSettingsUI,
-				protectionSettingsChanged,
-				setProtectionSettingsChanged,
 				setIsDirty,
 			} }
 		>
