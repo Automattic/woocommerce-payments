@@ -21,14 +21,14 @@ describe( 'Details link', () => {
 
 	test( 'renders dispute details with ID', () => {
 		const { container: link } = render(
-			<DetailsLink id="po_mock" parentSegment="deposits" />
+			<DetailsLink id="po_mock" parentSegment="payouts" />
 		);
 		expect( link ).toMatchSnapshot();
 	} );
 
 	test( 'empty render with no ID', () => {
 		const { container: link } = render(
-			<DetailsLink parentSegment="deposits" />
+			<DetailsLink parentSegment="payouts" />
 		);
 		expect( link ).toMatchSnapshot();
 	} );

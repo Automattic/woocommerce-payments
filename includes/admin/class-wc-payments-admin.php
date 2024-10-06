@@ -158,9 +158,9 @@ class WC_Payments_Admin {
 			],
 			'wc-payments-deposits'     => [
 				'id'       => 'wc-payments-deposits',
-				'title'    => __( 'Deposits', 'woocommerce-payments' ),
+				'title'    => __( 'Payouts', 'woocommerce-payments' ),
 				'parent'   => 'wc-payments',
-				'path'     => '/payments/deposits',
+				'path'     => '/payments/payouts',
 				'nav_args' => [
 					'parent' => 'wc-payments',
 					'order'  => 20,
@@ -467,9 +467,9 @@ class WC_Payments_Admin {
 			wc_admin_register_page(
 				[
 					'id'     => 'wc-payments-deposit-details',
-					'title'  => __( 'Deposit details', 'woocommerce-payments' ),
+					'title'  => __( 'Payout details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-transactions', // Not (top level) deposits, as workaround for showing up as submenu page.
-					'path'   => '/payments/deposits/details',
+					'path'   => '/payments/payouts/details',
 				]
 			);
 			wc_admin_register_page(

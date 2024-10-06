@@ -91,7 +91,7 @@ const getDepositTimelineItem = (
 		);
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			id: event.deposit.id,
 		} );
 
@@ -151,7 +151,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			id: event.deposit.id,
 		} );
 
