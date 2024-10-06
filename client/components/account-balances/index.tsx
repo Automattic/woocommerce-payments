@@ -154,9 +154,8 @@ const AccountBalances: React.FC = () => {
 							>
 								{ sprintf(
 									__(
-										/* translators: %$1$s: Available instant deposit amount, %2$s: Instant deposit fee percentage */
-										/* 'Instantly deposit %1$s and get funds in your bank account in 30 mins for a %2$s%% fee.' */
-										'Get %1$s via instant deposit. Funds are typically in your bank account within 30 mins. Fee: %2$s%%.',
+										/* translators: %$1$s: Available instant payout amount, %2$s: Instant payout fee percentage */
+										'Get %1$s via instant payout. Funds are typically in your bank account within 30 mins. Fee: %2$s%%.',
 										'woocommerce-payments'
 									),
 									formatCurrency(
@@ -179,17 +178,17 @@ const AccountBalances: React.FC = () => {
 								<ClickTooltip
 									buttonIcon={ <HelpOutlineIcon /> }
 									buttonLabel={ __(
-										'Learn more about instant deposit',
+										'Learn more about instant payouts',
 										'woocommerce-payments'
 									) }
 									content={
-										/* 'With instant deposit you can receive requested funds in your bank account within 30 mins for a 1.5% fee. Learn more' */
+										/* 'With instant payout you can receive requested funds in your bank account within 30 mins for a 1.5% fee. Learn more' */
 
 										interpolateComponents( {
 											mixedString: sprintf(
 												__(
-													/* translators: %s: Instant deposit fee percentage */
-													'With {{strong}}instant deposit{{/strong}} you can receive requested funds in your bank account within 30 mins for a %s%% fee. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+													/* translators: %s: Instant payout fee percentage */
+													'With {{strong}}instant payout{{/strong}} you can receive requested funds in your bank account within 30 mins for a %s%% fee. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 													'woocommerce-payments'
 												),
 												selectedOverview.instantBalance
