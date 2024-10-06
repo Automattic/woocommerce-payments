@@ -31,11 +31,20 @@ interface Props {
 
 const nounToUse = {
 	documents: __( 'document', 'woocommerce-payments' ),
-	deposits: __( 'deposit', 'woocommerce-payments' ),
+	deposits: __( 'payout', 'woocommerce-payments' ),
 	disputes: __( 'dispute', 'woocommerce-payments' ),
 	loans: __( 'loan', 'woocommerce-payments' ),
 	payments: __( 'order', 'woocommerce-payments' ),
 	transactions: __( 'order', 'woocommerce-payments' ),
+};
+
+const pluralNounToUse = {
+	documents: __( 'documents', 'woocommerce-payments' ),
+	deposits: __( 'payouts', 'woocommerce-payments' ),
+	disputes: __( 'disputes', 'woocommerce-payments' ),
+	loans: __( 'loans', 'woocommerce-payments' ),
+	payments: __( 'orders', 'woocommerce-payments' ),
+	transactions: __( 'orders', 'woocommerce-payments' ),
 };
 
 const verbToUse = {
@@ -143,7 +152,7 @@ const getNoticeContent = (
 								'Viewing test %1$s. To view live %1s, disable test mode in {{settingsLink}}%2s settings{{/settingsLink}}.',
 								'woocommerce-payments'
 							),
-							currentPage,
+							pluralNounToUse[ currentPage ],
 							'WooPayments'
 						),
 						components: {
