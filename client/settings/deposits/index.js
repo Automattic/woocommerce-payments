@@ -131,17 +131,17 @@ const CustomizeDepositSchedule = () => {
 			<p className="help-text">
 				{ depositScheduleInterval === 'monthly' &&
 					__(
-						'Deposits scheduled on a weekend will be sent on the next business day.',
+						'Payouts scheduled on a weekend will be sent on the next business day.',
 						'woocommerce-payments'
 					) }
 				{ depositScheduleInterval === 'weekly' &&
 					__(
-						'Deposits that fall on a holiday will initiate on the next business day.',
+						'Payouts that fall on a holiday will initiate on the next business day.',
 						'woocommerce-payments'
 					) }
 				{ depositScheduleInterval === 'daily' &&
 					__(
-						'Deposits will occur every business day.',
+						'Payouts will occur every business day.',
 						'woocommerce-payments'
 					) }
 			</p>
@@ -161,7 +161,7 @@ const DepositsSchedule = () => {
 			<InlineNotice status="warning" isDismissible={ false } icon>
 				{ interpolateComponents( {
 					mixedString: __(
-						'Deposit scheduling is currently unavailable for your store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'Payout scheduling is currently unavailable for your store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
 					components: {
@@ -183,8 +183,8 @@ const DepositsSchedule = () => {
 			<InlineNotice status="warning" isDismissible={ false } icon>
 				{ interpolateComponents( {
 					mixedString: __(
-						'Your first deposit will be held for 7-14 days. ' +
-							'Deposit scheduling will be available after this period. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'Your first payout will be held for 7-14 days. ' +
+							'Payout scheduling will be available after this period. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
 					components: {
@@ -220,13 +220,13 @@ const Deposits = () => {
 	return (
 		<Card className="deposits">
 			<CardBody>
-				<h4>{ __( 'Deposit schedule', 'woocommerce-payments' ) }</h4>
+				<h4>{ __( 'Payout schedule', 'woocommerce-payments' ) }</h4>
 
 				<DepositsSchedule />
 
 				<div className="deposits__bank-information">
 					<h4>
-						{ __( 'Deposit bank account', 'woocommerce-payments' ) }
+						{ __( 'Payout bank account', 'woocommerce-payments' ) }
 					</h4>
 					{ hasErroredExternalAccount ? (
 						<DepositFailureNotice
@@ -235,7 +235,7 @@ const Deposits = () => {
 					) : (
 						<p className="deposits__bank-information-help">
 							{ __(
-								'Manage and update your deposit account information to receive payments and deposits.',
+								'Manage and update your payout account information to receive payments and payouts.',
 								'woocommerce-payments'
 							) }{ ' ' }
 							{ accountLink && (
