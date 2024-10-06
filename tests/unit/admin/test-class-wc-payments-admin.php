@@ -271,7 +271,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 				false,
 				[
 					'page' => 'wc-admin',
-					'path' => '/payments/deposits',
+					'path' => '/payments/payouts',
 				],
 			],
 			'not working Jetpack connection - valid Stripe account' => [
@@ -280,7 +280,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 				true,
 				[
 					'page' => 'wc-admin',
-					'path' => '/payments/deposits',
+					'path' => '/payments/payouts',
 				],
 			],
 			'working Jetpack connection - valid Stripe account' => [
