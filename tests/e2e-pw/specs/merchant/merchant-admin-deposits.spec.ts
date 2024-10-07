@@ -20,7 +20,7 @@ test.describe( 'Merchant deposits', () => {
 
 		expect(
 			page.getByRole( 'heading', {
-				name: 'Deposit history',
+				name: 'Payout history',
 			} )
 		).toBeVisible();
 	} );
@@ -45,7 +45,7 @@ test.describe( 'Merchant deposits', () => {
 
 		// Select a filter option
 		await page
-			.getByLabel( 'Select a deposit status', {
+			.getByLabel( 'Select a payout status', {
 				exact: true,
 			} )
 			.selectOption( 'Pending' );
