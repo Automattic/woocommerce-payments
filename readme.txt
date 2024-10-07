@@ -94,6 +94,13 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.4.0-test-1 - unreleased =
+* Add - Using Floating Labels with Stripe Appearance API for Blocks Checkout
+* Fix - Converting text color rgba to hex to prevent Stripe warning
+* Fix - Stop enqueuing woopay-express-button.css to prevent 404 errors
+* Dev - Fixed wrong utils path that would prevent checkout with WooPay OTP
+* Dev - Migrate WizardTaskItem and CollapsibleBody components to TypeScript, making the className prop optional.
+
 = 8.3.0 - 2024-10-03 =
 * Add - Add compatibility with the buttonAttributes API from Woo Blocks
 * Add - Add rate limiter to compatibility data updates
