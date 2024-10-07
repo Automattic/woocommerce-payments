@@ -54,7 +54,7 @@ describe( 'Deposits filters', () => {
 		beforeEach( () => {
 			addAdvancedFilter( 'Date' );
 			ruleSelector = screen.getByRole( 'combobox', {
-				name: /deposit date filter/i,
+				name: /payout date filter/i,
 			} );
 		} );
 
@@ -111,7 +111,7 @@ describe( 'Deposits filters', () => {
 
 		test( 'should render all status', () => {
 			const statusSelect = screen.getByRole( 'combobox', {
-				name: /deposit status$/i,
+				name: /payout status$/i,
 			} );
 			expect( statusSelect.options ).toMatchSnapshot();
 		} );
