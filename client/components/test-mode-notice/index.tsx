@@ -38,15 +38,6 @@ const nounToUse = {
 	transactions: __( 'order', 'woocommerce-payments' ),
 };
 
-const pluralNounToUse = {
-	documents: __( 'documents', 'woocommerce-payments' ),
-	deposits: __( 'payouts', 'woocommerce-payments' ),
-	disputes: __( 'disputes', 'woocommerce-payments' ),
-	loans: __( 'loans', 'woocommerce-payments' ),
-	payments: __( 'orders', 'woocommerce-payments' ),
-	transactions: __( 'orders', 'woocommerce-payments' ),
-};
-
 const verbToUse = {
 	documents: __( 'created', 'woocommerce-payments' ),
 	deposits: __( 'created', 'woocommerce-payments' ),
@@ -152,7 +143,9 @@ const getNoticeContent = (
 								'Viewing test %1$s. To view live %1s, disable test mode in {{settingsLink}}%2s settings{{/settingsLink}}.',
 								'woocommerce-payments'
 							),
-							pluralNounToUse[ currentPage ],
+							'deposits' === currentPage
+								? 'payouts'
+								: currentPage,
 							'WooPayments'
 						),
 						components: {
