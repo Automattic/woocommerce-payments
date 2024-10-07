@@ -34,7 +34,7 @@ describe( 'Deposits filters', () => {
 		const { rerender } = render( <DepositsFilters /> );
 
 		// select advanced filter view
-		user.click( screen.getByRole( 'button', { name: /All deposits/i } ) );
+		user.click( screen.getByRole( 'button', { name: /All payouts/i } ) );
 		user.click(
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
 		);

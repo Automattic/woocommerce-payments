@@ -36,7 +36,7 @@ test.describe( 'Merchant deposits', () => {
 			.waitFor( { state: 'hidden' } );
 
 		// Open the advanced filters.
-		await page.getByRole( 'button', { name: 'All deposits' } ).click();
+		await page.getByRole( 'button', { name: 'All payouts' } ).click();
 		await page.getByRole( 'button', { name: 'Advanced filters' } ).click();
 
 		// Select a filter
