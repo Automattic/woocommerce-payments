@@ -209,6 +209,18 @@ class WC_Payments_Admin {
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
+		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
+	}
+
+	/**
+	 * Redirect /payments/deposits to /payments/payouts.
+	 */
+	public function redirect_deposits_to_payouts() {
+		if ( is_admin() && isset( $_GET['page'] ) && 'wc-admin' === $_GET['page'] // phpcs:ignore WordPress.Security.NonceVerification
+			&& isset( $_GET['path'] ) && '/payments/deposits' === $_GET['path'] ) { // phpcs:ignore WordPress.Security.NonceVerification
+			wp_safe_redirect( admin_url( 'admin.php?page=wc-admin&path=/payments/payouts' ) );
+			exit;
+		}
 	}
 
 	/**
