@@ -30,7 +30,7 @@ export const filters = [
 			'status_is_not',
 			'match',
 		],
-		showFilters: () => true,
+		showFilters: () => false,
 		filters: [
 			{
 				label: __( 'All', 'woocommerce-payments' ),
