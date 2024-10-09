@@ -14,7 +14,7 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events with fe
     "headline": <React.Fragment>
       $20.97 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -52,7 +52,7 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events without
     "headline": <React.Fragment>
       $20.97 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -122,7 +122,7 @@ exports[`mapTimelineEvents Multi-Currency events formats dispute_won events 1`] 
     "headline": <React.Fragment>
       $44.99 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2d3"
       >
         Apr 5, 2020 deposit
       </Link>
@@ -374,7 +374,7 @@ exports[`mapTimelineEvents single currency events formats captured events with f
     "headline": <React.Fragment>
       $59.50 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -439,7 +439,7 @@ exports[`mapTimelineEvents single currency events formats captured events with j
     "headline": <React.Fragment>
       $59.50 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -477,7 +477,7 @@ exports[`mapTimelineEvents single currency events formats captured events withou
     "headline": <React.Fragment>
       $59.50 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -566,7 +566,7 @@ exports[`mapTimelineEvents single currency events formats dispute_won events 1`]
     "headline": <React.Fragment>
       $115.00 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2d3"
       >
         Apr 5, 2020 deposit
       </Link>
@@ -675,7 +675,7 @@ exports[`mapTimelineEvents single currency events in person payments - tap to pa
     "headline": <React.Fragment>
       $19.19 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </Link>
@@ -724,7 +724,7 @@ exports[`mapTimelineEvents single currency events should not render fee breakup 
     "headline": <React.Fragment>
       $59.50 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
         Apr 2, 2020 deposit
       </Link>
