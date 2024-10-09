@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Set transient for woopay_enabled_by_default for the new onboarding flow
