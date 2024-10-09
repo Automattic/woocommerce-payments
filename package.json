@@ -38,6 +38,7 @@
     "test:e2e-dev": "NODE_CONFIG_DIR='tests/e2e/config' JEST_PUPPETEER_CONFIG='tests/e2e/config/jest-puppeteer.config.js' wp-scripts test-e2e --config tests/e2e/config/jest.config.js --puppeteer-interactive",
     "test:e2e-performance": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.performance.config.js",
     "test:e2e-pw": "./tests/e2e-pw/test-e2e-pw.sh",
+    "test:e2e-pw-update-snapshots": "rm -rf tests/e2e-pw/specs/merchant/__snapshots__/ && npm run test:e2e-pw --update-snapshots",
     "test:e2e-pw-ui": "./tests/e2e-pw/test-e2e-pw-ui.sh",
     "test:e2e-pw-ci": "npx playwright test --config=tests/e2e-pw/playwright.config.ts --grep-invert @todo",
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",

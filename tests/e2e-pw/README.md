@@ -17,7 +17,7 @@ See [tests/e2e/README.md](/tests/e2e/README.md) for detailed e2e environment set
 -   `npm run test:e2e-pw` headless run from within a linux docker container.
 -   `npm run test:e2e-pw-ui` runs tests in interactive UI mode from within a linux docker container – recommended for authoring tests and re-running failed tests.
 -   `npm run test:e2e-pw keyword` runs tests only with a specific keyword in the file name, e.g. `dispute` or `checkout`.
--   `npm run test:e2e-pw --update-snapshots` updates snapshots.
+-   `npm run test:e2e-pw --update-snapshots` updates snapshots but the existing snapshot file needs to be deleted first.
 
 ## FAQs
 
