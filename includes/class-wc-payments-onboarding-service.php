@@ -188,6 +188,9 @@ class WC_Payments_Onboarding_Service {
 				$actioned_notes,
 				$progressive
 			);
+
+			set_transient( 'woopay_enabled_by_default', isset( $account_session['woopay_enabled_by_default'] ) ?? false, DAY_IN_SECONDS );
+
 		} catch ( API_Exception $e ) {
 			// If we fail to create the session, return an empty array.
 			return [];
@@ -228,6 +231,11 @@ class WC_Payments_Onboarding_Service {
 
 		if ( ! $result || ! $success ) {
 			throw new API_Exception( __( 'Failed to finalize onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
+		}
+
+		if ( get_transient( 'woopay_enabled_by_default' ) ) {
+			\WC_Payments::get_gateway()->update_is_woopay_enabled( true );
+			delete_transient( 'woopay_enabled_by_default' );
 		}
 
 		// Clear the onboarding in progress option, since the onboarding flow is now complete.
