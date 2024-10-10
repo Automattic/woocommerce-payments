@@ -160,12 +160,13 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return array Session data.
 	 *
-	 * @throws API_Exception
+	 * @throws API_Exception|Exception
 	 */
 	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
+
 		$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
 
 		// Make sure the onboarding test mode DB flag is set.
@@ -240,7 +241,7 @@ class WC_Payments_Onboarding_Service {
 			throw new API_Exception( __( 'Failed to finalize onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
 		}
 
-		// Clear the onboarding in progress option, since the onboarding flow is now complete.
+		// Clear the embedded KYC in progress option, since the onboarding flow is now complete.
 		$this->clear_embedded_kyc_in_progress();
 
 		return [
@@ -332,7 +333,7 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Get account data for onboarding from self assestment data.
+	 * Get account data for onboarding from self assessment data.
 	 *
 	 * @param string $setup_mode Setup mode.
 	 * @param array  $self_assessment_data Self assessment data.
