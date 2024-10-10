@@ -193,6 +193,13 @@ class WC_Payments_Onboarding_Service {
 			return [];
 		}
 
+		// Remember if we should enable WooPay by default.
+		set_transient(
+			WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT,
+			filter_var( $account_session['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			DAY_IN_SECONDS
+		);
+
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
 			'expiresAt'      => $account_session['expires_at'] ?? 0,
