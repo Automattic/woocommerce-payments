@@ -1900,7 +1900,8 @@ class WC_Payments_Account {
 
 			// Clean up any existing onboarding state.
 			delete_transient( self::ONBOARDING_STATE_TRANSIENT );
-			delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
+			// Clear the embedded KYC in progress option, since the onboarding flow is now complete.
+			$this->onboarding_service->clear_embedded_kyc_in_progress();
 
 			return add_query_arg(
 				[ 'wcpay-connection-success' => '1' ],
