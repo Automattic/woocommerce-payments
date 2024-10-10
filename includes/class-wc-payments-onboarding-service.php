@@ -434,7 +434,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return bool True if embedded KYC is in progress, false otherwise.
 	 */
 	public function is_embedded_kyc_in_progress(): bool {
-		return in_array( get_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'no' ), [ 'yes', '1' ], true );
+		return filter_var( get_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'no' ), FILTER_VALIDATE_BOOLEAN );
 	}
 
 	/**
