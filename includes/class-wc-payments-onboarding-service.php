@@ -193,6 +193,9 @@ class WC_Payments_Onboarding_Service {
 			return [];
 		}
 
+		// Set the embedded KYC in progress flag.
+		$this->set_embedded_kyc_in_progress();
+
 		// Remember if we should enable WooPay by default.
 		set_transient(
 			WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT,
