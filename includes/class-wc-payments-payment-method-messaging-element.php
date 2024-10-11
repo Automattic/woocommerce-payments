@@ -60,17 +60,27 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		$product_variations = [];
 
 		if ( $product ) {
+			$price_needs_tax    = (
+				wc_tax_enabled() &&
+				! wc_prices_include_tax() &&
+				! WC()->cart->get_customer()->get_is_vat_exempt() &&
+				$product->is_taxable()
+			);
+			$price              = $price_needs_tax ? wc_get_price_including_tax( $product ) : $product->get_price();
 			$product_variations = [
 				'base_product' => [
-					'amount'   => WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code ),
+					'amount'   => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 					'currency' => $currency_code,
 				],
 			];
 			foreach ( $product->get_children() as $variation_id ) {
 				$variation = wc_get_product( $variation_id );
 				if ( $variation ) {
+					$price                               = $price_needs_tax
+						? wc_get_price_including_tax( $variation )
+						: $variation->get_price();
 					$product_variations[ $variation_id ] = [
-						'amount'   => WC_Payments_Utils::prepare_amount( $variation->get_price(), $currency_code ),
+						'amount'   => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 						'currency' => $currency_code,
 					];
 				}
