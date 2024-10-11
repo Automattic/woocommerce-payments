@@ -28,6 +28,7 @@ class WC_Payments_Account {
 	const ONBOARDING_DISABLED_TRANSIENT                         = 'wcpay_on_boarding_disabled';
 	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
+	const WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT                   = 'woopay_enabled_by_default';
 	const EMBEDDED_KYC_IN_PROGRESS_OPTION                       = 'wcpay_onboarding_embedded_kyc_in_progress';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
@@ -1618,7 +1619,7 @@ class WC_Payments_Account {
 		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
 		delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
 		delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
-		delete_transient( 'woopay_enabled_by_default' );
+		delete_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 
 		// Clear the cache to avoid stale data.
 		$this->clear_cache();
@@ -1910,7 +1911,8 @@ class WC_Payments_Account {
 
 			// Clean up any existing onboarding state.
 			delete_transient( self::ONBOARDING_STATE_TRANSIENT );
-			delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
+			// Clear the embedded KYC in progress option, since the onboarding flow is now complete.
+			$this->onboarding_service->clear_embedded_kyc_in_progress();
 
 			return add_query_arg(
 				[ 'wcpay-connection-success' => '1' ],
@@ -1920,7 +1922,7 @@ class WC_Payments_Account {
 
 		// We have an account that needs to be verified (has a URL to redirect the merchant to).
 		// Store the relevant onboarding data.
-		set_transient( 'woopay_enabled_by_default', isset( $onboarding_data['woopay_enabled_by_default'] ) ?? false, DAY_IN_SECONDS );
+		set_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ), DAY_IN_SECONDS );
 		// Save the onboarding state for a day.
 		// This is used to verify the state when finalizing the onboarding and connecting the account.
 		// On finalizing the onboarding, the transient gets deleted.
@@ -1937,9 +1939,9 @@ class WC_Payments_Account {
 			return;
 		}
 
-		if ( get_transient( 'woopay_enabled_by_default' ) ) {
+		if ( get_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) ) {
 			WC_Payments::get_gateway()->update_is_woopay_enabled( true );
-			delete_transient( 'woopay_enabled_by_default' );
+			delete_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 		}
 	}
 
