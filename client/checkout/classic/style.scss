@@ -33,12 +33,16 @@
 #payment .payment_methods {
 	li[class*='payment_method_woocommerce_payments'] > label {
 		display: grid;
-		grid-template-columns: 0fr auto auto 1fr;
+		grid-template-columns: 0fr auto auto;
 		grid-template-rows: max-content;
 		grid-gap: 3px 2px;
 
+		.payment-method-title {
+			margin-right: 8px;
+		}
+
 		.test-mode.badge {
-			align-self: center;
+			display: inline-block;
 			background-color: #fff2d7;
 			border-radius: 4px;
 			padding: 4px 6px;
@@ -46,7 +50,6 @@
 			font-weight: 400;
 			line-height: 16px;
 			color: #4d3716;
-			margin-left: 8px;
 		}
 
 		img {
