@@ -787,12 +787,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Connection URL.
 	 */
 	public function get_connection_url() {
-		$account_data = $this->account->get_cached_account_data();
-
-		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
-		if ( isset( $account_data['account_id'] ) ) {
+		// If we have an account, `Set up` will be shown instead of `Connect`.
+		if ( $this->is_connected() ) {
 			return '';
 		}
+
+		// Note: Payments Task is not a very accurate from value, but it is the best we can do, for now.
 		return html_entity_decode( WC_Payments_Account::get_connect_url( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK ) );
 	}
 

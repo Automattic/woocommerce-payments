@@ -1,5 +1,37 @@
 *** WooPayments Changelog ***
 
+= 8.3.0 - 2024-10-03 =
+* Add - Add compatibility with the buttonAttributes API from Woo Blocks
+* Add - Add rate limiter to compatibility data updates
+* Add - Add UTC to the date time column header of transactions list page.
+* Add - Disable save changes button until a setting has changed.
+* Add - Enables Klarna with amount limitations for FR country code.
+* Add - Provide locale to Express Checkout Element.
+* Add - Redesigned the Payment Method labels for the Blocks Checkout
+* Add - Show a notice in Payments > Settings > Deposits if there is an error with the bank account.
+* Add - Updates to the Embedded KYC to ensure compatibility with Progressive Onboarding
+* Fix - Allow the network saved card payment method setting to be overridden by the `wcpay_force_network_saved_cards` filter
+* Fix - Create div container element with JS dynamically.
+* Fix - Do not display BNPL methods and PMME when WooPayments is disabled
+* Fix - Fixed CC form input fields appearance when using RGBA
+* Fix - Fixed invalid appearance warnings
+* Fix - Fix event prefix duplication in Tracks events
+* Fix - Handle loadError in ECE for Block Context Initialization.
+* Fix - Prevent failures and notices related to trying to schedule AS jobs before init.
+* Fix - Prevent multi-currency conversion during a REST API request.
+* Fix - Remove text color from WooPay component.
+* Fix - Rendering Test Model badge only for Credit Card
+* Fix - Sync phone changes with WooPay phone field.
+* Fix - Update payment methods when manual capture is enabled.
+* Update - Default express checkout button label to "Only icon".
+* Update - Remove feature flag to make embedded KYC enabled by default
+* Update - Some minor styling updates on the Onboarding form.
+* Update - Update express payment methods with a title, description and gatewayId
+* Dev - fix: prevent multiple instances of WC_Payments_Apple_Pay_Registration
+* Dev - Fix gutenberg blueberry focus color
+* Dev - Fix progressive onboarding e2e test
+* Dev - Some refactors to embedded KYC logic.
+
 = 8.2.2 - 2024-09-24 =
 * Fix - Fix WooPay pre-checking place order bug when buying a subscription.
 
