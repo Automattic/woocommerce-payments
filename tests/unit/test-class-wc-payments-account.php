@@ -431,7 +431,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
-				'connect_page',
+				'start_jetpack_connection',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
@@ -439,7 +439,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
-				'connect_page',
+				'onboarding_wizard',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
