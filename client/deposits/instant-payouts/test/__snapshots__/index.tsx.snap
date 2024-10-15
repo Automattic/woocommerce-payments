@@ -11,7 +11,7 @@ exports[`Instant payout button and modal button renders correctly with balance 1
 </div>
 `;
 
-exports[`Instant payout button and modal modal renders correctly 1`] = `
+exports[`Instant payout button and modal renders correctly 1`] = `
 <div
   aria-labelledby="components-modal-header-0"
   class="components-modal__frame wcpay-instant-payout-modal"
@@ -55,7 +55,7 @@ exports[`Instant payout button and modal modal renders correctly 1`] = `
       </button>
     </div>
     <p>
-      Need cash in a hurry? Instant payoutss are available within 30 minutes for a nominal 1.5% service fee.
+      Need cash in a hurry? Instant payouts are available within 30 minutes for a nominal 1.5% service fee.
       <a
         href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/"
         rel="noopener noreferrer"
@@ -104,7 +104,7 @@ exports[`Instant payout button and modal modal renders correctly 1`] = `
         class="components-button is-primary"
         type="button"
       >
-        Deposit $122.22 now
+        Pay out $122.22 now
       </button>
     </div>
   </div>
