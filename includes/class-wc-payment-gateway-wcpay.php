@@ -586,7 +586,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$test_mode_badge = '';
 			}
-			return '<div><span class="payment-method-title">' . $title . '</span>' . $test_mode_badge . '</div>';
+			return '<div class="label-title-container"><span class="payment-method-title">' . $title . '</span>' . $test_mode_badge . '</div>';
 		}
 
 		return $title;

@@ -50,10 +50,14 @@
 		> label {
 			grid-column: 3;
 			display: grid;
-			grid-template-columns: auto;
+			grid-template-columns: 0fr auto;
 			grid-template-rows: max-content;
 			grid-gap: 0;
 			margin-bottom: 0;
+
+			> .label-title-container {
+				grid-area: 1 / 2 / 2 / 3;
+			}
 
 			.payment-method-title {
 				margin-right: 8px;
