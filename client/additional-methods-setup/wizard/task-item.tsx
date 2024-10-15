@@ -11,7 +11,19 @@ import { Icon, check } from '@wordpress/icons';
 import WizardTaskContext from './task/context';
 import './task-item.scss';
 
-const WizardTaskItem = ( { children, title, index, className } ) => {
+interface WizardTaskItemProps {
+	children: React.ReactNode;
+	title: string;
+	index: number;
+	className?: string;
+}
+
+const WizardTaskItem: React.FC< WizardTaskItemProps > = ( {
+	children,
+	title,
+	index,
+	className,
+} ) => {
 	const { isCompleted, isActive } = useContext( WizardTaskContext );
 
 	return (
@@ -26,7 +38,7 @@ const WizardTaskItem = ( { children, title, index, className } ) => {
 				className="wcpay-wizard-task__headline"
 				// tabindex with value `-1` is necessary to programmatically set the focus
 				// on an element that is not interactive.
-				tabIndex="-1"
+				tabIndex={ -1 }
 			>
 				<div className="wcpay-wizard-task__icon-wrapper">
 					<div className="wcpay-wizard-task__icon-text">

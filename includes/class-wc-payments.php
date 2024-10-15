@@ -303,6 +303,12 @@ class WC_Payments {
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
+		// in TeamCity tests, there might be multiple instances of WC_Payments initialized.
+		// This prevents the hooks from being registered multiple times, which can cause issues.
+		if ( defined( 'WCPAY_VERSION_NUMBER' ) ) {
+			return;
+		}
+
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
@@ -1536,6 +1542,7 @@ class WC_Payments {
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_woopay', [ WooPay_Session::class, 'ajax_init_woopay' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_session', [ WooPay_Session::class, 'ajax_get_woopay_session' ] );
+			add_action( 'wc_ajax_wcpay_set_woopay_phone_number', [ WooPay_Session::class, 'ajax_set_woopay_phone_number' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_minimum_session_data', [ WooPay_Session::class, 'ajax_get_woopay_minimum_session_data' ] );
 
