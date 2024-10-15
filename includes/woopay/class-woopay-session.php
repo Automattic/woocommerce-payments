@@ -33,6 +33,8 @@ class WooPay_Session {
 
 	const STORE_API_NAMESPACE_PATTERN = '@^wc/store(/v[\d]+)?$@';
 
+	const WOOPAY_SESSION_KEY = 'woopay-user-data';
+
 	/**
 	 * Init the hooks.
 	 *
@@ -61,11 +63,11 @@ class WooPay_Session {
 		$cart_token = wc_clean( wp_unslash( $_SERVER['HTTP_CART_TOKEN'] ?? null ) );
 
 		if (
-			$cart_token &&
-			self::is_request_from_woopay() &&
-			\WC_Payments_Utils::is_store_api_request() &&
-			class_exists( JsonWebToken::class ) &&
-			JsonWebToken::validate( $cart_token, '@' . wp_salt() )
+		$cart_token &&
+		self::is_request_from_woopay() &&
+		\WC_Payments_Utils::is_store_api_request() &&
+		class_exists( JsonWebToken::class ) &&
+		JsonWebToken::validate( $cart_token, '@' . wp_salt() )
 		) {
 			return SessionHandler::class;
 		}
@@ -121,7 +123,7 @@ class WooPay_Session {
 		$session_data    = $session_handler->get_session( $payload->user_id );
 		$customer        = maybe_unserialize( $session_data['customer'] );
 
-			// If the token is already authenticated, return the customer ID.
+		// If the token is already authenticated, return the customer ID.
 		if ( is_numeric( $customer['id'] ) && intval( $customer['id'] ) > 0 ) {
 			return intval( $customer['id'] );
 		}
@@ -230,7 +232,7 @@ class WooPay_Session {
 
 		$args = [
 			'meta_key' => 'woopay_merchant_customer_id', //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'return'   => 'ids',
+		'return'       => 'ids',
 		];
 
 		$order_ids = wc_get_orders( $args );
@@ -649,6 +651,49 @@ class WooPay_Session {
 		}
 
 		wp_send_json( self::get_frontend_init_session_request() );
+	}
+
+	/**
+	 * Save the blocks checkout phone number in session.
+	 *
+	 * @return void
+	 */
+	public static function ajax_set_woopay_phone_number() {
+		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		if ( ! ( isset( WC()->session ) && WC()->session->has_session() ) ) {
+			WC()->session->set_customer_session_cookie( true );
+		}
+
+		if ( ! empty( $_POST['empty'] ) && filter_var( wp_unslash( $_POST['empty'] ), FILTER_VALIDATE_BOOLEAN ) ) {
+			WC()->session->__unset( self::WOOPAY_SESSION_KEY );
+
+			wp_send_json_success();
+
+			return;
+		}
+
+		$data = [
+			'save_user_in_woopay'     => filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ),
+			'woopay_source_url'       =>
+			wc_clean( wp_unslash( $_POST['woopay_source_url'] ) ),
+			'woopay_is_blocks'        => filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ),
+			'woopay_viewport'         => wc_clean( wp_unslash( $_POST['woopay_viewport'] ) ),
+			'woopay_user_phone_field' => [
+				'full' => wc_clean( wp_unslash( $_POST['woopay_user_phone_field']['full'] ) ),
+			],
+		];
+
+		WC()->session->set( self::WOOPAY_SESSION_KEY, $data );
+
+		wp_send_json_success();
 	}
 
 	/**

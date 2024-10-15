@@ -67,6 +67,7 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	supports: {
 		features: getConfig( 'features' ),
+		style: [ 'height', 'borderRadius' ],
 	},
 } );
 

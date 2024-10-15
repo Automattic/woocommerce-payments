@@ -159,8 +159,6 @@ export const VatNumberTask = ( {
 				),
 				getVatTaxIDName()
 			) }
-			className={ null }
-			visibleDescription={ null }
 		>
 			<p className="wcpay-wizard-task__description-element">
 				{ __(
@@ -169,7 +167,7 @@ export const VatNumberTask = ( {
 				) }
 			</p>
 
-			<CollapsibleBody className={ null }>
+			<CollapsibleBody>
 				<CheckboxControl
 					checked={ isVatRegistered }
 					onChange={ setVatRegistered }

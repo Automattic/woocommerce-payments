@@ -98,6 +98,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			fontFamily: undefined,
 			fontSizeBase: undefined,
 		},
+		labels: 'above',
 	};
 
 	beforeEach( () => {
