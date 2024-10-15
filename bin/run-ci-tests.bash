@@ -10,6 +10,9 @@ WCPAY_DIR="$GITHUB_WORKSPACE"
 echo 'Updating composer version & Install dependencies...'
 composer self-update && composer install --no-progress
 
+echo 'Installing SVN...'
+sudo apt-get install -y subversion
+
 echo 'Starting MySQL service...'
 sudo systemctl start mysql.service
 
