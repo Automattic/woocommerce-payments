@@ -303,6 +303,12 @@ class WC_Payments {
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
+		// in TeamCity tests, there might be multiple instances of WC_Payments initialized.
+		// This prevents the hooks from being registered multiple times, which can cause issues.
+		if ( defined( 'WCPAY_VERSION_NUMBER' ) ) {
+			return;
+		}
+
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';

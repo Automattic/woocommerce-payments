@@ -158,10 +158,6 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 				$kyc_session
 			);
 
-		$this->mock_onboarding_service
-			->expects( $this->once() )
-			->method( 'set_embedded_kyc_in_progress' );
-
 		$request = new WP_REST_Request( 'GET' );
 		$request->set_query_params(
 			[

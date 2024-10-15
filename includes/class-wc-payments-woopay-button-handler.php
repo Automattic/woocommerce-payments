@@ -170,12 +170,6 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'dist/woopay-express-button' );
-		WC_Payments_Utils::enqueue_style(
-			'WCPAY_WOOPAY_EXPRESS_BUTTON',
-			plugins_url( 'dist/woopay-express-button.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/woopay-express-button.css' )
-		);
 
 		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
 

@@ -226,6 +226,7 @@ describe( 'Getting styles for automated theming', () => {
 					backgroundColor: 'rgba(0, 0, 0, 0)',
 				},
 			},
+			labels: 'above',
 		} );
 	} );
 
