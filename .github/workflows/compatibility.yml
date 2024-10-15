@@ -52,10 +52,6 @@ jobs:
           php-version: ${{ matrix.php }}
           tools: composer
           coverage: none
-      # SVN is used when installing WP.
-      - name: Installing SVN
-        run: sudo apt-get install -y subversion
-        shell: bash
       # run CI checks
       - run: bash bin/run-ci-tests.bash
   
@@ -97,9 +93,5 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
-      # SVN is used when installing WP.
-      - name: Installing SVN
-        run: sudo apt-get install -y subversion
-        shell: bash
       # run CI checks
       - run: bash bin/run-ci-tests.bash

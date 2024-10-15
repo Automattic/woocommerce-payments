@@ -26,10 +26,6 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v4
-      # SVN is used when installing WP.
-      - name: Installing SVN
-        run: sudo apt-get install -y subversion
-        shell: bash
       # enable dependencies caching
       - uses: actions/cache@v4
         with:
