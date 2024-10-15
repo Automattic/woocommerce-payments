@@ -66,7 +66,7 @@ runs:
       shell: bash
       run : |
         echo "::group::Kill webserver running on port 8084"
-        sudo fuser -k -n tcp 8084
+        sudo fuser -k -n tcp 8084 || true
         echo "::endgroup::"
 
     # Prepare test environment
