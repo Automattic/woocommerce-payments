@@ -89,7 +89,9 @@ export const getTasks = ( {
 		! isPoInProgress;
 
 	const isGoLiveTaskVisible =
-		isInTestModeOnboarding( false ) && showGoLiveTask;
+		wcpaySettings.isAccountConnected &&
+		isInTestModeOnboarding( false ) &&
+		showGoLiveTask;
 
 	return [
 		isUpdateDetailsTaskVisible &&

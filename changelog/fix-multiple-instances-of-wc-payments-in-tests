@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+fix: prevent multiple instances of WC_Payments_Apple_Pay_Registration
