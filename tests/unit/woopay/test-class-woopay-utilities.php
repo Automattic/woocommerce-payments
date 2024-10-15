@@ -177,6 +177,30 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		$this->clean_up_should_enable_woopay_tests();
 	}
 
+	/**
+	 * Test should_save_platform_customer.
+	 *
+	 * @return void
+	 */
+	public function test_should_save_platform_customer() {
+		$woopay_utilities = new WooPay_Utilities();
+
+		// Test with POST data set to save user in WooPay.
+		$_POST['save_user_in_woopay'] = 'true';
+		$this->assertTrue( $woopay_utilities->should_save_platform_customer() );
+		unset( $_POST['save_user_in_woopay'] );
+
+		// Test with session data set to save user in WooPay.
+		WC()->session = $this->createMock( 'WC_Session_Handler' );
+		WC()->session->method( 'has_session' )->willReturn( true );
+		WC()->session->method( 'get' )->with( WooPay_Session::WOOPAY_SESSION_KEY )->willReturn( [ 'save_user_in_woopay' => true ] );
+		$this->assertTrue( $woopay_utilities->should_save_platform_customer() );
+
+		// Test with neither POST nor session data set.
+		WC()->session->method( 'get' )->with( WooPay_Session::WOOPAY_SESSION_KEY )->willReturn( [] );
+		$this->assertFalse( $woopay_utilities->should_save_platform_customer() );
+	}
+
 	private function clean_up_should_enable_woopay_tests() {
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 		wp_set_current_user( 0 );
