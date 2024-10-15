@@ -18,7 +18,10 @@ fi
 
 composer self-update && composer install --no-progress
 # SVN is needed when installing WP.
-sudo apt-get install -y subversion
+if ! [ -x "$(command -v svn)" ]; then
+	echo 'Installing SVN...'
+	sudo apt-get install -y subversion
+fi
 sudo systemctl start mysql.service
 bash bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
 echo 'Running the tests...'

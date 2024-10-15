@@ -10,8 +10,11 @@ WCPAY_DIR="$GITHUB_WORKSPACE"
 echo 'Updating composer version & Install dependencies...'
 composer self-update && composer install --no-progress
 
-echo 'Installing SVN...'
-sudo apt-get install -y subversion
+# SVN is needed when installing WP.
+if ! [ -x "$(command -v svn)" ]; then
+	echo 'Installing SVN...'
+	sudo apt-get install -y subversion
+fi
 
 # SVN is needed when installing WP.
 echo 'Starting MySQL service...'
