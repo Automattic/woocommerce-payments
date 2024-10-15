@@ -10,6 +10,9 @@ runs:
         node-version-file: ".nvmrc"
         cache: "npm"
 
+    - name: Installing SVN
+      run: sudo apt-get install -y subversion
+
     - name: "Enable composer dependencies caching"
       uses: actions/cache@v4
       with:
