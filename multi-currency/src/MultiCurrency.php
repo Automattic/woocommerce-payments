@@ -343,7 +343,7 @@ class MultiCurrency {
 			return;
 		}
 
-		$api_controller = new RestController();
+		$api_controller = new RestController( $this );
 		$api_controller->register_routes();
 	}
 

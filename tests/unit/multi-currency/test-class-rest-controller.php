@@ -5,7 +5,13 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\MultiCurrency\Currency;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
+use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\RestController;
 
 /**
@@ -26,6 +32,27 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 	private $controller;
 
 	/**
+	 * Mock MultiCurrency.
+	 *
+	 * @var MultiCurrency|MockObject
+	 */
+	private $mock_multi_currency;
+
+	/**
+	 * The localization service.
+	 *
+	 * @var MultiCurrencyLocalizationInterface
+	 */
+	private $mock_localization_service;
+
+	/**
+	 * Mock available currencies.
+	 *
+	 * @var array An array of available currencies.
+	 */
+	private $mock_available_currencies = [];
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -34,13 +61,50 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
-		$mock_api_client  = $this->getMockBuilder( MultiCurrencyApiClientInterface::class )->disableOriginalConstructor()->getMock();
-		$this->controller = new RestController( $mock_api_client );
+		$mock_api_client   = $this->createMock( MultiCurrencyApiClientInterface::class );
+		$mock_account      = $this->createMock( MultiCurrencyAccountInterface::class );
+		$mock_localization = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		$mock_cache        = $this->createMock( MultiCurrencyCacheInterface::class );
+		$gateway_context   = [
+			'is_dev_mode' => true,
+		];
+
+		$mock_account->method( 'is_provider_connected' )->willReturn( true );
+		$mock_api_client->method( 'is_server_connected' )->willReturn( true );
+
+		$mock_localization
+			->method( 'get_currency_format' )
+			->willReturn(
+				[
+					'currency_pos' => 'right_space',
+					'num_decimals' => 2,
+				]
+			);
+
+		$this->mock_multi_currency = $this->getMockBuilder( MultiCurrency::class )
+			->setConstructorArgs( [ $gateway_context, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
+			->enableOriginalConstructor()
+			->onlyMethods( [ 'get_available_currencies' ] )
+			->getMock();
+
+		$this->mock_multi_currency->expects( $this->any() )
+			->method( 'get_available_currencies' )
+			->willReturn( $this->get_mock_available_currencies() );
+
+		$this->controller = new RestController( $this->mock_multi_currency );
+	}
+
+	/**
+	 * Post-test teardown
+	 */
+	public function tear_down() {
+		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
+		parent::tear_down();
 	}
 
 	public function test_get_store_currencies_gets_expected_response() {
 		// Arrange: Create expected response.
-		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_store_currencies() );
+		$expected = rest_ensure_response( $this->mock_multi_currency->get_store_currencies() );
 
 		// Act: Get the store currencies.
 		$response = $this->controller->get_store_currencies();
@@ -57,7 +121,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 	 */
 	public function test_update_enabled_currencies_updates_currencies() {
 		// Arrange: Create expected response.
-		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_store_currencies() );
+		$expected = rest_ensure_response( $this->mock_multi_currency->get_store_currencies() );
 
 		// Arrange: Delete the enabled currencies option.
 		delete_option( 'wcpay_multi_currency_enabled_currencies' );
@@ -110,7 +174,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_multi_currency_price_charm_usd', 0 );
 
 		// Arrange: Create expected response.
-		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_single_currency_settings( 'USD' ) );
+		$expected = rest_ensure_response( $this->mock_multi_currency->get_single_currency_settings( 'USD' ) );
 
 		// Arrange: Create the new REST request.
 		$request = new WP_REST_Request( 'GET', self::ROUTE . '/currencies/USD' );
@@ -161,7 +225,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_multi_currency_price_charm_usd', 0 );
 
 		// Arrange: Create expected response.
-		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_single_currency_settings( 'USD' ) );
+		$expected = rest_ensure_response( $this->mock_multi_currency->get_single_currency_settings( 'USD' ) );
 
 		// Arrange: Now remove all the options.
 		delete_option( 'wcpay_multi_currency_exchange_rate_usd' );
@@ -257,7 +321,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 	public function test_get_settings_gets_expected_response() {
 		// Arrange: Create expected response.
-		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_settings() );
+		$expected = rest_ensure_response( $this->mock_multi_currency->get_settings() );
 
 		// Act: Get the settings.
 		$response = $this->controller->get_settings();
@@ -272,7 +336,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_multi_currency_enable_storefront_switcher', 'yes' );
 
 		// Arrange: Create expected response.
-		$expected = rest_ensure_response( WC_Payments_Multi_Currency()->get_settings() );
+		$expected = rest_ensure_response( $this->mock_multi_currency->get_settings() );
 
 		// Arrange: Now remove all the options.
 		delete_option( 'wcpay_multi_currency_enable_auto_currency' );
@@ -292,5 +356,21 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm the response is what we expected.
 		$this->assertEquals( $expected, $response );
+	}
+
+	private function get_mock_available_currencies() {
+		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		if ( empty( $this->mock_available_currencies ) ) {
+			$this->mock_localization_service
+				->expects( $this->any() )
+				->method( 'get_currency_format' )
+				->willReturn( [ 'num_decimals' => 2 ] );
+
+			$this->mock_available_currencies = [
+				'USD' => new Currency( $this->mock_localization_service, 'USD', 1 ),
+			];
+		}
+
+		return $this->mock_available_currencies;
 	}
 }
