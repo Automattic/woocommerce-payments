@@ -7,7 +7,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import InstantDepositButton from '../';
+import InstantDepositButton from '..';
 import { useInstantDeposit } from 'wcpay/data';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
