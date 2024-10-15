@@ -247,7 +247,7 @@ class MultiCurrency {
 			add_action( 'woocommerce_created_customer', [ $this, 'set_new_customer_currency_meta' ] );
 		}
 
-		if ( ! \WC_Payments_Utils::is_store_batch_request() && ! \WC_Payments_Utils::is_store_api_request() && WC()->is_rest_api_request() ) {
+		if ( ! Utils::is_store_batch_request() && ! Utils::is_store_api_request() && WC()->is_rest_api_request() ) {
 			if ( isset( $_GET['currency'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 				$get_currency_from_query_param = function () {
 					$currency = sanitize_text_field( wp_unslash( $_GET['currency'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
