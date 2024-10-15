@@ -4,6 +4,10 @@ description: "Extracts the required PHP version from plugin file and uses it to 
 runs:
   using: composite
   steps:
+    # SVN is used when installing WP.
+    - name: Installing SVN
+      run: sudo apt-get install -y subversion
+      shell: bash
     - name: "Get minimum PHP version"
       shell: bash
       id: get_min_php_version
