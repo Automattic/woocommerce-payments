@@ -12,6 +12,7 @@ runs:
 
     - name: Installing SVN
       run: sudo apt-get install -y subversion
+      shell: bash
 
     - name: "Enable composer dependencies caching"
       uses: actions/cache@v4
