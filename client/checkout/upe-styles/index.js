@@ -8,6 +8,7 @@ import {
 	dashedToCamelCase,
 	isColorLight,
 	getBackgroundColor,
+	maybeConvertRGBAtoRGB,
 	handleAppearanceForFloatingLabel,
 } from './utils.js';
 
@@ -387,9 +388,11 @@ export const getFieldStyles = (
 	for ( let i = 0; i < styles.length; i++ ) {
 		const camelCase = dashedToCamelCase( styles[ i ] );
 		if ( validProperties.includes( camelCase ) ) {
-			filteredStyles[ camelCase ] = styles.getPropertyValue(
-				styles[ i ]
-			);
+			let propertyValue = styles.getPropertyValue( styles[ i ] );
+			if ( camelCase === 'color' ) {
+				propertyValue = maybeConvertRGBAtoRGB( propertyValue );
+			}
+			filteredStyles[ camelCase ] = propertyValue;
 		}
 	}
 

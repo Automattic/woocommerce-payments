@@ -573,6 +573,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the gateway title
+	 *
+	 * @return string
+	 * */
+	public function get_title() {
+		$title = parent::get_title();
+
+		if ( Payment_Method::CARD === $this->stripe_id && ( is_checkout() || is_add_payment_method_page() ) ) {
+			if ( WC_Payments::mode()->is_test() ) {
+				$test_mode_badge = '<span class="test-mode badge">' . __( 'Test Mode', 'woocommerce-payments' ) . '</span>';
+			} else {
+				$test_mode_badge = '';
+			}
+			return '<div class="label-title-container"><span class="payment-method-title">&nbsp;' . $title . '</span>' . $test_mode_badge . '</div>';
+		}
+
+		return $title;
+	}
+
+	/**
 	 * Updates icon and title using the account country.
 	 * This method runs on init is not in the controller because get_account_country might
 	 * make a request to the API if the account data is not cached.
@@ -767,12 +787,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Connection URL.
 	 */
 	public function get_connection_url() {
-		$account_data = $this->account->get_cached_account_data();
-
-		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
-		if ( isset( $account_data['account_id'] ) ) {
+		// If we have an account, `Set up` will be shown instead of `Connect`.
+		if ( $this->is_connected() ) {
 			return '';
 		}
+
+		// Note: Payments Task is not a very accurate from value, but it is the best we can do, for now.
 		return html_entity_decode( WC_Payments_Account::get_connect_url( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK ) );
 	}
 
