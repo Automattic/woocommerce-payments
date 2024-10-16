@@ -239,7 +239,7 @@ describe( 'UPE checkout utils', () => {
 
 			togglePaymentMethodForCountry( upeElement );
 
-			expect( upeElement.style.display ).toBe( 'block' );
+			expect( upeElement.style.display ).toBe( '' );
 		} );
 
 		it( 'should hide payment method if country is not supported', () => {
