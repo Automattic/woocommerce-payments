@@ -160,12 +160,13 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return array Session data.
 	 *
-	 * @throws API_Exception
+	 * @throws API_Exception|Exception
 	 */
 	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
+
 		$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
 
 		// Make sure the onboarding test mode DB flag is set.
@@ -192,6 +193,16 @@ class WC_Payments_Onboarding_Service {
 			// If we fail to create the session, return an empty array.
 			return [];
 		}
+
+		// Set the embedded KYC in progress flag.
+		$this->set_embedded_kyc_in_progress();
+
+		// Remember if we should enable WooPay by default.
+		set_transient(
+			WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT,
+			filter_var( $account_session['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			DAY_IN_SECONDS
+		);
 
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
@@ -230,7 +241,7 @@ class WC_Payments_Onboarding_Service {
 			throw new API_Exception( __( 'Failed to finalize onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
 		}
 
-		// Clear the onboarding in progress option, since the onboarding flow is now complete.
+		// Clear the embedded KYC in progress option, since the onboarding flow is now complete.
 		$this->clear_embedded_kyc_in_progress();
 
 		return [
@@ -322,7 +333,7 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Get account data for onboarding from self assestment data.
+	 * Get account data for onboarding from self assessment data.
 	 *
 	 * @param string $setup_mode Setup mode.
 	 * @param array  $self_assessment_data Self assessment data.
@@ -424,7 +435,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return bool True if embedded KYC is in progress, false otherwise.
 	 */
 	public function is_embedded_kyc_in_progress(): bool {
-		return in_array( get_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'no' ), [ 'yes', '1' ], true );
+		return filter_var( get_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'no' ), FILTER_VALIDATE_BOOLEAN );
 	}
 
 	/**
