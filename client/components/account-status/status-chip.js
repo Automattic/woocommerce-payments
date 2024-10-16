@@ -34,7 +34,7 @@ const StatusChip = ( props ) => {
 		description = __( 'Pending', 'woocommerce-payments' );
 		type = 'light';
 		tooltip = __(
-			'Deposits are pending while Stripe verifies details on your account.',
+			'Payouts are pending while Stripe verifies details on your account.',
 			'woocommerce-payments'
 		);
 	} else if ( accountStatus === 'restricted_partially' ) {
