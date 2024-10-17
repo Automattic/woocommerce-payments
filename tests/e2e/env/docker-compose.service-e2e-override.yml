@@ -1,0 +1,14 @@
+version: '3'
+
+volumes:
+  mysql_data:
+
+services:
+  db:
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # mailhog:
+  #   image: mailhog/mailhog
+  #   ports:
+  #     - 8098:8025 # web ui to view emails sent from WooPayments Server, view on http://localhost:8088
