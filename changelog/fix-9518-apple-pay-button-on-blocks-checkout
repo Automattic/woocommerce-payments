@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Load Stripe with merchant account's key when checking payment method availability.
