@@ -267,10 +267,11 @@ describe( 'Transactions list', () => {
 			isLoading: false,
 		} );
 
-		const { container } = render(
+		const { container, getByRole } = render(
 			<TransactionsList depositId="po_mock" />
 		);
 		expect( container ).toMatchSnapshot();
+		getByRole( 'heading', { name: 'Transactions' } );
 		expect( mockUseTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
 	} );
 
