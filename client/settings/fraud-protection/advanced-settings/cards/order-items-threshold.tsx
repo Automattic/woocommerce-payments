@@ -1,14 +1,7 @@
 /**
  * External dependencies
  */
-import React, {
-	useContext,
-	useEffect,
-	useState,
-	useMemo,
-	Dispatch,
-	SetStateAction,
-} from 'react';
+import React, { useContext, useMemo, Dispatch, SetStateAction } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl } from '@wordpress/components';
 
@@ -36,7 +29,6 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 	const {
 		protectionSettingsUI,
 		setProtectionSettingsUI,
-		setProtectionSettingsChanged,
 		setIsDirty,
 	} = useContext( FraudPreventionSettingsContext );
 
@@ -48,39 +40,28 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 		[ protectionSettingsUI, setting ]
 	);
 
-	const minItemsTemp = parseInt( settingUI.min_items + '', 10 );
-	const maxItemsTemp = parseInt( settingUI.max_items + '', 10 );
+	const minItems = parseInt( settingUI?.min_items + '', 10 );
+	const maxItems = parseInt( settingUI?.max_items + '', 10 );
 
-	const [ minItemsCount, setMinItemsCount ] = useState(
-		isNaN( minItemsTemp ) ? '' : minItemsTemp
-	);
-	const [ maxItemsCount, setMaxItemsCount ] = useState(
-		isNaN( maxItemsTemp ) ? '' : maxItemsTemp
-	);
-
-	useEffect( () => {
-		settingUI.min_items = minItemsCount
-			? parseInt( minItemsCount + '', 10 )
-			: minItemsCount;
-		settingUI.max_items = maxItemsCount
-			? parseInt( maxItemsCount + '', 10 )
-			: maxItemsCount;
-		setProtectionSettingsUI( protectionSettingsUI );
-		setProtectionSettingsChanged( ( prev ) => ! prev );
-	}, [
-		settingUI,
-		minItemsCount,
-		maxItemsCount,
-		protectionSettingsUI,
-		setProtectionSettingsUI,
-		setProtectionSettingsChanged,
-	] );
+	const minItemsCount = isNaN( minItems ) ? '' : minItems;
+	const maxItemsCount = isNaN( maxItems ) ? '' : maxItems;
 
 	const isItemRangeEmpty =
 		! parseInt( minItemsCount + '', 10 ) &&
 		! parseInt( maxItemsCount + '', 10 );
 	const isMinGreaterThanMax =
 		parseInt( minItemsCount + '', 10 ) > parseInt( maxItemsCount + '', 10 );
+
+	const handleInputChange = ( name: string ) => ( val: string ) => {
+		setProtectionSettingsUI( ( settings ) => ( {
+			...settings,
+			[ setting ]: {
+				...settings[ setting ],
+				[ name ]: val ? parseInt( val + '', 10 ) : val,
+			},
+		} ) );
+		setIsDirty( true );
+	};
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
@@ -98,10 +79,7 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						placeholder={ '0' }
 						value={ minItemsCount }
 						type="number"
-						onChange={ ( value ) => {
-							setMinItemsCount( value );
-							setIsDirty( true );
-						} }
+						onChange={ handleInputChange( 'min_items' ) }
 						onKeyDown={ ( e ) =>
 							/^[+-.,e]$/m.test( e.key ) && e.preventDefault()
 						}
@@ -125,10 +103,7 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						placeholder={ '0' }
 						type="number"
 						value={ maxItemsCount }
-						onChange={ ( value ) => {
-							setMaxItemsCount( value );
-							setIsDirty( true );
-						} }
+						onChange={ handleInputChange( 'max_items' ) }
 						onKeyDown={ ( e ) =>
 							/^[+-.,e]$/m.test( e.key ) && e.preventDefault()
 						}
