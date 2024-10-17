@@ -23,12 +23,10 @@ const mappings: Record< DepositStatus, ChipType > = {
 
 /**
  * Renders a deposits status chip.
- *
- * @return {JSX.Element} Deposit status chip.
  */
 const DepositStatusChip: React.FC< {
 	deposit: Pick< CachedDeposit, 'status' | 'type' >;
-} > = ( { deposit } ): JSX.Element => {
+} > = ( { deposit } ) => {
 	let message = depositStatusLabels[ deposit.status ];
 
 	// Withdrawals are displayed as 'Deducted' instead of 'Paid'.
