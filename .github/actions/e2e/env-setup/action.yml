@@ -76,3 +76,11 @@ runs:
         echo "::group::Setup E2E test environment"
         npm run test:e2e-setup
         echo "::endgroup::"
+
+    # Disable restrictions that prevent chromium from running properly. See: https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md
+    - name: Disable AppArmor User Namespace Restrictions
+      shell: bash
+      run: |
+        echo "::group::Disable AppArmor User Namespace Restrictions"
+        sudo sysctl --ignore --write kernel.apparmor_restrict_unprivileged_userns=0
+        echo "::endgroup::"
