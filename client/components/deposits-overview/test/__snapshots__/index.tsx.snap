@@ -262,7 +262,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             </svg>
             <a
               data-link-type="wc-admin"
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
             >
               January 2, 2020
             </a>
@@ -310,7 +310,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             </svg>
             <a
               data-link-type="wc-admin"
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
             >
               January 3, 2020
             </a>
