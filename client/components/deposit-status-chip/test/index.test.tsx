@@ -25,7 +25,7 @@ describe( 'Deposits status chip renders', () => {
 				deposit={ { type: 'deposit', status: 'paid' } }
 			/>
 		);
-		expect( getByText( 'Paid' ) ).toBeTruthy();
+		expect( getByText( 'Completed (paid)' ) ).toBeTruthy();
 	} );
 
 	test( 'Renders "In transit" status chip.', () => {

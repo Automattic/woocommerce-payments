@@ -75,7 +75,7 @@ describe( 'Deposit overview', () => {
 			<DepositOverview deposit={ mockDeposit } />
 		);
 		getByText( /Deposit date:/ );
-		getByText( 'Paid' );
+		getByText( 'Completed (paid)' );
 		expect( overview ).toMatchSnapshot();
 	} );
 
@@ -84,7 +84,7 @@ describe( 'Deposit overview', () => {
 			<DepositOverview deposit={ mockWithdrawal } />
 		);
 		getByText( /Withdrawal date:/ );
-		getByText( 'Deducted' );
+		getByText( 'Completed (deducted)' );
 		expect( overview ).toMatchSnapshot();
 	} );
 

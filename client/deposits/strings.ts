@@ -25,8 +25,8 @@ export const depositStatusLabels: Record<
 	DepositStatus | 'deducted',
 	string
 > = {
-	paid: __( 'Paid', 'woocommerce-payments' ),
-	deducted: __( 'Deducted', 'woocommerce-payments' ),
+	paid: __( 'Completed (paid)', 'woocommerce-payments' ),
+	deducted: __( 'Completed (deducted)', 'woocommerce-payments' ),
 	pending: __( 'Pending', 'woocommerce-payments' ),
 	in_transit: __( 'In transit', 'woocommerce-payments' ),
 	canceled: __( 'Canceled', 'woocommerce-payments' ),

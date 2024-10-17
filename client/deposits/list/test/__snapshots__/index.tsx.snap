@@ -384,7 +384,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       <span
                         class="chip chip-success"
                       >
-                        Paid
+                        Completed (paid)
                       </span>
                     </a>
                   </td>
@@ -558,7 +558,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       <span
                         class="chip chip-success"
                       >
-                        Deducted
+                        Completed (deducted)
                       </span>
                     </a>
                   </td>
@@ -1020,7 +1020,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       <span
                         class="chip chip-success"
                       >
-                        Paid
+                        Completed (paid)
                       </span>
                     </a>
                   </td>
@@ -1194,7 +1194,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       <span
                         class="chip chip-success"
                       >
-                        Deducted
+                        Completed (deducted)
                       </span>
                     </a>
                   </td>

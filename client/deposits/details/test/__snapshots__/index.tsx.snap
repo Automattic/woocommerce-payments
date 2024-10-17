@@ -37,7 +37,7 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
                     <span
                       class="woocommerce-order-status__indicator is-paid"
                     />
-                    Paid
+                    Completed (paid)
                   </div>
                 </div>
               </div>
@@ -109,7 +109,7 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
                     <span
                       class="woocommerce-order-status__indicator is-paid"
                     />
-                    Deducted
+                    Completed (deducted)
                   </div>
                 </div>
               </div>
@@ -187,7 +187,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
                   <span
                     class="woocommerce-order-status__indicator is-paid"
                   />
-                  Paid
+                  Completed (paid)
                 </div>
               </div>
             </div>

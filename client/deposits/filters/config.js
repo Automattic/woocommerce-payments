@@ -15,7 +15,7 @@ const depositStatusOptions = Object.entries( depositStatusLabels )
 	.map( ( [ status, label ] ) => {
 		if ( status === 'paid' ) {
 			return {
-				label: __( 'Paid / Deducted', 'woocommerce-payments' ),
+				label: __( 'Completed', 'woocommerce-payments' ),
 				value: 'paid',
 			};
 		}

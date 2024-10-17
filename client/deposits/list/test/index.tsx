@@ -326,7 +326,9 @@ describe( 'Deposits list', () => {
 					csvFirstDeposit[ 3 ]
 				)
 			).not.toBe( -1 ); // amount
-			expect( csvFirstDeposit[ 4 ] ).toBe( displayFirstDeposit[ 3 ] ); // status
+			expect( csvFirstDeposit[ 4 ] ).toBe(
+				`"${ displayFirstDeposit[ 3 ] }"`
+			); // status
 			expect( csvFirstDeposit[ 5 ] ).toBe(
 				`"${ displayFirstDeposit[ 4 ] }"`
 			); // bank account
