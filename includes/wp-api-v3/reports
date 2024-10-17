@@ -1,0 +1,229 @@
+<h1 id='reports'>Reports</h1>
+<p>The Reports API allows you to obtain detailed records of transactions and authorizations.</p>
+<h2 id='list-transactions'>List transactions</h2>
+<p><em>@since 6.5.0</em></p>
+
+<p>Fetch a detailed overview of transactions.</p>
+<h3 id='error-codes'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - Unauthenticated</li>
+<li>  <code>rest_invalid_param</code> - Invalid request parameter</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/reports/transactions</h6>
+    </div>
+</div>
+<h3 id='optional-parameters'>Optional parameters</h3>
+<ul>
+<li><code>date_before</code>: Filter transactions before this date.</li>
+<li><code>date_after</code>: Filter transactions after this date.</li>
+<li><code>date_between</code>: Filter transactions between these dates.</li>
+<li><code>order_id</code>: Filter transactions based on the associated order ID.</li>
+<li><code>deposit_id</code>: Filter transactions based on the associated deposit ID.</li>
+<li><code>customer_email</code>: Filter transactions based on the customer email.</li>
+<li><code>payment_method_type</code>: Filter transactions based on the payment method used.</li>
+<li><code>type</code>: Filter transactions where type is a specific value.</li>
+<li><code>match</code>: Match filter for the transactions.</li>
+<li><code>user_timezone</code>: Include timezone into date filtering.</li>
+<li><code>page</code>: Page number.</li>
+<li><code>per_page</code>: Page size.</li>
+<li><code>sort</code>: Field on which to sort.</li>
+<li><code>direction</code>: Direction on which to sort.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/reports/transactions?page<span class="o">=</span>1 <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"date"</span><span class="p">:</span><span class="s2">"2023-10-01 15:00:00"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"transaction_id"</span><span class="p">:</span><span class="s2">"txn_1234567890abcdef"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_id"</span><span class="p">:</span><span class="s2">"pi_1234567890abcdef"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"channel"</span><span class="p">:</span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_method"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"id"</span><span class="p">:</span><span class="s2">"pm_1234567890abcdef"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="s2">"charge"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"transaction_currency"</span><span class="p">:</span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="mi">1000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"exchange_rate"</span><span class="p">:</span><span class="mf">1.00</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"deposit_currency"</span><span class="p">:</span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fees"</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"country"</span><span class="p">:</span><span class="s2">"US"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"net_amount"</span><span class="p">:</span><span class="mi">980</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"order_id"</span><span class="p">:</span><span class="mi">12345</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"deposit_date"</span><span class="p">:</span><span class="s2">"2023-10-02 15:00:00"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"deposit_id"</span><span class="p">:</span><span class="s2">"dp_1234567890abcdef"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"deposit_status"</span><span class="p">:</span><span class="s2">"completed"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div><h2 id='list-transaction'>List transaction</h2>
+<p><em>@since 6.5.0</em></p>
+
+<p>Fetch a detailed overview of single transaction.</p>
+<h3 id='error-codes-2'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - Unauthenticated</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request-2'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/reports/transactions/&lt;transaction_id&gt;</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/reports/transactions/txn_1234567890abcdef <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2023-10-01 15:00:00"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"transaction_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"txn_1234567890abcdef"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_1234567890abcdef"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"channel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_method"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pm_1234567890abcdef"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"charge"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"transaction_currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"exchange_rate"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.00</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"deposit_currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"fees"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"customer"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"net_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">980</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"order_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">12345</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"deposit_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2023-10-02 15:00:00"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"deposit_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dp_1234567890abcdef"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"deposit_status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"completed"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='list-authorizations'>List authorizations</h2>
+<p><em>@since 6.5.0</em></p>
+
+<p>Fetch a detailed overview of authorizations.</p>
+<h3 id='error-codes-3'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - Unauthenticated</li>
+<li>  <code>rest_invalid_param</code> - Invalid request parameter</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request-3'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/reports/authorizations</h6>
+    </div>
+</div>
+<h3 id='optional-parameters-2'>Optional parameters</h3>
+<ul>
+<li><code>date_before</code>: Filter authorizations before this date.</li>
+<li><code>date_after</code>: Filter authorizations after this date. If it&#39;s not provided the default it will be 7 days before today.</li>
+<li><code>date_between</code>: Filter authorizations between these dates.</li>
+<li><code>order_id</code>: Filter authorizations based on the associated order ID.</li>
+<li><code>deposit_id</code>: Filter authorizations based on the associated deposit ID.</li>
+<li><code>customer_email</code>: Filter authorizations based on the customer email.</li>
+<li><code>payment_method_type</code>: Filter authorizations based on the payment method used.</li>
+<li><code>type</code>: Filter authorizations where type is a specific value.</li>
+<li><code>match</code>: Match filter for the authorizations.</li>
+<li><code>user_timezone</code>: Include timezone into date filtering for authorizations.</li>
+<li><code>page</code>: Page number for listing authorizations.</li>
+<li><code>per_page</code>: Page size for listing authorizations.</li>
+<li><code>sort</code>: Field on which to sort the authorizations.</li>
+<li><code>direction</code>: Direction on which to sort the authorizations.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/reports/authorizations?page<span class="o">=</span>1 <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"authorization_id"</span><span class="p">:</span><span class="s2">"auth_98765"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"date"</span><span class="p">:</span><span class="s2">"2023-09-30 15:05:00"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_id"</span><span class="p">:</span><span class="s2">"pi_12345"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"channel"</span><span class="p">:</span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_method"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"id"</span><span class="p">:</span><span class="s2">"pm_abc12345"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="mi">1000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount_captured"</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fees"</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"country"</span><span class="p">:</span><span class="s2">"US"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"net_amount"</span><span class="p">:</span><span class="mi">980</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"order_id"</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="mi">1</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div><h2 id='list-authorization'>List authorization</h2>
+<p><em>@since 6.5.0</em></p>
+
+<p>Fetch a detailed overview of single authorization.</p>
+<h3 id='error-codes-4'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - Unauthenticated</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request-4'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/reports/authorizations/&lt;authorization_id&gt;</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/reports/authorizations/auth_98765 <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"authorization_id"</span><span class="p">:</span><span class="s2">"auth_98765"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"date"</span><span class="p">:</span><span class="s2">"2023-09-30 15:05:00"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_id"</span><span class="p">:</span><span class="s2">"pi_12345"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"channel"</span><span class="p">:</span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_method"</span><span class="p">:{</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="s2">"pm_abc12345"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"currency"</span><span class="p">:</span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"amount"</span><span class="p">:</span><span class="mi">1000</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"amount_captured"</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"fees"</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"customer"</span><span class="p">:{</span><span class="w">
+    </span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"country"</span><span class="p">:</span><span class="s2">"US"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"net_amount"</span><span class="p">:</span><span class="mi">980</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"order_id"</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="mi">1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>

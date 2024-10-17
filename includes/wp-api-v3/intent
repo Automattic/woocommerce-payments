@@ -1,0 +1,75 @@
+<h1 id='payment-intents'>Payment intents</h1>
+<p>The Payment Intents API provides comprehensive functionality for managing payment intents. You can create and manage them seamlessly through its endpoints.</p>
+<h2 id='create-payment-intent'>Create payment intent</h2>
+<p><em>@since v6.6.0</em></p>
+
+<p>Create new payment intent.</p>
+<h3 id='error-codes'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - indicates that the user or application does not have the necessary permissions to perform the requested action.</li>
+<li>  <code>wcpay_server_error</code> - Indicates that API had error processing the request. Usually occurs when request params are invalid like order is not found, and similar.</li>
+</ul>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">POST</i>
+        <h6>/wp-json/wc/v3/payments/payment_intents</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/payment_intents <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+    <span class="nt">-d</span> <span class="s1">'{"payment_method":"&lt;pm_id&gt;","customer":"&lt;customer_id&gt;","order_id":"&lt;order_id&gt;"}'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_4NxlPtR3eYmZSVZP0PPpwee8"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1023</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1696496578</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"customer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cus_OUQoHGzJLw87Tk"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pm_2NlT19R3eYmZSVZPRJEvxvwF"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"charge"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ch_4NxlPtR3eYmZSVZP0ZLpKjfI"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1023</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"application_fee_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">62</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"billing_details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"address"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"San Francisco"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"line1"</span><span class="p">:</span><span class="w"> </span><span class="s2">"123 Random St"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"line2"</span><span class="p">:</span><span class="w"> </span><span class="s2">"-"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"postal_code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"94101"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CA"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"random.email@example.com"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"phone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5555555555"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"payment_method_details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"amount_authorized"</span><span class="p">:</span><span class="w"> </span><span class="mi">1023</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"brand"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mastercard"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"capture_before"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"exp_month"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"exp_year"</span><span class="p">:</span><span class="w"> </span><span class="mi">2030</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"last4"</span><span class="p">:</span><span class="w"> </span><span class="s2">"4321"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"three_d_secure"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"code"</span><span class="p">:</span><span class="s2">"rest_forbidden"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="s2">"Sorry, you are not allowed to do that."</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"data"</span><span class="p">:{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="mi">401</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>
