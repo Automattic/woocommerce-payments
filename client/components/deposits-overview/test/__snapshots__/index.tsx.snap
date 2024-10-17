@@ -222,6 +222,13 @@ exports[`Deposits Overview information Component Renders 1`] = `
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
+            Type
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
             Amount
           </div>
         </div>
@@ -283,6 +290,13 @@ exports[`Deposits Overview information Component Renders 1`] = `
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
+            Deposit
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
             $20.00
           </div>
         </div>
@@ -331,6 +345,13 @@ exports[`Deposits Overview information Component Renders 1`] = `
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
+            Withdrawal
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
             $30.00
           </div>
         </div>
@@ -373,6 +394,13 @@ exports[`Deposits Overview information Component Renders 1`] = `
             >
               Deducted
             </span>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Withdrawal
           </div>
           <div
             class="components-flex-item wcpay-deposits-overview__table__cell css-mw3lhz-View-Item-sx-Base em57xhy0"
