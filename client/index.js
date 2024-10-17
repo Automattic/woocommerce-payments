@@ -99,7 +99,7 @@ addFilter(
 			container: DepositsPage,
 			path: '/payments/deposits',
 			wpOpenMenu: menuID,
-			breadcrumbs: [ rootLink, __( 'Deposits', 'woocommerce-payments' ) ],
+			breadcrumbs: [ rootLink, __( 'Payouts', 'woocommerce-payments' ) ],
 			navArgs: {
 				id: 'wc-payments-deposits',
 			},

@@ -113,7 +113,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             class="wcpay-tooltip__content-wrapper"
           >
             <div
-              aria-label="Deposit schedule tooltip"
+              aria-label="Payout schedule tooltip"
               role="button"
               tabindex="0"
             >

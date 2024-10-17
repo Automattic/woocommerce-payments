@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
 import type { DepositStatus } from 'wcpay/types/deposits';
 
 export const displayType = {
-	deposit: __( 'Deposit', 'woocommerce-payments' ),
+	deposit: __( 'Payout', 'woocommerce-payments' ),
 	withdrawal: __( 'Withdrawal', 'woocommerce-payments' ),
 };
 
