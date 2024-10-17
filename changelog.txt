@@ -1,5 +1,9 @@
 *** WooPayments Changelog ***
 
+= 8.3.1 - 2024-10-16 =
+* Fix - Auto-enabled WooPay for new accounts.
+* Fix - Load Stripe with merchant account's key when checking payment method availability.
+
 = 8.3.0 - 2024-10-03 =
 * Add - Add compatibility with the buttonAttributes API from Woo Blocks
 * Add - Add rate limiter to compatibility data updates
