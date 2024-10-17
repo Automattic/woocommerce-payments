@@ -15,7 +15,7 @@ import type * as AccountOverview from 'wcpay/types/account-overview';
 import BalanceBlock from './balance-block';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import InlineNotice from '../inline-notice';
-import InstantDepositButton from 'deposits/instant-deposits';
+import InstantPayoutButton from 'wcpay/deposits/instant-payouts';
 import SendMoneyIcon from 'assets/images/icons/send-money.svg?asset';
 import {
 	TotalBalanceTooltip,
@@ -170,7 +170,7 @@ const AccountBalances: React.FC = () => {
 						) }
 
 						<Flex justify="flex-start">
-							<InstantDepositButton
+							<InstantPayoutButton
 								instantBalance={
 									selectedOverview.instantBalance
 								}

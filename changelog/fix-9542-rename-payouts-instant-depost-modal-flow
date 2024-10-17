@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Part of a larger change - renaming deposit to payout; this PR fixes instant payout modal + button
