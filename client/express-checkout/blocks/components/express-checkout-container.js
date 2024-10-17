@@ -18,7 +18,7 @@ const ExpressCheckoutContainer = ( props ) => {
 	const { api, billing, buttonAttributes } = props;
 
 	const stripePromise = useMemo( () => {
-		return api.loadStripe( true );
+		return api.loadStripeForExpressCheckout();
 	}, [ api ] );
 
 	const options = {
