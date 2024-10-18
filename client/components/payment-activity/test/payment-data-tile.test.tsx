@@ -43,6 +43,7 @@ describe( 'PaymentDataTile', () => {
 		const { container } = render(
 			<PaymentDataTile
 				id="total-payment"
+				tracksSource="total-payment-volume"
 				currencyCode="usd"
 				label="Total payment volume"
 			/>
@@ -55,6 +56,7 @@ describe( 'PaymentDataTile', () => {
 		render(
 			<PaymentDataTile
 				id="total-payment"
+				tracksSource="total-payment-volume"
 				currencyCode="usd"
 				label={ label }
 				amount={ 123 }
@@ -70,6 +72,7 @@ describe( 'PaymentDataTile', () => {
 		render(
 			<PaymentDataTile
 				id="charges-test-tile"
+				tracksSource="total-payment-volume"
 				label="Charges"
 				amount={ amount }
 				currencyCode={ currencyCode }
@@ -84,6 +87,7 @@ describe( 'PaymentDataTile', () => {
 		render(
 			<PaymentDataTile
 				id="charges-test-tile"
+				tracksSource="charges"
 				label="Charges"
 				amount={ 10000 }
 				currencyCode="usd"
