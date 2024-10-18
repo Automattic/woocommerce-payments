@@ -60,11 +60,16 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		$product_variations = [];
 
 		if ( $product ) {
+			/*
+			 * If the product price is tax exclusive but we are displaying tax inclusive amounts in the product page,
+			 * we need to do the same here and send tax inclusive amounts to the PMME.
+			 */
 			$price_needs_tax    = (
 				wc_tax_enabled() &&
 				! wc_prices_include_tax() &&
-				! WC()->cart->get_customer()->get_is_vat_exempt() &&
-				$product->is_taxable()
+				$product->is_taxable() &&
+				get_option( 'woocommerce_tax_display_shop' ) === 'incl' &&
+				! WC()->customer->get_is_vat_exempt()
 			);
 			$price              = $price_needs_tax ? wc_get_price_including_tax( $product ) : $product->get_price();
 			$product_variations = [
