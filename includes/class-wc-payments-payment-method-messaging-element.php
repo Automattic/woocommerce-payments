@@ -60,18 +60,30 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		$product_variations = [];
 
 		if ( $product ) {
-			/*
-			 * If the product price is tax exclusive but we are displaying tax inclusive amounts in the product page,
-			 * we need to do the same here and send tax inclusive amounts to the PMME.
-			 */
-			$price_needs_tax    = (
-				wc_tax_enabled() &&
-				! wc_prices_include_tax() &&
-				$product->is_taxable() &&
-				get_option( 'woocommerce_tax_display_shop' ) === 'incl' &&
-				! WC()->customer->get_is_vat_exempt()
-			);
-			$price              = $price_needs_tax ? wc_get_price_including_tax( $product ) : $product->get_price();
+			$get_price_fn = function ( $product ) {
+				return $product->get_price();
+			};
+			if ( wc_tax_enabled() && $product->is_taxable() ) {
+				if (
+					wc_prices_include_tax() &&
+					(
+						get_option( 'woocommerce_tax_display_shop' ) === 'excl' ||
+						WC()->customer->get_is_vat_exempt()
+					)
+				) {
+					$get_price_fn = function ( $product ) {
+						return wc_get_price_excluding_tax( $product );
+					};
+				} elseif (
+					get_option( 'woocommerce_tax_display_shop' ) === 'incl'
+					&& ! WC()->customer->get_is_vat_exempt()
+				) {
+					$get_price_fn = function ( $product ) {
+						return wc_get_price_including_tax( $product );
+					};
+				}
+			}
+			$price              = $get_price_fn( $product );
 			$product_variations = [
 				'base_product' => [
 					'amount'   => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
@@ -81,9 +93,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			foreach ( $product->get_children() as $variation_id ) {
 				$variation = wc_get_product( $variation_id );
 				if ( $variation ) {
-					$price                               = $price_needs_tax
-						? wc_get_price_including_tax( $variation )
-						: $variation->get_price();
+					$price                               = $get_price_fn( $variation );
 					$product_variations[ $variation_id ] = [
 						'amount'   => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 						'currency' => $currency_code,
