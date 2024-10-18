@@ -67,7 +67,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				if (
 					wc_prices_include_tax() &&
 					(
-						get_option( 'woocommerce_tax_display_shop' ) === 'excl' ||
+						get_option( 'woocommerce_tax_display_shop' ) !== 'incl' ||
 						WC()->customer->get_is_vat_exempt()
 					)
 				) {
