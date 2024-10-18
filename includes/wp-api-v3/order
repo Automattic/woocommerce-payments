@@ -1,0 +1,207 @@
+<h1 id='order'>Order</h1>
+<p>The order API allows you to perform operations such as capture a terminal payment, create an intent, create a customer, etc. for a particular order.</p>
+<h2 id='create-a-terminal-intent'>Create a terminal intent</h2>
+<p><em>@since v3.5.0</em></p>
+
+<p>Create a new in-person payment intent for the given order ID without confirming it.</p>
+<h3 id='error-codes'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+<li>  <code>wcpay_intent_creation_error</code> - Unknown error</li>
+</ul>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">POST</i>
+        <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/create_terminal_intent</h6>
+    </div>
+</div>
+<h3 id='optional-parameters'>Optional parameters</h3>
+<ul>
+<li>  <code>payment_methods</code> - array with payment methods. Accepted values: <code>card_present</code> and <code>interac_present</code></li>
+<li>  <code>metadata</code> - metadata that will be attached to the PaymentIntent</li>
+<li>  <code>customer_id</code> - customer that will be attached to the PaymentIntent</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/create_terminal_intent <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_ZZZZZZZZZZZZZZZZAAAAAAAA"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_intent_creation_error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Intent creation failed with the following message: &lt;reason&gt;"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='capture-a-terminal-payment'>Capture a terminal payment</h2>
+<p><em>@since v2.4.0</em></p>
+
+<p>Capture the funds of an in-person payment intent. Given an intent ID and an order ID, add the intent ID to the order and capture it.</p>
+<h3 id='post-params'>POST params</h3>
+<ul>
+<li>  payment_intent_id: string</li>
+</ul>
+<h3 id='error-codes-2'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_refunded_order_uncapturable</code> - Payment cannot be captured for partially or fully refunded orders</li>
+<li>  <code>wcpay_payment_uncapturable</code> - The payment cannot be captured if intent status is not one of &#39;processing&#39;, &#39;requires_capture&#39;, or &#39;succeeded&#39;</li>
+<li>  <code>wcpay_capture_error</code> - Unknown error</li>
+</ul>
+<h3 id='http-request-2'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">POST</i>
+        <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/capture_terminal_payment</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_terminal_payment <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+    <span class="nt">-d</span> <span class="s1">'{
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_ZZZZZZZZZZZZZZZZAAAAAAAA"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_server_error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unexpected server error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='capture-an-authorization'>Capture an authorization</h2>
+<p><em>@since v5.1.0</em></p>
+
+<p>Capture the funds of an existing uncaptured payment intent that was marked to be captured manually later.</p>
+<h3 id='post-params-2'>POST params</h3>
+<ul>
+<li>  payment_intent_id: string</li>
+<li>  order_id: string</li>
+</ul>
+<h3 id='error-codes-3'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_refunded_order_uncapturable</code> - Payment cannot be captured for partially or fully refunded orders</li>
+<li>  <code>wcpay_payment_uncapturable</code> - The payment cannot be captured if intent status is not one of &#39;processing&#39;, &#39;requires_capture&#39;, or &#39;succeeded&#39;</li>
+<li>  <code>wcpay_intent_order_mismatch</code> - Payment cannot be captured because the order id does not match</li>
+<li>  <code>wcpay_capture_error</code> - Unknown error</li>
+</ul>
+<h3 id='http-request-3'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">POST</i>
+    <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/capture_authorization</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_authorization <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+  <span class="nt">-d</span> <span class="s1">'{
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_ZZZZZZZZZZZZZZZZAAAAAAAA"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_payment_uncapturable"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The payment cannot be captured"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">409</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='cancel-an-authorization'>Cancel an authorization</h2>
+<p><em>@since v5.7.0</em></p>
+
+<p>Cancel the authorization of an existing uncaptured payment intent.</p>
+<h3 id='post-params-3'>POST params</h3>
+<ul>
+<li>  payment_intent_id: string</li>
+</ul>
+<h3 id='error-codes-4'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_refunded_order_uncapturable</code> - Payment cannot be canceled</li>
+<li>  <code>wcpay_payment_uncapturable</code> - The payment cannot be canceled if intent status is not one of &#39;processing&#39;, &#39;requires_capture&#39;, or &#39;succeeded&#39;</li>
+<li>  <code>wcpay_intent_order_mismatch</code> - Payment cannot be canceled because the order id does not match with payment intent id</li>
+<li>  <code>wcpay_cancel_error</code> - Unknown error</li>
+</ul>
+<h3 id='http-request-4'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">POST</i>
+    <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/cancel_authorization</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/cancel_authorization <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+  <span class="nt">-d</span> <span class="s1">'{
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"canceled"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_ZZZZZZZZZZZZZZZZAAAAAAAA"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_missing_order"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Order not found"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">409</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='create-customer'>Create customer</h2>
+<p><em>@since v2.8.0</em></p>
+
+<p>Returns customer id from order. Create or update customer if needed.</p>
+<h3 id='error-codes-5'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_invalid_order_status</code> - Invalid order status</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request-5'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">POST</i>
+        <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/create_customer</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/create_customer <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"i_am_awesome"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_server_error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unexpected server error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>
