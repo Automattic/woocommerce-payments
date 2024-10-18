@@ -240,11 +240,12 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
 			],
 			'checkout'           => [
-				'currency_code'     => strtolower( get_woocommerce_currency() ),
-				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
-				'needs_shipping'    => WC()->cart->needs_shipping(),
+				'currency_code'              => strtolower( get_woocommerce_currency() ),
+				'country_code'               => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
+				'needs_shipping'             => WC()->cart->needs_shipping(),
 				// Defaults to 'required' to match how core initializes this option.
-				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
+				'needs_payer_phone'          => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
+				'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
 			],
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
