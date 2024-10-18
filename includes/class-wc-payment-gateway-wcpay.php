@@ -4507,34 +4507,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $this->duplicate_payment_methods_detection_service->find_duplicates();
 	}
 
-	// Start: Deprecated functions.
-
-	/**
-	 * Check the defined constant to determine the current plugin mode.
-	 *
-	 * @deprecated 5.6.0
-	 *
-	 * @return bool
-	 */
-	public function is_in_dev_mode() {
-		wc_deprecated_function( __FUNCTION__, '5.6.0', 'WC_Payments::mode()->is_dev()' );
-		return WC_Payments::mode()->is_dev();
-	}
-
-	/**
-	 * Returns whether test_mode or dev_mode is active for the gateway
-	 *
-	 * @deprecated 5.6.0
-	 *
-	 * @return boolean Test mode enabled if true, disabled if false
-	 */
-	public function is_in_test_mode() {
-		wc_deprecated_function( __FUNCTION__, '5.6.0', 'WC_Payments::mode()->is_test()' );
-		return WC_Payments::mode()->is_test();
-	}
-
-	// End: Deprecated functions.
-
 	/**
 	 * Determine whether redirection is needed for the non-card UPE payment method.
 	 *

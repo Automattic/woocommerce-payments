@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+chore: remove deprecated is_in_dev_mode() and is_in_test_mode() methods
