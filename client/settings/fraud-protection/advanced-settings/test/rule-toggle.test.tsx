@@ -9,6 +9,7 @@ import { render } from '@testing-library/react';
  */
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudPreventionSettingsContext from '../context';
+import userEvent from '@testing-library/user-event';
 
 declare const global: {
 	wcpaySettings: {
@@ -23,9 +24,7 @@ interface mockContext {
 			block: boolean;
 		};
 	};
-	protectionSettingsChanged: boolean;
 	setProtectionSettingsUI: jest.Mock;
-	setProtectionSettingsChanged: jest.Mock;
 	setIsDirty: jest.Mock;
 }
 
@@ -41,9 +40,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				block: false,
 			},
 		},
-		protectionSettingsChanged: false,
 		setProtectionSettingsUI: jest.fn(),
-		setProtectionSettingsChanged: jest.fn(),
 		setIsDirty: jest.fn(),
 	};
 
@@ -55,9 +52,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 					block: false,
 				},
 			},
-			protectionSettingsChanged: false,
 			setProtectionSettingsUI: jest.fn(),
-			setProtectionSettingsChanged: jest.fn(),
 			setIsDirty: jest.fn(),
 		};
 	} );
@@ -134,7 +129,9 @@ describe( 'Fraud protection rule toggle tests', () => {
 		expect( container.getByLabelText( 'Test rule toggle' ) ).toBeChecked();
 		expect( container.queryByText( 'test content' ) ).toBeInTheDocument();
 	} );
-	test( 'sets the value correctly when enabled', () => {
+	test( 'calls the toggle enable function when clicking in the label', () => {
+		mockContext.protectionSettingsUI.test_rule.enabled = false;
+
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
 				<FraudProtectionRuleToggle
@@ -145,17 +142,10 @@ describe( 'Fraud protection rule toggle tests', () => {
 				</FraudProtectionRuleToggle>
 			</FraudPreventionSettingsContext.Provider>
 		);
+
 		const activationToggle = container.getByLabelText( 'Test rule toggle' );
-		expect(
-			mockContext.protectionSettingsUI.test_rule.enabled
-		).toBeFalsy();
-		activationToggle.click();
-		expect(
-			mockContext.protectionSettingsUI.test_rule.enabled
-		).toBeTruthy();
-		activationToggle.click();
-		expect(
-			mockContext.protectionSettingsUI.test_rule.enabled
-		).toBeFalsy();
+		userEvent.click( activationToggle );
+
+		expect( mockContext.setProtectionSettingsUI ).toHaveBeenCalled();
 	} );
 } );

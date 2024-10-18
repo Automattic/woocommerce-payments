@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import { ToggleControl, RadioControl } from '@wordpress/components';
 
@@ -10,6 +10,7 @@ import { ToggleControl, RadioControl } from '@wordpress/components';
  */
 import './../style.scss';
 import FraudPreventionSettingsContext from './context';
+import { FraudPreventionSettings } from '../interfaces';
 
 interface FraudProtectionRuleToggleProps {
 	setting: string;
@@ -49,6 +50,15 @@ export const getHelpText = (
 	return helpTextMapping[ filterAction ];
 };
 
+const getFilterAction = (
+	settingUI: FraudPreventionSettings,
+	isFRTReviewFeatureActive: boolean
+) => {
+	if ( ! isFRTReviewFeatureActive ) return filterActions.BLOCK;
+
+	return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
+};
+
 const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( {
 	setting,
 	label,
@@ -57,51 +67,31 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 	const {
 		protectionSettingsUI,
 		setProtectionSettingsUI,
-		setProtectionSettingsChanged,
 		setIsDirty,
 	} = useContext( FraudPreventionSettingsContext );
 
 	const { isFRTReviewFeatureActive } = wcpaySettings;
 
-	const [ toggleState, setToggleState ] = useState( false );
-	const [ filterAction, setFilterAction ] = useState(
-		isFRTReviewFeatureActive ? filterActions.REVIEW : filterActions.BLOCK
-	);
-
 	const settingUI = protectionSettingsUI?.[ setting ];
+	const filterAction = getFilterAction( settingUI, isFRTReviewFeatureActive );
 
-	// Set initial states from saved settings.
-	useEffect( () => {
-		if ( ! settingUI ) return;
-
-		setToggleState( settingUI.enabled );
-		setFilterAction( () => {
-			if ( ! isFRTReviewFeatureActive ) return filterActions.BLOCK;
-
-			return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
-		} );
-	}, [ settingUI, isFRTReviewFeatureActive ] );
-
-	// Set global object values from input changes.
-	useEffect( () => {
-		if ( ! settingUI ) return;
-
-		settingUI.enabled = toggleState;
-		settingUI.block = filterActions.BLOCK === filterAction;
-		setProtectionSettingsUI( protectionSettingsUI );
-		setProtectionSettingsChanged( ( prev ) => ! prev );
-	}, [
-		settingUI,
-		toggleState,
-		filterAction,
-		setProtectionSettingsChanged,
-		protectionSettingsUI,
-		setProtectionSettingsUI,
-	] );
-
-	const handleToggleChange = () => {
-		setToggleState( ( value ) => ! value );
+	const handleToggleChange = ( field: string, value: boolean ) => {
+		setProtectionSettingsUI( ( settings ) => ( {
+			...settings,
+			[ setting ]: {
+				...settings[ setting ],
+				[ field ]: value,
+			},
+		} ) );
 		setIsDirty( true );
+	};
+
+	const handleEnableToggleChange = ( value: boolean ) => {
+		handleToggleChange( 'enabled', value );
+	};
+
+	const handleBlockToggleChange = ( value: string ) => {
+		handleToggleChange( 'block', filterActions.BLOCK === value );
 	};
 
 	if ( ! protectionSettingsUI ) {
@@ -117,13 +107,13 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 			<ToggleControl
 				label={ label }
 				key={ setting }
-				help={ getHelpText( toggleState, filterAction ) }
-				checked={ toggleState }
+				help={ getHelpText( settingUI?.enabled, filterAction ) }
+				checked={ settingUI?.enabled }
 				className="fraud-protection-rule-toggle-toggle"
-				onChange={ handleToggleChange }
+				onChange={ handleEnableToggleChange }
 			/>
 
-			{ toggleState && (
+			{ settingUI?.enabled && (
 				<div>
 					{ children }
 
@@ -139,7 +129,7 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 							<RadioControl
 								options={ radioOptions }
 								selected={ filterAction }
-								onChange={ setFilterAction }
+								onChange={ handleBlockToggleChange }
 							/>
 						</div>
 					) }
