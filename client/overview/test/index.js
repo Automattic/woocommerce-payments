@@ -66,6 +66,21 @@ jest.mock( 'wcpay/data', () => ( {
 		.fn()
 		.mockReturnValue( { overviews: { currencies: [] } } ),
 	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
+	usePaymentActivityData: jest.fn().mockReturnValue( {
+		paymentActivityData: {
+			currency: 'eur',
+			total_payment_volume: 123456,
+			charges: 9876,
+			fees: 1234,
+			disputes: 5555,
+			refunds: 4444,
+			date_start: '2024-01-01',
+			date_end: '2024-01-31',
+			timezone: 'UTC',
+			interval: 'daily',
+		},
+		isLoading: false,
+	} ),
 } ) );
 
 select.mockReturnValue( {
@@ -111,6 +126,20 @@ describe( 'Overview page', () => {
 				remindMeAt: null,
 				dontShowAgain: false,
 			} ),
+			connect: {
+				country: 'DE',
+			},
+			lifetimeTPV: 1000,
+			currencyData: {
+				EU: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'left',
+					thousandSeparator: '.',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+			},
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
@@ -351,5 +380,14 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect( query() ).not.toBeInTheDocument();
+	} );
+
+	it( 'Displays the Payment Activity Card', () => {
+		const { getByLabelText, getByText } = render( <OverviewPage /> );
+
+		getByText( 'Your payment activity' );
+		// Check correct currency/value is displayed.
+		const tpvElement = getByLabelText( 'Total payment volume' );
+		expect( tpvElement ).toHaveTextContent( '€1.234,56' );
 	} );
 } );
