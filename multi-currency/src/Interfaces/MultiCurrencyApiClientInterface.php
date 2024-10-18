@@ -27,14 +27,4 @@ interface MultiCurrencyApiClientInterface {
 	 * @return array
 	 */
 	public function get_currency_rates( string $currency_from, $currencies_to = null ): array;
-
-	/**
-	 * Fetch a single intent with provided id.
-	 * Note: This can be removed if OrderMetaHelper is moved out of multi-currency.
-	 *
-	 * @param string $intent_id intent id.
-	 *
-	 * @return object Payment Intent object.
-	 */
-	public function get_intent( string $intent_id );
 }

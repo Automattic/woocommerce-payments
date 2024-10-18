@@ -9,7 +9,6 @@ namespace WCPay\MultiCurrency;
 
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
-use WCPay\MultiCurrency\Helpers\OrderMetaHelper;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
@@ -171,13 +170,6 @@ class MultiCurrency {
 	protected $simulation_params = [];
 
 	/**
-	 * Instance of OrderMetaHelper.
-	 *
-	 * @var OrderMetaHelper
-	 */
-	private $order_meta_helper;
-
-	/**
 	 * Gateway context.
 	 *
 	 * @var array
@@ -301,7 +293,6 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
-		$this->order_meta_helper   = new OrderMetaHelper( $this->payments_api_client, $this->backend_currencies );
 
 		// Init all of the hooks.
 		$admin_notices->init_hooks();
@@ -310,7 +301,6 @@ class MultiCurrency {
 		$this->frontend_currencies->init_hooks();
 		$this->backend_currencies->init_hooks();
 		$this->tracking->init_hooks();
-		$this->order_meta_helper->init_hooks();
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
 
@@ -343,7 +333,7 @@ class MultiCurrency {
 			return;
 		}
 
-		$api_controller = new RestController();
+		$api_controller = new RestController( $this );
 		$api_controller->register_routes();
 	}
 
