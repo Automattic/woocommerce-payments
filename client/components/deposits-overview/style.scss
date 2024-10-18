@@ -66,6 +66,8 @@
 			font-size: 13px;
 			align-items: center;
 			padding: 16px 0;
+			width: 20%;
+			text-align: center;
 
 			svg {
 				fill: $gray-900;
@@ -75,11 +77,25 @@
 			}
 
 			&:first-child {
-				width: 35%;
+				width: 40%;
+				text-align: left;
 			}
 
 			&:last-child {
-				margin-left: auto;
+				text-align: right;
+			}
+
+			@media screen and ( max-width: 605px ) {
+				width: 25%;
+
+				&:first-child {
+					width: 25%;
+				}
+
+				// Hide icon on mobile to save horizontal space.
+				svg {
+					display: none;
+				}
 			}
 		}
 	}
@@ -99,11 +115,5 @@
 				margin: 0;
 			}
 		}
-	}
-}
-
-@media screen and ( max-width: 605px ) {
-	.wcpay-deposits-overview__table__cell:first-child {
-		width: 45%;
 	}
 }
