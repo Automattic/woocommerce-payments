@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.3
-Stable tag: 8.3.0
+Stable tag: 8.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,11 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 8.3.1 - 2024-10-16 =
+* Fix - Auto-enabled WooPay for new accounts.
+* Fix - Load Stripe with merchant account's key when checking payment method availability.
+
 
 = 8.3.0 - 2024-10-03 =
 * Add - Add compatibility with the buttonAttributes API from Woo Blocks
