@@ -138,3 +138,99 @@ export const getBackgroundColor = ( selectors ) => {
 export const isColorLight = ( color ) => {
 	return tinycolor( color ).getBrightness() > 125;
 };
+
+/**
+ * Converts rgba to rgb format, since Stripe Appearances API does not accept rgba format for text color.
+ *
+ * @param {string} color CSS color value.
+ * @return {string} Accepted CSS color value.
+ */
+export const maybeConvertRGBAtoRGB = ( color ) => {
+	const colorParts = color.match(
+		/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0?(\.\d+)?|1?(\.0+)?)\s*\)$/
+	);
+	if ( colorParts ) {
+		const alpha = colorParts[ 4 ] || 1;
+		const newColorParts = colorParts.slice( 1, 4 ).map( ( part ) => {
+			return Math.round( part * alpha + 255 * ( 1 - alpha ) );
+		} );
+		color = `rgb(${ newColorParts.join( ', ' ) })`;
+	}
+	return color;
+};
+
+/**
+ * Modifies the appearance object to include styles for floating label.
+ *
+ * @param {Object} appearance object to modify.
+ * @param {Object} floatingLabelStyles Floating label styles.
+ * @return {Object} Modified appearance object.
+ */
+export const handleAppearanceForFloatingLabel = (
+	appearance,
+	floatingLabelStyles
+) => {
+	// Add floating label styles.
+	appearance.rules[ '.Label--floating' ] = floatingLabelStyles;
+
+	// Update line-height for floating label to account for scaling.
+	if (
+		appearance.rules[ '.Label--floating' ].transform &&
+		appearance.rules[ '.Label--floating' ].transform !== 'none'
+	) {
+		// Extract the scaling factors from the matrix
+		const transformMatrix =
+			appearance.rules[ '.Label--floating' ].transform;
+		const matrixValues = transformMatrix.match( /matrix\((.+)\)/ );
+		if ( matrixValues && matrixValues[ 1 ] ) {
+			const splitMatrixValues = matrixValues[ 1 ].split( ', ' );
+			const scaleX = parseFloat( splitMatrixValues[ 0 ] );
+			const scaleY = parseFloat( splitMatrixValues[ 3 ] );
+			const scale = ( scaleX + scaleY ) / 2;
+
+			const lineHeight = parseFloat(
+				appearance.rules[ '.Label--floating' ].lineHeight
+			);
+			const newLineHeight = Math.floor( lineHeight * scale );
+			appearance.rules[
+				'.Label--floating'
+			].lineHeight = `${ newLineHeight }px`;
+			appearance.rules[
+				'.Label--floating'
+			].fontSize = `${ newLineHeight }px`;
+		}
+		delete appearance.rules[ '.Label--floating' ].transform;
+	}
+
+	// Subtract the label's lineHeight from padding-top to account for floating label height.
+	// Minus 4px which is a constant value added by stripe to the padding-top.
+	// Minus 1px for each vertical padding to account for the unpredictable input height
+	// (see https://github.com/Automattic/woocommerce-payments/issues/9476#issuecomment-2374766540).
+	// When the result is less than 0, it will automatically use 0.
+	if ( appearance.rules[ '.Input' ].paddingTop ) {
+		appearance.rules[
+			'.Input'
+			// eslint-disable-next-line max-len
+		].paddingTop = `calc(${ appearance.rules[ '.Input' ].paddingTop } - ${ appearance.rules[ '.Label--floating' ].lineHeight } - 4px - 1px)`;
+	}
+	if ( appearance.rules[ '.Input' ].paddingBottom ) {
+		const originalPaddingBottom = parseFloat(
+			appearance.rules[ '.Input' ].paddingBottom
+		);
+		appearance.rules[
+			'.Input'
+			// eslint-disable-next-line max-len
+		].paddingBottom = `${ originalPaddingBottom - 1 }px`;
+
+		const originalLabelMarginTop =
+			appearance.rules[ '.Label' ].marginTop ?? '0';
+		appearance.rules[ '.Label' ].marginTop = `${ Math.floor(
+			( originalPaddingBottom - 1 ) / 3
+		) }px`;
+		appearance.rules[
+			'.Label--floating'
+		].marginTop = originalLabelMarginTop;
+	}
+
+	return appearance;
+};

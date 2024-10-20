@@ -959,11 +959,8 @@ class WC_Payments_Account {
 		$from = WC_Payments_Onboarding_Service::get_from();
 
 		// If the user came from the core Payments task list item,
-		// we run an experiment to skip the Connect page
-		// and go directly to the Jetpack connection flow and/or onboarding wizard.
-		if ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK === $from
-			&& WC_Payments_Utils::is_in_core_payments_task_onboarding_flow_treatment_mode() ) {
-
+		// skip the Connect page and go directly to the Jetpack connection flow and/or onboarding wizard.
+		if ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK === $from ) {
 			// We use a connect link to allow our logic to determine what comes next:
 			// the Jetpack connection setup and/or onboarding wizard (MOX).
 			$this->redirect_service->redirect_to_wcpay_connect(
@@ -1345,14 +1342,6 @@ class WC_Payments_Account {
 					],
 					true
 				)
-				/**
-				 * We are running an experiment to skip the Connect page for Payments Task flows.
-				 * Only redirect to the Connect page if the user is not in the experiment's treatment mode.
-				 *
-				 * @see self::maybe_redirect_from_connect_page()
-				 */
-				|| ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK === $from
-					&& ! WC_Payments_Utils::is_in_core_payments_task_onboarding_flow_treatment_mode() )
 				// This is a weird case, but it is best to handle it.
 				|| ( WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD === $from && ! $this->has_working_jetpack_connection() )
 			) {

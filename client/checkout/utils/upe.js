@@ -345,7 +345,7 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		'.payment_method_woocommerce_payments_' + paymentMethodType
 	);
 	if ( supportedCountries.includes( billingCountry ) ) {
-		upeContainer.style.display = 'block';
+		upeContainer.style.removeProperty( 'display' );
 	} else {
 		upeContainer.style.display = 'none';
 		// if the toggled off payment method was selected, we need to fall back to credit card

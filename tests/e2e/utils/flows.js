@@ -693,9 +693,18 @@ export const merchantWCP = {
 	},
 
 	wcpSettingsSaveChanges: async () => {
+		const saveSettingsButtonSelector = '.save-settings-section button';
+		const saveSettingsButton = await page.$( saveSettingsButtonSelector );
+		const buttonStatus = await (
+			await saveSettingsButton.getProperty( 'disabled' )
+		 ).jsonValue();
+		if ( buttonStatus === true ) {
+			return;
+		}
+
 		const snackbarSettingsSaved = '.components-snackbar';
 
-		await expect( page ).toClick( '.save-settings-section button' );
+		await expect( page ).toClick( saveSettingsButtonSelector );
 		await expect( page ).toMatchElement( snackbarSettingsSaved, {
 			text: 'Settings saved.',
 			timeout: 60000,

@@ -911,25 +911,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Check to see if the current user is in Core Payments task onboarding flow experiment treatment mode.
-	 *
-	 * @return bool
-	 */
-	public static function is_in_core_payments_task_onboarding_flow_treatment_mode(): bool {
-		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
-			return false;
-		}
-
-		$abtest = new \WCPay\Experimental_Abtest(
-			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
-			'woocommerce',
-			'yes' === get_option( 'woocommerce_allow_tracking', 'no' )
-		);
-
-		return 'treatment' === $abtest->get_variation( 'woopayments_core_payments_task_onboarding_flow_2024_v1' );
-	}
-
-	/**
 	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
 	 * @return boolean
