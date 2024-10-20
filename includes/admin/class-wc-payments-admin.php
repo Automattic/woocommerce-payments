@@ -216,10 +216,21 @@ class WC_Payments_Admin {
 	 * Redirect /payments/deposits to /payments/payouts.
 	 */
 	public function redirect_deposits_to_payouts() {
-		if ( is_admin() && isset( $_GET['page'] ) && 'wc-admin' === $_GET['page'] // phpcs:ignore WordPress.Security.NonceVerification
-			&& isset( $_GET['path'] ) && '/payments/deposits' === $_GET['path'] ) { // phpcs:ignore WordPress.Security.NonceVerification
-			wp_safe_redirect( admin_url( 'admin.php?page=wc-admin&path=/payments/payouts' ) );
-			exit;
+		if ( is_admin() && isset( $_GET['page'] ) && 'wc-admin' === $_GET['page'] && isset( $_GET['path'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$redirect_map = [
+				'/payments/deposits'         => '/payments/payouts',
+				'/payments/deposits/details' => '/payments/payouts/details',
+			];
+			$query_params = $_GET; // phpcs:ignore WordPress.Security.NonceVerification
+			if ( isset( $redirect_map[ $query_params['path'] ] ) ) {
+				$query_params['path'] = $redirect_map[ $query_params['path'] ];
+				$redirect_url         = add_query_arg(
+					$query_params,
+					admin_url( 'admin.php?page=wc-admin' ),
+				);
+				wp_safe_redirect( $redirect_url );
+				exit;
+			}
 		}
 	}
 
