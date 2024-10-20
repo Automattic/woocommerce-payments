@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Converting text color rgba to hex to prevent Stripe warning
