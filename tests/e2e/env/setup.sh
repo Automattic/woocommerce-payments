@@ -29,6 +29,8 @@ WP_ADMIN_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.email')
 SITE_TITLE="WooPayments E2E site"
 SITE_URL=$WP_URL
 
+E2E_SERVICE_DOCKER_COMPOSE_OVERRIDE_FILE="$E2E_ROOT"/env/docker-compose.service-e2e-override.yml
+
 if [[ $FORCE_E2E_DEPS_SETUP ]]; then
 	sudo rm -rf tests/e2e/deps
 fi
@@ -67,7 +69,12 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Secrets created"
 
 	step "Starting SERVER containers"
-	redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
+	if [ -e $E2E_SERVICE_DOCKER_COMPOSE_OVERRIDE_FILE ]; then
+		echo "Using docker override file for WooPayments service (aka wcpay-server): $E2E_SERVICE_DOCKER_COMPOSE_OVERRIDE_FILE"
+		redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f $E2E_SERVICE_DOCKER_COMPOSE_OVERRIDE_FILE up --build --force-recreate -d
+	else
+		redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
+	fi
 
 	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
 	WP_LISTEN_PORT=$(docker ps | grep "$SERVER_CONTAINER" | sed -En "s/.*0:([0-9]+).*/\1/p")
