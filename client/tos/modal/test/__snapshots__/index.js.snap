@@ -103,7 +103,7 @@ exports[`ToS modal should render disable plugin modal on decline 1`] = `
         >
           Terms of Service
         </a>
-        , you’ll no longer be able to capture credit card payments using WooPayments. Your previous transaction and deposit data will still be available.
+        , you’ll no longer be able to capture credit card payments using WooPayments. Your previous transaction and payout data will still be available.
       </div>
       <div
         class="woocommerce-payments__tos-footer"
