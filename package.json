@@ -77,8 +77,8 @@
   "dependencies": {
     "@automattic/interpolate-components": "1.2.1",
     "@fingerprintjs/fingerprintjs": "3.4.1",
-    "@stripe/connect-js": "3.3.12",
-    "@stripe/react-connect-js": "3.3.13",
+    "@stripe/connect-js": "3.3.16",
+    "@stripe/react-connect-js": "3.3.17",
     "@stripe/react-stripe-js": "2.5.1",
     "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "2.3.0",
