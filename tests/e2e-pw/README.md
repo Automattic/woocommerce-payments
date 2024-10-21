@@ -39,7 +39,7 @@ Prefer the use of [user-facing attribute or test-id locators](https://playwright
 
 ```ts
 // Prefer locating by role, label, text, or test id when possible. See https://playwright.dev/docs/locators
-await page.getByRole( 'button', { name: 'All deposits' } ).click();
+await page.getByRole( 'button', { name: 'All payouts' } ).click();
 await page.getByLabel( 'Select a deposit status' ).selectOption( 'Pending' );
 await expect( page.getByText( 'Order received' ) ).toBeVisible();
 await page.getByTestId( 'accept-dispute-button' ).click();
@@ -56,7 +56,7 @@ Visual regression tests are captured by the [`toHaveScreenshot()` function](http
 await expect( page ).toHaveScreenshot();
 
 await expect(
-	page.getByRole( 'button', { name: 'All deposits' } )
+	page.getByRole( 'button', { name: 'All payouts' } )
 ).toHaveScreenshot();
 ```
 
