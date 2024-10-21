@@ -213,7 +213,7 @@ const getColumns = (
 			key: 'amount',
 			label: __( 'Amount', 'woocommerce-payments' ),
 			screenReaderLabel: __(
-				'Amount in Deposit Curency',
+				'Amount in Deposit Currency',
 				'woocommerce-payments'
 			),
 			isNumeric: true,
