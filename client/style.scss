@@ -20,15 +20,10 @@
 	}
 }
 
-.woocommerce-table {
-	font-weight: 300;
-	letter-spacing: 0.012rem;
-	color: $studio-gray-60;
-
-	.woocommerce-table__summary {
-		border-radius: 0 0 3px 3px;
-	}
-
+/**
+* This styling is for all `<TableCard />` components found in WooPayments screens.
+*/
+.woocommerce-payments-page .woocommerce-table {
 	.woocommerce-table__item {
 		white-space: nowrap;
 	}
