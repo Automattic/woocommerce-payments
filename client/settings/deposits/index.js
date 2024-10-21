@@ -235,7 +235,7 @@ const Deposits = () => {
 					) : (
 						<p className="deposits__bank-information-help">
 							{ __(
-								'Manage and update your payout account information to receive payments and payouts.',
+								'Manage and update your bank account information to receive payouts.',
 								'woocommerce-payments'
 							) }{ ' ' }
 							{ accountLink && (

@@ -294,7 +294,7 @@ describe( 'Deposits', () => {
 
 		expect(
 			screen.queryByText(
-				/Manage and update your payout account information to receive payments and payouts./,
+				/Manage and update your bank account information to receive payouts./,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -319,7 +319,7 @@ describe( 'Deposits', () => {
 		).toBeFalsy();
 
 		const depositsMessage = screen.getByText(
-			/Manage and update your payout account information to receive payments and payouts./,
+			/Manage and update your bank account information to receive payouts./,
 			{
 				ignore: '.a11y-speak-region',
 			}
@@ -361,7 +361,7 @@ describe( 'Deposits', () => {
 
 		expect(
 			screen.queryByText(
-				/Manage and update your payout account information to receive payments and payouts./,
+				/Manage and update your bank account information to receive payouts./,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -403,7 +403,7 @@ describe( 'Deposits', () => {
 		).toBeFalsy();
 
 		const depositsMessage = screen.getByText(
-			/Manage and update your payout account information to receive payments and payouts./,
+			/Manage and update your bank account information to receive payouts./,
 			{
 				ignore: '.a11y-speak-region',
 			}
