@@ -1,6 +1,6 @@
 *** WooPayments Changelog ***
 
-= 8.4.0 - 2024-10-23 =
+= 8.4.0-test-3 - unreleased =
 * Add - Add test mode badge to classic checkout and add payment method.
 * Add - Using Floating Labels with Stripe Appearance API for Blocks Checkout
 * Fix - Converting text color rgba to hex to prevent Stripe warning
