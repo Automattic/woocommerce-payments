@@ -88,7 +88,7 @@ const DepositsDescription = () => {
 			<p>
 				{ sprintf(
 					__(
-						'Funds are available to be dispatched %s business days after they’re received.',
+						'Funds are available for payout %s business days after they’re received.',
 						'woocommerce-payments'
 					),
 					depositDelayDays
