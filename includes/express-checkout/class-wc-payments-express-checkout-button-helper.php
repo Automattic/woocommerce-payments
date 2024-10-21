@@ -365,6 +365,28 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Returns true if cart contains a subscription product with a trial period, false otherwise.
+	 *
+	 * @psalm-suppress UndefinedClass
+	 */
+	public function has_trial_subscription(): bool {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return false;
+		}
+
+		// TODO: WC_Subscriptions_Cart may provide a better way to check for trial subscriptions.
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			$product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+
+			if ( WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Checks whether Payment Request Button should be available on this page.
 	 *
 	 * @return bool
@@ -437,9 +459,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		// Cart total is 0 or is on product page and product price is 0.
-		// Exclude pay-for-order pages from this check.
+		// Exclude pay-for-order pages and trial subscriptions from this check.
 		if (
-			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
+			( ! $this->is_product()
+				&& ! $this->is_pay_for_order_page()
+				&& ! $this->has_trial_subscription() // TODO: double-check this condition.
+				&& 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
@@ -529,9 +554,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			 *
 			 * @psalm-suppress UndefinedClass
 			 */
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
-				return false;
-			}
+			// TODO: Double-check this condition.
+			// if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
+			// 	return false;
+			// }
 		}
 
 		// We don't support multiple packages with Payment Request Buttons because we can't offer a good UX.
@@ -767,7 +793,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		if ( is_null( $product )
 			|| ! is_object( $product )
 			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) // Trial subscriptions with shipping are not supported.
+			// TODO: Double-check this condition.
+			// || ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) // Trial subscriptions with shipping are not supported.
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
