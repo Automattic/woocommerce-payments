@@ -1,0 +1,1511 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>WooCommerce Payments REST API Documentation - WP REST API v3</title>
+
+    <link rel="icon" href="images/favicon-32x32-f2ceaccd.png" sizes="32x32" />
+    <link rel="icon" href="images/favicon-192x192-dc97f833.png" sizes="192x192" />
+    <link rel="apple-touch-icon-precomposed" href="images/favicon-180x180-bc95b359.png" />
+    <meta name="msapplication-TileImage" content="images/favicon-270x270-3d9cd5f3.png" />
+
+    <style>
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight .gh {
+  color: #999999;
+}
+.highlight .sr {
+  color: #f6aa11;
+}
+.highlight .go {
+  color: #888888;
+}
+.highlight .gp {
+  color: #555555;
+}
+.highlight .gs {
+}
+.highlight .gu {
+  color: #aaaaaa;
+}
+.highlight .nb {
+  color: #f6aa11;
+}
+.highlight .cm {
+  color: #75715e;
+}
+.highlight .cp {
+  color: #75715e;
+}
+.highlight .c1 {
+  color: #75715e;
+}
+.highlight .cs {
+  color: #75715e;
+}
+.highlight .c, .highlight .ch, .highlight .cd, .highlight .cpf {
+  color: #75715e;
+}
+.highlight .err {
+  color: #960050;
+}
+.highlight .gr {
+  color: #960050;
+}
+.highlight .gt {
+  color: #960050;
+}
+.highlight .gd {
+  color: #49483e;
+}
+.highlight .gi {
+  color: #49483e;
+}
+.highlight .ge {
+  color: #49483e;
+}
+.highlight .kc {
+  color: #66d9ef;
+}
+.highlight .kd {
+  color: #66d9ef;
+}
+.highlight .kr {
+  color: #66d9ef;
+}
+.highlight .no {
+  color: #66d9ef;
+}
+.highlight .kt {
+  color: #66d9ef;
+}
+.highlight .mf {
+  color: #ae81ff;
+}
+.highlight .mh {
+  color: #ae81ff;
+}
+.highlight .il {
+  color: #ae81ff;
+}
+.highlight .mi {
+  color: #ae81ff;
+}
+.highlight .mo {
+  color: #ae81ff;
+}
+.highlight .m, .highlight .mb, .highlight .mx {
+  color: #ae81ff;
+}
+.highlight .sc {
+  color: #ae81ff;
+}
+.highlight .se {
+  color: #ae81ff;
+}
+.highlight .ss {
+  color: #ae81ff;
+}
+.highlight .sd {
+  color: #e6db74;
+}
+.highlight .s2 {
+  color: #e6db74;
+}
+.highlight .sb {
+  color: #e6db74;
+}
+.highlight .sh {
+  color: #e6db74;
+}
+.highlight .si {
+  color: #e6db74;
+}
+.highlight .sx {
+  color: #e6db74;
+}
+.highlight .s1 {
+  color: #e6db74;
+}
+.highlight .s, .highlight .sa, .highlight .dl {
+  color: #e6db74;
+}
+.highlight .na {
+  color: #a6e22e;
+}
+.highlight .nc {
+  color: #a6e22e;
+}
+.highlight .nd {
+  color: #a6e22e;
+}
+.highlight .ne {
+  color: #a6e22e;
+}
+.highlight .nf, .highlight .fm {
+  color: #a6e22e;
+}
+.highlight .vc {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .nn {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .nl {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .ni {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .bp {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .vg {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .vi {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .nv, .highlight .vm {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .w {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .n, .highlight .py, .highlight .nx {
+  color: #ffffff;
+  background-color: #272822;
+}
+.highlight .ow {
+  color: #f92672;
+}
+.highlight .nt {
+  color: #f92672;
+}
+.highlight .k, .highlight .kv {
+  color: #f92672;
+}
+.highlight .kn {
+  color: #f92672;
+}
+.highlight .kp {
+  color: #f92672;
+}
+.highlight .o {
+  color: #f92672;
+}
+    </style>
+    <link href="stylesheets/screen-3f014397.css" rel="stylesheet" media="screen" />
+    <link href="stylesheets/print-f609a46b.css" rel="stylesheet" media="print" />
+      <script src="javascripts/all_nosearch-e0c1f518.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+  </head>
+
+  <body class="index" data-languages="[&quot;shell&quot;]">
+    <a href="#" id="nav-button">
+      <span>
+        NAV
+        <img src="images/navbar-cad8cdcb.png" alt="" />
+      </span>
+    </a>
+    <div class="toc-wrapper">
+      <a href="#" class="logo">
+        <img src="images/logo-5d518f52.png" alt="" />
+      </a>
+        <div class="lang-selector">
+              <a href="#" data-language-name="shell">cURL</a>
+        </div>
+      <ul id="toc" class="toc-list-h1">
+          <li>
+            <a href="#introduction" class="toc-h1 toc-link" data-title="Introduction">Introduction</a>
+          </li>
+          <li>
+            <a href="#authentication" class="toc-h1 toc-link" data-title="Authentication">Authentication</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#generate-api-keys" class="toc-h2 toc-link" data-title="Generate API keys">Generate API keys</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#order" class="toc-h1 toc-link" data-title="Order">Order</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#create-a-terminal-intent" class="toc-h2 toc-link" data-title="Create a terminal intent">Create a terminal intent</a>
+                  </li>
+                  <li>
+                    <a href="#capture-a-terminal-payment" class="toc-h2 toc-link" data-title="Capture a terminal payment">Capture a terminal payment</a>
+                  </li>
+                  <li>
+                    <a href="#capture-an-authorization" class="toc-h2 toc-link" data-title="Capture an authorization">Capture an authorization</a>
+                  </li>
+                  <li>
+                    <a href="#cancel-an-authorization" class="toc-h2 toc-link" data-title="Cancel an authorization">Cancel an authorization</a>
+                  </li>
+                  <li>
+                    <a href="#create-customer" class="toc-h2 toc-link" data-title="Create customer">Create customer</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#authorization" class="toc-h1 toc-link" data-title="Authorization">Authorization</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#get-authorizations" class="toc-h2 toc-link" data-title="Get authorizations">Get authorizations</a>
+                  </li>
+                  <li>
+                    <a href="#get-authorization" class="toc-h2 toc-link" data-title="Get authorization">Get authorization</a>
+                  </li>
+                  <li>
+                    <a href="#get-authorization-summary" class="toc-h2 toc-link" data-title="Get authorization summary">Get authorization summary</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#customer" class="toc-h1 toc-link" data-title="Customer">Customer</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#get-customer-39-s-payment-methods" class="toc-h2 toc-link" data-title="Get customer's payment methods">Get customer's payment methods</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#payment-intents" class="toc-h1 toc-link" data-title="Payment intents">Payment intents</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#create-payment-intent" class="toc-h2 toc-link" data-title="Create payment intent">Create payment intent</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#reports" class="toc-h1 toc-link" data-title="Reports">Reports</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#list-transactions" class="toc-h2 toc-link" data-title="List transactions">List transactions</a>
+                  </li>
+                  <li>
+                    <a href="#list-transaction" class="toc-h2 toc-link" data-title="List transaction">List transaction</a>
+                  </li>
+                  <li>
+                    <a href="#list-authorizations" class="toc-h2 toc-link" data-title="List authorizations">List authorizations</a>
+                  </li>
+                  <li>
+                    <a href="#list-authorization" class="toc-h2 toc-link" data-title="List authorization">List authorization</a>
+                  </li>
+              </ul>
+          </li>
+          <li>
+            <a href="#deposits" class="toc-h1 toc-link" data-title="Deposits">Deposits</a>
+              <ul class="toc-list-h2">
+                  <li>
+                    <a href="#deposit-object" class="toc-h2 toc-link" data-title="Deposit object">Deposit object</a>
+                  </li>
+                  <li>
+                    <a href="#get-deposits-overview-for-all-account-deposit-currencies" class="toc-h2 toc-link" data-title="Get deposits overview for all account deposit currencies">Get deposits overview for all account deposit currencies</a>
+                  </li>
+                  <li>
+                    <a href="#list-deposits" class="toc-h2 toc-link" data-title="List deposits">List deposits</a>
+                  </li>
+                  <li>
+                    <a href="#get-deposits-summary" class="toc-h2 toc-link" data-title="Get deposits summary">Get deposits summary</a>
+                  </li>
+                  <li>
+                    <a href="#get-deposit" class="toc-h2 toc-link" data-title="Get deposit">Get deposit</a>
+                  </li>
+                  <li>
+                    <a href="#submit-an-instant-deposit" class="toc-h2 toc-link" data-title="Submit an instant deposit">Submit an instant deposit</a>
+                  </li>
+                  <li>
+                    <a href="#request-a-csv-export-of-deposits" class="toc-h2 toc-link" data-title="Request a CSV export of deposits">Request a CSV export of deposits</a>
+                  </li>
+              </ul>
+          </li>
+      </ul>
+        <ul class="toc-footer">
+            <li><a href="https://woocommerce.github.io/woocommerce-rest-api-docs/">WooCommerce REST API Docs</a></li>
+            <li><a href="https://github.com/Automattic/woocommerce-payments">WooCommerce Payments</a></li>
+            <li><a href="https://github.com/tripit/slate">Documentation Powered by Slate</a></li>
+        </ul>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id='introduction'>Introduction</h1>
+<p>WooCommerce Payments REST APIs build upon the WooCommerce REST interface which itself extends the WordPress REST APIs. Consuming, testing and debugging WCPay APIs is exactly the same as Woo APIs.</p>
+
+<p>For requirements, request/response format, and other details refer to the <a href="https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction">WooCommerce REST API docs</a>.</p>
+<h1 id='authentication'>Authentication</h1>
+<p>WooCommerce includes two ways to authenticate with the WP REST API. It is also possible to authenticate using any <a href="http://v3.wp-api.org/guide/authentication/">WP REST API authentication</a> plugin or method.</p>
+
+<p>Refer to the <a href="http://woocommerce.github.io/woocommerce-rest-api-docs/#authentication">WooCommerce REST API docs</a> for more options and possibilities.</p>
+<h2 id='generate-api-keys'>Generate API keys</h2>
+<p>Pre-generated keys can be used to authenticate use of the REST API endpoints. New keys can be generated either through the WordPress admin interface or they can be auto-generated through an endpoint.</p>
+
+<p>To create or manage keys for a specific WordPress user, go to WooCommerce &gt; Settings &gt; Advanced &gt; REST API.</p>
+
+<p><em>Note: Keys/Apps was found at WooCommerce &gt; Settings &gt; API &gt; Key/Apps prior to WooCommerce 3.4.</em></p>
+
+<p><img src="images/woocommerce-api-keys-settings-02dfb1f9.png" alt="WooCommerce REST API keys settings" /></p>
+
+<p>Click the &quot;Add Key&quot; button. In the next screen, add a description and select the WordPress user you would like to generate the key for. Use of the REST API with the generated keys will conform to that user&#39;s WordPress roles and capabilities.</p>
+
+<p>Choose the level of access for this REST API key, which can be <em>Read</em> access, <em>Write</em> access or <em>Read/Write</em> access. Then click the &quot;Generate API Key&quot; button and WooCommerce will generate REST API keys for the selected user.</p>
+
+<p><img src="images/woocommerce-creating-api-keys-0f78883a.png" alt="Creating a new REST API key" /></p>
+
+<p>Now that keys have been generated, you should see two new keys, a QRCode, and a Revoke API Key button. These two keys are your Consumer Key and Consumer Secret.</p>
+
+<p><img src="images/woocommerce-api-key-generated-9004dc03.png" alt="Generated REST API key" /></p>
+
+<p>If the WordPress user associated with an API key is deleted, the API key will cease to function. API keys are not transferred to other users.</p>
+<h1 id='order'>Order</h1>
+<p>The order API allows you to perform operations such as capture a terminal payment, create an intent, create a customer, etc. for a particular order.</p>
+<h2 id='create-a-terminal-intent'>Create a terminal intent</h2>
+<p><em>@since v3.5.0</em></p>
+
+<p>Create a new in-person payment intent for the given order ID without confirming it.</p>
+<h3 id='error-codes'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+<li>  <code>wcpay_intent_creation_error</code> - Unknown error</li>
+</ul>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">POST</i>
+        <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/create_terminal_intent</h6>
+    </div>
+</div>
+<h3 id='optional-parameters'>Optional parameters</h3>
+<ul>
+<li>  <code>payment_methods</code> - array with payment methods. Accepted values: <code>card_present</code> and <code>interac_present</code></li>
+<li>  <code>metadata</code> - metadata that will be attached to the PaymentIntent</li>
+<li>  <code>customer_id</code> - customer that will be attached to the PaymentIntent</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/create_terminal_intent <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_ZZZZZZZZZZZZZZZZAAAAAAAA"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_intent_creation_error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Intent creation failed with the following message: &lt;reason&gt;"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='capture-a-terminal-payment'>Capture a terminal payment</h2>
+<p><em>@since v2.4.0</em></p>
+
+<p>Capture the funds of an in-person payment intent. Given an intent ID and an order ID, add the intent ID to the order and capture it.</p>
+<h3 id='post-params'>POST params</h3>
+<ul>
+<li>  payment_intent_id: string</li>
+</ul>
+<h3 id='error-codes-2'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_refunded_order_uncapturable</code> - Payment cannot be captured for partially or fully refunded orders</li>
+<li>  <code>wcpay_payment_uncapturable</code> - The payment cannot be captured if intent status is not one of &#39;processing&#39;, &#39;requires_capture&#39;, or &#39;succeeded&#39;</li>
+<li>  <code>wcpay_capture_error</code> - Unknown error</li>
+</ul>
+<h3 id='http-request-2'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">POST</i>
+        <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/capture_terminal_payment</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_terminal_payment <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+    <span class="nt">-d</span> <span class="s1">'{
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_ZZZZZZZZZZZZZZZZAAAAAAAA"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_server_error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unexpected server error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='capture-an-authorization'>Capture an authorization</h2>
+<p><em>@since v5.1.0</em></p>
+
+<p>Capture the funds of an existing uncaptured payment intent that was marked to be captured manually later.</p>
+<h3 id='post-params-2'>POST params</h3>
+<ul>
+<li>  payment_intent_id: string</li>
+<li>  order_id: string</li>
+</ul>
+<h3 id='error-codes-3'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_refunded_order_uncapturable</code> - Payment cannot be captured for partially or fully refunded orders</li>
+<li>  <code>wcpay_payment_uncapturable</code> - The payment cannot be captured if intent status is not one of &#39;processing&#39;, &#39;requires_capture&#39;, or &#39;succeeded&#39;</li>
+<li>  <code>wcpay_intent_order_mismatch</code> - Payment cannot be captured because the order id does not match</li>
+<li>  <code>wcpay_capture_error</code> - Unknown error</li>
+</ul>
+<h3 id='http-request-3'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">POST</i>
+    <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/capture_authorization</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_authorization <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+  <span class="nt">-d</span> <span class="s1">'{
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_ZZZZZZZZZZZZZZZZAAAAAAAA"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_payment_uncapturable"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The payment cannot be captured"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">409</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='cancel-an-authorization'>Cancel an authorization</h2>
+<p><em>@since v5.7.0</em></p>
+
+<p>Cancel the authorization of an existing uncaptured payment intent.</p>
+<h3 id='post-params-3'>POST params</h3>
+<ul>
+<li>  payment_intent_id: string</li>
+</ul>
+<h3 id='error-codes-4'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_refunded_order_uncapturable</code> - Payment cannot be canceled</li>
+<li>  <code>wcpay_payment_uncapturable</code> - The payment cannot be canceled if intent status is not one of &#39;processing&#39;, &#39;requires_capture&#39;, or &#39;succeeded&#39;</li>
+<li>  <code>wcpay_intent_order_mismatch</code> - Payment cannot be canceled because the order id does not match with payment intent id</li>
+<li>  <code>wcpay_cancel_error</code> - Unknown error</li>
+</ul>
+<h3 id='http-request-4'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">POST</i>
+    <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/cancel_authorization</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/cancel_authorization <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+  <span class="nt">-d</span> <span class="s1">'{
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"canceled"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_ZZZZZZZZZZZZZZZZAAAAAAAA"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_missing_order"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Order not found"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">409</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='create-customer'>Create customer</h2>
+<p><em>@since v2.8.0</em></p>
+
+<p>Returns customer id from order. Create or update customer if needed.</p>
+<h3 id='error-codes-5'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_missing_order</code> - Order not found</li>
+<li>  <code>wcpay_invalid_order_status</code> - Invalid order status</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request-5'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">POST</i>
+        <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/create_customer</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/orders/42/create_customer <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"i_am_awesome"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_server_error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Unexpected server error"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h1 id='authorization'>Authorization</h1>
+<p>An authorization is an uncaptured transaction marked for manual capture later, or more technically a payment intent with <code>requires_capture</code> status. An authorization must be captured within 7 days after which it expires and becomes unavailable for capture.</p>
+
+<p>An authorization may be captured from one of these pages - Order details, Uncapture transactions, Payment details.</p>
+
+<p>The authorization API allows you to get data related to authorizations.</p>
+<h2 id='get-authorizations'>Get authorizations</h2>
+<p><em>@since v4.9.0</em></p>
+
+<p>Return all active authorizations.</p>
+<h3 id='get-params'>GET params</h3>
+<ul>
+<li>  page: int</li>
+<li>  pagesize: int</li>
+<li>  sort: string</li>
+<li>  direction: string</li>
+</ul>
+<h3 id='error-codes'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_bad_request</code> - One or more query string params is invalid.</li>
+</ul>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">GET</i>
+    <h6>/wp-json/wc/v3/payments/authorizations?page=1&pagesize=10&sort=created&direction=DESC</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/authorizations?page<span class="o">=</span>1&amp;pagesize<span class="o">=</span>10&amp;sort<span class="o">=</span>created&amp;direction<span class="o">=</span>DESC <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"charge_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ch_123"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"transaction_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1800</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"net"</span><span class="p">:</span><span class="w"> </span><span class="mi">1720</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount_captured"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount_refunded"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"is_captured"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-11-03 08:56:14"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"modified"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-11-03 08:56:16"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"channel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"visa"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"source_identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"4242"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"customer_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mr. Albert"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"customer_email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mr.albert@email.com"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"customer_country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fees"</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"payment_intent_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_123"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"refunded"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"order_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">329</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"outcome_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"authorized"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_bad_request"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Error: Invalid sorting direction: "</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='get-authorization'>Get authorization</h2>
+<p><em>@since v4.9.0</em></p>
+
+<p>Return data for a specific authorization.</p>
+<h3 id='http-request-2'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">GET</i>
+    <h6>/wp-json/wc/v3/payments/authorizations/&lt;payment_intent_id&gt;</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/authorizations/pi_123 <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"wcpay_charges_cache_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">17</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"stripe_account_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"acct_123"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"charge_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ch_123"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"transaction_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1800</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"net"</span><span class="p">:</span><span class="w"> </span><span class="mi">1720</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount_captured"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount_refunded"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"is_captured"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-11-03 08:56:14"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"modified"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-11-03 08:56:16"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"channel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"visa"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"source_identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"4242"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mr. Albert"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer_email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mr.albert@email.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer_country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fees"</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_intent_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_123"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"refunded"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"order_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">329</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"outcome_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"authorized"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='get-authorization-summary'>Get authorization summary</h2>
+<p><em>@since v4.9.0</em></p>
+
+<p>Return a high-level summary for all active authorizations.</p>
+<h3 id='http-request-3'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">GET</i>
+    <h6>/wp-json/wc/v3/payments/authorizations/summary</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/authorizations/summary <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"count"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">5400</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"all_currencies"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"usd"</span><span class="w"> </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h1 id='customer'>Customer</h1>
+<p>The Customers API endpoints provide access to customer data. This includes payment methods and other key information useful for your application.</p>
+<h2 id='get-customer-39-s-payment-methods'>Get customer&#39;s payment methods</h2>
+<p><em>@since v6.6.0</em></p>
+
+<p>Return all customer&#39;s payment methods.</p>
+<h3 id='error-codes'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - indicates that the user or application does not have the necessary permissions to perform the requested action.</li>
+</ul>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">GET</i>
+    <h6>/wp-json/wc/v3/payments/customers/&lt;customer_id&gt;/payment_methods</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/customers/cus_123456/payment_methods <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pm_1AxXc2a5dGhIZQYPlaLbKj1Z"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"billing_details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"address"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Los Angeles"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"line1"</span><span class="p">:</span><span class="w"> </span><span class="s2">"123 Anywhere St"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"line2"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"postal_code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"90002"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CA"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"phone"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"brand"</span><span class="p">:</span><span class="w"> </span><span class="s2">"visa"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last4"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1122"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"exp_month"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"exp_year"</span><span class="p">:</span><span class="w"> </span><span class="mi">2028</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pm_2BcYd3e6hKjZLQWQmMnOjK45"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"billing_details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"address"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"New York"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"line1"</span><span class="p">:</span><span class="w"> </span><span class="s2">"456 Broadway Ave"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"line2"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"postal_code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10012"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NY"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jane.smith@example.com"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Jane Smith"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"phone"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"brand"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mastercard"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"last4"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3344"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"exp_month"</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"exp_year"</span><span class="p">:</span><span class="w"> </span><span class="mi">2027</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"code"</span><span class="p">:</span><span class="s2">"rest_forbidden"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="s2">"Sorry, you are not allowed to do that."</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"data"</span><span class="p">:{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="mi">401</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h1 id='payment-intents'>Payment intents</h1>
+<p>The Payment Intents API provides comprehensive functionality for managing payment intents. You can create and manage them seamlessly through its endpoints.</p>
+<h2 id='create-payment-intent'>Create payment intent</h2>
+<p><em>@since v6.6.0</em></p>
+
+<p>Create new payment intent.</p>
+<h3 id='error-codes'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - indicates that the user or application does not have the necessary permissions to perform the requested action.</li>
+<li>  <code>wcpay_server_error</code> - Indicates that API had error processing the request. Usually occurs when request params are invalid like order is not found, and similar.</li>
+</ul>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">POST</i>
+        <h6>/wp-json/wc/v3/payments/payment_intents</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/payment_intents <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span> <span class="se">\</span>
+    <span class="nt">-d</span> <span class="s1">'{"payment_method":"&lt;pm_id&gt;","customer":"&lt;customer_id&gt;","order_id":"&lt;order_id&gt;"}'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_4NxlPtR3eYmZSVZP0PPpwee8"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1023</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1696496578</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"customer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cus_OUQoHGzJLw87Tk"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pm_2NlT19R3eYmZSVZPRJEvxvwF"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"charge"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ch_4NxlPtR3eYmZSVZP0ZLpKjfI"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1023</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"application_fee_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">62</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"billing_details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"address"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"city"</span><span class="p">:</span><span class="w"> </span><span class="s2">"San Francisco"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"line1"</span><span class="p">:</span><span class="w"> </span><span class="s2">"123 Random St"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"line2"</span><span class="p">:</span><span class="w"> </span><span class="s2">"-"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"postal_code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"94101"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CA"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"random.email@example.com"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"phone"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5555555555"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"payment_method_details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"amount_authorized"</span><span class="p">:</span><span class="w"> </span><span class="mi">1023</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"brand"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mastercard"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"capture_before"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"exp_month"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"exp_year"</span><span class="p">:</span><span class="w"> </span><span class="mi">2030</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"last4"</span><span class="p">:</span><span class="w"> </span><span class="s2">"4321"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"three_d_secure"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"code"</span><span class="p">:</span><span class="s2">"rest_forbidden"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="s2">"Sorry, you are not allowed to do that."</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"data"</span><span class="p">:{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="mi">401</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h1 id='reports'>Reports</h1>
+<p>The Reports API allows you to obtain detailed records of transactions and authorizations.</p>
+<h2 id='list-transactions'>List transactions</h2>
+<p><em>@since 6.5.0</em></p>
+
+<p>Fetch a detailed overview of transactions.</p>
+<h3 id='error-codes'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - Unauthenticated</li>
+<li>  <code>rest_invalid_param</code> - Invalid request parameter</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/reports/transactions</h6>
+    </div>
+</div>
+<h3 id='optional-parameters'>Optional parameters</h3>
+<ul>
+<li><code>date_before</code>: Filter transactions before this date.</li>
+<li><code>date_after</code>: Filter transactions after this date.</li>
+<li><code>date_between</code>: Filter transactions between these dates.</li>
+<li><code>order_id</code>: Filter transactions based on the associated order ID.</li>
+<li><code>deposit_id</code>: Filter transactions based on the associated deposit ID.</li>
+<li><code>customer_email</code>: Filter transactions based on the customer email.</li>
+<li><code>payment_method_type</code>: Filter transactions based on the payment method used.</li>
+<li><code>type</code>: Filter transactions where type is a specific value.</li>
+<li><code>match</code>: Match filter for the transactions.</li>
+<li><code>user_timezone</code>: Include timezone into date filtering.</li>
+<li><code>page</code>: Page number.</li>
+<li><code>per_page</code>: Page size.</li>
+<li><code>sort</code>: Field on which to sort.</li>
+<li><code>direction</code>: Direction on which to sort.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/reports/transactions?page<span class="o">=</span>1 <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"date"</span><span class="p">:</span><span class="s2">"2023-10-01 15:00:00"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"transaction_id"</span><span class="p">:</span><span class="s2">"txn_1234567890abcdef"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_id"</span><span class="p">:</span><span class="s2">"pi_1234567890abcdef"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"channel"</span><span class="p">:</span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_method"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"id"</span><span class="p">:</span><span class="s2">"pm_1234567890abcdef"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="s2">"charge"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"transaction_currency"</span><span class="p">:</span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="mi">1000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"exchange_rate"</span><span class="p">:</span><span class="mf">1.00</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"deposit_currency"</span><span class="p">:</span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fees"</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"country"</span><span class="p">:</span><span class="s2">"US"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"net_amount"</span><span class="p">:</span><span class="mi">980</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"order_id"</span><span class="p">:</span><span class="mi">12345</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"deposit_date"</span><span class="p">:</span><span class="s2">"2023-10-02 15:00:00"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"deposit_id"</span><span class="p">:</span><span class="s2">"dp_1234567890abcdef"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"deposit_status"</span><span class="p">:</span><span class="s2">"completed"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div><h2 id='list-transaction'>List transaction</h2>
+<p><em>@since 6.5.0</em></p>
+
+<p>Fetch a detailed overview of single transaction.</p>
+<h3 id='error-codes-2'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - Unauthenticated</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request-2'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/reports/transactions/&lt;transaction_id&gt;</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/reports/transactions/txn_1234567890abcdef <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2023-10-01 15:00:00"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"transaction_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"txn_1234567890abcdef"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_1234567890abcdef"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"channel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_method"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pm_1234567890abcdef"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"charge"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"transaction_currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"exchange_rate"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.00</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"deposit_currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"fees"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"customer"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"net_amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">980</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"order_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">12345</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"deposit_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2023-10-02 15:00:00"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"deposit_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dp_1234567890abcdef"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"deposit_status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"completed"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='list-authorizations'>List authorizations</h2>
+<p><em>@since 6.5.0</em></p>
+
+<p>Fetch a detailed overview of authorizations.</p>
+<h3 id='error-codes-3'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - Unauthenticated</li>
+<li>  <code>rest_invalid_param</code> - Invalid request parameter</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request-3'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/reports/authorizations</h6>
+    </div>
+</div>
+<h3 id='optional-parameters-2'>Optional parameters</h3>
+<ul>
+<li><code>date_before</code>: Filter authorizations before this date.</li>
+<li><code>date_after</code>: Filter authorizations after this date. If it&#39;s not provided the default it will be 7 days before today.</li>
+<li><code>date_between</code>: Filter authorizations between these dates.</li>
+<li><code>order_id</code>: Filter authorizations based on the associated order ID.</li>
+<li><code>deposit_id</code>: Filter authorizations based on the associated deposit ID.</li>
+<li><code>customer_email</code>: Filter authorizations based on the customer email.</li>
+<li><code>payment_method_type</code>: Filter authorizations based on the payment method used.</li>
+<li><code>type</code>: Filter authorizations where type is a specific value.</li>
+<li><code>match</code>: Match filter for the authorizations.</li>
+<li><code>user_timezone</code>: Include timezone into date filtering for authorizations.</li>
+<li><code>page</code>: Page number for listing authorizations.</li>
+<li><code>per_page</code>: Page size for listing authorizations.</li>
+<li><code>sort</code>: Field on which to sort the authorizations.</li>
+<li><code>direction</code>: Direction on which to sort the authorizations.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/reports/authorizations?page<span class="o">=</span>1 <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"authorization_id"</span><span class="p">:</span><span class="s2">"auth_98765"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"date"</span><span class="p">:</span><span class="s2">"2023-09-30 15:05:00"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_id"</span><span class="p">:</span><span class="s2">"pi_12345"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"channel"</span><span class="p">:</span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_method"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"id"</span><span class="p">:</span><span class="s2">"pm_abc12345"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="mi">1000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount_captured"</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fees"</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"country"</span><span class="p">:</span><span class="s2">"US"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"net_amount"</span><span class="p">:</span><span class="mi">980</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"order_id"</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="mi">1</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div><h2 id='list-authorization'>List authorization</h2>
+<p><em>@since 6.5.0</em></p>
+
+<p>Fetch a detailed overview of single authorization.</p>
+<h3 id='error-codes-4'>Error codes</h3>
+<ul>
+<li>  <code>rest_forbidden</code> - Unauthenticated</li>
+<li>  <code>wcpay_server_error</code> - Unexpected server error</li>
+</ul>
+<h3 id='http-request-4'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/reports/authorizations/&lt;authorization_id&gt;</h6>
+    </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST https://example.com/wp-json/wc/v3/payments/reports/authorizations/auth_98765 <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"authorization_id"</span><span class="p">:</span><span class="s2">"auth_98765"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"date"</span><span class="p">:</span><span class="s2">"2023-09-30 15:05:00"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_id"</span><span class="p">:</span><span class="s2">"pi_12345"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"channel"</span><span class="p">:</span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"payment_method"</span><span class="p">:{</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="s2">"card"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="s2">"pm_abc12345"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"currency"</span><span class="p">:</span><span class="s2">"USD"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"amount"</span><span class="p">:</span><span class="mi">1000</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"amount_captured"</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"fees"</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"customer"</span><span class="p">:{</span><span class="w">
+    </span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"country"</span><span class="p">:</span><span class="s2">"US"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"net_amount"</span><span class="p">:</span><span class="mi">980</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"order_id"</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="mi">1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h1 id='deposits'>Deposits</h1>
+<p>The Deposits API endpoints provide access to an account&#39;s deposits data, including an overview of account balances, deposit schedule and deposit history.</p>
+<h2 id='deposit-object'>Deposit object</h2><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OJ466CBu6Jj8nBr38JRxdNE"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">802872</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 3000 (EUR)"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h3 id='properties'>Properties</h3>
+<ul>
+<li>  <code>id</code> <em>string</em> - The deposit ID.</li>
+<li>  <code>date</code> <em>int</em> - The arrival date of the deposit in unix timestamp milliseconds.</li>
+<li>  <code>type</code> <em>string</em> - The type of deposit. <code>deposit</code> <code>withdrawal</code></li>
+<li>  <code>amount</code> <em>int</em> - The amount of the deposit.</li>
+<li>  <code>status</code> <em>string</em> - The status of the deposit. <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>bankAccount</code> <em>string</em> - The bank account the deposit was/will be paid to.</li>
+<li>  <code>currency</code> <em>string</em> - The currency of the deposit. E.g. <code>eur</code></li>
+<li>  <code>automatic</code> <em>bool</em> - Returns <code>true</code> if the payout is created by an automated schedule and <code>false</code> if it’s requested manually.</li>
+<li>  <code>fee</code> <em>int</em> - The fee amount of the deposit.</li>
+<li>  <code>fee_percentage</code> <em>int</em> - The fee percentage of the deposit.</li>
+<li>  <code>created</code> <em>int</em> - The arrival date of the deposit in unix timestamp seconds.</li>
+</ul>
+<h2 id='get-deposits-overview-for-all-account-deposit-currencies'>Get deposits overview for all account deposit currencies</h2>
+<p>Fetch an overview of account deposits for all deposit currencies. This includes details for the last paid deposit, next scheduled deposit, and last manual deposits.</p>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/deposits/overview-all</h6>
+    </div>
+</div>
+<h3 id='returns'>Returns</h3>
+<ul>
+<li>  <code>deposit</code> <em>object</em>
+
+<ul>
+<li>  <code>last_paid</code> <em>array</em> of <a href="#deposit-object"><strong>Deposit</strong></a> - The last deposit that has been paid for each deposit currency.</li>
+<li>  <code>last_manual_deposits</code> <em>array</em> of <a href="#deposit-object"><strong>Deposit</strong></a> - Manual deposits that have been paid in the last 24 hours.</li>
+</ul></li>
+<li>  <code>balance</code> <em>object</em>
+
+<ul>
+<li>  <code>pending</code> <em>array</em> - The pending balance for each deposit currency.
+
+<ul>
+<li>  <code>amount</code> <em>int</em> - The amount of the balance.</li>
+<li>  <code>currency</code> <em>string</em> - The currency of the balance. E.g. <code>usd</code>.</li>
+<li>  <code>source_types</code> <em>object</em> | <em>null</em> - The amount of the balance from each source type, e.g. <code>{ &quot;card&quot;: 12345 }</code></li>
+</ul></li>
+<li>  <code>available</code> <em>array</em> - The available balance for each deposit currency.
+
+<ul>
+<li>  <code>amount</code> <em>int</em> - The amount of the balance.</li>
+<li>  <code>currency</code> <em>string</em> - The currency of the balance. E.g. <code>usd</code>.</li>
+<li>  <code>source_types</code> <em>object</em> | <em>null</em> - The amount of the balance from each source type, e.g. <code>{ &quot;card&quot;: 12345 }</code></li>
+</ul></li>
+<li>  <code>instant</code> <em>array</em> - The instant balance for each deposit currency.
+
+<ul>
+<li>  <code>amount</code> <em>int</em> - The amount of the balance.</li>
+<li>  <code>currency</code> <em>string</em> - The currency of the balance. E.g. <code>usd</code>.</li>
+<li>  <code>fee</code> <em>int</em> - The fee amount of the balance.</li>
+<li>  <code>fee_percentage</code> <em>int</em> - The fee percentage of the balance.</li>
+<li>  <code>net</code> <em>int</em> - The net amount of the balance.</li>
+</ul></li>
+</ul></li>
+<li>  <code>account</code> <em>object</em>
+
+<ul>
+<li>  <code>deposits_enabled</code> <em>bool</em> - Whether deposits are enabled for the account.</li>
+<li>  <code>deposits_blocked</code> <em>bool</em> - Whether deposits are blocked for the account.</li>
+<li>  <code>deposits_schedule</code> <em>object</em>
+
+<ul>
+<li>  <code>delay_days</code> <em>int</em> - The number of days after a charge is created that the payment is paid out.</li>
+<li>  <code>interval</code> <em>string</em> - The interval at which payments are paid out. <code>manual</code> <code>daily</code> <code>weekly</code> <code>monthly</code></li>
+<li>  <code>weekly_anchor</code> <em>string</em> | <em>undefined</em> - The day of the week that payments are paid out, e.g. <code>monday</code>.</li>
+<li>  <code>monthly_anchor</code> <em>int</em> | <em>undefined</em> - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.</li>
+</ul></li>
+<li>  <code>default_currency</code> <em>string</em> - The default currency for the account.</li>
+<li>  <code>default_external_accounts</code> <em>array</em> - The default external payout accounts (deposit destinations) for the account.
+
+<ul>
+<li>  <code>currency</code> <em>string</em> - The currency of the external account. e.g. <code>eur</code>, <code>chf</code>.</li>
+<li>  <code>status</code> <em>string</em> - The status of the external account. e.g. <code>new</code>, <code>errored</code>.</li>
+</ul></li>
+</ul></li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"deposit"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"last_paid"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OJ466CBu6Jj8nBr38JRxdNE"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000000</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">802872</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 3000 (EUR)"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OHylNCBu6Jj8nBr95tE8scS"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701302400000</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">471784</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 6789 (USD)"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701302400</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"last_manual_deposits"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"balance"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"pending"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">-114696</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"source_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="mi">-114696</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">707676</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"source_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="mi">707676</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"available"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">573480</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"source_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="mi">573480</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">587897</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"source_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="mi">587897</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"instant"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">12345</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">185</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"net"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"account"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"deposits_enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"deposits_blocked"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"deposits_schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"delay_days"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="s2">"weekly"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"weekly_anchor"</span><span class="p">:</span><span class="w"> </span><span class="s2">"friday"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"default_currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"default_external_accounts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"new"</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"new"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='list-deposits'>List deposits</h2>
+<p>Fetch a list of deposits.</p>
+<h3 id='http-request-2'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/deposits</h6>
+    </div>
+</div>
+<h3 id='required-parameters'>Required parameters</h3>
+<ul>
+<li>  <code>sort</code> <em>string</em> - Field on which to sort, e.g. <code>date</code></li>
+</ul>
+<h3 id='optional-parameters'>Optional parameters</h3>
+<ul>
+<li>  <code>match</code> <em>string</em></li>
+<li>  <code>store_currency_is</code> <em>string</em></li>
+<li>  <code>date_before</code> <em>string</em></li>
+<li>  <code>date_after</code> <em>string</em></li>
+<li>  <code>date_between</code> <em>array</em></li>
+<li>  <code>status_is</code> <em>string</em> <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>status_is_not</code> <em>string</em> <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>direction</code> <em>string</em></li>
+<li>  <code>page</code> <em>integer</em></li>
+<li>  <code>pagesize</code> <em>integer</em></li>
+</ul>
+<h3 id='returns-2'>Returns</h3>
+<ul>
+<li>  <code>data</code> <em>array</em> of <a href="#deposit-object"><strong>Deposit</strong></a> - The list of deposits matching the query.</li>
+<li>  <code>total_count</code> <em>int</em> - The total number of deposits matching the query.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/deposits?sort<span class="o">=</span><span class="nb">date</span> <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OJ466CBu6Jj8nBr38JRxdNE"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000000</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">802872</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 3000 (EUR)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OHylNCBu6Jj8nBr95tE8scS"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701302400000</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">471784</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 6789 (USD)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701302400</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"total_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='get-deposits-summary'>Get deposits summary</h2>
+<p>Fetches a summary of deposits matching the query. This includes the total number of deposits matching the query and a list of deposits.</p>
+
+<p>Useful in combination with the <strong>List deposits</strong> endpoint to get a summary of deposits matching the query without having to fetch the full list of deposits.</p>
+<h3 id='http-request-3'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/deposits/summary</h6>
+    </div>
+</div>
+<h3 id='optional-parameters-2'>Optional parameters</h3>
+<ul>
+<li>  <code>match</code> <em>string</em></li>
+<li>  <code>store_currency_is</code> <em>string</em></li>
+<li>  <code>date_before</code> <em>string</em></li>
+<li>  <code>date_after</code> <em>string</em></li>
+<li>  <code>date_between</code> <em>array</em></li>
+<li>  <code>status_is</code> <em>string</em> - <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>status_is_not</code> <em>string</em> - <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+</ul>
+<h3 id='returns-3'>Returns</h3>
+<ul>
+<li>  <code>count</code> <em>int</em> - The total number of deposits matching the query.</li>
+<li>  <code>store_currencies</code> <em>array</em> - The currencies of the deposits matching the query.</li>
+<li>  <code>total</code> <em>int</em> - The total amount of the deposits matching the query.</li>
+<li>  <code>currency</code> <em>string</em> - The currency as provided by <code>store_currency_is</code> or the default currency of the account.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/deposits/summary <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"count"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"store_currencies"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"chf"</span><span class="p">,</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w"> </span><span class="s2">"gbp"</span><span class="p">,</span><span class="w"> </span><span class="s2">"nok"</span><span class="p">,</span><span class="w"> </span><span class="s2">"sek"</span><span class="p">,</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w"> </span><span class="s2">"dkk"</span><span class="w"> </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">5744395</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='get-deposit'>Get deposit</h2>
+<p>Fetches a deposit by ID.</p>
+<h3 id='http-request-4'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/deposits/{deposit_id}</h6>
+    </div>
+</div>
+<h3 id='returns-4'>Returns</h3>
+<p>If a deposit is found for the provided ID, the response will return a <a href="#deposit-object"><strong>Deposit</strong></a> object.</p>
+
+<p>If no deposit is found for the provided ID, the response will return a <code>500</code> status code.</p>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OGAFOCBu6Jj8nBruJbMbGqD"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701043200000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">114696</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 3000 (EUR)"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701043200</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='submit-an-instant-deposit'>Submit an instant deposit</h2>
+<p>Submit an instant deposit for a list of transactions. Only for eligible accounts. See <a href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/">Instant Deposits with WooPayments</a> for more information.</p>
+<h3 id='http-request-5'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-post">POST</i>
+        <h6>/wp-json/wc/v3/payments/deposits</h6>
+    </div>
+</div>
+<h3 id='required-body-properties'>Required body properties</h3>
+<ul>
+<li>  <code>type</code>: <em>string</em> - The type of deposit. <code>instant</code></li>
+<li>  <code>currency</code>: <em>string</em> - The currency of the balance to deposit. E.g. <code>usd</code></li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST <span class="s1">'https://example.com/wp-json/wc/v3/payments/deposits'</span> <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret
+  <span class="nt">--data</span> <span class="s1">'{
+      "type": "instant",
+      "currency": "usd"
+    }'</span>
+</code></pre></div><h2 id='request-a-csv-export-of-deposits'>Request a CSV export of deposits</h2>
+<p>Request a CSV export of deposits matching the query. A link to the exported CSV will be emailed to the provided email address or the account&#39;s primary email address if no email address is provided.</p>
+<h3 id='http-request-6'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-post">POST</i>
+        <h6>/wp-json/wc/v3/payments/deposits/download</h6>
+    </div>
+</div>
+<h3 id='optional-body-properties'>Optional body properties</h3>
+<ul>
+<li>  <code>user_email</code>: <em>string</em> - The email address to send the CSV export link to. If not provided, the account&#39;s primary email address will be used.</li>
+</ul>
+<h3 id='optional-parameters-3'>Optional parameters</h3>
+<ul>
+<li>  <code>match</code> <em>string</em></li>
+<li>  <code>store_currency_is</code> <em>string</em></li>
+<li>  <code>date_before</code> <em>string</em></li>
+<li>  <code>date_after</code> <em>string</em></li>
+<li>  <code>date_between</code> <em>array</em></li>
+<li>  <code>status_is</code> <em>string</em> - <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>status_is_not</code> <em>string</em> - <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+</ul>
+<h3 id='returns-5'>Returns</h3>
+<ul>
+<li>  <code>exported_deposits</code> <em>int</em> - The number of deposits exported.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST <span class="s1">'https://example.com/wp-json/wc/v3/payments/deposits/download?status_is=paid'</span> <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret
+  <span class="nt">--data</span> <span class="s1">'{
+      "user_email": "name@example.woocommerce.com"
+    }'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"exported_deposits"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>
+      </div>
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="shell">cURL</a>
+          </div>
+      </div>
+	</div>
+
+
+  </body>
+</html>
