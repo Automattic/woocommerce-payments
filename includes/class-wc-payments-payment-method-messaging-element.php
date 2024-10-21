@@ -60,17 +60,42 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		$product_variations = [];
 
 		if ( $product ) {
+			$get_price_fn = function ( $product ) {
+				return $product->get_price();
+			};
+			if ( wc_tax_enabled() && $product->is_taxable() ) {
+				if (
+					wc_prices_include_tax() &&
+					(
+						get_option( 'woocommerce_tax_display_shop' ) !== 'incl' ||
+						WC()->customer->get_is_vat_exempt()
+					)
+				) {
+					$get_price_fn = function ( $product ) {
+						return wc_get_price_excluding_tax( $product );
+					};
+				} elseif (
+					get_option( 'woocommerce_tax_display_shop' ) === 'incl'
+					&& ! WC()->customer->get_is_vat_exempt()
+				) {
+					$get_price_fn = function ( $product ) {
+						return wc_get_price_including_tax( $product );
+					};
+				}
+			}
+			$price              = $get_price_fn( $product );
 			$product_variations = [
 				'base_product' => [
-					'amount'   => WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code ),
+					'amount'   => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 					'currency' => $currency_code,
 				],
 			];
 			foreach ( $product->get_children() as $variation_id ) {
 				$variation = wc_get_product( $variation_id );
 				if ( $variation ) {
+					$price                               = $get_price_fn( $variation );
 					$product_variations[ $variation_id ] = [
-						'amount'   => WC_Payments_Utils::prepare_amount( $variation->get_price(), $currency_code ),
+						'amount'   => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 						'currency' => $currency_code,
 					];
 				}
