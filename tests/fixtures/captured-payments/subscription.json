@@ -56,6 +56,6 @@
       "additional-fx": "Foreign exchange fee: 1%",
       "additional-wcpay-subscription": "Subscription transaction fee: 1%"
     },
-    "netString": "Net deposit: $52.87 USD"
+    "netString": "Net payout: $52.87 USD"
   }
 }
