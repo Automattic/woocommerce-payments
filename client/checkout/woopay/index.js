@@ -23,31 +23,38 @@ const renderSaveUserSection = () => {
 	);
 
 	if ( blocksCheckout.length ) {
-		const checkoutPageSaveUserContainer = document.createElement(
-			'fieldset'
+		let checkoutPageSaveUserContainer = document.querySelector(
+			'#remember-me'
 		);
-		const paymentOptions = document.getElementsByClassName(
-			'wp-block-woocommerce-checkout-payment-block'
-		)?.[ 0 ];
 
-		checkoutPageSaveUserContainer.className =
-			'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block wc-block-components-checkout-step ';
-		checkoutPageSaveUserContainer.id = 'remember-me';
+		if ( ! checkoutPageSaveUserContainer ) {
+			const paymentOptions = document.getElementsByClassName(
+				'wp-block-woocommerce-checkout-payment-block'
+			)?.[ 0 ];
 
-		if ( paymentOptions ) {
-			// Render right after the payment options block, as a sibling element.
-			paymentOptions.parentNode.insertBefore(
-				checkoutPageSaveUserContainer,
-				paymentOptions.nextSibling
+			checkoutPageSaveUserContainer = document.createElement(
+				'fieldset'
 			);
 
-			paymentOptions.classList.add( 'is-woopay' );
+			checkoutPageSaveUserContainer.className =
+				'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block wc-block-components-checkout-step ';
+			checkoutPageSaveUserContainer.id = 'remember-me';
 
-			ReactDOM.render(
-				<CheckoutPageSaveUser isBlocksCheckout={ true } />,
-				checkoutPageSaveUserContainer
-			);
+			if ( paymentOptions ) {
+				// Render right after the payment options block, as a sibling element.
+				paymentOptions.parentNode.insertBefore(
+					checkoutPageSaveUserContainer,
+					paymentOptions.nextSibling
+				);
+
+				paymentOptions.classList.add( 'is-woopay' );
+			}
 		}
+
+		ReactDOM.render(
+			<CheckoutPageSaveUser isBlocksCheckout={ true } />,
+			checkoutPageSaveUserContainer
+		);
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		checkoutPageSaveUserContainer.className =
