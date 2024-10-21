@@ -102,7 +102,7 @@ const DisableModalUI = ( { onDisable, onCancel, isBusy, hasError } ) => {
 			__(
 				'By declining our {{link}}Terms of Service{{/link}},' +
 					' you’ll no longer be able to capture credit card payments using %s.' +
-					' Your previous transaction and deposit data will still be available.',
+					' Your previous transaction and payout data will still be available.',
 				'woocommerce-payments'
 			),
 			'WooPayments'
