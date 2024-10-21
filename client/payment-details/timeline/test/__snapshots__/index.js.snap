@@ -181,7 +181,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         $115.00 was added to your 
                         <a
                           data-link-type="wc-admin"
-                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
+                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2d3"
                         >
                           Apr 5, 2020 deposit
                         </a>
@@ -791,7 +791,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         $59.50 was added to your 
                         <a
                           data-link-type="wc-admin"
-                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
                         >
                           Apr 2, 2020 deposit
                         </a>
