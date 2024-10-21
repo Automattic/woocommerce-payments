@@ -29,7 +29,7 @@ export const SuspendedDepositNotice: React.FC = () => {
 			{ interpolateComponents( {
 				/** translators: {{strong}}: placeholders are opening and closing strong tags. {{suspendLink}}: is a <a> link element */
 				mixedString: __(
-					'Your deposits are {{strong}}temporarily suspended{{/strong}}. {{suspendLink}}Learn more{{/suspendLink}}',
+					'Your payouts are {{strong}}temporarily suspended{{/strong}}. {{suspendLink}}Learn more{{/suspendLink}}',
 					'woocommerce-payments'
 				),
 				components: {
@@ -54,7 +54,7 @@ export const DepositIncludesLoanPayoutNotice: React.FC = () => (
 	<InlineNotice icon status="warning" isDismissible={ false }>
 		{ interpolateComponents( {
 			mixedString: __(
-				'This deposit will include funds from your WooCommerce Capital loan. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+				'This payout will include funds from your WooCommerce Capital loan. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 				'woocommerce-payments'
 			),
 			components: {
@@ -86,7 +86,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 	>
 		{ interpolateComponents( {
 			mixedString: __(
-				'Your first deposit is held for 7-14 days. {{whyLink}}Why?{{/whyLink}}',
+				'Your first payout is held for 7-14 days. {{whyLink}}Why?{{/whyLink}}',
 				'woocommerce-payments'
 			),
 			components: {
@@ -114,7 +114,7 @@ export const DepositTransitDaysNotice: React.FC = () => (
 		className="wcpay-deposit-transit-days-notice"
 	>
 		{ __(
-			'It may take 1-3 business days for deposits to reach your bank account.',
+			'It may take 1-3 business days for payouts to reach your bank account.',
 			'woocommerce-payments'
 		) }
 	</InlineNotice>
@@ -134,7 +134,7 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 			mixedString: sprintf(
 				/* translators: %s: WooPayments */
 				__(
-					'Deposits may be interrupted while your %s balance remains negative. {{whyLink}}Why?{{/whyLink}}',
+					'Payouts may be interrupted while your %s balance remains negative. {{whyLink}}Why?{{/whyLink}}',
 					'woocommerce-payments'
 				),
 				'WooPayments'
@@ -169,7 +169,7 @@ export const DepositMinimumBalanceNotice: React.FC< {
 				mixedString: sprintf(
 					/* translators: %s: a formatted currency amount, e.g. $5.00 USD */
 					__(
-						'Deposits are paused while your available funds balance remains below %s. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'Payouts are paused while your available funds balance remains below %s. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
 					minimumDepositAmountFormatted
@@ -197,7 +197,7 @@ export const NoFundsAvailableForDepositNotice: React.FC = () => (
 	<InlineNotice status="warning" icon isDismissible={ false }>
 		{ interpolateComponents( {
 			mixedString: __(
-				'You have no funds available to deposit. {{whyLink}}Why?{{/whyLink}}',
+				'You have no funds available. {{whyLink}}Why?{{/whyLink}}',
 				'woocommerce-payments'
 			),
 			components: {
@@ -240,7 +240,7 @@ export const DepositFailureNotice: React.FC< {
 		>
 			{ interpolateComponents( {
 				mixedString: __(
-					'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+					'Payouts are currently paused because a recent payout failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
 					'woocommerce-payments'
 				),
 				components: {
