@@ -66,6 +66,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
               >
                 <input
                   aria-describedby="inspector-toggle-control-2__help"
+                  checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-2"
                   type="checkbox"
@@ -137,7 +138,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
-                Orders from outside of the following countries will be blocked by the filter: 
+                Orders from outside of the following countries will be screened by the filter: 
                 <strong>
                   Canada, United States
                 </strong>
@@ -232,6 +233,7 @@ exports[`International IP address card renders correctly when enabled and checke
               >
                 <input
                   aria-describedby="inspector-toggle-control-3__help"
+                  checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-3"
                   type="checkbox"
@@ -588,7 +590,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
-                Orders from the following countries will be blocked by the filter: 
+                Orders from the following countries will be screened by the filter: 
                 <strong>
                   Canada, United States
                 </strong>
@@ -753,7 +755,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
-                Orders from outside of the following countries will be blocked by the filter: 
+                Orders from outside of the following countries will be screened by the filter: 
                 <strong>
                   Canada, United States
                 </strong>
