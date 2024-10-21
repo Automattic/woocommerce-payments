@@ -280,18 +280,34 @@ class WC_Payments_Token_Service {
 	 * Delete token from Stripe.
 	 *
 	 * @param string           $token_id Token ID.
-	 * @param WC_Payment_Token $token    Token object.
+	 * @param WC_Payment_Token $token Token object.
+	 *
+	 * @throws Exception
 	 */
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
 
-		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
-			try {
-				$this->payments_api_client->detach_payment_method( $token->get_token() );
-				// Clear cached payment methods.
-				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
-			} catch ( Exception $e ) {
-				Logger::log( 'Error detaching payment method:' . $e->getMessage() );
-			}
+		// If it's not reusable payment method, we don't need to perform any additional checks.
+		if ( ! in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
+			return;
+		}
+		// First check if it's live mode.
+		// Second check if it's admin.
+		// Third check if it's not production environment.
+		// When all conditions are met, we don't want to delete the payment method from Stripe.
+		// This is to avoid detaching the payment method from the live stripe account on non production environments.
+		if (
+			WC_Payments::mode()->is_live() &&
+			is_admin() &&
+			'production' !== wp_get_environment_type()
+		) {
+			return;
+		}
+		try {
+			$this->payments_api_client->detach_payment_method( $token->get_token() );
+			// Clear cached payment methods.
+			$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
+		} catch ( Exception $e ) {
+			Logger::log( 'Error detaching payment method:' . $e->getMessage() );
 		}
 	}
 
