@@ -55,12 +55,11 @@ export const initializeBnplSiteMessaging = async () => {
 		isCart,
 		isCartBlock,
 		cartTotal,
-		minimumOrderAmount,
+		isBnplAvailable,
 	} = window.wcpayStripeSiteMessaging;
 
 	let amount;
 	let elementLocation = 'bnplProductPage';
-	const minOrderAmount = parseInt( minimumOrderAmount, 10 ) || 0;
 	const paymentMessageContainer = document.getElementById(
 		'payment-method-message'
 	);
@@ -71,7 +70,7 @@ export const initializeBnplSiteMessaging = async () => {
 	} else {
 		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
 
-		if ( amount < minOrderAmount ) {
+		if ( ! isBnplAvailable ) {
 			paymentMessageContainer.style.setProperty( 'display', 'none' );
 		}
 	}

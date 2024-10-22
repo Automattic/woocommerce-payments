@@ -34,38 +34,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR, Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::NEW_ZEALAND_DOLLAR, Currency_Code::POUND_STERLING ];
 		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::CANADA, Country_Code::AUSTRALIA, Country_Code::NEW_ZEALAND, Country_Code::UNITED_KINGDOM ];
 		$this->accept_only_domestic_payment = true;
-		$this->limits_per_currency          = [
-			Currency_Code::AUSTRALIAN_DOLLAR    => [
-				Country_Code::AUSTRALIA => [
-					'min' => 100,
-					'max' => 200000,
-				], // Represents AUD 1 - 2,000 AUD.
-			],
-			Currency_Code::CANADIAN_DOLLAR      => [
-				Country_Code::CANADA => [
-					'min' => 100,
-					'max' => 200000,
-				], // Represents CAD 1 - 2,000 CAD.
-			],
-			Currency_Code::NEW_ZEALAND_DOLLAR   => [
-				Country_Code::NEW_ZEALAND => [
-					'min' => 100,
-					'max' => 200000,
-				], // Represents NZD 1 - 2,000 NZD.
-			],
-			Currency_Code::POUND_STERLING       => [
-				Country_Code::UNITED_KINGDOM => [
-					'min' => 100,
-					'max' => 120000,
-				], // Represents GBP 1 - 1,200 GBP.
-			],
-			Currency_Code::UNITED_STATES_DOLLAR => [
-				Country_Code::UNITED_STATES => [
-					'min' => 100,
-					'max' => 400000,
-				], // Represents USD 1 - 4,000 USD.
-			],
-		];
+		$this->limits_per_currency          = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
 	}
 
 	/**
