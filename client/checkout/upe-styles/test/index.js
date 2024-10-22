@@ -222,6 +222,9 @@ describe( 'Getting styles for automated theming', () => {
 					fontSize: '12px',
 					padding: '10px',
 				},
+				'.Container': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+				},
 			},
 			labels: 'above',
 		} );
