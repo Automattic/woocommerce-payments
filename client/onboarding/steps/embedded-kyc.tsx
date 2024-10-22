@@ -25,6 +25,10 @@ import {
 	isPoEligible,
 } from 'wcpay/onboarding/utils';
 import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
+import {
+	trackEmbeddedStepChange,
+	trackRedirected,
+} from 'wcpay/onboarding/tracking';
 
 interface Props {
 	continueKyc?: boolean;
@@ -57,6 +61,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 				isEligible
 			);
 			if ( accountSession && accountSession.clientSecret ) {
+				trackRedirected( isEligible, true );
 				return accountSession; // Return the full account session object
 			}
 
@@ -139,6 +144,10 @@ const EmbeddedKyc: React.FC< Props > = ( {
 		locale,
 	] );
 
+	const handleStepChange = ( step: string ) => {
+		trackEmbeddedStepChange( step );
+	};
+
 	const handleOnExit = async () => {
 		const urlParams = new URLSearchParams( window.location.search );
 		const urlSource =
@@ -192,6 +201,9 @@ const EmbeddedKyc: React.FC< Props > = ( {
 							)
 						}
 						onExit={ handleOnExit }
+						onStepChange={ ( stepChange ) =>
+							handleStepChange( stepChange.step )
+						}
 						collectionOptions={ {
 							fields: collectPayoutRequirements
 								? 'eventually_due'
