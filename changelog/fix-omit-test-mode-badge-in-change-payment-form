@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Omit the test mode badge in the change payment method form for subscriptions.
