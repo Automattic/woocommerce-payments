@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "8.2.2",
+  "version": "8.3.1",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -38,6 +38,7 @@
     "test:e2e-dev": "NODE_CONFIG_DIR='tests/e2e/config' JEST_PUPPETEER_CONFIG='tests/e2e/config/jest-puppeteer.config.js' wp-scripts test-e2e --config tests/e2e/config/jest.config.js --puppeteer-interactive",
     "test:e2e-performance": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.performance.config.js",
     "test:e2e-pw": "./tests/e2e-pw/test-e2e-pw.sh",
+    "test:e2e-pw-update-snapshots": "npm run test:e2e-pw -- --update-snapshots",
     "test:e2e-pw-ui": "./tests/e2e-pw/test-e2e-pw-ui.sh",
     "test:e2e-pw-ci": "npx playwright test --config=tests/e2e-pw/playwright.config.ts --grep-invert @todo",
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",
@@ -77,8 +78,8 @@
   "dependencies": {
     "@automattic/interpolate-components": "1.2.1",
     "@fingerprintjs/fingerprintjs": "3.4.1",
-    "@stripe/connect-js": "3.3.12",
-    "@stripe/react-connect-js": "3.3.13",
+    "@stripe/connect-js": "3.3.16",
+    "@stripe/react-connect-js": "3.3.17",
     "@stripe/react-stripe-js": "2.5.1",
     "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "2.3.0",
