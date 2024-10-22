@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevented detaching payment methods from live Stripe accounts when working in non-production environments.

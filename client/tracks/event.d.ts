@@ -60,6 +60,7 @@ export type Event =
 	| 'wcpay_onboarding_flow_reset'
 	| 'wcpay_onboarding_flow_eligibility_modal_closed'
 	| 'wcpay_onboarding_flow_setup_live_payments'
+	| 'wcpay_onboarding_flow_embedded_step_change'
 	| 'wcpay_overview_balances_currency_tab_click'
 	| 'wcpay_overview_deposits_view_history_click'
 	| 'wcpay_overview_deposits_change_schedule_click'
