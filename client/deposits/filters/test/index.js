@@ -34,7 +34,7 @@ describe( 'Deposits filters', () => {
 		const { rerender } = render( <DepositsFilters /> );
 
 		// select advanced filter view
-		user.click( screen.getByRole( 'button', { name: /All deposits/i } ) );
+		user.click( screen.getByRole( 'button', { name: /All payouts/i } ) );
 		user.click(
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
 		);
@@ -54,7 +54,7 @@ describe( 'Deposits filters', () => {
 		beforeEach( () => {
 			addAdvancedFilter( 'Date' );
 			ruleSelector = screen.getByRole( 'combobox', {
-				name: /deposit date filter/i,
+				name: /payout date filter/i,
 			} );
 		} );
 
@@ -105,13 +105,13 @@ describe( 'Deposits filters', () => {
 		beforeEach( () => {
 			addAdvancedFilter( 'Status' );
 			ruleSelector = screen.getByRole( 'combobox', {
-				name: /deposit status filter/i,
+				name: /payout status filter/i,
 			} );
 		} );
 
 		test( 'should render all status', () => {
 			const statusSelect = screen.getByRole( 'combobox', {
-				name: /deposit status$/i,
+				name: /payout status$/i,
 			} );
 			expect( statusSelect.options ).toMatchSnapshot();
 		} );
@@ -121,7 +121,7 @@ describe( 'Deposits filters', () => {
 
 			// need to include $ in name, otherwise "Select a deposit status filter" is also matched.
 			user.selectOptions(
-				screen.getByRole( 'combobox', { name: /deposit status$/i } ),
+				screen.getByRole( 'combobox', { name: /payout status$/i } ),
 				'paid'
 			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
@@ -134,7 +134,7 @@ describe( 'Deposits filters', () => {
 
 			// need to include $ in name, otherwise "Select a deposit status filter" is also matched.
 			user.selectOptions(
-				screen.getByRole( 'combobox', { name: /deposit status$/i } ),
+				screen.getByRole( 'combobox', { name: /payout status$/i } ),
 				'pending'
 			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
@@ -147,7 +147,7 @@ describe( 'Deposits filters', () => {
 
 			// need to include $ in name, otherwise "Select a deposit status filter" is also matched.
 			user.selectOptions(
-				screen.getByRole( 'combobox', { name: /deposit status$/i } ),
+				screen.getByRole( 'combobox', { name: /payout status$/i } ),
 				'in_transit'
 			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
@@ -160,7 +160,7 @@ describe( 'Deposits filters', () => {
 
 			// need to include $ in name, otherwise "Select a deposit status filter" is also matched.
 			user.selectOptions(
-				screen.getByRole( 'combobox', { name: /deposit status$/i } ),
+				screen.getByRole( 'combobox', { name: /payout status$/i } ),
 				'canceled'
 			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
@@ -173,7 +173,7 @@ describe( 'Deposits filters', () => {
 
 			// need to include $ in name, otherwise "Select a deposit status filter" is also matched.
 			user.selectOptions(
-				screen.getByRole( 'combobox', { name: /deposit status$/i } ),
+				screen.getByRole( 'combobox', { name: /payout status$/i } ),
 				'failed'
 			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
