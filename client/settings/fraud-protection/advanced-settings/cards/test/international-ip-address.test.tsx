@@ -41,8 +41,6 @@ describe( 'International IP address card', () => {
 	const contextValue = {
 		protectionSettingsUI: settings,
 		setProtectionSettingsUI: setSettings,
-		protectionSettingsChanged: false,
-		setProtectionSettingsChanged: jest.fn(),
 		isDirty: false,
 		setIsDirty: jest.fn(),
 	};
