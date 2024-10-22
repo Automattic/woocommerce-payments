@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Pass container styling data to WooPay
