@@ -108,7 +108,7 @@ describe( 'Deposits', () => {
 		);
 
 		const depositsMessage = screen.getByText(
-			/Deposit scheduling is currently unavailable for your store/,
+			/Payout scheduling is currently unavailable for your store/,
 			{
 				ignore: '.a11y-speak-region',
 			}
@@ -128,7 +128,7 @@ describe( 'Deposits', () => {
 		);
 
 		const depositsMessage = screen.getByText(
-			/Deposit scheduling is currently unavailable for your store/,
+			/Payout scheduling is currently unavailable for your store/,
 			{
 				ignore: '.a11y-speak-region',
 			}
@@ -146,7 +146,7 @@ describe( 'Deposits', () => {
 		);
 
 		const depositsMessage = screen.getByText(
-			/Deposit scheduling is currently unavailable for your store/,
+			/Payout scheduling is currently unavailable for your store/,
 			{
 				ignore: '.a11y-speak-region',
 			}
@@ -165,7 +165,7 @@ describe( 'Deposits', () => {
 		);
 
 		const depositsMessage = screen.getByText(
-			/Your first deposit will be held for/,
+			/Your first payout will be held for/,
 			{
 				ignore: '.a11y-speak-region',
 			}
@@ -184,7 +184,7 @@ describe( 'Deposits', () => {
 		);
 
 		expect(
-			screen.queryByText( /Your first deposit will be held for/, {
+			screen.queryByText( /Your first payout will be held for/, {
 				ignore: '.a11y-speak-region',
 			} )
 		).toBeFalsy();
@@ -285,7 +285,7 @@ describe( 'Deposits', () => {
 		);
 
 		const depositsMessage = screen.getByText(
-			/Deposits are currently paused because a recent deposit failed./,
+			/Payouts are currently paused because a recent payout failed./,
 			{
 				ignore: '.a11y-speak-region',
 			}
@@ -294,7 +294,7 @@ describe( 'Deposits', () => {
 
 		expect(
 			screen.queryByText(
-				/Manage and update your deposit account information to receive payments and deposits./,
+				/Manage and update your bank account information to receive payouts./,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -311,7 +311,7 @@ describe( 'Deposits', () => {
 
 		expect(
 			screen.queryByText(
-				/Deposits are currently paused because a recent deposit failed./,
+				/Payouts are currently paused because a recent payout failed./,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -319,7 +319,7 @@ describe( 'Deposits', () => {
 		).toBeFalsy();
 
 		const depositsMessage = screen.getByText(
-			/Manage and update your deposit account information to receive payments and deposits./,
+			/Manage and update your bank account information to receive payouts./,
 			{
 				ignore: '.a11y-speak-region',
 			}
@@ -352,7 +352,7 @@ describe( 'Deposits', () => {
 		);
 
 		const depositsMessage = screen.getByText(
-			/Deposits are currently paused because a recent deposit failed./,
+			/Payouts are currently paused because a recent payout failed./,
 			{
 				ignore: '.a11y-speak-region',
 			}
@@ -361,7 +361,7 @@ describe( 'Deposits', () => {
 
 		expect(
 			screen.queryByText(
-				/Manage and update your deposit account information to receive payments and deposits./,
+				/Manage and update your bank account information to receive payouts./,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -395,7 +395,7 @@ describe( 'Deposits', () => {
 
 		expect(
 			screen.queryByText(
-				/Deposits are currently paused because a recent deposit failed./,
+				/Payouts are currently paused because a recent payout failed./,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -403,7 +403,7 @@ describe( 'Deposits', () => {
 		).toBeFalsy();
 
 		const depositsMessage = screen.getByText(
-			/Manage and update your deposit account information to receive payments and deposits./,
+			/Manage and update your bank account information to receive payouts./,
 			{
 				ignore: '.a11y-speak-region',
 			}
