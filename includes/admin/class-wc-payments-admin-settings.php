@@ -96,7 +96,7 @@ class WC_Payments_Admin_Settings {
 	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
 	 *
-	 * @param array $query_args Optional additonal query args to append to the URL.
+	 * @param array $query_args Optional additional query args to append to the URL.
 	 *
 	 * @return string URL of the configuration screen for this gateway
 	 */
