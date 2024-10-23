@@ -52,6 +52,13 @@ class WC_Payments_Order_Service {
 	const INTENTION_STATUS_META_KEY = '_intention_status';
 
 	/**
+	 * Meta key used to store the charge risk level.
+	 *
+	 * @const string
+	 */
+	const CHARGE_RISK_LEVEL_META_KEY = '_charge_risk_level';
+
+	/**
 	 * Meta key used to store customer Id.
 	 *
 	 * @const string
@@ -567,6 +574,37 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Set the payment metadata for risk level.
+	 *
+	 * @param  mixed  $order      The order.
+	 * @param  string $risk_level The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_charge_risk_level_for_order( $order, $risk_level ) {
+		if ( ! isset( $risk_level ) || null === $risk_level ) {
+			return;
+		}
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::CHARGE_RISK_LEVEL_META_KEY, $risk_level );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the risk level for an order.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 *
+	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_charge_risk_level_for_order( $order ): string {
+		$order = $this->get_order( $order );
+		return $order->get_meta( self::CHARGE_RISK_LEVEL_META_KEY, true );
+	}
+
+	/**
 	 * Get the payment metadata for charge id.
 	 *
 	 * @param  mixed $order The order Id or order object.
@@ -828,8 +866,10 @@ class WC_Payments_Order_Service {
 		$charge_id              = $charge ? $charge->get_id() : null;
 		$payment_transaction    = $charge ? $charge->get_balance_transaction() : null;
 		$payment_transaction_id = $payment_transaction['id'] ?? '';
+		$outcome                = $charge ? $charge->get_outcome() : null;
+		$risk_level             = $outcome ? $outcome['risk_level'] : null;
 		// next, save it in order meta.
-		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id );
+		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id, $risk_level );
 	}
 
 	/**
@@ -845,10 +885,11 @@ class WC_Payments_Order_Service {
 	 * @param string   $charge_id Charge ID.
 	 * @param string   $currency Currency code.
 	 * @param string   $payment_transaction_id The transaction ID of the linked charge.
+	 * @param string   $risk_level The risk level of the payment.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id = null ) {
+	public function attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id = null, $risk_level = null ) {
 		// first, let's save all the metadata that needed for refunds, required for status change etc.
 		$order->set_transaction_id( $intent_id );
 		$this->set_intent_id_for_order( $order, $intent_id );
@@ -858,6 +899,7 @@ class WC_Payments_Order_Service {
 		$this->set_customer_id_for_order( $order, $customer_id );
 		$this->set_wcpay_intent_currency_for_order( $order, $currency );
 		$this->set_payment_transaction_id_for_order( $order, $payment_transaction_id );
+		$this->set_charge_risk_level_for_order( $order, $risk_level );
 		$order->save();
 	}
 

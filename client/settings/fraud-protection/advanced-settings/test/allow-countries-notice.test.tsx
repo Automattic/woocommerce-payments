@@ -16,9 +16,7 @@ const mockContext = {
 			block: false,
 		},
 	},
-	protectionSettingsChanged: false,
 	setProtectionSettingsUI: jest.fn(),
-	setProtectionSettingsChanged: jest.fn(),
 	setIsDirty: jest.fn(),
 };
 
