@@ -99,6 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Using Floating Labels with Stripe Appearance API for Blocks Checkout
 * Fix - Converting text color rgba to hex to prevent Stripe warning
 * Fix - Fix the color contrast of links within tooltips to improve readability.
+* Fix - Omit the test mode badge in the change payment method form for subscriptions.
 * Fix - Pass container styling data to WooPay
 * Fix - Prevented detaching payment methods from live Stripe accounts when working in non-production environments.
 * Fix - Rendering Test Model badge only for Credit Card
