@@ -88,7 +88,7 @@ const DepositsOverview: React.FC = () => {
 		history.push(
 			getAdminUrl( {
 				page: 'wc-admin',
-				path: '/payments/deposits',
+				path: '/payments/payouts',
 			} )
 		);
 	};
@@ -98,7 +98,7 @@ const DepositsOverview: React.FC = () => {
 		return (
 			<Card className="wcpay-deposits-overview">
 				<CardHeader>
-					{ __( 'Deposits', 'woocommerce-payments' ) }
+					{ __( 'Payouts', 'woocommerce-payments' ) }
 				</CardHeader>
 
 				<CardBody className="wcpay-deposits-overview__schedule__container">
