@@ -138,7 +138,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			'isCartBlock'        => $is_cart_block,
 			'cartTotal'          => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
 			'minimumOrderAmount' => WC_Payments_Utils::get_cached_minimum_amount( $currency_code, true ),
-			'nonce'              => wp_create_nonce( 'wcpay-get-cart-total' ),
+			'nonce'              => wp_create_nonce( 'wcpay-bnpl-nonce' ),
 			'wcAjaxUrl'          => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 		];
 

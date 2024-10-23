@@ -618,6 +618,7 @@ class WC_Payments {
 				add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ], 5 );
 				add_action( 'woocommerce_blocks_enqueue_cart_block_scripts_after', [ __CLASS__, 'load_stripe_bnpl_site_messaging' ] );
 				add_action( 'wc_ajax_wcpay_get_cart_total', [ __CLASS__, 'ajax_get_cart_total' ] );
+				add_action( 'wc_ajax_wcpay_check_bnpl_availability', [ __CLASS__, 'ajax_check_bnpl_availability' ] );
 			}
 		}
 
@@ -1713,7 +1714,7 @@ class WC_Payments {
 	 * Get cart total.
 	 */
 	public static function ajax_get_cart_total() {
-		check_ajax_referer( 'wcpay-get-cart-total', 'security' );
+		check_ajax_referer( 'wcpay-bnpl-nonce', 'security' );
 
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
@@ -1729,6 +1730,26 @@ class WC_Payments {
 		$currency_code = get_woocommerce_currency();
 
 		wp_send_json( [ 'total' => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ) ] );
+	}
+
+	/**
+	 * Check if BNPL is available for the given price, currency, and country.
+	 */
+	public static function ajax_check_bnpl_availability() {
+		check_ajax_referer( 'wcpay-bnpl-nonce', 'security' );
+
+		$price    = floatval( $_POST['price'] );
+		$currency = sanitize_text_field( wp_unslash( $_POST['currency'] ) );
+		$country  = sanitize_text_field( wp_unslash( $_POST['country'] ) );
+
+		$enabled_bnpl_payment_methods = array_intersect(
+			Payment_Method::BNPL_PAYMENT_METHODS,
+			self::get_gateway()->get_upe_enabled_payment_method_ids()
+		);
+
+		$is_available = WC_Payments_Utils::is_any_bnpl_method_available( $enabled_bnpl_payment_methods, $country, $currency, $price );
+
+		wp_send_json_success( [ 'is_available' => $is_available ] );
 	}
 
 	/**
