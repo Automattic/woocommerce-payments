@@ -14,7 +14,7 @@ export default {
 	),
 
 	restrictedDescription: __(
-		'Payments and deposits are disabled for this account until missing information is updated. Please update the following information in the Stripe dashboard.',
+		'Payments and payouts are disabled for this account until missing information is updated. Please update the following information in the Stripe dashboard.',
 		'woocommerce-payments'
 	),
 
