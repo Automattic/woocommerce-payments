@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Stop enqueuing woopay-express-button.css to prevent 404 errors
