@@ -1,0 +1,79 @@
+.payment-data-highlight {
+	&__wrapper {
+		position: relative;
+	}
+
+	&__label {
+		font-size: 12px;
+		line-height: 16px;
+		color: $gray-600;
+
+		.wcpay-tooltip__content-wrapper {
+			position: relative;
+			top: 1px;
+		}
+	}
+
+	&__amount {
+		display: flex;
+		padding-top: 8px;
+
+		&-number {
+			font-size: 16px;
+			line-height: 16px;
+			color: $gray-900;
+			font-weight: 500;
+		}
+
+		&-change {
+			margin-left: 10px;
+			font-size: 12px;
+			line-height: 16px;
+			padding-top: 1px;
+
+			&-icon {
+				position: relative;
+				top: 2px;
+				right: 2px;
+			}
+
+			&.arrow-up {
+				color: #005c12;
+			}
+
+			&.arrow-down {
+				color: #50575e;
+			}
+		}
+	}
+
+	&__view-report {
+		position: relative;
+		padding-top: 8px;
+		visibility: hidden;
+
+		a {
+			color: var( --wp-admin-theme-color );
+			text-decoration: none;
+		}
+	}
+
+	&__wrapper:hover .payment-data-highlight__view-report {
+		visibility: visible;
+	}
+
+	@include breakpoint( '<800px' ) {
+		&__wrapper {
+			display: flex;
+			justify-content: space-between;
+			padding: 8px 0;
+		}
+
+		&__view-report {
+			width: 30%;
+			float: right;
+			visibility: visible;
+			top: 15px;
+		}
+	}
+}
