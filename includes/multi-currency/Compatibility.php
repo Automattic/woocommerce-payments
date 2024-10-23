@@ -12,6 +12,7 @@ use WC_Deposits_Product_Manager;
 use WC_Order;
 use WC_Order_Refund;
 use WCPay\MultiCurrency\Compatibility\BaseCompatibility;
+use WCPay\MultiCurrency\Compatibility\WooCommerceBlocks;
 use WCPay\MultiCurrency\Compatibility\WooCommerceBookings;
 use WCPay\MultiCurrency\Compatibility\WooCommerceFedEx;
 use WCPay\MultiCurrency\Compatibility\WooCommerceNameYourPrice;
@@ -56,6 +57,7 @@ class Compatibility extends BaseCompatibility {
 	 */
 	public function init_compatibility_classes() {
 		if ( 1 < count( $this->multi_currency->get_enabled_currencies() ) ) {
+			$this->compatibility_classes[] = new WooCommerceBlocks( $this->multi_currency, $this->utils );
 			$this->compatibility_classes[] = new WooCommerceBookings( $this->multi_currency, $this->utils, $this->multi_currency->get_frontend_currencies() );
 			$this->compatibility_classes[] = new WooCommerceFedEx( $this->multi_currency, $this->utils );
 			$this->compatibility_classes[] = new WooCommerceNameYourPrice( $this->multi_currency, $this->utils );
