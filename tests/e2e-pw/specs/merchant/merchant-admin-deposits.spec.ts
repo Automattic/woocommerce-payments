@@ -10,7 +10,7 @@ test.describe( 'Merchant deposits', () => {
 
 	test( 'Load the deposits list page', async ( { page } ) => {
 		await page.goto(
-			'/wp-admin/admin.php?page=wc-admin&path=/payments/deposits'
+			'/wp-admin/admin.php?page=wc-admin&path=/payments/payouts'
 		);
 
 		// Wait for the deposits table to load.
@@ -27,7 +27,7 @@ test.describe( 'Merchant deposits', () => {
 
 	test( 'Select deposits list advanced filters', async ( { page } ) => {
 		await page.goto(
-			'/wp-admin/admin.php?page=wc-admin&path=/payments/deposits'
+			'/wp-admin/admin.php?page=wc-admin&path=/payments/payouts'
 		);
 
 		// Wait for the deposits table to load.
