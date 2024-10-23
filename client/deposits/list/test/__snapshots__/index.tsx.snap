@@ -25,7 +25,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
             <span
               class="woocommerce-filters-label"
             >
-              Deposit currency
+              Payout currency
               :
             </span>
             <div
@@ -69,7 +69,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   class="woocommerce-dropdown-button__labels"
                 >
                   <span>
-                    All deposits
+                    All payouts
                   </span>
                 </div>
               </button>
@@ -96,7 +96,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
             data-wp-c16t="true"
             data-wp-component="Text"
           >
-            Deposit history
+            Payout history
           </h2>
           <div
             class="woocommerce-table__actions"
@@ -170,7 +170,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                 class="woocommerce-table__caption screen-reader-text"
                 id="caption-1"
               >
-                Deposit history
+                Payout history
               </caption>
               <tbody>
                 <tr>
@@ -357,7 +357,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      Deposit
+                      Payout
                     </a>
                   </td>
                   <td
@@ -512,7 +512,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
               <span
                 class="woocommerce-table__summary-label"
               >
-                deposit
+                payout
               </span>
             </li>
             <li
@@ -574,7 +574,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
             <span
               class="woocommerce-filters-label"
             >
-              Deposit currency
+              Payout currency
               :
             </span>
             <div
@@ -618,7 +618,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   class="woocommerce-dropdown-button__labels"
                 >
                   <span>
-                    All deposits
+                    All payouts
                   </span>
                 </div>
               </button>
@@ -645,7 +645,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
             data-wp-c16t="true"
             data-wp-component="Text"
           >
-            Deposit history
+            Payout history
           </h2>
           <div
             class="woocommerce-table__actions"
@@ -719,7 +719,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                 class="woocommerce-table__caption screen-reader-text"
                 id="caption-0"
               >
-                Deposit history
+                Payout history
               </caption>
               <tbody>
                 <tr>
@@ -906,7 +906,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      Deposit
+                      Payout
                     </a>
                   </td>
                   <td
@@ -1061,7 +1061,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
               <span
                 class="woocommerce-table__summary-label"
               >
-                deposits
+                payouts
               </span>
             </li>
           </ul>

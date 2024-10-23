@@ -185,8 +185,8 @@ export const DepositsList = (): JSX.Element => {
 		summary = [
 			{
 				label: _n(
-					'deposit',
-					'deposits',
+					'payout',
+					'payouts',
 					depositsSummary.count,
 					'woocommerce-payments'
 				),
@@ -364,7 +364,7 @@ export const DepositsList = (): JSX.Element => {
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-deposits-list woocommerce-report-table"
-				title={ __( 'Deposit history', 'woocommerce-payments' ) }
+				title={ __( 'Payout history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '' ) || 25 }
 				totalRows={ totalRows }
