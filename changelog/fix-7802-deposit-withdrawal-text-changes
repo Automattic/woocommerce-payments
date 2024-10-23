@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Use 'Withdrawal' and 'Deducted' labels when referring to withdrawal deposits, to more accurately communicate the type of transaction that has occurred

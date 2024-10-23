@@ -42,7 +42,7 @@ import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
-import { displayStatus as displayDepositStatus } from 'deposits/strings';
+import { depositStatusLabels } from 'deposits/strings';
 import {
 	formatStringValue,
 	isExportModalDismissed,
@@ -454,7 +454,7 @@ export const TransactionsList = (
 		);
 
 		const depositStatus = txn.deposit_status
-			? displayDepositStatus[ txn.deposit_status ]
+			? depositStatusLabels[ txn.deposit_status ]
 			: '';
 
 		// Map transaction into table row.
@@ -597,9 +597,7 @@ export const TransactionsList = (
 				'woocommerce-payments'
 		  );
 
-	const title = props.depositId
-		? __( 'Deposit transactions', 'woocommerce-payments' )
-		: __( 'Transactions', 'woocommerce-payments' );
+	const title = __( 'Transactions', 'woocommerce-payments' );
 
 	const downloadable = !! rows.length;
 

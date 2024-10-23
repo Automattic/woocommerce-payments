@@ -2069,7 +2069,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
             data-wp-c16t="true"
             data-wp-component="Text"
           >
-            Deposit transactions
+            Transactions
           </h2>
           <div
             class="woocommerce-table__actions"
@@ -2190,7 +2190,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                 class="woocommerce-table__caption screen-reader-text"
                 id="caption-0"
               >
-                Deposit transactions
+                Transactions
               </caption>
               <tbody>
                 <tr>
