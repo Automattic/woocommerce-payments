@@ -76,6 +76,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 			<PaymentDataTile
 				id="wcpay-payment-activity-data__total-payment-volume"
 				label={ __( 'Total payment volume', 'woocommerce-payments' ) }
+				tracksSource="total_payment_volume"
 				currencyCode={ currency }
 				tooltip={
 					<ClickTooltip
@@ -126,12 +127,12 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						searchTermsForViewReportLink.totalPaymentVolume
 					),
 				} ) }
-				tracksSource="total_payment_volume"
 				isLoading={ isLoading }
 			/>
 			<div className="wcpay-payment-data-highlights">
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__charges"
+					tracksSource="charges"
 					label={ __( 'Charges', 'woocommerce-payments' ) }
 					currencyCode={ currency }
 					tooltip={
@@ -173,11 +174,11 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 							searchTermsForViewReportLink.charge
 						),
 					} ) }
-					tracksSource="charges"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__refunds"
+					tracksSource="refunds"
 					label={ __( 'Refunds', 'woocommerce-payments' ) }
 					currencyCode={ currency }
 					amount={ refunds }
@@ -200,11 +201,11 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 							searchTermsForViewReportLink.refunds
 						),
 					} ) }
-					tracksSource="refunds"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__disputes"
+					tracksSource="disputes"
 					label={ __( 'Disputes', 'woocommerce-payments' ) }
 					currencyCode={ currency }
 					tooltip={
@@ -254,11 +255,11 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 							searchTermsForViewReportLink.dispute
 						),
 					} ) }
-					tracksSource="disputes"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__fees"
+					tracksSource="fees"
 					label={ __( 'Fees', 'woocommerce-payments' ) }
 					currencyCode={ currency }
 					tooltip={
