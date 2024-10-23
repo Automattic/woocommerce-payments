@@ -68,6 +68,8 @@ export const useExpressCheckout = ( {
 						};
 					}
 				),
+				allowedShippingCountries: getExpressCheckoutData( 'checkout' )
+					.allowed_shipping_countries,
 			};
 
 			// Click event from WC Blocks.
