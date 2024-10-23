@@ -255,6 +255,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			'product'            => $this->express_checkout_helper->get_product_data(),
 			'total_label'        => $this->express_checkout_helper->get_total_label(),
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
+			'has_trial_subscription' => $this->express_checkout_helper->has_trial_subscription(),
 		];
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'dist/express-checkout', [ 'jquery', 'stripe' ] );

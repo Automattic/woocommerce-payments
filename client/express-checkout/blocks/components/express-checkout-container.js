@@ -24,7 +24,9 @@ const ExpressCheckoutContainer = ( props ) => {
 	const options = {
 		mode: 'payment',
 		paymentMethodCreation: 'manual',
-		amount: billing.cartTotal.value,
+		amount: getExpressCheckoutData( 'has_trial_subscription' )
+			? 1300 // TODO: Find a way to get the cart total with trial subscription.
+			: billing.cartTotal.value,
 		currency: billing.currency.code.toLowerCase(),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
