@@ -1,0 +1,4 @@
+<h1 id='introduction'>Introduction</h1>
+<p>WooCommerce Payments REST APIs build upon the WooCommerce REST interface which itself extends the WordPress REST APIs. Consuming, testing and debugging WCPay APIs is exactly the same as Woo APIs.</p>
+
+<p>For requirements, request/response format, and other details refer to the <a href="https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction">WooCommerce REST API docs</a>.</p>

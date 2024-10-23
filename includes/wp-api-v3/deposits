@@ -1,0 +1,397 @@
+<h1 id='deposits'>Deposits</h1>
+<p>The Deposits API endpoints provide access to an account&#39;s deposits data, including an overview of account balances, deposit schedule and deposit history.</p>
+<h2 id='deposit-object'>Deposit object</h2><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OJ466CBu6Jj8nBr38JRxdNE"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">802872</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 3000 (EUR)"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h3 id='properties'>Properties</h3>
+<ul>
+<li>  <code>id</code> <em>string</em> - The deposit ID.</li>
+<li>  <code>date</code> <em>int</em> - The arrival date of the deposit in unix timestamp milliseconds.</li>
+<li>  <code>type</code> <em>string</em> - The type of deposit. <code>deposit</code> <code>withdrawal</code></li>
+<li>  <code>amount</code> <em>int</em> - The amount of the deposit.</li>
+<li>  <code>status</code> <em>string</em> - The status of the deposit. <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>bankAccount</code> <em>string</em> - The bank account the deposit was/will be paid to.</li>
+<li>  <code>currency</code> <em>string</em> - The currency of the deposit. E.g. <code>eur</code></li>
+<li>  <code>automatic</code> <em>bool</em> - Returns <code>true</code> if the payout is created by an automated schedule and <code>false</code> if it’s requested manually.</li>
+<li>  <code>fee</code> <em>int</em> - The fee amount of the deposit.</li>
+<li>  <code>fee_percentage</code> <em>int</em> - The fee percentage of the deposit.</li>
+<li>  <code>created</code> <em>int</em> - The arrival date of the deposit in unix timestamp seconds.</li>
+</ul>
+<h2 id='get-deposits-overview-for-all-account-deposit-currencies'>Get deposits overview for all account deposit currencies</h2>
+<p>Fetch an overview of account deposits for all deposit currencies. This includes details for the last paid deposit, next scheduled deposit, and last manual deposits.</p>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/deposits/overview-all</h6>
+    </div>
+</div>
+<h3 id='returns'>Returns</h3>
+<ul>
+<li>  <code>deposit</code> <em>object</em>
+
+<ul>
+<li>  <code>last_paid</code> <em>array</em> of <a href="#deposit-object"><strong>Deposit</strong></a> - The last deposit that has been paid for each deposit currency.</li>
+<li>  <code>last_manual_deposits</code> <em>array</em> of <a href="#deposit-object"><strong>Deposit</strong></a> - Manual deposits that have been paid in the last 24 hours.</li>
+</ul></li>
+<li>  <code>balance</code> <em>object</em>
+
+<ul>
+<li>  <code>pending</code> <em>array</em> - The pending balance for each deposit currency.
+
+<ul>
+<li>  <code>amount</code> <em>int</em> - The amount of the balance.</li>
+<li>  <code>currency</code> <em>string</em> - The currency of the balance. E.g. <code>usd</code>.</li>
+<li>  <code>source_types</code> <em>object</em> | <em>null</em> - The amount of the balance from each source type, e.g. <code>{ &quot;card&quot;: 12345 }</code></li>
+</ul></li>
+<li>  <code>available</code> <em>array</em> - The available balance for each deposit currency.
+
+<ul>
+<li>  <code>amount</code> <em>int</em> - The amount of the balance.</li>
+<li>  <code>currency</code> <em>string</em> - The currency of the balance. E.g. <code>usd</code>.</li>
+<li>  <code>source_types</code> <em>object</em> | <em>null</em> - The amount of the balance from each source type, e.g. <code>{ &quot;card&quot;: 12345 }</code></li>
+</ul></li>
+<li>  <code>instant</code> <em>array</em> - The instant balance for each deposit currency.
+
+<ul>
+<li>  <code>amount</code> <em>int</em> - The amount of the balance.</li>
+<li>  <code>currency</code> <em>string</em> - The currency of the balance. E.g. <code>usd</code>.</li>
+<li>  <code>fee</code> <em>int</em> - The fee amount of the balance.</li>
+<li>  <code>fee_percentage</code> <em>int</em> - The fee percentage of the balance.</li>
+<li>  <code>net</code> <em>int</em> - The net amount of the balance.</li>
+</ul></li>
+</ul></li>
+<li>  <code>account</code> <em>object</em>
+
+<ul>
+<li>  <code>deposits_enabled</code> <em>bool</em> - Whether deposits are enabled for the account.</li>
+<li>  <code>deposits_blocked</code> <em>bool</em> - Whether deposits are blocked for the account.</li>
+<li>  <code>deposits_schedule</code> <em>object</em>
+
+<ul>
+<li>  <code>delay_days</code> <em>int</em> - The number of days after a charge is created that the payment is paid out.</li>
+<li>  <code>interval</code> <em>string</em> - The interval at which payments are paid out. <code>manual</code> <code>daily</code> <code>weekly</code> <code>monthly</code></li>
+<li>  <code>weekly_anchor</code> <em>string</em> | <em>undefined</em> - The day of the week that payments are paid out, e.g. <code>monday</code>.</li>
+<li>  <code>monthly_anchor</code> <em>int</em> | <em>undefined</em> - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.</li>
+</ul></li>
+<li>  <code>default_currency</code> <em>string</em> - The default currency for the account.</li>
+<li>  <code>default_external_accounts</code> <em>array</em> - The default external payout accounts (deposit destinations) for the account.
+
+<ul>
+<li>  <code>currency</code> <em>string</em> - The currency of the external account. e.g. <code>eur</code>, <code>chf</code>.</li>
+<li>  <code>status</code> <em>string</em> - The status of the external account. e.g. <code>new</code>, <code>errored</code>.</li>
+</ul></li>
+</ul></li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"deposit"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"last_paid"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OJ466CBu6Jj8nBr38JRxdNE"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000000</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">802872</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 3000 (EUR)"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OHylNCBu6Jj8nBr95tE8scS"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701302400000</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">471784</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 6789 (USD)"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701302400</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"last_manual_deposits"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"balance"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"pending"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">-114696</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"source_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="mi">-114696</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">707676</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"source_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="mi">707676</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"available"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">573480</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"source_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="mi">573480</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">587897</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"source_types"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"card"</span><span class="p">:</span><span class="w"> </span><span class="mi">587897</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">],</span><span class="w">
+        </span><span class="nl">"instant"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">12345</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">185</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mf">1.5</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"net"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"account"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"deposits_enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"deposits_blocked"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"deposits_schedule"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"delay_days"</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"interval"</span><span class="p">:</span><span class="w"> </span><span class="s2">"weekly"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"weekly_anchor"</span><span class="p">:</span><span class="w"> </span><span class="s2">"friday"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"default_currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"default_external_accounts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"new"</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+                </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"new"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='list-deposits'>List deposits</h2>
+<p>Fetch a list of deposits.</p>
+<h3 id='http-request-2'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/deposits</h6>
+    </div>
+</div>
+<h3 id='required-parameters'>Required parameters</h3>
+<ul>
+<li>  <code>sort</code> <em>string</em> - Field on which to sort, e.g. <code>date</code></li>
+</ul>
+<h3 id='optional-parameters'>Optional parameters</h3>
+<ul>
+<li>  <code>match</code> <em>string</em></li>
+<li>  <code>store_currency_is</code> <em>string</em></li>
+<li>  <code>date_before</code> <em>string</em></li>
+<li>  <code>date_after</code> <em>string</em></li>
+<li>  <code>date_between</code> <em>array</em></li>
+<li>  <code>status_is</code> <em>string</em> <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>status_is_not</code> <em>string</em> <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>direction</code> <em>string</em></li>
+<li>  <code>page</code> <em>integer</em></li>
+<li>  <code>pagesize</code> <em>integer</em></li>
+</ul>
+<h3 id='returns-2'>Returns</h3>
+<ul>
+<li>  <code>data</code> <em>array</em> of <a href="#deposit-object"><strong>Deposit</strong></a> - The list of deposits matching the query.</li>
+<li>  <code>total_count</code> <em>int</em> - The total number of deposits matching the query.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/deposits?sort<span class="o">=</span><span class="nb">date</span> <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OJ466CBu6Jj8nBr38JRxdNE"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000000</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">802872</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 3000 (EUR)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701648000</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OHylNCBu6Jj8nBr95tE8scS"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701302400000</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">471784</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 6789 (USD)"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701302400</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"total_count"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='get-deposits-summary'>Get deposits summary</h2>
+<p>Fetches a summary of deposits matching the query. This includes the total number of deposits matching the query and a list of deposits.</p>
+
+<p>Useful in combination with the <strong>List deposits</strong> endpoint to get a summary of deposits matching the query without having to fetch the full list of deposits.</p>
+<h3 id='http-request-3'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/deposits/summary</h6>
+    </div>
+</div>
+<h3 id='optional-parameters-2'>Optional parameters</h3>
+<ul>
+<li>  <code>match</code> <em>string</em></li>
+<li>  <code>store_currency_is</code> <em>string</em></li>
+<li>  <code>date_before</code> <em>string</em></li>
+<li>  <code>date_after</code> <em>string</em></li>
+<li>  <code>date_between</code> <em>array</em></li>
+<li>  <code>status_is</code> <em>string</em> - <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>status_is_not</code> <em>string</em> - <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+</ul>
+<h3 id='returns-3'>Returns</h3>
+<ul>
+<li>  <code>count</code> <em>int</em> - The total number of deposits matching the query.</li>
+<li>  <code>store_currencies</code> <em>array</em> - The currencies of the deposits matching the query.</li>
+<li>  <code>total</code> <em>int</em> - The total amount of the deposits matching the query.</li>
+<li>  <code>currency</code> <em>string</em> - The currency as provided by <code>store_currency_is</code> or the default currency of the account.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/deposits/summary <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"count"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"store_currencies"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"chf"</span><span class="p">,</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w"> </span><span class="s2">"gbp"</span><span class="p">,</span><span class="w"> </span><span class="s2">"nok"</span><span class="p">,</span><span class="w"> </span><span class="s2">"sek"</span><span class="p">,</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w"> </span><span class="s2">"dkk"</span><span class="w"> </span><span class="p">],</span><span class="w">
+    </span><span class="nl">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">5744395</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='get-deposit'>Get deposit</h2>
+<p>Fetches a deposit by ID.</p>
+<h3 id='http-request-4'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-get">GET</i>
+        <h6>/wp-json/wc/v3/payments/deposits/{deposit_id}</h6>
+    </div>
+</div>
+<h3 id='returns-4'>Returns</h3>
+<p>If a deposit is found for the provided ID, the response will return a <a href="#deposit-object"><strong>Deposit</strong></a> object.</p>
+
+<p>If no deposit is found for the provided ID, the response will return a <code>500</code> status code.</p>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc <span class="se">\</span>
+    <span class="nt">-u</span> consumer_key:consumer_secret
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"po_1OGAFOCBu6Jj8nBruJbMbGqD"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"date"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701043200000</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deposit"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">114696</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"paid"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"bankAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STRIPE TEST BANK •••• 3000 (EUR)"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eur"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"automatic"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fee"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fee_percentage"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="mi">1701043200</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='submit-an-instant-deposit'>Submit an instant deposit</h2>
+<p>Submit an instant deposit for a list of transactions. Only for eligible accounts. See <a href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/">Instant Deposits with WooPayments</a> for more information.</p>
+<h3 id='http-request-5'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-post">POST</i>
+        <h6>/wp-json/wc/v3/payments/deposits</h6>
+    </div>
+</div>
+<h3 id='required-body-properties'>Required body properties</h3>
+<ul>
+<li>  <code>type</code>: <em>string</em> - The type of deposit. <code>instant</code></li>
+<li>  <code>currency</code>: <em>string</em> - The currency of the balance to deposit. E.g. <code>usd</code></li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST <span class="s1">'https://example.com/wp-json/wc/v3/payments/deposits'</span> <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret
+  <span class="nt">--data</span> <span class="s1">'{
+      "type": "instant",
+      "currency": "usd"
+    }'</span>
+</code></pre></div><h2 id='request-a-csv-export-of-deposits'>Request a CSV export of deposits</h2>
+<p>Request a CSV export of deposits matching the query. A link to the exported CSV will be emailed to the provided email address or the account&#39;s primary email address if no email address is provided.</p>
+<h3 id='http-request-6'>HTTP request</h3>
+<div class="api-endpoint">
+    <div class="endpoint-data">
+        <i class="label label-post">POST</i>
+        <h6>/wp-json/wc/v3/payments/deposits/download</h6>
+    </div>
+</div>
+<h3 id='optional-body-properties'>Optional body properties</h3>
+<ul>
+<li>  <code>user_email</code>: <em>string</em> - The email address to send the CSV export link to. If not provided, the account&#39;s primary email address will be used.</li>
+</ul>
+<h3 id='optional-parameters-3'>Optional parameters</h3>
+<ul>
+<li>  <code>match</code> <em>string</em></li>
+<li>  <code>store_currency_is</code> <em>string</em></li>
+<li>  <code>date_before</code> <em>string</em></li>
+<li>  <code>date_after</code> <em>string</em></li>
+<li>  <code>date_between</code> <em>array</em></li>
+<li>  <code>status_is</code> <em>string</em> - <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+<li>  <code>status_is_not</code> <em>string</em> - <code>paid</code> <code>pending</code> <code>in_transit</code> <code>canceled</code> <code>failed</code></li>
+</ul>
+<h3 id='returns-5'>Returns</h3>
+<ul>
+<li>  <code>exported_deposits</code> <em>int</em> - The number of deposits exported.</li>
+</ul>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> POST <span class="s1">'https://example.com/wp-json/wc/v3/payments/deposits/download?status_is=paid'</span> <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret
+  <span class="nt">--data</span> <span class="s1">'{
+      "user_email": "name@example.woocommerce.com"
+    }'</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"exported_deposits"</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>

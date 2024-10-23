@@ -1,0 +1,139 @@
+<h1 id='authorization'>Authorization</h1>
+<p>An authorization is an uncaptured transaction marked for manual capture later, or more technically a payment intent with <code>requires_capture</code> status. An authorization must be captured within 7 days after which it expires and becomes unavailable for capture.</p>
+
+<p>An authorization may be captured from one of these pages - Order details, Uncapture transactions, Payment details.</p>
+
+<p>The authorization API allows you to get data related to authorizations.</p>
+<h2 id='get-authorizations'>Get authorizations</h2>
+<p><em>@since v4.9.0</em></p>
+
+<p>Return all active authorizations.</p>
+<h3 id='get-params'>GET params</h3>
+<ul>
+<li>  page: int</li>
+<li>  pagesize: int</li>
+<li>  sort: string</li>
+<li>  direction: string</li>
+</ul>
+<h3 id='error-codes'>Error codes</h3>
+<ul>
+<li>  <code>wcpay_bad_request</code> - One or more query string params is invalid.</li>
+</ul>
+<h3 id='http-request'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">GET</i>
+    <h6>/wp-json/wc/v3/payments/authorizations?page=1&pagesize=10&sort=created&direction=DESC</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/authorizations?page<span class="o">=</span>1&amp;pagesize<span class="o">=</span>10&amp;sort<span class="o">=</span>created&amp;direction<span class="o">=</span>DESC <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"charge_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ch_123"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"transaction_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1800</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"net"</span><span class="p">:</span><span class="w"> </span><span class="mi">1720</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount_captured"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"amount_refunded"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"is_captured"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-11-03 08:56:14"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"modified"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-11-03 08:56:16"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"channel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"visa"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"source_identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"4242"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"customer_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mr. Albert"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"customer_email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mr.albert@email.com"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"customer_country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"fees"</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"payment_intent_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_123"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"refunded"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"order_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">329</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"outcome_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"authorized"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"wcpay_bad_request"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Error: Invalid sorting direction: "</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='get-authorization'>Get authorization</h2>
+<p><em>@since v4.9.0</em></p>
+
+<p>Return data for a specific authorization.</p>
+<h3 id='http-request-2'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">GET</i>
+    <h6>/wp-json/wc/v3/payments/authorizations/&lt;payment_intent_id&gt;</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/authorizations/pi_123 <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"wcpay_charges_cache_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">17</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"stripe_account_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"acct_123"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"charge_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ch_123"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"transaction_id"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount"</span><span class="p">:</span><span class="w"> </span><span class="mi">1800</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"net"</span><span class="p">:</span><span class="w"> </span><span class="mi">1720</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount_captured"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"amount_refunded"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"is_captured"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"created"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-11-03 08:56:14"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"modified"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-11-03 08:56:16"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"channel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"online"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"source"</span><span class="p">:</span><span class="w"> </span><span class="s2">"visa"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"source_identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"4242"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mr. Albert"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer_email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mr.albert@email.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"customer_country"</span><span class="p">:</span><span class="w"> </span><span class="s2">"US"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"fees"</span><span class="p">:</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"risk_level"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payment_intent_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pi_123"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"refunded"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"order_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">329</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"outcome_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"authorized"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"succeeded"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div><h2 id='get-authorization-summary'>Get authorization summary</h2>
+<p><em>@since v4.9.0</em></p>
+
+<p>Return a high-level summary for all active authorizations.</p>
+<h3 id='http-request-3'>HTTP request</h3>
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">GET</i>
+    <h6>/wp-json/wc/v3/payments/authorizations/summary</h6>
+  </div>
+</div>
+<div class="highlight"><pre class="highlight shell tab-shell"><code>curl <span class="nt">-X</span> GET https://example.com/wp-json/wc/v3/payments/authorizations/summary <span class="se">\</span>
+  <span class="nt">-u</span> consumer_key:consumer_secret <span class="se">\</span>
+  <span class="nt">-H</span> <span class="s2">"Content-Type: application/json"</span>
+</code></pre></div>
+<blockquote>
+<p>JSON response example:</p>
+</blockquote>
+<div class="highlight"><pre class="highlight json tab-json"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"count"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usd"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">5400</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"all_currencies"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"usd"</span><span class="w"> </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div>
