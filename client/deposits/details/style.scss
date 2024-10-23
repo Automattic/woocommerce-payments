@@ -8,17 +8,19 @@
 		height: 0.85em;
 
 		&.is-paid {
-			background: $studio-green-50;
-			border-color: $studio-green-5;
+			background: $wp-green-70;
+			border-color: $wp-green-0;
 		}
+
 		&.is-pending,
 		&.is-in_transit {
-			background: $studio-yellow-30;
-			border-color: $studio-yellow-5;
+			background: $wp-yellow-70;
+			border-color: $wp-yellow-0;
 		}
+
 		&.is-failed {
-			background: $studio-red-50;
-			border-color: $studio-red-5;
+			background: $wp-red-70;
+			border-color: $wp-red-0;
 		}
 	}
 
@@ -27,6 +29,7 @@
 			font-size: 14px;
 			line-height: 20px;
 		}
+
 		.woocommerce-summary__item-value {
 			font-size: 20px;
 			line-height: 28px;
@@ -34,11 +37,11 @@
 	}
 
 	.wcpay-deposit-fee {
-		color: $studio-red-50;
+		color: $wp-red-70;
 	}
 
 	.wcpay-deposit-net {
-		color: $studio-green-30;
+		color: $wp-green-70;
 	}
 
 	.wcpay-deposit-automatic ul {
@@ -50,6 +53,7 @@
 			border-bottom: 0;
 			background-color: inherit;
 			color: inherit;
+
 			.woocommerce-summary__item-label:hover {
 				color: inherit;
 			}
@@ -75,31 +79,39 @@
 		.woocommerce-summary__item-label {
 			margin-bottom: 12px;
 		}
+
 		.woocommerce-summary__item-data {
 			margin-top: 0;
 			margin-bottom: 8px;
 		}
+
 		.wcpay-summary__item-detail {
 			color: $dark-gray-500;
 		}
+
 		/* Hide unused SummaryNumber fields */
 		.woocommerce-summary__item-prev-value,
 		.woocommerce-summary__item-delta {
 			display: none;
 		}
+
 		.woocommerce-summary__item {
 			background: $studio-white;
+
 			&:hover .woocommerce-summary__item-label {
 				color: $gray-700;
 			}
 		}
+
 		a.woocommerce-summary__item {
 			&:hover {
 				background-color: $studio-gray-0;
+
 				&:hover .woocommerce-summary__item-label {
 					color: var( --wp-admin-theme-color );
 				}
 			}
+
 			&:active {
 				background-color: $studio-gray-5;
 			}
