@@ -42,7 +42,7 @@ export const checkPaymentMethodIsAvailable = memoize(
 
 		root.render(
 			<Elements
-				stripe={ api.loadStripe( true ) }
+				stripe={ api.loadStripeForExpressCheckout() }
 				options={ {
 					mode: 'payment',
 					paymentMethodCreation: 'manual',
