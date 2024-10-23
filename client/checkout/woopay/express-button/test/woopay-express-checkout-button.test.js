@@ -89,6 +89,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			'.Text--redirect': {},
 			'.Heading': {},
 			'.Button': {},
+			'.Container': {},
 			'.Link': {},
 		},
 		theme: 'stripe',
@@ -98,6 +99,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			fontFamily: undefined,
 			fontSizeBase: undefined,
 		},
+		labels: 'above',
 	};
 
 	beforeEach( () => {

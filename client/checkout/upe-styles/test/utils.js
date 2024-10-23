@@ -111,4 +111,30 @@ describe( 'UPE Utilities to generate UPE styles', () => {
 		expect( upeUtils.isColorLight( darkGrey ) ).toEqual( false );
 		expect( upeUtils.isColorLight( lightGrey ) ).toEqual( true );
 	} );
+
+	test( 'maybeConvertRGBAtoRGB returns valid colors', () => {
+		const hex = '#ffffff';
+		const color = 'red';
+		const rgb = 'rgb(1, 2, 3)';
+		const rgbNoSpaces = 'rgb(1,2,3)';
+		const rgba = 'rgba(1, 2, 3, 1)';
+		const rgbaNoSpaces = 'rgba(1,2,3,1)';
+		const shadow = 'rgb(1,2,3) 0px 1px 1px 0px';
+		const shadowTransparent = 'rgba(1,2,3,1) 0px 1px 1px 0px';
+		const pixel = '0px';
+
+		expect( upeUtils.maybeConvertRGBAtoRGB( hex ) ).toEqual( hex );
+		expect( upeUtils.maybeConvertRGBAtoRGB( color ) ).toEqual( color );
+		expect( upeUtils.maybeConvertRGBAtoRGB( rgb ) ).toEqual( rgb );
+		expect( upeUtils.maybeConvertRGBAtoRGB( rgbNoSpaces ) ).toEqual(
+			rgbNoSpaces
+		);
+		expect( upeUtils.maybeConvertRGBAtoRGB( rgba ) ).toEqual( rgb );
+		expect( upeUtils.maybeConvertRGBAtoRGB( rgbaNoSpaces ) ).toEqual( rgb );
+		expect( upeUtils.maybeConvertRGBAtoRGB( shadow ) ).toEqual( shadow );
+		expect( upeUtils.maybeConvertRGBAtoRGB( shadowTransparent ) ).toEqual(
+			shadowTransparent
+		);
+		expect( upeUtils.maybeConvertRGBAtoRGB( pixel ) ).toEqual( pixel );
+	} );
 } );

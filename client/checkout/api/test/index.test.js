@@ -42,6 +42,7 @@ const mockAppearance = {
 		'.Heading': {},
 		'.Button': {},
 		'.Link': {},
+		'.Container': {},
 	},
 	theme: 'stripe',
 	variables: {
@@ -50,6 +51,7 @@ const mockAppearance = {
 		fontFamily: undefined,
 		fontSizeBase: undefined,
 	},
+	labels: 'above',
 };
 
 describe( 'WCPayAPI', () => {
