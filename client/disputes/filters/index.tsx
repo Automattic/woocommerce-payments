@@ -9,7 +9,7 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { filters, advancedFilters, DisputesFilterType } from './config';
-import { formatCurrencyName } from '../../utils/currency';
+import { formatCurrencyName } from 'multi-currency/interface/functions';
 
 interface DisputesFiltersProps {
 	storeCurrencies?: string[];

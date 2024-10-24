@@ -46,13 +46,13 @@
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>
-  <file src="includes/multi-currency/Compatibility/WooCommerceProductAddOns.php">
+  <file src="multi-currency/src/Compatibility/WooCommerceProductAddOns.php">
     <UndefinedClass occurrences="2">
       <code>\WC_Product_Addons_Helper</code>
       <code>\WC_Product_Addons_Helper</code>
     </UndefinedClass>
   </file>
-  <file src="includes/multi-currency/Compatibility/WooCommerceNameYourPrice.php">
+  <file src="multi-currency/src/Compatibility/WooCommerceNameYourPrice.php">
     <UndefinedClass occurrences="2">
       <code>\WC_Name_Your_Price_Helpers</code>
       <code>\WC_Name_Your_Price_Helpers</code>

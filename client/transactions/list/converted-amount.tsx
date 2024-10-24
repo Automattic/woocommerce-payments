@@ -12,7 +12,7 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 
 declare const window: any;
 

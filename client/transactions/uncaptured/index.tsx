@@ -17,7 +17,7 @@ import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { recordEvent } from 'tracks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';

@@ -13,8 +13,8 @@ import {
 	appendRedirectionParams,
 	shouldSkipWooPay,
 	deleteSkipWooPayCookie,
-} from 'wcpay/checkout/woopay/utils';
-import { getAppearanceType } from 'wcpay/checkout/utils';
+} from './utils';
+import { getAppearanceType } from '../utils';
 
 export const handleWooPayEmailInput = async (
 	field,

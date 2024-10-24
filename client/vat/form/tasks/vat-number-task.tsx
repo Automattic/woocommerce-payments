@@ -11,14 +11,14 @@ import {
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import React, { useContext, useState } from 'react';
-import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
-import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
-import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
+import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
+import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
+import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import { VatError, VatFormOnCompleted, VatValidationResult } from '../../types';
 import '../style.scss';
 
