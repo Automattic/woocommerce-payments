@@ -93,7 +93,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
-        Deposits
+        Payouts
       </div>
       <div
         class="components-card__body components-card-body wcpay-deposits-overview__schedule__container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
@@ -190,7 +190,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
         <span
           class="wcpay-deposits-overview__heading__title"
         >
-          Deposit history
+          Payout history
         </span>
       </div>
       <div
@@ -344,13 +344,13 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-button is-secondary"
           type="button"
         >
-          View full deposits history
+          View full payout history
         </button>
         <a
           class="components-button is-tertiary"
           href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#deposit-schedule"
         >
-          Change deposit schedule
+          Change payout schedule
         </a>
       </div>
     </div>

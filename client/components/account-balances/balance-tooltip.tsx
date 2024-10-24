@@ -36,7 +36,7 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 					<>
 						{ interpolateComponents( {
 							mixedString: __(
-								'{{bold}}Total balance{{/bold}} combines both pending funds (transactions under processing) and available funds (ready for deposit). {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'{{bold}}Total balance{{/bold}} combines both pending funds (transactions under processing) and available funds (ready for payout). {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
 							components: {
@@ -105,7 +105,7 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 					<p>
 						{ interpolateComponents( {
 							mixedString: __(
-								'{{bold}}Available funds{{/bold}} have completed processing and are ready to be deposited into your bank account. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'{{bold}}Available funds{{/bold}} have completed processing and are ready to be dispatched to your bank account. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
 							components: {
