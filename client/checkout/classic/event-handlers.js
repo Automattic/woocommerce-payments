@@ -204,7 +204,8 @@ jQuery( function ( $ ) {
 								decimalPlaces:
 									cartData?.totals?.currency_minor_unit,
 								country: currentCountry,
-							}
+							},
+							'shortcode_checkout'
 						);
 					}
 				}

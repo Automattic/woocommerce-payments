@@ -9,17 +9,16 @@ import { normalizeCurrencyToMinorUnit } from '../utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
+import { useEffect, useState } from '@wordpress/element';
+import { getAppearance } from 'wcpay/checkout/upe-styles';
 
-export default ( {
-	api,
-	upeConfig,
-	upeName,
-	stripeAppearance,
-	upeAppearanceTheme,
-} ) => {
+export default ( { api, upeConfig, upeName, upeAppearanceTheme } ) => {
 	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
 	const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 	const isTestMode = getUPEConfig( 'testMode' );
+	const [ appearance, setAppearance ] = useState(
+		getUPEConfig( 'wcBlocksUPEAppearance' )
+	);
 
 	// Stripe expects the amount to be sent as the minor unit of 2 digits.
 	const amount = parseInt(
@@ -37,6 +36,22 @@ export default ( {
 		'US';
 
 	const isCreditCard = upeName === 'card';
+
+	useEffect( () => {
+		async function generateUPEAppearance() {
+			// Generate UPE input styles.
+			let upeAppearance = getAppearance( 'blocks_checkout', false );
+			upeAppearance = await api.saveUPEAppearance(
+				upeAppearance,
+				'blocks_checkout'
+			);
+			setAppearance( upeAppearance );
+		}
+
+		if ( ! appearance ) {
+			generateUPEAppearance();
+		}
+	}, [ api, appearance ] );
 
 	return (
 		<>
@@ -63,12 +78,13 @@ export default ( {
 				( upeConfig.countries.length === 0 ||
 					upeConfig.countries.includes( currentCountry ) ) &&
 				amount > 0 &&
-				currentCountry && (
+				currentCountry &&
+				appearance && (
 					<div className="bnpl-message">
 						<Elements
 							stripe={ api.getStripeForUPE( upeName ) }
 							options={ {
-								appearance: stripeAppearance ?? {},
+								appearance: appearance,
 							} }
 						>
 							<PaymentMethodMessagingElement
