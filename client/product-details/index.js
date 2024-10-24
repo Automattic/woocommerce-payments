@@ -109,8 +109,23 @@ jQuery( async function ( $ ) {
 		);
 	};
 
+	const isBnplAvailable = ( price, currency, country ) => {
+		return request(
+			buildAjaxURL(
+				window.wcpayStripeSiteMessaging.wcAjaxUrl,
+				'check_bnpl_availability'
+			),
+			{
+				security: window.wcpayStripeSiteMessaging.nonce,
+				price: price,
+				currency: currency,
+				country: country,
+			}
+		);
+	};
+
 	// Update BNPL message based on the quantity change
-	quantityInput.on( 'change', ( event ) => {
+	quantityInput.on( 'change', async ( event ) => {
 		let amount = baseProductAmount;
 		const variationId = $( VARIATION_ID_SELECTOR ).val();
 
@@ -123,6 +138,22 @@ jQuery( async function ( $ ) {
 		}
 
 		updateBnplPaymentMessage( amount, productCurrency, event.target.value );
+
+		// Check if changes in quantity/price affect BNPL availability and show/hide BNPL messaging accordingly.
+		try {
+			const response = await isBnplAvailable(
+				amount * event.target.value,
+				productCurrency,
+				window.wcpayStripeSiteMessaging.country
+			);
+			if ( response.success && response.data.is_available ) {
+				$( '#payment-method-message' ).slideDown();
+			} else {
+				$( '#payment-method-message' ).slideUp();
+			}
+		} catch {
+			// Do nothing.
+		}
 	} );
 
 	$( document.body ).on( 'updated_cart_totals', () => {
