@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.6
 Requires PHP: 7.3
-Stable tag: 8.3.1
+Stable tag: 8.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,27 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 8.4.0 - 2024-10-23 =
+* Add - Add test mode badge to classic checkout and add payment method.
+* Add - Using Floating Labels with Stripe Appearance API for Blocks Checkout
+* Fix - Converting text color rgba to hex to prevent Stripe warning
+* Fix - Fix the color contrast of links within tooltips to improve readability.
+* Fix - Omit the test mode badge in the change payment method form for subscriptions.
+* Fix - Pass container styling data to WooPay
+* Fix - Prevented detaching payment methods from live Stripe accounts when working in non-production environments.
+* Fix - Rendering Test Model badge only for Credit Card
+* Fix - Stop enqueuing woopay-express-button.css to prevent 404 errors
+* Fix - The amounts used by the PMMEs will match the displayed price of the product regardless of the tax settings.
+* Fix - WooPay user registration via classic checkout
+* Update - Add support for the style controls for the WooPay button
+* Update - chore: remove deprecated is_in_dev_mode() and is_in_test_mode() methods
+* Update - Payments task onboarding flows skip the Connect page.
+* Dev - Bump WC tested up to version to 9.3.3.
+* Dev - fix: prevent multiple instances of WC_Payments_Apple_Pay_Registration
+* Dev - Fixed wrong utils path that would prevent checkout with WooPay OTP
+* Dev - Migrate WizardTaskItem and CollapsibleBody components to TypeScript, making the className prop optional.
+* Dev - Use official `phpmyadmin` Docker Hub container image
 
 = 8.3.1 - 2024-10-16 =
 * Fix - Auto-enabled WooPay for new accounts.

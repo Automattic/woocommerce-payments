@@ -340,7 +340,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          Orders from outside of the following countries will be blocked by the filter: 
+                          Orders from outside of the following countries will be screened by the filter: 
                           <strong>
                             Canada, United States
                           </strong>
@@ -1345,7 +1345,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Orders from outside of the following countries will be blocked by the filter: 
+                        Orders from outside of the following countries will be screened by the filter: 
                         <strong>
                           Canada, United States
                         </strong>
@@ -2119,7 +2119,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
     </div>
     <div>
       <div>
@@ -2415,7 +2415,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          Orders from outside of the following countries will be blocked by the filter: 
+                          Orders from outside of the following countries will be screened by the filter: 
                           <strong>
                             Canada, United States
                           </strong>
@@ -3277,7 +3277,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Orders from outside of the following countries will be blocked by the filter: 
+                        Orders from outside of the following countries will be screened by the filter: 
                         <strong>
                           Canada, United States
                         </strong>
@@ -3925,7 +3925,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
     </div>
     <div>
       <div
@@ -4186,7 +4186,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Orders from outside of the following countries will be blocked by the filter: 
+                        Orders from outside of the following countries will be screened by the filter: 
                         <strong>
                           Canada, United States
                         </strong>
@@ -5012,7 +5012,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                       data-wp-c16t="true"
                       data-wp-component="FlexItem"
                     >
-                      Orders from outside of the following countries will be blocked by the filter: 
+                      Orders from outside of the following countries will be screened by the filter: 
                       <strong>
                         Canada, United States
                       </strong>
@@ -5659,7 +5659,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
     </div>
     <div>
       <div>
@@ -5938,7 +5938,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          Orders from outside of the following countries will be blocked by the filter: 
+                          Orders from outside of the following countries will be screened by the filter: 
                           <strong>
                             Canada, United States
                           </strong>
@@ -6863,7 +6863,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Orders from outside of the following countries will be blocked by the filter: 
+                        Orders from outside of the following countries will be screened by the filter: 
                         <strong>
                           Canada, United States
                         </strong>
