@@ -83,7 +83,7 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Start receiving deposits',
+				name: 'Start receiving payouts',
 			} )
 		);
 
