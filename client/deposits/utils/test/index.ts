@@ -8,7 +8,19 @@ import momentLib from 'moment';
  */
 import { getDepositDate, getDepositMonthlyAnchorLabel } from '../';
 
+declare const global: {
+	wcpaySettings: {
+		dateFormat: string;
+	};
+};
+
 describe( 'Deposits Overview Utils / getDepositDate', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			dateFormat: 'F j, Y',
+		};
+	} );
+
 	test( 'returns a display value without a deposit', () => {
 		expect( getDepositDate() ).toEqual( '—' );
 	} );

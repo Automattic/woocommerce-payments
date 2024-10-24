@@ -4,19 +4,18 @@
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-
-const formatDate = ( format: string, date: number | string ) =>
-	dateI18n(
-		format,
-		moment.utc( date ).toISOString(),
-		true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-	);
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 interface DepositObject {
 	date: number | string;
 }
+
 export const getDepositDate = ( deposit?: DepositObject | null ): string =>
-	deposit ? formatDate( 'F j, Y', deposit?.date ) : '—';
+	deposit
+		? formatDateTime( moment.utc( deposit?.date ).toISOString(), null, {
+				includeTime: false,
+		  } )
+		: '—';
 
 interface GetDepositMonthlyAnchorLabelProps {
 	monthlyAnchor: number;

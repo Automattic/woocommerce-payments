@@ -14,10 +14,8 @@ interface FormatDateTimeOptions {
  * Formats a date and time string according to WordPress settings or a custom format.
  *
  * @param { string } dateTime - The date and time string from the database in UTC (e.g., '2024-10-23 15:28:26').
- * @param { DateTimeFormat } [ customFormat=null ] - Optional custom format for date and time. If not provided, uses WordPress settings.
- * @param { FormatDateTimeOptions } [ options={ includeTime: true, useGmt: true } ] - Additional options to control time inclusion and whether to use GMT/UTC.
- * @param { boolean } [ options.includeTime=true ] - Whether to include the time in the formatted string. Defaults to true.
- * @param { boolean } [ options.useGmt=true ] - Whether to display the time in GMT/UTC. Defaults to true.
+ * @param { DateTimeFormat } customFormat - Optional custom format for date and time. If not provided, uses WordPress settings.
+ * @param { FormatDateTimeOptions } options - Additional options to control time inclusion and whether to use GMT/UTC.
  * @return { string } - The formatted date and time string.
  */
 export function formatDateTime(
