@@ -50,7 +50,7 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 		$note->set_source( 'woocommerce-payments' );
 		$note->add_action(
 			self::NOTE_NAME,
-			__( 'Request an instant deposit', 'woocommerce-payments' ),
+			__( 'Request an instant payout', 'woocommerce-payments' ),
 			'https://woocommerce.com/document/woopayments/deposits/instant-deposits/#request-an-instant-deposit',
 			'unactioned',
 			true
