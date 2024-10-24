@@ -775,49 +775,49 @@ class WC_Payments_Utils {
 				return [
 					Currency_Code::UNITED_STATES_DOLLAR => [
 						Country_Code::UNITED_STATES => [
-							'min' => 0,
+							'min' => 100,
 							'max' => 1000000,
-						], // Represents USD 0 - 10,000 USD.
+						], // Represents USD 1 - 10,000 USD.
 					],
 					Currency_Code::POUND_STERLING       => [
 						Country_Code::UNITED_KINGDOM => [
-							'min' => 0,
+							'min' => 100,
 							'max' => 1150000,
-						], // Represents GBP 0 - 11,500 GBP.
+						], // Represents GBP 1 - 11,500 GBP.
 					],
 					Currency_Code::EURO                 => [
 						Country_Code::AUSTRIA     => [
-							'min' => 1,
+							'min' => 100,
 							'max' => 1000000,
 						], // Represents EUR 1 - 10,000 EUR.
 						Country_Code::BELGIUM     => [
-							'min' => 1,
+							'min' => 100,
 							'max' => 1000000,
 						], // Represents EUR 1 - 10,000 EUR.
 						Country_Code::GERMANY     => [
-							'min' => 1,
+							'min' => 100,
 							'max' => 1000000,
 						], // Represents EUR 1 - 10,000 EUR.
 						Country_Code::NETHERLANDS => [
-							'min' => 1,
+							'min' => 100,
 							'max' => 1500000,
 						], // Represents EUR 1 - 15,000 EUR.
 						Country_Code::FINLAND     => [
-							'min' => 0,
+							'min' => 100,
 							'max' => 1000000,
-						], // Represents EUR 0 - 10,000 EUR.
+						], // Represents EUR 1 - 10,000 EUR.
 						Country_Code::SPAIN       => [
-							'min' => 0,
+							'min' => 100,
 							'max' => 1000000,
-						], // Represents EUR 0 - 10,000 EUR.
+						], // Represents EUR 1 - 10,000 EUR.
 						Country_Code::IRELAND     => [
-							'min' => 0,
+							'min' => 100,
 							'max' => 400000,
-						], // Represents EUR 0 - 4,000 EUR.
+						], // Represents EUR 1 - 4,000 EUR.
 						Country_Code::ITALY       => [
-							'min' => 0,
+							'min' => 100,
 							'max' => 1000000,
-						], // Represents EUR 0 - 10,000 EUR.
+						], // Represents EUR 1 - 10,000 EUR.
 						Country_Code::FRANCE      => [
 							'min' => 3500,
 							'max' => 400000,
@@ -831,15 +831,15 @@ class WC_Payments_Utils {
 					],
 					Currency_Code::NORWEGIAN_KRONE      => [
 						Country_Code::NORWAY => [
-							'min' => 0,
+							'min' => 100,
 							'max' => 100000000,
-						], // Represents NOK 0 - 1,000,000 NOK.
+						], // Represents NOK 1 - 1,000,000 NOK.
 					],
 					Currency_Code::SWEDISH_KRONA        => [
 						Country_Code::SWEDEN => [
-							'min' => 0,
+							'min' => 100,
 							'max' => 15000000,
-						], // Represents SEK 0 - 150,000 SEK.
+						], // Represents SEK 1 - 150,000 SEK.
 					],
 				];
 			default:
