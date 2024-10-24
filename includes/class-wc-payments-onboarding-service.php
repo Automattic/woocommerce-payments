@@ -858,7 +858,15 @@ class WC_Payments_Onboarding_Service {
 					'path' => '/payments/deposits',
 				]
 			)
-		) ) {
+		) || ( 2 === count(
+			array_intersect_assoc(
+				$referer_params,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/payouts',
+				]
+			)
+		) ) ) {
 			return self::SOURCE_WCPAY_PAYOUTS_PAGE;
 		}
 
