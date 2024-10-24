@@ -37,6 +37,7 @@ import InlineNotice from 'components/inline-notice';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import { displayStatus } from '../strings';
 import './style.scss';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
@@ -108,10 +109,10 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 			key="depositDate"
 			label={
 				`${ depositDateLabel }: ` +
-				dateI18n(
-					'M j, Y',
+				formatDateTime(
 					moment.utc( deposit.date ).toISOString(),
-					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+					null,
+					{ useGmt: true, includeTime: false }
 				)
 			}
 			value={ <Status status={ deposit.status } /> }
