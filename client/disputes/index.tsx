@@ -5,7 +5,6 @@
  */
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
-import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { Button } from '@wordpress/components';
@@ -55,6 +54,7 @@ import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -198,9 +198,10 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 			</span>
 		);
 	}
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( dispute.due_by ).local().toISOString()
+	return formatDateTime(
+		moment.utc( dispute.due_by ).local().toISOString(),
+		null,
+		{ useGmt: false }
 	);
 };
 
@@ -298,9 +299,10 @@ export const DisputesList = (): JSX.Element => {
 			created: {
 				value: dispute.created,
 				display: clickable(
-					dateI18n(
-						'M j, Y',
-						moment( dispute.created ).toISOString()
+					formatDateTime(
+						moment.utc( dispute.created ).local().toISOString(),
+						null,
+						{ useGmt: false }
 					)
 				),
 			},
@@ -480,17 +482,19 @@ export const DisputesList = (): JSX.Element => {
 					{
 						// Disputed On.
 						...row[ 10 ],
-						value: dateI18n(
-							'Y-m-d',
-							moment( row[ 10 ].value ).toISOString()
+						value: formatDateTime(
+							moment.utc( row[ 10 ].value ).local().toISOString(),
+							null,
+							{ useGmt: false, includeTime: false }
 						),
 					},
 					{
 						// Respond by.
 						...row[ 11 ],
-						value: dateI18n(
-							'Y-m-d / g:iA',
-							moment( row[ 11 ].value ).toISOString()
+						value: formatDateTime(
+							moment.utc( row[ 11 ].value ).local().toISOString(),
+							null,
+							{ useGmt: false }
 						),
 					},
 				];
