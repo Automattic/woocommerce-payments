@@ -17,6 +17,7 @@ import InfoOutlineIcon from 'gridicons/dist/info-outline';
  */
 import { getAdminUrl } from 'utils';
 import { ClickTooltip } from 'components/tooltip';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 interface DepositProps {
 	depositId?: string;
@@ -31,12 +32,11 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 			id: depositId,
 		} );
 
-		const formattedDateAvailable = dateI18n(
-			'M j, Y',
+		const formattedDateAvailable = formatDateTime(
 			moment.utc( dateAvailable ).toISOString(),
-			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+			null,
+			{ includeTime: false, useGmt: true }
 		);
-
 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}
 

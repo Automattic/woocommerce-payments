@@ -12,6 +12,12 @@ import { render } from '@testing-library/react';
 import Deposit from '../deposit';
 
 describe( 'Deposit', () => {
+	beforeEach( () => {
+		// Mock the window.wcpaySettings property
+		window.wcpaySettings.dateFormat = 'M j, Y';
+		window.wcpaySettings.timeFormat = 'g:i a';
+	} );
+
 	test( 'renders with date and deposit available', () => {
 		const { container: link } = render(
 			<Deposit dateAvailable="2020-01-07 00:00:00" depositId="po_mock" />

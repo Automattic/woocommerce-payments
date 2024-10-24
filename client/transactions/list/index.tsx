@@ -7,7 +7,6 @@ import React, { Fragment, useState } from 'react';
 import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import {
@@ -70,6 +69,7 @@ import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -466,9 +466,10 @@ export const TransactionsList = (
 			date: {
 				value: txn.date,
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( txn.date ).local().toISOString()
+					formatDateTime(
+						moment.utc( txn.date ).local().toISOString(),
+						null,
+						{ useGmt: false }
 					)
 				),
 			},

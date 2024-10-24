@@ -244,6 +244,8 @@ describe( 'Transactions list', () => {
 				exportModalDismissed: true,
 			},
 		};
+		window.wcpaySettings.dateFormat = 'M j, Y';
+		window.wcpaySettings.timeFormat = 'g:iA';
 	} );
 
 	test( 'renders correctly when filtered by deposit', () => {
