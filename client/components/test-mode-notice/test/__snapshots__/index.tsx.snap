@@ -22,7 +22,7 @@ exports[`Test mode notification Returns valid component for deposits page 1`] = 
     <div
       class="wcpay-banner-notice__content"
     >
-      Viewing test deposits. To view live deposits, disable test mode in 
+      Viewing test payouts. To view live payouts, disable test mode in 
       <a
         href="https://example.com/"
       >
