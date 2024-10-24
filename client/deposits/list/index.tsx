@@ -45,6 +45,7 @@ import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/i
 
 import './style.scss';
 import { parseInt } from 'lodash';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
@@ -132,10 +133,10 @@ export const DepositsList = (): JSX.Element => {
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
-				{ dateI18n(
-					'M j, Y',
+				{ formatDateTime(
 					moment.utc( deposit.date ).toISOString(),
-					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+					null,
+					{ includeTime: false, useGmt: true }
 				) }
 			</Link>
 		);
