@@ -257,8 +257,8 @@ describe( 'Deposits Overview information', () => {
 
 		const { container, getByText } = render( <DepositsOverview /> );
 		// Check that the button and link is rendered.
-		getByText( 'View full deposits history' );
-		getByText( 'Change deposit schedule' );
+		getByText( 'View full payout history' );
+		getByText( 'Change payout schedule' );
 		expect( container ).toMatchSnapshot();
 	} );
 
@@ -321,7 +321,7 @@ describe( 'Deposits Overview information', () => {
 		getByText( /Your payouts are temporarily suspended/ );
 
 		// Check that the buttons are rendered as expected.
-		getByText( 'View full deposits history' );
+		getByText( 'View full payout history' );
 		// This one is not rendered when deposits are blocked.
 		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
 	} );
