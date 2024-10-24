@@ -135,6 +135,8 @@ declare global {
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
 		defaultExpressCheckoutBorderRadius: string;
+		dateFormat: string;
+		timeFormat: string;
 	};
 
 	const wc: {
