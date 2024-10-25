@@ -34,8 +34,10 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 
 		const formattedDateAvailable = formatDateTime(
 			moment.utc( dateAvailable ).toISOString(),
-			null,
-			{ includeTime: false, useGmt: true }
+			{
+				includeTime: false,
+				useGmt: true,
+			}
 		);
 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}

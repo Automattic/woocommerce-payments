@@ -198,11 +198,9 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 			</span>
 		);
 	}
-	return formatDateTime(
-		moment.utc( dispute.due_by ).local().toISOString(),
-		null,
-		{ useGmt: false }
-	);
+	return formatDateTime( moment.utc( dispute.due_by ).local().toISOString(), {
+		useGmt: false,
+	} );
 };
 
 export const DisputesList = (): JSX.Element => {
@@ -301,7 +299,6 @@ export const DisputesList = (): JSX.Element => {
 				display: clickable(
 					formatDateTime(
 						moment.utc( dispute.created ).local().toISOString(),
-						null,
 						{ useGmt: false }
 					)
 				),
@@ -484,8 +481,10 @@ export const DisputesList = (): JSX.Element => {
 						...row[ 10 ],
 						value: formatDateTime(
 							moment.utc( row[ 10 ].value ).local().toISOString(),
-							null,
-							{ useGmt: false, includeTime: false }
+							{
+								useGmt: false,
+								includeTime: false,
+							}
 						),
 					},
 					{
@@ -493,7 +492,6 @@ export const DisputesList = (): JSX.Element => {
 						...row[ 11 ],
 						value: formatDateTime(
 							moment.utc( row[ 11 ].value ).local().toISOString(),
-							null,
 							{ useGmt: false }
 						),
 					},

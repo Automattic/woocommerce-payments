@@ -12,7 +12,7 @@ interface DepositObject {
 
 export const getDepositDate = ( deposit?: DepositObject | null ): string =>
 	deposit
-		? formatDateTime( moment.utc( deposit?.date ).toISOString(), null, {
+		? formatDateTime( moment.utc( deposit?.date ).toISOString(), {
 				includeTime: false,
 		  } )
 		: '—';

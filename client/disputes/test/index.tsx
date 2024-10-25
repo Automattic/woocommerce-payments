@@ -375,7 +375,6 @@ describe( 'Disputes list', () => {
 						.utc( mockDisputes[ 0 ].due_by )
 						.local()
 						.toISOString(),
-					null,
 					{ useGmt: false }
 				)
 			); // date respond by

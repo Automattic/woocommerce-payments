@@ -468,7 +468,6 @@ export const TransactionsList = (
 				display: clickable(
 					formatDateTime(
 						moment.utc( txn.date ).local().toISOString(),
-						null,
 						{ useGmt: false }
 					)
 				),

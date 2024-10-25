@@ -133,11 +133,10 @@ export const DepositsList = (): JSX.Element => {
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
-				{ formatDateTime(
-					moment.utc( deposit.date ).toISOString(),
-					null,
-					{ includeTime: false, useGmt: true }
-				) }
+				{ formatDateTime( moment.utc( deposit.date ).toISOString(), {
+					includeTime: false,
+					useGmt: true,
+				} ) }
 			</Link>
 		);
 

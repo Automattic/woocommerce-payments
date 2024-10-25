@@ -73,13 +73,14 @@ const getDocumentDescription = ( document: Document ) => {
 							.utc( document.period_from )
 							.local()
 							.toISOString(),
-						null,
 						{ useGmt: false, includeTime: false }
 					),
 					formatDateTime(
 						moment.utc( document.period_to ).local().toISOString(),
-						null,
-						{ useGmt: false, includeTime: false }
+						{
+							useGmt: false,
+							includeTime: false,
+						}
 					)
 				);
 			}
@@ -185,8 +186,10 @@ export const DocumentsList = (): JSX.Element => {
 				value: document.date,
 				display: formatDateTime(
 					moment.utc( document.date ).local().toISOString(),
-					null,
-					{ useGmt: false, includeTime: false }
+					{
+						useGmt: false,
+						includeTime: false,
+					}
 				),
 			},
 			type: {
