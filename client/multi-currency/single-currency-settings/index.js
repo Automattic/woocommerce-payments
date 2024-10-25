@@ -105,7 +105,7 @@ const SingleCurrencySettings = () => {
 		? formatDateTime(
 				moment.unix( targetCurrency.last_updated ).toISOString(),
 				null,
-				{ useGmt: false, separator: '' }
+				{ useGmt: false, separator: ' ' }
 		  )
 		: '';
 

@@ -28,14 +28,16 @@ export function formatDateTime(
 		separator: '/',
 	}
 ): string {
-	const { includeTime = true, useGmt = true, separator = ' /' } = options;
+	const { includeTime = true, useGmt = true, separator = ' / ' } = options;
 
 	// Use the WordPress settings for date and time format if no custom format is provided
-	const dateFormat = customFormat || window.wcpaySettings.dateFormat;
-	const timeFormat = includeTime ? window.wcpaySettings.timeFormat : '';
-	const format = `${ dateFormat }${
-		includeTime ? `${ separator } ${ timeFormat }` : ''
-	}`;
+	const format =
+		customFormat ||
+		`${ window.wcpaySettings.dateFormat }${
+			includeTime
+				? `${ separator }${ window.wcpaySettings.timeFormat }`
+				: ''
+		}`;
 
 	return dateI18n( format, dateTime, useGmt );
 }
