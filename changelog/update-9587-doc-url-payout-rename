@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: Update 'deposit' to 'payout' in URLs of WooPayments docs occuring across the codebase. Part of a larger renaming project.
+
+
