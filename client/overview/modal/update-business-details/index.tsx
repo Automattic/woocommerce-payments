@@ -13,6 +13,7 @@ import moment from 'moment';
 import strings from './strings';
 import './index.scss';
 import { recordEvent } from 'wcpay/tracks';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 interface Props {
 	errorMessages: Array< string >;
@@ -57,11 +58,14 @@ const UpdateBusinessDetailsModal = ( {
 								currentDeadline
 									? sprintf(
 											strings.restrictedSoonDescription,
-											dateI18n(
-												'ga M j, Y',
+											formatDateTime(
 												moment(
 													currentDeadline * 1000
-												).toISOString()
+												).toISOString(),
+												{
+													useGmt: false,
+													customFormat: 'ga M j, Y',
+												}
 											)
 									  )
 									: strings.restrictedDescription }
