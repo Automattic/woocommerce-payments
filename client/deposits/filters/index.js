@@ -38,7 +38,7 @@ export const DepositsFilters = ( props ) => {
 				filters={ populateDepositCurrencies( filters ) }
 				advancedFilters={ advancedFilters }
 				showDatePicker={ false }
-				path="/payments/deposits"
+				path="/payments/payouts"
 				query={ getQuery() }
 			/>
 		</div>

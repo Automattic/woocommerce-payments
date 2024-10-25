@@ -117,19 +117,19 @@ export const DepositsList = (): JSX.Element => {
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
-				href={ getDetailsURL( deposit.id, 'deposits' ) }
+				href={ getDetailsURL( deposit.id, 'payouts' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
 				{ children }
 			</ClickableCell>
 		);
 		const detailsLink = (
-			<DetailsLink id={ deposit.id } parentSegment="deposits" />
+			<DetailsLink id={ deposit.id } parentSegment="payouts" />
 		);
 
 		const dateDisplay = (
 			<Link
-				href={ getDetailsURL( deposit.id, 'deposits' ) }
+				href={ getDetailsURL( deposit.id, 'payouts' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
 				{ dateI18n(
