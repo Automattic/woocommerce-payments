@@ -17,7 +17,7 @@ const DisputeDueByDate: React.FC< {
 	const respondByDate = formatDateTime(
 		moment( dueBy * 1000 ).toISOString(),
 		{
-			customFormat: 'M j, Y, g:ia',
+			separator: ', ',
 		}
 	);
 	return (

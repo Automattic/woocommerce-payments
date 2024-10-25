@@ -41,7 +41,7 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 			content: dispute.created
 				? formatDateTime(
 						moment( dispute.created * 1000 ).toISOString(),
-						{ useGmt: false }
+						{ useGmt: false, separator: ', ' }
 				  )
 				: '–',
 		},
