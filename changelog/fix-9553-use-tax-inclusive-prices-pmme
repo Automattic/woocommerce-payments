@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-The amounts used by the PMMEs will match the displayed price of the product regardless of the tax settings.

@@ -45,7 +45,7 @@ interface AllowedCountriesNoticeProps {
 const AllowedCountriesNotice: React.FC< AllowedCountriesNoticeProps > = ( {
 	setting,
 } ) => {
-	const { protectionSettingsUI, protectionSettingsChanged } = useContext(
+	const { protectionSettingsUI } = useContext(
 		FraudPreventionSettingsContext
 	);
 	const [ isBlocking, setIsBlocking ] = useState(
@@ -53,7 +53,7 @@ const AllowedCountriesNotice: React.FC< AllowedCountriesNoticeProps > = ( {
 	);
 	useEffect( () => {
 		setIsBlocking( protectionSettingsUI[ setting ]?.block ?? false );
-	}, [ protectionSettingsUI, setting, protectionSettingsChanged ] );
+	}, [ protectionSettingsUI, setting ] );
 
 	const supportedCountriesType = getSupportedCountriesType();
 	const settingCountries = getSettingCountries();
