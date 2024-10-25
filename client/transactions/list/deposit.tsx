@@ -27,7 +27,7 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 	if ( depositId && dateAvailable ) {
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			id: depositId,
 		} );
 

@@ -4,7 +4,7 @@ exports[`Deposit renders with date and payout available 1`] = `
 <div>
   <a
     data-link-type="wc-admin"
-    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+    href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock"
   >
     Jan 7, 2020
   </a>
