@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import moment from 'moment';
-import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { createInterpolateElement } from '@wordpress/element';
@@ -17,13 +16,13 @@ import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import './style.scss';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 const DisputeUnderReviewFooter: React.FC< {
 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
-		? dateI18n(
-				'M j, Y',
+		? formatDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
@@ -93,8 +92,7 @@ const DisputeWonFooter: React.FC< {
 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
-		? dateI18n(
-				'M j, Y',
+		? formatDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
@@ -171,13 +169,13 @@ const DisputeLostFooter: React.FC< {
 	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true ) ?? '-';
 
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
-		? dateI18n(
-				'M j, Y',
+		? formatDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
 					)
-					.toISOString()
+					.toISOString(),
+				{ includeTime: false }
 		  )
 		: '-';
 
@@ -274,13 +272,13 @@ const InquiryUnderReviewFooter: React.FC< {
 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
-		? dateI18n(
-				'M j, Y',
+		? formatDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
 					)
-					.toISOString()
+					.toISOString(),
+				{ includeTime: false }
 		  )
 		: '-';
 
@@ -346,13 +344,13 @@ const InquiryClosedFooter: React.FC< {
 } > = ( { dispute } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
-		? dateI18n(
-				'M j, Y',
+		? formatDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
 					)
-					.toISOString()
+					.toISOString(),
+				{ includeTime: false }
 		  )
 		: '-';
 
