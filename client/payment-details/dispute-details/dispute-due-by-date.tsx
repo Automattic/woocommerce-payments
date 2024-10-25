@@ -2,10 +2,10 @@
  * External dependencies
  */
 import React from 'react';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import classNames from 'classnames';
 import moment from 'moment';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 const DisputeDueByDate: React.FC< {
 	dueBy: number;
@@ -14,9 +14,11 @@ const DisputeDueByDate: React.FC< {
 	const daysRemaining = Math.floor(
 		moment.unix( dueBy ).diff( moment(), 'days', true )
 	);
-	const respondByDate = dateI18n(
-		'M j, Y, g:ia',
-		moment( dueBy * 1000 ).toISOString()
+	const respondByDate = formatDateTime(
+		moment( dueBy * 1000 ).toISOString(),
+		{
+			customFormat: 'M j, Y, g:ia',
+		}
 	);
 	return (
 		<span className="dispute-steps__steps__response-date">
