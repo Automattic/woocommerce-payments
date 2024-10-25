@@ -7,7 +7,6 @@ import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
 /**
@@ -21,6 +20,7 @@ import { formatExplicitCurrency } from 'utils/currency';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { recordEvent } from 'tracks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 interface Column extends TableCardColumn {
 	key:
@@ -130,35 +130,35 @@ export const AuthorizationsList = (): JSX.Element => {
 				display: auth.payment_intent_id,
 			},
 			created: {
-				value: dateI18n(
-					'M j, Y / g:iA',
-					moment.utc( auth.created ).local().toISOString()
+				value: formatDateTime(
+					moment.utc( auth.created ).local().toISOString(),
+					{ useGmt: false }
 				),
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( auth.created ).local().toISOString()
+					formatDateTime(
+						moment.utc( auth.created ).local().toISOString(),
+						{ useGmt: false }
 					)
 				),
 			},
 			// Payments are authorized for a maximum of 7 days
 			capture_by: {
-				value: dateI18n(
-					'M j, Y / g:iA',
+				value: formatDateTime(
 					moment
 						.utc( auth.created )
 						.add( 7, 'd' )
 						.local()
-						.toISOString()
+						.toISOString(),
+					{ useGmt: false }
 				),
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
+					formatDateTime(
 						moment
 							.utc( auth.created )
 							.add( 7, 'd' )
 							.local()
-							.toISOString()
+							.toISOString(),
+						{ useGmt: false }
 					)
 				),
 			},
