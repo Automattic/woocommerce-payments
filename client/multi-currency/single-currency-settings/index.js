@@ -3,7 +3,6 @@
  * External dependencies
  */
 import React, { useContext, useEffect, useState } from 'react';
-import { dateI18n } from '@wordpress/date';
 import { sprintf, __ } from '@wordpress/i18n';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import SettingsSection from 'wcpay/settings/settings-section';
@@ -26,10 +25,10 @@ import {
 	useCurrencies,
 	useCurrencySettings,
 	useEnabledCurrencies,
-	useStoreSettings,
 } from 'wcpay/data';
 import MultiCurrencySettingsContext from '../context';
 import { LoadableBlock } from 'wcpay/components/loadable';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 const SingleCurrencySettings = () => {
 	const {
@@ -43,7 +42,6 @@ const SingleCurrencySettings = () => {
 
 	const { currencies } = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
-	const { storeSettings } = useStoreSettings();
 
 	const {
 		currencySettings,
@@ -103,13 +101,11 @@ const SingleCurrencySettings = () => {
 		}
 	}, [ currencySettings, currency, initialPriceRoundingType ] );
 
-	const dateFormat = storeSettings.date_format ?? 'M j, Y';
-	const timeFormat = storeSettings.time_format ?? 'g:iA';
-
 	const formattedLastUpdatedDateTime = targetCurrency
-		? dateI18n(
-				`${ dateFormat } ${ timeFormat }`,
-				moment.unix( targetCurrency.last_updated ).toISOString()
+		? formatDateTime(
+				moment.unix( targetCurrency.last_updated ).toISOString(),
+				null,
+				{ useGmt: false, separator: '' }
 		  )
 		: '';
 

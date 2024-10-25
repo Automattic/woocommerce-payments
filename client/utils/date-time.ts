@@ -8,6 +8,7 @@ type DateTimeFormat = string | null;
 interface FormatDateTimeOptions {
 	includeTime?: boolean; // Whether to include time in the formatted string (defaults to true)
 	useGmt?: boolean; // Whether to display the time in GMT/UTC (defaults to false)
+	separator?: string; // Separator between date and time (defaults to '/')
 }
 
 /**
@@ -21,15 +22,19 @@ interface FormatDateTimeOptions {
 export function formatDateTime(
 	dateTime: string,
 	customFormat: DateTimeFormat = null,
-	options: FormatDateTimeOptions = { includeTime: true, useGmt: true }
+	options: FormatDateTimeOptions = {
+		includeTime: true,
+		useGmt: true,
+		separator: '/',
+	}
 ): string {
-	const { includeTime = true, useGmt = true } = options;
+	const { includeTime = true, useGmt = true, separator = ' /' } = options;
 
 	// Use the WordPress settings for date and time format if no custom format is provided
 	const dateFormat = customFormat || window.wcpaySettings.dateFormat;
 	const timeFormat = includeTime ? window.wcpaySettings.timeFormat : '';
 	const format = `${ dateFormat }${
-		includeTime ? ` / ${ timeFormat }` : ''
+		includeTime ? `${ separator } ${ timeFormat }` : ''
 	}`;
 
 	return dateI18n( format, dateTime, useGmt );
