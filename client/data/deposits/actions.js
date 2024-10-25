@@ -123,7 +123,7 @@ export function* submitInstantDeposit( currency ) {
 						label: __( 'View details', 'woocommerce-payments' ),
 						url: getAdminUrl( {
 							page: 'wc-admin',
-							path: '/payments/deposits/details',
+							path: '/payments/payouts/details',
 							id: deposit.id,
 						} ),
 					},

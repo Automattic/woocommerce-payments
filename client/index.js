@@ -97,7 +97,7 @@ addFilter(
 
 		pages.push( {
 			container: DepositsPage,
-			path: '/payments/deposits',
+			path: '/payments/payouts',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Payouts', 'woocommerce-payments' ) ],
 			navArgs: {
@@ -107,19 +107,19 @@ addFilter(
 		} );
 		pages.push( {
 			container: DepositDetailsPage,
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
 				rootLink,
 				[
-					'/payments/deposits',
-					__( 'Deposits', 'woocommerce-payments' ),
+					'/payments/payouts',
+					__( 'Payouts', 'woocommerce-payments' ),
 				],
-				__( 'Deposit details', 'woocommerce-payments' ),
+				__( 'Payout details', 'woocommerce-payments' ),
 			],
 			navArgs: {
 				id: 'wc-payments-deposit-details',
-				parentPath: '/payments/deposits',
+				parentPath: '/payments/payouts',
 			},
 			capability: 'manage_woocommerce',
 		} );

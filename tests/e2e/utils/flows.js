@@ -35,7 +35,7 @@ const WCPAY_CONNECT =
 const WCPAY_DISPUTES =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
 const WCPAY_DEPOSITS =
-	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/deposits';
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/payouts';
 const WCPAY_TRANSACTIONS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
 const WCPAY_MULTI_CURRENCY =

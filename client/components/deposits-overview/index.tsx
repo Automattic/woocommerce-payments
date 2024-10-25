@@ -88,7 +88,7 @@ const DepositsOverview: React.FC = () => {
 		history.push(
 			getAdminUrl( {
 				page: 'wc-admin',
-				path: '/payments/deposits',
+				path: '/payments/payouts',
 			} )
 		);
 	};
