@@ -79,6 +79,13 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 	private $mock_localization_service;
 
 	/**
+	 * Mock of the WC_Payments_Settings_Service.
+	 *
+	 * @var WC_Payments_Settings_Service
+	 */
+	private $mock_settings;
+
+	/**
 	 * Mock of Database_Cache.
 	 *
 	 * @var Database_Cache;
@@ -247,11 +254,9 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 		$this->mock_database_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+		$this->mock_settings = $this->createMock( WC_Payments_Settings_Service::class );
 
-		$gateway_context      = [
-			'is_dev_mode' => true,
-		];
-		$this->multi_currency = new MultiCurrency( $gateway_context, $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service, $this->mock_database_cache );
+		$this->multi_currency = new MultiCurrency( $this->mock_settings, $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service, $this->mock_database_cache );
 		$this->multi_currency->init();
 
 		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->multi_currency );

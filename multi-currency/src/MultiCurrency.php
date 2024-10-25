@@ -13,6 +13,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 use WCPay\MultiCurrency\Utils;
@@ -128,6 +129,13 @@ class MultiCurrency {
 	protected $enabled_currencies;
 
 	/**
+	 * Instance of MultiCurrencySettingsInterface.
+	 *
+	 * @var MultiCurrencySettingsInterface
+	 */
+	private $settings_service;
+
+	/**
 	 * Client for making requests to the API
 	 *
 	 * @var MultiCurrencyApiClientInterface
@@ -169,25 +177,19 @@ class MultiCurrency {
 	 */
 	protected $simulation_params = [];
 
-	/**
-	 * Gateway context.
-	 *
-	 * @var array
-	 */
-	public $gateway_context;
 
 	/**
 	 * Class constructor.
 	 *
-	 * @param array                              $gateway_context      Gateway context.
+	 * @param MultiCurrencySettingsInterface     $settings_service     Settings service.
 	 * @param MultiCurrencyApiClientInterface    $payments_api_client  Payments API client.
 	 * @param MultiCurrencyAccountInterface      $payments_account     Payments Account instance.
 	 * @param MultiCurrencyLocalizationInterface $localization_service Localization Service instance.
 	 * @param MultiCurrencyCacheInterface        $cache                Cache instance.
 	 * @param Utils|null                         $utils                Optional Utils instance.
 	 */
-	public function __construct( array $gateway_context, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, Utils $utils = null ) {
-		$this->gateway_context      = $gateway_context;
+	public function __construct( MultiCurrencySettingsInterface $settings_service, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, Utils $utils = null ) {
+		$this->settings_service     = $settings_service;
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
 		$this->localization_service = $localization_service;
@@ -287,7 +289,7 @@ class MultiCurrency {
 
 		$admin_notices = new AdminNotices();
 		$user_settings = new UserSettings( $this );
-		new Analytics( $this );
+		new Analytics( $this, $this->settings_service );
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
@@ -1108,8 +1110,8 @@ class MultiCurrency {
 	 */
 	public function register_script_with_dependencies( string $handler, string $script, array $additional_dependencies = [] ) {
 		$script_file       = $script . '.js';
-		$script_src_url    = plugins_url( $script_file, $this->gateway_context['plugin_file_path'] );
-		$script_asset_path = plugin_dir_path( $this->gateway_context['plugin_file_path'] ) . $script . '.asset.php';
+		$script_src_url    = plugins_url( $script_file, $this->settings_service->get_plugin_file_path() );
+		$script_asset_path = plugin_dir_path( $this->settings_service->get_plugin_file_path() ) . $script . '.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ]; // nosemgrep: audit.php.lang.security.file.inclusion-arg -- server generated path is used.
 		$all_dependencies  = array_merge( $script_asset['dependencies'], $additional_dependencies );
 
@@ -1130,13 +1132,13 @@ class MultiCurrency {
 	 * @return string
 	 */
 	public function get_file_version( $file ) {
-		$plugin_path = plugin_dir_path( $this->gateway_context['plugin_file_path'] );
+		$plugin_path = plugin_dir_path( $this->settings_service->get_plugin_file_path() );
 
 		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG && file_exists( $plugin_path . $file ) ) {
 			return (string) filemtime( $plugin_path . trim( $file, '/' ) );
 		}
 
-		return $this->gateway_context['plugin_version'];
+		return $this->settings_service->get_plugin_version();
 	}
 
 	/**
@@ -1590,7 +1592,7 @@ class MultiCurrency {
 
 		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',
-			plugins_url( 'dist/multi-currency.css', $this->gateway_context['plugin_file_path'] ),
+			plugins_url( 'dist/multi-currency.css', $this->settings_service->get_plugin_file_path() ),
 			[ 'wc-components', 'WCPAY_ADMIN_SETTINGS' ],
 			$this->get_file_version( 'dist/multi-currency.css' ),
 			'all'

@@ -12,6 +12,7 @@ use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 use WC_Order;
 use WC_Order_Refund;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -42,12 +43,21 @@ class Analytics {
 	private $multi_currency;
 
 	/**
+	 * Instance of MultiCurrencySettingsInterface.
+	 *
+	 * @var MultiCurrencySettingsInterface $settings_service
+	 */
+	private $settings_service;
+
+	/**
 	 * Constructor
 	 *
-	 * @param MultiCurrency $multi_currency Instance of MultiCurrency.
+	 * @param MultiCurrency                  $multi_currency   Instance of MultiCurrency.
+	 * @param MultiCurrencySettingsInterface $settings_service Instance of MultiCurrencySettingsInterface.
 	 */
-	public function __construct( MultiCurrency $multi_currency ) {
-		$this->multi_currency = $multi_currency;
+	public function __construct( MultiCurrency $multi_currency, MultiCurrencySettingsInterface $settings_service ) {
+		$this->multi_currency   = $multi_currency;
+		$this->settings_service = $settings_service;
 		$this->init();
 	}
 
@@ -62,7 +72,7 @@ class Analytics {
 			$this->register_customer_currencies();
 		}
 
-		if ( $this->multi_currency->gateway_context['is_dev_mode'] ) {
+		if ( $this->settings_service->is_dev_mode() ) {
 			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 

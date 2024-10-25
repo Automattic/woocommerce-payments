@@ -65,9 +65,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		$mock_account      = $this->createMock( MultiCurrencyAccountInterface::class );
 		$mock_localization = $this->createMock( MultiCurrencyLocalizationInterface::class );
 		$mock_cache        = $this->createMock( MultiCurrencyCacheInterface::class );
-		$gateway_context   = [
-			'is_dev_mode' => true,
-		];
+		$mock_settings     = $this->createMock( WC_Payments_Settings_Service::class );
 
 		$mock_account->method( 'is_provider_connected' )->willReturn( true );
 		$mock_api_client->method( 'is_server_connected' )->willReturn( true );
@@ -82,7 +80,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 			);
 
 		$this->mock_multi_currency = $this->getMockBuilder( MultiCurrency::class )
-			->setConstructorArgs( [ $gateway_context, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
+			->setConstructorArgs( [ $mock_settings, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
 			->enableOriginalConstructor()
 			->onlyMethods( [ 'get_available_currencies' ] )
 			->getMock();

@@ -126,6 +126,13 @@ class WC_Payments {
 	private static $localization_service;
 
 	/**
+	 * Instance of WC_Payments_Settings_Service, created in init function
+	 *
+	 * @var WC_Payments_Settings_Service
+	 */
+	private static $settings_service;
+
+	/**
 	 * Instance of WC_Payments_Dependency_Service, created in init function
 	 *
 	 * @var WC_Payments_Dependency_Service
@@ -476,6 +483,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-onboarding-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
+		include_once __DIR__ . '/class-wc-payments-settings-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-success-page.php';
@@ -529,6 +537,7 @@ class WC_Payments {
 		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account, self::$session_service, self::$database_cache );
 		self::$in_person_payments_receipts_service  = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                 = new WC_Payments_Localization_Service();
+		self::$settings_service                     = new WC_Payments_Settings_Service();
 		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
 		self::$woopay_util                          = new WooPay_Utilities();
@@ -1336,6 +1345,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Settings_Service
+	 *
+	 * @return WC_Payments_Settings_Service Localization Service instance
+	 */
+	public static function get_settings_service() {
+		return self::$settings_service;
+	}
+
+	/**
 	 * Returns the WC_Payments_Action_Scheduler_Service
 	 *
 	 * @return WC_Payments_Action_Scheduler_Service Action Scheduler Service instance
@@ -1418,22 +1436,6 @@ class WC_Payments {
 	 */
 	public static function get_session_service() {
 		return self::$session_service;
-	}
-
-	/**
-	 * Returns gateway context variables needed for multi-currency support.
-	 *
-	 * @return array
-	 */
-	public static function get_context_for_multi_currency() {
-		// While multi-currency is being decoupled from WooPayments into a separate module, it is still rendered within the plugin.
-		// We don't want to reference WCPAY constants from within the module, therefore, we need a few variables from the gateway,
-		// as reflected in the array below.
-		return [
-			'plugin_version'   => WCPAY_VERSION_NUMBER,
-			'plugin_file_path' => WCPAY_PLUGIN_FILE,
-			'is_dev_mode'      => self::mode()->is_dev(),
-		];
 	}
 
 	/**

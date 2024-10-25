@@ -11,6 +11,7 @@ use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Settings;
 use WCPay\MultiCurrency\SettingsOnboardCta;
@@ -90,6 +91,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	 * @var MultiCurrencyCacheInterface;
 	 */
 	private $mock_cache;
+
+	/**
+	 * Mock of MultiCurrencySettingsInterface.
+	 *
+	 * @var MultiCurrencySettingsInterface;
+	 */
+	private $mock_settings;
 
 	/**
 	 * Mock of Utils.
@@ -1428,11 +1436,10 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_utils = $this->createMock( Utils::class );
 
-		$gateway_context      = [
-			'is_dev_mode' => true,
-		];
+		$this->mock_settings = $this->createMock( MultiCurrencySettingsInterface::class );
+
 		$this->multi_currency = new MultiCurrency(
-			$gateway_context,
+			$this->mock_settings,
 			$mock_api_client ?? $this->mock_api_client,
 			$this->mock_account,
 			$this->localization_service,
