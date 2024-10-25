@@ -34,6 +34,8 @@ declare const global: {
 		featureFlags: {
 			isAuthAndCaptureEnabled: boolean;
 		};
+		dateFormat: string;
+		timeFormat: string;
 	};
 };
 
@@ -203,6 +205,8 @@ describe( 'PaymentDetailsSummary', () => {
 					precision: 0,
 				},
 			},
+			dateFormat: 'M j, Y',
+			timeFormat: 'g:iA',
 		};
 
 		// mock Date.now that moment library uses to get current date for testing purposes

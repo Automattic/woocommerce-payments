@@ -61,6 +61,7 @@ import DisputeResolutionFooter from '../dispute-details/dispute-resolution-foote
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import CardNotice from 'wcpay/components/card-notice';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 declare const window: any;
 
@@ -107,9 +108,12 @@ const composePaymentSummaryItems = ( {
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
 			content: charge.created
-				? dateI18n(
-						'M j, Y, g:ia',
-						moment( charge.created * 1000 ).toISOString()
+				? formatDateTime(
+						moment( charge.created * 1000 ).toISOString(),
+						{
+							customFormat: 'M j, Y, g:ia',
+							useGmt: false,
+						}
 				  )
 				: '–',
 		},
@@ -703,12 +707,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								}
 							) }{ ' ' }
 							<abbr
-								title={ dateI18n(
-									'M j, Y / g:iA',
+								title={ formatDateTime(
 									moment
 										.utc( authorization.created )
-										.add( 7, 'days' ),
-									'UTC'
+										.add( 7, 'days' )
+										.toISOString(),
+									{ useGmt: true }
 								) }
 							>
 								<b>
