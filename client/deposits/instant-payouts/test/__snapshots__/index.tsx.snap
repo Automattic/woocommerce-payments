@@ -57,7 +57,7 @@ exports[`Instant payout button and modal modal renders correctly 1`] = `
     <p>
       Need cash in a hurry? Instant payouts are available within 30 minutes for a nominal 1.5% service fee. 
       <a
-        href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/"
+        href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/"
         rel="noopener noreferrer"
         target="_blank"
       >

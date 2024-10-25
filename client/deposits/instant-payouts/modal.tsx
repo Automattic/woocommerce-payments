@@ -29,7 +29,7 @@ const InstantPayoutModal: React.FC< InstantPayoutModalProps > = ( {
 	inProgress,
 } ) => {
 	const learnMoreHref =
-		'https://woocommerce.com/document/woopayments/deposits/instant-deposits/';
+		'https://woocommerce.com/document/woopayments/payouts/instant-payouts/';
 	const feePercentage = `${ percentage }%`;
 	const description = createInterpolateElement(
 		/* translators: %s: amount representing the fee percentage, <a>: instant payout doc URL */
