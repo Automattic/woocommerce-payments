@@ -102,7 +102,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			}
 		}
 
-		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$enabled_upe_payment_methods = $this->gateway->get_upe_enabled_payment_method_ids();
 		// Filter non BNPL out of the list of payment methods.
 		$bnpl_payment_methods = array_intersect( $enabled_upe_payment_methods, Payment_Method::BNPL_PAYMENT_METHODS );
 
