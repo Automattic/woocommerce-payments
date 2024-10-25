@@ -77,8 +77,6 @@ const api = new WCPayAPI(
 	request
 );
 
-const stripeAppearance = getUPEConfig( 'wcBlocksUPEAppearance' );
-
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
@@ -114,7 +112,6 @@ Object.entries( enabledPaymentMethodsConfig )
 					api={ api }
 					upeConfig={ upeConfig }
 					upeName={ upeName }
-					stripeAppearance={ stripeAppearance }
 					upeAppearanceTheme={ upeAppearanceTheme }
 				/>
 			),

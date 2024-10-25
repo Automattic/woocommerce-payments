@@ -453,10 +453,11 @@ export async function mountStripePaymentElement(
 export async function mountStripePaymentMethodMessagingElement(
 	api,
 	domElement,
-	cartData
+	cartData,
+	location
 ) {
 	const paymentMethodType = domElement.dataset.paymentMethodType;
-	const appearance = await initializeAppearance( api );
+	const appearance = await initializeAppearance( api, location );
 
 	try {
 		const paymentMethodMessagingElement = api
