@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
@@ -21,6 +20,7 @@ import DocumentsFilters from '../filters';
 import Page from '../../components/page';
 import { getDocumentUrl } from 'wcpay/utils';
 import VatFormModal from 'wcpay/vat/form-modal';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 interface Column extends TableCardColumn {
 	key: 'date' | 'type' | 'description' | 'download';
@@ -68,15 +68,18 @@ const getDocumentDescription = ( document: Document ) => {
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
 					__( 'VAT invoice for %s to %s', 'woocommerce-payments' ),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_from ).toISOString(),
-						'utc'
+					formatDateTime(
+						moment
+							.utc( document.period_from )
+							.local()
+							.toISOString(),
+						null,
+						{ useGmt: false, includeTime: false }
 					),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_to ).toISOString(),
-						'utc'
+					formatDateTime(
+						moment.utc( document.period_to ).local().toISOString(),
+						null,
+						{ useGmt: false, includeTime: false }
 					)
 				);
 			}
@@ -180,9 +183,10 @@ export const DocumentsList = (): JSX.Element => {
 		const data = {
 			date: {
 				value: document.date,
-				display: dateI18n(
-					'M j, Y',
-					moment.utc( document.date ).local().toISOString()
+				display: formatDateTime(
+					moment.utc( document.date ).local().toISOString(),
+					null,
+					{ useGmt: false, includeTime: false }
 				),
 			},
 			type: {
