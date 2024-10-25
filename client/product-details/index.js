@@ -104,7 +104,7 @@ jQuery( async function ( $ ) {
 				'get_cart_total'
 			),
 			{
-				security: window.wcpayStripeSiteMessaging.nonce,
+				security: window.wcpayStripeSiteMessaging.nonce.get_cart_total,
 			}
 		);
 	};
@@ -116,7 +116,8 @@ jQuery( async function ( $ ) {
 				'check_bnpl_availability'
 			),
 			{
-				security: window.wcpayStripeSiteMessaging.nonce,
+				security:
+					window.wcpayStripeSiteMessaging.nonce.is_bnpl_available,
 				price: price,
 				currency: currency,
 				country: country,

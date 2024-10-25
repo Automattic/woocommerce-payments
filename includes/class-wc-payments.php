@@ -1714,7 +1714,7 @@ class WC_Payments {
 	 * Get cart total.
 	 */
 	public static function ajax_get_cart_total() {
-		check_ajax_referer( 'wcpay-bnpl-nonce', 'security' );
+		check_ajax_referer( 'wcpay-get-cart-total', 'security' );
 
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
@@ -1736,7 +1736,7 @@ class WC_Payments {
 	 * Check if BNPL is available for the given price, currency, and country.
 	 */
 	public static function ajax_check_bnpl_availability() {
-		check_ajax_referer( 'wcpay-bnpl-nonce', 'security' );
+		check_ajax_referer( 'wcpay-is-bnpl-available', 'security' );
 
 		$price    = floatval( $_POST['price'] );
 		$currency = sanitize_text_field( wp_unslash( $_POST['currency'] ) );

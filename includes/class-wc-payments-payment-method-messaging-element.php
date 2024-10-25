@@ -137,7 +137,10 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			'isCart'            => is_cart(),
 			'isCartBlock'       => $is_cart_block,
 			'cartTotal'         => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
-			'nonce'             => wp_create_nonce( 'wcpay-bnpl-nonce' ),
+			'nonce'             => [
+				'get_cart_total'    => wp_create_nonce( 'wcpay-get-cart-total' ),
+				'is_bnpl_available' => wp_create_nonce( 'wcpay-is-bnpl-available' ),
+			],
 			'wcAjaxUrl'         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 		];
 

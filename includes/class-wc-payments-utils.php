@@ -782,8 +782,8 @@ class WC_Payments_Utils {
 					Currency_Code::POUND_STERLING       => [
 						Country_Code::UNITED_KINGDOM => [
 							'min' => 100,
-							'max' => 1150000,
-						], // Represents GBP 1 - 11,500 GBP.
+							'max' => 500000,
+						], // Represents GBP 1 - 5,000 GBP.
 					],
 					Currency_Code::EURO                 => [
 						Country_Code::AUSTRIA     => [
@@ -819,9 +819,9 @@ class WC_Payments_Utils {
 							'max' => 400000,
 						], // Represents EUR 1 - 4,000 EUR.
 						Country_Code::FRANCE      => [
-							'min' => 3500,
+							'min' => 100,
 							'max' => 400000,
-						], // Represents EUR 35 - 4000 EUR.
+						], // Represents EUR 1 - 4,000 EUR.
 					],
 					Currency_Code::DANISH_KRONE         => [
 						Country_Code::DENMARK => [
