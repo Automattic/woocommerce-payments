@@ -37,7 +37,7 @@ export const SuspendedDepositNotice: React.FC = () => {
 					suspendLink: (
 						<Link
 							href={
-								'https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/'
+								'https://woocommerce.com/document/woopayments/payouts/why-payouts-suspended/'
 							}
 						/>
 					),
