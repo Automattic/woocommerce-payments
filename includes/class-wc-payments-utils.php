@@ -800,8 +800,8 @@ class WC_Payments_Utils {
 						], // Represents EUR 1 - 10,000 EUR.
 						Country_Code::NETHERLANDS => [
 							'min' => 100,
-							'max' => 1500000,
-						], // Represents EUR 1 - 15,000 EUR.
+							'max' => 500000,
+						], // Represents EUR 1 - 5,000 EUR.
 						Country_Code::FINLAND     => [
 							'min' => 100,
 							'max' => 1000000,
@@ -816,30 +816,30 @@ class WC_Payments_Utils {
 						], // Represents EUR 1 - 4,000 EUR.
 						Country_Code::ITALY       => [
 							'min' => 100,
-							'max' => 1000000,
-						], // Represents EUR 1 - 10,000 EUR.
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
 						Country_Code::FRANCE      => [
 							'min' => 3500,
 							'max' => 400000,
-						], // Represents EUR 35 - 400 EUR.
+						], // Represents EUR 35 - 4000 EUR.
 					],
 					Currency_Code::DANISH_KRONE         => [
 						Country_Code::DENMARK => [
 							'min' => 100,
-							'max' => 100000000,
-						], // Represents DKK 1 - 1,000,000 DKK.
+							'max' => 10000000,
+						], // Represents DKK 1 - 100,000 DKK.
 					],
 					Currency_Code::NORWEGIAN_KRONE      => [
 						Country_Code::NORWAY => [
 							'min' => 100,
-							'max' => 100000000,
-						], // Represents NOK 1 - 1,000,000 NOK.
+							'max' => 10000000,
+						], // Represents NOK 1 - 100,000 NOK.
 					],
 					Currency_Code::SWEDISH_KRONA        => [
 						Country_Code::SWEDEN => [
 							'min' => 100,
-							'max' => 15000000,
-						], // Represents SEK 1 - 150,000 SEK.
+							'max' => 10000000,
+						], // Represents SEK 1 - 100,000 SEK.
 					],
 				];
 			default:
