@@ -23,7 +23,7 @@ import DisputesPage from 'disputes';
 import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
 import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
-import MultiCurrencySetupPage from 'wcpay/multi-currency-setup';
+import { MultiCurrencySetupPage } from 'multi-currency/interface/components';
 import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
 import OverviewPage from 'overview';
