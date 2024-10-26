@@ -7,7 +7,6 @@ import { DepositsTableHeader } from 'wcpay/types/deposits';
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
 import { useMemo } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
@@ -325,10 +324,9 @@ export const DepositsList = (): JSX.Element => {
 				row[ 0 ],
 				{
 					...row[ 1 ],
-					value: dateI18n(
-						'Y-m-d',
+					value: formatDateTime(
 						moment.utc( row[ 1 ].value ).toISOString(),
-						true
+						{ useGmt: true, includeTime: false }
 					),
 				},
 				...row.slice( 2 ),
