@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { formatDateTime } from 'wcpay/utils/date-time';
 
