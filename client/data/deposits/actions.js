@@ -6,7 +6,7 @@
 import { apiFetch } from '@wordpress/data-controls';
 import { dispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 
 /**
  * Internal Dependencies

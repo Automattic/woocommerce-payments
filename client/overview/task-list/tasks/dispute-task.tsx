@@ -11,7 +11,7 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import type { TaskItemProps } from '../types';
 import type { CachedDispute } from 'wcpay/types/disputes';
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
 import { isDueWithin } from 'wcpay/disputes/utils';

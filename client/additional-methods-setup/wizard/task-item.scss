@@ -117,6 +117,22 @@
 		}
 	}
 
+	&__visible-description-element {
+		position: absolute;
+		margin-left: 40px;
+		margin-top: 0;
+		margin-bottom: 1em;
+
+		&.is-muted-color {
+			color: $gray-700;
+		}
+
+		.components-external-link svg {
+			width: 1em;
+			height: 1em;
+		}
+	}
+
 	.add-payment-methods-task {
 		&__payment-selector {
 			&-wrapper {
