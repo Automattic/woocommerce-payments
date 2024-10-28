@@ -24,6 +24,7 @@ import { useActiveLoanSummary } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
+import { formatDateTime } from 'wcpay/utils/date-time';
 
 const Block = ( {
 	title,
@@ -210,12 +211,12 @@ const ActiveLoanSummary = (): JSX.Element => {
 								'Repaid this period (until %s)',
 								'woocommerce-payments'
 							),
-							dateI18n(
-								'M j, Y',
+							formatDateTime(
 								new Date(
 									details.current_repayment_interval.due_at *
 										1000
-								)
+								),
+								{ includeTime: false }
 							)
 						) }
 					>
@@ -251,9 +252,9 @@ const ActiveLoanSummary = (): JSX.Element => {
 					<Block
 						title={ __( 'Loan disbursed', 'woocommerce-payments' ) }
 					>
-						{ dateI18n(
-							'M j, Y',
-							new Date( details.advance_paid_out_at * 1000 )
+						{ formatDateTime(
+							new Date( details.advance_paid_out_at * 1000 ),
+							{ includeTime: false }
 						) }
 					</Block>
 					<Block
@@ -278,9 +279,9 @@ const ActiveLoanSummary = (): JSX.Element => {
 					<Block
 						title={ __( 'First paydown', 'woocommerce-payments' ) }
 					>
-						{ dateI18n(
-							'M j, Y',
-							new Date( details.repayments_begin_at * 1000 )
+						{ formatDateTime(
+							new Date( details.repayments_begin_at * 1000 ),
+							{ includeTime: false }
 						) }
 					</Block>
 				</Flex>

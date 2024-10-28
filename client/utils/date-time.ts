@@ -20,7 +20,7 @@ interface FormatDateTimeOptions {
  * @return { string } - The formatted date and time string.
  */
 export function formatDateTime(
-	dateTime: string,
+	dateTime: string | Date,
 	options: FormatDateTimeOptions = {
 		includeTime: true,
 		useGmt: true,

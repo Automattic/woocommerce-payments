@@ -34,6 +34,7 @@ describe( 'Active loan summary', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
 		};
 	} );
 	afterEach( () => {
