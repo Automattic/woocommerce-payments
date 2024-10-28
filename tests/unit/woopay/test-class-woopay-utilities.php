@@ -6,6 +6,7 @@
  */
 
 use WCPay\WooPay\WooPay_Utilities;
+use WCPay\WooPay\WooPay_Session;
 
 /**
  * WooPay_Utilities unit tests.
@@ -175,6 +176,19 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $woopay_utilities->should_enable_woopay_on_cart_or_checkout() );
 		$this->clean_up_should_enable_woopay_tests();
+	}
+
+	/**
+	 * WooPay user is saved to platform on classic checkout.
+	 *
+	 * @return void
+	 */
+	public function test_should_save_platform_customer_in_classic_checkout() {
+		$woopay_utilities = new WooPay_Utilities();
+
+		$_POST['save_user_in_woopay'] = 'true';
+		$this->assertTrue( $woopay_utilities->should_save_platform_customer() );
+		unset( $_POST['save_user_in_woopay'] );
 	}
 
 	private function clean_up_should_enable_woopay_tests() {

@@ -10,7 +10,7 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 
 const ExpirationDescription = ( {
 	feeData: { volume_allowance: volumeAllowance, end_time: endTime, ...rest },

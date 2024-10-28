@@ -18,7 +18,6 @@ export * from './charges/hooks';
 export * from './timeline/hooks';
 export * from './disputes/hooks';
 export * from './settings/hooks';
-export * from './multi-currency';
 export * from './card-readers/hooks';
 export * from './capital/hooks';
 export * from './documents/hooks';
