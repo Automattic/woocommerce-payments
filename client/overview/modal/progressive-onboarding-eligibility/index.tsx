@@ -82,7 +82,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 			</h1>
 			<h2 className="wcpay-progressive-onboarding-eligibility-modal__subheading">
 				{ __(
-					'Start selling now and fast track the setup process, or continue the process to set up deposits with WooPayments.',
+					'Start selling now and fast track the setup process, or continue the process to set up payouts with WooPayments.',
 					'woocommerce-payments'
 				) }
 			</h2>
@@ -120,14 +120,14 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 						{ __( 'Flexible process', 'woocommerce-payments' ) }
 					</h3>
 					{ __(
-						'You have a $5,000 balance limit or 30 days from your first transaction to verify and set up deposits in your account.',
+						'You have a $5,000 balance limit or 30 days from your first transaction to verify and set up payouts in your account.',
 						'woocommerce-payments'
 					) }
 				</div>
 			</div>
 			<div className="wcpay-progressive-onboarding-eligibility-modal__footer">
 				<Button variant="secondary" onClick={ handleSetup }>
-					{ __( 'Start receiving deposits', 'woocommerce-payments' ) }
+					{ __( 'Start receiving payouts', 'woocommerce-payments' ) }
 				</Button>
 				<Button variant="primary" onClick={ handlePaymentsOnly }>
 					{ __( 'Start selling', 'woocommerce-payments' ) }
