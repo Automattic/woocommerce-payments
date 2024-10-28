@@ -13,7 +13,6 @@ import {
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies.

@@ -6,7 +6,6 @@
 import * as React from 'react';
 import { __, _n } from '@wordpress/i18n';
 import { TableCard } from '@woocommerce/components';
-import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies.
