@@ -129,7 +129,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Wipes the account data option, forcing to re-fetch the account status from WP.com.
+	 * Wipes the account data option, forcing to re-fetch the account data from WP.com.
 	 */
 	public function clear_cache() {
 		$this->database_cache->delete( Database_Cache::ACCOUNT_KEY );
@@ -2125,7 +2125,7 @@ class WC_Payments_Account {
 	/**
 	 * Refetches account data and returns the fresh data.
 	 *
-	 * @return array|bool|string Either the new account data or false if unavailable.
+	 * @return array|bool Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
 		return $this->get_cached_account_data( true );
