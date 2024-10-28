@@ -10,6 +10,7 @@ use WCPay\MultiCurrency\Compatibility;
 use WCPay\MultiCurrency\Currency;
 use WCPay\MultiCurrency\CurrencySwitcherBlock;
 use WCPay\MultiCurrency\MultiCurrency;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 
 /**
  * CurrencySwitcherBlock unit tests.
@@ -37,23 +38,25 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 	protected $mock_currencies;
 
 	/**
-	 * WC_Payments_Localization_Service.
-	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var MockObject\MultiCurrencyLocalizationInterface
 	 */
-	private $localization_service;
+	private $mock_localization_service;
 
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_multi_currency  = $this->createMock( MultiCurrency::class );
-		$this->mock_compatibility   = $this->createMock( Compatibility::class );
-		$this->localization_service = new WC_Payments_Localization_Service();
-		$this->mock_currencies      = [
-			new Currency( $this->localization_service, 'USD', 1 ),
-			new Currency( $this->localization_service, 'CAD', 1.206823 ),
-			new Currency( $this->localization_service, 'GBP', 0.708099 ),
-			new Currency( $this->localization_service, 'EUR', 0.826381 ),
+		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
+		$this->mock_compatibility        = $this->createMock( Compatibility::class );
+		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		$this->mock_localization_service
+			->method( 'get_currency_format' )
+			->willReturn( [ 'num_decimals' => 2 ] );
+
+		$this->mock_currencies = [
+			new Currency( $this->mock_localization_service, 'USD', 1 ),
+			new Currency( $this->mock_localization_service, 'CAD', 1.206823 ),
+			new Currency( $this->mock_localization_service, 'GBP', 0.708099 ),
+			new Currency( $this->mock_localization_service, 'EUR', 0.826381 ),
 		];
 
 		$this->currency_switcher_block = new CurrencySwitcherBlock(
@@ -219,8 +222,8 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 			->method( 'get_enabled_currencies' )
 			->willReturn(
 				[
-					new Currency( $this->localization_service, 'USD' ),
-					new Currency( $this->localization_service, $currency_code, 1 ),
+					new Currency( $this->mock_localization_service, 'USD' ),
+					new Currency( $this->mock_localization_service, $currency_code, 1 ),
 				]
 			);
 
@@ -275,7 +278,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestC
 		$this->mock_multi_currency
 			->expects( $this->once() )
 			->method( 'get_enabled_currencies' )
-			->willReturn( [ new Currency( $this->localization_service, 'USD' ) ] );
+			->willReturn( [ new Currency( $this->mock_localization_service, 'USD' ) ] );
 
 		// Act/Assert: Confirm that when calling the renger method nothing is returned.
 		$this->assertSame( '', $this->currency_switcher_block->render_block_widget( [], '' ) );

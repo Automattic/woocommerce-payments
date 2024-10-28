@@ -15,7 +15,10 @@ import Page from 'components/page';
 import { TestModeNotice } from 'components/test-mode-notice';
 import ErrorBoundary from 'components/error-boundary';
 import ActiveLoanSummary from 'components/active-loan-summary';
-import { formatExplicitCurrency, isZeroDecimalCurrency } from 'utils/currency';
+import {
+	formatExplicitCurrency,
+	isZeroDecimalCurrency,
+} from 'multi-currency/interface/functions';
 import { CapitalLoan } from 'data/capital/types';
 import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';

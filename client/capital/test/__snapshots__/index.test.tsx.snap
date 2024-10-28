@@ -1,0 +1,496 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CapitalPage renders the TableCard component with loan data 1`] = `
+<div>
+  <div
+    class=" woocommerce-payments-page"
+  >
+    <div
+      class="wcpay-banner-notice is-warning"
+    >
+      <div
+        class="wcpay-banner-notice__content"
+      >
+        Viewing test loans. To view live loans, disable test mode in 
+        <a
+          href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
+        >
+          WooPayments settings
+        </a>
+        .
+      </div>
+    </div>
+    <div
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-flex components-card__header components-card-header wcpay-loan-summary-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <div
+            class="components-flex-item css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Active loan overview
+          </div>
+          <div
+            class="components-flex-item css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          />
+        </div>
+        <div
+          class="components-card__body components-card-body wcpay-loan-summary-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div
+            class="components-flex wcpay-loan-summary-row css-s9rxun-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
+          >
+            <div
+              class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexBlock"
+            >
+              <div
+                class="wcpay-loan-summary-block__title"
+              >
+                Total repaid
+              </div>
+              <div
+                class="wcpay-loan-summary-block__value"
+              >
+                <span
+                  class="is-big"
+                >
+                  $0.00
+                </span>
+                 of $1,100.00
+              </div>
+            </div>
+            <div
+              class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexBlock"
+            >
+              <div
+                class="wcpay-loan-summary-block__title"
+              >
+                Repaid this period (until Dec 27, 2024)
+              </div>
+              <div
+                class="wcpay-loan-summary-block__value"
+              >
+                <span
+                  class="is-big"
+                >
+                  $0.00
+                </span>
+                 of $122.23 minimum
+              </div>
+            </div>
+          </div>
+          <div
+            class="components-flex wcpay-loan-summary-row is-bottom-row css-s9rxun-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
+          >
+            <div
+              class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexBlock"
+            >
+              <div
+                class="wcpay-loan-summary-block__title"
+              >
+                Loan disbursed
+              </div>
+              <div
+                class="wcpay-loan-summary-block__value"
+              >
+                Oct 21, 2024
+              </div>
+            </div>
+            <div
+              class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexBlock"
+            >
+              <div
+                class="wcpay-loan-summary-block__title"
+              >
+                Loan amount
+              </div>
+              <div
+                class="wcpay-loan-summary-block__value"
+              >
+                $1,000.00
+              </div>
+            </div>
+            <div
+              class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexBlock"
+            >
+              <div
+                class="wcpay-loan-summary-block__title"
+              >
+                Fixed fee
+              </div>
+              <div
+                class="wcpay-loan-summary-block__value"
+              >
+                $100.00
+              </div>
+            </div>
+            <div
+              class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexBlock"
+            >
+              <div
+                class="wcpay-loan-summary-block__title"
+              >
+                Withhold rate
+              </div>
+              <div
+                class="wcpay-loan-summary-block__value"
+              >
+                15
+                %
+              </div>
+            </div>
+            <div
+              class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+              data-wp-c16t="true"
+              data-wp-component="FlexBlock"
+            >
+              <div
+                class="wcpay-loan-summary-block__title"
+              >
+                First paydown
+              </div>
+              <div
+                class="wcpay-loan-summary-block__value"
+              >
+                Oct 28, 2024
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="components-surface components-card woocommerce-table wcpay-loans-list css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <h2
+            class="components-truncate components-text css-1s1vggh-View-Text-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Text"
+          >
+            All loans
+          </h2>
+          <div
+            class="woocommerce-table__actions"
+          />
+        </div>
+        <div
+          class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div
+            aria-labelledby="caption-0"
+            class="woocommerce-table__table"
+            role="group"
+          >
+            <table>
+              <caption
+                class="woocommerce-table__caption screen-reader-text"
+                id="caption-0"
+              >
+                All loans
+              </caption>
+              <tbody>
+                <tr>
+                  <th
+                    class="woocommerce-table__header is-left-aligned is-sorted"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Disbursed
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Disbursed
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-center-aligned is-left-aligned"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Status
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Status
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Amount
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Amount
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Fixed fee
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Fixed fee
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Withhold rate
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Withhold rate
+                    </span>
+                  </th>
+                  <th
+                    class="woocommerce-table__header is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      First paydown
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      First paydown
+                    </span>
+                  </th>
+                </tr>
+                <tr>
+                  <th
+                    class="woocommerce-table__item is-left-aligned is-sorted"
+                    scope="row"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      tabindex="-1"
+                    >
+                      Oct 28, 2024
+                    </a>
+                  </th>
+                  <td
+                    class="woocommerce-table__item is-center-aligned is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      tabindex="-1"
+                    >
+                      <span
+                        class="chip chip-warning"
+                      >
+                        Active
+                      </span>
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      tabindex="-1"
+                    >
+                      $1,000.00
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      tabindex="-1"
+                    >
+                      $100.00
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      tabindex="-1"
+                    >
+                      15%
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      tabindex="-1"
+                    >
+                      -
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div
+          class="components-flex components-card__footer components-card-footer css-142znvl-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardFooter"
+        >
+          <ul
+            class="woocommerce-table__summary"
+            role="complementary"
+          >
+            <li
+              class="woocommerce-table__summary-item"
+            >
+              <span
+                class="woocommerce-table__summary-value"
+              >
+                1
+              </span>
+              <span
+                class="woocommerce-table__summary-label"
+              >
+                loan
+              </span>
+            </li>
+            <li
+              class="woocommerce-table__summary-item"
+            >
+              <span
+                class="woocommerce-table__summary-value"
+              >
+                $1,000.00
+              </span>
+              <span
+                class="woocommerce-table__summary-label"
+              >
+                total
+              </span>
+            </li>
+            <li
+              class="woocommerce-table__summary-item"
+            >
+              <span
+                class="woocommerce-table__summary-value"
+              >
+                $100.00
+              </span>
+              <span
+                class="woocommerce-table__summary-label"
+              >
+                fixed fees
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;

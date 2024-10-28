@@ -22,7 +22,7 @@ import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants'
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import CapabilityRequestNotice from './capability-request';
-import { getMissingCurrenciesTooltipMessage } from 'wcpay/multi-currency/missing-currencies-message';
+import { getMissingCurrenciesTooltipMessage } from 'multi-currency/interface/functions';
 
 const PaymentMethodsList = ( { methodIds } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();

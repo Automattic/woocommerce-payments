@@ -21,7 +21,7 @@ import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { displayType } from 'deposits/strings';
 import { CachedDeposit } from 'wcpay/types/deposits';
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { getDetailsURL } from 'wcpay/components/details-link';
 
 interface RecentDepositsProps {
