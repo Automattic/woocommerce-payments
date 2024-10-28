@@ -9,7 +9,7 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { formatDateTime } from 'wcpay/utils/date-time';
 
 const ExpirationDescription = ( {

@@ -7,18 +7,21 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
+import { useAccountDomesticCurrency } from '../../../data';
 import {
 	useCurrencies,
 	useEnabledCurrencies,
-	useAccountDomesticCurrency,
-} from 'wcpay/data';
+} from 'multi-currency/interface/data';
 import CurrencyInformationForMethods from '../currency-information-for-methods';
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( '../../../data', () => ( {
+	useAccountDomesticCurrency: jest.fn(),
+} ) );
+
+jest.mock( 'multi-currency/interface/data', () => ( {
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
-	useAccountDomesticCurrency: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {

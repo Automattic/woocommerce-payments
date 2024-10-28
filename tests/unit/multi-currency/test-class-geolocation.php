@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Country_Code;
-
 /**
  * WCPay\MultiCurrency\Geolocation unit tests.
  */
@@ -51,10 +49,10 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
-		$this->assertSame( Country_Code::CANADA, $this->geolocation->get_country_by_customer_location() );
+		$this->assertSame( 'CA', $this->geolocation->get_country_by_customer_location() );
 	}
 
 	public function test_get_country_by_customer_location_returns_default_country_when_no_geolocation() {
@@ -68,20 +66,20 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_customer_default_location',
 			function () {
-				return Country_Code::BRAZIL;
+				return 'BR';
 			}
 		);
 
-		$this->assertSame( Country_Code::BRAZIL, $this->geolocation->get_country_by_customer_location() );
+		$this->assertSame( 'BR', $this->geolocation->get_country_by_customer_location() );
 	}
 
 	public function test_get_currency_by_customer_location_returns_geolocation_currency_code() {
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( 'CA' )->willReturn( [ 'currency_code' => 'CAD' ] );
 
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
 
@@ -89,7 +87,7 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_currency_by_customer_location_returns_default_currency_code() {
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::BRAZIL )->willReturn( [ 'currency_code' => 'BRL' ] );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( 'BR' )->willReturn( [ 'currency_code' => 'BRL' ] );
 
 		add_filter(
 			'woocommerce_geolocate_ip',
@@ -100,7 +98,7 @@ class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_customer_default_location',
 			function () {
-				return Country_Code::BRAZIL;
+				return 'BR';
 			}
 		);
 

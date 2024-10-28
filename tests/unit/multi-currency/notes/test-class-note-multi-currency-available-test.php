@@ -6,6 +6,7 @@
  */
 
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 
 /**
  * Class Note_Multi_Currency_Available_Test tests.
@@ -55,8 +56,8 @@ class Note_Multi_Currency_Available_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_possibly_add_note_with_account_not_connected() {
-		$account_mock = $this->createMock( WC_Payments_Account::class );
-		$account_mock->method( 'is_stripe_connected' )->willReturn( false );
+		$account_mock = $this->createMock( MultiCurrencyAccountInterface::class );
+		$account_mock->method( 'is_provider_connected' )->willReturn( false );
 		NoteMultiCurrencyAvailable::set_account( $account_mock );
 
 		NoteMultiCurrencyAvailable::possibly_add_note();
@@ -65,8 +66,8 @@ class Note_Multi_Currency_Available_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_possibly_add_note_with_connected_account() {
-		$account_mock = $this->createMock( WC_Payments_Account::class );
-		$account_mock->method( 'is_stripe_connected' )->willReturn( true );
+		$account_mock = $this->createMock( MultiCurrencyAccountInterface::class );
+		$account_mock->method( 'is_provider_connected' )->willReturn( true );
 		NoteMultiCurrencyAvailable::set_account( $account_mock );
 
 		NoteMultiCurrencyAvailable::possibly_add_note();

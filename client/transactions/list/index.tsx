@@ -53,7 +53,7 @@ import {
 	formatCurrency,
 	formatExplicitCurrency,
 	formatExportAmount,
-} from 'utils/currency';
+} from 'multi-currency/interface/functions';
 import { getChargeChannel } from 'utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';

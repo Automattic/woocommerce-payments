@@ -14,10 +14,10 @@ import {
 	formatMethodFeesTooltip,
 	getCurrentBaseFee,
 } from '../account-fees';
-import { formatCurrency } from '../currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
 
-jest.mock( '../currency', () => ( {
+jest.mock( 'multi-currency/interface/functions', () => ( {
 	formatCurrency: jest.fn( ( amount: number ): string => {
 		return sprintf( '$%.2f', amount / 100 );
 	} ),

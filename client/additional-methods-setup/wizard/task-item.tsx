@@ -16,6 +16,7 @@ interface WizardTaskItemProps {
 	title: string;
 	index: number;
 	className?: string;
+	visibleDescription?: string;
 }
 
 const WizardTaskItem: React.FC< WizardTaskItemProps > = ( {
@@ -23,6 +24,7 @@ const WizardTaskItem: React.FC< WizardTaskItemProps > = ( {
 	title,
 	index,
 	className,
+	visibleDescription,
 } ) => {
 	const { isCompleted, isActive } = useContext( WizardTaskContext );
 
@@ -51,6 +53,16 @@ const WizardTaskItem: React.FC< WizardTaskItemProps > = ( {
 				</div>
 				<span className="wcpay-wizard-task__title">{ title }</span>
 			</div>
+			{ visibleDescription && ! isActive && (
+				<span
+					className={ classNames(
+						'wcpay-wizard-task__visible-description-element',
+						'is-muted-color'
+					) }
+				>
+					{ visibleDescription }
+				</span>
+			) }
 			<div className="wcpay-wizard-task__body">{ children }</div>
 		</li>
 	);

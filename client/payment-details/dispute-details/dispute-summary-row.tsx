@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
  */
 import type { Dispute } from 'wcpay/types/disputes';
 import { HorizontalList } from 'wcpay/components/horizontal-list';
-import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { reasons } from 'wcpay/disputes/strings';
 import { formatStringValue } from 'wcpay/utils';
 import { ClickTooltip } from 'wcpay/components/tooltip';

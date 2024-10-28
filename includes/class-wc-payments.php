@@ -42,6 +42,7 @@ use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
+use WCPay\WC_Payments_Currency_Manager;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -123,6 +124,13 @@ class WC_Payments {
 	 * @var WC_Payments_Localization_Service
 	 */
 	private static $localization_service;
+
+	/**
+	 * Instance of WC_Payments_Settings_Service, created in init function
+	 *
+	 * @var WC_Payments_Settings_Service
+	 */
+	private static $settings_service;
 
 	/**
 	 * Instance of WC_Payments_Dependency_Service, created in init function
@@ -300,6 +308,13 @@ class WC_Payments {
 	private static $duplicates_detection_service;
 
 	/**
+	 * Instance of WC_Payments_Currency_Manager, created in init function
+	 *
+	 * @var WC_Payments_Currency_Manager
+	 */
+	private static $currency_manager;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -468,6 +483,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-onboarding-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
+		include_once __DIR__ . '/class-wc-payments-settings-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-success-page.php';
@@ -489,7 +505,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
 		include_once __DIR__ . '/class-compatibility-service.php';
-		include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
+		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
+		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
 		include_once __DIR__ . '/class-duplicates-detection-service.php';
 
 		self::$woopay_checkout_service = new Checkout_Service();
@@ -520,6 +537,7 @@ class WC_Payments {
 		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account, self::$session_service, self::$database_cache );
 		self::$in_person_payments_receipts_service  = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                 = new WC_Payments_Localization_Service();
+		self::$settings_service                     = new WC_Payments_Settings_Service();
 		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
 		self::$woopay_util                          = new WooPay_Utilities();
@@ -581,6 +599,9 @@ class WC_Payments {
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
+
+		self::$currency_manager = new WC_Payments_Currency_Manager( self::get_gateway() );
+		self::$currency_manager->init_hooks();
 
 		// Only register hooks of the new `src` service with the same feature of Duplicate_Payment_Prevention_Service.
 		// To avoid register the same hooks twice.
@@ -1321,6 +1342,15 @@ class WC_Payments {
 	 */
 	public static function get_localization_service() {
 		return self::$localization_service;
+	}
+
+	/**
+	 * Returns the WC_Payments_Settings_Service
+	 *
+	 * @return WC_Payments_Settings_Service Localization Service instance
+	 */
+	public static function get_settings_service() {
+		return self::$settings_service;
 	}
 
 	/**

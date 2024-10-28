@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Provide backwards-compatible method for retrieving the multi-currency instance.

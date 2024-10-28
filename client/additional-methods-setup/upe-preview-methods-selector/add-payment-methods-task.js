@@ -36,7 +36,7 @@ import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/p
 import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods from './currency-information-for-methods';
-import { getMissingCurrenciesTooltipMessage } from 'wcpay/multi-currency/missing-currencies-message';
+import { getMissingCurrenciesTooltipMessage } from 'multi-currency/interface/functions';
 import { upeCapabilityStatuses, upeMethods } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/settings/payment-methods-list/activation-modal';
