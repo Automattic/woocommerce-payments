@@ -7,16 +7,17 @@
 
 namespace WCPay;
 
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
+
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
  * A class for caching data as an option in the database.
  */
-class Database_Cache {
+class Database_Cache implements MultiCurrencyCacheInterface {
 	const ACCOUNT_KEY                 = 'wcpay_account_data';
 	const ONBOARDING_FIELDS_DATA_KEY  = 'wcpay_onboarding_fields_data';
 	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
-	const CURRENCIES_KEY              = 'wcpay_multi_currency_cached_currencies';
 	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
 	const FRAUD_SERVICES_KEY          = 'wcpay_fraud_services_data';
 

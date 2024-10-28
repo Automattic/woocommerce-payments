@@ -35,7 +35,7 @@ import {
 	getRiskReviewListColumnsStructure,
 } from './columns';
 import './style.scss';
-import { formatExplicitCurrency } from '../../utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import autocompleter from '../fraud-protection/autocompleter';
 import DownloadButton from '../../components/download-button';
 import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
