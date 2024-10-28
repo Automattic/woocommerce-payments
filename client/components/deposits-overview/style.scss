@@ -1,4 +1,8 @@
 .wcpay-deposits-overview {
+	a {
+		color: var( --wp-admin-theme-color, $gutenberg-blue );
+	}
+
 	&__heading {
 		display: flex;
 		flex-direction: column;
