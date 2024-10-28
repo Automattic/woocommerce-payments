@@ -5,7 +5,6 @@
  */
 import React from 'react';
 import moment from 'moment';
-import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { ExternalLink } from '@wordpress/components';
