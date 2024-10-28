@@ -49,12 +49,13 @@
 
 		&.components-notice {
 			padding: 8px;
+			background-color: $components-color-accent-background;
 		}
 
 		.components-notice__content {
 			font-size: 12px;
 			white-space: nowrap;
-			color: $wp-blue-70;
+			color: $components-color-accent;
 			margin-right: 0;
 		}
 	}

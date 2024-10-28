@@ -69,6 +69,7 @@ $wp-green-100: #001c05;
 
 // Missing from dependencies
 $gutenberg-blue: #007cba;
+$gutenberg-blue--rgb: 0, 124, 186;
 $gutenberg-blueberry: #3858e9;
 $gutenberg-blueberry-focus: #1d35b4;
 
@@ -76,4 +77,10 @@ $gutenberg-blueberry-focus: #1d35b4;
 $components-color-accent: var(
 	--wp-components-color-accent,
 	var( --wp-admin-theme-color, $gutenberg-blue )
+);
+
+// Accent background color
+$components-color-accent-background: rgba(
+	var( --wp-admin-theme-color--rgb, $gutenberg-blue--rgb ),
+	0.07
 );
