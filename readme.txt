@@ -94,6 +94,17 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.5.0-test-1 - unreleased =
+* Add - Add risk level information to the fraud and risk box on the order details page.
+* Fix - Fix PMME appearance in checkout
+* Fix - Fix settings display on the advanced fraud protection page.
+* Fix - Fix WooPay duplicated Save my info section.
+* Fix - Provide backwards-compatible method for retrieving the multi-currency instance.
+* Fix - Remove unnecessary '.woocommerce-table' css overrides to fix WC Analytics styling and a11y issues
+* Update - Decoupled Multi-currency module from gateway dependencies.
+* Update - Improvements to events during onboarding flow.
+* Dev - Bump WC tested up to version to 9.4.0
+
 = 8.4.0 - 2024-10-23 =
 * Add - Add test mode badge to classic checkout and add payment method.
 * Add - Using Floating Labels with Stripe Appearance API for Blocks Checkout
