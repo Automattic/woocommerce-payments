@@ -240,11 +240,12 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
 			],
 			'checkout'           => [
-				'currency_code'     => strtolower( get_woocommerce_currency() ),
-				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
-				'needs_shipping'    => WC()->cart->needs_shipping(),
+				'currency_code'              => strtolower( get_woocommerce_currency() ),
+				'country_code'               => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
+				'needs_shipping'             => WC()->cart->needs_shipping(),
 				// Defaults to 'required' to match how core initializes this option.
-				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
+				'needs_payer_phone'          => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
+				'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
 			],
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
@@ -256,15 +257,6 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			'total_label'        => $this->express_checkout_helper->get_total_label(),
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
-
-		// No need to send a list of countries if the store:
-		// 1. ships to all countries. Regardless of whom it sells to.
-		$ship_to_all = get_option( 'woocommerce_ship_to_countries' ) === 'all';
-		// 2. ships to all countries it sells to and store sells to all countries.
-		$ship_to_all_and_selling_to_all = get_option( 'woocommerce_allowed_countries' ) === 'all' && empty( get_option( 'woocommerce_ship_to_countries' ) );
-		if ( ! $ship_to_all && ! $ship_to_all_and_selling_to_all ) {
-			$payment_request_params['checkout']['allowed_shipping_countries'] = array_keys( WC()->countries->get_shipping_countries() ?? [] );
-		}
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'dist/express-checkout', [ 'jquery', 'stripe' ] );
 
