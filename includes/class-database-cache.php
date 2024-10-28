@@ -83,6 +83,23 @@ class Database_Cache {
 	private $refresh_disabled;
 
 	/**
+	 * In-memory cache for the duration of a single request.
+	 *
+	 * This is used to avoid multiple database reads for the same data and as a backstop in case the database write fails,
+	 * thus ensuring the cache generator (which means an API call to our platform) is not called multiple times.
+	 *
+	 * @var array
+	 */
+	private $in_memory_cache = [];
+
+	/**
+	 * Database cache write errors for each key.
+	 *
+	 * @var array
+	 */
+	private $db_cache_write_errors = [];
+
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
@@ -110,7 +127,7 @@ class Database_Cache {
 	 * @return mixed|null The cache contents. NULL on failure
 	 */
 	public function get_or_add( string $key, callable $generator, callable $validate_data, bool $force_refresh = false, bool &$refreshed = false ) {
-		$cache_contents = get_option( $key );
+		$cache_contents = $this->get_from_cache( $key );
 		$data           = null;
 		$old_data       = null;
 
@@ -122,11 +139,9 @@ class Database_Cache {
 		}
 
 		if ( $this->should_refresh_cache( $key, $cache_contents, $validate_data, $force_refresh ) ) {
-			$errored = false;
-
 			try {
 				$data    = $generator();
-				$errored = false === $data || null === $data;
+				$errored = ( false === $data || null === $data );
 			} catch ( \Throwable $e ) {
 				$errored = true;
 			}
@@ -138,7 +153,11 @@ class Database_Cache {
 				$data = $old_data;
 			}
 
-			$cache_contents = $this->write_to_cache( $key, $data, $errored );
+			$cache_written = $this->write_to_cache( $key, $data, $errored );
+			if ( ! $cache_written ) {
+				// If the cache write failed, mark as not refreshed.
+				$refreshed = false;
+			}
 		}
 
 		return $data;
@@ -153,7 +172,7 @@ class Database_Cache {
 	 * @return mixed The cache contents.
 	 */
 	public function get( string $key, bool $force = false ) {
-		$cache_contents = get_option( $key );
+		$cache_contents = $this->get_from_cache( $key );
 		if ( is_array( $cache_contents ) && array_key_exists( 'data', $cache_contents ) ) {
 			if ( ! $force && $this->is_expired( $key, $cache_contents ) ) {
 				return null;
@@ -161,6 +180,7 @@ class Database_Cache {
 
 			return $cache_contents['data'];
 		}
+
 		return null;
 	}
 
@@ -184,21 +204,16 @@ class Database_Cache {
 	 * @return void
 	 */
 	public function delete( string $key ) {
+		// Remove from the in-memory cache.
+		unset( $this->in_memory_cache[ $key ] );
+		// Reset the DB error count for the key.
+		unset( $this->db_cache_write_errors[ $key ] );
+
+		// Remove from the DB cache.
 		delete_option( $key );
 
-		// Clear WP Cache to ensure the new data is fetched by other processes.
+		// Clear the WP object cache to ensure the new data is fetched by other processes.
 		wp_cache_delete( $key, 'options' );
-	}
-
-	/**
-	 * Hook function allowing the cache refresh to be selectively disabled in certain situations
-	 * (such as while running an Action Scheduler job). While the refresh is disabled, get_or_add
-	 * will only return the cached value and never regenerate it, even if it's expired.
-	 *
-	 * @return void
-	 */
-	public function disable_refresh() {
-		$this->refresh_disabled = true;
 	}
 
 	/**
@@ -219,11 +234,34 @@ class Database_Cache {
 		}
 		global $wpdb;
 
-		$plugin_options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s", $key . '%' ) );
-
-		foreach ( $plugin_options as $option ) {
+		$options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s", $key . '%' ) );
+		foreach ( $options as $option ) {
 			$this->delete( $option->option_name );
 		}
+
+		// Make sure there are no stray entries the in-memory cache.
+		// This can happen on DB write failures or during unit tests.
+		foreach ( array_keys( $this->in_memory_cache ) as $cache_key ) {
+			if ( 0 === strpos( $cache_key, $key ) ) {
+				unset( $this->in_memory_cache[ $cache_key ] );
+			}
+		}
+		foreach ( array_keys( $this->db_cache_write_errors ) as $cache_key ) {
+			if ( 0 === strpos( $cache_key, $key ) ) {
+				unset( $this->db_cache_write_errors[ $cache_key ] );
+			}
+		}
+	}
+
+	/**
+	 * Hook function allowing the cache refresh to be selectively disabled in certain situations
+	 * (such as while running an Action Scheduler job). While the refresh is disabled, get_or_add
+	 * will only return the cached value and never regenerate it, even if it's expired.
+	 *
+	 * @return void
+	 */
+	public function disable_refresh() {
+		$this->refresh_disabled = true;
 	}
 
 	/**
@@ -243,6 +281,13 @@ class Database_Cache {
 			return true;
 		}
 
+		// Do not refresh if we had DB cache write errors for this key, during the current request.
+		// For the remainder of the request, we will use whatever we have in the in-memory cache,
+		// if the cache is not explicitly cleared or forced to refresh.
+		if ( isset( $this->db_cache_write_errors[ $key ] ) && $this->db_cache_write_errors[ $key ] > 0 ) {
+			return false;
+		}
+
 		// Do not refresh if doing ajax or the refresh has been disabled (running an AS job).
 		if (
 			defined( 'DOING_CRON' )
@@ -251,7 +296,7 @@ class Database_Cache {
 			return false;
 		}
 
-		// The value of false means that there was never an option set in the database.
+		// The value of false means that there was never something cached.
 		if ( false === $cache_contents ) {
 			return true;
 		}
@@ -284,28 +329,54 @@ class Database_Cache {
 	}
 
 	/**
+	 * Get the cache data the in-memory cache if initialized or read from the DB and initialize the in-memory cache.
+	 *
+	 * @param string $key The cache key.
+	 *
+	 * @return array|false The cache contents or false if there is no cached data for the key.
+	 */
+	private function get_from_cache( string $key ) {
+		if ( ! isset( $this->in_memory_cache[ $key ] ) || is_null( $this->in_memory_cache[ $key ] ) ) {
+			$this->in_memory_cache[ $key ] = get_option( $key );
+		}
+
+		return $this->in_memory_cache[ $key ];
+	}
+
+	/**
 	 * Wraps the data in the cache metadata and stores it.
 	 *
 	 * @param string  $key     The key to store the data under.
 	 * @param mixed   $data    The data to store.
 	 * @param boolean $errored Whether the refresh operation resulted in an error before this has been called.
 	 *
-	 * @return array The cache contents (data and metadata).
+	 * @return bool True if the data was successfully written to the cache. False otherwise.
 	 */
-	private function write_to_cache( string $key, $data, bool $errored ): array {
+	private function write_to_cache( string $key, $data, bool $errored ): bool {
 		// Add the  data and expiry time to the array we're caching.
 		$cache_contents            = [];
 		$cache_contents['data']    = $data;
 		$cache_contents['fetched'] = time();
 		$cache_contents['errored'] = $errored;
 
-		// Create or update the option cache.
-		update_option( $key, $cache_contents, 'no' );
+		// Write the in-memory cache.
+		$this->in_memory_cache[ $key ] = $cache_contents;
 
-		// Clear WP Cache to ensure the new data is fetched by other processes.
+		// Create or update the DB option cache.
+		// Note: Since we are adding the current time to the option value, WP will always write the option because
+		// the value is different from the current one. Thus, a false result ONLY means that the DB write failed.
+		$result = update_option( $key, $cache_contents, 'no' );
+
+		// Clear the WP object cache to ensure the new data is fetched by other processes.
 		wp_cache_delete( $key, 'options' );
 
-		return $cache_contents;
+		// The DB cache write failed.
+		if ( false === $result ) {
+			// Increase the error count.
+			$this->db_cache_write_errors[ $key ] = ( $this->db_cache_write_errors[ $key ] ?? 0 ) + 1;
+		}
+
+		return $result;
 	}
 
 	/**
@@ -314,12 +385,13 @@ class Database_Cache {
 	 * @param string $key            The cache key.
 	 * @param array  $cache_contents The cache contents.
 	 *
-	 * @return boolean True if the contents are expired.
+	 * @return boolean True if the contents are expired. False otherwise.
 	 */
 	private function is_expired( string $key, array $cache_contents ): bool {
 		$ttl     = $this->get_ttl( $key, $cache_contents );
 		$expires = $cache_contents['fetched'] + $ttl;
 		$now     = time();
+
 		return $expires < $now;
 	}
 
