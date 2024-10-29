@@ -159,8 +159,6 @@ describe( 'Single currency settings screen', () => {
 					precision: 2,
 				},
 			},
-			dateFormat: 'M j, Y',
-			timeFormat: 'g:iA',
 		};
 	} );
 
