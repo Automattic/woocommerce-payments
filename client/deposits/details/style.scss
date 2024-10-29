@@ -11,13 +11,11 @@
 			background: $wp-green-70;
 			border-color: $wp-green-0;
 		}
-
 		&.is-pending,
 		&.is-in_transit {
 			background: $wp-yellow-70;
 			border-color: $wp-yellow-0;
 		}
-
 		&.is-failed {
 			background: $wp-red-70;
 			border-color: $wp-red-0;
@@ -29,7 +27,6 @@
 			font-size: 14px;
 			line-height: 20px;
 		}
-
 		.woocommerce-summary__item-value {
 			font-size: 20px;
 			line-height: 28px;
@@ -53,7 +50,6 @@
 			border-bottom: 0;
 			background-color: inherit;
 			color: inherit;
-
 			.woocommerce-summary__item-label:hover {
 				color: inherit;
 			}
@@ -79,39 +75,31 @@
 		.woocommerce-summary__item-label {
 			margin-bottom: 12px;
 		}
-
 		.woocommerce-summary__item-data {
 			margin-top: 0;
 			margin-bottom: 8px;
 		}
-
 		.wcpay-summary__item-detail {
 			color: $dark-gray-500;
 		}
-
 		/* Hide unused SummaryNumber fields */
 		.woocommerce-summary__item-prev-value,
 		.woocommerce-summary__item-delta {
 			display: none;
 		}
-
 		.woocommerce-summary__item {
 			background: $studio-white;
-
 			&:hover .woocommerce-summary__item-label {
 				color: $gray-700;
 			}
 		}
-
 		a.woocommerce-summary__item {
 			&:hover {
 				background-color: $studio-gray-0;
-
 				&:hover .woocommerce-summary__item-label {
 					color: var( --wp-admin-theme-color );
 				}
 			}
-
 			&:active {
 				background-color: $studio-gray-5;
 			}
