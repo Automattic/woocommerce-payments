@@ -39,7 +39,7 @@ import {
 } from 'multi-currency/interface/functions';
 import { displayStatus } from '../strings';
 import './style.scss';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
@@ -111,7 +111,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 			key="depositDate"
 			label={
 				`${ depositDateLabel }: ` +
-				formatDateTime( moment.utc( deposit.date ).toISOString(), {
+				formatUserDateTime( moment.utc( deposit.date ).toISOString(), {
 					useGmt: true,
 					includeTime: false,
 				} )

@@ -13,7 +13,7 @@ import type { TaskItemProps } from '../types';
 import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-details';
 import moment from 'moment';
 import { recordEvent } from 'wcpay/tracks';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 export const getUpdateBusinessDetailsTask = (
 	errorMessages: string[],
@@ -46,9 +46,12 @@ export const getUpdateBusinessDetailsTask = (
 				'Update by %s to avoid a disruption in deposits.',
 				'woocommerce-payments'
 			),
-			formatDateTime( moment( currentDeadline * 1000 ).toISOString(), {
-				customFormat: 'ga M j, Y',
-			} )
+			formatUserDateTime(
+				moment( currentDeadline * 1000 ).toISOString(),
+				{
+					customFormat: 'ga M j, Y',
+				}
+			)
 		);
 
 		if ( hasSingleError ) {

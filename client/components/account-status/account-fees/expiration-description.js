@@ -10,7 +10,7 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { formatCurrency } from 'multi-currency/interface/functions';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 const ExpirationDescription = ( {
 	feeData: { volume_allowance: volumeAllowance, end_time: endTime, ...rest },
@@ -26,7 +26,7 @@ const ExpirationDescription = ( {
 				'woocommerce-payments'
 			),
 			formatCurrency( volumeAllowance, currencyCode ),
-			formatDateTime( moment( endTime ).toISOString(), {
+			formatUserDateTime( moment( endTime ).toISOString(), {
 				includeTime: false,
 			} )
 		);
@@ -46,7 +46,7 @@ const ExpirationDescription = ( {
 				'Discounted base fee expires on %1$s.',
 				'woocommerce-payments'
 			),
-			formatDateTime( moment( endTime ).toISOString(), {
+			formatUserDateTime( moment( endTime ).toISOString(), {
 				includeTime: false,
 			} )
 		);

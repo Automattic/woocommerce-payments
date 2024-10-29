@@ -16,7 +16,7 @@ import InfoOutlineIcon from 'gridicons/dist/info-outline';
  */
 import { getAdminUrl } from 'utils';
 import { ClickTooltip } from 'components/tooltip';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 interface DepositProps {
 	depositId?: string;
@@ -31,7 +31,7 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 			id: depositId,
 		} );
 
-		const formattedDateAvailable = formatDateTime(
+		const formattedDateAvailable = formatUserDateTime(
 			moment.utc( dateAvailable ).toISOString(),
 			{
 				includeTime: false,

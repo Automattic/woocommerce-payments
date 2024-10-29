@@ -24,7 +24,7 @@ import {
 	DisputeReason,
 	DisputeStatus,
 } from 'wcpay/types/disputes';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 import moment from 'moment';
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -370,7 +370,7 @@ describe( 'Disputes list', () => {
 			); // customer
 
 			expect( csvFirstDispute[ 11 ].replace( /^"|"$/g, '' ) ).toBe(
-				formatDateTime(
+				formatUserDateTime(
 					moment
 						.utc( mockDisputes[ 0 ].due_by )
 						.local()

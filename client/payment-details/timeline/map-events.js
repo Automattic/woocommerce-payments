@@ -30,7 +30,7 @@ import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
 import { fraudOutcomeRulesetMapping } from './mappings';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 /**
  * Creates a timeline item about a payment status change
@@ -84,7 +84,7 @@ const getDepositTimelineItem = (
 						'woocommerce-payments'
 				  ),
 			formattedAmount,
-			formatDateTime(
+			formatUserDateTime(
 				moment( event.deposit.arrival_date * 1000 ).toISOString(),
 				{ includeTime: false }
 			)
@@ -143,7 +143,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 				'woocommerce-payments'
 			),
 			formattedAmount,
-			formatDateTime(
+			formatUserDateTime(
 				moment( event.deposit.arrival_date * 1000 ).toISOString(),
 				{ includeTime: false }
 			)

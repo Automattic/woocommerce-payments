@@ -30,7 +30,7 @@ import {
 	SettingsLayout,
 	SettingsSection,
 } from 'multi-currency/interface/components';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 const SingleCurrencySettings = () => {
 	const {
@@ -104,7 +104,7 @@ const SingleCurrencySettings = () => {
 	}, [ currencySettings, currency, initialPriceRoundingType ] );
 
 	const formattedLastUpdatedDateTime = targetCurrency
-		? formatDateTime(
+		? formatUserDateTime(
 				moment.unix( targetCurrency.last_updated ).toISOString(),
 				{ useGmt: false, separator: ' ' }
 		  )

@@ -57,7 +57,7 @@ import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -201,9 +201,12 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 			</span>
 		);
 	}
-	return formatDateTime( moment.utc( dispute.due_by ).local().toISOString(), {
-		useGmt: false,
-	} );
+	return formatUserDateTime(
+		moment.utc( dispute.due_by ).local().toISOString(),
+		{
+			useGmt: false,
+		}
+	);
 };
 
 export const DisputesList = (): JSX.Element => {
@@ -300,7 +303,7 @@ export const DisputesList = (): JSX.Element => {
 			created: {
 				value: dispute.created,
 				display: clickable(
-					formatDateTime(
+					formatUserDateTime(
 						moment.utc( dispute.created ).local().toISOString(),
 						{ useGmt: false }
 					)
@@ -482,7 +485,7 @@ export const DisputesList = (): JSX.Element => {
 					{
 						// Disputed On.
 						...row[ 10 ],
-						value: formatDateTime(
+						value: formatUserDateTime(
 							moment.utc( row[ 10 ].value ).local().toISOString(),
 							{
 								useGmt: false,
@@ -493,7 +496,7 @@ export const DisputesList = (): JSX.Element => {
 					{
 						// Respond by.
 						...row[ 11 ],
-						value: formatDateTime(
+						value: formatUserDateTime(
 							moment.utc( row[ 11 ].value ).local().toISOString(),
 							{ useGmt: false }
 						),

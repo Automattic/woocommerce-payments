@@ -20,7 +20,7 @@ import DocumentsFilters from '../filters';
 import Page from '../../components/page';
 import { getDocumentUrl } from 'wcpay/utils';
 import VatFormModal from 'wcpay/vat/form-modal';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 interface Column extends TableCardColumn {
 	key: 'date' | 'type' | 'description' | 'download';
@@ -68,14 +68,14 @@ const getDocumentDescription = ( document: Document ) => {
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
 					__( 'VAT invoice for %s to %s', 'woocommerce-payments' ),
-					formatDateTime(
+					formatUserDateTime(
 						moment
 							.utc( document.period_from )
 							.local()
 							.toISOString(),
 						{ useGmt: false, includeTime: false }
 					),
-					formatDateTime(
+					formatUserDateTime(
 						moment.utc( document.period_to ).local().toISOString(),
 						{
 							useGmt: false,
@@ -184,7 +184,7 @@ export const DocumentsList = (): JSX.Element => {
 		const data = {
 			date: {
 				value: document.date,
-				display: formatDateTime(
+				display: formatUserDateTime(
 					moment.utc( document.date ).local().toISOString(),
 					{
 						useGmt: false,

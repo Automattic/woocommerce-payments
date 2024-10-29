@@ -63,7 +63,7 @@ import DisputeResolutionFooter from '../dispute-details/dispute-resolution-foote
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import CardNotice from 'wcpay/components/card-notice';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 declare const window: any;
 
@@ -110,7 +110,7 @@ const composePaymentSummaryItems = ( {
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
 			content: charge.created
-				? formatDateTime(
+				? formatUserDateTime(
 						moment( charge.created * 1000 ).toISOString(),
 						{
 							customFormat: 'M j, Y, g:ia',
@@ -709,7 +709,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								}
 							) }{ ' ' }
 							<abbr
-								title={ formatDateTime(
+								title={ formatUserDateTime(
 									moment
 										.utc( authorization.created )
 										.add( 7, 'days' )

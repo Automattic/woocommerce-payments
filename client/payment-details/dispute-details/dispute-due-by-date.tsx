@@ -5,7 +5,7 @@ import React from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import classNames from 'classnames';
 import moment from 'moment';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 const DisputeDueByDate: React.FC< {
 	dueBy: number;
@@ -14,7 +14,7 @@ const DisputeDueByDate: React.FC< {
 	const daysRemaining = Math.floor(
 		moment.unix( dueBy ).diff( moment(), 'days', true )
 	);
-	const respondByDate = formatDateTime(
+	const respondByDate = formatUserDateTime(
 		moment( dueBy * 1000 ).toISOString(),
 		{
 			separator: ', ',

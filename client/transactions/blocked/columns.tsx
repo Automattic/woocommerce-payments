@@ -14,7 +14,7 @@ import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';
 import { getDetailsURL } from '../../components/details-link';
 import ClickableCell from '../../components/clickable-cell';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'status';
@@ -70,7 +70,7 @@ export const getBlockedListRowContent = (
 		data.payment_intent.id || data.order_id.toString(),
 		'transactions'
 	);
-	const formattedCreatedDate = formatDateTime(
+	const formattedCreatedDate = formatUserDateTime(
 		moment.utc( data.created ).local().toISOString(),
 		{ useGmt: false }
 	);

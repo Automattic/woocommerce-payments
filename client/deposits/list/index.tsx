@@ -47,7 +47,7 @@ import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/i
 
 import './style.scss';
 import { parseInt } from 'lodash';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
@@ -135,10 +135,13 @@ export const DepositsList = (): JSX.Element => {
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
-				{ formatDateTime( moment.utc( deposit.date ).toISOString(), {
-					includeTime: false,
-					useGmt: true,
-				} ) }
+				{ formatUserDateTime(
+					moment.utc( deposit.date ).toISOString(),
+					{
+						includeTime: false,
+						useGmt: true,
+					}
+				) }
 			</Link>
 		);
 
@@ -327,7 +330,7 @@ export const DepositsList = (): JSX.Element => {
 				row[ 0 ],
 				{
 					...row[ 1 ],
-					value: formatDateTime(
+					value: formatUserDateTime(
 						moment.utc( row[ 1 ].value ).toISOString(),
 						{ useGmt: true, includeTime: false }
 					),

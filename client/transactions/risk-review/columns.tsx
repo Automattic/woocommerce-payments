@@ -16,7 +16,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
 import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'status';
@@ -76,7 +76,7 @@ export const getRiskReviewListRowContent = (
 	data: FraudOutcomeTransaction
 ): Record< string, TableCardBodyColumn > => {
 	const detailsURL = getDetailsURL( data.payment_intent.id, 'transactions' );
-	const formattedCreatedDate = formatDateTime(
+	const formattedCreatedDate = formatUserDateTime(
 		moment.utc( data.created ).local().toISOString(),
 		{ useGmt: false }
 	);

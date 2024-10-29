@@ -19,7 +19,7 @@ import {
 import { useCharge } from 'wcpay/data';
 import { recordEvent } from 'tracks';
 import './style.scss';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	const { data: charge } = useCharge( chargeId );
@@ -131,7 +131,9 @@ const UrgentDisputeNoticeBody = ( {
 		formatString,
 		formattedAmount,
 		reasons[ disputeReason ].display,
-		formatDateTime( dueBy.local().toISOString(), { includeTime: false } )
+		formatUserDateTime( dueBy.local().toISOString(), {
+			includeTime: false,
+		} )
 	);
 
 	let suffix = sprintf(
@@ -182,7 +184,9 @@ const RegularDisputeNoticeBody = ( {
 	const suffix = sprintf(
 		// Translators: %1$s is the dispute due date.
 		__( 'Please respond before %1$s.', 'woocommerce-payments' ),
-		formatDateTime( dueBy.local().toISOString(), { includeTime: false } )
+		formatUserDateTime( dueBy.local().toISOString(), {
+			includeTime: false,
+		} )
 	);
 
 	return (

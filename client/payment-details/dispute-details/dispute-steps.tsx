@@ -19,7 +19,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import DisputeDueByDate from './dispute-due-by-date';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 interface Props {
 	dispute: Dispute;
@@ -34,13 +34,13 @@ export const DisputeSteps: React.FC< Props > = ( {
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
-		const chargeDate = formatDateTime(
+		const chargeDate = formatUserDateTime(
 			moment( chargeCreated * 1000 ).toISOString(),
 			{
 				includeTime: false,
 			}
 		);
-		const disputeDate = formatDateTime(
+		const disputeDate = formatUserDateTime(
 			moment( dispute.created * 1000 ).toISOString(),
 			{ includeTime: false }
 		);
@@ -175,10 +175,10 @@ export const InquirySteps: React.FC< Props > = ( {
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
-		const chargeDate = formatDateTime(
+		const chargeDate = formatUserDateTime(
 			moment( chargeCreated * 1000 ).toISOString()
 		);
-		const disputeDate = formatDateTime(
+		const disputeDate = formatUserDateTime(
 			moment( dispute.created * 1000 ).toISOString()
 		);
 		const emailSubject = sprintf(

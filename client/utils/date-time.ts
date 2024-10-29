@@ -19,7 +19,7 @@ interface FormatDateTimeOptions {
  * @param { FormatDateTimeOptions } options - Additional options to control time inclusion and whether to use GMT/UTC.
  * @return { string } - The formatted date and time string.
  */
-export function formatDateTime(
+export function formatUserDateTime(
 	dateTime: string | Date,
 	options: FormatDateTimeOptions = {
 		includeTime: true,

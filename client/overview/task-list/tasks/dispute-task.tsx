@@ -14,7 +14,7 @@ import { formatCurrency } from 'multi-currency/interface/functions';
 import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
 import { isDueWithin } from 'wcpay/disputes/utils';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 /**
  * Returns an array of disputes that are due within the specified number of days.
@@ -142,7 +142,7 @@ export const getDisputeResolutionTask = (
 				? sprintf(
 						__( 'Respond today by %s', 'woocommerce-payments' ),
 						// Show due_by time in local timezone: e.g. "11:59 PM".
-						formatDateTime(
+						formatUserDateTime(
 							moment.utc( dispute.due_by ).local().toISOString(),
 							{
 								useGmt: false,
@@ -156,7 +156,7 @@ export const getDisputeResolutionTask = (
 							'woocommerce-payments'
 						),
 						// Show due_by date in local timezone: e.g. "Jan 1, 2021".
-						formatDateTime(
+						formatUserDateTime(
 							moment.utc( dispute.due_by ).local().toISOString(),
 							{
 								useGmt: false,

@@ -69,7 +69,7 @@ import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -466,7 +466,7 @@ export const TransactionsList = (
 			date: {
 				value: txn.date,
 				display: clickable(
-					formatDateTime(
+					formatUserDateTime(
 						moment.utc( txn.date ).local().toISOString(),
 						{ useGmt: false }
 					)

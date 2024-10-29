@@ -20,7 +20,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { recordEvent } from 'tracks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 interface Column extends TableCardColumn {
 	key:
@@ -130,12 +130,12 @@ export const AuthorizationsList = (): JSX.Element => {
 				display: auth.payment_intent_id,
 			},
 			created: {
-				value: formatDateTime(
+				value: formatUserDateTime(
 					moment.utc( auth.created ).local().toISOString(),
 					{ useGmt: false }
 				),
 				display: clickable(
-					formatDateTime(
+					formatUserDateTime(
 						moment.utc( auth.created ).local().toISOString(),
 						{ useGmt: false }
 					)
@@ -143,7 +143,7 @@ export const AuthorizationsList = (): JSX.Element => {
 			},
 			// Payments are authorized for a maximum of 7 days
 			capture_by: {
-				value: formatDateTime(
+				value: formatUserDateTime(
 					moment
 						.utc( auth.created )
 						.add( 7, 'd' )
@@ -152,7 +152,7 @@ export const AuthorizationsList = (): JSX.Element => {
 					{ useGmt: false }
 				),
 				display: clickable(
-					formatDateTime(
+					formatUserDateTime(
 						moment
 							.utc( auth.created )
 							.add( 7, 'd' )

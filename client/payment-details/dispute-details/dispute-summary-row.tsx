@@ -19,7 +19,7 @@ import { formatStringValue } from 'wcpay/utils';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import Paragraphs from 'wcpay/components/paragraphs';
 import DisputeDueByDate from './dispute-due-by-date';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 interface Props {
 	dispute: Dispute;
@@ -39,7 +39,7 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 		{
 			title: __( 'Disputed On', 'woocommerce-payments' ),
 			content: dispute.created
-				? formatDateTime(
+				? formatUserDateTime(
 						moment( dispute.created * 1000 ).toISOString(),
 						{ useGmt: false, separator: ', ' }
 				  )

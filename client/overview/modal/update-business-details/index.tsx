@@ -12,7 +12,7 @@ import moment from 'moment';
 import strings from './strings';
 import './index.scss';
 import { recordEvent } from 'wcpay/tracks';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 interface Props {
 	errorMessages: Array< string >;
@@ -57,7 +57,7 @@ const UpdateBusinessDetailsModal = ( {
 								currentDeadline
 									? sprintf(
 											strings.restrictedSoonDescription,
-											formatDateTime(
+											formatUserDateTime(
 												moment(
 													currentDeadline * 1000
 												).toISOString(),

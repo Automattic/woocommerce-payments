@@ -5,7 +5,7 @@ import { dateI18n } from '@wordpress/date';
 /**
  * Internal dependencies
  */
-import { formatDateTime } from '../date-time';
+import { formatUserDateTime } from '../date-time';
 
 jest.mock( '@wordpress/date', () => ( {
 	dateI18n: jest.fn(),
@@ -28,7 +28,7 @@ describe( 'formatDateTime', () => {
 
 	it( 'should format date and time using default WordPress settings', () => {
 		const dateTime = '2024-10-23 15:28:26';
-		formatDateTime( dateTime );
+		formatUserDateTime( dateTime );
 
 		expect( dateI18n ).toHaveBeenCalledWith(
 			`${ mockWcpaySettings.dateFormat } / ${ mockWcpaySettings.timeFormat }`,
@@ -40,7 +40,7 @@ describe( 'formatDateTime', () => {
 	it( 'should use custom format if provided', () => {
 		const dateTime = '2024-10-23 15:28:26';
 		const options = { customFormat: 'd-m-Y H:i:s' };
-		formatDateTime( dateTime, options );
+		formatUserDateTime( dateTime, options );
 
 		expect( dateI18n ).toHaveBeenCalledWith(
 			'd-m-Y H:i:s',
@@ -52,7 +52,7 @@ describe( 'formatDateTime', () => {
 	it( 'should exclude time if includeTime is set to false', () => {
 		const dateTime = '2024-10-23 15:28:26';
 		const options = { includeTime: false };
-		formatDateTime( dateTime, options );
+		formatUserDateTime( dateTime, options );
 
 		expect( dateI18n ).toHaveBeenCalledWith(
 			mockWcpaySettings.dateFormat,
@@ -64,7 +64,7 @@ describe( 'formatDateTime', () => {
 	it( 'should handle GMT/UTC setting correctly', () => {
 		const dateTime = '2024-10-23 15:28:26';
 		const options = { useGmt: false };
-		formatDateTime( dateTime, options );
+		formatUserDateTime( dateTime, options );
 
 		expect( dateI18n ).toHaveBeenCalledWith(
 			`${ mockWcpaySettings.dateFormat } / ${ mockWcpaySettings.timeFormat }`,
@@ -76,7 +76,7 @@ describe( 'formatDateTime', () => {
 	it( 'should use custom separator when provided', () => {
 		const dateTime = '2024-10-23 15:28:26';
 		const options = { separator: ' - ' };
-		formatDateTime( dateTime, options );
+		formatUserDateTime( dateTime, options );
 
 		expect( dateI18n ).toHaveBeenCalledWith(
 			`${ mockWcpaySettings.dateFormat } - ${ mockWcpaySettings.timeFormat }`,

@@ -19,7 +19,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import './style.scss';
 import Loadable from 'components/loadable';
 import { Dispute } from 'wcpay/types/disputes';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 const fields: { key: string; label: string }[] = [
 	{ key: 'created', label: __( 'Dispute date', 'woocommerce-payments' ) },
@@ -69,7 +69,7 @@ const Info = ( {
 				transactionId: __( 'Transaction link', 'woocommerce-payments' ),
 		  }
 		: {
-				created: formatDateTime(
+				created: formatUserDateTime(
 					moment( dispute.created * 1000 ).toISOString(),
 					{ includeTime: false, useGmt: false }
 				),
@@ -78,7 +78,7 @@ const Info = ( {
 					dispute.currency || 'USD'
 				),
 				dueBy: dispute.evidence_details
-					? formatDateTime(
+					? formatUserDateTime(
 							moment(
 								dispute.evidence_details.due_by * 1000
 							).toISOString(),

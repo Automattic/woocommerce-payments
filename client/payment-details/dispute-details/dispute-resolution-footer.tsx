@@ -16,13 +16,13 @@ import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import './style.scss';
-import { formatDateTime } from 'wcpay/utils/date-time';
+import { formatUserDateTime } from 'wcpay/utils/date-time';
 
 const DisputeUnderReviewFooter: React.FC< {
 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
-		? formatDateTime(
+		? formatUserDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
@@ -92,7 +92,7 @@ const DisputeWonFooter: React.FC< {
 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
-		? formatDateTime(
+		? formatUserDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
@@ -169,7 +169,7 @@ const DisputeLostFooter: React.FC< {
 	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true ) ?? '-';
 
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
-		? formatDateTime(
+		? formatUserDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
@@ -272,7 +272,7 @@ const InquiryUnderReviewFooter: React.FC< {
 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
 } > = ( { dispute } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
-		? formatDateTime(
+		? formatUserDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
@@ -344,7 +344,7 @@ const InquiryClosedFooter: React.FC< {
 } > = ( { dispute } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
-		? formatDateTime(
+		? formatUserDateTime(
 				moment
 					.unix(
 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
