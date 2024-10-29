@@ -1,6 +1,6 @@
 .wcpay-deposits-overview {
 	a {
-		color: var( --wp-admin-theme-color, $gutenberg-blue );
+		color: $components-color-accent;
 	}
 
 	&__heading {
