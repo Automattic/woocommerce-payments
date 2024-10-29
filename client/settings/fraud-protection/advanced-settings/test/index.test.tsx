@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
-import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
@@ -28,7 +27,9 @@ jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		createSuccessNotice: jest.fn(),
+		createErrorNotice: jest.fn(),
 		onLoad: jest.fn(),
+		onHistoryChange: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
@@ -75,9 +76,9 @@ declare const global: {
 	};
 };
 
-const mockUseCurrentProtectionLevel = mocked( useCurrentProtectionLevel );
+const mockUseCurrentProtectionLevel = jest.mocked( useCurrentProtectionLevel );
 
-const mockUseAdvancedFraudProtectionSettings = mocked(
+const mockUseAdvancedFraudProtectionSettings = jest.mocked(
 	useAdvancedFraudProtectionSettings
 );
 
@@ -85,6 +86,7 @@ const mockUseSettings = useSettings as jest.MockedFunction<
 	() => {
 		settings: any;
 		isLoading: boolean;
+		isDirty: boolean;
 		saveSettings: jest.Mock;
 		isSaving: boolean;
 	}
@@ -170,6 +172,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isSaving: false,
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			[],
@@ -186,6 +189,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isSaving: false,
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			'error',
@@ -241,6 +245,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isLoading: false,
 			isSaving: false,
+			isDirty: false,
 		} );
 
 		container = render(
@@ -252,6 +257,11 @@ describe( 'Advanced fraud protection settings', () => {
 			</div>
 		);
 
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		expect( mockUseSettings().saveSettings.mock.calls.length ).toBe( 0 );
@@ -285,6 +295,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isSaving: false,
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
@@ -298,6 +309,12 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
+
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
@@ -345,6 +362,7 @@ describe( 'Advanced fraud protection settings', () => {
 			isSaving: false,
 			saveSettings: jest.fn(),
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
@@ -358,6 +376,12 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
+
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
@@ -409,6 +433,7 @@ describe( 'Advanced fraud protection settings', () => {
 			saveSettings: jest.fn(),
 			isSaving: false,
 			isLoading: false,
+			isDirty: false,
 		} );
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
 			defaultSettings,
@@ -422,6 +447,12 @@ describe( 'Advanced fraud protection settings', () => {
 				<FraudProtectionAdvancedSettingsPage />
 			</div>
 		);
+
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
 		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
 		saveButton.click();
 		await waitFor( () => {
@@ -437,5 +468,53 @@ describe( 'Advanced fraud protection settings', () => {
 		expect( protectionLevelState.state ).toBe( 'advanced' );
 		expect( protectionLevelState.updateState.mock.calls.length ).toBe( 0 );
 		expect( protectionLevelState.updateState.mock.calls ).toEqual( [] );
+	} );
+	test( 'does not update protection level to advanced when no risk rules are enabled', async () => {
+		const protectionLevelState = {
+			state: 'standard',
+			updateState: jest.fn( ( level ) => {
+				protectionLevelState.state = level;
+			} ),
+		};
+		mockUseCurrentProtectionLevel.mockReturnValue( [
+			protectionLevelState.state,
+			protectionLevelState.updateState,
+		] );
+		mockUseSettings.mockReturnValue( {
+			settings: {
+				advanced_fraud_protection_settings: defaultSettings,
+			},
+			isSaving: false,
+			saveSettings: jest.fn(),
+			isLoading: false,
+			isDirty: false,
+		} );
+		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [
+			defaultSettings,
+			jest.fn(),
+		] );
+		container = render(
+			<div>
+				<div className="woocommerce-layout__header-wrapper">
+					<div className="woocommerce-layout__header-heading"></div>
+				</div>
+				<FraudProtectionAdvancedSettingsPage />
+			</div>
+		);
+		const avsThresholdToggle = await container.findByLabelText(
+			'Block transactions for mismatched AVS'
+		);
+		avsThresholdToggle.click();
+		avsThresholdToggle.click();
+		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+
+		saveButton.click();
+		await waitFor( () => {
+			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
+				1
+			);
+		} );
+
+		expect( protectionLevelState.state ).toBe( 'basic' );
 	} );
 } );

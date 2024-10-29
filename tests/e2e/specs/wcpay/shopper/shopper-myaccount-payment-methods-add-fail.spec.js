@@ -57,7 +57,7 @@ describe( 'Payment Methods', () => {
 				} );
 
 				await shopperWCP.goToPaymentMethods();
-				await expect( page ).not.toMatch( label );
+				await expect( page ).not.toMatchTextContent( label );
 			} );
 		}
 	);

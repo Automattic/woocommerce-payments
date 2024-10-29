@@ -9,7 +9,7 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { filters, advancedFilters, DisputesFilterType } from './config';
-import { formatCurrencyName } from '../../utils/currency';
+import { formatCurrencyName } from 'multi-currency/interface/functions';
 
 interface DisputesFiltersProps {
 	storeCurrencies?: string[];
@@ -42,13 +42,15 @@ export const DisputesFilters = ( {
 	};
 
 	return (
-		<ReportFilters
-			filters={ populateDisputesCurrencies( filters ) }
-			advancedFilters={ advancedFilters }
-			showDatePicker={ false }
-			path="/payments/disputes"
-			query={ getQuery() }
-		/>
+		<div className="woocommerce-filters-disputes">
+			<ReportFilters
+				filters={ populateDisputesCurrencies( filters ) }
+				advancedFilters={ advancedFilters }
+				showDatePicker={ false }
+				path="/payments/disputes"
+				query={ getQuery() }
+			/>
+		</div>
 	);
 };
 

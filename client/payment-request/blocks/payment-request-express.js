@@ -9,9 +9,9 @@ import { Elements, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
  * Internal dependencies
  */
 import { useInitialization } from './use-initialization';
-import { getPaymentRequestData } from '../utils';
 import { recordUserEvent } from 'tracks';
 import { useEffect, useState } from 'react';
+import { getPaymentRequestData } from '../utils/utils';
 
 /**
  * PaymentRequestExpressComponent
@@ -28,6 +28,7 @@ const PaymentRequestExpressComponent = ( {
 	onClick,
 	onClose,
 	onPaymentRequestAvailable,
+	buttonAttributes,
 } ) => {
 	// TODO: Don't display custom button when result.requestType
 	// is `apple_pay` or `google_pay`.
@@ -44,13 +45,18 @@ const PaymentRequestExpressComponent = ( {
 		onClose,
 	} );
 
-	const { type, theme, height } = getPaymentRequestData( 'button' );
+	let { type, theme, height } = getPaymentRequestData( 'button' );
+
+	// If we are on the checkout block, we receive button attributes which overwrite the extension specific settings
+	if ( typeof buttonAttributes !== 'undefined' ) {
+		height = buttonAttributes.height || height;
+	}
 
 	const paymentRequestButtonStyle = {
 		paymentRequestButton: {
 			type,
 			theme,
-			height: height + 'px',
+			height: `${ height }px`,
 		},
 	};
 

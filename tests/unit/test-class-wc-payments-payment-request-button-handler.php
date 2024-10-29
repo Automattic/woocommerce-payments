@@ -7,6 +7,7 @@
 
 use WCPay\Constants\Country_Code;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
@@ -161,7 +162,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	}
 
 	public function tear_down() {
-		parent::tear_down();
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
@@ -177,6 +177,9 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		remove_filter( 'wc_tax_enabled', '__return_true' );
 		remove_filter( 'wc_tax_enabled', '__return_false' );
 		remove_filter( 'wc_shipping_enabled', '__return_false' );
+		remove_all_filters( 'woocommerce_find_rates' );
+
+		parent::tear_down();
 	}
 
 	public function __return_yes() {
@@ -223,7 +226,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$mock_order_service,
 			$mock_dpps,
 			$this->createMock( WC_Payments_Localization_Service::class ),
-			$this->createMock( WC_Payments_Fraud_Service::class )
+			$this->createMock( WC_Payments_Fraud_Service::class ),
+			$this->createMock( Duplicates_Detection_Service::class )
 		);
 	}
 
@@ -272,6 +276,141 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		return $method->get_rate_id();
 	}
 
+	public function test_tokenized_cart_address_avoid_normalization_when_missing_header() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', null );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'US',
+				'state'   => 'California',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+
+		$this->assertSame( 'California', $shipping_address['state'] );
+	}
+
+	public function test_tokenized_cart_address_avoid_normalization_when_wrong_nonce() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', 'invalid-nonce' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'US',
+				'state'   => 'California',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+
+		$this->assertSame( 'California', $shipping_address['state'] );
+	}
+
+	public function test_tokenized_cart_address_state_normalization() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'US',
+				'state'   => 'California',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country' => 'CA',
+				'state'   => 'Colombie-Britannique',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'CA', $shipping_address['state'] );
+		$this->assertSame( 'BC', $billing_address['state'] );
+	}
+
+	public function test_tokenized_cart_address_postcode_normalization() {
+		$request = new WP_REST_Request();
+		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => 'CA',
+				'postcode' => 'H3B',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => 'US',
+				'postcode' => '90210',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		// this should be modified.
+		$this->assertSame( 'H3B000', $shipping_address['postcode'] );
+		// this shouldn't be modified.
+		$this->assertSame( '90210', $billing_address['postcode'] );
+	}
+
+	public function test_tokenized_cart_avoid_address_postcode_normalization_if_route_incorrect() {
+		$request = new WP_REST_Request();
+		$request->set_route( '/wc/store/v1/checkout' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => 'CA',
+				'postcode' => 'H3B',
+				'state'    => 'Colombie-Britannique',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => 'CA',
+				'postcode' => 'H3B',
+				'state'    => 'Colombie-Britannique',
+			]
+		);
+
+		$this->pr->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		// this should be modified.
+		$this->assertSame( 'BC', $shipping_address['state'] );
+		$this->assertSame( 'BC', $billing_address['state'] );
+		// this shouldn't be modified.
+		$this->assertSame( 'H3B', $shipping_address['postcode'] );
+		$this->assertSame( 'H3B', $billing_address['postcode'] );
+	}
 
 	public function test_get_shipping_options_returns_shipping_options() {
 		$data = $this->pr->get_shipping_options( self::SHIPPING_ADDRESS );
@@ -293,6 +432,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			[
 				'label'  => 'Shipping',
 				'amount' => $flat_rate['amount'],
+				'key'    => 'total_shipping',
 			],
 		];
 
@@ -523,6 +663,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		// Restore the sign-up fee after the test.
 		WC_Subscriptions_Product::set_sign_up_fee( 0 );
+
+		remove_all_filters( 'test_deposit_get_product' );
 	}
 
 	public function test_get_product_price_includes_variable_subscription_sign_up_fee() {
@@ -541,6 +683,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		// Restore the sign-up fee after the test.
 		WC_Subscriptions_Product::set_sign_up_fee( 0 );
+
+		remove_all_filters( 'test_deposit_get_product' );
 	}
 
 	public function test_get_product_price_throws_exception_for_products_without_prices() {
@@ -571,6 +715,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		// Restore the sign-up fee after the test.
 		WC_Subscriptions_Product::set_sign_up_fee( 0 );
+
+		remove_all_filters( 'test_deposit_get_product' );
 	}
 
 	private function create_mock_subscription( $type ) {
@@ -656,13 +802,50 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		$this->assertEquals(
 			[
-				'type'         => 'buy',
+				'type'         => 'default',
 				'theme'        => 'dark',
 				'height'       => '48',
 				'locale'       => 'en',
-				'branded_type' => 'long',
+				'branded_type' => 'short',
+				'radius'       => '',
 			],
 			$this->pr->get_button_settings()
 		);
+	}
+
+	public function test_filter_gateway_title() {
+		$order = $this->createMock( WC_Order::class );
+		$order->method( 'get_payment_method_title' )->willReturn( 'Apple Pay' );
+
+		global $theorder;
+		$theorder = $order;
+
+		$this->set_is_admin( true );
+		$this->assertEquals( 'Apple Pay', $this->pr->filter_gateway_title( 'Original Title', 'woocommerce_payments' ) );
+
+		$this->set_is_admin( false );
+		$this->assertEquals( 'Original Title', $this->pr->filter_gateway_title( 'Original Title', 'woocommerce_payments' ) );
+
+		$this->set_is_admin( true );
+		$this->assertEquals( 'Original Title', $this->pr->filter_gateway_title( 'Original Title', 'another_gateway' ) );
+	}
+
+	/**
+	 * @param bool $is_admin
+	 */
+	private function set_is_admin( bool $is_admin ) {
+		global $current_screen;
+
+		if ( ! $is_admin ) {
+			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+			return;
+		}
+
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+		$current_screen = $this->getMockBuilder( \stdClass::class )
+			->setMethods( [ 'in_admin' ] )
+			->getMock();
+
+		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
 	}
 }

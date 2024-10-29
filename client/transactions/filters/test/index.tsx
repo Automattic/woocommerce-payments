@@ -16,7 +16,7 @@ import { TransactionsFilters } from '../';
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
 jest.mock( '@woocommerce/settings', () => ( {
 	...jest.requireActual( '@woocommerce/settings' ),
-	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.7 : '' ) ),
+	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.8 : '' ) ),
 } ) );
 
 jest.mock( 'tracks', () => ( {
@@ -47,6 +47,14 @@ global.wcSettings = {
 };
 
 describe( 'Transactions filters', () => {
+	beforeAll( () => {
+		jest.useFakeTimers();
+	} );
+
+	afterAll( () => {
+		jest.useRealTimers();
+	} );
+
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );

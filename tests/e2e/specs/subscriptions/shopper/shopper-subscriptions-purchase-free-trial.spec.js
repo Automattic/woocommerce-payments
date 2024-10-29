@@ -120,7 +120,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await page.waitForNavigation( {
 				waitUntil: 'networkidle0',
 			} );
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 
 			// Get the order ID so we can open it in the merchant view
 			const orderIdField = await page.$( testSelectors.checkoutOrderId );

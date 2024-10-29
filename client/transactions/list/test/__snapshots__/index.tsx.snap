@@ -119,7 +119,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                        d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
                       />
                     </svg>
                     <div
@@ -208,7 +208,6 @@ exports[`Transactions list renders correctly when can filter by several currenci
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-15"
             class="woocommerce-table__table"
             role="group"
@@ -1002,13 +1001,13 @@ exports[`Transactions list renders correctly when can filter by several currenci
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -1108,7 +1107,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                        d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
                       />
                     </svg>
                     <div
@@ -1197,7 +1196,6 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-16"
             class="woocommerce-table__table"
             role="group"
@@ -2033,13 +2031,13 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -2094,7 +2092,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                        d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
                       />
                     </svg>
                     <div
@@ -2183,7 +2181,6 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-0"
             class="woocommerce-table__table"
             role="group"
@@ -2665,13 +2662,13 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -2771,7 +2768,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                        d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
                       />
                     </svg>
                     <div
@@ -2860,7 +2857,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-14"
             class="woocommerce-table__table"
             role="group"
@@ -3728,13 +3724,13 @@ exports[`Transactions list subscription column renders correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -3834,7 +3830,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                        d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
                       />
                     </svg>
                     <div
@@ -3923,7 +3919,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-1"
             class="woocommerce-table__table"
             role="group"
@@ -4759,13 +4754,13 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -4865,7 +4860,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
+                        d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
                       />
                     </svg>
                     <div
@@ -4954,7 +4949,6 @@ exports[`Transactions list when not filtered by deposit renders table summary on
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-11"
             class="woocommerce-table__table"
             role="group"
@@ -5790,13 +5784,13 @@ exports[`Transactions list when not filtered by deposit renders table summary on
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

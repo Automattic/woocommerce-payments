@@ -11,6 +11,7 @@ use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WC_Payments_Utils;
 use WC_Payments_API_Client;
 use WCPay\Constants\Fraud_Meta_Box_Type;
+use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
  * Request class for getting intents.
@@ -37,6 +38,10 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
+		$status = $this->status ?? 'null';
+		if ( ! Rule::is_valid_fraud_outcome_status( $status ) ) {
+			throw new Invalid_Request_Parameter_Exception( "Invalid fraud outcome status provided: $status", 'invalid_fraud_outcome_status' );
+		}
 		return WC_Payments_API_Client::FRAUD_OUTCOMES_API . '/status/' . $this->status;
 	}
 

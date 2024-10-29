@@ -30,19 +30,6 @@ export const useCardPresentEligible = () => {
 	return [ isCardPresentEligible, updateIsCardPresentEligible ];
 };
 
-export const useClientSecretEncryption = () => {
-	const { updateIsClientSecretEncryptionEnabled } = useDispatch( STORE_NAME );
-
-	const isClientSecretEncryptionEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsClientSecretEncryptionEnabled()
-	);
-
-	return [
-		isClientSecretEncryptionEnabled,
-		updateIsClientSecretEncryptionEnabled,
-	];
-};
-
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
@@ -97,6 +84,12 @@ export const useTestMode = () => {
 
 	return [ isTestModeEnabled, updateIsTestModeEnabled ];
 };
+
+export const useTestModeOnboarding = () =>
+	useSelect(
+		( select ) => select( STORE_NAME ).getIsTestModeOnboarding(),
+		[]
+	);
 
 export const useDevMode = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getIsDevModeEnabled(), [] );
@@ -335,6 +328,7 @@ export const useSettings = () => {
 	const isSaving = useSelect( ( select ) =>
 		select( STORE_NAME ).isSavingSettings()
 	);
+	const isDirty = useSelect( ( select ) => select( STORE_NAME ).isDirty() );
 
 	const isLoading = useSelect( ( select ) => {
 		select( STORE_NAME ).getSettings();
@@ -349,6 +343,7 @@ export const useSettings = () => {
 		isLoading,
 		saveSettings,
 		isSaving,
+		isDirty,
 	};
 };
 
@@ -402,6 +397,21 @@ export const usePaymentRequestButtonTheme = () => {
 	return [ paymentRequestButtonTheme, updatePaymentRequestButtonTheme ];
 };
 
+export const usePaymentRequestButtonBorderRadius = () => {
+	const { updatePaymentRequestButtonBorderRadius } = useDispatch(
+		STORE_NAME
+	);
+
+	const paymentRequestButtonBorderRadius = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonBorderRadius()
+	);
+
+	return [
+		paymentRequestButtonBorderRadius,
+		updatePaymentRequestButtonBorderRadius,
+	];
+};
+
 export const useGetSavingError = () => {
 	return useSelect( ( select ) => select( STORE_NAME ).getSavingError(), [] );
 };
@@ -414,6 +424,21 @@ export const useWooPayEnabledSettings = () => {
 	);
 
 	return [ isWooPayEnabled, updateIsWooPayEnabled ];
+};
+
+export const useWooPayGlobalThemeSupportEnabledSettings = () => {
+	const { updateIsWooPayGlobalThemeSupportEnabled } = useDispatch(
+		STORE_NAME
+	);
+
+	const isWooPayGlobalThemeSupportEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWooPayGlobalThemeSupportEnabled()
+	);
+
+	return [
+		isWooPayGlobalThemeSupportEnabled,
+		updateIsWooPayGlobalThemeSupportEnabled,
+	];
 };
 
 export const useWooPayCustomMessage = () => {
@@ -472,11 +497,6 @@ export const useAdvancedFraudProtectionSettings = () => {
 export const useWooPayShowIncompatibilityNotice = () =>
 	useSelect( ( select ) =>
 		select( STORE_NAME ).getShowWooPayIncompatibilityNotice()
-	);
-
-export const useExpressCheckoutShowIncompatibilityNotice = () =>
-	useSelect( ( select ) =>
-		select( STORE_NAME ).getShowExpressCheckoutIncompatibilityNotice()
 	);
 
 export const useStripeBilling = () => {

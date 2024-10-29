@@ -53,7 +53,7 @@ describe( 'WcPayOverviewSurveyContextProvider', () => {
 			</WcPayOverviewSurveyContextProvider>
 		);
 
-		const surveyText = screen.getByText( 'Are those metrics helpful?' );
+		const surveyText = screen.getByText( 'Are these metrics helpful?' );
 		expect( surveyText ).toBeInTheDocument();
 
 		const buttons = screen.getAllByRole( 'button' );

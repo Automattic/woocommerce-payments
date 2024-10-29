@@ -78,3 +78,18 @@ export const getShopper = async (
 	const shopperPage = await shopperContext.newPage();
 	return { shopperPage, shopperContext };
 };
+
+/**
+ * Returns an anonymous shopper page and context.
+ * Emulates a new shopper who has not been authenticated and has no previous state, e.g. cart, order, etc.
+ */
+export const getAnonymousShopper = async (
+	browser: Browser
+): Promise< {
+	shopperPage: Page;
+	shopperContext: BrowserContext;
+} > => {
+	const shopperContext = await browser.newContext();
+	const shopperPage = await shopperContext.newPage();
+	return { shopperPage, shopperContext };
+};

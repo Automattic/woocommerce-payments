@@ -7,6 +7,7 @@
 
 use WCPay\MultiCurrency\Compatibility;
 use WCPay\MultiCurrency\Currency;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
@@ -36,14 +37,27 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 	private $mock_utils;
 
 	/**
+	 * MultiCurrencyLocalizationInterface.
+	 *
+	 * @var MultiCurrencyLocalizationInterface
+	 */
+	private $mock_localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
-		$this->mock_utils          = $this->createMock( Utils::class );
-		$this->compatibility       = new Compatibility( $this->mock_multi_currency, $this->mock_utils );
+		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
+		$this->mock_utils                = $this->createMock( Utils::class );
+		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		$this->mock_localization_service
+			->method( 'get_currency_format' )
+			->with( 'USD' )
+			->willReturn( [ 'num_decimals' => 2 ] );
+
+		$this->compatibility = new Compatibility( $this->mock_multi_currency, $this->mock_utils );
 	}
 
 	public function test_init_compatibility_classes_does_not_add_classes_if_one_enabled_currencies() {
@@ -100,7 +114,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -124,7 +138,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -145,7 +159,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -169,7 +183,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )

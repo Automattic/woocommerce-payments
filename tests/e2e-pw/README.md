@@ -9,12 +9,15 @@ See [tests/e2e/README.md](/tests/e2e/README.md) for detailed e2e environment set
 1. `npm run test:e2e-setup`
 1. `npm run test:e2e-up`
 
+> [!TIP]
+> In case some tests fail due to the lack of `data-test-id` attributes, you'll need to run `npm start` or `NODE_ENV=test npm run build:client` to re-build the assets.
+
 ## Running Playwright e2e tests
 
 -   `npm run test:e2e-pw` headless run from within a linux docker container.
 -   `npm run test:e2e-pw-ui` runs tests in interactive UI mode from within a linux docker container – recommended for authoring tests and re-running failed tests.
 -   `npm run test:e2e-pw keyword` runs tests only with a specific keyword in the file name, e.g. `dispute` or `checkout`.
--   `npm run test:e2e-pw --update-snapshots` updates snapshots.
+-   `npm run test:e2e-pw -- --update-snapshots` updates snapshots. This can be combined with a keyword to update a specific set of snapshots, e.g. `npm run test:e2e-pw -- --update-snapshots deposits`.
 
 ## FAQs
 

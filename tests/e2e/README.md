@@ -45,6 +45,7 @@ E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
 E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
 # This should be the Stripe Account ID of a connected merchant account. For example, after onboarding an account, you can obtain the ID from WCPay Dev Tools.
 E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
+E2E_WOOPAY_BLOG_ID=<WPCOM Site ID for https://pay.woo.com>
 ```
 
 **Using Live Server**

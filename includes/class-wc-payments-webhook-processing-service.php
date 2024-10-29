@@ -775,6 +775,8 @@ class WC_Payments_Webhook_Processing_Service {
 				return __( 'Microdeposit transfers failed. Please check the account, institution and transit numbers.', 'woocommerce-payments' );
 			case 'payment_method_microdeposit_verification_attempts_exceeded':
 				return __( 'You have exceeded the number of allowed verification attempts.', 'woocommerce-payments' );
+			case 'payment_intent_mandate_invalid':
+				return __( 'The mandate used for this renewal payment is invalid. You may need to bring the customer back to your store and ask them to resubmit their payment information.', 'woocommerce-payments' );
 			case 'card_declined':
 				switch ( $decline_code ) {
 					case 'debit_notification_undelivered':

@@ -92,7 +92,7 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @return string Invoice ID.
 	 */
-	public static function get_pending_invoice_id( $subscription ) : string {
+	public static function get_pending_invoice_id( $subscription ): string {
 		return $subscription->get_meta( self::PENDING_INVOICE_ID_KEY, true );
 	}
 
@@ -102,7 +102,7 @@ class WC_Payments_Invoice_Service {
 	 * @param WC_Order $order The order.
 	 * @return string Invoice ID.
 	 */
-	public static function get_order_invoice_id( WC_Order $order ) : string {
+	public static function get_order_invoice_id( WC_Order $order ): string {
 		return $order->get_meta( self::ORDER_INVOICE_ID_KEY, true );
 	}
 
@@ -334,7 +334,7 @@ class WC_Payments_Invoice_Service {
 		}
 
 		$charge = $this->payments_api_client->get_charge( $invoice['charge'] );
-		if ( !isset( $charge['balance_transaction'] ) || !isset( $charge['balance_transaction']['id'] ) ) {
+		if ( ! isset( $charge['balance_transaction'] ) || ! isset( $charge['balance_transaction']['id'] ) ) {
 			return;
 		}
 
@@ -347,14 +347,13 @@ class WC_Payments_Invoice_Service {
 				'customer_country'    => $order->get_billing_country(),
 			]
 		);
-
 	}
 
 	/**
 	 * Update a charge with the order id from invoice.
 	 *
-	 * @param array $invoice
-	 * @param int   $order_id
+	 * @param array $invoice Invoice details.
+	 * @param int   $order_id Order ID.
 	 *
 	 * @return void
 	 * @throws API_Exception
@@ -366,7 +365,7 @@ class WC_Payments_Invoice_Service {
 		$this->payments_api_client->update_charge(
 			$invoice['charge'],
 			[
-				'metadata' => ['order_id' => $order_id ],
+				'metadata' => [ 'order_id' => $order_id ],
 			]
 		);
 	}
@@ -392,7 +391,7 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @throws Rest_Request_Exception WCPay invoice items do not match WC subscription items.
 	 */
-	private function get_repair_data_for_wcpay_items( array $wcpay_item_data, WC_Subscription $subscription ) : array {
+	private function get_repair_data_for_wcpay_items( array $wcpay_item_data, WC_Subscription $subscription ): array {
 		$repair_data        = [];
 		$wcpay_items        = [];
 		$subscription_items = $subscription->get_items( [ 'line_item', 'fee', 'shipping', 'tax' ] );

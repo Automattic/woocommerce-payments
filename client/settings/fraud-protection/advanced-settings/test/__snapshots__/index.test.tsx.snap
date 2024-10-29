@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Advanced fraud protection settings doesn't save when there's a validation error 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -66,6 +66,11 @@ Object {
                &gt; 
               Advanced fraud protection
             </h2>
+            <p
+              class="fraud-protection-advanced-settings-notice"
+            >
+              At least one risk filter needs to be enabled for advanced protection.
+            </p>
             <div
               class="fraud-protection-advanced-settings-error-notice"
             >
@@ -335,7 +340,7 @@ Object {
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          Orders from outside of the following countries will be blocked by the filter: 
+                          Orders from outside of the following countries will be screened by the filter: 
                           <strong>
                             Canada, United States
                           </strong>
@@ -1066,6 +1071,11 @@ Object {
              &gt; 
             Advanced fraud protection
           </h2>
+          <p
+            class="fraud-protection-advanced-settings-notice"
+          >
+            At least one risk filter needs to be enabled for advanced protection.
+          </p>
           <div
             class="fraud-protection-advanced-settings-error-notice"
           >
@@ -1335,7 +1345,7 @@ Object {
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Orders from outside of the following countries will be blocked by the filter: 
+                        Orders from outside of the following countries will be screened by the filter: 
                         <strong>
                           Canada, United States
                         </strong>
@@ -2083,7 +2093,7 @@ Object {
 `;
 
 exports[`Advanced fraud protection settings renders an error message when settings can not be fetched from the server 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -2109,7 +2119,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
     </div>
     <div>
       <div>
@@ -2149,6 +2159,11 @@ Object {
                &gt; 
               Advanced fraud protection
             </h2>
+            <p
+              class="fraud-protection-advanced-settings-notice"
+            >
+              At least one risk filter needs to be enabled for advanced protection.
+            </p>
             <div
               class="fraud-protection-advanced-settings-error-notice"
             >
@@ -2400,7 +2415,7 @@ Object {
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          Orders from outside of the following countries will be blocked by the filter: 
+                          Orders from outside of the following countries will be screened by the filter: 
                           <strong>
                             Canada, United States
                           </strong>
@@ -3006,6 +3021,11 @@ Object {
              &gt; 
             Advanced fraud protection
           </h2>
+          <p
+            class="fraud-protection-advanced-settings-notice"
+          >
+            At least one risk filter needs to be enabled for advanced protection.
+          </p>
           <div
             class="fraud-protection-advanced-settings-error-notice"
           >
@@ -3257,7 +3277,7 @@ Object {
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Orders from outside of the following countries will be blocked by the filter: 
+                        Orders from outside of the following countries will be screened by the filter: 
                         <strong>
                           Canada, United States
                         </strong>
@@ -3879,7 +3899,7 @@ Object {
 `;
 
 exports[`Advanced fraud protection settings renders correctly 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -3905,7 +3925,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
     </div>
     <div>
       <div
@@ -3926,6 +3946,11 @@ Object {
              &gt; 
             Advanced fraud protection
           </h2>
+          <p
+            class="fraud-protection-advanced-settings-notice"
+          >
+            At least one risk filter needs to be enabled for advanced protection.
+          </p>
           <div
             class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
             data-wp-c16t="true"
@@ -4161,7 +4186,7 @@ Object {
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Orders from outside of the following countries will be blocked by the filter: 
+                        Orders from outside of the following countries will be screened by the filter: 
                         <strong>
                           Canada, United States
                         </strong>
@@ -4718,6 +4743,7 @@ Object {
             </a>
             <button
               class="components-button is-primary"
+              disabled=""
               type="button"
             >
               Save Changes
@@ -4746,6 +4772,11 @@ Object {
            &gt; 
           Advanced fraud protection
         </h2>
+        <p
+          class="fraud-protection-advanced-settings-notice"
+        >
+          At least one risk filter needs to be enabled for advanced protection.
+        </p>
         <div
           class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
           data-wp-c16t="true"
@@ -4981,7 +5012,7 @@ Object {
                       data-wp-c16t="true"
                       data-wp-component="FlexItem"
                     >
-                      Orders from outside of the following countries will be blocked by the filter: 
+                      Orders from outside of the following countries will be screened by the filter: 
                       <strong>
                         Canada, United States
                       </strong>
@@ -5538,6 +5569,7 @@ Object {
           </a>
           <button
             class="components-button is-primary"
+            disabled=""
             type="button"
           >
             Save Changes
@@ -5601,7 +5633,7 @@ Object {
 `;
 
 exports[`Advanced fraud protection settings saves settings when there are no validation errors 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -5627,7 +5659,7 @@ Object {
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
     >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked.  Learn more   
     </div>
     <div>
       <div>
@@ -5666,6 +5698,11 @@ Object {
                &gt; 
               Advanced fraud protection
             </h2>
+            <p
+              class="fraud-protection-advanced-settings-notice"
+            >
+              At least one risk filter needs to be enabled for advanced protection.
+            </p>
             <div
               class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
               data-wp-c16t="true"
@@ -5901,7 +5938,7 @@ Object {
                           data-wp-c16t="true"
                           data-wp-component="FlexItem"
                         >
-                          Orders from outside of the following countries will be blocked by the filter: 
+                          Orders from outside of the following countries will be screened by the filter: 
                           <strong>
                             Canada, United States
                           </strong>
@@ -6586,6 +6623,11 @@ Object {
              &gt; 
             Advanced fraud protection
           </h2>
+          <p
+            class="fraud-protection-advanced-settings-notice"
+          >
+            At least one risk filter needs to be enabled for advanced protection.
+          </p>
           <div
             class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
             data-wp-c16t="true"
@@ -6821,7 +6863,7 @@ Object {
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
-                        Orders from outside of the following countries will be blocked by the filter: 
+                        Orders from outside of the following countries will be screened by the filter: 
                         <strong>
                           Canada, United States
                         </strong>

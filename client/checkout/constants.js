@@ -13,8 +13,11 @@ export const PAYMENT_METHOD_NAME_AFTERPAY =
 export const PAYMENT_METHOD_NAME_KLARNA = 'woocommerce_payments_klarna';
 export const PAYMENT_METHOD_NAME_PAYMENT_REQUEST =
 	'woocommerce_payments_payment_request';
+export const PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT =
+	'woocommerce_payments_express_checkout';
 export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =
 	'woocommerce_payments_woopay_express_checkout';
+export const PAYMENT_METHOD_ERROR = 'woocommerce_payments_payment_method_error';
 export const WC_STORE_CART = 'wc/store/cart';
 
 export function getPaymentMethodsConstants() {

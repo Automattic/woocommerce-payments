@@ -29,6 +29,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title                        = __( 'Afterpay', 'woocommerce-payments' );
 		$this->is_reusable                  = false;
+		$this->is_bnpl                      = true;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay-logo.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR, Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::NEW_ZEALAND_DOLLAR, Currency_Code::POUND_STERLING ];
 		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::CANADA, Country_Code::AUSTRALIA, Country_Code::NEW_ZEALAND, Country_Code::UNITED_KINGDOM ];
@@ -71,8 +72,10 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * Returns payment method title.
 	 *
 	 * @param string|null $account_country Country of merchants account.
-	 * @param array|false $payment_details Optional payment details from charge object.
+	 * @param array|false $payment_details Payment details from charge object. Not used by this class.
 	 * @return string|null
+	 *
+	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_title( string $account_country = null, $payment_details = false ) {
 		if ( 'GB' === $account_country ) {

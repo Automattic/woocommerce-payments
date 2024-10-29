@@ -5,17 +5,19 @@ import { upeRestrictedProperties } from './upe-styles';
 import {
 	generateHoverRules,
 	generateOutlineStyle,
-	maybeConvertRGBAtoRGB,
 	dashedToCamelCase,
 	isColorLight,
 	getBackgroundColor,
+	maybeConvertRGBAtoRGB,
+	handleAppearanceForFloatingLabel,
 } from './utils.js';
 
-const appearanceSelectors = {
+export const appearanceSelectors = {
 	default: {
 		hiddenContainer: '#wcpay-hidden-div',
 		hiddenInput: '#wcpay-hidden-input',
 		hiddenInvalidInput: '#wcpay-hidden-invalid-input',
+		hiddenValidActiveLabel: '#wcpay-hidden-valid-active-label',
 	},
 	classicCheckout: {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
@@ -36,18 +38,20 @@ const appearanceSelectors = {
 			'form.checkout',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '#place_order' ],
+		linkSelectors: [ 'a' ],
 	},
 	blocksCheckout: {
-		appendTarget: '#billing.wc-block-components-address-form',
-		upeThemeInputSelector: '#billing-first_name',
-		upeThemeLabelSelector:
-			'.wc-block-components-checkout-step__description',
+		appendTarget: '#contact-fields',
+		upeThemeInputSelector: '.wc-block-components-text-input #email',
+		upeThemeLabelSelector: '.wc-block-components-text-input label',
 		rowElement: 'div',
-		validClasses: [ 'wc-block-components-text-input' ],
+		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
 		alternateSelectors: {
-			appendTarget: '#shipping.wc-block-components-address-form',
-			upeThemeInputSelector: '#shipping-first_name',
+			appendTarget: '#billing.wc-block-components-address-form',
+			upeThemeInputSelector: '#billing-first_name',
 			upeThemeLabelSelector:
 				'.wc-block-components-checkout-step__description',
 		},
@@ -57,6 +61,12 @@ const appearanceSelectors = {
 			'form.wc-block-checkout__form',
 			'.wc-block-checkout',
 			'body',
+		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
+		linkSelectors: [ 'a' ],
+		containerSelectors: [
+			'.wp-block-woocommerce-checkout-order-summary-block',
 		],
 	},
 	bnplProductPage: {
@@ -73,6 +83,9 @@ const appearanceSelectors = {
 			'#main',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.single_add_to_cart_button' ],
+		linkSelectors: [ 'a' ],
 	},
 	bnplClassicCart: {
 		appendTarget: '.cart .quantity',
@@ -88,6 +101,10 @@ const appearanceSelectors = {
 			'#main',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.checkout-button' ],
+		linkSelectors: [ 'a' ],
+		containerSelectors: [ '.shop_table' ],
 	},
 	bnplCartBlock: {
 		appendTarget: '.wc-block-cart .wc-block-components-quantity-selector',
@@ -107,6 +124,32 @@ const appearanceSelectors = {
 			'.wp-block-woocommerce-cart',
 			'body',
 		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.wc-block-cart__submit-button' ],
+		linkSelectors: [ 'a' ],
+		containerSelectors: [ '.wp-block-woocommerce-cart-line-items-block' ],
+	},
+	wooPayClassicCheckout: {
+		appendTarget: '.woocommerce-billing-fields__field-wrapper',
+		upeThemeInputSelector: '#billing_first_name',
+		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
+		rowElement: 'p',
+		validClasses: [ 'form-row' ],
+		invalidClasses: [
+			'form-row',
+			'woocommerce-invalid',
+			'woocommerce-invalid-required-field',
+		],
+		backgroundSelectors: [
+			'#customer_details',
+			'#order_review',
+			'form.checkout',
+			'body',
+		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '#place_order' ],
+		linkSelectors: [ 'a' ],
+		containerSelectors: [ '.woocommerce-checkout-review-order-table' ],
 	},
 
 	/**
@@ -148,7 +191,7 @@ const appearanceSelectors = {
 			case 'blocks_checkout':
 				appearanceSelector = this.blocksCheckout;
 				break;
-			case 'classic_checkout':
+			case 'shortcode_checkout':
 				appearanceSelector = this.classicCheckout;
 				break;
 			case 'bnpl_product_page':
@@ -159,6 +202,9 @@ const appearanceSelectors = {
 				break;
 			case 'bnpl_cart_block':
 				appearanceSelector = this.bnplCartBlock;
+				break;
+			case 'woopay_shortcode_checkout':
+				appearanceSelector = this.wooPayClassicCheckout;
 				break;
 		}
 
@@ -288,6 +334,13 @@ const hiddenElementsForUPE = {
 			selectors.hiddenInput
 		);
 
+		// Clone & append target label to hidden valid row.
+		this.appendClone(
+			hiddenValidRow,
+			selectors.upeThemeLabelSelector,
+			selectors.hiddenValidActiveLabel
+		);
+
 		// Clone & append target input  to hidden invalid row.
 		this.appendClone(
 			hiddenInvalidRow,
@@ -341,9 +394,11 @@ export const getFieldStyles = (
 	for ( let i = 0; i < styles.length; i++ ) {
 		const camelCase = dashedToCamelCase( styles[ i ] );
 		if ( validProperties.includes( camelCase ) ) {
-			filteredStyles[ camelCase ] = maybeConvertRGBAtoRGB(
-				styles.getPropertyValue( styles[ i ] )
-			);
+			let propertyValue = styles.getPropertyValue( styles[ i ] );
+			if ( camelCase === 'color' ) {
+				propertyValue = maybeConvertRGBAtoRGB( propertyValue );
+			}
+			filteredStyles[ camelCase ] = propertyValue;
 		}
 	}
 
@@ -404,7 +459,7 @@ export const getFontRulesFromPage = () => {
 	return fontRules;
 };
 
-export const getAppearance = ( elementsLocation ) => {
+export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	const selectors = appearanceSelectors.getSelectors( elementsLocation );
 
 	// Add hidden fields to DOM for generating styles.
@@ -436,12 +491,18 @@ export const getAppearance = ( elementsLocation ) => {
 	};
 
 	const backgroundColor = getBackgroundColor( selectors.backgroundSelectors );
+	const headingRules = getFieldStyles( selectors.headingSelectors, '.Label' );
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
 		'.Block',
 		backgroundColor
 	);
-
+	const buttonRules = getFieldStyles( selectors.buttonSelectors, '.Input' );
+	const linkRules = getFieldStyles( selectors.linkSelectors, '.Label' );
+	const containerRules = getFieldStyles(
+		selectors.containerSelectors,
+		'.Container'
+	);
 	const globalRules = {
 		colorBackground: backgroundColor,
 		colorText: labelRules.color,
@@ -449,23 +510,50 @@ export const getAppearance = ( elementsLocation ) => {
 		fontSizeBase: labelRules.fontSize,
 	};
 
-	const appearance = {
+	const isFloatingLabel = elementsLocation === 'blocks_checkout';
+
+	let appearance = {
 		variables: globalRules,
 		theme: isColorLight( backgroundColor ) ? 'stripe' : 'night',
-		rules: {
-			'.Input': inputRules,
-			'.Input--invalid': inputInvalidRules,
-			'.Label': labelRules,
-			'.Block': blockRules,
-			'.Tab': tabRules,
-			'.Tab:hover': tabHoverRules,
-			'.Tab--selected': selectedTabRules,
-			'.TabIcon:hover': tabIconHoverRules,
-			'.TabIcon--selected': selectedTabIconRules,
-			'.Text': labelRules,
-			'.Text--redirect': labelRules,
-		},
+		labels: isFloatingLabel ? 'floating' : 'above',
+		// We need to clone the object to avoid modifying other rules when updating the appearance for floating labels.
+		rules: JSON.parse(
+			JSON.stringify( {
+				'.Input': inputRules,
+				'.Input--invalid': inputInvalidRules,
+				'.Label': labelRules,
+				'.Block': blockRules,
+				'.Tab': tabRules,
+				'.Tab:hover': tabHoverRules,
+				'.Tab--selected': selectedTabRules,
+				'.TabIcon:hover': tabIconHoverRules,
+				'.TabIcon--selected': selectedTabIconRules,
+				'.Text': labelRules,
+				'.Text--redirect': labelRules,
+			} )
+		),
 	};
+
+	if ( isFloatingLabel ) {
+		appearance = handleAppearanceForFloatingLabel(
+			appearance,
+			getFieldStyles(
+				selectors.hiddenValidActiveLabel,
+				'.Label--floating'
+			)
+		);
+	}
+
+	if ( forWooPay ) {
+		appearance.rules = {
+			...appearance.rules,
+			'.Heading': headingRules,
+			'.Button': buttonRules,
+			'.Link': linkRules,
+			'.Container': containerRules,
+		};
+	}
+
 	// Remove hidden fields from DOM.
 	hiddenElementsForUPE.cleanup();
 	return appearance;

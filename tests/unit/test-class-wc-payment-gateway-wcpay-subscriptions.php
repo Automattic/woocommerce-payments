@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
@@ -102,6 +103,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_fraud_service;
 
+	/**
+	 * Mock Duplicates Detection Service.
+	 *
+	 * @var Duplicates_Detection_Service
+	 */
+	private $mock_duplicates_detection_service;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -136,8 +144,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
-		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
-		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_localization_service         = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
 		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
 			->setConstructorArgs( [ $this->mock_token_service ] )
@@ -156,7 +165,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service,
 		);
 		$this->wcpay_gateway->init_hooks();
 		WC_Payments::set_gateway( $this->wcpay_gateway );
@@ -338,6 +348,76 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'update_customer_for_user' )
 			->willReturn( self::CUSTOMER_ID );
+
+		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
+
+		$this->assertEquals( 'processing', $renewal_order->get_status() );
+	}
+
+	public function test_scheduled_subscription_payment_with_saved_customer_id() {
+		$saved_customer_id = self::CUSTOMER_ID . '_old';
+
+		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+
+		$token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+		$renewal_order->add_payment_token( $token );
+
+		$this->order_service->set_customer_id_for_order( $renewal_order, $saved_customer_id );
+
+		$mock_subscription = new WC_Subscription();
+
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [ '1' => $mock_subscription ] );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_customer_id_by_user_id' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( $saved_customer_id );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( self::PAYMENT_METHOD_ID );
+
+		$request->expects( $this->once() )
+			->method( 'set_cvc_confirmation' )
+			->with( null );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( 5000 )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( 'usd' )
+			->willReturn( $request );
+
+		$request->expects( $this->never() )
+			->method( 'setup_future_usage' );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_off_session' )
+			->with( true );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
@@ -830,7 +910,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service,
 		);
 
 		// Ensure the has_attached_integration_hooks property is set to false so callbacks can be attached in maybe_init_subscriptions().
@@ -864,7 +945,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service,
 		);
 
 		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );

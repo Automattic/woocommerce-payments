@@ -7,11 +7,11 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { isInDevMode } from 'utils';
+import { isInTestModeOnboarding } from 'utils';
 
 export default {
 	title: __( 'Reset account', 'woocommerce-payments' ),
-	description: isInDevMode()
+	description: isInTestModeOnboarding()
 		? __(
 				'In sandbox mode, you can reset your account and onboard again at any time. Please note that all current WooPayments account details, test transactions, and deposits history will be lost.',
 				'woocommerce-payments'

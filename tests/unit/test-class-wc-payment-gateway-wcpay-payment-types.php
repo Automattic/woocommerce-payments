@@ -9,6 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -153,6 +154,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 					$mock_dpps,
 					$this->createMock( WC_Payments_Localization_Service::class ),
 					$this->createMock( WC_Payments_Fraud_Service::class ),
+					$this->createMock( Duplicates_Detection_Service::class ),
 				]
 			)
 			->setMethods(

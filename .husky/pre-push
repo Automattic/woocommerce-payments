@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
 # check if main stream (stdout and stderr) are attached to the terminal
@@ -7,12 +7,12 @@ if [ -t 1 ] && [ -t 2 ]; then
     exec < /dev/tty
 fi
 
-PROTECTED_BRANCH=("develop" "trunk")
+PROTECTED_BRANCH_LIST="develop trunk"
 CURRENT_BRANCH=$(git branch --show-current)
 
-if [[ " ${PROTECTED_BRANCH[@]} " =~ " ${CURRENT_BRANCH} " ]]; then
+if echo "$PROTECTED_BRANCH_LIST" | grep -q -w "$CURRENT_BRANCH"; then
     read -p "$CURRENT_BRANCH is a protected branch. Are you sure you want to push? (y/n): " confirmation
-        if [ "$confirmation" != "y" ]; then
+    if [ "$confirmation" != "y" ]; then
         echo "Push aborted"
         exit 1
     fi

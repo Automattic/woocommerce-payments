@@ -64,59 +64,6 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'data' => $mock_business_types ], $response->get_data() );
 	}
 
-	public function test_get_required_verification_information_with_missing_params() {
-		$request  = new WP_REST_Request( 'GET', '', [ 'foo' => 'bar' ] );
-		$response = $this->controller->get_required_verification_information( $request );
-
-		$this->assertSame( 400, $response->status );
-		$this->assertSame(
-			[ 'result' => WC_REST_Payments_Onboarding_Controller::RESULT_BAD_REQUEST ],
-			$response->get_data()
-		);
-	}
-
-	public function test_get_required_verification_information() {
-		$mock_requirements = [
-			'business_profile.url',
-			'business_profile.mcc',
-			'representative.first_name',
-			'representative.last_name',
-			'representative.dob.day',
-			'representative.dob.month',
-			'representative.dob.year',
-			'representative.phone',
-			'representative.email',
-			'representative.address.line1',
-			'representative.address.postal_code',
-			'representative.address.city',
-			'representative.address.state',
-			'representative.ssn_last_4',
-			'company.name',
-			'company.tax_id',
-			'tos_acceptance.ip',
-			'tos_acceptance.date',
-			'external_account',
-		];
-
-		$this->mock_onboarding_service
-			->expects( $this->once() )
-			->method( 'get_required_verification_information' )
-			->willReturn( $mock_requirements );
-
-		$request = new WP_REST_Request( 'GET' );
-		$request->set_url_params(
-			[
-				'country'   => Country_Code::UNITED_STATES,
-				'type'      => 'company',
-				'structure' => 'sole_proprietor',
-			]
-		);
-		$response = $this->controller->get_required_verification_information( $request );
-
-		$this->assertSame( 200, $response->status );
-		$this->assertSame( [ 'data' => $mock_requirements ], $response->get_data() );
-	}
-
 	public function test_get_progressive_onboarding_eligible() {
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -190,6 +137,85 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 				'result' => 'not_eligible',
 				'data'   => [],
 			],
+			$response->get_data()
+		);
+	}
+
+	public function test_get_embedded_kyc_session() {
+		$kyc_session = [
+			'clientSecret'   => 'accs_secret__XXX',
+			'expiresAt'      => time() + 120,
+			'accountId'      => 'acct_XXX',
+			'isLive'         => false,
+			'accountCreated' => true,
+			'publishableKey' => 'pk_test_XXX',
+		];
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'create_embedded_kyc_session' )
+			->willReturn(
+				$kyc_session
+			);
+
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_query_params(
+			[
+				'progressive'         => true,
+				'create_live_account' => true,
+			]
+		);
+
+		$response = $this->controller->get_embedded_kyc_session( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			array_merge(
+				$kyc_session,
+				[
+					'locale' => 'en_US',
+				]
+			),
+			$response->get_data()
+		);
+	}
+
+	public function test_finalize_embedded_kyc() {
+		$response_data = [
+			'success'           => true,
+			'account_id'        => 'acct_1PvxJQQujq4nxoo6',
+			'details_submitted' => true,
+			'mode'              => 'test',
+			'promotion_id'      => null,
+		];
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'finalize_embedded_kyc' )
+			->willReturn(
+				$response_data
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'source' => 'embedded',
+				'from'   => 'wcpay-connect',
+			]
+		);
+
+		$response = $this->controller->finalize_embedded_kyc( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
+			array_merge(
+				$response_data,
+				[
+					'params' => [
+						'promo'                    => '',
+						'from'                     => 'wcpay-connect',
+						'source'                   => 'embedded',
+						'wcpay-connection-success' => '1',
+					],
+				]
+			),
 			$response->get_data()
 		);
 	}

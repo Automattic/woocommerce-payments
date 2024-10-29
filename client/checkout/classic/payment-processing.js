@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -12,6 +17,7 @@ import {
 import {
 	appendFraudPreventionTokenInputToForm,
 	appendPaymentMethodIdToForm,
+	appendPaymentMethodErrorDataToForm,
 	getPaymentMethodTypes,
 	getSelectedUPEGatewayPaymentMethod,
 	getTerms,
@@ -24,7 +30,8 @@ import enableStripeLinkPaymentMethod, {
 import {
 	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
-} from '../constants';
+	PAYMENT_METHOD_ERROR,
+} from 'wcpay/checkout/constants';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
@@ -34,6 +41,7 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
 		upeElement: null,
+		hasLoadError: false,
 	};
 }
 
@@ -43,17 +51,24 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
  * it is simply returned.
  *
  * @param {Object} api The API object used to save the UPE configuration.
+ * @param {string} elementsLocation The location of the UPE elements.
  * @return {Promise<Object>} The appearance object for the UPE.
  */
-async function initializeAppearance( api ) {
-	const appearance = getUPEConfig( 'upeAppearance' );
+async function initializeAppearance( api, elementsLocation ) {
+	const upeConfigMap = {
+		shortcode_checkout: 'upeAppearance',
+		add_payment_method: 'upeAddPaymentMethodAppearance',
+	};
+	const upeConfigProperty =
+		upeConfigMap[ elementsLocation ] ?? 'upeAppearance';
+	const appearance = getUPEConfig( upeConfigProperty );
 	if ( appearance ) {
 		return Promise.resolve( appearance );
 	}
 
 	return await api.saveUPEAppearance(
-		getAppearance( 'shortcode_checkout' ),
-		'shortcode_checkout'
+		getAppearance( elementsLocation ),
+		elementsLocation
 	);
 }
 
@@ -62,8 +77,8 @@ async function initializeAppearance( api ) {
  *
  * @param {Object} $form The jQuery object for the form.
  */
-export function blockUI( $form ) {
-	$form.addClass( 'processing' ).block( {
+export async function blockUI( $form ) {
+	await $form.addClass( 'processing' ).block( {
 		message: null,
 		overlayCSS: {
 			background: '#fff',
@@ -179,14 +194,7 @@ function createStripePaymentMethod(
 
 	return api
 		.getStripeForUPE( paymentMethodType )
-		.createPaymentMethod( { elements, params: params } )
-		.then( ( paymentMethod ) => {
-			if ( paymentMethod.error ) {
-				throw paymentMethod.error;
-			}
-
-			return paymentMethod;
-		} );
+		.createPaymentMethod( { elements, params: params } );
 }
 
 /**
@@ -196,18 +204,30 @@ function createStripePaymentMethod(
  *
  * @param {Object} api The API object used to create the Stripe payment element.
  * @param {string} paymentMethodType The type of Stripe payment method to create.
+ * @param {string} elementsLocation The location of the UPE elements.
  * @return {Object} A promise that resolves with the created Stripe payment element.
  */
-async function createStripePaymentElement( api, paymentMethodType ) {
+async function createStripePaymentElement(
+	api,
+	paymentMethodType,
+	elementsLocation
+) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
+	const appearance = await initializeAppearance( api, elementsLocation );
+	document
+		.querySelector(
+			`.wcpay-upe-element[data-payment-method-type="${ paymentMethodType }"]`
+		)
+		?.closest( '.wc_payment_method' )
+		?.classList.add( `theme--${ appearance.theme || 'stripe' }` );
 	const options = {
 		mode: amount < 1 ? 'setup' : 'payment',
 		currency: getUPEConfig( 'currency' ).toLowerCase(),
 		amount: amount,
 		paymentMethodCreation: 'manual',
 		paymentMethodTypes: paymentMethodTypes,
-		appearance: await initializeAppearance( api ),
+		appearance,
 		fonts: getFontRulesFromPage(),
 	};
 
@@ -367,8 +387,13 @@ export function maybeEnableStripeLink( api ) {
  *
  * @param {Object} api The API object.
  * @param {string} domElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * @param {string} elementsLocation Thhe location of the UPE element.
  **/
-export async function mountStripePaymentElement( api, domElement ) {
+export async function mountStripePaymentElement(
+	api,
+	domElement,
+	elementsLocation
+) {
 	try {
 		if ( ! fingerprint ) {
 			const { visitorId } = await getFingerprint();
@@ -398,17 +423,41 @@ export async function mountStripePaymentElement( api, domElement ) {
 
 	const upeElement =
 		gatewayUPEComponents[ paymentMethodType ].upeElement ||
-		( await createStripePaymentElement( api, paymentMethodType ) );
+		( await createStripePaymentElement(
+			api,
+			paymentMethodType,
+			elementsLocation
+		) );
 	upeElement.mount( domElement );
+	upeElement.on( 'loaderror', ( e ) => {
+		// setting the flag to true to prevent the form from being submitted.
+		gatewayUPEComponents[ paymentMethodType ].hasLoadError = true;
+		// unset any styling to ensure the WC error message wrapper can take more width.
+		domElement.style.padding = '0';
+		// creating a new element to be added to the DOM, so that the message can be displayed.
+		const messageWrapper = document.createElement( 'div' );
+		messageWrapper.classList.add( 'woocommerce-error' );
+		messageWrapper.innerHTML = e.error.message;
+		messageWrapper.style.margin = '0';
+		domElement.appendChild( messageWrapper );
+		// hiding any "save payment method" checkboxes.
+		const savePaymentMethodWrapper = domElement
+			.closest( '.payment_box' )
+			?.querySelector( '.woocommerce-SavedPaymentMethods-saveNew' );
+		if ( savePaymentMethodWrapper ) {
+			savePaymentMethodWrapper.style.display = 'none';
+		}
+	} );
 }
 
 export async function mountStripePaymentMethodMessagingElement(
 	api,
 	domElement,
-	cartData
+	cartData,
+	location
 ) {
 	const paymentMethodType = domElement.dataset.paymentMethodType;
-	const appearance = await initializeAppearance( api );
+	const appearance = await initializeAppearance( api, location );
 
 	try {
 		const paymentMethodMessagingElement = api
@@ -493,12 +542,23 @@ export const processPayment = (
 		return;
 	}
 
-	blockUI( $form );
-
-	const elements = gatewayUPEComponents[ paymentMethodType ].elements;
-
 	( async () => {
 		try {
+			await blockUI( $form );
+
+			const { elements, hasLoadError } = gatewayUPEComponents[
+				paymentMethodType
+			];
+
+			if ( hasLoadError ) {
+				throw new Error(
+					__(
+						'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.',
+						'woocommerce-payments'
+					)
+				);
+			}
+
 			await validateElements( elements );
 			const paymentMethodObject = await createStripePaymentMethod(
 				api,
@@ -506,11 +566,20 @@ export const processPayment = (
 				$form,
 				paymentMethodType
 			);
+
+			if ( paymentMethodObject.error ) {
+				appendPaymentMethodIdToForm( $form, PAYMENT_METHOD_ERROR );
+				appendPaymentMethodErrorDataToForm(
+					$form,
+					paymentMethodObject.error
+				);
+			} else {
+				appendPaymentMethodIdToForm(
+					$form,
+					paymentMethodObject.paymentMethod.id
+				);
+			}
 			appendFingerprintInputToForm( $form, fingerprint );
-			appendPaymentMethodIdToForm(
-				$form,
-				paymentMethodObject.paymentMethod.id
-			);
 			appendFraudPreventionTokenInputToForm( $form );
 			await additionalActionsHandler(
 				paymentMethodObject.paymentMethod,
@@ -529,3 +598,24 @@ export const processPayment = (
 	// Prevent WC Core default form submission (see woocommerce/assets/js/frontend/checkout.js) from happening.
 	return false;
 };
+
+/**
+ * Used only for testing, resets the hasCheckoutCompleted value.
+ *
+ * @return {void}
+ */
+export function __resetHasCheckoutCompleted() {
+	hasCheckoutCompleted = false;
+}
+
+/**
+ * Used only for testing, resets the gatewayUPEComponents internal cache of elements for a given property.
+ *
+ * @param {string} paymentMethodType The paymentMethodType we want to remove the upeElement from.
+ * @return {void}
+ */
+export function __resetGatewayUPEComponentsElement( paymentMethodType ) {
+	if ( gatewayUPEComponents[ paymentMethodType ]?.upeElement ) {
+		delete gatewayUPEComponents[ paymentMethodType ].upeElement;
+	}
+}

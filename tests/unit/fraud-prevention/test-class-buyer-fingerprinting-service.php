@@ -63,5 +63,7 @@ class Buyer_Fingerprinting_Service_Test extends WCPAY_UnitTestCase {
 		];
 
 		$this->assertSame( $order_hashes, $expected_hashed_array );
+
+		remove_all_filters( 'woocommerce_geolocate_ip' );
 	}
 }

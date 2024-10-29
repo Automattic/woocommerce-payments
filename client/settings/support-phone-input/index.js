@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
 	useAccountBusinessSupportPhone,
 	useGetSavingError,
-	useDevMode,
+	useTestModeOnboarding,
 } from 'wcpay/data';
 import PhoneNumberInput from 'wcpay/settings/phone-input';
 
@@ -23,9 +23,9 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 
 	const currentPhone = useRef( supportPhone ).current;
 	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
-	const isDevModeEnabled = useDevMode();
+	const isTestModeOnboarding = useTestModeOnboarding();
 	const isTestPhoneValid =
-		isDevModeEnabled && supportPhone === '+10000000000';
+		isTestModeOnboarding && supportPhone === '+10000000000';
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
 	if ( ! isTestPhoneValid && ! isPhoneValid && ! isEmptyPhoneValid ) {
@@ -49,7 +49,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 	}, [ supportPhoneError, setInputVallid ] );
 
 	let labelText = __( 'Support phone number', 'woocommerce-payments' );
-	if ( isDevModeEnabled ) {
+	if ( isTestModeOnboarding ) {
 		labelText += __(
 			' (+1 0000000000 can be used in sandbox mode)',
 			'woocommerce-payments'

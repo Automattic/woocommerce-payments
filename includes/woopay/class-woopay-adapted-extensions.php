@@ -36,7 +36,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	public function get_adapted_extensions_data( $email ) {
 		$enabled_adapted_extensions = get_option( WooPay_Scheduler::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, [] );
 
-		if ( (is_countable($enabled_adapted_extensions) ? count( $enabled_adapted_extensions ) : 0) === 0 ) {
+		if ( ( is_countable( $enabled_adapted_extensions ) ? count( $enabled_adapted_extensions ) : 0 ) === 0 ) {
 			return [];
 		}
 
@@ -166,16 +166,18 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		$extension_data = [];
 
 		if ( defined( 'WOOCOMMERCE_MULTICURRENCY_VERSION' ) ) {
-			$extension_data[ 'woocommerce-multicurrency' ] = [
+			$extension_data['woocommerce-multicurrency'] = [
 				'currency' => get_woocommerce_currency(),
 			];
 		}
 
-		if ( $this->is_affiliate_for_woocommerce_enabled() ) {
+		if ( $this->is_affiliate_for_woocommerce_enabled() && function_exists( 'afwc_get_referrer_id' ) ) {
 			/**
+			 * Suppress psalm warning.
+			 *
 			 * @psalm-suppress UndefinedFunction
 			 */
-			$extension_data[ 'affiliate-for-woocommerce' ] = [
+			$extension_data['affiliate-for-woocommerce'] = [
 				'affiliate-user' => afwc_get_referrer_id(),
 			];
 		}
@@ -183,7 +185,7 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		if ( $this->is_automate_woo_referrals_enabled() ) {
 			$advocate_id = $this->get_automate_woo_advocate_id_from_cookie();
 
-			$extension_data[ 'automatewoo-referrals' ] = [
+			$extension_data['automatewoo-referrals'] = [
 				'advocate_id' => $advocate_id,
 			];
 		}
@@ -205,12 +207,14 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		) {
 			$affiliate_id = (int) wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
-			// phpcs:ignore
-			/**
-			 * @psalm-suppress UndefinedClass
-			 */
-			$affiliate_api = \AFWC_API::get_instance();
-			$affiliate_api->track_conversion( $order_id, $affiliate_id, '', [ 'is_affiliate_eligible' => true ] );
+			if ( class_exists( '\AFWC_API' ) ) {
+				// phpcs:ignore
+				/**
+				 * @psalm-suppress UndefinedClass
+				 */
+				$affiliate_api = \AFWC_API::get_instance();
+				$affiliate_api->track_conversion( $order_id, $affiliate_id, '', [ 'is_affiliate_eligible' => true ] );
+			}
 		}
 	}
 
@@ -270,7 +274,10 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	 * @return string|null
 	 */
 	private function get_automate_woo_advocate_id_from_cookie() {
-		$advocate_from_key_cookie = \AutomateWoo\Referrals\Referral_Manager::get_advocate_key_from_cookie();
-		return $advocate_from_key_cookie ? $advocate_from_key_cookie->get_advocate_id() : null;
+		if ( class_exists( '\AutomateWoo\Referrals\Referral_Manager' ) ) {
+			$advocate_from_key_cookie = \AutomateWoo\Referrals\Referral_Manager::get_advocate_key_from_cookie();
+			return $advocate_from_key_cookie ? $advocate_from_key_cookie->get_advocate_id() : null;
+		}
+		return null;
 	}
 }

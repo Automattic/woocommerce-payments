@@ -6,19 +6,7 @@ exports[`Instant deposit button and modal button renders correctly with balance 
     class="components-button is-primary"
     type="button"
   >
-    Deposit available funds
-  </button>
-</div>
-`;
-
-exports[`Instant deposit button and modal button renders correctly with zero balance 1`] = `
-<div>
-  <button
-    class="components-button is-primary"
-    disabled=""
-    type="button"
-  >
-    Deposit available funds
+    Get $123.45 now
   </button>
 </div>
 `;

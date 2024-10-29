@@ -60,17 +60,42 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		$product_variations = [];
 
 		if ( $product ) {
+			$get_price_fn = function ( $product ) {
+				return $product->get_price();
+			};
+			if ( wc_tax_enabled() && $product->is_taxable() ) {
+				if (
+					wc_prices_include_tax() &&
+					(
+						get_option( 'woocommerce_tax_display_shop' ) !== 'incl' ||
+						WC()->customer->get_is_vat_exempt()
+					)
+				) {
+					$get_price_fn = function ( $product ) {
+						return wc_get_price_excluding_tax( $product );
+					};
+				} elseif (
+					get_option( 'woocommerce_tax_display_shop' ) === 'incl'
+					&& ! WC()->customer->get_is_vat_exempt()
+				) {
+					$get_price_fn = function ( $product ) {
+						return wc_get_price_including_tax( $product );
+					};
+				}
+			}
+			$price              = $get_price_fn( $product );
 			$product_variations = [
 				'base_product' => [
-					'amount'   => WC_Payments_Utils::prepare_amount( $product->get_price(), $currency_code ),
+					'amount'   => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 					'currency' => $currency_code,
 				],
 			];
 			foreach ( $product->get_children() as $variation_id ) {
 				$variation = wc_get_product( $variation_id );
 				if ( $variation ) {
+					$price                               = $get_price_fn( $variation );
 					$product_variations[ $variation_id ] = [
-						'amount'   => WC_Payments_Utils::prepare_amount( $variation->get_price(), $currency_code ),
+						'amount'   => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 						'currency' => $currency_code,
 					];
 				}
@@ -98,19 +123,20 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			'WCPAY_PRODUCT_DETAILS',
 			'wcpayStripeSiteMessaging',
 			[
-				'productId'         => 'base_product',
-				'productVariations' => $product_variations,
-				'country'           => empty( $billing_country ) ? $store_country : $billing_country,
-				'locale'            => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-				'accountId'         => $this->account->get_stripe_account_id(),
-				'publishableKey'    => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-				'paymentMethods'    => array_values( $bnpl_payment_methods ),
-				'currencyCode'      => $currency_code,
-				'isCart'            => is_cart(),
-				'isCartBlock'       => $is_cart_block,
-				'cartTotal'         => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
-				'nonce'             => wp_create_nonce( 'wcpay-get-cart-total' ),
-				'wcAjaxUrl'         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+				'productId'          => 'base_product',
+				'productVariations'  => $product_variations,
+				'country'            => empty( $billing_country ) ? $store_country : $billing_country,
+				'locale'             => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+				'accountId'          => $this->account->get_stripe_account_id(),
+				'publishableKey'     => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+				'paymentMethods'     => array_values( $bnpl_payment_methods ),
+				'currencyCode'       => $currency_code,
+				'isCart'             => is_cart(),
+				'isCartBlock'        => $is_cart_block,
+				'cartTotal'          => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
+				'minimumOrderAmount' => WC_Payments_Utils::get_cached_minimum_amount( $currency_code, true ),
+				'nonce'              => wp_create_nonce( 'wcpay-get-cart-total' ),
+				'wcAjaxUrl'          => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			]
 		);
 

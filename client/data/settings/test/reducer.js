@@ -18,7 +18,6 @@ import {
 	updateIsWooPayEnabled,
 	updateWooPayCustomMessage,
 	updateWooPayStoreLogo,
-	updateIsClientSecretEncryptionEnabled,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -29,6 +28,7 @@ describe( 'Settings reducer tests', () => {
 			isSaving: false,
 			data: {},
 			savingError: null,
+			isDirty: false,
 		} );
 	} );
 
@@ -61,6 +61,7 @@ describe( 'Settings reducer tests', () => {
 
 		test( 'leaves fields other than `data` unchanged', () => {
 			const oldState = {
+				isDirty: false,
 				foo: 'bar',
 				data: {
 					baz: 'quux',
@@ -75,6 +76,7 @@ describe( 'Settings reducer tests', () => {
 			const state = reducer( oldState, updateSettings( newSettings ) );
 
 			expect( state ).toEqual( {
+				isDirty: false,
 				foo: 'bar',
 				data: {
 					quuz: 'corge',
@@ -102,6 +104,7 @@ describe( 'Settings reducer tests', () => {
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
+				isDirty: false,
 				foo: 'bar',
 				isSaving: false,
 				savingError: {},
@@ -113,6 +116,7 @@ describe( 'Settings reducer tests', () => {
 			);
 
 			expect( state ).toEqual( {
+				isDirty: false,
 				foo: 'bar',
 				savingError: null,
 				isSaving: true,
@@ -138,6 +142,7 @@ describe( 'Settings reducer tests', () => {
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
+				isDirty: false,
 				foo: 'bar',
 				data: {
 					is_manual_capture_enabled: false,
@@ -152,6 +157,7 @@ describe( 'Settings reducer tests', () => {
 			);
 
 			expect( state ).toEqual( {
+				isDirty: true,
 				savingError: null,
 				foo: 'bar',
 				data: {
@@ -182,6 +188,7 @@ describe( 'Settings reducer tests', () => {
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
+				isDirty: false,
 				foo: 'bar',
 				data: {
 					account_statement_descriptor: 'Statement',
@@ -196,6 +203,7 @@ describe( 'Settings reducer tests', () => {
 			);
 
 			expect( state ).toEqual( {
+				isDirty: true,
 				foo: 'bar',
 				savingError: null,
 				data: {
@@ -225,6 +233,7 @@ describe( 'Settings reducer tests', () => {
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
+				isDirty: false,
 				foo: 'bar',
 				data: {
 					is_payment_request_enabled: false,
@@ -239,6 +248,7 @@ describe( 'Settings reducer tests', () => {
 			);
 
 			expect( state ).toEqual( {
+				isDirty: true,
 				foo: 'bar',
 				savingError: null,
 				data: {
@@ -272,6 +282,7 @@ describe( 'Settings reducer tests', () => {
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
+				isDirty: false,
 				foo: 'bar',
 				data: {
 					payment_request_enabled_locations: initPaymentRequestState,
@@ -286,6 +297,7 @@ describe( 'Settings reducer tests', () => {
 			);
 
 			expect( state ).toEqual( {
+				isDirty: true,
 				foo: 'bar',
 				data: {
 					payment_request_enabled_locations: enableAllpaymentRequestState,
@@ -351,6 +363,7 @@ describe( 'Settings reducer tests', () => {
 			'leaves other fields unchanged `%j`',
 			( setting ) => {
 				const oldState = {
+					isDirty: false,
 					foo: 'bar',
 					data: {
 						[ setting.stateKey ]: setting.settingValue,
@@ -365,6 +378,7 @@ describe( 'Settings reducer tests', () => {
 				);
 
 				expect( state ).toEqual( {
+					isDirty: true,
 					foo: 'bar',
 					savingError: null,
 					data: {
@@ -379,6 +393,7 @@ describe( 'Settings reducer tests', () => {
 	describe( 'SET_IS_WOOPAY_ENABLED', () => {
 		test( 'toggles `data.is_woopay_enabled`', () => {
 			const oldState = {
+				isDirty: true,
 				data: {
 					is_woopay_enabled: false,
 				},
@@ -392,6 +407,7 @@ describe( 'Settings reducer tests', () => {
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
+				isDirty: false,
 				foo: 'bar',
 				data: {
 					is_woopay_enabled: false,
@@ -403,6 +419,7 @@ describe( 'Settings reducer tests', () => {
 			const state = reducer( oldState, updateIsWooPayEnabled( true ) );
 
 			expect( state ).toEqual( {
+				isDirty: true,
 				foo: 'bar',
 				savingError: null,
 				data: {
@@ -431,6 +448,7 @@ describe( 'Settings reducer tests', () => {
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
+				isDirty: false,
 				foo: 'bar',
 				data: {
 					woopay_custom_message: '',
@@ -445,6 +463,7 @@ describe( 'Settings reducer tests', () => {
 			);
 
 			expect( state ).toEqual( {
+				isDirty: true,
 				foo: 'bar',
 				data: {
 					woopay_custom_message: 'test',
@@ -470,6 +489,7 @@ describe( 'Settings reducer tests', () => {
 
 		test( 'leaves other fields unchanged', () => {
 			const oldState = {
+				isDirty: false,
 				foo: 'bar',
 				data: {
 					woopay_store_logo: '',
@@ -481,53 +501,10 @@ describe( 'Settings reducer tests', () => {
 			const state = reducer( oldState, updateWooPayStoreLogo( 'test' ) );
 
 			expect( state ).toEqual( {
+				isDirty: true,
 				foo: 'bar',
 				data: {
 					woopay_store_logo: 'test',
-					baz: 'quux',
-				},
-				savingError: null,
-			} );
-		} );
-	} );
-
-	describe( 'SET_IS_CLIENT_SECRET_ENCRYPTION_ENABLED', () => {
-		test( 'toggle `data.is_client_secret_encryption_enabled`', () => {
-			const oldState = {
-				data: {
-					is_client_secret_encryption_enabled: false,
-				},
-			};
-
-			const state = reducer(
-				oldState,
-				updateIsClientSecretEncryptionEnabled( true )
-			);
-
-			expect( state.data.is_client_secret_encryption_enabled ).toEqual(
-				true
-			);
-		} );
-
-		test( 'leaves other fields unchanged', () => {
-			const oldState = {
-				foo: 'bar',
-				data: {
-					is_client_secret_encryption_enabled: false,
-					baz: 'quux',
-				},
-				savingError: {},
-			};
-
-			const state = reducer(
-				oldState,
-				updateIsClientSecretEncryptionEnabled( true )
-			);
-
-			expect( state ).toEqual( {
-				foo: 'bar',
-				data: {
-					is_client_secret_encryption_enabled: true,
 					baz: 'quux',
 				},
 				savingError: null,

@@ -1,4 +1,4 @@
-# WooCommerce Payments
+# WooPayments
 
 This is a feature plugin for accepting payments via a WooCommerce-branded payment gateway.
 
@@ -31,9 +31,9 @@ Head to https://github.com/settings/tokens/new?scopes=repo&description=Composer+
 
 To fix this up, follow the link provided in the prompt and paste the token into the terminal window to continue.
 
-### Extending WooCommerce Payments
+### Extending WooPayments
 
-If you are extending WooCommerce Payments, or building on top of it, please refer to the [core docs](includes/core/README.md) and directory (`includes/core`) for guides and recommended ways of doing it.
+If you are extending WooPayments, or building on top of it, please refer to the [core docs](includes/core/README.md) and directory (`includes/core`) for guides and recommended ways of doing it.
 
 ## Setup
 
@@ -44,6 +44,7 @@ Install the following plugins:
 
 -   WooCommerce
 -   WCPay Dev Tools (clone or download [the GitHub repo](https://github.com/Automattic/woocommerce-payments-dev-tools))
+    - This dependency is automatically updated to the latest version each time you perform a `git pull` or `git merge` in this repository, as long as the WCPay Dev Tools repository is cloned locally and remains on the `trunk` branch. For more details, please refer to the [post-merge](.husky/post-merge) hook.
 
 ### Optional local.env file
 

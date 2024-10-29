@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Exception;
 use WC_Payments;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
@@ -61,7 +60,7 @@ class Duplicates_Detection_Service {
 				->keep_duplicates_only();
 
 			// Return payment method IDs list so that front-end can successfully compare with its own list.
-			return array_keys( $this->gateways_qualified_by_duplicates_detector );
+			return $this->gateways_qualified_by_duplicates_detector;
 		} catch ( \Exception $e ) {
 			Logger::warning( 'Duplicates detection service failed silently with the following error: ' . $e->getMessage() );
 
@@ -149,6 +148,9 @@ class Duplicates_Detection_Service {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
 					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && 'woocommerce_payments' === $gateway->id ) {
+						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
+						break;
+					} elseif ( 'yes' === $gateway->get_option( 'express_checkout_enabled' ) ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
 					}

@@ -1,6 +1,6 @@
 # `Get_Charge` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 

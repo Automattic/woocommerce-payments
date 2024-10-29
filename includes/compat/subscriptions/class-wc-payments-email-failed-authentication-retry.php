@@ -9,6 +9,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Logger;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -17,6 +19,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * An email sent to the admin when payment fails to go through due to authentication_required error.
  */
 class WC_Payments_Email_Failed_Authentication_Retry extends WC_Email_Failed_Order {
+
+	/**
+	 * The details of the last retry (if any) recorded for a given order
+	 *
+	 * @var WCS_Retry
+	 */
+	private $retry;
 
 	/**
 	 * Constructor
@@ -71,7 +80,7 @@ class WC_Payments_Email_Failed_Authentication_Retry extends WC_Email_Failed_Orde
 			$this->retry                 = WCS_Retry_Manager::store()->get_last_retry_for_order( wcs_get_objects_property( $order, 'id' ) );
 			$this->replace['retry-time'] = wcs_get_human_time_diff( $this->retry->get_time() );
 		} else {
-			WC_Stripe_Logger::log( 'WCS_Retry_Manager class or does not exist. Not able to send admin email about customer notification for authentication required for renewal payment.' );
+			Logger::log( 'WCS_Retry_Manager class or does not exist. Not able to send admin email about customer notification for authentication required for renewal payment.' );
 			return;
 		}
 

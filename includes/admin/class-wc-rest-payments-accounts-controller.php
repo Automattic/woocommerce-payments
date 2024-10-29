@@ -72,6 +72,7 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 			// Add extra properties to account if necessary.
 			$account['card_present_eligible'] = false;
 			$account['test_mode']             = WC_Payments::mode()->is_test();
+			$account['test_mode_onboarding']  = WC_Payments::mode()->is_test_mode_onboarding();
 		}
 
 		return rest_ensure_response( $account );

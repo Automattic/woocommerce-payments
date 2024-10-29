@@ -33,6 +33,7 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WC_Payments_Localization_Service;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Database_Cache;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 
@@ -171,6 +172,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_fraud_service;
 
 	/**
+	 * Mock Duplicates Detection Service.
+	 *
+	 * @var Duplicates_Detection_Service
+	 */
+	private $mock_duplicates_detection_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -230,8 +238,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_dpps = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 
-		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
-		$this->mock_fraud_service        = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_localization_service         = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
+		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
 		$this->mock_payment_methods = [];
 		$payment_method_classes     = [
@@ -294,6 +303,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
+					$this->mock_duplicates_detection_service,
 				]
 			)
 			->setMethods(
@@ -917,13 +927,16 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $mock_token, $this->mock_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	}
 
-	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
+	public function test_failure_result_returned_if_phone_number_is_invalid() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_billing_phone( '+1123456789123456789123' );
 		$order->save();
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Invalid phone number.' );
-		$this->mock_gateway->process_payment( $order->get_id() );
+		$result = $this->mock_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
+		WC()->session->set( 'wc_notices', [] );
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {
@@ -961,7 +974,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
-			$this->mock_fraud_service
+			$this->mock_fraud_service,
+			$this->mock_duplicates_detection_service
 		);
 
 		$this->assertEquals( $expected_result, $gateway->get_upe_available_payment_methods() );

@@ -4,6 +4,7 @@
  * Internal dependencies
  */
 import { ProtectionLevel } from '../../settings/fraud-protection/advanced-settings/constants';
+import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 const EMPTY_OBJ = {};
 const EMPTY_ARR = [];
@@ -32,10 +33,6 @@ export const getIsWCPayEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_enabled || false;
 };
 
-export const getIsClientSecretEncryptionEnabled = ( state ) => {
-	return getSettings( state ).is_client_secret_encryption_enabled || false;
-};
-
 export const getEnabledPaymentMethodIds = ( state ) => {
 	return getSettings( state ).enabled_payment_method_ids || EMPTY_ARR;
 };
@@ -50,6 +47,10 @@ export const getPaymentMethodStatuses = ( state ) => {
 
 export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
+};
+
+export const isDirty = ( state ) => {
+	return getSettingsState( state ).isDirty || false;
 };
 
 export const getAccountStatementDescriptor = ( state ) => {
@@ -156,6 +157,10 @@ export const getIsTestModeEnabled = ( state ) => {
 	return getSettings( state ).is_test_mode_enabled || false;
 };
 
+export const getIsTestModeOnboarding = ( state ) => {
+	return getSettings( state ).is_test_mode_onboarding || false;
+};
+
 export const getIsDevModeEnabled = ( state ) => {
 	return getSettings( state ).is_dev_mode_enabled || false;
 };
@@ -188,6 +193,16 @@ export const getPaymentRequestButtonTheme = ( state ) => {
 	return getSettings( state ).payment_request_button_theme || '';
 };
 
+export const getPaymentRequestButtonBorderRadius = ( state ) => {
+	const radius = getSettings( state )?.payment_request_button_border_radius;
+
+	// We can't use a || shorthand because 0 is a valid value.
+	if ( radius === 0 || radius === '0' || radius ) {
+		return radius;
+	}
+	return getDefaultBorderRadius();
+};
+
 export const getIsSavedCardsEnabled = ( state ) => {
 	return getSettings( state ).is_saved_cards_enabled || false;
 };
@@ -216,6 +231,10 @@ export const getIsWooPayEnabled = ( state ) => {
 	return getSettings( state ).is_woopay_enabled || false;
 };
 
+export const getIsWooPayGlobalThemeSupportEnabled = ( state ) => {
+	return getSettings( state ).is_woopay_global_theme_support_enabled || false;
+};
+
 export const getWooPayCustomMessage = ( state ) => {
 	return getSettings( state ).woopay_custom_message || '';
 };
@@ -240,13 +259,6 @@ export const getAdvancedFraudProtectionSettings = ( state ) => {
 
 export const getShowWooPayIncompatibilityNotice = ( state ) => {
 	return getSettings( state ).show_woopay_incompatibility_notice || false;
-};
-
-export const getShowExpressCheckoutIncompatibilityNotice = ( state ) => {
-	return (
-		getSettings( state ).show_express_checkout_incompatibility_notice ||
-		false
-	);
 };
 
 export const getIsStripeBillingEnabled = ( state ) => {

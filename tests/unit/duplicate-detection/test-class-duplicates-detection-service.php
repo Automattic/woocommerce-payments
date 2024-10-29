@@ -66,7 +66,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->service->find_duplicates();
 
 		$this->assertCount( 1, $result );
-		$this->assertEquals( 'card', $result[0] );
+		$this->assertEquals( 'card', array_keys( $result )[0] );
 	}
 
 	public function test_two_cc_one_enabled() {
@@ -83,7 +83,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->service->find_duplicates();
 
 		$this->assertCount( 1, $result );
-		$this->assertEquals( Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $result[0] );
+		$this->assertEquals( Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID, array_keys( $result )[0] );
 	}
 
 	public function test_two_bnpls_enabled() {
@@ -92,7 +92,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->service->find_duplicates();
 
 		$this->assertCount( 1, $result );
-		$this->assertEquals( Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $result[0] );
+		$this->assertEquals( Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID, array_keys( $result )[0] );
 	}
 
 	public function test_two_prbs_enabled() {
@@ -103,7 +103,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 
 		$result = $this->service->find_duplicates();
 
-		$this->assertEquals( 'apple_pay_google_pay', $result[0] );
+		$this->assertEquals( 'apple_pay_google_pay', array_keys( $result )[0] );
 	}
 
 	public function test_duplicate_not_enabled_in_woopayments() {

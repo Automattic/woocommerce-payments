@@ -23,6 +23,10 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
+	const urlParams = new URLSearchParams( window.location.search );
+	const urlSource =
+		urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
+
 	const markAsDismissed = async () => {
 		setModalDismissed( true );
 
@@ -33,22 +37,24 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 	};
 
 	const handleSetup = () => {
-		trackEligibilityModalClosed( 'setup_deposits' );
+		trackEligibilityModalClosed( 'setup_deposits', urlSource );
 
 		// Note: we don't need to update the option here because it will be handled upon redirect to the connect URL.
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			collect_payout_requirements: true,
+			source: urlSource,
+			from: 'WCPAY_OVERVIEW',
 		} );
 	};
 
 	const handlePaymentsOnly = () => {
-		trackEligibilityModalClosed( 'enable_payments_only' );
+		trackEligibilityModalClosed( 'enable_payments_only', urlSource );
 		markAsDismissed();
 		setModalVisible( false );
 	};
 
 	const handleDismiss = () => {
-		trackEligibilityModalClosed( 'dismiss' );
+		trackEligibilityModalClosed( 'dismiss', urlSource );
 		markAsDismissed();
 		setModalVisible( false );
 	};

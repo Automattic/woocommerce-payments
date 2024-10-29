@@ -13,6 +13,10 @@ import {
 
 export const fraudOutcomeRulesetMapping = {
 	[ Outcomes.REVIEW ]: {
+		[ Rules.RULE_AVS_VERIFICATION ]: __(
+			'Place in review if the AVS verification fails',
+			'woocommerce-payments'
+		),
 		[ Rules.RULE_ADDRESS_MISMATCH ]: __(
 			'Place in review if the shipping address country differs from the billing address country',
 			'woocommerce-payments'
@@ -35,6 +39,10 @@ export const fraudOutcomeRulesetMapping = {
 		),
 	},
 	[ Outcomes.BLOCK ]: {
+		[ Rules.RULE_AVS_VERIFICATION ]: __(
+			'Block if the AVS verification fails',
+			'woocommerce-payments'
+		),
 		[ Rules.RULE_ADDRESS_MISMATCH ]: __(
 			'Block if the shipping address differs from the billing address',
 			'woocommerce-payments'

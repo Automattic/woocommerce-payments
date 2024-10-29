@@ -91,6 +91,13 @@ abstract class UPE_Payment_Method {
 	protected $dark_icon_url;
 
 	/**
+	 * Is the payment method a BNPL (Buy Now Pay Later) method?
+	 *
+	 * @var boolean
+	 */
+	protected $is_bnpl = false;
+
+	/**
 	 * Supported customer locations for which charges for a payment method can be processed
 	 * Empty if all customer locations are supported
 	 *
@@ -123,6 +130,8 @@ abstract class UPE_Payment_Method {
 	 * @param array|false $payment_details Optional payment details from charge object.
 	 *
 	 * @return string
+	 *
+	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_title( string $account_country = null, $payment_details = false ) {
 		return $this->title;
@@ -199,6 +208,16 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
+	 * Returns boolean dependent on whether payment method
+	 * will support BNPL (Buy Now Pay Later) payments
+	 *
+	 * @return bool
+	 */
+	public function is_bnpl() {
+		return $this->is_bnpl;
+	}
+
+	/**
 	 * Returns boolean dependent on whether payment method will accept charges
 	 * with chosen currency
 	 *
@@ -243,6 +262,8 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @param string|null $account_country Optional account country.
 	 * @return string
+	 *
+	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_icon( string $account_country = null ) {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
@@ -259,12 +280,33 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
+	 * Gets the theme appropriate icon for the payment method for a given location and context.
+	 *
+	 * @param string  $location The location to get the icon for.
+	 * @param boolean $is_blocks Whether the icon is for blocks.
+	 * @param string  $account_country Optional account country.
+	 * @return string
+	 */
+	public function get_payment_method_icon_for_location( string $location = 'checkout', bool $is_blocks = true, string $account_country = null ) {
+		$appearance_theme = WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $is_blocks ? 'blocks' : 'classic' );
+
+		if ( 'night' === $appearance_theme ) {
+			return $this->get_dark_icon( $account_country );
+		}
+
+		return $this->get_icon( $account_country );
+	}
+
+	/**
 	 * Returns payment method supported countries
 	 *
 	 * @return array
 	 */
 	public function get_countries() {
-		return $this->countries;
+		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
+
+		return $this->has_domestic_transactions_restrictions() ? [ $account_country ] : $this->countries;
 	}
 
 	/**

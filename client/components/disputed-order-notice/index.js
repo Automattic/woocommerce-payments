@@ -8,7 +8,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import InlineNotice from 'wcpay/components/inline-notice';
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { reasons } from 'wcpay/disputes/strings';
 import { getDetailsURL } from 'wcpay/components/details-link';
 import {

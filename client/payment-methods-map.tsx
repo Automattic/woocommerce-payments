@@ -24,16 +24,6 @@ import {
 	SofortIcon,
 } from 'wcpay/payment-methods-icons';
 
-declare global {
-	interface Window {
-		wcpaySettings: {
-			accountStatus: {
-				country: string;
-			};
-		};
-	}
-}
-
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
 
 export interface PaymentMethodMapEntry {
@@ -182,8 +172,7 @@ const PaymentMethodInformationObject: Record<
 		id: 'affirm',
 		label: __( 'Affirm', 'woocommerce-payments' ),
 		description: __(
-			// translators: %s is the store currency.
-			'Allow customers to pay over time with Affirm. Available to all customers paying in %s.',
+			'Allow customers to pay over time with Affirm.',
 			'woocommerce-payments'
 		),
 		icon: AffirmIcon,
@@ -202,13 +191,11 @@ const PaymentMethodInformationObject: Record<
 		description:
 			'GB' === accountCountry
 				? __(
-						// translators: %s is the store currency.
-						'Allow customers to pay over time with Clearpay. Available to all customers paying in %s.',
+						'Allow customers to pay over time with Clearpay.',
 						'woocommerce-payments'
 				  )
 				: __(
-						// translators: %s is the store currency.
-						'Allow customers to pay over time with Afterpay. Available to all customers paying in %s.',
+						'Allow customers to pay over time with Afterpay.',
 						'woocommerce-payments'
 				  ),
 		icon: 'GB' === accountCountry ? ClearpayIcon : AfterpayIcon,
@@ -236,8 +223,7 @@ const PaymentMethodInformationObject: Record<
 		id: 'klarna',
 		label: __( 'Klarna', 'woocommerce-payments' ),
 		description: __(
-			// translators: %s is the store currency.
-			'Allow customers to pay over time with Klarna. Available to all customers paying in %s.',
+			'Allow customers to pay over time or pay now with Klarna.',
 			'woocommerce-payments'
 		),
 		icon: KlarnaIcon,

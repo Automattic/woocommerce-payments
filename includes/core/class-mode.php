@@ -22,6 +22,13 @@ class Mode {
 	private $test_mode;
 
 	/**
+	 * Holds the onboarding test mode flag.
+	 *
+	 * @var bool
+	 */
+	private $test_mode_onboarding;
+
+	/**
 	 * Holds the dev mode flag.
 	 *
 	 * @var bool
@@ -48,12 +55,10 @@ class Mode {
 
 	/**
 	 * Initializes the working mode of WooPayments.
-	 *
-	 * @throws Exception In case the class has not been initialized yet.
 	 */
 	private function maybe_init() {
 		// The object is only initialized once.
-		if ( isset( $this->dev_mode ) && isset( $this->test_mode ) ) {
+		if ( isset( $this->dev_mode ) && isset( $this->test_mode_onboarding ) && isset( $this->test_mode ) ) {
 			return;
 		}
 
@@ -69,41 +74,57 @@ class Mode {
 		 * Allows WooPayments to enter dev (aka sandbox) mode.
 		 *
 		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/
-		 * @param bool $dev_mode The pre-determined dev mode.
+		 * @param bool $dev_mode Whether to enter WooPayments in dev mode.
 		 */
 		$this->dev_mode = (bool) apply_filters( 'wcpay_dev_mode', $dev_mode );
 
-		// Getting the gateway settings directly from the database so the gateway doesn't need to be initialized.
-		$settings_option_name = 'woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings';
-		$wcpay_settings       = get_option( $settings_option_name );
-		$test_mode_setting    = 'yes' === ( $wcpay_settings['test_mode'] ?? false );
-		$test_mode            = $this->dev_mode || $test_mode_setting;
+		// If dev mode is active, we enable test mode onboarding.
+		$test_mode_onboarding = $this->dev_mode || \WC_Payments_Onboarding_Service::is_test_mode_enabled();
 
 		/**
-		 * Allows WooPayments to enter test mode.
+		 * Allows WooPayments to use test mode onboarding.
+		 *
+		 * @param bool $test_mode_onboarding Whether to use test mode onboarding.
+		 */
+		$this->test_mode_onboarding = (bool) apply_filters( 'wcpay_test_mode_onboarding', $test_mode_onboarding );
+
+		// If the current mode of onboarding is test, we will enable test mode payments processing.
+		// Otherwise, follow the gateway settings.
+		if ( $this->test_mode_onboarding ) {
+			$test_mode = true;
+		} else {
+			// Getting the gateway settings directly from the database so the gateway doesn't need to be initialized.
+			$settings_option_name = 'woocommerce_' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '_settings';
+			$wcpay_settings       = get_option( $settings_option_name );
+			$test_mode            = 'yes' === ( $wcpay_settings['test_mode'] ?? false );
+		}
+
+		/**
+		 * Allows WooPayments to process payments in test mode.
 		 *
 		 * @see https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#enabling-test-mode
-		 * @param bool $test_mode The pre-determined test mode.
+		 * @param bool $test_mode Whether to process payments in test mode.
 		 */
 		$this->test_mode = (bool) apply_filters( 'wcpay_test_mode', $test_mode );
 	}
 
 	/**
-	 * Checks if live is enabled.
+	 * Checks if live payment processing is enabled.
 	 *
-	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
+	 * @throws Exception In case the class has not been initialized yet.
 	 */
 	public function is_live(): bool {
 		$this->maybe_init();
-		return ! $this->test_mode && ! $this->dev_mode;
+
+		return ! $this->test_mode;
 	}
 
 	/**
-	 * Checks if test is enabled.
+	 * Checks if test payments processing is enabled.
 	 *
-	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
+	 * @throws Exception In case the class has not been initialized yet.
 	 */
 	public function is_test(): bool {
 		$this->maybe_init();
@@ -112,44 +133,87 @@ class Mode {
 	}
 
 	/**
-	 * Checks if dev is enabled.
+	 * Checks if test mode onboarding is enabled.
 	 *
-	 * @throws Exception In case the class has not been initialized yet.
 	 * @return bool
+	 * @throws Exception In case the class has not been initialized yet.
+	 */
+	public function is_test_mode_onboarding(): bool {
+		$this->maybe_init();
+
+		return $this->test_mode_onboarding;
+	}
+
+	/**
+	 * Checks if dev mode is enabled.
+	 *
+	 * @return bool
+	 * @throws Exception In case the class has not been initialized yet.
 	 */
 	public function is_dev(): bool {
 		$this->maybe_init();
+
 		return $this->dev_mode;
 	}
 
 	/**
-	 * Enters into live mode.
+	 * Enable live payment processing.
 	 *
 	 * @return void
 	 */
 	public function live() {
 		$this->test_mode = false;
-		$this->dev_mode  = false;
+		// We can't process live payments and be in test mode onboarding.
+		$this->test_mode_onboarding = false;
+		// We also can't be in dev mode.
+		$this->dev_mode = false;
 	}
 
 	/**
-	 * Enters into test mode.
+	 * Enable test payment processing.
 	 *
 	 * @return void
 	 */
 	public function test() {
 		$this->test_mode = true;
-		$this->dev_mode  = false;
+		// Doesn't affect the onboarding mode or the dev mode.
 	}
 
 	/**
-	 * Enters into dev mode.
+	 * Enable test mode onboarding.
+	 *
+	 * @return void
+	 */
+	public function test_mode_onboarding() {
+		$this->test_mode_onboarding = true;
+		// When onboarding in test mode, we can only do test payment processing.
+		$this->test_mode = true;
+	}
+
+	/**
+	 * Enable live mode onboarding.
+	 *
+	 * @return void
+	 */
+	public function live_mode_onboarding() {
+		$this->test_mode_onboarding = false;
+		// When onboarding in live mode, we can't be in dev mode.
+		$this->dev_mode = false;
+		// Doesn't affect the payments processing mode.
+	}
+
+	/**
+	 * Enable the gateway dev mode.
+	 *
+	 * Payments processing and onboarding are always in test mode when dev mode is active.
 	 *
 	 * @return void
 	 */
 	public function dev() {
-		$this->test_mode = true;
-		$this->dev_mode  = true;
+		$this->dev_mode = true;
+		// In dev mode, everything is in test mode.
+		$this->test_mode            = true;
+		$this->test_mode_onboarding = true;
 	}
 
 	/**
@@ -158,7 +222,7 @@ class Mode {
 	 * @return bool Whether `WCPAY_DEV_MODE` is defined and true.
 	 */
 	protected function is_wcpay_dev_mode_defined(): bool {
-		return(
+		return (
 			defined( 'WCPAY_DEV_MODE' )
 			&& WCPAY_DEV_MODE
 		);

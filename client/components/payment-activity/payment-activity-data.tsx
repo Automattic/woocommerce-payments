@@ -13,42 +13,70 @@ import interpolateComponents from '@automattic/interpolate-components';
 import InlineNotice from '../inline-notice';
 import PaymentDataTile from './payment-data-tile';
 import { ClickTooltip } from '../tooltip';
-import { usePaymentActivityData } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
-import type { DateRange } from './types';
+import type { PaymentActivityData } from 'wcpay/data/payment-activity/types';
 import './style.scss';
 
-/**
- * This will be replaces in the future with a dynamic date range picker.
- */
-const getDateRange = (): DateRange => {
-	return {
-		// Subtract 7 days from the current date.
-		date_start: moment()
-			.subtract( 7, 'd' )
-			.format( 'YYYY-MM-DD\\THH:mm:ss' ),
-		date_end: moment().format( 'YYYY-MM-DD\\THH:mm:ss' ),
-	};
+const searchTermsForViewReportLink = {
+	totalPaymentVolume: [
+		'charge',
+		'payment',
+		'payment_failure_refund',
+		'payment_refund',
+		'refund',
+		'refund_failure',
+		'dispute',
+		'dispute_reversal',
+		'card_reader_fee',
+		'adjustment',
+	],
+
+	charge: [ 'charge', 'payment', 'adjustment' ],
+
+	refunds: [
+		'refund',
+		'refund_failure',
+		'payment_refund',
+		'payment_failure_refund',
+	],
+
+	dispute: [ 'dispute', 'dispute_reversal' ],
 };
 
-const PaymentActivityData: React.FC = () => {
-	const { paymentActivityData, isLoading } = usePaymentActivityData(
-		getDateRange()
+const getSearchParams = ( searchTerms: string[] ) => {
+	return searchTerms.reduce(
+		( acc, term, index ) => ( {
+			...acc,
+			[ `search[${ index }]` ]: term,
+		} ),
+		{}
 	);
+};
 
+interface Props {
+	paymentActivityData?: PaymentActivityData;
+	isLoading?: boolean;
+}
+
+const PaymentActivityDataComponent: React.FC< Props > = ( {
+	paymentActivityData,
+	isLoading,
+} ) => {
 	const totalPaymentVolume = paymentActivityData?.total_payment_volume ?? 0;
 	const charges = paymentActivityData?.charges ?? 0;
 	const fees = paymentActivityData?.fees ?? 0;
 	const disputes = paymentActivityData?.disputes ?? 0;
 	const refunds = paymentActivityData?.refunds ?? 0;
-	const { storeCurrency } = wcpaySettings;
+	const currency = paymentActivityData?.currency;
+	const siteTimeZone = wcSettings.admin.timeZone;
+	// We need to add a time offset to the date range to ensure the correct dates are passed on to the transactions report via the view report link.
 
 	return (
 		<div className="wcpay-payment-activity-data">
 			<PaymentDataTile
 				id="wcpay-payment-activity-data__total-payment-volume"
 				label={ __( 'Total payment volume', 'woocommerce-payments' ) }
-				currencyCode={ storeCurrency }
+				currencyCode={ currency }
 				tooltip={
 					<ClickTooltip
 						className="wcpay-payment-activity-data__total-payment-volume__tooltip"
@@ -62,7 +90,7 @@ const PaymentActivityData: React.FC = () => {
 							<>
 								{ interpolateComponents( {
 									mixedString: __(
-										'{{strong}}Total payment volume{{/strong}} is gross value of payments successfully processed over a given timeframe.',
+										'{{strong}}Total payment volume{{/strong}} is the sum of all transactions in a given time period, minus refunds and disputes.',
 										'woocommerce-payments'
 									),
 									components: {
@@ -86,21 +114,26 @@ const PaymentActivityData: React.FC = () => {
 				reportLink={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
-					'date_between[0]': moment(
-						getDateRange().date_start
-					).format( 'YYYY-MM-DD' ),
-					'date_between[1]': moment( getDateRange().date_end ).format(
-						'YYYY-MM-DD'
-					),
 					filter: 'advanced',
+					store_currency_is: currency,
+					'date_between[0]': moment( paymentActivityData?.date_start )
+						.add( siteTimeZone )
+						.format( 'YYYY-MM-DD' ),
+					'date_between[1]': moment( paymentActivityData?.date_end )
+						.add( siteTimeZone )
+						.format( 'YYYY-MM-DD' ),
+					...getSearchParams(
+						searchTermsForViewReportLink.totalPaymentVolume
+					),
 				} ) }
+				tracksSource="total_payment_volume"
 				isLoading={ isLoading }
 			/>
 			<div className="wcpay-payment-data-highlights">
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__charges"
 					label={ __( 'Charges', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					tooltip={
 						<ClickTooltip
 							className="payment-data-highlights__charges__tooltip"
@@ -125,52 +158,109 @@ const PaymentActivityData: React.FC = () => {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
-						type_is: 'charge',
+						store_currency_is: currency,
+						'date_between[0]': moment(
+							paymentActivityData?.date_start
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
+						'date_between[1]': moment(
+							paymentActivityData?.date_end
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
+						...getSearchParams(
+							searchTermsForViewReportLink.charge
+						),
 					} ) }
+					tracksSource="charges"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__refunds"
 					label={ __( 'Refunds', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					amount={ refunds }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
 						path: '/payments/transactions',
 						filter: 'advanced',
-						type_is: 'refund',
+						store_currency_is: currency,
 						'date_between[0]': moment(
-							getDateRange().date_start
-						).format( 'YYYY-MM-DD' ),
+							paymentActivityData?.date_start
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
-							getDateRange().date_end
-						).format( 'YYYY-MM-DD' ),
+							paymentActivityData?.date_end
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
+						...getSearchParams(
+							searchTermsForViewReportLink.refunds
+						),
 					} ) }
+					tracksSource="refunds"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__disputes"
 					label={ __( 'Disputes', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
+					tooltip={
+						<ClickTooltip
+							className="payment-data-highlights__disputes__tooltip"
+							buttonIcon={ <HelpOutlineIcon /> }
+							buttonLabel={ __(
+								'Disputes tooltip',
+								'woocommerce-payments'
+							) }
+							content={ interpolateComponents( {
+								mixedString: __(
+									'{{strong}}Disputes{{/strong}} includes the amount of any disputed charges. Dispute fees are included in the Fees section. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
+									'woocommerce-payments'
+								),
+								components: {
+									strong: <strong />,
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+										/>
+									),
+								},
+							} ) }
+						/>
+					}
 					amount={ disputes }
 					reportLink={ getAdminUrl( {
 						page: 'wc-admin',
-						path: '/payments/disputes',
+						path: '/payments/transactions',
 						filter: 'advanced',
+						store_currency_is: currency,
 						'date_between[0]': moment(
-							getDateRange().date_start
-						).format( 'YYYY-MM-DD' ),
+							paymentActivityData?.date_start
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
 						'date_between[1]': moment(
-							getDateRange().date_end
-						).format( 'YYYY-MM-DD' ),
-						status_is: 'needs_response',
+							paymentActivityData?.date_end
+						)
+							.add( siteTimeZone )
+							.format( 'YYYY-MM-DD' ),
+						...getSearchParams(
+							searchTermsForViewReportLink.dispute
+						),
 					} ) }
+					tracksSource="disputes"
 					isLoading={ isLoading }
 				/>
 				<PaymentDataTile
 					id="wcpay-payment-data-highlights__fees"
 					label={ __( 'Fees', 'woocommerce-payments' ) }
-					currencyCode={ storeCurrency }
+					currencyCode={ currency }
 					tooltip={
 						<ClickTooltip
 							className="payment-data-highlights__fees__tooltip"
@@ -181,11 +271,19 @@ const PaymentActivityData: React.FC = () => {
 							) }
 							content={ interpolateComponents( {
 								mixedString: __(
-									'{{strong}}Fees{{/strong}} includes fees on payments as well as disputes.',
+									'{{strong}}Fees{{/strong}} includes all types of fees charged by WooPayments. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
 									'woocommerce-payments'
 								),
 								components: {
 									strong: <strong />,
+									learnMoreLink: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woopayments/fees-and-debits/fees/"
+										/>
+									),
 								},
 							} ) }
 						/>
@@ -198,4 +296,4 @@ const PaymentActivityData: React.FC = () => {
 	);
 };
 
-export default PaymentActivityData;
+export default PaymentActivityDataComponent;

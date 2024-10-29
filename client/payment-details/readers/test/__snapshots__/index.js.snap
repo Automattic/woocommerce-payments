@@ -89,7 +89,6 @@ exports[`RenderPaymentCardReaderChargeDetails renders reader charges 1`] = `
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-1"
             class="woocommerce-table__table"
             role="group"
@@ -206,13 +205,13 @@ exports[`RenderPaymentCardReaderChargeDetails renders reader charges 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -286,7 +285,6 @@ exports[`RenderPaymentCardReaderChargeDetails renders without reader charges 1`]
           data-wp-component="CardBody"
         >
           <div
-            aria-hidden="false"
             aria-labelledby="caption-0"
             class="woocommerce-table__table"
             role="group"
@@ -365,13 +363,13 @@ exports[`RenderPaymentCardReaderChargeDetails renders without reader charges 1`]
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

@@ -95,6 +95,16 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 	}
 
 	/**
+	 * Returns the type of this payment token (CC, eCheck, or something else).
+	 *
+	 * @param  string $deprecated Deprecated since WooCommerce 3.0.
+	 * @return string Payment Token Type (CC, eCheck)
+	 */
+	public function get_type( $deprecated = '' ) {
+		return self::TYPE;
+	}
+
+	/**
 	 * Transforms email address into redacted/shortened format like ***xxxx@x.com.
 	 * Using shortened length of four characters will mimic CC last-4 digits of card number.
 	 *

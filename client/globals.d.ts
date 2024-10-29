@@ -2,11 +2,13 @@
  * Internal dependencies
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
+import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 
 declare global {
 	const wcpaySettings: {
 		version: string;
 		connectUrl: string;
+		overviewUrl: string;
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
@@ -17,9 +19,12 @@ declare global {
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
+		testModeOnboarding: boolean;
 		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
+		isAccountConnected: boolean;
+		isAccountValid: boolean;
 		accountStatus: {
 			email?: string;
 			created: string;
@@ -41,7 +46,6 @@ declare global {
 				minimum_manual_deposit_amounts: Record< string, number >;
 				minimum_scheduled_deposit_amounts: Record< string, number >;
 			};
-			depositsStatus?: string;
 			currentDeadline?: bigint;
 			detailsSubmitted?: boolean;
 			pastDue?: boolean;
@@ -85,17 +89,15 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		progressiveOnboarding?: {
-			isNewFlowEnabled: boolean;
 			isEnabled: boolean;
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
 		};
 		enabledPaymentMethods: string[];
-		dismissedDuplicateNotices: string[];
+		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
-		onboardingTestMode: boolean;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -118,6 +120,7 @@ declare global {
 		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
+		isInstantDepositNoticeDismissed: boolean;
 		reporting: {
 			exportModalDismissed?: boolean;
 		};
@@ -131,6 +134,7 @@ declare global {
 		};
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
+		defaultExpressCheckoutBorderRadius: string;
 	};
 
 	const wc: {
@@ -169,10 +173,23 @@ declare global {
 					woocommerce_default_country: string;
 				};
 			};
+			siteVisibilitySettings: {
+				woocommerce_share_key: string;
+				woocommerce_coming_soon: string;
+				woocommerce_private_link: string;
+			};
+			timeZone: string;
 		};
 		adminUrl: string;
 		countries: Record< string, string >;
 		homeUrl: string;
 		siteTitle: string;
 	};
+
+	interface Window {
+		wcpaySettings: typeof wcpaySettings;
+		wc: typeof wc;
+		wcTracks: typeof wcTracks;
+		wcSettings: typeof wcSettings;
+	}
 }

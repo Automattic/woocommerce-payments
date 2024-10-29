@@ -37,10 +37,14 @@ describe( 'Admin merchant progressive onboarding', () => {
 		// pick Individual business entity
 		await expect( page ).toClick( '[name="business_type"]' );
 		await page.waitForSelector(
-			'[name="business_type"] ~ ul li.components-custom-select-control__item'
+			'[name="business_type"] ~ ul li.components-custom-select-control__item',
+			{ text: /Individual/ }
 		);
-		await expect( page ).toClick(
-			'[name="business_type"] ~ ul li.components-custom-select-control__item'
+		await expect(
+			page
+		).toClick(
+			'[name="business_type"] ~ ul li.components-custom-select-control__item',
+			{ text: /Individual/ }
 		);
 		// pick Software type of goods (MCC)
 		await expect( page ).toClick( '[name="mcc"]' );
@@ -84,13 +88,9 @@ describe( 'Admin merchant progressive onboarding', () => {
 			}
 		);
 
-		// Loading screen before redirect to Stripe.
-		await expect( page ).toMatchElement( 'h1.stepper__heading', {
-			text: 'One last step! Verify your identity with our partner',
-		} );
-
-		// Merchant is redirected away to payments/connect again (because of force fisconnected option)
-		// todo at some point test real Stripe KYC
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		// Check that Stripe Embedded KYC iframe is loaded.
+		await page.waitForSelector(
+			'iframe[data-testid="stripe-connect-ui-layer-stripe-connect-account-onboarding"]'
+		);
 	} );
 } );

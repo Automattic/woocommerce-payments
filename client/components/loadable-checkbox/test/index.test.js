@@ -100,13 +100,13 @@ describe( 'Loadable checkbox', () => {
 		jest.useFakeTimers();
 		act( () => {
 			userEvent.click( container.queryByLabelText( 'Foo' ) );
-			jest.runTimersToTime( 400 );
+			jest.advanceTimersByTime( 400 );
 		} );
 		container.rerender( getLoadableCheckbox( false, 1500, 0 ) );
 		expect( mockOnChangeEvent ).not.toHaveBeenCalled();
 
 		act( () => {
-			jest.runTimersToTime( 1200 );
+			jest.advanceTimersByTime( 1200 );
 		} );
 		container.rerender( getLoadableCheckbox( false, 1500, 0 ) );
 		expect( mockOnChangeEvent ).toHaveBeenCalled();
@@ -122,12 +122,12 @@ describe( 'Loadable checkbox', () => {
 		jest.useFakeTimers();
 		act( () => {
 			userEvent.click( container.queryByLabelText( 'Foo' ) );
-			jest.runTimersToTime( 400 );
+			jest.advanceTimersByTime( 400 );
 		} );
 		container.rerender( getLoadableCheckbox( false, 0, 1500 ) );
 		expect( mockOnChangeEvent ).not.toHaveBeenCalled();
 		act( () => {
-			jest.runTimersToTime( 1200 );
+			jest.advanceTimersByTime( 1200 );
 		} );
 		container.rerender( getLoadableCheckbox( false, 0, 1500 ) );
 		expect( mockOnChangeEvent ).toHaveBeenCalledWith( false );

@@ -1,11 +1,15 @@
-.wc-payment-gateway-method-name-woopay-wrapper {
+.wc-payment-gateway-method-logo-wrapper {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
 	line-height: 1;
 }
 
-.wc-payment-gateway-method-name-woopay-wrapper img {
+.wc-payment-gateway-method-logo-wrapper img {
 	margin-left: 0.5rem;
 	padding-top: 4px;
+}
+
+.wc-payment-gateway-method-logo-wrapper.wc-payment-bnpl-logo img {
+	max-height: 30px;
 }

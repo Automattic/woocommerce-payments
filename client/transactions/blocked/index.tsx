@@ -34,7 +34,7 @@ import {
 	getBlockedListColumns,
 	getBlockedListColumnsStructure,
 } from './columns';
-import { formatExplicitCurrency } from '../../utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import autocompleter from '../fraud-protection/autocompleter';
 import DownloadButton from '../../components/download-button';
 import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
@@ -47,14 +47,13 @@ export const BlockedList = (): JSX.Element => {
 	const columnsToDisplay = getBlockedListColumns();
 	const { isLoading, transactions } = useFraudOutcomeTransactions(
 		'block',
-		query,
-		'review'
+		query
 	);
 
 	const {
 		transactionsSummary,
 		isLoading: isSummaryLoading,
-	} = useFraudOutcomeTransactionsSummary( 'block', query, 'review' );
+	} = useFraudOutcomeTransactionsSummary( 'block', query );
 
 	const rows = transactions.map( ( transaction ) =>
 		getBlockedListColumnsStructure( transaction, columnsToDisplay )

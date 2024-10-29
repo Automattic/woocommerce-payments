@@ -44,7 +44,7 @@ describe( 'Getting styles for automated theming', () => {
 			'.Input'
 		);
 		expect( fieldStyles ).toEqual( {
-			backgroundColor: 'rgb(255, 255, 255)',
+			backgroundColor: 'rgba(0, 0, 0, 0)',
 			color: 'rgb(109, 109, 109)',
 			fontFamily:
 				'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -119,7 +119,10 @@ describe( 'Getting styles for automated theming', () => {
 			return mockCSStyleDeclaration;
 		} );
 
-		const appearance = upeStyles.getAppearance( 'shortcode_checkout' );
+		const appearance = upeStyles.getAppearance(
+			'shortcode_checkout',
+			true
+		);
 		expect( appearance ).toEqual( {
 			variables: {
 				colorBackground: '#ffffff',
@@ -131,7 +134,7 @@ describe( 'Getting styles for automated theming', () => {
 			theme: 'stripe',
 			rules: {
 				'.Input': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -140,7 +143,7 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 				},
 				'.Input--invalid': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -156,24 +159,24 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 				},
 				'.Tab': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab:hover': {
-					backgroundColor: 'rgb(237, 237, 237)',
-					color: 'rgb(0, 0, 0)',
+					backgroundColor: 'rgba(18, 18, 18, 0)',
+					color: 'rgb(255, 255, 255)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab--selected': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					outline: '1px solid rgb(150, 88, 138)',
 				},
 				'.TabIcon:hover': {
-					color: 'rgb(0, 0, 0)',
+					color: 'rgb(255, 255, 255)',
 				},
 				'.TabIcon--selected': {
 					color: 'rgb(109, 109, 109)',
@@ -196,7 +199,87 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 					backgroundColor: '#ffffff',
 				},
+				'.Heading': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Button': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					outline: '1px solid rgb(150, 88, 138)',
+					padding: '10px',
+				},
+				'.Link': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Container': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+				},
 			},
+			labels: 'above',
+		} );
+	} );
+
+	[
+		{
+			elementsLocation: 'shortcode_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'blocks_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'other',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+	].forEach( ( { elementsLocation, expectedSelectors } ) => {
+		afterEach( () => {
+			document.querySelector.mockClear();
+		} );
+
+		describe( `when elementsLocation is ${ elementsLocation }`, () => {
+			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
+				jest.spyOn( document, 'querySelector' ).mockImplementation(
+					() => mockElement
+				);
+				jest.spyOn( window, 'getComputedStyle' ).mockImplementation(
+					() => mockCSStyleDeclaration
+				);
+
+				upeStyles.getAppearance( elementsLocation );
+
+				expectedSelectors.forEach( ( selector ) => {
+					expect( document.querySelector ).toHaveBeenCalledWith(
+						selector
+					);
+				} );
+			} );
 		} );
 	} );
 } );

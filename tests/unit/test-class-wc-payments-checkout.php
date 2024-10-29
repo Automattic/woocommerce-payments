@@ -374,7 +374,6 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->willReturn( $payment_methods );
 
 		$this->assertSame(
-			$this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig'],
 			[
 				'card' => [
 					'isReusable'             => true,
@@ -383,7 +382,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
 					'countries'              => [],
-					'testingInstructions'    => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">here</a>.',
+					'testingInstructions'    => '<strong>Test mode:</strong> use test card <button type="button" class="js-woopayments-copy-test-number" aria-label="Click to copy the test number to clipboard" title="Copy to clipboard"><i></i><span>4242 4242 4242 4242</button> or refer to our <a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">testing guide</a>.',
 					'forceNetworkSavedCards' => false,
 				],
 				'link' => [
@@ -396,7 +395,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'testingInstructions'    => '',
 					'forceNetworkSavedCards' => false,
 				],
-			]
+			],
+			$this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig']
 		);
 	}
 
@@ -509,5 +509,31 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 				new CC_Payment_Method( $this->mock_token_service )
 			);
 			$this->assertSame( true, $this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig'][ Payment_Method::CARD ]['showSaveOption'] );
+	}
+
+	public function test_upe_appearance_transients() {
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn(
+				[
+					Payment_Method::CARD,
+				]
+			);
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->willReturn(
+				new CC_Payment_Method( $this->mock_token_service )
+			);
+
+		set_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT, '{}', DAY_IN_SECONDS );
+		set_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT, 'night', DAY_IN_SECONDS );
+		delete_transient( WC_Payment_Gateway_WCPay::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertSame( '{}', $js_config['upeAppearance'] );
+		$this->assertSame( 'night', $js_config['wcBlocksUPEAppearanceTheme'] );
+		$this->assertFalse( $js_config['upeAddPaymentMethodAppearance'] );
 	}
 }

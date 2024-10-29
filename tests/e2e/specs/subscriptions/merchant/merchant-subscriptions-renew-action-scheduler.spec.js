@@ -47,7 +47,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 
 			await shopper.logout();
 		} );

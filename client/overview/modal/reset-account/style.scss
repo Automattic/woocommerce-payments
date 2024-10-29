@@ -1,25 +1,49 @@
 .wcpay-reset-account-modal {
+	color: $gray-900;
+	fill: $studio-woocommerce-purple-50;
+
 	// fix for the modal being too short on smaller screens
 	@media ( max-height: 880px ) {
 		max-height: 100% !important;
 	}
 
+	.components-modal__header {
+		position: initial;
+		padding: 0;
+		border: 0;
+
+		h1 {
+			@include wp-title-small;
+			margin-bottom: $gap-smaller;
+		}
+	}
+
 	.components-modal__content {
 		box-sizing: border-box;
-		max-width: 700px;
+		max-width: 600px;
+		margin: auto;
+		padding: $gap-smaller $gap-larger $gap-larger;
+	}
+
+	&__title {
+		@include wp-title-small;
+	}
+
+	&__content {
+		display: grid;
+		grid-template-columns: auto;
+		gap: $gap;
+		padding: $gap-smallest;
+		align-items: normal;
+		margin-bottom: $gap-large;
+
+		ol {
+			margin-top: 0;
+			margin-bottom: 0;
+		}
 	}
 
 	&__footer {
-		text-align: right;
-		margin-top: $gap-large;
-
-		& :first-child {
-			margin-right: $gap-smaller;
-		}
-
-		button {
-			margin-top: $gap;
-			padding: $gap-smaller $gap;
-		}
+		@include modal-footer-buttons;
 	}
 }

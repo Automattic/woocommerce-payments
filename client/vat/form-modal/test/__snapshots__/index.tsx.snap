@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`VAT form modal should render the VAT Form 1`] = `
+exports[`Tax details modal should render the VAT Form 1`] = `
 <div
   aria-labelledby="components-modal-header-1"
   class="components-modal__frame"
@@ -21,7 +21,7 @@ exports[`VAT form modal should render the VAT Form 1`] = `
           class="components-modal__header-heading"
           id="components-modal-header-1"
         >
-          VAT details
+          Set your tax details
         </h1>
       </div>
       <button

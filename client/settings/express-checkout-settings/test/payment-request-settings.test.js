@@ -18,24 +18,23 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	useWooPayEnabledSettings,
-	useExpressCheckoutShowIncompatibilityNotice,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePaymentRequestLocations: jest.fn(),
-	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'default' ] ),
+	usePaymentRequestButtonBorderRadius: jest.fn().mockReturnValue( [ 4 ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	useWooPayEnabledSettings: jest.fn(),
-	useExpressCheckoutShowIncompatibilityNotice: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
 
-jest.mock( 'payment-request/utils', () => ( {
+jest.mock( 'utils/express-checkout', () => ( {
 	getPaymentRequestData: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',
@@ -149,7 +148,7 @@ describe( 'PaymentRequestSettings', () => {
 			screen.getByRole( 'combobox', {
 				name: 'Call to action',
 			} )
-		).toHaveValue( 'buy' );
+		).toHaveValue( 'default' );
 		expect( screen.getByLabelText( 'Small (40 px)' ) ).toBeChecked();
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
@@ -190,7 +189,7 @@ describe( 'PaymentRequestSettings', () => {
 		const setButtonThemeMock = jest.fn();
 
 		usePaymentRequestButtonType.mockReturnValue( [
-			'buy',
+			'default',
 			setButtonTypeMock,
 		] );
 		usePaymentRequestButtonSize.mockReturnValue( [
@@ -222,7 +221,7 @@ describe( 'PaymentRequestSettings', () => {
 			expect.anything()
 		);
 
-		userEvent.click( screen.getByLabelText( 'Large (56 px)' ) );
+		userEvent.click( screen.getByLabelText( 'Large (55 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
 	} );
 
@@ -255,29 +254,5 @@ describe( 'PaymentRequestSettings', () => {
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );
-	} );
-
-	it( 'triggers the hooks when the enable setting is being interacted with', () => {
-		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( true );
-
-		render( <PaymentRequestSettings section="enable" /> );
-
-		expect(
-			screen.queryByText(
-				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
-			)
-		).toBeInTheDocument();
-	} );
-
-	it( 'triggers the hooks when the enable setting is being interacted with', () => {
-		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( false );
-
-		render( <PaymentRequestSettings section="enable" /> );
-
-		expect(
-			screen.queryByText(
-				'One or more of your extensions alters checkout fields. This might cause issues with this payment method.'
-			)
-		).not.toBeInTheDocument();
 	} );
 } );

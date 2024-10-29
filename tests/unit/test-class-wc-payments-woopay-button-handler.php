@@ -6,6 +6,7 @@
  */
 
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WooPay\WooPay_Utilities;
@@ -134,9 +135,12 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
-		parent::tear_down();
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
+
+		remove_all_filters( 'woocommerce_available_payment_gateways' );
+
+		parent::tear_down();
 	}
 
 	/**
@@ -163,7 +167,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			$mock_order_service,
 			$mock_dpps,
 			$this->createMock( WC_Payments_Localization_Service::class ),
-			$this->createMock( WC_Payments_Fraud_Service::class )
+			$this->createMock( WC_Payments_Fraud_Service::class ),
+			$this->createMock( Duplicates_Detection_Service::class )
 		);
 	}
 
@@ -236,6 +241,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->willReturn( true );
 
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
 	}
 
 	public function test_should_only_load_common_config_script() {
@@ -332,6 +339,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->willReturn( true );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_false' );
 	}
 
 	public function test_should_show_woopay_button_all_good_at_product() {
@@ -357,6 +366,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->willReturn( true );
 
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_woopay_button_is_product_supported', '__return_true' );
 	}
 
 	public function test_should_show_woopay_button_unsupported_product_at_product() {
@@ -382,6 +393,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->willReturn( true );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_woopay_button_is_product_supported', '__return_false' );
 	}
 
 	public function test_should_show_woopay_button_not_available_at_product() {
@@ -407,6 +420,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->willReturn( false );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_woopay_button_is_product_supported', '__return_true' );
 	}
 
 	public function test_should_show_woopay_button_page_not_supported() {
@@ -474,6 +489,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_product' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
 	}
 
 	public function test_should_show_woopay_button_woopay_not_enabled() {
@@ -504,11 +521,12 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals(
 			[
-				'type'    => 'buy',
+				'type'    => 'default',
 				'theme'   => 'dark',
 				'height'  => '48',
 				'size'    => 'medium',
 				'context' => 'product',
+				'radius'  => '',
 			],
 			$this->mock_pr->get_button_settings()
 		);

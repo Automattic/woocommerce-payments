@@ -167,7 +167,10 @@ describe( 'Order details page', () => {
 	} );
 
 	afterAll( () => {
-		window.location = location;
+		Object.defineProperty( window, 'location', {
+			configurable: true,
+			value: location,
+		} );
 	} );
 
 	it( 'should match the snapshot - Charge without payment intent', () => {

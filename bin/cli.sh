@@ -11,4 +11,4 @@ fi
 
 command=${command:-bash}
 
-docker-compose exec -u ${user} wordpress ${command}
+docker compose exec -u ${user} wordpress ${command}

@@ -26,6 +26,7 @@ import {
 	useWooPayStoreLogo,
 	useWooPayLocations,
 	useWooPayShowIncompatibilityNotice,
+	useWooPayGlobalThemeSupportEnabledSettings,
 } from 'wcpay/data';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
@@ -40,6 +41,11 @@ const WooPaySettings = ( { section } ) => {
 		woopayCustomMessage,
 		setWooPayCustomMessage,
 	] = useWooPayCustomMessage();
+
+	const [
+		isWooPayGlobalThemeSupportEnabled,
+		updateIsWooPayGlobalThemeSupportEnabled,
+	] = useWooPayGlobalThemeSupportEnabledSettings();
 
 	const [ woopayStoreLogo, setWooPayStoreLogo ] = useWooPayStoreLogo();
 
@@ -203,6 +209,31 @@ const WooPaySettings = ( { section } ) => {
 							updateFileID={ setWooPayStoreLogo }
 						/>
 					</div>
+					{ wcpaySettings.isWooPayGlobalThemeSupportEligible && (
+						<div className="woopay-global-theme-support">
+							<h4>
+								{ __(
+									'WooPay Global Theme Support',
+									'woocommerce-payments'
+								) }
+							</h4>
+							<div className="woopay-settings__global-theme-checkbox">
+								<CheckboxControl
+									disabled={ ! isWooPayEnabled }
+									checked={
+										isWooPayGlobalThemeSupportEnabled
+									}
+									onChange={
+										updateIsWooPayGlobalThemeSupportEnabled
+									}
+									label={ __(
+										'Enable WooPay Global Theme Support',
+										'woocommerce-payments'
+									) }
+								/>
+							</div>
+						</div>
+					) }
 					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
 							{ __(

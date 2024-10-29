@@ -144,7 +144,7 @@ describe( 'Overview page', () => {
 
 		expect(
 			container.querySelector(
-				'.wcpay-login-error.components-notice.is-error'
+				'.wcpay-banner-notice.is-error.wcpay-login-error'
 			)
 		).toBeVisible();
 	} );

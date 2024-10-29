@@ -15,6 +15,68 @@ use WCPay\Core\Server\Response;
  * Class WP_UnitTestCase
  */
 class WCPAY_UnitTestCase extends WP_UnitTestCase {
+	public function set_up() {
+		parent::set_up();
+
+		// Use a priority of 9 to ensure that these filters will allow tests that want to mock external requests
+		// to hook in with the regular 10 priority and do their thing.
+		// But by default we will intercept all external requests.
+		add_filter( 'pre_http_request', [ $this, 'filter_intercept_external_requests' ], 9, 3 );
+		add_filter( 'woocommerce_get_geolocation', [ $this, 'filter_mock_wc_geolocation' ], 9, 2 );
+	}
+
+	public function tear_down() {
+		remove_filter( 'pre_http_request', [ $this, 'filter_intercept_external_requests' ], 9, 3 );
+		remove_filter( 'woocommerce_get_geolocation', [ $this, 'filter_mock_wc_geolocation' ], 9, 2 );
+
+		parent::tear_down();
+	}
+
+	/**
+	 * Intercept external requests and return a service unavailable response.
+	 *
+	 * This way we don't allow relying on external services for tests (fragile and slow tests) and force those tests
+	 * that care about a response to mock the request response.
+	 *
+	 * @see WP_Http::request()
+	 *
+	 * @param false|array|WP_Error $response    A preemptive return value of an HTTP request. Default false.
+	 * @param array                $parsed_args HTTP request arguments.
+	 * @param string               $url         The request URL.
+	 *
+	 * @return array
+	 */
+	public function filter_intercept_external_requests( $response, $parsed_args, $url ) {
+		// Return a service unavailable response.
+		return [
+			'body'          => '',
+			'response'      => [
+				'code' => WP_Http::SERVICE_UNAVAILABLE,
+			],
+			'headers'       => [],
+			'cookies'       => [],
+			'http_response' => null,
+		];
+	}
+
+	/**
+	 * Intercept geolocation requests and return mock data.
+	 *
+	 * @param array $geolocation
+	 * @param string $ip_address
+	 *
+	 * @return array
+	 */
+	public function filter_mock_wc_geolocation( $geolocation, $ip_address ) {
+		$ip_geolocation_test_data = json_decode( file_get_contents( __DIR__ . '/unit/test-data/ip-geolocation.json' ), true );
+
+		if ( ! empty( $ip_geolocation_test_data[ $ip_address ] ) ) {
+			$geolocation = array_merge( $geolocation, $ip_geolocation_test_data[ $ip_address ] );
+		}
+
+		return $geolocation;
+	}
+
 	protected function is_wpcom() {
 		return defined( 'IS_WPCOM' ) && IS_WPCOM;
 	}
@@ -52,14 +114,15 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 * @param  mixed                  $response                     The expected response.
 	 * @param  WC_Payments_API_Client $api_client_mock              Specific API client mock if necessary.
 	 * @param  WC_Payments_Http       $http_mock                    Specific HTTP mock if necessary.
+	 * @param  bool                   $force_request_mock           When true, a request will be mocked even if $total_api_calls is 0.
 	 *
 	 * @return Request|MockObject                                   The mocked request.
 	 */
-	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null ) {
+	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null, $force_request_mock = false ) {
 		$http_mock       = $http_mock ? $http_mock : $this->createMock( WC_Payments_Http::class );
 		$api_client_mock = $api_client_mock ? $api_client_mock : $this->createMock( WC_Payments_API_Client::class );
 
-		if ( 1 > $total_api_calls ) {
+		if ( 1 > $total_api_calls && ! $force_request_mock ) {
 			$api_client_mock->expects( $this->never() )->method( 'send_request' );
 
 			// No expectation for calls, return here.

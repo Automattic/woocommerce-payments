@@ -24,6 +24,9 @@ class ExampleServiceWithDependenciesTest extends WCPAY_UnitTestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
+		// Reset the mode.
+		\WC_Payments::mode()->live();
+
 		// Loading through the container to increase coverage.
 		$this->sut = wcpay_get_container()->get( ExampleServiceWithDependencies::class );
 	}

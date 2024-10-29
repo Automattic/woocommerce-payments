@@ -30,7 +30,7 @@ describe( 'Saved cards ', () => {
 			} );
 
 			afterAll( async () => {
-				await shopperWCP.logout();
+				await shopperWCP.logout( true );
 			} );
 
 			it( 'should save the card', async () => {
@@ -51,12 +51,12 @@ describe( 'Saved cards ', () => {
 					} );
 				}
 
-				await expect( page ).toMatch( 'Order received' );
+				await expect( page ).toMatchTextContent( 'Order received' );
 
 				// validate that the payment method has been added to the customer.
 				await shopperWCP.goToPaymentMethods();
-				await expect( page ).toMatch( card.label );
-				await expect( page ).toMatch(
+				await expect( page ).toMatchTextContent( card.label );
+				await expect( page ).toMatchTextContent(
 					`${ card.expires.month }/${ card.expires.year }`
 				);
 			} );
@@ -79,13 +79,15 @@ describe( 'Saved cards ', () => {
 					} );
 				}
 
-				await expect( page ).toMatch( 'Order received' );
+				await expect( page ).toMatchTextContent( 'Order received' );
 			} );
 
 			it( 'should delete the card', async () => {
 				await shopperWCP.goToPaymentMethods();
 				await shopperWCP.deleteSavedPaymentMethod( card.label );
-				await expect( page ).toMatch( 'Payment method deleted' );
+				await expect( page ).toMatchTextContent(
+					'Payment method deleted'
+				);
 			} );
 
 			it( 'should not allow guest user to save the card', async () => {
