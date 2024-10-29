@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Esnure highlight colors on the Payments Overview screen use custom admin theme colors.
