@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Introduce handling of DB write errors to our DB cache to avoid performance issues.
