@@ -13,6 +13,7 @@ export const getDepositDate = ( deposit?: DepositObject | null ): string =>
 	deposit
 		? formatUserDateTime( moment.utc( deposit?.date ).toISOString(), {
 				includeTime: false,
+				useGmt: true,
 		  } )
 		: '—';
 

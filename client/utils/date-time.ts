@@ -23,7 +23,7 @@ export function formatUserDateTime(
 	dateTime: string | Date,
 	options: FormatDateTimeOptions = {
 		includeTime: true,
-		useGmt: true,
+		useGmt: false,
 		separator: ' / ',
 		customFormat: null,
 	}
@@ -31,7 +31,7 @@ export function formatUserDateTime(
 	const {
 		customFormat = null,
 		includeTime = true,
-		useGmt = true,
+		useGmt = false,
 		separator = ' / ',
 	} = options;
 
