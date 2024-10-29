@@ -313,11 +313,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			return true;
 		}
 
-		// If the data is not errored and invalid, refresh it.
-		if (
-			! $cache_contents['errored'] &&
-			! $validate_data( $cache_contents['data'] )
-		) {
+		// If the data is not errored but invalid, we should refresh it.
+		if ( ! $cache_contents['errored'] && ! $validate_data( $cache_contents['data'] ) ) {
 			return true;
 		}
 
@@ -330,7 +327,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	}
 
 	/**
-	 * Get the cache data the in-memory cache if initialized or read from the DB and initialize the in-memory cache.
+	 * Get the cached data for a certain key.
+	 *
+	 * We read from the in-memory cache if initialized or read from the DB and initialize the in-memory cache.
 	 *
 	 * @param string $key The cache key.
 	 *
@@ -364,8 +363,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		$this->in_memory_cache[ $key ] = $cache_contents;
 
 		// Create or update the DB option cache.
-		// Note: Since we are adding the current time to the option value, WP will always write the option because
-		// the value is different from the current one. Thus, a false result ONLY means that the DB write failed.
+		// Note: Since we are adding the current time to the option value, WP will ALWAYS write the option because
+		// the cache contents value is different from the current one, even if the data is the same.
+		// A `false` result ONLY means that the DB write failed.
+		// Yes, there is the possibility that we attempt to write the same data multiple times, within the SAME second,
+		// and we will mistakenly think that the DB write failed. We are OK with this false positive, since the data is the same.
 		$result = update_option( $key, $cache_contents, 'no' );
 
 		// Clear the WP object cache to ensure the new data is fetched by other processes.
