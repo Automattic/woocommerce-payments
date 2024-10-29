@@ -206,7 +206,7 @@ describe( 'PaymentDetailsSummary', () => {
 				},
 			},
 			dateFormat: 'M j, Y',
-			timeFormat: 'g:iA',
+			timeFormat: 'g:ia',
 		};
 
 		// mock Date.now that moment library uses to get current date for testing purposes

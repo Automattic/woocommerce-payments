@@ -111,10 +111,8 @@ const composePaymentSummaryItems = ( {
 			title: __( 'Date', 'woocommerce-payments' ),
 			content: charge.created
 				? formatUserDateTime(
-						moment( charge.created * 1000 ).toISOString(),
-						{
-							customFormat: 'M j, Y, g:ia',
-						}
+						moment.utc( charge.created * 1000 ).toISOString(),
+						{ separator: ', ' }
 				  )
 				: '–',
 		},
