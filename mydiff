@@ -1,0 +1,1892 @@
+diff --git a/client/capital/index.tsx b/client/capital/index.tsx
+index 81e76ad91b4..dea559ba74e 100644
+--- a/client/capital/index.tsx
++++ b/client/capital/index.tsx
+@@ -6,7 +6,6 @@
+ import * as React from 'react';
+ import { __, _n } from '@wordpress/i18n';
+ import { TableCard } from '@woocommerce/components';
+-import { dateI18n } from '@wordpress/date';
+ 
+ /**
+  * Internal dependencies.
+@@ -25,6 +24,7 @@ import Chip from 'components/chip';
+ import { useLoans } from 'wcpay/data';
+ import { getAdminUrl } from 'wcpay/utils';
+ import './style.scss';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const columns = [
+ 	{
+@@ -80,7 +80,7 @@ const getLoanStatusText = ( loan: CapitalLoan ) => {
+ 	return loan.fully_paid_at
+ 		? __( 'Paid off', 'woocommerce-payments' ) +
+ 				': ' +
+-				dateI18n( 'M j, Y', loan.fully_paid_at )
++				formatUserDateTime( loan.fully_paid_at, { includeTime: false } )
+ 		: __( 'Active', 'woocommerce-payments' );
+ };
+ 
+@@ -112,7 +112,11 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
+ 		const data = {
+ 			paid_out_at: {
+ 				value: loan.paid_out_at,
+-				display: clickable( dateI18n( 'M j, Y', loan.paid_out_at ) ),
++				display: clickable(
++					formatUserDateTime( loan.paid_out_at, {
++						includeTime: false,
++					} )
++				),
+ 			},
+ 			status: {
+ 				value: getLoanStatusText( loan ),
+@@ -150,7 +154,9 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
+ 				value: loan.first_paydown_at,
+ 				display: clickable(
+ 					loan.first_paydown_at
+-						? dateI18n( 'M j, Y', loan.first_paydown_at )
++						? formatUserDateTime( loan.first_paydown_at, {
++								includeTime: false,
++						  } )
+ 						: '-'
+ 				),
+ 			},
+diff --git a/client/capital/test/index.test.tsx b/client/capital/test/index.test.tsx
+index f9eb43b8a49..41ea917902a 100644
+--- a/client/capital/test/index.test.tsx
++++ b/client/capital/test/index.test.tsx
+@@ -25,6 +25,7 @@ declare const global: {
+ 		accountLoans: {
+ 			has_active_loan: boolean;
+ 		};
++		dateFormat: string;
+ 	};
+ };
+ 
+@@ -37,6 +38,7 @@ describe( 'CapitalPage', () => {
+ 			},
+ 			accountLoans: { has_active_loan: true },
+ 			testMode: true,
++			dateFormat: 'M j, Y',
+ 		};
+ 	} );
+ 
+diff --git a/client/components/account-status/account-fees/expiration-description.js b/client/components/account-status/account-fees/expiration-description.js
+index 6be5b58681c..b9472c238b8 100644
+--- a/client/components/account-status/account-fees/expiration-description.js
++++ b/client/components/account-status/account-fees/expiration-description.js
+@@ -4,13 +4,13 @@
+  * External dependencies
+  */
+ import { __, sprintf } from '@wordpress/i18n';
+-import { dateI18n } from '@wordpress/date';
+ import moment from 'moment';
+ 
+ /**
+  * Internal dependencies
+  */
+ import { formatCurrency } from 'multi-currency/interface/functions';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const ExpirationDescription = ( {
+ 	feeData: { volume_allowance: volumeAllowance, end_time: endTime, ...rest },
+@@ -26,7 +26,9 @@ const ExpirationDescription = ( {
+ 				'woocommerce-payments'
+ 			),
+ 			formatCurrency( volumeAllowance, currencyCode ),
+-			dateI18n( 'F j, Y', moment( endTime ).toISOString() )
++			formatUserDateTime( moment( endTime ).toISOString(), {
++				includeTime: false,
++			} )
+ 		);
+ 	} else if ( volumeAllowance ) {
+ 		description = sprintf(
+@@ -44,7 +46,9 @@ const ExpirationDescription = ( {
+ 				'Discounted base fee expires on %1$s.',
+ 				'woocommerce-payments'
+ 			),
+-			dateI18n( 'F j, Y', moment( endTime ).toISOString() )
++			formatUserDateTime( moment( endTime ).toISOString(), {
++				includeTime: false,
++			} )
+ 		);
+ 	} else {
+ 		return null;
+diff --git a/client/components/account-status/account-fees/test/index.js b/client/components/account-status/account-fees/test/index.js
+index 5258af4ffdc..7405b33e371 100644
+--- a/client/components/account-status/account-fees/test/index.js
++++ b/client/components/account-status/account-fees/test/index.js
+@@ -46,6 +46,7 @@ describe( 'AccountFees', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'F j, Y',
+ 		};
+ 	} );
+ 
+diff --git a/client/components/active-loan-summary/index.tsx b/client/components/active-loan-summary/index.tsx
+index 0c5059ef87c..af817c7331d 100755
+--- a/client/components/active-loan-summary/index.tsx
++++ b/client/components/active-loan-summary/index.tsx
+@@ -13,7 +13,6 @@ import {
+ } from '@wordpress/components';
+ import { __, sprintf } from '@wordpress/i18n';
+ import { createInterpolateElement } from '@wordpress/element';
+-import { dateI18n } from '@wordpress/date';
+ 
+ /**
+  * Internal dependencies.
+@@ -24,6 +23,7 @@ import { useActiveLoanSummary } from 'wcpay/data';
+ import { getAdminUrl } from 'wcpay/utils';
+ 
+ import './style.scss';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const Block = ( {
+ 	title,
+@@ -210,12 +210,12 @@ const ActiveLoanSummary = (): JSX.Element => {
+ 								'Repaid this period (until %s)',
+ 								'woocommerce-payments'
+ 							),
+-							dateI18n(
+-								'M j, Y',
++							formatUserDateTime(
+ 								new Date(
+ 									details.current_repayment_interval.due_at *
+ 										1000
+-								)
++								),
++								{ includeTime: false, useGmt: true }
+ 							)
+ 						) }
+ 					>
+@@ -251,9 +251,9 @@ const ActiveLoanSummary = (): JSX.Element => {
+ 					<Block
+ 						title={ __( 'Loan disbursed', 'woocommerce-payments' ) }
+ 					>
+-						{ dateI18n(
+-							'M j, Y',
+-							new Date( details.advance_paid_out_at * 1000 )
++						{ formatUserDateTime(
++							new Date( details.advance_paid_out_at * 1000 ),
++							{ includeTime: false, useGmt: true }
+ 						) }
+ 					</Block>
+ 					<Block
+@@ -278,9 +278,9 @@ const ActiveLoanSummary = (): JSX.Element => {
+ 					<Block
+ 						title={ __( 'First paydown', 'woocommerce-payments' ) }
+ 					>
+-						{ dateI18n(
+-							'M j, Y',
+-							new Date( details.repayments_begin_at * 1000 )
++						{ formatUserDateTime(
++							new Date( details.repayments_begin_at * 1000 ),
++							{ includeTime: false, useGmt: true }
+ 						) }
+ 					</Block>
+ 				</Flex>
+diff --git a/client/components/active-loan-summary/test/__snapshots__/index.js.snap b/client/components/active-loan-summary/test/__snapshots__/index.js.snap
+index 4424415245c..4e9dd15ec13 100644
+--- a/client/components/active-loan-summary/test/__snapshots__/index.js.snap
++++ b/client/components/active-loan-summary/test/__snapshots__/index.js.snap
+@@ -74,7 +74,7 @@ exports[`Active loan summary renders correctly 1`] = `
+             <div
+               class="wcpay-loan-summary-block__title"
+             >
+-              Repaid this period (until Feb 14, 2022)
++              Repaid this period (until Feb 15, 2022)
+             </div>
+             <div
+               class="wcpay-loan-summary-block__value"
+diff --git a/client/components/active-loan-summary/test/index.js b/client/components/active-loan-summary/test/index.js
+index 6d4c90fc41f..6e1c9fdce34 100644
+--- a/client/components/active-loan-summary/test/index.js
++++ b/client/components/active-loan-summary/test/index.js
+@@ -34,6 +34,7 @@ describe( 'Active loan summary', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
+ 		};
+ 	} );
+ 	afterEach( () => {
+diff --git a/client/components/deposits-overview/test/index.tsx b/client/components/deposits-overview/test/index.tsx
+index 4853aff7bf5..509bf1d3d42 100644
+--- a/client/components/deposits-overview/test/index.tsx
++++ b/client/components/deposits-overview/test/index.tsx
+@@ -68,6 +68,7 @@ declare const global: {
+ 		connect: {
+ 			country: string;
+ 		};
++		dateFormat: string;
+ 	};
+ };
+ 
+@@ -231,6 +232,7 @@ describe( 'Deposits Overview information', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'F j, Y',
+ 		};
+ 		mockUseDepositIncludesLoan.mockReturnValue( {
+ 			includesFinancingPayout: false,
+diff --git a/client/components/disputed-order-notice/index.js b/client/components/disputed-order-notice/index.js
+index ab51a52d16e..892f0313cf0 100644
+--- a/client/components/disputed-order-notice/index.js
++++ b/client/components/disputed-order-notice/index.js
+@@ -1,7 +1,6 @@
+ import moment from 'moment';
+ import React, { useEffect } from 'react';
+ import { __, _n, sprintf } from '@wordpress/i18n';
+-import { dateI18n } from '@wordpress/date';
+ import { createInterpolateElement } from '@wordpress/element';
+ 
+ /**
+@@ -20,6 +19,7 @@ import {
+ import { useCharge } from 'wcpay/data';
+ import { recordEvent } from 'tracks';
+ import './style.scss';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
+ 	const { data: charge } = useCharge( chargeId );
+@@ -131,7 +131,9 @@ const UrgentDisputeNoticeBody = ( {
+ 		formatString,
+ 		formattedAmount,
+ 		reasons[ disputeReason ].display,
+-		dateI18n( 'M j, Y', dueBy.local().toISOString() )
++		formatUserDateTime( dueBy.local().toISOString(), {
++			includeTime: false,
++		} )
+ 	);
+ 
+ 	let suffix = sprintf(
+@@ -182,7 +184,9 @@ const RegularDisputeNoticeBody = ( {
+ 	const suffix = sprintf(
+ 		// Translators: %1$s is the dispute due date.
+ 		__( 'Please respond before %1$s.', 'woocommerce-payments' ),
+-		dateI18n( 'M j, Y', dueBy.local().toISOString() )
++		formatUserDateTime( dueBy.local().toISOString(), {
++			includeTime: false,
++		} )
+ 	);
+ 
+ 	return (
+diff --git a/client/components/disputed-order-notice/test/index.test.js b/client/components/disputed-order-notice/test/index.test.js
+index 7e44da132e0..784092295f3 100644
+--- a/client/components/disputed-order-notice/test/index.test.js
++++ b/client/components/disputed-order-notice/test/index.test.js
+@@ -36,6 +36,7 @@ describe( 'DisputedOrderNoticeHandler', () => {
+ 			connect: {
+ 				country: 'US',
+ 			},
++			dateFormat: 'M j, Y',
+ 		};
+ 		useCharge.mockReturnValue( { data: mockCharge } );
+ 	} );
+diff --git a/client/deposits/details/index.tsx b/client/deposits/details/index.tsx
+index 74aec3f2a7d..e3f4cc0afc9 100644
+--- a/client/deposits/details/index.tsx
++++ b/client/deposits/details/index.tsx
+@@ -4,7 +4,6 @@
+  * External dependencies
+  */
+ import React from 'react';
+-import { dateI18n } from '@wordpress/date';
+ import { __, sprintf } from '@wordpress/i18n';
+ import moment from 'moment';
+ import {
+@@ -40,6 +39,7 @@ import {
+ } from 'multi-currency/interface/functions';
+ import { displayStatus } from '../strings';
+ import './style.scss';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ /**
+  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
+@@ -111,11 +111,10 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
+ 			key="depositDate"
+ 			label={
+ 				`${ depositDateLabel }: ` +
+-				dateI18n(
+-					'M j, Y',
+-					moment.utc( deposit.date ).toISOString(),
+-					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+-				)
++				formatUserDateTime( moment.utc( deposit.date ).toISOString(), {
++					useGmt: true,
++					includeTime: false,
++				} )
+ 			}
+ 			value={ <Status status={ deposit.status } /> }
+ 			detail={ deposit.bankAccount }
+diff --git a/client/deposits/details/test/index.tsx b/client/deposits/details/test/index.tsx
+index f6fd4d98116..385e896f173 100644
+--- a/client/deposits/details/test/index.tsx
++++ b/client/deposits/details/test/index.tsx
+@@ -32,6 +32,7 @@ declare const global: {
+ 		connect: {
+ 			country: string;
+ 		};
++		dateFormat: string;
+ 	};
+ 	wcSettings: { countries: Record< string, string > };
+ };
+@@ -54,6 +55,7 @@ describe( 'Deposit overview', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
+ 		};
+ 	} );
+ 
+diff --git a/client/deposits/list/index.tsx b/client/deposits/list/index.tsx
+index 03789c466e1..cd948034acc 100644
+--- a/client/deposits/list/index.tsx
++++ b/client/deposits/list/index.tsx
+@@ -7,7 +7,6 @@ import { DepositsTableHeader } from 'wcpay/types/deposits';
+ import React, { useState } from 'react';
+ import { recordEvent } from 'tracks';
+ import { useMemo } from '@wordpress/element';
+-import { dateI18n } from '@wordpress/date';
+ import { __, _n, sprintf } from '@wordpress/i18n';
+ import moment from 'moment';
+ import { TableCard, Link } from '@woocommerce/components';
+@@ -48,6 +47,7 @@ import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/i
+ 
+ import './style.scss';
+ import { parseInt } from 'lodash';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
+ 	{
+@@ -135,10 +135,12 @@ export const DepositsList = (): JSX.Element => {
+ 				href={ getDetailsURL( deposit.id, 'deposits' ) }
+ 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
+ 			>
+-				{ dateI18n(
+-					'M j, Y',
++				{ formatUserDateTime(
+ 					moment.utc( deposit.date ).toISOString(),
+-					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
++					{
++						includeTime: false,
++						useGmt: true,
++					}
+ 				) }
+ 			</Link>
+ 		);
+@@ -328,10 +330,9 @@ export const DepositsList = (): JSX.Element => {
+ 				row[ 0 ],
+ 				{
+ 					...row[ 1 ],
+-					value: dateI18n(
+-						'Y-m-d',
++					value: formatUserDateTime(
+ 						moment.utc( row[ 1 ].value ).toISOString(),
+-						true
++						{ useGmt: true, includeTime: false }
+ 					),
+ 				},
+ 				...row.slice( 2 ),
+diff --git a/client/deposits/list/test/__snapshots__/index.tsx.snap b/client/deposits/list/test/__snapshots__/index.tsx.snap
+index 5d6d3d1b96c..64b57b8c38d 100644
+--- a/client/deposits/list/test/__snapshots__/index.tsx.snap
++++ b/client/deposits/list/test/__snapshots__/index.tsx.snap
+@@ -345,7 +345,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
+                       data-link-type="wc-admin"
+                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                     >
+-                      Jan 2, 2020
++                      Jan 2 2020
+                     </a>
+                   </td>
+                   <td
+@@ -432,7 +432,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
+                       data-link-type="wc-admin"
+                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                     >
+-                      Jan 3, 2020
++                      Jan 3 2020
+                     </a>
+                   </td>
+                   <td
+@@ -894,7 +894,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
+                       data-link-type="wc-admin"
+                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                     >
+-                      Jan 2, 2020
++                      Jan 2 2020
+                     </a>
+                   </td>
+                   <td
+@@ -981,7 +981,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
+                       data-link-type="wc-admin"
+                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                     >
+-                      Jan 3, 2020
++                      Jan 3 2020
+                     </a>
+                   </td>
+                   <td
+diff --git a/client/deposits/list/test/index.tsx b/client/deposits/list/test/index.tsx
+index 7c6ea8f9d17..620c0b18917 100644
+--- a/client/deposits/list/test/index.tsx
++++ b/client/deposits/list/test/index.tsx
+@@ -19,7 +19,7 @@ import {
+ 	useDepositsSummary,
+ 	useReportingExportLanguage,
+ } from 'wcpay/data';
+-import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
++import { getUnformattedAmount } from 'wcpay/utils/test-utils';
+ import {
+ 	CachedDeposit,
+ 	CachedDeposits,
+@@ -76,6 +76,7 @@ declare const global: {
+ 		reporting?: {
+ 			exportModalDismissed: boolean;
+ 		};
++		dateFormat: string;
+ 	};
+ };
+ 
+@@ -141,6 +142,7 @@ describe( 'Deposits list', () => {
+ 			reporting: {
+ 				exportModalDismissed: true,
+ 			},
++			dateFormat: 'M j Y',
+ 		};
+ 	} );
+ 
+@@ -308,7 +310,7 @@ describe( 'Deposits list', () => {
+ 			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
+ 			//    trailing zeros as in the display amount.
+ 			//
+-			expect( formatDate( csvFirstDeposit[ 1 ], 'M j, Y' ) ).toBe(
++			expect( csvFirstDeposit[ 1 ].replace( /^"|"$/g, '' ) ).toBe(
+ 				displayFirstDeposit[ 0 ]
+ 			); // date
+ 			expect( csvFirstDeposit[ 2 ] ).toBe( displayFirstDeposit[ 1 ] ); // type
+diff --git a/client/deposits/utils/index.ts b/client/deposits/utils/index.ts
+index 3d8fd6276e1..a3bf14e82a3 100644
+--- a/client/deposits/utils/index.ts
++++ b/client/deposits/utils/index.ts
+@@ -2,21 +2,20 @@
+  * External dependencies
+  */
+ import { __ } from '@wordpress/i18n';
+-import { dateI18n } from '@wordpress/date';
+ import moment from 'moment';
+-
+-const formatDate = ( format: string, date: number | string ) =>
+-	dateI18n(
+-		format,
+-		moment.utc( date ).toISOString(),
+-		true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+-	);
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface DepositObject {
+ 	date: number | string;
+ }
++
+ export const getDepositDate = ( deposit?: DepositObject | null ): string =>
+-	deposit ? formatDate( 'F j, Y', deposit?.date ) : '—';
++	deposit
++		? formatUserDateTime( moment.utc( deposit?.date ).toISOString(), {
++				includeTime: false,
++				useGmt: true,
++		  } )
++		: '—';
+ 
+ interface GetDepositMonthlyAnchorLabelProps {
+ 	monthlyAnchor: number;
+diff --git a/client/deposits/utils/test/index.ts b/client/deposits/utils/test/index.ts
+index d0361137104..9b58bddf898 100644
+--- a/client/deposits/utils/test/index.ts
++++ b/client/deposits/utils/test/index.ts
+@@ -8,7 +8,19 @@ import momentLib from 'moment';
+  */
+ import { getDepositDate, getDepositMonthlyAnchorLabel } from '../';
+ 
++declare const global: {
++	wcpaySettings: {
++		dateFormat: string;
++	};
++};
++
+ describe( 'Deposits Overview Utils / getDepositDate', () => {
++	beforeEach( () => {
++		global.wcpaySettings = {
++			dateFormat: 'F j, Y',
++		};
++	} );
++
+ 	test( 'returns a display value without a deposit', () => {
+ 		expect( getDepositDate() ).toEqual( '—' );
+ 	} );
+diff --git a/client/disputes/evidence/test/index.js b/client/disputes/evidence/test/index.js
+index e9ccdb826cb..142ee738ab8 100644
+--- a/client/disputes/evidence/test/index.js
++++ b/client/disputes/evidence/test/index.js
+@@ -96,6 +96,7 @@ describe( 'Dispute evidence form', () => {
+ 
+ 		global.wcpaySettings = {
+ 			restUrl: 'http://example.com/wp-json/',
++			dateFormat: 'M j, Y',
+ 		};
+ 	} );
+ 	afterEach( () => {
+@@ -190,6 +191,8 @@ describe( 'Dispute evidence page', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
++			timeFormat: 'g:iA',
+ 		};
+ 	} );
+ 
+diff --git a/client/disputes/index.tsx b/client/disputes/index.tsx
+index 060afccce35..11515987b58 100644
+--- a/client/disputes/index.tsx
++++ b/client/disputes/index.tsx
+@@ -5,7 +5,6 @@
+  */
+ import React, { useState } from 'react';
+ import { recordEvent } from 'tracks';
+-import { dateI18n } from '@wordpress/date';
+ import { _n, __, sprintf } from '@wordpress/i18n';
+ import moment from 'moment';
+ import { Button } from '@wordpress/components';
+@@ -58,6 +57,7 @@ import CSVExportModal from 'components/csv-export-modal';
+ import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
+ 
+ import './style.scss';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
+ 	{
+@@ -201,10 +201,7 @@ const smartDueDate = ( dispute: CachedDispute ) => {
+ 			</span>
+ 		);
+ 	}
+-	return dateI18n(
+-		'M j, Y / g:iA',
+-		moment.utc( dispute.due_by ).local().toISOString()
+-	);
++	return formatUserDateTime( moment.utc( dispute.due_by ).toISOString() );
+ };
+ 
+ export const DisputesList = (): JSX.Element => {
+@@ -301,9 +298,8 @@ export const DisputesList = (): JSX.Element => {
+ 			created: {
+ 				value: dispute.created,
+ 				display: clickable(
+-					dateI18n(
+-						'M j, Y',
+-						moment( dispute.created ).toISOString()
++					formatUserDateTime(
++						moment.utc( dispute.created ).toISOString()
+ 					)
+ 				),
+ 			},
+@@ -483,17 +479,18 @@ export const DisputesList = (): JSX.Element => {
+ 					{
+ 						// Disputed On.
+ 						...row[ 10 ],
+-						value: dateI18n(
+-							'Y-m-d',
+-							moment( row[ 10 ].value ).toISOString()
++						value: formatUserDateTime(
++							moment.utc( row[ 10 ].value ).toISOString(),
++							{
++								includeTime: false,
++							}
+ 						),
+ 					},
+ 					{
+ 						// Respond by.
+ 						...row[ 11 ],
+-						value: dateI18n(
+-							'Y-m-d / g:iA',
+-							moment( row[ 11 ].value ).toISOString()
++						value: formatUserDateTime(
++							moment.utc( row[ 11 ].value ).toISOString()
+ 						),
+ 					},
+ 				];
+diff --git a/client/disputes/info/index.tsx b/client/disputes/info/index.tsx
+index 12f7ba0e64a..a6f6ecaad06 100644
+--- a/client/disputes/info/index.tsx
++++ b/client/disputes/info/index.tsx
+@@ -5,7 +5,6 @@
+  */
+ import * as React from 'react';
+ import { __ } from '@wordpress/i18n';
+-import { dateI18n } from '@wordpress/date';
+ import moment from 'moment';
+ import { Link } from '@woocommerce/components';
+ 
+@@ -20,6 +19,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+ import './style.scss';
+ import Loadable from 'components/loadable';
+ import { Dispute } from 'wcpay/types/disputes';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const fields: { key: string; label: string }[] = [
+ 	{ key: 'created', label: __( 'Dispute date', 'woocommerce-payments' ) },
+@@ -69,20 +69,20 @@ const Info = ( {
+ 				transactionId: __( 'Transaction link', 'woocommerce-payments' ),
+ 		  }
+ 		: {
+-				created: dateI18n(
+-					'M j, Y',
+-					moment( dispute.created * 1000 ).toISOString()
++				created: formatUserDateTime(
++					moment( dispute.created * 1000 ).toISOString(),
++					{ includeTime: false }
+ 				),
+ 				amount: formatExplicitCurrency(
+ 					dispute.amount || 0,
+ 					dispute.currency || 'USD'
+ 				),
+ 				dueBy: dispute.evidence_details
+-					? dateI18n(
+-							'M j, Y - g:iA',
++					? formatUserDateTime(
+ 							moment(
+ 								dispute.evidence_details.due_by * 1000
+-							).toISOString()
++							).toISOString(),
++							{ separator: ' - ' }
+ 					  )
+ 					: null,
+ 				reason: composeDisputeReason( dispute ),
+diff --git a/client/disputes/info/test/index.tsx b/client/disputes/info/test/index.tsx
+index 1e2f5dcb8b0..7b49b588052 100644
+--- a/client/disputes/info/test/index.tsx
++++ b/client/disputes/info/test/index.tsx
+@@ -29,6 +29,8 @@ declare const global: {
+ 				precision: number;
+ 			};
+ 		};
++		dateFormat: string;
++		timeFormat: string;
+ 	};
+ };
+ 
+@@ -49,6 +51,8 @@ describe( 'Dispute info', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
++			timeFormat: 'g:iA',
+ 		};
+ 	} );
+ 
+diff --git a/client/disputes/test/index.tsx b/client/disputes/test/index.tsx
+index 1409bfc852d..52af84da080 100644
+--- a/client/disputes/test/index.tsx
++++ b/client/disputes/test/index.tsx
+@@ -17,13 +17,15 @@ import {
+ 	useReportingExportLanguage,
+ 	useSettings,
+ } from 'data/index';
+-import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
++import { getUnformattedAmount } from 'wcpay/utils/test-utils';
+ import React from 'react';
+ import {
+ 	CachedDispute,
+ 	DisputeReason,
+ 	DisputeStatus,
+ } from 'wcpay/types/disputes';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
++import moment from 'moment';
+ 
+ jest.mock( '@woocommerce/csv-export', () => {
+ 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
+@@ -100,6 +102,8 @@ declare const global: {
+ 		reporting?: {
+ 			exportModalDismissed: boolean;
+ 		};
++		dateFormat?: string;
++		timeFormat?: string;
+ 	};
+ };
+ 
+@@ -198,6 +202,8 @@ describe( 'Disputes list', () => {
+ 			reporting: {
+ 				exportModalDismissed: true,
+ 			},
++			dateFormat: 'Y-m-d',
++			timeFormat: 'g:iA',
+ 		};
+ 	} );
+ 
+@@ -363,8 +369,10 @@ describe( 'Disputes list', () => {
+ 				`"${ displayFirstDispute[ 5 ] }"`
+ 			); // customer
+ 
+-			expect( formatDate( csvFirstDispute[ 11 ], 'Y-m-d / g:iA' ) ).toBe(
+-				formatDate( displayFirstDispute[ 6 ], 'Y-m-d / g:iA' )
++			expect( csvFirstDispute[ 11 ].replace( /^"|"$/g, '' ) ).toBe(
++				formatUserDateTime(
++					moment.utc( mockDisputes[ 0 ].due_by ).toISOString()
++				)
+ 			); // date respond by
+ 		} );
+ 	} );
+diff --git a/client/documents/list/index.tsx b/client/documents/list/index.tsx
+index 307c3faf0c6..a6aacd9c4a2 100644
+--- a/client/documents/list/index.tsx
++++ b/client/documents/list/index.tsx
+@@ -4,7 +4,6 @@
+  * External dependencies
+  */
+ import React, { useCallback, useEffect, useState } from 'react';
+-import { dateI18n } from '@wordpress/date';
+ import { __, _n, sprintf } from '@wordpress/i18n';
+ import moment from 'moment';
+ import { TableCard, TableCardColumn } from '@woocommerce/components';
+@@ -21,6 +20,7 @@ import DocumentsFilters from '../filters';
+ import Page from '../../components/page';
+ import { getDocumentUrl } from 'wcpay/utils';
+ import VatFormModal from 'wcpay/vat/form-modal';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface Column extends TableCardColumn {
+ 	key: 'date' | 'type' | 'description' | 'download';
+@@ -68,15 +68,15 @@ const getDocumentDescription = ( document: Document ) => {
+ 			if ( document.period_from && document.period_to ) {
+ 				return sprintf(
+ 					__( 'VAT invoice for %s to %s', 'woocommerce-payments' ),
+-					dateI18n(
+-						'M j, Y',
++					formatUserDateTime(
+ 						moment.utc( document.period_from ).toISOString(),
+-						'utc'
++						{ includeTime: false }
+ 					),
+-					dateI18n(
+-						'M j, Y',
++					formatUserDateTime(
+ 						moment.utc( document.period_to ).toISOString(),
+-						'utc'
++						{
++							includeTime: false,
++						}
+ 					)
+ 				);
+ 			}
+@@ -180,9 +180,11 @@ export const DocumentsList = (): JSX.Element => {
+ 		const data = {
+ 			date: {
+ 				value: document.date,
+-				display: dateI18n(
+-					'M j, Y',
+-					moment.utc( document.date ).local().toISOString()
++				display: formatUserDateTime(
++					moment.utc( document.date ).toISOString(),
++					{
++						includeTime: false,
++					}
+ 				),
+ 			},
+ 			type: {
+diff --git a/client/documents/list/test/index.tsx b/client/documents/list/test/index.tsx
+index c54cf7a02c8..0eac7e0bf61 100644
+--- a/client/documents/list/test/index.tsx
++++ b/client/documents/list/test/index.tsx
+@@ -36,6 +36,7 @@ declare const global: {
+ 		accountStatus: {
+ 			hasSubmittedVatData: boolean;
+ 		};
++		dateFormat: string;
+ 	};
+ };
+ 
+@@ -60,6 +61,11 @@ describe( 'Documents list', () => {
+ 	let container: Element;
+ 	let rerender: ( ui: React.ReactElement ) => void;
+ 	beforeEach( () => {
++		global.wcpaySettings = {
++			accountStatus: { hasSubmittedVatData: true },
++			dateFormat: 'M j, Y',
++		};
++
+ 		mockUseDocuments.mockReturnValue( {
+ 			documents: getMockDocuments(),
+ 			isLoading: false,
+@@ -200,6 +206,7 @@ describe( 'Document download button', () => {
+ 			beforeEach( () => {
+ 				global.wcpaySettings = {
+ 					accountStatus: { hasSubmittedVatData: true },
++					dateFormat: 'M j, Y',
+ 				};
+ 
+ 				render( <DocumentsList /> );
+@@ -223,6 +230,7 @@ describe( 'Document download button', () => {
+ 			beforeEach( () => {
+ 				global.wcpaySettings = {
+ 					accountStatus: { hasSubmittedVatData: false },
++					dateFormat: 'M j, Y',
+ 				};
+ 
+ 				render( <DocumentsList /> );
+@@ -293,6 +301,7 @@ describe( 'Direct document download', () => {
+ 
+ 		global.wcpaySettings = {
+ 			accountStatus: { hasSubmittedVatData: true },
++			dateFormat: 'M j, Y',
+ 		};
+ 	} );
+ 
+diff --git a/client/globals.d.ts b/client/globals.d.ts
+index f00b521943a..9992f2faadb 100644
+--- a/client/globals.d.ts
++++ b/client/globals.d.ts
+@@ -135,6 +135,8 @@ declare global {
+ 		isOverviewSurveySubmitted: boolean;
+ 		lifetimeTPV: number;
+ 		defaultExpressCheckoutBorderRadius: string;
++		dateFormat: string;
++		timeFormat: string;
+ 	};
+ 
+ 	const wc: {
+diff --git a/client/overview/modal/update-business-details/index.tsx b/client/overview/modal/update-business-details/index.tsx
+index 2c654a57f9b..fb98eca74f3 100644
+--- a/client/overview/modal/update-business-details/index.tsx
++++ b/client/overview/modal/update-business-details/index.tsx
+@@ -3,7 +3,6 @@
+  */
+ import React, { useState } from 'react';
+ import { Button, Modal, Notice } from '@wordpress/components';
+-import { dateI18n } from '@wordpress/date';
+ import { sprintf } from '@wordpress/i18n';
+ import moment from 'moment';
+ 
+@@ -13,6 +12,7 @@ import moment from 'moment';
+ import strings from './strings';
+ import './index.scss';
+ import { recordEvent } from 'wcpay/tracks';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface Props {
+ 	errorMessages: Array< string >;
+@@ -57,11 +57,15 @@ const UpdateBusinessDetailsModal = ( {
+ 								currentDeadline
+ 									? sprintf(
+ 											strings.restrictedSoonDescription,
+-											dateI18n(
+-												'ga M j, Y',
+-												moment(
+-													currentDeadline * 1000
+-												).toISOString()
++											formatUserDateTime(
++												moment
++													.utc(
++														currentDeadline * 1000
++													)
++													.toISOString(),
++												{
++													customFormat: 'ga M j, Y',
++												}
+ 											)
+ 									  )
+ 									: strings.restrictedDescription }
+diff --git a/client/overview/task-list/tasks/dispute-task.tsx b/client/overview/task-list/tasks/dispute-task.tsx
+index 235b92696b9..f7be6ec8e13 100644
+--- a/client/overview/task-list/tasks/dispute-task.tsx
++++ b/client/overview/task-list/tasks/dispute-task.tsx
+@@ -2,7 +2,6 @@
+  * External dependencies
+  */
+ import { __, sprintf } from '@wordpress/i18n';
+-import { dateI18n } from '@wordpress/date';
+ import moment from 'moment';
+ import { getHistory } from '@woocommerce/navigation';
+ 
+@@ -15,6 +14,7 @@ import { formatCurrency } from 'multi-currency/interface/functions';
+ import { getAdminUrl } from 'wcpay/utils';
+ import { recordEvent } from 'tracks';
+ import { isDueWithin } from 'wcpay/disputes/utils';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ /**
+  * Returns an array of disputes that are due within the specified number of days.
+@@ -142,9 +142,11 @@ export const getDisputeResolutionTask = (
+ 				? sprintf(
+ 						__( 'Respond today by %s', 'woocommerce-payments' ),
+ 						// Show due_by time in local timezone: e.g. "11:59 PM".
+-						dateI18n(
+-							'g:i A',
+-							moment.utc( dispute.due_by ).local().toISOString()
++						formatUserDateTime(
++							moment.utc( dispute.due_by ).toISOString(),
++							{
++								customFormat: 'g:i A',
++							}
+ 						)
+ 				  )
+ 				: sprintf(
+@@ -153,9 +155,11 @@ export const getDisputeResolutionTask = (
+ 							'woocommerce-payments'
+ 						),
+ 						// Show due_by date in local timezone: e.g. "Jan 1, 2021".
+-						dateI18n(
+-							'M j, Y',
+-							moment.utc( dispute.due_by ).local().toISOString()
++						formatUserDateTime(
++							moment.utc( dispute.due_by ).toISOString(),
++							{
++								includeTime: false,
++							}
+ 						),
+ 						moment( dispute.due_by ).fromNow( true ) // E.g. "2 days".
+ 				  );
+diff --git a/client/overview/task-list/tasks/update-business-details-task.tsx b/client/overview/task-list/tasks/update-business-details-task.tsx
+index a9746ec7b66..2ca90519616 100644
+--- a/client/overview/task-list/tasks/update-business-details-task.tsx
++++ b/client/overview/task-list/tasks/update-business-details-task.tsx
+@@ -11,9 +11,9 @@ import { addQueryArgs } from '@wordpress/url';
+  */
+ import type { TaskItemProps } from '../types';
+ import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-details';
+-import { dateI18n } from '@wordpress/date';
+ import moment from 'moment';
+ import { recordEvent } from 'wcpay/tracks';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ export const getUpdateBusinessDetailsTask = (
+ 	errorMessages: string[],
+@@ -46,9 +46,11 @@ export const getUpdateBusinessDetailsTask = (
+ 				'Update by %s to avoid a disruption in deposits.',
+ 				'woocommerce-payments'
+ 			),
+-			dateI18n(
+-				'ga M j, Y',
+-				moment( currentDeadline * 1000 ).toISOString()
++			formatUserDateTime(
++				moment( currentDeadline * 1000 ).toISOString(),
++				{
++					customFormat: 'ga M j, Y',
++				}
+ 			)
+ 		);
+ 
+diff --git a/client/overview/task-list/test/tasks.js b/client/overview/task-list/test/tasks.js
+index 44b5de4e9f7..429ed175efb 100644
+--- a/client/overview/task-list/test/tasks.js
++++ b/client/overview/task-list/test/tasks.js
+@@ -139,6 +139,7 @@ describe( 'getTasks()', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
+ 		};
+ 	} );
+ 	afterEach( () => {
+diff --git a/client/payment-details/dispute-details/dispute-due-by-date.tsx b/client/payment-details/dispute-details/dispute-due-by-date.tsx
+index 18993ef2387..697485c9d63 100644
+--- a/client/payment-details/dispute-details/dispute-due-by-date.tsx
++++ b/client/payment-details/dispute-details/dispute-due-by-date.tsx
+@@ -2,10 +2,10 @@
+  * External dependencies
+  */
+ import React from 'react';
+-import { dateI18n } from '@wordpress/date';
+ import { __, _n, sprintf } from '@wordpress/i18n';
+ import classNames from 'classnames';
+ import moment from 'moment';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const DisputeDueByDate: React.FC< {
+ 	dueBy: number;
+@@ -14,9 +14,11 @@ const DisputeDueByDate: React.FC< {
+ 	const daysRemaining = Math.floor(
+ 		moment.unix( dueBy ).diff( moment(), 'days', true )
+ 	);
+-	const respondByDate = dateI18n(
+-		'M j, Y, g:ia',
+-		moment( dueBy * 1000 ).toISOString()
++	const respondByDate = formatUserDateTime(
++		moment( dueBy * 1000 ).toISOString(),
++		{
++			separator: ', ',
++		}
+ 	);
+ 	return (
+ 		<span className="dispute-steps__steps__response-date">
+diff --git a/client/payment-details/dispute-details/dispute-resolution-footer.tsx b/client/payment-details/dispute-details/dispute-resolution-footer.tsx
+index 15fec759244..e6b38213abc 100644
+--- a/client/payment-details/dispute-details/dispute-resolution-footer.tsx
++++ b/client/payment-details/dispute-details/dispute-resolution-footer.tsx
+@@ -3,7 +3,6 @@
+  */
+ import React from 'react';
+ import moment from 'moment';
+-import { dateI18n } from '@wordpress/date';
+ import { __, sprintf } from '@wordpress/i18n';
+ import { Link } from '@woocommerce/components';
+ import { createInterpolateElement } from '@wordpress/element';
+@@ -17,13 +16,13 @@ import { recordEvent } from 'tracks';
+ import { getAdminUrl } from 'wcpay/utils';
+ import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
+ import './style.scss';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const DisputeUnderReviewFooter: React.FC< {
+ 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+ } > = ( { dispute } ) => {
+ 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
+-		? dateI18n(
+-				'M j, Y',
++		? formatUserDateTime(
+ 				moment
+ 					.unix(
+ 						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
+@@ -93,8 +92,7 @@ const DisputeWonFooter: React.FC< {
+ 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+ } > = ( { dispute } ) => {
+ 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
+-		? dateI18n(
+-				'M j, Y',
++		? formatUserDateTime(
+ 				moment
+ 					.unix(
+ 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
+@@ -171,13 +169,13 @@ const DisputeLostFooter: React.FC< {
+ 	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true ) ?? '-';
+ 
+ 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
+-		? dateI18n(
+-				'M j, Y',
++		? formatUserDateTime(
+ 				moment
+ 					.unix(
+ 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
+ 					)
+-					.toISOString()
++					.toISOString(),
++				{ includeTime: false }
+ 		  )
+ 		: '-';
+ 
+@@ -274,13 +272,13 @@ const InquiryUnderReviewFooter: React.FC< {
+ 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+ } > = ( { dispute } ) => {
+ 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
+-		? dateI18n(
+-				'M j, Y',
++		? formatUserDateTime(
+ 				moment
+ 					.unix(
+ 						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
+ 					)
+-					.toISOString()
++					.toISOString(),
++				{ includeTime: false }
+ 		  )
+ 		: '-';
+ 
+@@ -346,13 +344,13 @@ const InquiryClosedFooter: React.FC< {
+ } > = ( { dispute } ) => {
+ 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
+ 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
+-		? dateI18n(
+-				'M j, Y',
++		? formatUserDateTime(
+ 				moment
+ 					.unix(
+ 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
+ 					)
+-					.toISOString()
++					.toISOString(),
++				{ includeTime: false }
+ 		  )
+ 		: '-';
+ 
+diff --git a/client/payment-details/dispute-details/dispute-steps.tsx b/client/payment-details/dispute-details/dispute-steps.tsx
+index 01f87431274..2fce833c4ec 100644
+--- a/client/payment-details/dispute-details/dispute-steps.tsx
++++ b/client/payment-details/dispute-details/dispute-steps.tsx
+@@ -7,7 +7,6 @@ import React from 'react';
+ import { __, sprintf } from '@wordpress/i18n';
+ import { createInterpolateElement } from '@wordpress/element';
+ import { ExternalLink } from '@wordpress/components';
+-import { dateI18n } from '@wordpress/date';
+ import moment from 'moment';
+ import HelpOutlineIcon from 'gridicons/dist/help-outline';
+ 
+@@ -20,6 +19,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+ import { ClickTooltip } from 'wcpay/components/tooltip';
+ import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
+ import DisputeDueByDate from './dispute-due-by-date';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface Props {
+ 	dispute: Dispute;
+@@ -34,13 +34,15 @@ export const DisputeSteps: React.FC< Props > = ( {
+ } ) => {
+ 	let emailLink;
+ 	if ( customer?.email ) {
+-		const chargeDate = dateI18n(
+-			'Y-m-d',
+-			moment( chargeCreated * 1000 ).toISOString()
++		const chargeDate = formatUserDateTime(
++			moment( chargeCreated * 1000 ).toISOString(),
++			{
++				includeTime: false,
++			}
+ 		);
+-		const disputeDate = dateI18n(
+-			'Y-m-d',
+-			moment( dispute.created * 1000 ).toISOString()
++		const disputeDate = formatUserDateTime(
++			moment( dispute.created * 1000 ).toISOString(),
++			{ includeTime: false }
+ 		);
+ 		const emailSubject = sprintf(
+ 			// Translators: %1$s is the store name, %2$s is the charge date.
+@@ -173,12 +175,10 @@ export const InquirySteps: React.FC< Props > = ( {
+ } ) => {
+ 	let emailLink;
+ 	if ( customer?.email ) {
+-		const chargeDate = dateI18n(
+-			'Y-m-d',
++		const chargeDate = formatUserDateTime(
+ 			moment( chargeCreated * 1000 ).toISOString()
+ 		);
+-		const disputeDate = dateI18n(
+-			'Y-m-d',
++		const disputeDate = formatUserDateTime(
+ 			moment( dispute.created * 1000 ).toISOString()
+ 		);
+ 		const emailSubject = sprintf(
+diff --git a/client/payment-details/dispute-details/dispute-summary-row.tsx b/client/payment-details/dispute-details/dispute-summary-row.tsx
+index 0a43cb223e0..fbe7371fd56 100644
+--- a/client/payment-details/dispute-details/dispute-summary-row.tsx
++++ b/client/payment-details/dispute-details/dispute-summary-row.tsx
+@@ -7,7 +7,6 @@ import React from 'react';
+ import moment from 'moment';
+ import HelpOutlineIcon from 'gridicons/dist/help-outline';
+ import { __ } from '@wordpress/i18n';
+-import { dateI18n } from '@wordpress/date';
+ 
+ /**
+  * Internal dependencies
+@@ -20,6 +19,7 @@ import { formatStringValue } from 'wcpay/utils';
+ import { ClickTooltip } from 'wcpay/components/tooltip';
+ import Paragraphs from 'wcpay/components/paragraphs';
+ import DisputeDueByDate from './dispute-due-by-date';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface Props {
+ 	dispute: Dispute;
+@@ -39,9 +39,9 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
+ 		{
+ 			title: __( 'Disputed On', 'woocommerce-payments' ),
+ 			content: dispute.created
+-				? dateI18n(
+-						'M j, Y, g:ia',
+-						moment( dispute.created * 1000 ).toISOString()
++				? formatUserDateTime(
++						moment( dispute.created * 1000 ).toISOString(),
++						{ separator: ', ' }
+ 				  )
+ 				: '–',
+ 		},
+diff --git a/client/payment-details/summary/index.tsx b/client/payment-details/summary/index.tsx
+index 4e9d9559a4b..d7b1790d23d 100644
+--- a/client/payment-details/summary/index.tsx
++++ b/client/payment-details/summary/index.tsx
+@@ -4,7 +4,6 @@
+  * External dependencies
+  */
+ import { __ } from '@wordpress/i18n';
+-import { dateI18n } from '@wordpress/date';
+ import {
+ 	Card,
+ 	CardBody,
+@@ -64,6 +63,7 @@ import DisputeResolutionFooter from '../dispute-details/dispute-resolution-foote
+ import ErrorBoundary from 'components/error-boundary';
+ import RefundModal from 'wcpay/payment-details/summary/refund-modal';
+ import CardNotice from 'wcpay/components/card-notice';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ declare const window: any;
+ 
+@@ -110,9 +110,11 @@ const composePaymentSummaryItems = ( {
+ 		{
+ 			title: __( 'Date', 'woocommerce-payments' ),
+ 			content: charge.created
+-				? dateI18n(
+-						'M j, Y, g:ia',
+-						moment( charge.created * 1000 ).toISOString()
++				? formatUserDateTime(
++						moment( charge.created * 1000 ).toISOString(),
++						{
++							customFormat: 'M j, Y, g:ia',
++						}
+ 				  )
+ 				: '–',
+ 		},
+@@ -706,12 +708,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
+ 								}
+ 							) }{ ' ' }
+ 							<abbr
+-								title={ dateI18n(
+-									'M j, Y / g:iA',
++								title={ formatUserDateTime(
+ 									moment
+ 										.utc( authorization.created )
+-										.add( 7, 'days' ),
+-									'UTC'
++										.add( 7, 'days' )
++										.toISOString(),
++									{ useGmt: true }
+ 								) }
+ 							>
+ 								<b>
+diff --git a/client/payment-details/summary/test/index.test.tsx b/client/payment-details/summary/test/index.test.tsx
+index 9055d481dda..d98363a720e 100755
+--- a/client/payment-details/summary/test/index.test.tsx
++++ b/client/payment-details/summary/test/index.test.tsx
+@@ -34,6 +34,8 @@ declare const global: {
+ 		featureFlags: {
+ 			isAuthAndCaptureEnabled: boolean;
+ 		};
++		dateFormat: string;
++		timeFormat: string;
+ 	};
+ };
+ 
+@@ -203,6 +205,8 @@ describe( 'PaymentDetailsSummary', () => {
+ 					precision: 0,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
++			timeFormat: 'g:iA',
+ 		};
+ 
+ 		// mock Date.now that moment library uses to get current date for testing purposes
+diff --git a/client/payment-details/timeline/map-events.js b/client/payment-details/timeline/map-events.js
+index 64bc74d91d2..1a3ffe5546f 100644
+--- a/client/payment-details/timeline/map-events.js
++++ b/client/payment-details/timeline/map-events.js
+@@ -5,7 +5,6 @@
+  */
+ import { flatMap } from 'lodash';
+ import { __, sprintf } from '@wordpress/i18n';
+-import { dateI18n } from '@wordpress/date';
+ import { addQueryArgs } from '@wordpress/url';
+ import moment from 'moment';
+ import { createInterpolateElement } from '@wordpress/element';
+@@ -31,6 +30,7 @@ import { formatFee } from 'utils/fees';
+ import { getAdminUrl } from 'wcpay/utils';
+ import { ShieldIcon } from 'wcpay/icons';
+ import { fraudOutcomeRulesetMapping } from './mappings';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ /**
+  * Creates a timeline item about a payment status change
+@@ -84,9 +84,9 @@ const getDepositTimelineItem = (
+ 						'woocommerce-payments'
+ 				  ),
+ 			formattedAmount,
+-			dateI18n(
+-				'M j, Y',
+-				moment( event.deposit.arrival_date * 1000 ).toISOString()
++			formatUserDateTime(
++				moment( event.deposit.arrival_date * 1000 ).toISOString(),
++				{ includeTime: false }
+ 			)
+ 		);
+ 		const depositUrl = getAdminUrl( {
+@@ -143,9 +143,9 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
+ 				'woocommerce-payments'
+ 			),
+ 			formattedAmount,
+-			dateI18n(
+-				'M j, Y',
+-				moment( event.deposit.arrival_date * 1000 ).toISOString()
++			formatUserDateTime(
++				moment( event.deposit.arrival_date * 1000 ).toISOString(),
++				{ includeTime: false }
+ 			)
+ 		);
+ 
+diff --git a/client/payment-details/timeline/test/index.js b/client/payment-details/timeline/test/index.js
+index 2529f3d673e..616c780dd69 100644
+--- a/client/payment-details/timeline/test/index.js
++++ b/client/payment-details/timeline/test/index.js
+@@ -34,6 +34,7 @@ describe( 'PaymentDetailsTimeline', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
+ 		};
+ 	} );
+ 
+diff --git a/client/payment-details/timeline/test/map-events.js b/client/payment-details/timeline/test/map-events.js
+index c3e42ceae8b..73f65b94940 100644
+--- a/client/payment-details/timeline/test/map-events.js
++++ b/client/payment-details/timeline/test/map-events.js
+@@ -47,6 +47,7 @@ describe( 'mapTimelineEvents', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
+ 		};
+ 	} );
+ 
+diff --git a/client/transactions/blocked/columns.tsx b/client/transactions/blocked/columns.tsx
+index 1d75e407cea..c1e6cedd386 100644
+--- a/client/transactions/blocked/columns.tsx
++++ b/client/transactions/blocked/columns.tsx
+@@ -2,7 +2,6 @@
+  * External dependencies
+  */
+ import React from 'react';
+-import { dateI18n } from '@wordpress/date';
+ import { __ } from '@wordpress/i18n';
+ import moment from 'moment';
+ import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
+@@ -15,6 +14,7 @@ import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
+ import { FraudOutcomeTransaction } from '../../data';
+ import { getDetailsURL } from '../../components/details-link';
+ import ClickableCell from '../../components/clickable-cell';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface Column extends TableCardColumn {
+ 	key: 'created' | 'amount' | 'customer' | 'status';
+@@ -70,9 +70,8 @@ export const getBlockedListRowContent = (
+ 		data.payment_intent.id || data.order_id.toString(),
+ 		'transactions'
+ 	);
+-	const formattedCreatedDate = dateI18n(
+-		'M j, Y / g:iA',
+-		moment.utc( data.created ).local().toISOString()
++	const formattedCreatedDate = formatUserDateTime(
++		moment.utc( data.created ).toISOString()
+ 	);
+ 
+ 	const clickable = ( children: JSX.Element | string ) => (
+diff --git a/client/transactions/blocked/test/columns.test.tsx b/client/transactions/blocked/test/columns.test.tsx
+index 7ca2c3d4895..b65e2d10c12 100644
+--- a/client/transactions/blocked/test/columns.test.tsx
++++ b/client/transactions/blocked/test/columns.test.tsx
+@@ -15,6 +15,8 @@ declare const global: {
+ 		connect: {
+ 			country: string;
+ 		};
++		dateFormat: string;
++		timeFormat: string;
+ 	};
+ };
+ const mockWcPaySettings = {
+@@ -23,6 +25,8 @@ const mockWcPaySettings = {
+ 	connect: {
+ 		country: 'US',
+ 	},
++	dateFormat: 'M j, Y',
++	timeFormat: 'g:iA',
+ };
+ 
+ describe( 'Blocked fraud outcome transactions columns', () => {
+diff --git a/client/transactions/list/deposit.tsx b/client/transactions/list/deposit.tsx
+index b1889f3ad19..ff032aaab66 100644
+--- a/client/transactions/list/deposit.tsx
++++ b/client/transactions/list/deposit.tsx
+@@ -5,7 +5,6 @@
+  */
+ import React from 'react';
+ import moment from 'moment';
+-import { dateI18n } from '@wordpress/date';
+ import { __ } from '@wordpress/i18n';
+ import interpolateComponents from '@automattic/interpolate-components';
+ import { ExternalLink } from '@wordpress/components';
+@@ -17,6 +16,7 @@ import InfoOutlineIcon from 'gridicons/dist/info-outline';
+  */
+ import { getAdminUrl } from 'utils';
+ import { ClickTooltip } from 'components/tooltip';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface DepositProps {
+ 	depositId?: string;
+@@ -31,12 +31,13 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
+ 			id: depositId,
+ 		} );
+ 
+-		const formattedDateAvailable = dateI18n(
+-			'M j, Y',
++		const formattedDateAvailable = formatUserDateTime(
+ 			moment.utc( dateAvailable ).toISOString(),
+-			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
++			{
++				includeTime: false,
++				useGmt: true,
++			}
+ 		);
+-
+ 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
+ 	}
+ 
+diff --git a/client/transactions/list/index.tsx b/client/transactions/list/index.tsx
+index e123d0319f5..7ff37084ad3 100644
+--- a/client/transactions/list/index.tsx
++++ b/client/transactions/list/index.tsx
+@@ -7,7 +7,6 @@ import React, { Fragment, useState } from 'react';
+ import { uniq } from 'lodash';
+ import { useDispatch } from '@wordpress/data';
+ import { useMemo } from '@wordpress/element';
+-import { dateI18n } from '@wordpress/date';
+ import { __, _n, sprintf } from '@wordpress/i18n';
+ import moment from 'moment';
+ import {
+@@ -70,6 +69,7 @@ import p24BankList from '../../payment-details/payment-method/p24/bank-list';
+ import { HoverTooltip } from 'components/tooltip';
+ import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
+ import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface TransactionsListProps {
+ 	depositId?: string;
+@@ -466,10 +466,7 @@ export const TransactionsList = (
+ 			date: {
+ 				value: txn.date,
+ 				display: clickable(
+-					dateI18n(
+-						'M j, Y / g:iA',
+-						moment.utc( txn.date ).local().toISOString()
+-					)
++					formatUserDateTime( moment.utc( txn.date ).toISOString() )
+ 				),
+ 			},
+ 			channel: {
+diff --git a/client/transactions/list/test/deposit.tsx b/client/transactions/list/test/deposit.tsx
+index 2cb87b0b248..283e101e3db 100644
+--- a/client/transactions/list/test/deposit.tsx
++++ b/client/transactions/list/test/deposit.tsx
+@@ -12,6 +12,12 @@ import { render } from '@testing-library/react';
+ import Deposit from '../deposit';
+ 
+ describe( 'Deposit', () => {
++	beforeEach( () => {
++		// Mock the window.wcpaySettings property
++		window.wcpaySettings.dateFormat = 'M j, Y';
++		window.wcpaySettings.timeFormat = 'g:i a';
++	} );
++
+ 	test( 'renders with date and deposit available', () => {
+ 		const { container: link } = render(
+ 			<Deposit dateAvailable="2020-01-07 00:00:00" depositId="po_mock" />
+diff --git a/client/transactions/list/test/index.tsx b/client/transactions/list/test/index.tsx
+index 8d97397ce01..0ac273c6751 100644
+--- a/client/transactions/list/test/index.tsx
++++ b/client/transactions/list/test/index.tsx
+@@ -244,6 +244,8 @@ describe( 'Transactions list', () => {
+ 				exportModalDismissed: true,
+ 			},
+ 		};
++		window.wcpaySettings.dateFormat = 'M j, Y';
++		window.wcpaySettings.timeFormat = 'g:iA';
+ 	} );
+ 
+ 	test( 'renders correctly when filtered by deposit', () => {
+diff --git a/client/transactions/risk-review/columns.tsx b/client/transactions/risk-review/columns.tsx
+index d7f5de95111..3de9987065c 100644
+--- a/client/transactions/risk-review/columns.tsx
++++ b/client/transactions/risk-review/columns.tsx
+@@ -2,7 +2,6 @@
+  * External dependencies
+  */
+ import React from 'react';
+-import { dateI18n } from '@wordpress/date';
+ import { __ } from '@wordpress/i18n';
+ import moment from 'moment';
+ import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
+@@ -17,6 +16,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+ import { recordEvent } from 'tracks';
+ import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
+ import { FraudOutcomeTransaction } from '../../data';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface Column extends TableCardColumn {
+ 	key: 'created' | 'amount' | 'customer' | 'status';
+@@ -76,9 +76,8 @@ export const getRiskReviewListRowContent = (
+ 	data: FraudOutcomeTransaction
+ ): Record< string, TableCardBodyColumn > => {
+ 	const detailsURL = getDetailsURL( data.payment_intent.id, 'transactions' );
+-	const formattedCreatedDate = dateI18n(
+-		'M j, Y / g:iA',
+-		moment.utc( data.created ).local().toISOString()
++	const formattedCreatedDate = formatUserDateTime(
++		moment.utc( data.created ).toISOString()
+ 	);
+ 
+ 	const clickable = ( children: JSX.Element | string ) => (
+diff --git a/client/transactions/risk-review/test/columns.test.tsx b/client/transactions/risk-review/test/columns.test.tsx
+index 033f9eb7aa2..54de107e0e4 100644
+--- a/client/transactions/risk-review/test/columns.test.tsx
++++ b/client/transactions/risk-review/test/columns.test.tsx
+@@ -15,6 +15,8 @@ declare const global: {
+ 		connect: {
+ 			country: string;
+ 		};
++		dateFormat: string;
++		timeFormat: string;
+ 	};
+ };
+ const mockWcPaySettings = {
+@@ -23,6 +25,8 @@ const mockWcPaySettings = {
+ 	connect: {
+ 		country: 'US',
+ 	},
++	dateFormat: 'M j, Y',
++	timeFormat: 'g:iA',
+ };
+ 
+ describe( 'Review fraud outcome transactions columns', () => {
+diff --git a/client/transactions/uncaptured/index.tsx b/client/transactions/uncaptured/index.tsx
+index 17058760c19..97581af5d91 100644
+--- a/client/transactions/uncaptured/index.tsx
++++ b/client/transactions/uncaptured/index.tsx
+@@ -7,7 +7,6 @@ import React, { useEffect } from 'react';
+ import { __ } from '@wordpress/i18n';
+ import { TableCard, TableCardColumn } from '@woocommerce/components';
+ import { onQueryChange, getQuery } from '@woocommerce/navigation';
+-import { dateI18n } from '@wordpress/date';
+ import moment from 'moment';
+ 
+ /**
+@@ -21,6 +20,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
+ import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
+ import { recordEvent } from 'tracks';
+ import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ interface Column extends TableCardColumn {
+ 	key:
+@@ -130,35 +130,23 @@ export const AuthorizationsList = (): JSX.Element => {
+ 				display: auth.payment_intent_id,
+ 			},
+ 			created: {
+-				value: dateI18n(
+-					'M j, Y / g:iA',
+-					moment.utc( auth.created ).local().toISOString()
++				value: formatUserDateTime(
++					moment.utc( auth.created ).toISOString()
+ 				),
+ 				display: clickable(
+-					dateI18n(
+-						'M j, Y / g:iA',
+-						moment.utc( auth.created ).local().toISOString()
++					formatUserDateTime(
++						moment.utc( auth.created ).toISOString()
+ 					)
+ 				),
+ 			},
+ 			// Payments are authorized for a maximum of 7 days
+ 			capture_by: {
+-				value: dateI18n(
+-					'M j, Y / g:iA',
+-					moment
+-						.utc( auth.created )
+-						.add( 7, 'd' )
+-						.local()
+-						.toISOString()
++				value: formatUserDateTime(
++					moment.utc( auth.created ).add( 7, 'd' ).toISOString()
+ 				),
+ 				display: clickable(
+-					dateI18n(
+-						'M j, Y / g:iA',
+-						moment
+-							.utc( auth.created )
+-							.add( 7, 'd' )
+-							.local()
+-							.toISOString()
++					formatUserDateTime(
++						moment.utc( auth.created ).add( 7, 'd' ).toISOString()
+ 					)
+ 				),
+ 			},
+diff --git a/client/transactions/uncaptured/test/index.test.tsx b/client/transactions/uncaptured/test/index.test.tsx
+index 52f76dcc882..fc21a532b67 100644
+--- a/client/transactions/uncaptured/test/index.test.tsx
++++ b/client/transactions/uncaptured/test/index.test.tsx
+@@ -67,6 +67,8 @@ declare const global: {
+ 				precision: number;
+ 			};
+ 		};
++		dateFormat: string;
++		timeFormat: string;
+ 	};
+ };
+ 
+@@ -126,6 +128,8 @@ describe( 'Authorizations list', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
++			timeFormat: 'g:iA',
+ 		};
+ 	} );
+ 
+diff --git a/client/utils/date-time.ts b/client/utils/date-time.ts
+new file mode 100644
+index 00000000000..61ae1a046a0
+--- /dev/null
++++ b/client/utils/date-time.ts
+@@ -0,0 +1,48 @@
++/**
++ * External dependencies
++ */
++import { dateI18n } from '@wordpress/date';
++
++type DateTimeFormat = string | null;
++
++interface FormatDateTimeOptions {
++	includeTime?: boolean; // Whether to include time in the formatted string (defaults to true)
++	useGmt?: boolean; // Whether to display the time in GMT/UTC (defaults to false)
++	separator?: string; // Separator between date and time (defaults to ' / ')
++	customFormat?: DateTimeFormat; // Custom format to use instead of WordPress settings
++}
++
++/**
++ * Formats a date and time string according to WordPress settings or a custom format.
++ *
++ * @param { string | Date } dateTime - The date and time string (e.g., '2024-10-23 15:28:26') or a JS Date object.
++ * @param { FormatDateTimeOptions } options - Additional options to control time inclusion and whether to use GMT/UTC.
++ * @return { string } - The formatted date and time string.
++ */
++export function formatUserDateTime(
++	dateTime: string | Date,
++	options: FormatDateTimeOptions = {
++		includeTime: true,
++		useGmt: false,
++		separator: ' / ',
++		customFormat: null,
++	}
++): string {
++	const {
++		customFormat = null,
++		includeTime = true,
++		useGmt = false,
++		separator = ' / ',
++	} = options;
++
++	// Use the WordPress settings for date and time format if no custom format is provided
++	const format =
++		customFormat ||
++		`${ window.wcpaySettings.dateFormat }${
++			includeTime
++				? `${ separator }${ window.wcpaySettings.timeFormat }`
++				: ''
++		}`;
++
++	return dateI18n( format, dateTime, useGmt );
++}
+diff --git a/client/utils/test/date-time.test.ts b/client/utils/test/date-time.test.ts
+new file mode 100644
+index 00000000000..ae1bc2e890b
+--- /dev/null
++++ b/client/utils/test/date-time.test.ts
+@@ -0,0 +1,115 @@
++/**
++ * Internal dependencies
++ */
++import { formatUserDateTime } from 'wcpay/utils/date-time';
++import { dateI18n } from '@wordpress/date';
++
++describe( 'formatUserDateTime', () => {
++	const originalWcpaySettings = window.wcpaySettings;
++	const mockWcpaySettings = {
++		dateFormat: 'Y-m-d',
++		timeFormat: 'H:i',
++	};
++
++	beforeAll( () => {
++		window.wcpaySettings = mockWcpaySettings as typeof wcpaySettings;
++	} );
++
++	afterAll( () => {
++		window.wcpaySettings = originalWcpaySettings;
++	} );
++
++	describe( 'with string input', () => {
++		it( 'should format using default WordPress settings', () => {
++			const dateTime = '2024-10-23 15:28:26';
++			const formatted = formatUserDateTime( dateTime );
++
++			expect( formatted ).toBe( '2024-10-23 / 15:28' );
++		} );
++
++		it( 'should use custom format if provided', () => {
++			const dateTime = '2024-10-23 15:28:26';
++			const options = { customFormat: 'd-m-Y H:i:s' };
++			const formatted = formatUserDateTime( dateTime, options );
++
++			expect( formatted ).toBe( '23-10-2024 15:28:26' );
++		} );
++
++		it( 'should exclude time if includeTime is set to false', () => {
++			const dateTime = '2024-10-23 15:28:26';
++			const options = { includeTime: false };
++			const formatted = formatUserDateTime( dateTime, options );
++
++			expect( formatted ).toBe( '2024-10-23' );
++		} );
++
++		it( 'should use custom separator when provided', () => {
++			const dateTime = '2024-10-23 15:28:26';
++			const options = { separator: ' - ' };
++			const formatted = formatUserDateTime( dateTime, options );
++
++			// Expect output with custom separator
++			expect( formatted ).toBe( '2024-10-23 - 15:28' );
++		} );
++
++		it( 'should handle GMT/UTC setting correctly when useGmt is true', () => {
++			const dateTime = '2024-10-23 15:28:26Z';
++			const options = { useGmt: true }; // Enforcing UTC
++			const formatted = formatUserDateTime( dateTime, options );
++
++			// Expect UTC-based output (no timezone adjustment)
++			expect( formatted ).toBe( '2024-10-23 / 15:28' );
++		} );
++	} );
++
++	describe( 'with Date object input', () => {
++		it( 'should format using default WordPress settings', () => {
++			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
++			const formatted = formatUserDateTime( dateTime, { useGmt: true } );
++
++			// Expected format based on WordPress settings and Date object
++			expect( formatted ).toBe( '2024-10-23 / 15:28' );
++		} );
++
++		it( 'should use custom format if provided', () => {
++			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
++			const options = { customFormat: 'd-m-Y H:i:s', useGmt: true };
++			const formatted = formatUserDateTime( dateTime, options );
++
++			// Expected format for Date object: '23-10-2024 15:28:26'
++			expect( formatted ).toBe( '23-10-2024 15:28:26' );
++		} );
++
++		it( 'should exclude time if includeTime is set to false', () => {
++			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
++			const options = { includeTime: false, useGmt: true };
++			const formatted = formatUserDateTime( dateTime, options );
++
++			// Expect output with date only
++			expect( formatted ).toBe( '2024-10-23' );
++		} );
++
++		it( 'should handle GMT/UTC setting correctly', () => {
++			const dateTime = new Date( 2024, 9, 23, 15, 28, 26 ); // Local time (non-UTC)
++			const formatted = formatUserDateTime( dateTime );
++
++			// The expected format will vary based on your local timezone
++			const expectedFormat = dateI18n(
++				`${ mockWcpaySettings.dateFormat } / ${ mockWcpaySettings.timeFormat }`,
++				dateTime,
++				false
++			);
++
++			expect( formatted ).toBe( expectedFormat );
++		} );
++
++		it( 'should use custom separator when provided', () => {
++			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
++			const options = { separator: ' - ', useGmt: true };
++			const formatted = formatUserDateTime( dateTime, options );
++
++			// Expect output with custom separator
++			expect( formatted ).toBe( '2024-10-23 - 15:28' );
++		} );
++	} );
++} );
+diff --git a/includes/admin/class-wc-payments-admin.php b/includes/admin/class-wc-payments-admin.php
+index 9c53cb48597..eb6a6e9fd7c 100644
+--- a/includes/admin/class-wc-payments-admin.php
++++ b/includes/admin/class-wc-payments-admin.php
+@@ -958,6 +958,8 @@ private function get_js_settings(): array {
+ 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
+ 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
+ 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
++			'dateFormat'                         => wc_date_format(),
++			'timeFormat'                         => get_option( 'time_format' ),
+ 		];
+ 
+ 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
+diff --git a/multi-currency/client/settings/single-currency/index.js b/multi-currency/client/settings/single-currency/index.js
+index 14a3560f14d..fc063ce3211 100644
+--- a/multi-currency/client/settings/single-currency/index.js
++++ b/multi-currency/client/settings/single-currency/index.js
+@@ -3,7 +3,6 @@
+  * External dependencies
+  */
+ import React, { useContext, useEffect, useState } from 'react';
+-import { dateI18n } from '@wordpress/date';
+ import { sprintf, __ } from '@wordpress/i18n';
+ import moment from 'moment';
+ 
+@@ -24,7 +23,6 @@ import {
+ 	useCurrencies,
+ 	useCurrencySettings,
+ 	useEnabledCurrencies,
+-	useStoreSettings,
+ } from 'multi-currency/data';
+ import MultiCurrencySettingsContext from 'multi-currency/context';
+ import {
+@@ -32,6 +30,7 @@ import {
+ 	SettingsLayout,
+ 	SettingsSection,
+ } from 'multi-currency/interface/components';
++import { formatUserDateTime } from 'wcpay/utils/date-time';
+ 
+ const SingleCurrencySettings = () => {
+ 	const {
+@@ -45,7 +44,6 @@ const SingleCurrencySettings = () => {
+ 
+ 	const { currencies } = useCurrencies();
+ 	const { enabledCurrencies } = useEnabledCurrencies();
+-	const { storeSettings } = useStoreSettings();
+ 
+ 	const {
+ 		currencySettings,
+@@ -105,13 +103,10 @@ const SingleCurrencySettings = () => {
+ 		}
+ 	}, [ currencySettings, currency, initialPriceRoundingType ] );
+ 
+-	const dateFormat = storeSettings.date_format ?? 'M j, Y';
+-	const timeFormat = storeSettings.time_format ?? 'g:iA';
+-
+ 	const formattedLastUpdatedDateTime = targetCurrency
+-		? dateI18n(
+-				`${ dateFormat } ${ timeFormat }`,
+-				moment.unix( targetCurrency.last_updated ).toISOString()
++		? formatUserDateTime(
++				moment.unix( targetCurrency.last_updated ).toISOString(),
++				{ useGmt: false, separator: ' ' }
+ 		  )
+ 		: '';
+ 
+diff --git a/multi-currency/client/settings/single-currency/test/index.test.js b/multi-currency/client/settings/single-currency/test/index.test.js
+index 0559953e54b..b9a401c3946 100644
+--- a/multi-currency/client/settings/single-currency/test/index.test.js
++++ b/multi-currency/client/settings/single-currency/test/index.test.js
+@@ -159,6 +159,8 @@ describe( 'Single currency settings screen', () => {
+ 					precision: 2,
+ 				},
+ 			},
++			dateFormat: 'M j, Y',
++			timeFormat: 'g:iA',
+ 		};
+ 	} );
+ 
