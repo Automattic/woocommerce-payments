@@ -69,16 +69,12 @@ const getDocumentDescription = ( document: Document ) => {
 				return sprintf(
 					__( 'VAT invoice for %s to %s', 'woocommerce-payments' ),
 					formatUserDateTime(
-						moment
-							.utc( document.period_from )
-							.local()
-							.toISOString(),
-						{ useGmt: false, includeTime: false }
+						moment.utc( document.period_from ).toISOString(),
+						{ includeTime: false }
 					),
 					formatUserDateTime(
-						moment.utc( document.period_to ).local().toISOString(),
+						moment.utc( document.period_to ).toISOString(),
 						{
-							useGmt: false,
 							includeTime: false,
 						}
 					)
@@ -185,9 +181,8 @@ export const DocumentsList = (): JSX.Element => {
 			date: {
 				value: document.date,
 				display: formatUserDateTime(
-					moment.utc( document.date ).local().toISOString(),
+					moment.utc( document.date ).toISOString(),
 					{
-						useGmt: false,
 						includeTime: false,
 					}
 				),

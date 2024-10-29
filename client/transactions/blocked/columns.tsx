@@ -71,8 +71,7 @@ export const getBlockedListRowContent = (
 		'transactions'
 	);
 	const formattedCreatedDate = formatUserDateTime(
-		moment.utc( data.created ).local().toISOString(),
-		{ useGmt: false }
+		moment.utc( data.created ).toISOString()
 	);
 
 	const clickable = ( children: JSX.Element | string ) => (

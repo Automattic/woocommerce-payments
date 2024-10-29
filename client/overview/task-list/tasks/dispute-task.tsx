@@ -143,9 +143,8 @@ export const getDisputeResolutionTask = (
 						__( 'Respond today by %s', 'woocommerce-payments' ),
 						// Show due_by time in local timezone: e.g. "11:59 PM".
 						formatUserDateTime(
-							moment.utc( dispute.due_by ).local().toISOString(),
+							moment.utc( dispute.due_by ).toISOString(),
 							{
-								useGmt: false,
 								customFormat: 'g:i A',
 							}
 						)
@@ -157,9 +156,8 @@ export const getDisputeResolutionTask = (
 						),
 						// Show due_by date in local timezone: e.g. "Jan 1, 2021".
 						formatUserDateTime(
-							moment.utc( dispute.due_by ).local().toISOString(),
+							moment.utc( dispute.due_by ).toISOString(),
 							{
-								useGmt: false,
 								includeTime: false,
 							}
 						),

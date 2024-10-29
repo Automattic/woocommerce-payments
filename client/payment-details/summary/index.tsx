@@ -114,7 +114,6 @@ const composePaymentSummaryItems = ( {
 						moment( charge.created * 1000 ).toISOString(),
 						{
 							customFormat: 'M j, Y, g:ia',
-							useGmt: false,
 						}
 				  )
 				: '–',

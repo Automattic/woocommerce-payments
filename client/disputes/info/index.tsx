@@ -71,7 +71,7 @@ const Info = ( {
 		: {
 				created: formatUserDateTime(
 					moment( dispute.created * 1000 ).toISOString(),
-					{ includeTime: false, useGmt: false }
+					{ includeTime: false }
 				),
 				amount: formatExplicitCurrency(
 					dispute.amount || 0,
@@ -82,7 +82,7 @@ const Info = ( {
 							moment(
 								dispute.evidence_details.due_by * 1000
 							).toISOString(),
-							{ separator: ' - ', useGmt: false }
+							{ separator: ' - ' }
 					  )
 					: null,
 				reason: composeDisputeReason( dispute ),

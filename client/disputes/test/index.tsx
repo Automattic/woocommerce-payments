@@ -371,11 +371,7 @@ describe( 'Disputes list', () => {
 
 			expect( csvFirstDispute[ 11 ].replace( /^"|"$/g, '' ) ).toBe(
 				formatUserDateTime(
-					moment
-						.utc( mockDisputes[ 0 ].due_by )
-						.local()
-						.toISOString(),
-					{ useGmt: false }
+					moment.utc( mockDisputes[ 0 ].due_by ).toISOString()
 				)
 			); // date respond by
 		} );

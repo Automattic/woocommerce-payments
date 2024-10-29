@@ -22,14 +22,14 @@ describe( 'formatUserDateTime', () => {
 	describe( 'with string input', () => {
 		it( 'should format using default WordPress settings', () => {
 			const dateTime = '2024-10-23 15:28:26';
-			const formatted = formatUserDateTime( dateTime, { useGmt: false } );
+			const formatted = formatUserDateTime( dateTime );
 
 			expect( formatted ).toBe( '2024-10-23 / 15:28' );
 		} );
 
 		it( 'should use custom format if provided', () => {
 			const dateTime = '2024-10-23 15:28:26';
-			const options = { customFormat: 'd-m-Y H:i:s', useGmt: false };
+			const options = { customFormat: 'd-m-Y H:i:s' };
 			const formatted = formatUserDateTime( dateTime, options );
 
 			expect( formatted ).toBe( '23-10-2024 15:28:26' );
@@ -37,7 +37,7 @@ describe( 'formatUserDateTime', () => {
 
 		it( 'should exclude time if includeTime is set to false', () => {
 			const dateTime = '2024-10-23 15:28:26';
-			const options = { includeTime: false, useGmt: false };
+			const options = { includeTime: false };
 			const formatted = formatUserDateTime( dateTime, options );
 
 			expect( formatted ).toBe( '2024-10-23' );
@@ -45,7 +45,7 @@ describe( 'formatUserDateTime', () => {
 
 		it( 'should use custom separator when provided', () => {
 			const dateTime = '2024-10-23 15:28:26';
-			const options = { separator: ' - ', useGmt: false };
+			const options = { separator: ' - ' };
 			const formatted = formatUserDateTime( dateTime, options );
 
 			// Expect output with custom separator
@@ -91,8 +91,7 @@ describe( 'formatUserDateTime', () => {
 
 		it( 'should handle GMT/UTC setting correctly', () => {
 			const dateTime = new Date( 2024, 9, 23, 15, 28, 26 ); // Local time (non-UTC)
-			const options = { useGmt: false }; // Using local timezone
-			const formatted = formatUserDateTime( dateTime, options );
+			const formatted = formatUserDateTime( dateTime );
 
 			// The expected format will vary based on your local timezone
 			const expectedFormat = dateI18n(

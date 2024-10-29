@@ -58,11 +58,12 @@ const UpdateBusinessDetailsModal = ( {
 									? sprintf(
 											strings.restrictedSoonDescription,
 											formatUserDateTime(
-												moment(
-													currentDeadline * 1000
-												).toISOString(),
+												moment
+													.utc(
+														currentDeadline * 1000
+													)
+													.toISOString(),
 												{
-													useGmt: false,
 													customFormat: 'ga M j, Y',
 												}
 											)
