@@ -84,6 +84,19 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	private $refresh_disabled;
 
 	/**
+	 * The maximum size in bytes of a cache entry that will be stored in memory.
+	 */
+	const IN_MEMORY_CACHE_ENTRY_SIZE_LIMIT = 15 * KB_IN_BYTES;
+
+	/**
+	 * The maximum data size in bytes of all the in-memory cache stored data.
+	 *
+	 * This will ensure we keep the memory impact under control.
+	 * This is especially important for large stores that can handle many concurrent requests.
+	 */
+	const IN_MEMORY_CACHE_SIZE_LIMIT = 100 * KB_IN_BYTES;
+
+	/**
 	 * In-memory cache for the duration of a single request.
 	 *
 	 * This is used to avoid multiple database reads for the same data and as a backstop in case the database write fails,
@@ -92,6 +105,19 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @var array
 	 */
 	private $in_memory_cache = [];
+
+	/**
+	 * Cache sizes in bytes for each entry in the in-memory cache.
+	 *
+	 * This is used to keep track of the size of the in-memory cache and stop adding entries if the cache size limit is reached.
+	 * The cache size is calculated based on the serialized size of the data (the same format as the database cache).
+	 *
+	 * We don't use an eviction policy for the in-memory cache because there is no priority among different entries.
+	 * Under normal circumstances, the cache size limit should be sufficient for all entries small enough to be stored in memory.
+	 *
+	 * @var array
+	 */
+	private $in_memory_cache_sizes = [];
 
 	/**
 	 * Database cache write errors for each key.
@@ -245,6 +271,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		foreach ( array_keys( $this->in_memory_cache ) as $cache_key ) {
 			if ( 0 === strpos( $cache_key, $key ) ) {
 				unset( $this->in_memory_cache[ $cache_key ] );
+				unset( $this->in_memory_cache_sizes[ $cache_key ] );
 			}
 		}
 		foreach ( array_keys( $this->db_cache_write_errors ) as $cache_key ) {
@@ -282,10 +309,14 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			return true;
 		}
 
-		// Do not refresh if we had DB cache write errors for this key, during the current request.
-		// For the remainder of the request, we will use whatever we have in the in-memory cache,
+		// Do not refresh if we had DB cache write errors for this key and we have a valid in-memory cache.
+		// For the remainder of the request, we will what we have in the in-memory cache,
 		// if the cache is not explicitly cleared or forced to refresh.
-		if ( isset( $this->db_cache_write_errors[ $key ] ) && $this->db_cache_write_errors[ $key ] > 0 ) {
+		if ( isset( $this->db_cache_write_errors[ $key ] ) &&
+			$this->db_cache_write_errors[ $key ] > 0 &&
+			isset( $this->in_memory_cache[ $key ] ) &&
+			! is_null( $this->in_memory_cache[ $key ] ) ) {
+
 			return false;
 		}
 
@@ -336,11 +367,17 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return array|false The cache contents or false if there is no cached data for the key.
 	 */
 	private function get_from_cache( string $key ) {
-		if ( ! isset( $this->in_memory_cache[ $key ] ) || is_null( $this->in_memory_cache[ $key ] ) ) {
-			$this->in_memory_cache[ $key ] = get_option( $key );
+		// Check the in-memory cache first.
+		if ( isset( $this->in_memory_cache[ $key ] ) && ! is_null( $this->in_memory_cache[ $key ] ) ) {
+			return $this->in_memory_cache[ $key ];
 		}
 
-		return $this->in_memory_cache[ $key ];
+		// Read from the DB cache.
+		$data = get_option( $key );
+
+		$this->maybe_store_in_memory_cache( $key, $data );
+
+		return $data;
 	}
 
 	/**
@@ -359,8 +396,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		$cache_contents['fetched'] = time();
 		$cache_contents['errored'] = $errored;
 
-		// Write the in-memory cache.
-		$this->in_memory_cache[ $key ] = $cache_contents;
+		$this->maybe_store_in_memory_cache( $key, $cache_contents );
 
 		// Create or update the DB option cache.
 		// Note: Since we are adding the current time to the option value, WP will ALWAYS write the option because
@@ -380,6 +416,42 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Maybe store the data in the in-memory cache.
+	 *
+	 * The data is stored in the in-memory cache if it is small enough and the cache size limit is not reached.
+	 *
+	 * @param string $key  The cache key.
+	 * @param mixed  $data The data to store.
+	 *
+	 * @return void
+	 */
+	private function maybe_store_in_memory_cache( string $key, $data ) {
+		$data_size = strlen( maybe_serialize( $data ) );
+
+		// If the data size is too large, skip the in-memory cache.
+		if ( $data_size > self::IN_MEMORY_CACHE_ENTRY_SIZE_LIMIT ) {
+			return;
+		}
+
+		// If the cache size limit would be exceeded, skip the in-memory cache.
+		if ( $this->get_in_memory_cache_size() + $data_size > self::IN_MEMORY_CACHE_SIZE_LIMIT ) {
+			return;
+		}
+
+		$this->in_memory_cache[ $key ]       = $data;
+		$this->in_memory_cache_sizes[ $key ] = $data_size;
+	}
+
+	/**
+	 * Get the total data size in bytes currently stored in the in-memory cache.
+	 *
+	 * @return integer The total size in bytes of the data in the in-memory cache.
+	 */
+	private function get_in_memory_cache_size(): int {
+		return array_sum( $this->in_memory_cache_sizes );
 	}
 
 	/**
