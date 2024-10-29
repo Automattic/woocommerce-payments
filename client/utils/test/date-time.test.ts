@@ -48,13 +48,12 @@ describe( 'formatUserDateTime', () => {
 			const options = { separator: ' - ' };
 			const formatted = formatUserDateTime( dateTime, options );
 
-			// Expect output with custom separator
 			expect( formatted ).toBe( '2024-10-23 - 15:28' );
 		} );
 
 		it( 'should handle GMT/UTC setting correctly when useGmt is true', () => {
 			const dateTime = '2024-10-23 15:28:26Z';
-			const options = { useGmt: true }; // Enforcing UTC
+			const options = { useGmt: true };
 			const formatted = formatUserDateTime( dateTime, options );
 
 			// Expect UTC-based output (no timezone adjustment)
@@ -67,7 +66,6 @@ describe( 'formatUserDateTime', () => {
 			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
 			const formatted = formatUserDateTime( dateTime, { useGmt: true } );
 
-			// Expected format based on WordPress settings and Date object
 			expect( formatted ).toBe( '2024-10-23 / 15:28' );
 		} );
 
@@ -76,7 +74,6 @@ describe( 'formatUserDateTime', () => {
 			const options = { customFormat: 'd-m-Y H:i:s', useGmt: true };
 			const formatted = formatUserDateTime( dateTime, options );
 
-			// Expected format for Date object: '23-10-2024 15:28:26'
 			expect( formatted ).toBe( '23-10-2024 15:28:26' );
 		} );
 
@@ -85,7 +82,6 @@ describe( 'formatUserDateTime', () => {
 			const options = { includeTime: false, useGmt: true };
 			const formatted = formatUserDateTime( dateTime, options );
 
-			// Expect output with date only
 			expect( formatted ).toBe( '2024-10-23' );
 		} );
 
@@ -93,7 +89,6 @@ describe( 'formatUserDateTime', () => {
 			const dateTime = new Date( 2024, 9, 23, 15, 28, 26 ); // Local time (non-UTC)
 			const formatted = formatUserDateTime( dateTime );
 
-			// The expected format will vary based on your local timezone
 			const expectedFormat = dateI18n(
 				`${ mockWcpaySettings.dateFormat } / ${ mockWcpaySettings.timeFormat }`,
 				dateTime,
@@ -108,7 +103,6 @@ describe( 'formatUserDateTime', () => {
 			const options = { separator: ' - ', useGmt: true };
 			const formatted = formatUserDateTime( dateTime, options );
 
-			// Expect output with custom separator
 			expect( formatted ).toBe( '2024-10-23 - 15:28' );
 		} );
 	} );
