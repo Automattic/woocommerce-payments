@@ -370,13 +370,13 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		// and we will mistakenly think that the DB write failed. We are OK with this false positive, since the data is the same.
 		$result = update_option( $key, $cache_contents, 'no' );
 
-		// Clear the WP object cache to ensure the new data is fetched by other processes.
-		wp_cache_delete( $key, 'options' );
-
-		// The DB cache write failed.
+		// Check if the DB cache write failed.
 		if ( false === $result ) {
 			// Increase the error count.
 			$this->db_cache_write_errors[ $key ] = ( $this->db_cache_write_errors[ $key ] ?? 0 ) + 1;
+		} else {
+			// Clear the WP object cache to ensure the new data is fetched by other processes.
+			wp_cache_delete( $key, 'options' );
 		}
 
 		return $result;
