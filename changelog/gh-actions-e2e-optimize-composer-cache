@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Updates gh actions cache-key for composer dependencies.
+
+
