@@ -103,8 +103,8 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 	}
 
 	const depositDateLabel = deposit.automatic
-		? __( 'Deposit date', 'woocommerce-payments' )
-		: __( 'Instant deposit date', 'woocommerce-payments' );
+		? __( 'Payout date', 'woocommerce-payments' )
+		: __( 'Instant payout date', 'woocommerce-payments' );
 
 	const depositDateItem = (
 		<SummaryItem
@@ -138,14 +138,14 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 				</Card>
 			) : (
 				<SummaryList
-					label={ __( 'Deposit overview', 'woocommerce-payments' ) }
+					label={ __( 'Payout overview', 'woocommerce-payments' ) }
 				>
 					{ () => [
 						depositDateItem,
 						<SummaryItem
 							key="depositAmount"
 							label={ __(
-								'Deposit amount',
+								'Payout amount',
 								'woocommerce-payments'
 							) }
 							value={ formatExplicitCurrency(
@@ -171,7 +171,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 						<SummaryItem
 							key="netDepositAmount"
 							label={ __(
-								'Net deposit amount',
+								'Net payout amount',
 								'woocommerce-payments'
 							) }
 							value={ formatExplicitCurrency(
@@ -220,7 +220,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 							<CardHeader>
 								<Text size={ 16 } weight={ 600 } as="h2">
 									{ __(
-										'Deposit transactions',
+										'Payout transactions',
 										'woocommerce-payments'
 									) }
 								</Text>
@@ -229,7 +229,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 								{ interpolateComponents( {
 									/* Translators: {{learnMoreLink}} is a link element (<a/>). */
 									mixedString: __(
-										`We're unable to show transaction history on instant deposits. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
+										`We're unable to show transaction history on instant payouts. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
 										'woocommerce-payments'
 									),
 									components: {
