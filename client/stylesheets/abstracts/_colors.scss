@@ -73,13 +73,13 @@ $gutenberg-blue--rgb: 0, 124, 186;
 $gutenberg-blueberry: #3858e9;
 $gutenberg-blueberry-focus: #1d35b4;
 
-// Accent color
+// Accent color – used for admin links, buttons, etc.
 $components-color-accent: var(
 	--wp-components-color-accent,
 	var( --wp-admin-theme-color, $gutenberg-blue )
 );
 
-// Accent background color
+// Accent background color – used for notice backgrounds and other subtle accent elements.
 $components-color-accent-background: rgba(
 	var( --wp-admin-theme-color--rgb, $gutenberg-blue--rgb ),
 	0.07
