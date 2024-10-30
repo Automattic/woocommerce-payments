@@ -400,15 +400,14 @@ class WC_Payments_Checkout {
 				<?php
 			endif;
 
-			$testing_instructions = $this->gateway->get_payment_method()->get_testing_instructions();
-			if ( WC_Payments::mode()->is_test() && false !== $testing_instructions ) :
+			if ( WC_Payments::mode()->is_test() && false !== $this->gateway->get_payment_method()->get_testing_instructions() ) :
 				?>
 				<p class="testmode-info">
 				<?php
 						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
-								$testing_instructions,
+								$this->gateway->get_payment_method()->get_testing_instructions(),
 								[
 									'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 									'strong' => '<strong>',
