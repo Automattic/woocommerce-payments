@@ -138,7 +138,6 @@ export const DepositsList = (): JSX.Element => {
 				{ formatUserDateTime(
 					moment.utc( deposit.date ).toISOString(),
 					{
-						includeTime: false,
 						useGmt: true,
 					}
 				) }
@@ -332,7 +331,7 @@ export const DepositsList = (): JSX.Element => {
 					...row[ 1 ],
 					value: formatUserDateTime(
 						moment.utc( row[ 1 ].value ).toISOString(),
-						{ useGmt: true, includeTime: false }
+						{ useGmt: true }
 					),
 				},
 				...row.slice( 2 ),

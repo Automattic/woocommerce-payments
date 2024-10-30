@@ -131,22 +131,26 @@ export const AuthorizationsList = (): JSX.Element => {
 			},
 			created: {
 				value: formatUserDateTime(
-					moment.utc( auth.created ).toISOString()
+					moment.utc( auth.created ).toISOString(),
+					{ includeTime: true }
 				),
 				display: clickable(
 					formatUserDateTime(
-						moment.utc( auth.created ).toISOString()
+						moment.utc( auth.created ).toISOString(),
+						{ includeTime: true }
 					)
 				),
 			},
 			// Payments are authorized for a maximum of 7 days
 			capture_by: {
 				value: formatUserDateTime(
-					moment.utc( auth.created ).add( 7, 'd' ).toISOString()
+					moment.utc( auth.created ).add( 7, 'd' ).toISOString(),
+					{ includeTime: true }
 				),
 				display: clickable(
 					formatUserDateTime(
-						moment.utc( auth.created ).add( 7, 'd' ).toISOString()
+						moment.utc( auth.created ).add( 7, 'd' ).toISOString(),
+						{ includeTime: true }
 					)
 				),
 			},

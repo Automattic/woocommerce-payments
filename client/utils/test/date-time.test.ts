@@ -22,7 +22,9 @@ describe( 'formatUserDateTime', () => {
 	describe( 'with string input', () => {
 		it( 'should format using default WordPress settings', () => {
 			const dateTime = '2024-10-23 15:28:26';
-			const formatted = formatUserDateTime( dateTime );
+			const formatted = formatUserDateTime( dateTime, {
+				includeTime: true,
+			} );
 
 			expect( formatted ).toBe( '2024-10-23 / 15:28' );
 		} );
@@ -37,15 +39,14 @@ describe( 'formatUserDateTime', () => {
 
 		it( 'should exclude time if includeTime is set to false', () => {
 			const dateTime = '2024-10-23 15:28:26';
-			const options = { includeTime: false };
-			const formatted = formatUserDateTime( dateTime, options );
+			const formatted = formatUserDateTime( dateTime );
 
 			expect( formatted ).toBe( '2024-10-23' );
 		} );
 
 		it( 'should use custom separator when provided', () => {
 			const dateTime = '2024-10-23 15:28:26';
-			const options = { separator: ' - ' };
+			const options = { separator: ' - ', includeTime: true };
 			const formatted = formatUserDateTime( dateTime, options );
 
 			expect( formatted ).toBe( '2024-10-23 - 15:28' );
@@ -53,7 +54,7 @@ describe( 'formatUserDateTime', () => {
 
 		it( 'should handle GMT/UTC setting correctly when useGmt is true', () => {
 			const dateTime = '2024-10-23 15:28:26Z';
-			const options = { useGmt: true };
+			const options = { useGmt: true, includeTime: true };
 			const formatted = formatUserDateTime( dateTime, options );
 
 			// Expect UTC-based output (no timezone adjustment)
@@ -64,7 +65,10 @@ describe( 'formatUserDateTime', () => {
 	describe( 'with Date object input', () => {
 		it( 'should format using default WordPress settings', () => {
 			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
-			const formatted = formatUserDateTime( dateTime, { useGmt: true } );
+			const formatted = formatUserDateTime( dateTime, {
+				useGmt: true,
+				includeTime: true,
+			} );
 
 			expect( formatted ).toBe( '2024-10-23 / 15:28' );
 		} );
@@ -79,7 +83,7 @@ describe( 'formatUserDateTime', () => {
 
 		it( 'should exclude time if includeTime is set to false', () => {
 			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
-			const options = { includeTime: false, useGmt: true };
+			const options = { useGmt: true };
 			const formatted = formatUserDateTime( dateTime, options );
 
 			expect( formatted ).toBe( '2024-10-23' );
@@ -87,7 +91,9 @@ describe( 'formatUserDateTime', () => {
 
 		it( 'should handle GMT/UTC setting correctly', () => {
 			const dateTime = new Date( 2024, 9, 23, 15, 28, 26 ); // Local time (non-UTC)
-			const formatted = formatUserDateTime( dateTime );
+			const formatted = formatUserDateTime( dateTime, {
+				includeTime: true,
+			} );
 
 			const expectedFormat = dateI18n(
 				`${ mockWcpaySettings.dateFormat } / ${ mockWcpaySettings.timeFormat }`,
@@ -100,7 +106,11 @@ describe( 'formatUserDateTime', () => {
 
 		it( 'should use custom separator when provided', () => {
 			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
-			const options = { separator: ' - ', useGmt: true };
+			const options = {
+				separator: ' - ',
+				useGmt: true,
+				includeTime: true,
+			};
 			const formatted = formatUserDateTime( dateTime, options );
 
 			expect( formatted ).toBe( '2024-10-23 - 15:28' );

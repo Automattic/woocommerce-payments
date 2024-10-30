@@ -156,10 +156,7 @@ export const getDisputeResolutionTask = (
 						),
 						// Show due_by date in local timezone: e.g. "Jan 1, 2021".
 						formatUserDateTime(
-							moment.utc( dispute.due_by ).toISOString(),
-							{
-								includeTime: false,
-							}
+							moment.utc( dispute.due_by ).toISOString()
 						),
 						moment( dispute.due_by ).fromNow( true ) // E.g. "2 days".
 				  );

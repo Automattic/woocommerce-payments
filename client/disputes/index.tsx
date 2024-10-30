@@ -201,7 +201,9 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 			</span>
 		);
 	}
-	return formatUserDateTime( moment.utc( dispute.due_by ).toISOString() );
+	return formatUserDateTime( moment.utc( dispute.due_by ).toISOString(), {
+		includeTime: true,
+	} );
 };
 
 export const DisputesList = (): JSX.Element => {
@@ -299,7 +301,8 @@ export const DisputesList = (): JSX.Element => {
 				value: dispute.created,
 				display: clickable(
 					formatUserDateTime(
-						moment.utc( dispute.created ).toISOString()
+						moment.utc( dispute.created ).toISOString(),
+						{ includeTime: true }
 					)
 				),
 			},
@@ -480,17 +483,15 @@ export const DisputesList = (): JSX.Element => {
 						// Disputed On.
 						...row[ 10 ],
 						value: formatUserDateTime(
-							moment.utc( row[ 10 ].value ).toISOString(),
-							{
-								includeTime: false,
-							}
+							moment.utc( row[ 10 ].value ).toISOString()
 						),
 					},
 					{
 						// Respond by.
 						...row[ 11 ],
 						value: formatUserDateTime(
-							moment.utc( row[ 11 ].value ).toISOString()
+							moment.utc( row[ 11 ].value ).toISOString(),
+							{ includeTime: true }
 						),
 					},
 				];

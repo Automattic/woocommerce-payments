@@ -112,7 +112,7 @@ const composePaymentSummaryItems = ( {
 			content: charge.created
 				? formatUserDateTime(
 						moment.utc( charge.created * 1000 ).toISOString(),
-						{ separator: ', ' }
+						{ separator: ', ', includeTime: true }
 				  )
 				: '–',
 		},
@@ -711,7 +711,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										.utc( authorization.created )
 										.add( 7, 'days' )
 										.toISOString(),
-									{ useGmt: true }
+									{ useGmt: true, includeTime: true }
 								) }
 							>
 								<b>

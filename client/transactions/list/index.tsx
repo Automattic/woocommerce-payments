@@ -466,7 +466,9 @@ export const TransactionsList = (
 			date: {
 				value: txn.date,
 				display: clickable(
-					formatUserDateTime( moment.utc( txn.date ).toISOString() )
+					formatUserDateTime( moment.utc( txn.date ).toISOString(), {
+						includeTime: true,
+					} )
 				),
 			},
 			channel: {

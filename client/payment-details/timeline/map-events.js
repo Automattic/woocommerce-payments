@@ -85,8 +85,7 @@ const getDepositTimelineItem = (
 				  ),
 			formattedAmount,
 			formatUserDateTime(
-				moment( event.deposit.arrival_date * 1000 ).toISOString(),
-				{ includeTime: false }
+				moment( event.deposit.arrival_date * 1000 ).toISOString()
 			)
 		);
 		const depositUrl = getAdminUrl( {
@@ -144,8 +143,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 			),
 			formattedAmount,
 			formatUserDateTime(
-				moment( event.deposit.arrival_date * 1000 ).toISOString(),
-				{ includeTime: false }
+				moment( event.deposit.arrival_date * 1000 ).toISOString()
 			)
 		);
 

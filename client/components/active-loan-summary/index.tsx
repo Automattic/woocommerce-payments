@@ -215,7 +215,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 									details.current_repayment_interval.due_at *
 										1000
 								),
-								{ includeTime: false, useGmt: true }
+								{ useGmt: true }
 							)
 						) }
 					>
@@ -253,7 +253,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 					>
 						{ formatUserDateTime(
 							new Date( details.advance_paid_out_at * 1000 ),
-							{ includeTime: false, useGmt: true }
+							{ useGmt: true }
 						) }
 					</Block>
 					<Block
@@ -280,7 +280,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 					>
 						{ formatUserDateTime(
 							new Date( details.repayments_begin_at * 1000 ),
-							{ includeTime: false, useGmt: true }
+							{ useGmt: true }
 						) }
 					</Block>
 				</Flex>

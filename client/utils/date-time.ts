@@ -22,7 +22,7 @@ interface FormatDateTimeOptions {
 export function formatUserDateTime(
 	dateTime: string | Date,
 	options: FormatDateTimeOptions = {
-		includeTime: true,
+		includeTime: false,
 		useGmt: false,
 		separator: ' / ',
 		customFormat: null,
@@ -30,7 +30,7 @@ export function formatUserDateTime(
 ): string {
 	const {
 		customFormat = null,
-		includeTime = true,
+		includeTime = false,
 		useGmt = false,
 		separator = ' / ',
 	} = options;

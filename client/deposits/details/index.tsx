@@ -113,7 +113,6 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 				`${ depositDateLabel }: ` +
 				formatUserDateTime( moment.utc( deposit.date ).toISOString(), {
 					useGmt: true,
-					includeTime: false,
 				} )
 			}
 			value={ <Status status={ deposit.status } /> }

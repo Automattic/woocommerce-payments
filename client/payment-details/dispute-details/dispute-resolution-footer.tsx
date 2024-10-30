@@ -27,7 +27,8 @@ const DisputeUnderReviewFooter: React.FC< {
 					.unix(
 						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
 					)
-					.toISOString()
+					.toISOString(),
+				{ includeTime: true }
 		  )
 		: '-';
 
@@ -97,7 +98,8 @@ const DisputeWonFooter: React.FC< {
 					.unix(
 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
 					)
-					.toISOString()
+					.toISOString(),
+				{ includeTime: true }
 		  )
 		: '-';
 
@@ -174,8 +176,7 @@ const DisputeLostFooter: React.FC< {
 					.unix(
 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
 					)
-					.toISOString(),
-				{ includeTime: false }
+					.toISOString()
 		  )
 		: '-';
 
@@ -277,8 +278,7 @@ const InquiryUnderReviewFooter: React.FC< {
 					.unix(
 						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
 					)
-					.toISOString(),
-				{ includeTime: false }
+					.toISOString()
 		  )
 		: '-';
 
@@ -349,8 +349,7 @@ const InquiryClosedFooter: React.FC< {
 					.unix(
 						parseInt( dispute.metadata.__dispute_closed_at, 10 )
 					)
-					.toISOString(),
-				{ includeTime: false }
+					.toISOString()
 		  )
 		: '-';
 

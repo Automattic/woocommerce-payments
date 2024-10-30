@@ -26,9 +26,7 @@ const ExpirationDescription = ( {
 				'woocommerce-payments'
 			),
 			formatCurrency( volumeAllowance, currencyCode ),
-			formatUserDateTime( moment( endTime ).toISOString(), {
-				includeTime: false,
-			} )
+			formatUserDateTime( moment( endTime ).toISOString() )
 		);
 	} else if ( volumeAllowance ) {
 		description = sprintf(
@@ -46,9 +44,7 @@ const ExpirationDescription = ( {
 				'Discounted base fee expires on %1$s.',
 				'woocommerce-payments'
 			),
-			formatUserDateTime( moment( endTime ).toISOString(), {
-				includeTime: false,
-			} )
+			formatUserDateTime( moment( endTime ).toISOString() )
 		);
 	} else {
 		return null;

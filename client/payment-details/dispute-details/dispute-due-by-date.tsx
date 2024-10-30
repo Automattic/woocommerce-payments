@@ -18,6 +18,7 @@ const DisputeDueByDate: React.FC< {
 		moment( dueBy * 1000 ).toISOString(),
 		{
 			separator: ', ',
+			includeTime: true,
 		}
 	);
 	return (

@@ -77,7 +77,8 @@ export const getRiskReviewListRowContent = (
 ): Record< string, TableCardBodyColumn > => {
 	const detailsURL = getDetailsURL( data.payment_intent.id, 'transactions' );
 	const formattedCreatedDate = formatUserDateTime(
-		moment.utc( data.created ).toISOString()
+		moment.utc( data.created ).toISOString(),
+		{ includeTime: true }
 	);
 
 	const clickable = ( children: JSX.Element | string ) => (

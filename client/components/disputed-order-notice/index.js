@@ -131,9 +131,7 @@ const UrgentDisputeNoticeBody = ( {
 		formatString,
 		formattedAmount,
 		reasons[ disputeReason ].display,
-		formatUserDateTime( dueBy.local().toISOString(), {
-			includeTime: false,
-		} )
+		formatUserDateTime( dueBy.local().toISOString() )
 	);
 
 	let suffix = sprintf(
@@ -184,9 +182,7 @@ const RegularDisputeNoticeBody = ( {
 	const suffix = sprintf(
 		// Translators: %1$s is the dispute due date.
 		__( 'Please respond before %1$s.', 'woocommerce-payments' ),
-		formatUserDateTime( dueBy.local().toISOString(), {
-			includeTime: false,
-		} )
+		formatUserDateTime( dueBy.local().toISOString() )
 	);
 
 	return (

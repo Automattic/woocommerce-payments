@@ -80,7 +80,7 @@ const getLoanStatusText = ( loan: CapitalLoan ) => {
 	return loan.fully_paid_at
 		? __( 'Paid off', 'woocommerce-payments' ) +
 				': ' +
-				formatUserDateTime( loan.fully_paid_at, { includeTime: false } )
+				formatUserDateTime( loan.fully_paid_at )
 		: __( 'Active', 'woocommerce-payments' );
 };
 
@@ -112,11 +112,7 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 		const data = {
 			paid_out_at: {
 				value: loan.paid_out_at,
-				display: clickable(
-					formatUserDateTime( loan.paid_out_at, {
-						includeTime: false,
-					} )
-				),
+				display: clickable( formatUserDateTime( loan.paid_out_at ) ),
 			},
 			status: {
 				value: getLoanStatusText( loan ),
@@ -154,9 +150,7 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 				value: loan.first_paydown_at,
 				display: clickable(
 					loan.first_paydown_at
-						? formatUserDateTime( loan.first_paydown_at, {
-								includeTime: false,
-						  } )
+						? formatUserDateTime( loan.first_paydown_at )
 						: '-'
 				),
 			},
