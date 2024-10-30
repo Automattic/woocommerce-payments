@@ -581,16 +581,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$title = parent::get_title();
 
 		if (
-			Payment_Method::CARD === $this->stripe_id &&
 			( is_checkout() || is_add_payment_method_page() ) &&
 			! isset( $_GET['change_payment_method'] )  // phpcs:ignore WordPress.Security.NonceVerification
 		) {
+			$test_mode_badge = '';
 			if ( WC_Payments::mode()->is_test() ) {
 				$test_mode_badge = '<span class="test-mode badge">' . __( 'Test Mode', 'woocommerce-payments' ) . '</span>';
-			} else {
-				$test_mode_badge = '';
 			}
-			return '<div class="label-title-container"><span class="payment-method-title">&nbsp;' . $title . '</span>' . $test_mode_badge . '</div>';
+
+			return '<div class="label-title-container"><span class="payment-method-title">' . $title . '</span>' . $test_mode_badge . '</div>';
 		}
 
 		return $title;

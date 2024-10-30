@@ -41,32 +41,48 @@
 
 	&.wc_payment_methods,
 	&.woocommerce-PaymentMethods {
-		li.payment_method_woocommerce_payments {
-			display: grid;
-			grid-template-columns: 0fr 0fr 1fr;
-			grid-template-rows: max-content;
-
+		li[class*='payment_method_woocommerce_payments'] {
 			> input[name='payment_method'] {
 				align-self: center;
-			}
-			> label {
-				grid-column: 3;
-				display: grid;
-				grid-template-columns: 0fr auto;
-				grid-template-rows: max-content;
-				grid-gap: 0;
-				margin-bottom: 0;
 
-				> .label-title-container {
-					grid-area: 1 / 2 / 2 / 3;
+				&:checked ~ label {
+					.label-title-container {
+						gap: 8px; /* 8px gap between .payment-method-title and .test-mode.badge */
+					}
+
+					.test-mode.badge {
+						// hiding the badge when the payment method is not selected
+						display: inline-block;
+					}
+
+					.stripe-pmme-container {
+						display: none;
+					}
+				}
+			}
+
+			> label {
+				display: grid;
+				grid-template-columns: 16px 1fr auto;
+				grid-template-rows: auto auto;
+				gap: 0 16px;
+				align-items: center;
+
+				.label-title-container {
+					display: inline-flex;
+					align-items: center; /* Centers the elements vertically */
+					flex-wrap: wrap; /* Allows elements to go onto new lines if necessary */
+					margin-right: 8px; /* Space between label-title-container and img */
+					grid-column: 2 / 3;
+					gap: 8px;
 				}
 
 				.payment-method-title {
-					margin-right: 8px;
+					white-space: normal; /* Allows wrapping if text is too long */
 				}
 
 				.test-mode.badge {
-					display: inline-block;
+					display: none;
 					background-color: #fff2d7;
 					border-radius: 4px;
 					padding: 4px 6px;
@@ -75,73 +91,26 @@
 					line-height: 16px;
 					color: #4d3716;
 					vertical-align: middle;
+					white-space: nowrap; /* Prevents the badge text from wrapping */
 				}
 
 				img {
-					float: none;
-					grid-area: 1 / 4 / 2 / 5;
-					align-self: baseline;
+					grid-column: 3 / 4;
+					align-self: start;
 					justify-self: end;
-					margin-left: 1em;
 				}
-			}
-			> div.payment_box {
-				grid-area: 2 / 1 / 3 / 4;
-			}
-		}
-	}
-}
 
-li.wc_payment_method:has( .input-radio:not( :checked )
-		+ label
-		.stripe-pmme-container ) {
-	display: grid;
-	grid-template-columns: min-content 1fr;
-	grid-template-rows: auto auto;
-	align-items: baseline;
+				.stripe-pmme-container {
+					&:empty {
+						display: none; /* hides container if empty, without affecting alignment */
+					}
 
-	.input-radio {
-		grid-row: 1;
-		grid-column: 1;
-	}
-
-	label {
-		grid-column: 2;
-		grid-row: 1;
-	}
-
-	img {
-		grid-row: 1 / span 2;
-		align-self: center;
-	}
-
-	.stripe-pmme-container {
-		width: 100%;
-		grid-column: 1;
-		grid-row-start: 2;
-		pointer-events: none;
-	}
-
-	.payment_box {
-		flex: 0 0 100%;
-		grid-row: 2;
-		grid-column: 1 / span 2;
-	}
-}
-
-li.wc_payment_method:has( .input-radio:checked
-		+ label
-		.stripe-pmme-container ) {
-	display: block;
-
-	.input-radio:checked {
-		+ label {
-			.stripe-pmme-container {
-				display: none;
-			}
-
-			img {
-				grid-column: 2;
+					pointer-events: none;
+					display: block;
+					grid-column: 1 / -1;
+					width: 100%;
+					margin-top: 8px; /* Space above it */
+				}
 			}
 		}
 	}
