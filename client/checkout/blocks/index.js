@@ -161,12 +161,16 @@ if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
 	registerExpressPaymentMethod(
 		tokenizedCartPaymentRequestPaymentMethod( api )
 	);
-} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+} else if (
+	getUPEConfig( 'isPaymentRequestEnabled' ) &&
+	getUPEConfig( 'isExpressCheckoutElementEnabled' )
+) {
 	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
-} else {
+} else if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
 	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 }
+
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();
