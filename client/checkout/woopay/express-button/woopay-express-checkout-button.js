@@ -363,8 +363,6 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [] );
 
-	console.log( buttonSize );
-
 	return (
 		<button
 			ref={ buttonRef }
