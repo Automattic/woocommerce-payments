@@ -304,6 +304,9 @@ jQuery( ( $ ) => {
 					shippingAddressRequired: options.requestShipping,
 					phoneNumberRequired: options.requestPhone,
 					shippingRates,
+					allowedShippingCountries: getExpressCheckoutData(
+						'checkout'
+					).allowed_shipping_countries,
 				};
 
 				onClickHandler( event );
