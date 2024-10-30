@@ -235,7 +235,7 @@ describe( 'AccountBalances', () => {
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/'
+			'https://woocommerce.com/document/woopayments/payouts/payout-schedule/'
 		);
 	} );
 
@@ -293,7 +293,7 @@ describe( 'AccountBalances', () => {
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/'
+			'https://woocommerce.com/document/woopayments/payouts/payout-schedule/'
 		);
 	} );
 

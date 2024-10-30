@@ -37,7 +37,7 @@ export const SuspendedDepositNotice: React.FC = () => {
 					suspendLink: (
 						<Link
 							href={
-								'https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/'
+								'https://woocommerce.com/document/woopayments/payouts/why-payouts-suspended/'
 							}
 						/>
 					),
@@ -96,7 +96,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#new-accounts"
+						href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#new-accounts"
 					/>
 				),
 			},
@@ -181,7 +181,7 @@ export const DepositMinimumBalanceNotice: React.FC< {
 						<a
 							target="_blank"
 							rel="noopener noreferrer"
-							href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#minimum-deposit-amounts"
+							href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#minimum-payout-amounts"
 						/>
 					),
 				},
@@ -207,7 +207,7 @@ export const NoFundsAvailableForDepositNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#pending-funds"
+						href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#pending-funds"
 					/>
 				),
 			},

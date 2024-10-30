@@ -354,7 +354,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
 
 ## Submit an instant deposit
 
-Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woocommerce.com/document/woopayments/deposits/instant-deposits/) for more information.
+Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woocommerce.com/document/woopayments/payouts/instant-payouts/) for more information.
 
 ### HTTP request
 
