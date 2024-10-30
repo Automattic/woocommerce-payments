@@ -71,7 +71,8 @@ export const WoopayExpressCheckoutButton = ( {
 		borderRadius = buttonAttributes.borderRadius || borderRadius;
 	}
 
-	const buttonSize = buttonSizeMap.get( buttonHeight );
+	const buttonSize =
+		buttonSizeMap.get( buttonHeight?.toString() ) || 'medium';
 
 	const buttonText =
 		ButtonTypeTextMap[ buttonType || 'default' ] ??
@@ -361,6 +362,8 @@ export const WoopayExpressCheckoutButton = ( {
 			window.removeEventListener( 'pageshow', handlePageShow );
 		};
 	}, [] );
+
+	console.log( buttonSize );
 
 	return (
 		<button
