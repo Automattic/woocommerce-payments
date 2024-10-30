@@ -138,6 +138,7 @@ declare global {
 	};
 
 	const wc: {
+		wcSettings: typeof wcSettingsModule;
 		tracks: {
 			recordEvent: (
 				eventName: string,
@@ -184,6 +185,10 @@ declare global {
 		countries: Record< string, string >;
 		homeUrl: string;
 		siteTitle: string;
+	};
+
+	const wcSettingsModule: {
+		getSetting: ( setting: string, fallback?: unknown ) => any;
 	};
 
 	interface Window {
