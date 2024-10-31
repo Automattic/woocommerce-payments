@@ -270,7 +270,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( $value, $res );
-		$this->assertFalse( $refreshed ); // When failing to write to the DB, we don't report the cache as refreshed.
+		$this->assertTrue( $refreshed );
 		$this->assertTrue( $called_generator );
 		$this->assert_cache_contains( $old );
 
@@ -290,7 +290,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( $value, $res );
-		$this->assertFalse( $refreshed ); // When failing to write to the DB, we don't report the cache as refreshed.
+		$this->assertFalse( $refreshed );
 		$this->assertFalse( $called_generator );
 		$this->assert_cache_contains( $old );
 
@@ -370,7 +370,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( $value, $res );
-		$this->assertFalse( $refreshed ); // When failing to write to the DB, we don't report the cache as refreshed.
+		$this->assertTrue( $refreshed );
 		$this->assertTrue( $called_generator );
 
 		// The second call will NOT call the generator, but the value will be returned from the in-memory cache.
@@ -389,7 +389,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( $value, $res );
-		$this->assertFalse( $refreshed ); // When failing to write to the DB, we don't report the cache as refreshed.
+		$this->assertFalse( $refreshed );
 		$this->assertFalse( $called_generator );
 
 		remove_all_filters( 'query' );
@@ -451,7 +451,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( $value, $res );
-		$this->assertFalse( $refreshed ); // When failing to write to the DB, we don't report the cache as refreshed.
+		$this->assertTrue( $refreshed );
 		$this->assertTrue( $called_generator );
 		$this->assert_cache_contains( $old );
 
@@ -471,7 +471,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( $value, $res );
-		$this->assertFalse( $refreshed ); // When failing to write to the DB, we don't report the cache as refreshed.
+		$this->assertFalse( $refreshed );
 		$this->assertFalse( $called_generator );
 
 		// Clear the cache.
@@ -493,7 +493,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( $another_value, $res );
-		$this->assertFalse( $refreshed ); // When failing to write to the DB, we don't report the cache as refreshed.
+		$this->assertTrue( $refreshed );
 		$this->assertTrue( $called_generator );
 
 		// Fourth call will NOT call the generator, but the value will be returned from the in-memory cache.
@@ -512,7 +512,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertEquals( $another_value, $res );
-		$this->assertFalse( $refreshed ); // When failing to write to the DB, we don't report the cache as refreshed.
+		$this->assertFalse( $refreshed );
 		$this->assertFalse( $called_generator );
 
 		remove_all_filters( 'query' );
