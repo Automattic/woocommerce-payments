@@ -201,7 +201,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return boolean Whether there is account data.
 	 */
 	public function has_account_data(): bool {
-		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY, true );
 		if ( ! empty( $account_data['account_id'] ) ) {
 			return true;
 		}
