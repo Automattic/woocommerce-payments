@@ -60,6 +60,13 @@ describe( 'formatUserDateTime', () => {
 			// Expect UTC-based output (no timezone adjustment)
 			expect( formatted ).toBe( '2024-10-23 / 15:28' );
 		} );
+
+		it( 'should support escaping characters with custom format', () => {
+			const dateTime = '2024-10-23 15:28:26';
+			const options = { customFormat: "'l \\t\\h\\e jS'" };
+			const formatted = formatUserDateTime( dateTime, options );
+			expect( formatted ).toBe( "'Wednesday the 23rd'" );
+		} );
 	} );
 
 	describe( 'with Date object input', () => {
