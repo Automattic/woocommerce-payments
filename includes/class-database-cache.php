@@ -87,7 +87,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * In-memory cache for the duration of a single request.
 	 *
 	 * This is used to avoid multiple database reads for the same data and as a backstop in case the database write fails,
-	 * thus ensuring the cache generator (which means an API call to our platform) is not called multiple times.
+	 * thus ensuring the cache generator is not called multiple times (which would mean multiple API calls to our platform).
 	 *
 	 * @var array
 	 */
@@ -95,6 +95,10 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 
 	/**
 	 * Database cache write errors for each key.
+	 *
+	 * This is used when deciding whether to refresh the cache or not.
+	 *
+	 * @see self::should_refresh_cache()
 	 *
 	 * @var array
 	 */
@@ -125,7 +129,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @param boolean  $force_refresh Regenerates the cache regardless of its state if true.
 	 * @param boolean  $refreshed     Is set to true if the cache has been refreshed without errors and with a non-empty value.
 	 *
-	 * @return mixed|null The cache contents. NULL on failure
+	 * @return mixed|null The cached value. NULL on failure to regenerate or validate the data.
 	 */
 	public function get_or_add( string $key, callable $generator, callable $validate_data, bool $force_refresh = false, bool &$refreshed = false ) {
 		$cache_contents = $this->get_from_cache( $key );
@@ -207,7 +211,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	public function delete( string $key ) {
 		// Remove from the in-memory cache.
 		unset( $this->in_memory_cache[ $key ] );
-		// Reset the DB error count for the key.
+		// Reset the DB write error count for the key.
 		unset( $this->db_cache_write_errors[ $key ] );
 
 		// Remove from the DB cache.
@@ -240,7 +244,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			$this->delete( $option->option_name );
 		}
 
-		// Make sure there are no stray entries the in-memory cache.
+		// Make sure there are no stray entries in the in-memory cache.
 		// This can happen on DB write failures or during unit tests.
 		foreach ( array_keys( $this->in_memory_cache ) as $cache_key ) {
 			if ( 0 === strpos( $cache_key, $key ) ) {
@@ -283,8 +287,10 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		}
 
 		// Do not refresh if we had DB cache write errors for this key, during the current request.
-		// For the remainder of the request, we will use whatever we have in the in-memory cache,
-		// if the cache is not explicitly cleared or forced to refresh.
+		// For the remainder of the request, we will use what we have in the in-memory cache,
+		// including expired, errored, invalid, or missing data.
+		// If the cache is explicitly cleared, we will also clear the DB write error count.
+		// @see self::delete().
 		if ( isset( $this->db_cache_write_errors[ $key ] ) && $this->db_cache_write_errors[ $key ] > 0 ) {
 			return false;
 		}
@@ -372,8 +378,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		// Note: Since we are adding the current time to the option value, WP will ALWAYS write the option because
 		// the cache contents value is different from the current one, even if the data is the same.
 		// A `false` result ONLY means that the DB write failed.
-		// Yes, there is the possibility that we attempt to write the same data multiple times, within the SAME second,
-		// and we will mistakenly think that the DB write failed. We are OK with this false positive, since the data is the same.
+		// Yes, there is the possibility that we attempt to write the same data multiple times within the SAME second,
+		// and we will mistakenly think that the DB write failed. We are OK with this false positive,
+		// since the actual data is the same.
 		$result = update_option( $key, $cache_contents, 'no' );
 
 		// Check if the DB cache write failed.
