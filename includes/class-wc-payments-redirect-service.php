@@ -8,6 +8,7 @@
 use WCPay\Core\Server\Request\Get_Account_Capital_Link;
 use WCPay\Core\Server\Request\Get_Account_Login_Data;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Tracker;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -92,6 +93,7 @@ class WC_Payments_Redirect_Service {
 			$request->set_refresh_url( $refresh_url );
 
 			$capital_link = $request->send();
+			Tracker::track_admin( 'wcpay_capital_view_offer_redirect' );
 			$this->redirect_to( $capital_link['url'] );
 		} catch ( Exception $e ) {
 
