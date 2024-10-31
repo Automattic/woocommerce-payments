@@ -103,7 +103,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		$this->express_checkout_ajax_handler->init();
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
-			$this->register_ece_data();
+			$this->register_ece_data_for_block_editor();
 		}
 	}
 
@@ -458,7 +458,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 *
 	 * @return void
 	 */
-	private function register_ece_data() {
+	private function register_ece_data_for_block_editor() {
 		$data_registry = Package::container()->get( AssetDataRegistry::class );
 
 		if ( $data_registry->exists( 'ece_data' ) ) {
