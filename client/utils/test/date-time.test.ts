@@ -67,6 +67,13 @@ describe( 'formatUserDateTime', () => {
 			const formatted = formatUserDateTime( dateTime, options );
 			expect( formatted ).toBe( "'Wednesday the 23rd'" );
 		} );
+
+		it( 'should output unrecognized characters as-is', () => {
+			const dateTime = '2024-10-23 15:28:26';
+			const options = { customFormat: '-' };
+			const formatted = formatUserDateTime( dateTime, options );
+			expect( formatted ).toBe( '-' );
+		} );
 	} );
 
 	describe( 'with Date object input', () => {
