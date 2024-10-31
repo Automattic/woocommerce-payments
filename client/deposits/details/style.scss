@@ -1,24 +1,30 @@
 .wcpay-deposit-overview {
 	.woocommerce-order-status {
 		margin-bottom: 4px;
+		white-space: nowrap;
 	}
 
 	.woocommerce-order-status__indicator {
 		width: 0.85em;
 		height: 0.85em;
 
+		// is-canceled uses the default gray color.
+
 		&.is-paid {
-			background: $studio-green-50;
-			border-color: $studio-green-5;
+			background: $wp-green-30;
+			border-color: $wp-green-5;
 		}
-		&.is-pending,
+		&.is-pending {
+			background: $wp-yellow-20;
+			border-color: $wp-yellow-5;
+		}
 		&.is-in_transit {
-			background: $studio-yellow-30;
-			border-color: $studio-yellow-5;
+			background: $wp-blue-30;
+			border-color: $wp-blue-5;
 		}
 		&.is-failed {
-			background: $studio-red-50;
-			border-color: $studio-red-5;
+			background: $wp-red-50;
+			border-color: $wp-red-10;
 		}
 	}
 
@@ -34,11 +40,11 @@
 	}
 
 	.wcpay-deposit-fee {
-		color: $studio-red-50;
+		color: $wp-red-70;
 	}
 
 	.wcpay-deposit-net {
-		color: $studio-green-30;
+		color: $wp-green-70;
 	}
 
 	.wcpay-deposit-automatic ul {
