@@ -233,7 +233,6 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	public function delete( string $key ) {
 		// Remove from the in-memory cache.
 		unset( $this->in_memory_cache[ $key ] );
-		unset( $this->in_memory_cache_sizes[ $key ] );
 		// Reset the DB error count for the key.
 		unset( $this->db_cache_write_errors[ $key ] );
 
@@ -437,7 +436,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			return;
 		}
 
-		// If the total cache size limit would be exceeded by adding this entry, skip the in-memory cache.
+		// If the cache size limit would be exceeded, skip the in-memory cache.
 		if ( $this->get_in_memory_cache_size() + $data_size > self::IN_MEMORY_CACHE_SIZE_LIMIT ) {
 			return;
 		}
