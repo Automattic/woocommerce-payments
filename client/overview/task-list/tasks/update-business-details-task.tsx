@@ -43,7 +43,7 @@ export const getUpdateBusinessDetailsTask = (
 		accountDetailsUpdateByDescription = sprintf(
 			/* translators: %s - formatted requirements current deadline (date) */
 			__(
-				'Update by %s to avoid a disruption in deposits.',
+				'Update by %s to avoid a disruption in payouts.',
 				'woocommerce-payments'
 			),
 			dateI18n(
