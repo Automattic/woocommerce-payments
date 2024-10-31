@@ -27,7 +27,7 @@ describe( 'Connect Account Page – Info Notice Modal', () => {
 		render( <InfoNoticeModal /> );
 
 		const enableDeposits = screen.getByRole( 'button', {
-			name: /enable deposits./i,
+			name: /enable payouts./i,
 		} );
 		userEvent.click( enableDeposits );
 
