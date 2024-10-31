@@ -3,6 +3,7 @@
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
+import { WCPayExpressCheckoutParams } from './express-checkout/utils';
 
 declare global {
 	const wcpaySettings: {
@@ -187,8 +188,19 @@ declare global {
 		siteTitle: string;
 	};
 
+	interface WcSettings {
+		ece_data?: WCPayExpressCheckoutParams;
+		woocommerce_payments_data: typeof wcpaySettings;
+	}
+
 	const wcSettingsModule: {
-		getSetting: ( setting: string, fallback?: unknown ) => any;
+		getSetting: <
+			K extends keyof WcSettings,
+			T extends WcSettings[ K ] | undefined
+		>(
+			setting: K,
+			fallback?: T
+		) => WcSettings[ K ] | T;
 	};
 
 	interface Window {
