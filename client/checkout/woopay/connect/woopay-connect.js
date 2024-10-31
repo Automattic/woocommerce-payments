@@ -22,7 +22,9 @@ class WoopayConnect {
 			getPostMessageTimeoutCallback: () => {},
 		};
 		this.removeMessageListener = this.attachMessageListener();
-		this.injectWooPayConnectIframe();
+		if ( this.shouldInjectConnectIframe() ) {
+			this.injectWooPayConnectIframe();
+		}
 	}
 
 	/**
@@ -60,6 +62,15 @@ class WoopayConnect {
 		if ( typeof this.removeMessageListener === 'function' ) {
 			this.removeMessageListener();
 		}
+	}
+
+	/**
+	 * Determines whether the WooPay Connect iframe should be injected.
+	 *
+	 * @return {boolean} Whether the WooPay Connect iframe should be injected.
+	 */
+	shouldInjectConnectIframe() {
+		return ! ( getConfig( 'isPreview' ) || getConfig( 'is_admin' ) );
 	}
 
 	/**
