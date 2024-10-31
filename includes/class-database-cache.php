@@ -448,10 +448,10 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	/**
 	 * Get the total data size in bytes currently stored in the in-memory cache.
 	 *
-	 * @return int The total size in bytes of the data in the in-memory cache.
+	 * @return integer The total size in bytes of the data in the in-memory cache.
 	 */
 	private function get_in_memory_cache_size(): int {
-		return absint( array_sum( $this->in_memory_cache_sizes ) );
+		return array_sum( $this->in_memory_cache_sizes );
 	}
 
 	/**
