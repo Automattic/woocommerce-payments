@@ -94,17 +94,6 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	private $in_memory_cache = [];
 
 	/**
-	 * Database cache write errors for each key.
-	 *
-	 * This is used when deciding whether to refresh the cache or not.
-	 *
-	 * @see self::should_refresh_cache()
-	 *
-	 * @var array
-	 */
-	private $db_cache_write_errors = [];
-
-	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
@@ -158,11 +147,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$data = $old_data;
 			}
 
-			$cache_written = $this->write_to_cache( $key, $data, $errored );
-			if ( ! $cache_written ) {
-				// If the cache write failed, mark as not refreshed.
-				$refreshed = false;
-			}
+			$this->write_to_cache( $key, $data, $errored );
 		}
 
 		return $data;
@@ -211,8 +196,6 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	public function delete( string $key ) {
 		// Remove from the in-memory cache.
 		unset( $this->in_memory_cache[ $key ] );
-		// Reset the DB write error count for the key.
-		unset( $this->db_cache_write_errors[ $key ] );
 
 		// Remove from the DB cache.
 		delete_option( $key );
@@ -251,11 +234,6 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				unset( $this->in_memory_cache[ $cache_key ] );
 			}
 		}
-		foreach ( array_keys( $this->db_cache_write_errors ) as $cache_key ) {
-			if ( 0 === strpos( $cache_key, $key ) ) {
-				unset( $this->db_cache_write_errors[ $cache_key ] );
-			}
-		}
 	}
 
 	/**
@@ -284,15 +262,6 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		// Always refresh if the flag is set.
 		if ( $force_refresh ) {
 			return true;
-		}
-
-		// Do not refresh if we had DB cache write errors for this key, during the current request.
-		// For the remainder of the request, we will use what we have in the in-memory cache,
-		// including expired, errored, invalid, or missing data.
-		// If the cache is explicitly cleared, we will also clear the DB write error count.
-		// @see self::delete().
-		if ( isset( $this->db_cache_write_errors[ $key ] ) && $this->db_cache_write_errors[ $key ] > 0 ) {
-			return false;
 		}
 
 		// Do not refresh if doing ajax or the refresh has been disabled (running an AS job).
@@ -362,9 +331,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @param mixed   $data    The data to store.
 	 * @param boolean $errored Whether the refresh operation resulted in an error before this has been called.
 	 *
-	 * @return bool True if the data was successfully written to the cache. False otherwise.
+	 * @return void
 	 */
-	private function write_to_cache( string $key, $data, bool $errored ): bool {
+	private function write_to_cache( string $key, $data, bool $errored ) {
 		// Add the  data and expiry time to the array we're caching.
 		$cache_contents            = [];
 		$cache_contents['data']    = $data;
@@ -382,17 +351,10 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		// and we will mistakenly think that the DB write failed. We are OK with this false positive,
 		// since the actual data is the same.
 		$result = update_option( $key, $cache_contents, 'no' );
-
-		// Check if the DB cache write failed.
-		if ( false === $result ) {
-			// Increase the error count.
-			$this->db_cache_write_errors[ $key ] = ( $this->db_cache_write_errors[ $key ] ?? 0 ) + 1;
-		} else {
-			// Clear the WP object cache to ensure the new data is fetched by other processes.
+		if ( false !== $result ) {
+			// If the DB cache write succeeded, clear the WP object cache to ensure the new data is fetched by other processes.
 			wp_cache_delete( $key, 'options' );
 		}
-
-		return $result;
 	}
 
 	/**
