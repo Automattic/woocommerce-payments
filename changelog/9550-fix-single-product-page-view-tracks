@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed single product page view tracks when BNPL and PRB payment methods are inactive.

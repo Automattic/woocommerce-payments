@@ -622,12 +622,22 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		WC_Payments::register_script_with_dependencies( 'wcpay-frontend-tracks', 'dist/frontend-tracks' );
 
-		wp_enqueue_script( 'wcpay-frontend-tracks' );
+		// Define wcpayConfig before the frontend tracks script if it hasn't been defined yet.
+		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
+		wp_add_inline_script(
+			'wcpay-frontend-tracks',
+			"
+			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+			",
+			'before'
+		);
 
 		wp_localize_script(
 			'wcpay-frontend-tracks',
 			'wcPayFrontendTracks',
 			$frontent_tracks
 		);
+
+		wp_enqueue_script( 'wcpay-frontend-tracks' );
 	}
 }
