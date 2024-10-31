@@ -174,7 +174,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @param string $key The key to look for.
 	 * @param bool   $force If set, return from the cache without checking for expiry.
 	 *
-	 * @return mixed The cache contents.
+	 * @return mixed|null The cache contents. NULL if the cache is expired or missing.
 	 */
 	public function get( string $key, bool $force = false ) {
 		$cache_contents = $this->get_from_cache( $key );
