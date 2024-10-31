@@ -716,59 +716,163 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Retrieves Stripe minimum order value authorized per currency.
-	 * The values are based on Stripe's recommendations.
-	 * See https://docs.stripe.com/currencies#minimum-and-maximum-charge-amounts.
+	 * Get the BNPL limits per currency for a specific payment method.
 	 *
-	 * @param string $currency The currency.
-	 *
-	 * @return int The minimum amount.
+	 * @param string $payment_method The payment method name ('affirm', 'afterpay_clearpay', or 'klarna').
+	 * @return array The BNPL limits per currency for the specified payment method.
 	 */
-	public static function get_stripe_minimum_amount( $currency ) {
-		switch ( $currency ) {
-			case 'AED':
-			case 'MYR':
-			case 'PLN':
-			case 'RON':
-				$minimum_amount = 200;
-				break;
-			case 'BGN':
-				$minimum_amount = 100;
-				break;
-			case 'CZK':
-				$minimum_amount = 1500;
-				break;
-			case 'DKK':
-				$minimum_amount = 250;
-				break;
-			case 'GBP':
-				$minimum_amount = 30;
-				break;
-			case 'HKD':
-				$minimum_amount = 400;
-				break;
-			case 'HUF':
-				$minimum_amount = 17500;
-				break;
-			case 'JPY':
-				$minimum_amount = 5000;
-				break;
-			case 'MXN':
-			case 'THB':
-				$minimum_amount = 1000;
-				break;
-			case 'NOK':
-			case 'SEK':
-				$minimum_amount = 300;
-				break;
+	public static function get_bnpl_limits_per_currency( $payment_method ) {
+		switch ( $payment_method ) {
+			case 'affirm':
+				return [
+					Currency_Code::CANADIAN_DOLLAR      => [
+						Country_Code::CANADA => [
+							'min' => 5000,
+							'max' => 3000000,
+						], // Represents CAD 50 - 30,000 CAD.
+					],
+					Currency_Code::UNITED_STATES_DOLLAR => [
+						Country_Code::UNITED_STATES => [
+							'min' => 5000,
+							'max' => 3000000,
+						],
+					], // Represents USD 50 - 30,000 USD.
+				];
+			case 'afterpay_clearpay':
+				return [
+					Currency_Code::AUSTRALIAN_DOLLAR    => [
+						Country_Code::AUSTRALIA => [
+							'min' => 100,
+							'max' => 200000,
+						], // Represents AUD 1 - 2,000 AUD.
+					],
+					Currency_Code::CANADIAN_DOLLAR      => [
+						Country_Code::CANADA => [
+							'min' => 100,
+							'max' => 200000,
+						], // Represents CAD 1 - 2,000 CAD.
+					],
+					Currency_Code::NEW_ZEALAND_DOLLAR   => [
+						Country_Code::NEW_ZEALAND => [
+							'min' => 100,
+							'max' => 200000,
+						], // Represents NZD 1 - 2,000 NZD.
+					],
+					Currency_Code::POUND_STERLING       => [
+						Country_Code::UNITED_KINGDOM => [
+							'min' => 100,
+							'max' => 120000,
+						], // Represents GBP 1 - 1,200 GBP.
+					],
+					Currency_Code::UNITED_STATES_DOLLAR => [
+						Country_Code::UNITED_STATES => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents USD 1 - 4,000 USD.
+					],
+				];
+			case 'klarna':
+				return [
+					Currency_Code::UNITED_STATES_DOLLAR => [
+						Country_Code::UNITED_STATES => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents USD 1 - 10,000 USD.
+					],
+					Currency_Code::POUND_STERLING       => [
+						Country_Code::UNITED_KINGDOM => [
+							'min' => 100,
+							'max' => 500000,
+						], // Represents GBP 1 - 5,000 GBP.
+					],
+					Currency_Code::EURO                 => [
+						Country_Code::AUSTRIA     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::BELGIUM     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::GERMANY     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::NETHERLANDS => [
+							'min' => 100,
+							'max' => 500000,
+						], // Represents EUR 1 - 5,000 EUR.
+						Country_Code::FINLAND     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::SPAIN       => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::IRELAND     => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
+						Country_Code::ITALY       => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
+						Country_Code::FRANCE      => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
+					],
+					Currency_Code::DANISH_KRONE         => [
+						Country_Code::DENMARK => [
+							'min' => 100,
+							'max' => 10000000,
+						], // Represents DKK 1 - 100,000 DKK.
+					],
+					Currency_Code::NORWEGIAN_KRONE      => [
+						Country_Code::NORWAY => [
+							'min' => 100,
+							'max' => 10000000,
+						], // Represents NOK 1 - 100,000 NOK.
+					],
+					Currency_Code::SWEDISH_KRONA        => [
+						Country_Code::SWEDEN => [
+							'min' => 100,
+							'max' => 10000000,
+						], // Represents SEK 1 - 100,000 SEK.
+					],
+				];
 			default:
-				$minimum_amount = 50;
-				break;
+				return [];
+		}
+	}
+
+	/**
+	 * Check if any BNPL method is available for a given country, currency, and price.
+	 *
+	 * @param array  $enabled_methods Array of enabled BNPL methods.
+	 * @param string $country_code Country code.
+	 * @param string $currency_code Currency code.
+	 * @param float  $price Product price.
+	 * @return bool True if any BNPL method is available, false otherwise.
+	 */
+	public static function is_any_bnpl_method_available( array $enabled_methods, string $country_code, string $currency_code, float $price ): bool {
+		$price_in_cents = $price;
+
+		foreach ( $enabled_methods as $method ) {
+			$limits = self::get_bnpl_limits_per_currency( $method );
+
+			if ( isset( $limits[ $currency_code ][ $country_code ] ) ) {
+				$min_amount = $limits[ $currency_code ][ $country_code ]['min'];
+				$max_amount = $limits[ $currency_code ][ $country_code ]['max'];
+
+				if ( $price_in_cents >= $min_amount && $price_in_cents <= $max_amount ) {
+					return true;
+				}
+			}
 		}
 
-		self::cache_minimum_amount( $currency, $minimum_amount );
-
-		return $minimum_amount;
+		return false;
 	}
 
 	/**
@@ -785,20 +889,12 @@ class WC_Payments_Utils {
 	 * Checks if there is a minimum amount required for transactions in a given currency.
 	 *
 	 * @param string $currency The currency to check for.
-	 * @param bool   $fallback_to_local_list Whether to fallback to the local Stripe list if the cached value is not available.
 	 *
 	 * @return int|null Either the minimum amount, or `null` if not available.
 	 */
-	public static function get_cached_minimum_amount( $currency, $fallback_to_local_list = false ) {
+	public static function get_cached_minimum_amount( $currency ) {
 		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
-
-		if ( (int) $cached ) {
-			return (int) $cached;
-		} elseif ( $fallback_to_local_list ) {
-			return self::get_stripe_minimum_amount( $currency );
-		}
-
-		return null;
+		return (int) $cached ? (int) $cached : null;
 	}
 
 	/**

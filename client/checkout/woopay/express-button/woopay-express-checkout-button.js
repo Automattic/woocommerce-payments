@@ -68,10 +68,11 @@ export const WoopayExpressCheckoutButton = ( {
 	// If we are on the checkout block, we receive button attributes which overwrite the extension specific settings
 	if ( typeof buttonAttributes !== 'undefined' ) {
 		buttonHeight = buttonAttributes.height || buttonHeight;
-		borderRadius = buttonAttributes.borderRadius || borderRadius;
+		borderRadius = buttonAttributes.borderRadius ?? borderRadius;
 	}
 
-	const buttonSize = buttonSizeMap.get( buttonHeight );
+	const buttonSize =
+		buttonSizeMap.get( buttonHeight?.toString() ) || 'medium';
 
 	const buttonText =
 		ButtonTypeTextMap[ buttonType || 'default' ] ??
