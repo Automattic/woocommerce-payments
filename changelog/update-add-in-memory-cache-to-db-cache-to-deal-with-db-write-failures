@@ -1,4 +1,4 @@
 Significance: patch
 Type: update
 
-Introduce handling of DB write errors to our DB cache to avoid performance issues.
+Add in-memory cache fallback for our database-cached objects in case of database write failures.
