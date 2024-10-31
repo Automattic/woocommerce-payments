@@ -235,6 +235,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $return;
 		}
 
+		// If product is not a subscription then bail.
+		if ( ! \WC_Subscriptions_Product::is_subscription( $product ) ) {
+			return $return;
+		}
+
 		// Check for subscription renewal or resubscribe.
 		if ( $this->get_subscription_type_from_cart( 'renewal' )
 			|| $this->get_subscription_type_from_cart( 'resubscribe' ) ) {
