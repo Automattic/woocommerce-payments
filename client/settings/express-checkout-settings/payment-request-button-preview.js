@@ -43,7 +43,10 @@ const WooPayButtonPreview = ( { size, buttonType, theme, radius } ) => (
 				buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium
 			}px`,
 			size,
-			radius,
+		} }
+		buttonAttributes={ {
+			height: buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium,
+			borderRadius: radius,
 		} }
 	/>
 );
