@@ -327,20 +327,26 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	}
 
 	/**
-	 * Get the cached data for a certain key.
-	 *
-	 * We read from the in-memory cache if initialized or read from the DB and initialize the in-memory cache.
+	 * Get the cache contents for a certain key.
 	 *
 	 * @param string $key The cache key.
 	 *
-	 * @return array|false The cache contents or false if there is no cached data for the key.
+	 * @return array|false The cache contents (array with `data`, `fetched`, and `errored` entries).
+	 *                     False if there is no cached data.
 	 */
 	private function get_from_cache( string $key ) {
-		if ( ! isset( $this->in_memory_cache[ $key ] ) || is_null( $this->in_memory_cache[ $key ] ) ) {
-			$this->in_memory_cache[ $key ] = get_option( $key );
+		// Check the in-memory cache first.
+		if ( isset( $this->in_memory_cache[ $key ] ) ) {
+			return $this->in_memory_cache[ $key ];
 		}
 
-		return $this->in_memory_cache[ $key ];
+		// Read from the DB cache.
+		$data = get_option( $key );
+
+		// Store the data in the in-memory cache, including the case when there is no data cached (`false`).
+		$this->in_memory_cache[ $key ] = $data;
+
+		return $data;
 	}
 
 	/**
