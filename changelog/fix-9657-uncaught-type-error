@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix error on WooPay button on Blocks editing and previewing.
