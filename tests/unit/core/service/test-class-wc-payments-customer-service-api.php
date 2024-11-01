@@ -41,7 +41,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Filter callback to return the mock http client
 	 *
-	 * @return void
+	 * @return WC_Payments_Http|MockObject
 	 */
 	public function replace_http_client() {
 		return $this->mock_http_client;
@@ -68,9 +68,6 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 		);
 		$this->customer_service     = new WC_Payments_Customer_Service( WC_Payments::create_api_client(), WC_Payments::get_account_service(), WC_Payments::get_database_cache(), WC_Payments::get_session_service(), WC_Payments::get_order_service() );
 		$this->customer_service_api = new WC_Payments_Customer_Service_API( $this->customer_service );
-
-		// Clear the cache before each test.
-		$this->customer_service->delete_cached_payment_methods();
 	}
 
 	/**
@@ -81,6 +78,9 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 			'wc_payments_http',
 			[ $this, 'replace_http_client' ]
 		);
+
+		// Clear the cache after each test.
+		$this->customer_service->delete_cached_payment_methods();
 
 		parent::tear_down();
 	}
