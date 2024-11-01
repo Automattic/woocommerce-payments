@@ -198,31 +198,33 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		unset( $this->in_memory_cache[ $key ] );
 
 		// Remove from the DB cache.
-		delete_option( $key );
-
-		// Clear the WP object cache to ensure the new data is fetched by other processes.
-		wp_cache_delete( $key, 'options' );
+		if ( delete_option( $key ) ) {
+			// Clear the WP object cache to ensure the new data is fetched by other processes.
+			wp_cache_delete( $key, 'options' );
+		}
 	}
 
 	/**
-	 * Deletes all saved by looking for cache key prefix. This is useful when you want to cache user related data by
+	 * Deletes all cache entries that are keyed with a certain prefix.
 	 *
-	 * @param string $key Cache key prefix to delete.
+	 * This is useful when you use dynamic cache keys.
+	 *
+	 * Note: Only key prefixes with known, static prefixes are allowed, for protection purposes.
+	 *
+	 * @param string $key_prefix The cache key prefix.
 	 *
 	 * @return void
 	 */
-	public function delete_by_prefix( string $key ) {
-
-		// Protection against accidentally deleting all options or options that are not related to WcPay caching.
-		// Since only one cache key prefix is supported, we will check only this one by checking does key starts with payment method key prefix.
-		// Feel free to update this statement if more prefix cache keys you are planning to add.
-
-		if ( strncmp( $key, self::PAYMENT_METHODS_KEY_PREFIX, strlen( self::PAYMENT_METHODS_KEY_PREFIX ) ) !== 0 ) {
+	public function delete_by_prefix( string $key_prefix ) {
+		// Protection against accidentally deleting all options or options that are not related to WCPay caching.
+		// Feel free to update this statement as more prefix cache keys are used.
+		if ( strncmp( $key_prefix, self::PAYMENT_METHODS_KEY_PREFIX, strlen( self::PAYMENT_METHODS_KEY_PREFIX ) ) !== 0 ) {
 			return; // Maybe throw exception here...
 		}
+
 		global $wpdb;
 
-		$options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s", $key . '%' ) );
+		$options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s", $key_prefix . '%' ) );
 		foreach ( $options as $option ) {
 			$this->delete( $option->option_name );
 		}
