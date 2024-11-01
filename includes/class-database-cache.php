@@ -226,14 +226,6 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		foreach ( $options as $option ) {
 			$this->delete( $option->option_name );
 		}
-
-		// Make sure there are no stray entries in the in-memory cache.
-		// This can happen on DB write failures or during unit tests.
-		foreach ( array_keys( $this->in_memory_cache ) as $cache_key ) {
-			if ( 0 === strpos( $cache_key, $key ) ) {
-				unset( $this->in_memory_cache[ $cache_key ] );
-			}
-		}
 	}
 
 	/**
