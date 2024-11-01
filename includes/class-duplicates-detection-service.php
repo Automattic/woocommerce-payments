@@ -78,8 +78,6 @@ class Duplicates_Detection_Service {
 		$keywords         = [ 'credit_card', 'creditcard', 'cc', 'card' ];
 		$special_keywords = [ 'woocommerce_payments', 'stripe' ];
 
-		$gateways = $this->get_enabled_gateways();
-
 		foreach ( $this->get_enabled_gateways() as $gateway ) {
 			if ( $this->gateway_contains_keyword( $gateway->id, $keywords ) || in_array( $gateway->id, $special_keywords, true ) ) {
 				$this->gateways_qualified_by_duplicates_detector[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ][] = $gateway->id;
