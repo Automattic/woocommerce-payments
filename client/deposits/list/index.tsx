@@ -214,7 +214,7 @@ export const DepositsList = (): JSX.Element => {
 		depositsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
 
-	const title = __( 'Deposits', 'woocommerce-payments' );
+	const title = __( 'Payouts', 'woocommerce-payments' );
 
 	const downloadable = !! rows.length;
 
@@ -319,7 +319,7 @@ export const DepositsList = (): JSX.Element => {
 			const csvColumns = [
 				{
 					...columns[ 0 ],
-					label: __( 'Deposit Id', 'woocommerce-payments' ),
+					label: __( 'Payout Id', 'woocommerce-payments' ),
 				},
 				...columns.slice( 1 ),
 			];

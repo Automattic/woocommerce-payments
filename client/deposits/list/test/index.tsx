@@ -272,7 +272,7 @@ describe( 'Deposits list', () => {
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const expected = [
-				'"Deposit Id"',
+				'"Payout Id"',
 				'Date',
 				'Type',
 				'Amount',
