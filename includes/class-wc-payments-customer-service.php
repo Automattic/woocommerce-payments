@@ -275,8 +275,8 @@ class WC_Payments_Customer_Service {
 			return $payment_methods;
 
 		} catch ( API_Exception $e ) {
-			// If we failed to find the we can simply return empty payment methods as this customer will
-			// be recreated when the user succesfuly adds a payment method.
+			// If we failed to find the payment methods, we can simply return empty payment methods as this customer
+			// will be recreated when the user successfully adds a payment method.
 			if ( $e->get_error_code() === 'resource_missing' ) {
 				return [];
 			}
@@ -383,7 +383,7 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Delete all saved payment methods that are stored inside database cache driver.
+	 * Delete all saved payment methods that are stored inside the database cache driver.
 	 *
 	 * @return void
 	 */
