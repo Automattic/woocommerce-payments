@@ -130,7 +130,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Wipes the account data option, forcing to re-fetch the account status from WP.com.
+	 * Wipes the account data option, forcing to re-fetch the account data from WP.com.
 	 */
 	public function clear_cache() {
 		$this->database_cache->delete( Database_Cache::ACCOUNT_KEY );
@@ -201,7 +201,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return boolean Whether there is account data.
 	 */
 	public function has_account_data(): bool {
-		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY, true );
 		if ( ! empty( $account_data['account_id'] ) ) {
 			return true;
 		}
@@ -304,7 +304,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		$account = $this->get_cached_account_data();
-		return 'under_review' === $account['status'];
+		return 'under_review' === ( $account['status'] ?? false );
 	}
 
 	/**
@@ -2140,6 +2140,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 */
 	public function update_account_data( $property, $data ) {
 		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+		if ( ! is_array( $account_data ) ) {
+			// Bail if we don't have any cached account data.
+			return;
+		}
 
 		$account_data[ $property ] = is_array( $data ) ? array_merge( $account_data[ $property ] ?? [], $data ) : $data;
 
@@ -2149,7 +2153,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	/**
 	 * Refetches account data and returns the fresh data.
 	 *
-	 * @return array|bool|string Either the new account data or false if unavailable.
+	 * @return array|bool Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
 		return $this->get_cached_account_data( true );

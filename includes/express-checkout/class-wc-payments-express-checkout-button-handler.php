@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 
 /**
@@ -99,6 +101,10 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		add_action( 'woocommerce_checkout_order_processed', [ $this->express_checkout_helper, 'add_order_payment_method_title' ], 10, 2 );
 
 		$this->express_checkout_ajax_handler->init();
+
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
+			$this->register_ece_data_for_block_editor();
+		}
 	}
 
 	/**
@@ -446,5 +452,24 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		return $title;
+	}
+
+	/**
+	 * Add ECE data to `wcSettings` to allow it to be accessed by the front-end JS script in the Block editor.
+	 *
+	 * @return void
+	 */
+	private function register_ece_data_for_block_editor() {
+		$data_registry = Package::container()->get( AssetDataRegistry::class );
+
+		if ( $data_registry->exists( 'ece_data' ) ) {
+			return;
+		}
+
+		$ece_data = [
+			'button' => $this->get_button_settings(),
+		];
+
+		$data_registry->add( 'ece_data', $ece_data );
 	}
 }
