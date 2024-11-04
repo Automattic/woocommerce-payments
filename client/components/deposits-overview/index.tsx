@@ -217,7 +217,7 @@ const DepositsOverview: React.FC = () => {
 									page: 'wc-settings',
 									tab: 'checkout',
 									section: 'woocommerce_payments',
-								} ) + '#deposit-schedule'
+								} ) + '#payout-schedule'
 							}
 							onClick={ () =>
 								recordEvent(

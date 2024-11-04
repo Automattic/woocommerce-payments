@@ -348,7 +348,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
         </button>
         <a
           class="components-button is-tertiary"
-          href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#deposit-schedule"
+          href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#payout-schedule"
         >
           Change payout schedule
         </a>
