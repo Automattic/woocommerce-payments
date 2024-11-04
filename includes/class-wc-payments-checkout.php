@@ -376,16 +376,35 @@ class WC_Payments_Checkout {
 			if ( ! wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) ) {
 				$payment_fields = $this->get_payment_fields_js_config();
 				wp_enqueue_script( 'wcpay-upe-checkout' );
+				/**
+				 * We can't localize the script right away since at this point is not registered yet.
+				 * We also need to make sure it that it only runs once (using a dummy action), even if
+				 * there are multiple payment methods available; otherwise the data will be overwritten
+				 * which is pointless.
+				 *
+				 * The same applies for `wcpayCustomerData` a few lines below.
+				 */
 				add_action(
 					'wp_footer',
 					function () use ( $payment_fields ) {
-						wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
+						if ( ! did_action( '__wcpay_upe_config_localized' ) ) {
+							wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
+						}
+						do_action( '__wcpay_upe_config_localized' );
 					}
 				);
 
 				$prepared_customer_data = $this->customer_service->get_prepared_customer_data();
 				if ( ! empty( $prepared_customer_data ) ) {
-					wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
+					add_action(
+						'wp_footer',
+						function () use ( $prepared_customer_data ) {
+							if ( ! did_action( '__wcpay_customer_data_localized' ) ) {
+								wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
+							}
+							do_action( '__wcpay_customer_data_localized' );
+						}
+					);
 				}
 
 				WC_Payments_Utils::enqueue_style(
