@@ -90,6 +90,9 @@ class WC_Payments_Payment_Method_Messaging_Element {
 					'currency' => $currency_code,
 				],
 			];
+
+			$product_price = $product_variations['base_product']['amount'];
+
 			foreach ( $product->get_children() as $variation_id ) {
 				$variation = wc_get_product( $variation_id );
 				if ( $variation ) {
@@ -98,11 +101,13 @@ class WC_Payments_Payment_Method_Messaging_Element {
 						'amount'   => WC_Payments_Utils::prepare_amount( $price, $currency_code ),
 						'currency' => $currency_code,
 					];
+
+					$product_price = $product_variations['base_product']['amount'];
 				}
 			}
 		}
 
-		$enabled_upe_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$enabled_upe_payment_methods = $this->gateway->get_upe_enabled_payment_method_ids();
 		// Filter non BNPL out of the list of payment methods.
 		$bnpl_payment_methods = array_intersect( $enabled_upe_payment_methods, Payment_Method::BNPL_PAYMENT_METHODS );
 
@@ -118,26 +123,36 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			WC_Payments::get_file_version( 'dist/product-details.css' ),
 		);
 
+		$country = empty( $billing_country ) ? $store_country : $billing_country;
+
+		$script_data = [
+			'productId'         => 'base_product',
+			'productVariations' => $product_variations,
+			'country'           => $country,
+			'locale'            => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			'accountId'         => $this->account->get_stripe_account_id(),
+			'publishableKey'    => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+			'paymentMethods'    => array_values( $bnpl_payment_methods ),
+			'currencyCode'      => $currency_code,
+			'isCart'            => is_cart(),
+			'isCartBlock'       => $is_cart_block,
+			'cartTotal'         => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
+			'nonce'             => [
+				'get_cart_total'    => wp_create_nonce( 'wcpay-get-cart-total' ),
+				'is_bnpl_available' => wp_create_nonce( 'wcpay-is-bnpl-available' ),
+			],
+			'wcAjaxUrl'         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+		];
+
+		if ( $product ) {
+			$script_data['isBnplAvailable'] = WC_Payments_Utils::is_any_bnpl_method_available( array_values( $bnpl_payment_methods ), $country, $currency_code, $product_price );
+		}
+
 		// Create script tag with config.
 		wp_localize_script(
 			'WCPAY_PRODUCT_DETAILS',
 			'wcpayStripeSiteMessaging',
-			[
-				'productId'          => 'base_product',
-				'productVariations'  => $product_variations,
-				'country'            => empty( $billing_country ) ? $store_country : $billing_country,
-				'locale'             => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-				'accountId'          => $this->account->get_stripe_account_id(),
-				'publishableKey'     => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-				'paymentMethods'     => array_values( $bnpl_payment_methods ),
-				'currencyCode'       => $currency_code,
-				'isCart'             => is_cart(),
-				'isCartBlock'        => $is_cart_block,
-				'cartTotal'          => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
-				'minimumOrderAmount' => WC_Payments_Utils::get_cached_minimum_amount( $currency_code, true ),
-				'nonce'              => wp_create_nonce( 'wcpay-get-cart-total' ),
-				'wcAjaxUrl'          => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			]
+			$script_data
 		);
 
 		// Ensure wcpayConfig is available in the page.

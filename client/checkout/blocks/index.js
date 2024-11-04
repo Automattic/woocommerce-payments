@@ -160,15 +160,17 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
-	registerExpressPaymentMethod(
-		tokenizedCartPaymentRequestPaymentMethod( api )
-	);
-} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
-	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
-	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
-} else {
-	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
+	if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
+		registerExpressPaymentMethod(
+			tokenizedCartPaymentRequestPaymentMethod( api )
+		);
+	} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
+		registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+	} else {
+		registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+	}
 }
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
