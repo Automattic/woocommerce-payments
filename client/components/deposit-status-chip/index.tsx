@@ -15,10 +15,10 @@ import type { DepositStatus } from 'wcpay/types/deposits';
  */
 const mappings: Record< DepositStatus, ChipType > = {
 	pending: 'warning',
-	in_transit: 'success',
+	in_transit: 'primary',
 	paid: 'success',
 	failed: 'alert',
-	canceled: 'alert',
+	canceled: 'light',
 };
 
 /**

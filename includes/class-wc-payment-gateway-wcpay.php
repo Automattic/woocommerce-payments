@@ -895,6 +895,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if the setting to show the payment request buttons is enabled.
+	 *
+	 * @return bool Whether the setting to show the payment request buttons is enabled or not.
+	 */
+	public function is_payment_request_enabled() {
+		return 'yes' === $this->get_option( 'payment_request' );
+	}
+
+	/**
 	 * Check if account is eligible for card present.
 	 *
 	 * @return bool
