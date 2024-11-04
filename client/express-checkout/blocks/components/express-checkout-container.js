@@ -15,7 +15,7 @@ import {
 import '../express-checkout-element.scss';
 
 const ExpressCheckoutContainer = ( props ) => {
-	const { api, billing, buttonAttributes } = props;
+	const { api, billing, buttonAttributes, isPreview } = props;
 
 	const stripePromise = useMemo( () => {
 		return api.loadStripeForExpressCheckout();
@@ -24,8 +24,8 @@ const ExpressCheckoutContainer = ( props ) => {
 	const options = {
 		mode: 'payment',
 		paymentMethodCreation: 'manual',
-		amount: billing.cartTotal.value,
-		currency: billing.currency.code.toLowerCase(),
+		amount: ! isPreview ? billing.cartTotal.value : 10,
+		currency: ! isPreview ? billing.currency.code.toLowerCase() : 'usd',
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};
