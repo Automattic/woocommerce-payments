@@ -150,7 +150,7 @@ class WC_Payments_Incentives_Service {
 		$store_context_hash = $this->generate_context_hash( $this->get_store_context() );
 
 		// First, get the cache contents, if any.
-		$incentive_data = $this->database_cache->get( Database_Cache::CONNECT_INCENTIVE_KEY );
+		$incentive_data = $this->database_cache->get( Database_Cache::CONNECT_INCENTIVE_KEY, true );
 		// Check if we need to force-refresh the cache contents.
 		if ( empty( $incentive_data['context_hash'] ) || ! is_string( $incentive_data['context_hash'] )
 			|| ! hash_equals( $store_context_hash, $incentive_data['context_hash'] ) ) {

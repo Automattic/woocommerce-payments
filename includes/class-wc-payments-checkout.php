@@ -193,6 +193,7 @@ class WC_Payments_Checkout {
 			'isPreview'                         => is_preview(),
 			'isSavedCardsEnabled'               => $this->gateway->is_saved_cards_enabled(),
 			'isExpressCheckoutElementEnabled'   => WC_Payments_Features::is_stripe_ece_enabled(),
+			'isPaymentRequestEnabled'           => $this->gateway->is_payment_request_enabled(),
 			'isTokenizedCartPrbEnabled'         => WC_Payments_Features::is_tokenized_cart_prb_enabled(),
 			'isWooPayEnabled'                   => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_cart_or_checkout(),
 			'isWoopayExpressCheckoutEnabled'    => $this->woopay_util->is_woopay_express_checkout_enabled(),
