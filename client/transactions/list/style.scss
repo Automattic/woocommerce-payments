@@ -33,6 +33,13 @@ $space-header-item: 12px;
 		text-align: center;
 	}
 
+	.woocommerce-table__header {
+		.my-icon {
+			font-size: 12px;
+			line-height: 1.4;
+		}
+	}
+
 	.woocommerce-taptopay__icon {
 		position: relative;
 		display: inline-block;
