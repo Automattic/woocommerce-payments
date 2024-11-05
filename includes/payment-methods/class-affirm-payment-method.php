@@ -11,7 +11,6 @@ use WC_Payments_Token_Service;
 use WC_Payments_Utils;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
-use WCPay\MultiCurrency\MultiCurrency;
 
 /**
  * Affirm Payment Method class extending UPE base class
