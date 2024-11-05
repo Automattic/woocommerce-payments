@@ -171,11 +171,26 @@ abstract class UPE_Payment_Method {
 
 		// This part ensures that when payment limits for the currency declared, those will be respected (e.g. BNPLs).
 		if ( [] !== $this->limits_per_currency ) {
-			$currency = get_woocommerce_currency();
+			$order = null;
+			if ( is_wc_endpoint_url( 'order-pay' ) ) {
+				$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+				$order = is_a( $order, 'WC_Order' ) ? $order : null;
+			}
+
+			if ( $order ) {
+				$currency = $order->get_currency();
+			} else {
+				$currency = get_woocommerce_currency();
+			}
 			// If the currency limits are not defined, we allow the PM for now (gateway has similar validation for limits).
 			// Additionally, we don't engage with limits verification in no-checkout context (cart is not available or empty).
 			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
-				$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
+				if ( $order ) {
+					$amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+				} else {
+					$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
+				}
+
 				if ( $amount > 0 ) {
 					$range = null;
 					if ( isset( $this->limits_per_currency[ $currency ][ $account_country ] ) ) {
