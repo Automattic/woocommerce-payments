@@ -4,7 +4,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
-import { loadConnectAndInitialize } from '@stripe/connect-js';
+import { loadConnectAndInitialize } from '@stripe/connect-js/pure';
 
 /**
  * Internal dependencies
@@ -12,7 +12,7 @@ import { loadConnectAndInitialize } from '@stripe/connect-js';
 import EmbeddedKyc from '../embedded-kyc';
 
 jest.mock( '@wordpress/api-fetch' );
-jest.mock( '@stripe/connect-js', () => ( {
+jest.mock( '@stripe/connect-js/pure', () => ( {
 	loadConnectAndInitialize: jest.fn(),
 } ) );
 
