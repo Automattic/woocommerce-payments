@@ -19,7 +19,6 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
-import { displayType } from 'deposits/strings';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import { getDetailsURL } from 'wcpay/components/details-link';
@@ -54,9 +53,6 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 				<DepositStatusChip deposit={ deposit } />
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
-				{ displayType[ deposit.type ] }
-			</FlexItem>
-			<FlexItem className={ `${ tableClass }__cell` }>
 				{ formatCurrency( deposit.amount, deposit.currency ) }
 			</FlexItem>
 		</Flex>
@@ -71,9 +67,6 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						{ __( 'Status', 'woocommerce-payments' ) }
-					</FlexItem>
-					<FlexItem className={ `${ tableClass }__cell` }>
-						{ __( 'Type', 'woocommerce-payments' ) }
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						{ __( 'Amount', 'woocommerce-payments' ) }
