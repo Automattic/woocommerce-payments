@@ -1,0 +1,5 @@
+Significance: patch
+Type: add
+Comment: Added notice to indicate the rename of Deposits to Payouts. User facing changelog will be added as part of feature branch
+
+
