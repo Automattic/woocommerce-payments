@@ -6,6 +6,11 @@
  */
 
 use WCPay\MultiCurrency\Compatibility\WooCommerceSubscriptions;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
@@ -62,7 +67,16 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
+		$mock_api_client   = $this->createMock( MultiCurrencyApiClientInterface::class );
+		$mock_account      = $this->createMock( MultiCurrencyAccountInterface::class );
+		$mock_localization = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		$mock_cache        = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_settings     = $this->createMock( MultiCurrencySettingsInterface::class );
+
+		$this->mock_multi_currency = $this->getMockBuilder( MultiCurrency::class )
+			->setConstructorArgs( [ $mock_settings, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
+			->getMock();
+
 		$this->mock_utils                = $this->createMock( Utils::class );
 		$this->woocommerce_subscriptions = new WooCommerceSubscriptions( $this->mock_multi_currency, $this->mock_utils );
 
@@ -830,15 +844,8 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		// Arrange: Set expectation and return for is_initialized and has_additional_currencies_enabled.
 		$this->mock_multi_currency
 			->expects( $this->once() )
-			->method( 'is_initialized' )
-			->willReturn( true );
-		$this->mock_multi_currency
-			->expects( $this->once() )
 			->method( 'has_additional_currencies_enabled' )
 			->willReturn( true );
-
-		// Arrange: Make sure to set our Multi-Currency instance as our mock instance.
-		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->mock_multi_currency );
 
 		// Arrange/Assert: Apply the woocommerce_subscription_price_string_details filter and confirm the filter does not change the passed array.
 		$this->assertSame( [ 1, 2, 3 ], apply_filters( 'woocommerce_subscription_price_string_details', [ 1, 2, 3 ], $mock_subscription ) );

@@ -35,7 +35,7 @@ const UpdateBusinessDetailsModal = ( {
 
 	const openAccountLink = () => {
 		recordEvent( 'wcpay_account_details_link_clicked', {
-			source: 'update-business-details',
+			source: 'wcpay-update-business-details-task',
 		} );
 		window.open( accountLink, '_blank' );
 	};

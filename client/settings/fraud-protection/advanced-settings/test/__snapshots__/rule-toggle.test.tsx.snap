@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -174,7 +174,7 @@ Object {
 `;
 
 exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -219,6 +219,7 @@ Object {
             >
               <input
                 aria-describedby="inspector-toggle-control-1__help"
+                checked=""
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-1"
                 type="checkbox"
@@ -268,6 +269,7 @@ Object {
           >
             <input
               aria-describedby="inspector-toggle-control-1__help"
+              checked=""
               class="components-form-toggle__input"
               id="inspector-toggle-control-1"
               type="checkbox"
@@ -353,7 +355,7 @@ Object {
 `;
 
 exports[`Fraud protection rule toggle tests renders correctly when enabled and blocked 1`] = `
-Object {
+{
   "asFragment": [Function],
   "baseElement": <body>
     <p
@@ -398,6 +400,7 @@ Object {
             >
               <input
                 aria-describedby="inspector-toggle-control-2__help"
+                checked=""
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-2"
                 type="checkbox"
@@ -447,6 +450,7 @@ Object {
           >
             <input
               aria-describedby="inspector-toggle-control-2__help"
+              checked=""
               class="components-form-toggle__input"
               id="inspector-toggle-control-2"
               type="checkbox"

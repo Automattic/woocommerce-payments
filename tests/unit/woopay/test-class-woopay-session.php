@@ -62,6 +62,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		wp_set_current_user( 0 );
 
+		remove_filter( 'wcpay_woopay_is_signed_with_blog_token', '__return_true' );
+
 		parent::tear_down();
 	}
 

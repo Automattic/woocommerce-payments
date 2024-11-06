@@ -95,7 +95,7 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 			'order_status' => 'publish',
 		];
 
-		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
 		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
 
@@ -138,11 +138,12 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests that the webhook is created succesfuly if the logged in user has the capability manage_woocommerce.
+	 * Tests that the webhook is created successfully if the logged-in user has the capability manage_woocommerce
+	 * and the account is in good working order.
 	 */
 	public function test_webhook_is_created() {
 		wp_set_current_user( self::$admin_user->ID );
-		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
 		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
 
@@ -186,11 +187,11 @@ class WooPay_Order_Status_Sync_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Tests that the webhook is deleted succesfuly.
+	 * Tests that the webhook is deleted successfully.
 	 */
 	public function test_webhook_removal() {
 		wp_set_current_user( self::$admin_user->ID );
-		$this->account_mock->method( 'is_stripe_connected' )->willReturn( true );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
 		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
 

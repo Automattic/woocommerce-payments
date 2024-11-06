@@ -175,7 +175,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 * Test add SEPA token to user with deferred intent creation UPE.
 	 */
 	public function test_add_token_to_user_for_sepa_deferred_intent_creation_upe() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 		$mock_payment_method = [
 			'id'         => 'pm_mock',
 			'sepa_debit' => [
@@ -197,7 +196,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 * Test add SEPA token to user with deferred intent UPE.
 	 */
 	public function test_add_token_to_user_for_sepa_deferred_upe() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_deferred_intent_creation_upe_enabled' => true ] );
 		$mock_payment_method = [
 			'id'         => 'pm_mock',
 			'sepa_debit' => [

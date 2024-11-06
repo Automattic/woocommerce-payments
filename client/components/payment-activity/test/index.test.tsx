@@ -74,6 +74,11 @@ declare const global: {
 			country: string;
 		};
 	};
+	wcSettings: {
+		admin: {
+			timeZone: string;
+		};
+	};
 };
 
 describe( 'PaymentActivity component', () => {
@@ -118,6 +123,11 @@ describe( 'PaymentActivity component', () => {
 		Date.now = jest.fn( () =>
 			new Date( '2024-04-08T12:33:37.000Z' ).getTime()
 		);
+		global.wcSettings = {
+			admin: {
+				timeZone: 'UTC',
+			},
+		};
 	} );
 
 	afterEach( () => {

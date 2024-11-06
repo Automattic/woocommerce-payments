@@ -60,7 +60,7 @@ describe.each( cardTestingPreventionStates )(
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 		} );
 
 		it( `using a 3DS card, carding protection ${ cardTestingPreventionEnabled }`, async () => {
@@ -77,7 +77,7 @@ describe.each( cardTestingPreventionStates )(
 			await page.waitForNavigation( {
 				waitUntil: 'networkidle0',
 			} );
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 		} );
 	}
 );

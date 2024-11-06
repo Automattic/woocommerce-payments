@@ -7,6 +7,7 @@
 
 namespace WCPay;
 
+use WC_Payments;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 
@@ -16,6 +17,8 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * Class to send compatibility data to the server.
  */
 class Compatibility_Service {
+	const UPDATE_COMPATIBILITY_DATA = 'wcpay_update_compatibility_data';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -44,16 +47,22 @@ class Compatibility_Service {
 	}
 
 	/**
-	 * Gets the data we need to confirm compatibility and sends it to the server.
+	 * Schedules the sending of the compatibility data to send only the last update in T minutes.
 	 *
 	 * @return void
 	 */
 	public function update_compatibility_data() {
-		try {
-			$this->payments_api_client->update_compatibility_data( $this->get_compatibility_data() );
-		} catch ( API_Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-			// The exception is already logged if logging is on, nothing else needed.
-		}
+		// This will delete the previous compatibility requests in the last two minutes, and only send the last update to the server, ensuring there's only one update in two minutes.
+		WC_Payments::get_action_scheduler_service()->schedule_job( time() + 2 * MINUTE_IN_SECONDS, self::UPDATE_COMPATIBILITY_DATA );
+	}
+
+	/**
+	 * Gets the data we need to confirm compatibility and sends it to the server.
+	 *
+	 * @return  void
+	 */
+	public function update_compatibility_data_hook() {
+		$this->payments_api_client->update_compatibility_data( $this->get_compatibility_data() );
 	}
 
 	/**

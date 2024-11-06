@@ -81,7 +81,7 @@ export const recordUserEvent = (
 	fetch( ajaxUrl, {
 		method: 'post',
 		body,
-	} );
+	} ).then( ( response ) => response.json() );
 };
 
 /**
@@ -125,6 +125,7 @@ export const getTracksIdentity = async (): Promise< string | undefined > => {
 
 	body.append( 'tracksNonce', nonce );
 	body.append( 'action', 'get_identity' );
+
 	try {
 		const response = await fetch( ajaxUrl, {
 			method: 'post',

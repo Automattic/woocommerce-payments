@@ -4,6 +4,7 @@
 import {
 	normalizeLineItems,
 	normalizeOrderData,
+	normalizePayForOrderData,
 	normalizeShippingAddress,
 } from '../normalize';
 
@@ -30,22 +31,15 @@ describe( 'Express checkout normalization', () => {
 			const expected = [
 				{
 					name: 'Item 1',
-					label: 'Item 1',
 					amount: 100,
-					value: 100,
 				},
 				{
 					name: 'Item 2',
-					label: 'Item 2',
 					amount: 200,
-					value: 200,
 				},
 				{
 					name: 'Item 3',
-					label: 'Item 3',
 					amount: 200,
-					valueWithTax: 300,
-					value: 200,
 				},
 			];
 
@@ -73,18 +67,60 @@ describe( 'Express checkout normalization', () => {
 			const expected = [
 				{
 					name: 'Item 1',
-					label: 'Item 1',
 					amount: 100,
 				},
 				{
 					name: 'Item 2',
-					label: 'Item 2',
 					amount: 200,
 				},
 				{
 					name: 'Item 3',
+					amount: 300,
+				},
+			];
+
+			expect( normalizeLineItems( displayItems ) ).toStrictEqual(
+				expected
+			);
+		} );
+
+		test( 'normalizes discount line item properly', () => {
+			const displayItems = [
+				{
+					label: 'Item 1',
+					amount: 100,
+				},
+				{
+					label: 'Item 2',
+					amount: 200,
+				},
+				{
 					label: 'Item 3',
 					amount: 300,
+				},
+				{
+					key: 'total_discount',
+					label: 'Discount',
+					amount: 50,
+				},
+			];
+
+			const expected = [
+				{
+					name: 'Item 1',
+					amount: 100,
+				},
+				{
+					name: 'Item 2',
+					amount: 200,
+				},
+				{
+					name: 'Item 3',
+					amount: 300,
+				},
+				{
+					name: 'Discount',
+					amount: -50,
 				},
 			];
 
@@ -260,6 +296,64 @@ describe( 'Express checkout normalization', () => {
 			expect( normalizeOrderData( event, paymentMethodId ) ).toEqual(
 				expectedNormalizedData
 			);
+		} );
+	} );
+
+	describe( 'normalizePayForOrderData', () => {
+		test( 'should normalize pay for order data with complete event and paymentMethodId', () => {
+			window.wcpayFraudPreventionToken = 'token123';
+
+			const event = {
+				billingDetails: {
+					name: 'John Doe',
+					email: 'john.doe@example.com',
+					address: {
+						organization: 'Some Company',
+						country: 'US',
+						line1: '123 Main St',
+						line2: 'Apt 4B',
+						city: 'New York',
+						state: 'NY',
+						postal_code: '10001',
+					},
+					phone: '(123) 456-7890',
+				},
+				shippingAddress: {
+					name: 'John Doe',
+					organization: 'Some Company',
+					address: {
+						country: 'US',
+						line1: '123 Main St',
+						line2: 'Apt 4B',
+						city: 'New York',
+						state: 'NY',
+						postal_code: '10001',
+					},
+				},
+				shippingRate: { id: 'rate_1' },
+				expressPaymentType: 'express',
+			};
+
+			expect( normalizePayForOrderData( event, 'pm_123456' ) ).toEqual( {
+				payment_method: 'woocommerce_payments',
+				'wcpay-payment-method': 'pm_123456',
+				'wcpay-fraud-prevention-token': 'token123',
+				express_payment_type: 'express',
+			} );
+		} );
+
+		test( 'should normalize pay for order data with empty event and empty payment method', () => {
+			const event = {};
+			const paymentMethodId = '';
+
+			expect(
+				normalizePayForOrderData( event, paymentMethodId )
+			).toEqual( {
+				payment_method: 'woocommerce_payments',
+				'wcpay-payment-method': '',
+				'wcpay-fraud-prevention-token': 'token123',
+				express_payment_type: undefined,
+			} );
 		} );
 	} );
 

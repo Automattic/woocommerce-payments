@@ -6,7 +6,10 @@
 import { PaymentRequestExpress } from './payment-request-express';
 import { applePayImage } from './apple-pay-preview';
 import { getConfig } from '../../utils/checkout';
-import { getPaymentRequest } from '../../payment-request/utils';
+import {
+	getPaymentRequest,
+	transformCartDataForStoreAPI,
+} from '../frontend-utils';
 
 const PAYMENT_METHOD_NAME_PAYMENT_REQUEST =
 	'woocommerce_payments_tokenized_cart_payment_request';
@@ -16,7 +19,10 @@ const ApplePayPreview = () => <img src={ applePayImage } alt="" />;
 const tokenizedCartPaymentRequestPaymentMethod = ( api ) => ( {
 	name: PAYMENT_METHOD_NAME_PAYMENT_REQUEST,
 	content: (
-		<PaymentRequestExpress api={ api } stripe={ api.loadStripe( true ) } />
+		<PaymentRequestExpress
+			api={ api }
+			stripe={ api.loadStripeForExpressCheckout() }
+		/>
 	),
 	edit: <ApplePayPreview />,
 	canMakePayment: ( cartData ) => {
@@ -37,15 +43,14 @@ const tokenizedCartPaymentRequestPaymentMethod = ( api ) => ( {
 			return false;
 		}
 
-		return api.loadStripe( true ).then( ( stripe ) => {
+		return api.loadStripeForExpressCheckout().then( ( stripe ) => {
 			// Create a payment request and check if we can make a payment to determine whether to
 			// show the Payment Request Button or not. This is necessary because a browser might be
 			// able to load the Stripe JS object, but not support Payment Requests.
+			cartData = transformCartDataForStoreAPI( cartData, null );
 			const pr = getPaymentRequest( {
 				stripe,
-				total: parseInt( cartData?.cartTotals?.total_price ?? 0, 10 ),
-				requestShipping: cartData?.cartNeedsShipping,
-				displayItems: [],
+				cartData,
 			} );
 
 			return pr.canMakePayment();

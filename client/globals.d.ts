@@ -3,11 +3,13 @@
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
+import { WCPayExpressCheckoutParams } from './express-checkout/utils';
 
 declare global {
 	const wcpaySettings: {
 		version: string;
 		connectUrl: string;
+		overviewUrl: string;
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
@@ -18,9 +20,12 @@ declare global {
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
+		testModeOnboarding: boolean;
 		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
+		isAccountConnected: boolean;
+		isAccountValid: boolean;
 		accountStatus: {
 			email?: string;
 			created: string;
@@ -85,7 +90,6 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		progressiveOnboarding?: {
-			isNewFlowEnabled: boolean;
 			isEnabled: boolean;
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
@@ -95,7 +99,6 @@ declare global {
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
 		frtDiscoverBannerSettings: string;
-		onboardingTestMode: boolean;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -132,9 +135,11 @@ declare global {
 		};
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
+		defaultExpressCheckoutBorderRadius: string;
 	};
 
 	const wc: {
+		wcSettings: typeof wcSettingsModule;
 		tracks: {
 			recordEvent: (
 				eventName: string,
@@ -175,10 +180,33 @@ declare global {
 				woocommerce_coming_soon: string;
 				woocommerce_private_link: string;
 			};
+			timeZone: string;
 		};
 		adminUrl: string;
 		countries: Record< string, string >;
 		homeUrl: string;
 		siteTitle: string;
 	};
+
+	interface WcSettings {
+		ece_data?: WCPayExpressCheckoutParams;
+		woocommerce_payments_data: typeof wcpaySettings;
+	}
+
+	const wcSettingsModule: {
+		getSetting: <
+			K extends keyof WcSettings,
+			T extends WcSettings[ K ] | undefined
+		>(
+			setting: K,
+			fallback?: T
+		) => WcSettings[ K ] | T;
+	};
+
+	interface Window {
+		wcpaySettings: typeof wcpaySettings;
+		wc: typeof wc;
+		wcTracks: typeof wcTracks;
+		wcSettings: typeof wcSettings;
+	}
 }

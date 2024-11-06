@@ -56,6 +56,14 @@ const addMiniCartEventListener = () => {
 };
 
 /**
+ * Add an event listener to the footer mini cart checkout button.
+ */
+const addFooterCartEventListener = () => {
+	const checkoutButton = WooPayDirectCheckout.getFooterMiniCartProceedToCheckoutButton();
+	handleWooPayDirectCheckout( [ checkoutButton ] );
+};
+
+/**
  * If the mini cart widget is available on the page, observe when the drawer element gets added to the DOM.
  *
  * As of today, no window events are triggered when the mini cart is opened or closed,
@@ -87,6 +95,11 @@ const maybeObserveMiniCart = () => {
 							WooPayDirectCheckout.redirectElements
 								.BLOCKS_MINI_CART_PROCEED_BUTTON,
 							addMiniCartEventListener
+						);
+						waitForSelector(
+							WooPayDirectCheckout.redirectElements
+								.BLOCKS_FOOTER_MINI_CART_PROCEED_BUTTON,
+							addFooterCartEventListener
 						);
 						return;
 					}
@@ -214,6 +227,8 @@ window.addEventListener( 'load', async () => {
 	WooPayDirectCheckout.init();
 
 	isThirdPartyCookieEnabled = await WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled();
+
+	await WooPayDirectCheckout.initPostMessageTimeout();
 
 	// Note, although the following hooks are prefixed with 'experimental__', they will be
 	// graduated to stable in the near future (it'll include the 'experimental__' prefix).

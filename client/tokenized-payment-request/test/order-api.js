@@ -12,8 +12,8 @@ jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 global.wcpayPaymentRequestParams = {};
 global.wcpayPaymentRequestParams.nonce = {};
-global.wcpayPaymentRequestParams.nonce.tokenized_order_nonce =
-	'global_tokenized_order_nonce';
+global.wcpayPaymentRequestParams.nonce.store_api_nonce =
+	'global_store_api_nonce';
 
 describe( 'PaymentRequestOrderApi', () => {
 	afterEach( () => {
@@ -60,7 +60,7 @@ describe( 'PaymentRequestOrderApi', () => {
 				method: 'POST',
 				path: '/wc/store/v1/checkout/1',
 				headers: expect.objectContaining( {
-					Nonce: 'global_tokenized_order_nonce',
+					Nonce: 'global_store_api_nonce',
 				} ),
 				data: expect.objectContaining( {
 					key: 'key_123',
@@ -107,7 +107,7 @@ describe( 'PaymentRequestOrderApi', () => {
 				method: 'POST',
 				path: '/wc/store/v1/checkout/1',
 				headers: expect.objectContaining( {
-					Nonce: 'global_tokenized_order_nonce',
+					Nonce: 'global_store_api_nonce',
 				} ),
 				data: expect.objectContaining( {
 					key: 'key_123',

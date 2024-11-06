@@ -19,7 +19,10 @@ import { useCardReaderStats } from 'wcpay/data';
 import { TestModeNotice } from 'components/test-mode-notice';
 import Page from 'components/page';
 import DownloadButton from 'components/download-button';
-import { formatExplicitCurrency, formatExportAmount } from 'utils/currency';
+import {
+	formatExplicitCurrency,
+	formatExportAmount,
+} from 'multi-currency/interface/functions';
 
 const PaymentCardReaderChargeDetails = ( props ) => {
 	const { readers, chargeError, isLoading } = useCardReaderStats(

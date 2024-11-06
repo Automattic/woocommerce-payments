@@ -152,6 +152,25 @@ export const appendPaymentMethodIdToForm = ( $form, paymentMethodId ) => {
 	);
 };
 
+export const appendPaymentMethodErrorDataToForm = (
+	$form,
+	paymentMethodError
+) => {
+	[
+		[ 'wcpay-payment-method-error-code', paymentMethodError.code ],
+		[
+			'wcpay-payment-method-error-decline-code',
+			paymentMethodError.decline_code,
+		],
+		[ 'wcpay-payment-method-error-message', paymentMethodError.message ],
+		[ 'wcpay-payment-method-error-type', paymentMethodError.type ],
+	].forEach( ( [ fieldName, value ] ) => {
+		$form.append(
+			`<input type="hidden" id="${ fieldName }" name="${ fieldName }" value="${ value }" />`
+		);
+	} );
+};
+
 export const appendFraudPreventionTokenInputToForm = ( $form ) => {
 	const fraudPreventionToken = window.wcpayFraudPreventionToken ?? '';
 	$form.append(
@@ -326,7 +345,7 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		'.payment_method_woocommerce_payments_' + paymentMethodType
 	);
 	if ( supportedCountries.includes( billingCountry ) ) {
-		upeContainer.style.display = 'block';
+		upeContainer.style.removeProperty( 'display' );
 	} else {
 		upeContainer.style.display = 'none';
 		// if the toggled off payment method was selected, we need to fall back to credit card

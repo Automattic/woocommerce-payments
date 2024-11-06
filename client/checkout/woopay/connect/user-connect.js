@@ -21,22 +21,30 @@ class WooPayUserConnect extends WoopayConnect {
 	 * @return {Promise<bool>} Resolves to true if the user is logged in.
 	 */
 	async isUserLoggedIn() {
-		return await this.sendMessageAndListenWith(
-			{ action: 'getIsUserLoggedIn' },
-			'getIsUserLoggedInCallback'
-		);
+		try {
+			return await this.sendMessageAndListenWith(
+				{ action: 'getIsUserLoggedIn' },
+				'getIsUserLoggedInCallback'
+			);
+		} catch ( error ) {
+			return false;
+		}
 	}
 
 	/**
 	 * Retrieves encrypted data from WooPay.
 	 *
-	 * @return {Promise<Object>} Resolves to an object with encrypted data.
+	 * @return {Promise<Object|null>} Resolves to an object with encrypted data.
 	 */
 	async getEncryptedData() {
-		return await this.sendMessageAndListenWith(
-			{ action: 'getEncryptedData' },
-			'getEncryptedDataCallback'
-		);
+		try {
+			return await this.sendMessageAndListenWith(
+				{ action: 'getEncryptedData' },
+				'getEncryptedDataCallback'
+			);
+		} catch ( error ) {
+			return null;
+		}
 	}
 
 	/**

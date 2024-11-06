@@ -34,7 +34,13 @@ const BusinessDetails: React.FC = () => {
 		return country.key === data.country;
 	} );
 
-	const selectedBusinessType = selectedCountry?.types.find(
+	// Reorder the country business types so company is always first, if it exists.
+	const reorderedBusinessTypes = selectedCountry?.types.sort( ( a, b ) =>
+		// eslint-disable-next-line no-nested-ternary
+		a.key === 'company' ? -1 : b.key === 'company' ? 1 : 0
+	);
+
+	const selectedBusinessType = reorderedBusinessTypes?.find(
 		( type ) => type.key === data.business_type
 	);
 
@@ -43,7 +49,6 @@ const BusinessDetails: React.FC = () => {
 		selectedBusinessType?.structures.find(
 			( structure ) => structure.key === data[ 'company.structure' ]
 		);
-
 	const selectedMcc = mccsFlatList.find( ( mcc ) => mcc.key === data.mcc );
 
 	const handleTiedChange = (

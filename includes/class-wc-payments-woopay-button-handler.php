@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 
 /**
@@ -148,10 +149,13 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return array The modified config array.
 	 */
 	public function add_woopay_config( $config ) {
+		$user = wp_get_current_user();
+
 		$config['woopayButton']           = $this->get_button_settings();
 		$config['woopayButtonNonce']      = wp_create_nonce( 'woopay_button_nonce' );
 		$config['addToCartNonce']         = wp_create_nonce( 'wcpay-add-to-cart' );
 		$config['shouldShowWooPayButton'] = $this->should_show_woopay_button();
+		$config['woopaySessionEmail']     = WooPay_Session::get_user_email( $user );
 
 		return $config;
 	}
@@ -166,12 +170,6 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'dist/woopay-express-button' );
-		WC_Payments_Utils::enqueue_style(
-			'WCPAY_WOOPAY_EXPRESS_BUTTON',
-			plugins_url( 'dist/woopay-express-button.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/woopay-express-button.css' )
-		);
 
 		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
 
@@ -333,6 +331,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		$settings = $this->get_button_settings();
+		$radius   = WC_Payments_Features::is_stripe_ece_enabled() ? $settings['radius'] : WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX;
 
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->express_checkout_helper->is_product() ); ?>>
@@ -343,7 +342,7 @@ class WC_Payments_WooPay_Button_Handler {
 				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
 				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
 				data-size="<?php echo esc_attr( $settings['size'] ); ?>"
-				style="height: <?php echo esc_attr( $settings['height'] ); ?>px"
+				style="height: <?php echo esc_attr( $settings['height'] ); ?>px; border-radius: <?php echo esc_attr( $radius ); ?>px"
 				disabled
 			></button>
 		</div>

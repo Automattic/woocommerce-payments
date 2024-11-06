@@ -40,6 +40,12 @@ export function updatePaymentRequestButtonTheme( theme ) {
 	return updateSettingsValues( { payment_request_button_theme: theme } );
 }
 
+export function updatePaymentRequestButtonBorderRadius( radius ) {
+	return updateSettingsValues( {
+		payment_request_button_border_radius: radius,
+	} );
+}
+
 export function updateSettings( data ) {
 	return {
 		type: ACTION_TYPES.SET_SETTINGS,
@@ -250,6 +256,12 @@ export function updatePaymentRequestLocations( locations ) {
 
 export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
+}
+
+export function updateIsWooPayGlobalThemeSupportEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_woopay_global_theme_support_enabled: isEnabled,
+	} );
 }
 
 export function updateWooPayCustomMessage( message ) {

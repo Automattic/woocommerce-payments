@@ -30,6 +30,7 @@ jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		onLoad: jest.fn(),
+		onHistoryChange: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
@@ -104,6 +105,7 @@ describe( 'TransactionsPage', () => {
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
 			isSaving: false,
+			isDirty: false,
 			saveSettings: ( a ) => a,
 		} );
 

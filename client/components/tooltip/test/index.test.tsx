@@ -193,6 +193,9 @@ describe( 'ClickTooltip', () => {
 
 		act( () => {
 			userEvent.click( screen.getByText( 'Trigger element' ) );
+		} );
+
+		act( () => {
 			jest.runAllTimers();
 		} );
 

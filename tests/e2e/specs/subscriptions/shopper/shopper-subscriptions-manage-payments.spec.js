@@ -53,7 +53,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
 			await shopper.placeOrder();
-			await expect( page ).toMatch( 'Order received' );
+			await expect( page ).toMatchTextContent( 'Order received' );
 
 			// Get the subscription ID
 			const subscriptionIdField = await page.$(
@@ -83,7 +83,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				'Change payment method'
 			);
 
-			await page.waitFor( 1000 );
+			await page.waitForTimeout( 1000 );
 			await expect( page ).toMatchElement(
 				testSelectors.newPaymentMethodCheckbox
 			);
@@ -127,7 +127,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				'Change payment method'
 			);
 
-			await page.waitFor( 1000 );
+			await page.waitForTimeout( 1000 );
 
 			// Select a different payment method and save it
 			const checkboxes = await page.$$(

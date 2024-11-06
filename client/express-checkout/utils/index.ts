@@ -1,4 +1,14 @@
+/**
+ * Internal dependencies
+ */
 export * from './normalize';
+import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
+
+interface MyWindow extends Window {
+	wcpayExpressCheckoutParams: WCPayExpressCheckoutParams;
+}
+
+declare let window: MyWindow;
 
 /**
  * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
@@ -15,6 +25,7 @@ export interface WCPayExpressCheckoutParams {
 		height: string;
 		locale: string;
 		branded_type: string;
+		radius: number;
 	};
 
 	/**
@@ -72,6 +83,12 @@ export interface WCPayExpressCheckoutParams {
 			amount: number;
 		};
 	};
+
+	/**
+	 * Settings for the user authentication dialog and redirection.
+	 */
+	login_confirmation: { message: string; redirect_url: string } | false;
+
 	stripe: {
 		accountId: string;
 		locale: string;
@@ -92,8 +109,10 @@ export const getExpressCheckoutData = <
 >(
 	key: K
 ) => {
-	if ( window.wcpayExpressCheckoutParams ) {
-		return window.wcpayExpressCheckoutParams?.[ key ];
+	if ( typeof window.wcpayExpressCheckoutParams !== 'undefined' ) {
+		return window.wcpayExpressCheckoutParams[ key ] ?? null;
+	} else if ( typeof window.wc?.wcSettings !== 'undefined' ) {
+		return window.wc.wcSettings.getSetting( 'ece_data' )?.[ key ] ?? null;
 	}
 
 	return null;
@@ -111,13 +130,78 @@ export const getErrorMessageFromNotice = ( notice: string ) => {
 	return div.firstChild ? div.firstChild.textContent : '';
 };
 
+type ExpressPaymentType =
+	| 'apple_pay'
+	| 'google_pay'
+	| 'amazon_pay'
+	| 'paypal'
+	| 'link';
+
+/**
+ * Displays a `confirm` dialog which leads to a redirect.
+ *
+ * @param expressPaymentType Can be either 'apple_pay', 'google_pay', 'amazon_pay', 'paypal' or 'link'.
+ */
+export const displayLoginConfirmation = (
+	expressPaymentType: ExpressPaymentType
+) => {
+	const loginConfirmation = getExpressCheckoutData( 'login_confirmation' );
+
+	if ( ! loginConfirmation ) {
+		return;
+	}
+
+	const paymentTypesMap = {
+		apple_pay: 'Apple Pay',
+		google_pay: 'Google Pay',
+		amazon_pay: 'Amazon Pay',
+		paypal: 'PayPal',
+		link: 'Link',
+	};
+	let message = loginConfirmation.message;
+
+	// Replace dialog text with specific express checkout type.
+	message = message.replace(
+		/\*\*.*?\*\*/,
+		paymentTypesMap[ expressPaymentType ]
+	);
+
+	// Remove asterisks from string.
+	message = message.replace( /\*\*/g, '' );
+
+	if ( confirm( message ) ) {
+		// Redirect to my account page.
+		window.location.href = loginConfirmation.redirect_url;
+	}
+};
+
+type ButtonAttributesType =
+	| { height: string; borderRadius: string }
+	| undefined;
+
 /**
  * Returns the appearance settings for the Express Checkout buttons.
  * Currently only configures border radius for the buttons.
  */
-export const getExpressCheckoutButtonAppearance = () => {
+export const getExpressCheckoutButtonAppearance = (
+	buttonAttributes: ButtonAttributesType
+) => {
+	let borderRadius = getDefaultBorderRadius();
+	const buttonSettings = getExpressCheckoutData( 'button' );
+
+	// Border radius from WooPayments settings
+	borderRadius = buttonSettings?.radius ?? borderRadius;
+
+	// Border radius from Cart & Checkout blocks attributes
+	if ( typeof buttonAttributes !== 'undefined' ) {
+		borderRadius = Number( buttonAttributes?.borderRadius ) ?? borderRadius;
+	}
+
 	return {
-		// variables: { borderRadius: '99999px' },
+		variables: {
+			borderRadius: `${ borderRadius }px`,
+			spacingUnit: '6px',
+		},
 	};
 };
 
@@ -161,7 +245,9 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 		paymentMethods: {
 			applePay: 'always',
 			googlePay: 'always',
-			link: 'auto',
+			link: 'never',
+			paypal: 'never',
+			amazonPay: 'never',
 		},
 		layout: { overflow: 'never' },
 		buttonTheme: {

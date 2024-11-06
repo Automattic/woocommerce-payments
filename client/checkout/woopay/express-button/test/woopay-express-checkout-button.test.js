@@ -70,6 +70,37 @@ describe( 'WoopayExpressCheckoutButton', () => {
 	const mockRequest = jest.fn().mockResolvedValue( true );
 	const mockAddToCart = jest.fn().mockResolvedValue( true );
 	const api = new WCPayAPI( {}, mockRequest );
+	const mockAppearance = {
+		rules: {
+			'.Block': {},
+			'.Input': {},
+			'.Input--invalid': {},
+			'.Label': {},
+			'.Tab': {},
+			'.Tab--selected': {},
+			'.Tab:hover': {},
+			'.TabIcon--selected': {
+				color: undefined,
+			},
+			'.TabIcon:hover': {
+				color: undefined,
+			},
+			'.Text': {},
+			'.Text--redirect': {},
+			'.Heading': {},
+			'.Button': {},
+			'.Container': {},
+			'.Link': {},
+		},
+		theme: 'stripe',
+		variables: {
+			colorBackground: '#ffffff',
+			colorText: undefined,
+			fontFamily: undefined,
+			fontSizeBase: undefined,
+		},
+		labels: 'above',
+	};
 
 	beforeEach( () => {
 		expressCheckoutIframe.mockImplementation( () => jest.fn() );
@@ -97,6 +128,27 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		expect(
 			screen.queryByRole( 'button', { name: 'WooPay' } )
 		).toBeInTheDocument();
+	} );
+
+	test( 'respect buttonAttributes API when available ', () => {
+		render(
+			<WoopayExpressCheckoutButton
+				isPreview={ false }
+				buttonSettings={ buttonSettings }
+				api={ api }
+				isProductPage={ false }
+				emailSelector="#email"
+				buttonAttributes={ {
+					height: '55',
+					borderRadius: '20',
+				} }
+			/>
+		);
+
+		const button = screen.queryByRole( 'button', { name: 'WooPay' } );
+		expect( button.getAttribute( 'style' ) ).toBe(
+			'height: 55px; border-radius: 20px;'
+		);
 	} );
 
 	test( 'does not prefetch session data by default', async () => {
@@ -145,6 +197,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					return 'testkey';
 				case 'order_id':
 					return 1;
+				case 'appearance':
+					return mockAppearance;
 				default:
 					return 'foo';
 			}
@@ -170,6 +224,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				order_id: 1,
 				key: 'testkey',
 				billing_email: 'test@test.com',
+				appearance: mockAppearance,
 			} );
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );

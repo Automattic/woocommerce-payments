@@ -17,7 +17,7 @@ jobs:
       matrix:
         woocommerce: [ 'latest' ]
         wordpress:   [ 'latest' ]
-        php:         [ '7.4' ]
+        php:         [ '7.4', '8.1' ]
         directory:   [ 'includes', 'src' ]
     env:
       WP_VERSION:   ${{ matrix.wordpress }}
@@ -30,12 +30,12 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    xdebug2
+          coverage:    xdebug
       # run CI checks
       - run: bash bin/run-ci-tests-check-coverage.bash

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import apiFetch from '@wordpress/api-fetch';
-import { addAction, doAction, doingAction } from '@wordpress/hooks';
+import { addAction, applyFilters, doAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -10,7 +10,6 @@ import { addAction, doAction, doingAction } from '@wordpress/hooks';
 import PaymentRequestCartApi from '../cart-api';
 import WooPaymentsPaymentRequest from '../payment-request';
 import { trackPaymentRequestButtonLoad } from '../tracking';
-import { waitFor } from '@testing-library/react';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 jest.mock( '../tracking', () => ( {
@@ -55,9 +54,6 @@ const jQueryMock = ( selector ) => {
 };
 jQueryMock.blockUI = () => null;
 
-const waitForAction = async ( hookName ) =>
-	await waitFor( () => doingAction( hookName ) === false );
-
 describe( 'WooPaymentsPaymentRequest', () => {
 	let wcpayApi;
 
@@ -65,6 +61,9 @@ describe( 'WooPaymentsPaymentRequest', () => {
 		global.$ = jQueryMock;
 		global.jQuery = jQueryMock;
 		global.wcpayPaymentRequestParams = {
+			nonce: {
+				store_api_nonce: 'global_store_api_nonce',
+			},
 			button_context: 'cart',
 			checkout: {
 				needs_payer_phone: true,
@@ -72,7 +71,7 @@ describe( 'WooPaymentsPaymentRequest', () => {
 				currency_code: 'usd',
 			},
 			total_label: 'wcpay.test (via WooCommerce)',
-			button: { type: 'buy', theme: 'dark', height: '48' },
+			button: { type: 'default', theme: 'dark', height: '48' },
 		};
 		wcpayApi = {
 			getStripe: () => ( {
@@ -101,20 +100,21 @@ describe( 'WooPaymentsPaymentRequest', () => {
 		const headers = new Headers();
 		headers.append( 'Nonce', 'nonce-value' );
 
-		const responseData = {
-			needs_shipping: false,
-			totals: {
-				currency_code: 'USD',
-				total_price: '20',
-				total_tax: '0',
-				total_shipping: '5',
-			},
-			items: [ { name: 'Shirt', quantity: 1, prices: { price: '15' } } ],
-		};
-
 		apiFetch.mockResolvedValue( {
 			headers: headers,
-			json: () => Promise.resolve( responseData ),
+			json: () =>
+				Promise.resolve( {
+					needs_shipping: false,
+					totals: {
+						currency_code: 'USD',
+						total_price: '20',
+						total_tax: '0',
+						total_shipping: '5',
+					},
+					items: [
+						{ name: 'Shirt', quantity: 1, prices: { price: '15' } },
+					],
+				} ),
 		} );
 		const paymentRequestAvailabilityCallback = jest.fn();
 		addAction(
@@ -140,16 +140,19 @@ describe( 'WooPaymentsPaymentRequest', () => {
 		);
 		expect( trackPaymentRequestButtonLoad ).toHaveBeenCalledWith( 'cart' );
 
-		doAction( 'wcpay.payment-request.update-button-data' );
-
-		await waitForAction( 'wcpay.payment-request.update-button-data' );
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
 		expect( paymentRequestAvailabilityCallback ).toHaveBeenCalledTimes( 1 );
 
 		// firing this should initialize the button again.
 		doAction( 'payment-request-test.registered-action.cancel' );
 
-		doAction( 'wcpay.payment-request.update-button-data' );
-		await waitForAction( 'wcpay.payment-request.update-button-data' );
+		await applyFilters(
+			'wcpay.payment-request.update-button-data',
+			Promise.resolve()
+		);
 		expect( paymentRequestAvailabilityCallback ).toHaveBeenCalledTimes( 2 );
 	} );
 } );

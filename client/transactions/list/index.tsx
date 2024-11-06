@@ -42,18 +42,19 @@ import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
-import { displayStatus as displayDepositStatus } from 'deposits/strings';
+import { depositStatusLabels } from 'deposits/strings';
 import {
 	formatStringValue,
 	isExportModalDismissed,
 	getExportLanguage,
 	isDefaultSiteLanguage,
-} from 'utils';
+	applyThousandSeparator,
+} from 'wcpay/utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
 	formatExportAmount,
-} from 'utils/currency';
+} from 'multi-currency/interface/functions';
 import { getChargeChannel } from 'utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
@@ -66,9 +67,8 @@ import DownloadButton from 'components/download-button';
 import CSVExportModal from 'components/csv-export-modal';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
-import { applyThousandSeparator } from '../../utils/index.js';
 import { HoverTooltip } from 'components/tooltip';
-import { PAYMENT_METHOD_TITLES } from 'payment-methods/constants';
+import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 interface TransactionsListProps {
@@ -94,6 +94,7 @@ interface Column extends TableCardColumn {
 		| 'deposit';
 	visible?: boolean;
 	cellClassName?: string;
+	labelInCsv?: string;
 }
 
 const getPaymentSourceDetails = ( txn: Transaction ) => {
@@ -158,6 +159,7 @@ const getColumns = (
 			key: 'date',
 			label: __( 'Date / Time', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
+			labelInCsv: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',
@@ -452,7 +454,7 @@ export const TransactionsList = (
 		);
 
 		const depositStatus = txn.deposit_status
-			? displayDepositStatus[ txn.deposit_status ]
+			? depositStatusLabels[ txn.deposit_status ]
 			: '';
 
 		// Map transaction into table row.
@@ -595,9 +597,7 @@ export const TransactionsList = (
 				'woocommerce-payments'
 		  );
 
-	const title = props.depositId
-		? __( 'Deposit transactions', 'woocommerce-payments' )
-		: __( 'Transactions', 'woocommerce-payments' );
+	const title = __( 'Transactions', 'woocommerce-payments' );
 
 	const downloadable = !! rows.length;
 
@@ -730,9 +730,15 @@ export const TransactionsList = (
 				endpointExport( '' );
 			}
 		} else {
+			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
+				if ( column.labelInCsv ) {
+					return { ...column, label: column.labelInCsv };
+				}
+				return column;
+			} );
 			downloadCSVFile(
 				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( columnsToDisplay, rows )
+				generateCSVDataFromTable( columnsToDisplayInCsv, rows )
 			);
 		}
 

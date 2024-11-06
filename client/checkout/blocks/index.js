@@ -19,7 +19,10 @@ import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
-import expressCheckoutElementPaymentMethod from '../../express-checkout/blocks';
+import {
+	expressCheckoutElementApplePay,
+	expressCheckoutElementGooglePay,
+} from '../../express-checkout/blocks';
 import tokenizedCartPaymentRequestPaymentMethod from '../../tokenized-payment-request/blocks';
 
 import {
@@ -41,6 +44,7 @@ import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
+import '../utils/copy-test-number';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
@@ -72,8 +76,6 @@ const api = new WCPayAPI(
 	},
 	request
 );
-
-const stripeAppearance = getUPEConfig( 'wcBlocksUPEAppearance' );
 
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
@@ -110,7 +112,6 @@ Object.entries( enabledPaymentMethodsConfig )
 					api={ api }
 					upeConfig={ upeConfig }
 					upeName={ upeName }
-					stripeAppearance={ stripeAppearance }
 					upeAppearanceTheme={ upeAppearanceTheme }
 				/>
 			),
@@ -156,14 +157,17 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
-	registerExpressPaymentMethod(
-		tokenizedCartPaymentRequestPaymentMethod( api )
-	);
-} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
-	registerExpressPaymentMethod( expressCheckoutElementPaymentMethod( api ) );
-} else {
-	registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
+	if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
+		registerExpressPaymentMethod(
+			tokenizedCartPaymentRequestPaymentMethod( api )
+		);
+	} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
+		registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+	} else {
+		registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+	}
 }
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );

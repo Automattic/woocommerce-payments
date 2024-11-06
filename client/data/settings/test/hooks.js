@@ -177,6 +177,7 @@ describe( 'Settings hooks tests', () => {
 				hasFinishedResolution: jest.fn(),
 				isResolving: jest.fn(),
 				isSavingSettings: jest.fn(),
+				isDirty: jest.fn(),
 			};
 		} );
 

@@ -224,10 +224,14 @@ export const DepositFailureNotice: React.FC< {
 	 */
 	updateAccountLink: string;
 } > = ( { updateAccountLink } ) => {
-	const accountLinkWithSource = addQueryArgs( updateAccountLink, {
-		source: 'deposits-overview__deposit-failure-notice',
-	} );
-	return (
+	const accountLinkWithSource = updateAccountLink
+		? addQueryArgs( updateAccountLink, {
+				from: 'WCPAY_PAYOUTS',
+				source: 'wcpay-payout-failure-notice',
+		  } )
+		: '';
+
+	return updateAccountLink !== '' ? (
 		<InlineNotice
 			status="warning"
 			icon
@@ -246,8 +250,8 @@ export const DepositFailureNotice: React.FC< {
 								recordEvent(
 									'wcpay_account_details_link_clicked',
 									{
-										source:
-											'deposits-overview__deposit-failure-notice',
+										from: 'WCPAY_PAYOUTS',
+										source: 'wcpay-payout-failure-notice',
 									}
 								)
 							}
@@ -257,5 +261,5 @@ export const DepositFailureNotice: React.FC< {
 				},
 			} ) }
 		</InlineNotice>
-	);
+	) : null;
 };

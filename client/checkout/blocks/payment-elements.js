@@ -36,7 +36,7 @@ const PaymentElements = ( { api, ...props } ) => {
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
-			let upeAppearance = getAppearance( 'blocks_checkout' );
+			let upeAppearance = getAppearance( 'blocks_checkout', false );
 			upeAppearance = await api.saveUPEAppearance(
 				upeAppearance,
 				'blocks_checkout'
@@ -90,6 +90,7 @@ const PaymentElements = ( { api, ...props } ) => {
 					errorMessage={ errorMessage }
 					fingerprint={ fingerprint }
 					onLoadError={ setPaymentProcessorLoadErrorMessage }
+					theme={ appearance?.theme }
 					{ ...props }
 				/>
 			</Elements>

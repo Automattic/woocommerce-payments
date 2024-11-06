@@ -134,6 +134,7 @@ class Klarna_Payment_Method_Test extends WCPAY_UnitTestCase {
 					Country_Code::ITALY,
 					Country_Code::NETHERLANDS,
 					Country_Code::SPAIN,
+					Country_Code::FRANCE,
 				],
 			],
 			'BE account with EUR store currency' => [
@@ -148,6 +149,22 @@ class Klarna_Payment_Method_Test extends WCPAY_UnitTestCase {
 					Country_Code::ITALY,
 					Country_Code::NETHERLANDS,
 					Country_Code::SPAIN,
+					Country_Code::FRANCE,
+				],
+			],
+			'FR account with EUR store currency' => [
+				'account_country' => Country_Code::FRANCE,
+				'site_currency'   => Currency_Code::EURO,
+				'expected_result' => [
+					Country_Code::AUSTRIA,
+					Country_Code::BELGIUM,
+					Country_Code::FINLAND,
+					Country_Code::GERMANY,
+					Country_Code::IRELAND,
+					Country_Code::ITALY,
+					Country_Code::NETHERLANDS,
+					Country_Code::SPAIN,
+					Country_Code::FRANCE,
 				],
 			],
 		];

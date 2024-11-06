@@ -3,17 +3,18 @@
 /**
  * External dependencies
  */
-import { addFilter, doAction } from '@wordpress/hooks';
+import { addFilter, applyFilters } from '@wordpress/hooks';
 import paymentRequestButtonUi from '../button-ui';
-import { waitForAction } from '../frontend-utils';
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {
 		try {
 			paymentRequestButtonUi.blockButton();
 
-			doAction( 'wcpay.payment-request.update-button-data' );
-			await waitForAction( 'wcpay.payment-request.update-button-data' );
+			await applyFilters(
+				'wcpay.payment-request.update-button-data',
+				Promise.resolve()
+			);
 
 			paymentRequestButtonUi.unblockButton();
 		} catch ( e ) {

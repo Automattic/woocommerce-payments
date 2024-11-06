@@ -40,14 +40,3 @@ export const WooPayIncompatibilityNotice = () => (
 		learnMoreLinkHref="https://woocommerce.com/document/woopay-merchant-documentation/#compatibility"
 	/>
 );
-
-export const ExpressCheckoutIncompatibilityNotice = () => (
-	<IncompatibilityNotice
-		message={ __(
-			'Your custom checkout fields may not be compatible with these payment methods.',
-			'woocommerce-payments'
-		) }
-		// eslint-disable-next-line max-len
-		learnMoreLinkHref="https://woocommerce.com/document/woopayments/payment-methods/apple-pay-and-google-pay-compatibility/#faq-extra-fields-on-checkout"
-	/>
-);

@@ -25,7 +25,7 @@ redirect_output() {
     fi
 }
 
-# --user xfs forces the wordpress:cli container to use a user with the same ID as the main wordpress container. See:
+# --user 33:33 forces the wordpress:cli container to use a user with the same ID as the main wordpress container. See:
 # https://hub.docker.com/_/wordpress#running-as-an-arbitrary-user
 cli()
 {

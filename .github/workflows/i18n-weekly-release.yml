@@ -21,7 +21,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/composer/
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       - uses: actions/cache@v4
         with:
           path: ~/.npm/
@@ -33,7 +33,7 @@ jobs:
         run: |
           npm ci
           npm run build
-          
+
           if [[ ! -f woocommerce-payments.zip ]]; then
             echo "Failed to create release zip"
             exit 1

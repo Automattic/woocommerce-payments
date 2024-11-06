@@ -44,6 +44,7 @@ describe( 'RefundModal', () => {
 
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
+			isDirty: false,
 			isSaving: false,
 			saveSettings: ( a ) => a,
 		} );

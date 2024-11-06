@@ -101,11 +101,15 @@ const NextDepositNotice: React.FC = () => {
 
 const DepositFailureNotice: React.FC = () => {
 	const { hasErroredExternalAccount } = useAccountStatus();
-	const accountLink = addQueryArgs( wcpaySettings.accountStatus.accountLink, {
-		source: 'deposit__failure-notice',
-	} );
 
-	return hasErroredExternalAccount ? (
+	const accountLink = wcpaySettings.accountStatus.accountLink
+		? addQueryArgs( wcpaySettings.accountStatus.accountLink, {
+				from: 'WCPAY_PAYOUTS',
+				source: 'wcpay-payout-failure-notice',
+		  } )
+		: '';
+
+	return hasErroredExternalAccount && accountLink !== '' ? (
 		<BannerNotice
 			status="warning"
 			icon
@@ -123,7 +127,10 @@ const DepositFailureNotice: React.FC = () => {
 							onClick={ () =>
 								recordEvent(
 									'wcpay_account_details_link_clicked',
-									{ source: 'deposit__failure-notice' }
+									{
+										from: 'WCPAY_PAYOUTS',
+										source: 'wcpay-payout-failure-notice',
+									}
 								)
 							}
 							href={ accountLink }

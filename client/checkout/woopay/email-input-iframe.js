@@ -6,6 +6,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from 'utils/express-checkout';
+import { getAppearance } from 'checkout/upe-styles';
 import {
 	getTargetElement,
 	validateEmail,
@@ -13,6 +14,7 @@ import {
 	shouldSkipWooPay,
 	deleteSkipWooPayCookie,
 } from './utils';
+import { getAppearanceType } from '../utils';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -177,6 +179,7 @@ export const handleWooPayEmailInput = async (
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
+		const appearanceType = getAppearanceType();
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(
@@ -186,6 +189,9 @@ export const handleWooPayEmailInput = async (
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
+					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+						? getAppearance( appearanceType, true )
+						: null,
 				}
 			).then( ( response ) => {
 				if ( response?.data?.session ) {
@@ -325,7 +331,7 @@ export const handleWooPayEmailInput = async (
 		window.dispatchEvent( woopayUserCheckEvent );
 	};
 
-	const woopayLocateUser = async ( email ) => {
+	const woopayLocateUser = async ( email, shouldOpenIframe = true ) => {
 		parentDiv.insertBefore( spinner, woopayEmailInput );
 
 		if ( parentDiv.contains( errorMessage ) ) {
@@ -399,7 +405,9 @@ export const handleWooPayEmailInput = async (
 				dispatchUserExistEvent( data[ 'user-exists' ] );
 
 				if ( data[ 'user-exists' ] ) {
-					openIframe( email );
+					if ( shouldOpenIframe ) {
+						openIframe( email );
+					}
 				} else if ( data.code !== 'rest_invalid_param' ) {
 					recordUserEvent( 'checkout_woopay_save_my_info_offered' );
 
@@ -430,6 +438,8 @@ export const handleWooPayEmailInput = async (
 		spinner.remove();
 
 		timer = setTimeout( () => {
+			dispatchUserExistEvent( false ); // Always show checkbox until the email is from a valid WooPay user.
+
 			if ( validateEmail( email ) ) {
 				woopayLocateUser( email );
 			}
@@ -529,6 +539,14 @@ export const handleWooPayEmailInput = async (
 			closeIframe( false );
 		}
 	} );
+
+	if ( woopayEmailInput.value ) {
+		const email = woopayEmailInput.value;
+
+		if ( validateEmail( email ) ) {
+			woopayLocateUser( email, false );
+		}
+	}
 
 	if ( customerClickedBackButton ) {
 		// Dispatch an event declaring this user exists as returned via back button. Wait for the window to load.

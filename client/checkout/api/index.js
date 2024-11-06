@@ -11,6 +11,8 @@ import {
 	getExpressCheckoutAjaxURL,
 	getExpressCheckoutConfig,
 } from 'utils/express-checkout';
+import { getAppearance } from 'checkout/upe-styles';
+import { getAppearanceType } from '../utils';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -101,15 +103,15 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Load Stripe for payment request button.
+	 * Load Stripe for Express Checkout with the merchant’s connected account.
 	 *
-	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
-	loadStripe( forceAccountRequest = false ) {
+	loadStripeForExpressCheckout() {
 		return new Promise( ( resolve ) => {
 			try {
-				resolve( this.getStripe( forceAccountRequest ) );
+				// Force Stripe to be loadded with the connected account.
+				resolve( this.getStripe( true ) );
 			} catch ( error ) {
 				// In order to avoid showing console error publicly to users,
 				// we resolve instead of rejecting when there is an error.
@@ -439,13 +441,33 @@ export default class WCPayAPI {
 		} );
 	}
 
+	/**
+	 * Pays for an order based on the Express Checkout payment method.
+	 *
+	 * @param {integer} order The order ID.
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	expressCheckoutECEPayForOrder( order, paymentData ) {
+		return this.request( getExpressCheckoutAjaxURL( 'pay_for_order' ), {
+			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.pay_for_order,
+			order,
+			...paymentData,
+		} );
+	}
+
 	initWooPay( userEmail, woopayUserSession ) {
 		if ( ! this.isWooPayRequesting ) {
 			this.isWooPayRequesting = true;
 			const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 			const nonce = getConfig( 'initWooPayNonce' );
+			const appearanceType = getAppearanceType();
+
 			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
 				_wpnonce: nonce,
+				appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+					? getAppearance( appearanceType, true )
+					: null,
 				email: userEmail,
 				user_session: woopayUserSession,
 				order_id: getConfig( 'order_id' ),

@@ -22,11 +22,14 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useSettings,
-	useCurrencies,
-	useEnabledCurrencies,
 	useManualCapture,
 	useAccountDomesticCurrency,
 } from '../../../data';
+import {
+	useCurrencies,
+	useEnabledCurrencies,
+} from 'multi-currency/interface/data';
+
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
@@ -34,11 +37,14 @@ jest.mock( '../../../data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useEnabledPaymentMethodIds: jest.fn(),
 	useSettings: jest.fn(),
-	useCurrencies: jest.fn(),
-	useEnabledCurrencies: jest.fn(),
 	useGetPaymentMethodStatuses: jest.fn(),
 	useManualCapture: jest.fn(),
 	useAccountDomesticCurrency: jest.fn(),
+} ) );
+
+jest.mock( 'multi-currency/interface/data', () => ( {
+	useCurrencies: jest.fn(),
+	useEnabledCurrencies: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -270,10 +276,13 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		userEvent.click( screen.getByText( 'Continue' ) );
 
+		await jest.runAllTimersAsync();
+
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
 			'p24',
 		] );
+
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
 				{ initialMethods: [ 'card' ] },
@@ -334,6 +343,8 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 
 		userEvent.click( screen.getByText( 'Continue' ) );
+
+		await jest.runAllTimersAsync();
 
 		// Methods are removed.
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [

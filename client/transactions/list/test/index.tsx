@@ -43,6 +43,7 @@ jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		onLoad: jest.fn(),
+		onHistoryChange: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
@@ -266,10 +267,11 @@ describe( 'Transactions list', () => {
 			isLoading: false,
 		} );
 
-		const { container } = render(
+		const { container, getByRole } = render(
 			<TransactionsList depositId="po_mock" />
 		);
 		expect( container ).toMatchSnapshot();
+		getByRole( 'heading', { name: 'Transactions' } );
 		expect( mockUseTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
 	} );
 
@@ -620,7 +622,7 @@ describe( 'Transactions list', () => {
 
 			const expected = [
 				'"Transaction Id"',
-				'"Date / Time"',
+				'"Date / Time (UTC)"',
 				'Type',
 				'Channel',
 				'"Paid Currency"',

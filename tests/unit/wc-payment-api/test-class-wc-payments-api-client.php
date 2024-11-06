@@ -319,6 +319,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		// Call the method under test.
 		$result = $this->payments_api_client->get_onboarding_data(
+			true,
 			'http://localhost',
 			$site_data,
 			$user_data,

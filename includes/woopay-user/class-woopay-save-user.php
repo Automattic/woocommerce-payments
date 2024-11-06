@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 
 /**
@@ -115,10 +116,10 @@ class WooPay_Save_User {
 	 * @return void
 	 */
 	public function maybe_clear_session_key() {
-		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
+		$session_data = WC()->session->get( WooPay_Session::WOOPAY_SESSION_KEY );
 
 		if ( ! empty( $session_data ) ) {
-			WC()->session->__unset( WooPay_Extension::WOOPAY_SESSION_KEY );
+			WC()->session->__unset( WooPay_Session::WOOPAY_SESSION_KEY );
 		}
 	}
 }

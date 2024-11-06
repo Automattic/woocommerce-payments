@@ -8,7 +8,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import PAYMENT_METHOD_IDS from 'wcpay/payment-methods/constants';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import PaymentMethodDisabledTooltip, {
 	DocumentationUrlForDisabledPaymentMethod,
 	getDocumentationUrlForDisabledPaymentMethod,

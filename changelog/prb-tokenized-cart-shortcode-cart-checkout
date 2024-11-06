@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-feat: tokenized cart PRBs on shortcode cart and checkout behind feature flag.

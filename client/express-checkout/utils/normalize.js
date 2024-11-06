@@ -7,14 +7,17 @@
  * @return {Array} An array of PaymentItems
  */
 export const normalizeLineItems = ( displayItems ) => {
-	return displayItems.map( ( displayItem ) =>
-		// The amount prop is already present on the item.
-		( {
-			...displayItem,
+	return displayItems.map( ( displayItem ) => {
+		let amount = displayItem?.amount ?? displayItem?.value;
+		if ( displayItem.key === 'total_discount' ) {
+			amount = -amount;
+		}
+
+		return {
 			name: displayItem.label,
-			amount: displayItem?.amount ?? displayItem?.value,
-		} )
-	);
+			amount,
+		};
+	} );
 };
 
 /**
@@ -71,6 +74,23 @@ export const normalizeOrderData = ( event, paymentMethodId ) => {
 		payment_request_type: event?.expressPaymentType,
 		express_payment_type: event?.expressPaymentType,
 		'wcpay-fraud-prevention-token': fraudPreventionTokenValue,
+	};
+};
+
+/**
+ * Normalize Pay for Order data from Stripe's object to the expected format for WC.
+ *
+ * @param {Object} event Stripe's event object.
+ * @param {string} paymentMethodId Stripe's payment method id.
+ *
+ * @return {Object} Order object in the format WooCommerce expects.
+ */
+export const normalizePayForOrderData = ( event, paymentMethodId ) => {
+	return {
+		payment_method: 'woocommerce_payments',
+		'wcpay-payment-method': paymentMethodId,
+		express_payment_type: event?.expressPaymentType,
+		'wcpay-fraud-prevention-token': window.wcpayFraudPreventionToken ?? '',
 	};
 };
 

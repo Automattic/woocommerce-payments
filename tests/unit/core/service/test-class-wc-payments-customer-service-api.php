@@ -41,7 +41,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Filter callback to return the mock http client
 	 *
-	 * @return void
+	 * @return WC_Payments_Http|MockObject
 	 */
 	public function replace_http_client() {
 		return $this->mock_http_client;
@@ -52,6 +52,10 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		// Reset the mode.
+		WC_Payments::mode()->live();
+
 		// mock WC_Payments_Http and use it to set up system under test.
 		$this->mock_http_client = $this
 			->getMockBuilder( 'WC_Payments_Http' )
@@ -70,11 +74,15 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	 * Post-test teardown
 	 */
 	public function tear_down() {
-		parent::tear_down();
 		remove_filter(
 			'wc_payments_http',
 			[ $this, 'replace_http_client' ]
 		);
+
+		// Clear the cache after each test.
+		$this->customer_service->delete_cached_payment_methods();
+
+		parent::tear_down();
 	}
 
 	/**
@@ -311,7 +319,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 
 		$response = $this->customer_service_api->get_payment_methods_for_customer( 'cus_12345' );
 
-		// When the payment methods are unable to update, a empty array is sent back.
+		// When the payment methods are unable to update, an empty array is sent back.
 		$this->assertEquals( [], $response );
 	}
 
@@ -442,19 +450,19 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 		$response = $this->customer_service_api->get_payment_methods_for_customer( 'cus_123' );
 		$this->assertEquals( $mock_payment_methods, $response );
 
-		// check if can retrieve from cache.
+		// check if we can retrieve from cache.
 		$db_cache       = WC_Payments::get_database_cache();
 		$cache_response = $db_cache->get( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . 'cus_123_card' );
 		$this->assertEquals( $mock_payment_methods, $cache_response );
 
 		// set up the user for customer.
-		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_test123' );
+		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_123' );
 
 		// run the method.
-		$this->customer_service_api->clear_cached_payment_methods_for_user( 'cus_123' );
+		$this->customer_service_api->clear_cached_payment_methods_for_user( 1 );
 
 		// check that cache is empty.
-		$cache_response = $db_cache->get( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . 'cus_12345_card' );
+		$cache_response = $db_cache->get( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . 'cus_123_card' );
 		$this->assertEquals( null, $cache_response );
 	}
 

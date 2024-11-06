@@ -10,13 +10,9 @@ import React, { useContext } from 'react';
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
-import {
-	usePaymentRequestEnabledSettings,
-	useExpressCheckoutShowIncompatibilityNotice,
-} from 'wcpay/data';
+import { usePaymentRequestEnabledSettings } from 'wcpay/data';
 import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
-import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
 
@@ -28,7 +24,6 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 		updateIsPaymentRequestEnabled,
 	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
 
-	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
 	const {
 		duplicates,
 		dismissedDuplicateNotices,
@@ -176,9 +171,6 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
-			{ showIncompatibilityNotice && (
-				<ExpressCheckoutIncompatibilityNotice />
-			) }
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }

@@ -9,7 +9,7 @@ import { recordEvent } from 'wcpay/tracks';
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import Loadable from '../loadable';
 import './style.scss';
 
@@ -83,7 +83,7 @@ const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
 				</p>
 				{ reportLink && (
 					<Link href={ reportLink } onClick={ handleReportLinkClick }>
-						{ __( 'View report', 'woocommerce_payments' ) }
+						{ __( 'View report', 'woocommerce-payments' ) }
 					</Link>
 				) }
 			</div>

@@ -12,7 +12,6 @@ import userEvent from '@testing-library/user-event';
 import ExpressCheckout from '..';
 import {
 	useEnabledPaymentMethodIds,
-	useExpressCheckoutShowIncompatibilityNotice,
 	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
@@ -27,7 +26,6 @@ jest.mock( 'wcpay/data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn(),
-	useExpressCheckoutShowIncompatibilityNotice: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 } ) );
 
@@ -217,26 +215,6 @@ describe( 'ExpressCheckout', () => {
 		expect(
 			screen.queryByText(
 				'One or more of your extensions are incompatible with WooPay.'
-			)
-		).toBeInTheDocument();
-	} );
-
-	it( 'should show Express Checkout incompatibility warning', async () => {
-		const context = { featureFlags: { woopay: true } };
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
-		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
-
-		useExpressCheckoutShowIncompatibilityNotice.mockReturnValue( true );
-
-		render(
-			<WCPaySettingsContext.Provider value={ context }>
-				<ExpressCheckout />
-			</WCPaySettingsContext.Provider>
-		);
-
-		expect(
-			screen.queryByText(
-				'Your custom checkout fields may not be compatible with these payment methods.'
 			)
 		).toBeInTheDocument();
 	} );

@@ -927,13 +927,16 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $mock_token, $this->mock_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	}
 
-	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
+	public function test_failure_result_returned_if_phone_number_is_invalid() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_billing_phone( '+1123456789123456789123' );
 		$order->save();
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Invalid phone number.' );
-		$this->mock_gateway->process_payment( $order->get_id() );
+		$result = $this->mock_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
+		WC()->session->set( 'wc_notices', [] );
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {
