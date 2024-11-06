@@ -10,13 +10,14 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { useDeposits } from 'wcpay/data';
 import './style.scss';
 
 export const PayoutsRenameNotice = () => {
 	const isPayoutsRenameNoticeDismissed =
 		wcpaySettings.isPayoutsRenameNoticeDismissed;
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
-	const [ showTour, setShowTour ] = useState( true );
+	const [ showTour, setShowTour ] = useState( false );
 
 	const onClose = () => {
 		updateOptions( {
@@ -27,7 +28,9 @@ export const PayoutsRenameNotice = () => {
 	};
 
 	useEffect( () => {
-		setShowTour( ! isPayoutsRenameNoticeDismissed );
+		if ( ! isPayoutsRenameNoticeDismissed ) {
+			setShowTour( true );
+		}
 	}, [ isPayoutsRenameNoticeDismissed ] );
 
 	if ( ! showTour ) return null;
