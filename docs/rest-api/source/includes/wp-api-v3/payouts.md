@@ -2,6 +2,9 @@
 
 The Payouts API endpoints provide access to an account's payouts data, including an overview of account balances, payout schedule and payout history.
 
+>[!NOTE] 
+>Payouts have historically been referred to as deposits, therefore these terms may be used interchangeably in response objects.
+
 ## Payout object
 
 ```json
