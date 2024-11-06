@@ -3231,12 +3231,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * The get_icon() method from the WC_Payment_Gateway class wraps the icon URL into a prepared HTML element, but there are situations when this
-	 * element needs to be rendered differently on the UI (e.g. additional styles or `display` property).
+	 * Overriding the base method because the `alt` tag would otherwise output the markup returned by the `get_title()` method in this class - which we don't want.
 	 *
-	 * This is why we need a usual getter like this to provide a raw icon URL to the UI, which will render it according to particular requirements.
+	 * @return string
+	 */
+	public function get_icon() {
+		return '<img src="' . esc_url( WC_HTTPS::force_https_url( $this->get_icon_url() ) ) . '" alt="' . esc_attr( $this->payment_method->get_title() ) . ' payment method logo" />';
+	}
+
+	/**
+	 * The URL for the current payment method's icon.
 	 *
-	 * @return string Returns the payment method icon URL.
+	 * @return string The payment method icon URL.
 	 */
 	public function get_icon_url() {
 		return $this->payment_method->get_icon();
