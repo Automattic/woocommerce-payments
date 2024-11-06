@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Deposit overview renders automatic deposit correctly 1`] = `
+exports[`Deposit overview renders automatic payout correctly 1`] = `
 <div>
   <div
     class="wcpay-deposit-overview"
