@@ -192,6 +192,16 @@ function createStripePaymentMethod(
 		};
 	}
 
+	if (
+		getUPEConfig( 'isOrderPay' ) &&
+		[ 'afterpay_clearpay', 'affirm' ].includes( paymentMethodType ) &&
+		params?.billing_details?.address &&
+		! params.billing_details.address.line1
+	) {
+		// These payment methods don't accept an address object with partial information.
+		delete params.billing_details.address;
+	}
+
 	return api
 		.getStripeForUPE( paymentMethodType )
 		.createPaymentMethod( { elements, params: params } );
