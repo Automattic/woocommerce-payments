@@ -90,18 +90,25 @@ class Utils {
 	}
 
 	/**
-	 * Returns true if the request that's currently being processed is a Store API batch request, false
-	 * otherwise.
+	 * Determine if the request that's currently being processed is a Store API batch request.
 	 *
 	 * @return bool True if the request is a Store API batch request, false otherwise.
 	 */
 	public static function is_store_batch_request(): bool {
+		// @TODO We should move to a more robust way of getting to the route, like WC is doing in the StoreAPI library. https://github.com/woocommerce/woocommerce/blob/9ac48232a944baa2dbfaa7dd47edf9027cca9519/plugins/woocommerce/src/StoreApi/Authentication.php#L15-L15
 		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
 		} else {
+			// Extract the request path from the request URL.
 			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = $url_parts ? rtrim( $url_parts['path'], '/' ) : '';
-			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+			$request_path = ! empty( $url_parts['path'] ) ? rtrim( $url_parts['path'], '/' ) : '';
+			// Remove the REST API prefix from the request path to end up with the route.
+			$rest_route = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+		}
+
+		// Bail early if the rest route is empty.
+		if ( empty( $rest_route ) ) {
+			return false;
 		}
 
 		return 1 === preg_match( '@^\/wc\/store(\/v[\d]+)?\/batch@', $rest_route );

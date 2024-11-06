@@ -1109,8 +1109,16 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_store_api_request_with_malformed_url() {
-		$_SERVER['REQUEST_URI'] = '///wp-json/wp/v2/users';
+		$_SERVER['REQUEST_URI'] = '///wp-json/wc/store/v1/checkout';
 
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+	}
+
+	public function test_is_store_api_request_with_url_with_no_path() {
+		$_SERVER['REQUEST_URI'] = '?something';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+
+		$_SERVER['REQUEST_URI'] = '';
 		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
 	}
 

@@ -38,15 +38,32 @@ import {
 	formatCurrency,
 	formatExplicitCurrency,
 } from 'multi-currency/interface/functions';
-import { displayStatus } from '../strings';
+import { depositStatusLabels } from '../strings';
 import './style.scss';
 
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
  */
-const Status: React.FC< { status: string } > = ( { status } ) => (
-	<OrderStatus order={ { status } } orderStatusMap={ displayStatus } />
-);
+const DepositStatusIndicator: React.FC< {
+	deposit: Pick< CachedDeposit, 'status' | 'type' >;
+} > = ( { deposit } ) => {
+	let displayStatusMap = depositStatusLabels;
+
+	// Withdrawals are displayed as 'Deducted' instead of 'Paid' when the status is 'paid'.
+	if ( deposit.type === 'withdrawal' ) {
+		displayStatusMap = {
+			...displayStatusMap,
+			paid: displayStatusMap.deducted,
+		};
+	}
+
+	return (
+		<OrderStatus
+			order={ { status: deposit.status } }
+			orderStatusMap={ displayStatusMap }
+		/>
+	);
+};
 
 interface SummaryItemProps {
 	label: string;
@@ -102,9 +119,15 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 		);
 	}
 
-	const depositDateLabel = deposit.automatic
-		? __( 'Deposit date', 'woocommerce-payments' )
-		: __( 'Instant deposit date', 'woocommerce-payments' );
+	const isWithdrawal = deposit.type === 'withdrawal';
+
+	let depositDateLabel = __( 'Deposit date', 'woocommerce-payments' );
+	if ( ! deposit.automatic ) {
+		depositDateLabel = __( 'Instant deposit date', 'woocommerce-payments' );
+	}
+	if ( isWithdrawal ) {
+		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
+	}
 
 	const depositDateItem = (
 		<SummaryItem
@@ -117,7 +140,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 				)
 			}
-			value={ <Status status={ deposit.status } /> }
+			value={ <DepositStatusIndicator deposit={ deposit } /> }
 			detail={ deposit.bankAccount }
 		/>
 	);
@@ -138,16 +161,30 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 				</Card>
 			) : (
 				<SummaryList
-					label={ __( 'Deposit overview', 'woocommerce-payments' ) }
+					label={
+						isWithdrawal
+							? __(
+									'Withdrawal overview',
+									'woocommerce-payments'
+							  )
+							: __( 'Deposit overview', 'woocommerce-payments' )
+					}
 				>
 					{ () => [
 						depositDateItem,
 						<SummaryItem
 							key="depositAmount"
-							label={ __(
-								'Deposit amount',
-								'woocommerce-payments'
-							) }
+							label={
+								isWithdrawal
+									? __(
+											'Withdrawal amount',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Deposit amount',
+											'woocommerce-payments'
+									  )
+							}
 							value={ formatExplicitCurrency(
 								deposit.amount + deposit.fee,
 								deposit.currency
@@ -170,10 +207,17 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 						/>,
 						<SummaryItem
 							key="netDepositAmount"
-							label={ __(
-								'Net deposit amount',
-								'woocommerce-payments'
-							) }
+							label={
+								isWithdrawal
+									? __(
+											'Net withdrawal amount',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Net deposit amount',
+											'woocommerce-payments'
+									  )
+							}
 							value={ formatExplicitCurrency(
 								deposit.amount,
 								deposit.currency

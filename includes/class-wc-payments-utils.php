@@ -1343,26 +1343,35 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Returns true if the request that's currently being processed is a Store API request, false
-	 * otherwise.
+	 * Determine if the request that's currently being processed is a Store API request.
 	 *
 	 * @return bool True if request is a Store API request, false otherwise.
 	 */
 	public static function is_store_api_request(): bool {
+		// @TODO We should move to a more robust way of getting to the route, like WC is doing in the StoreAPI library. https://github.com/woocommerce/woocommerce/blob/9ac48232a944baa2dbfaa7dd47edf9027cca9519/plugins/woocommerce/src/StoreApi/Authentication.php#L15-L15
 		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
 		} else {
+			// Extract the request path from the request URL.
 			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = $url_parts ? rtrim( $url_parts['path'], '/' ) : '';
-			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+			$request_path = ! empty( $url_parts['path'] ) ? rtrim( $url_parts['path'], '/' ) : '';
+			// Remove the REST API prefix from the request path to end up with the route.
+			$rest_route = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
 		}
 
+		// Bail early if the rest route is empty.
+		if ( empty( $rest_route ) ) {
+			return false;
+		}
+
+		// Try to match the rest route against the store API route patterns.
 		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
 			if ( 1 === preg_match( $pattern, $rest_route ) ) {
 				return true;
 			}
 		}
 
+		// If no match was found, this is not a Store API request.
 		return false;
 	}
 
