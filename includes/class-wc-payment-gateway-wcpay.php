@@ -589,7 +589,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$test_mode_badge = '<span class="test-mode badge">' . __( 'Test Mode', 'woocommerce-payments' ) . '</span>';
 			}
 
-			return '<div class="label-title-container"><span class="payment-method-title">' . $title . '</span>' . $test_mode_badge . '</div>';
+			$bnpl_messaging_container = '';
+			if ( $this->payment_method->is_bnpl() ) {
+				$bnpl_messaging_container = '<span id="stripe-pmme-container-' . $this->payment_method->get_id() . '" class="stripe-pmme-container"></span>';
+			}
+
+			$html  = '<div class="woopayments-rich-payment-method-label">';
+			$html .= '<div class="label-title-container">';
+			$html .= '<span class="payment-method-title">&nbsp;' . $title . '</span>';
+			$html .= $test_mode_badge;
+			$html .= '</div>';
+			$html .= $this->get_icon();
+			$html .= $bnpl_messaging_container;
+			$html .= '</div>';
+
+			return $html;
 		}
 
 		return $title;
@@ -3235,7 +3249,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_icon() {
-		return '<img src="' . esc_url( WC_HTTPS::force_https_url( $this->get_icon_url() ) ) . '" alt="' . esc_attr( $this->payment_method->get_title() ) . ' payment method logo" />';
+		return '<img src="' . esc_url( WC_HTTPS::force_https_url( $this->get_theme_icon() ) ) . '" alt="' . esc_attr( $this->payment_method->get_title() ) . ' payment method logo" />';
 	}
 
 	/**

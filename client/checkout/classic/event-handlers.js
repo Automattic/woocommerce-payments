@@ -166,27 +166,16 @@ jQuery( function ( $ ) {
 
 		for ( const method of paymentMethodsKeys ) {
 			if ( bnplMethods.includes( method ) ) {
-				const targetLabel = document.querySelector(
-					`label[for="${ labelBase }${ method }"]`
-				);
 				const containerID = `stripe-pmme-container-${ method }`;
+				const container = document.getElementById( containerID );
 
-				if ( document.getElementById( containerID ) ) {
-					document.getElementById( containerID ).innerHTML = '';
-				}
-
-				if ( ! targetLabel ) {
+				if ( ! container ) {
 					continue;
 				}
 
-				let container = document.getElementById( containerID );
-				if ( ! container ) {
-					container = document.createElement( 'span' );
-					container.id = containerID;
-					container.dataset.paymentMethodType = method;
-					container.classList.add( 'stripe-pmme-container' );
-					targetLabel.appendChild( container );
-				}
+				container.innerHTML = '';
+				container.dataset.paymentMethodType = method;
+
 				const currentCountry =
 					cartData?.billing_address?.country ||
 					getUPEConfig( 'storeCountry' );
