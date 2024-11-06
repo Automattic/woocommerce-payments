@@ -175,39 +175,39 @@ jQuery( function ( $ ) {
 					document.getElementById( containerID ).innerHTML = '';
 				}
 
-				if ( targetLabel ) {
-					let container = document.getElementById( containerID );
-					if ( ! container ) {
-						container = document.createElement( 'span' );
-						container.id = containerID;
-						container.dataset.paymentMethodType = method;
-						container.classList.add( 'stripe-pmme-container' );
-						targetLabel.appendChild( container );
-					}
+				if ( ! targetLabel ) {
+					continue;
+				}
 
-					const currentCountry =
-						cartData?.billing_address?.country ||
-						getUPEConfig( 'storeCountry' );
-
-					if (
-						paymentMethods[ method ]?.countries.length === 0 ||
-						paymentMethods[ method ]?.countries?.includes(
-							currentCountry
-						)
-					) {
-						await mountStripePaymentMethodMessagingElement(
-							api,
-							container,
-							{
-								amount: cartData?.totals?.total_price,
-								currency: cartData?.totals?.currency_code,
-								decimalPlaces:
-									cartData?.totals?.currency_minor_unit,
-								country: currentCountry,
-							},
-							'shortcode_checkout'
-						);
-					}
+				let container = document.getElementById( containerID );
+				if ( ! container ) {
+					container = document.createElement( 'span' );
+					container.id = containerID;
+					container.dataset.paymentMethodType = method;
+					container.classList.add( 'stripe-pmme-container' );
+					targetLabel.appendChild( container );
+				}
+				const currentCountry =
+					cartData?.billing_address?.country ||
+					getUPEConfig( 'storeCountry' );
+				if (
+					paymentMethods[ method ]?.countries.length === 0 ||
+					paymentMethods[ method ]?.countries?.includes(
+						currentCountry
+					)
+				) {
+					await mountStripePaymentMethodMessagingElement(
+						api,
+						container,
+						{
+							amount: cartData?.totals?.total_price,
+							currency: cartData?.totals?.currency_code,
+							decimalPlaces:
+								cartData?.totals?.currency_minor_unit,
+							country: currentCountry,
+						},
+						'shortcode_checkout'
+					);
 				}
 			}
 		}
