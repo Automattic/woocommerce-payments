@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
 	loadConnectAndInitialize,
 	StripeConnectInstance,
-} from '@stripe/connect-js';
+} from '@stripe/connect-js/pure';
 import {
 	ConnectAccountOnboarding,
 	ConnectComponentsProvider,
