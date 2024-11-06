@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Rename 'deposit' to 'payout' within the developer doc description texts. The change is a part of a larger renaming project.
+
+
