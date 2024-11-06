@@ -364,7 +364,8 @@ class MultiCurrency {
 			return $settings_pages;
 		}
 
-		// Due to autoloader limitations, we shouldn't initiate MCCY settings if the plugin was just upgraded: https://github.com/Automattic/woocommerce-payments/issues/9676.
+		// Due to autoloader limitations, we shouldn't initiate MCCY settings if the plugin was just upgraded:
+		// https://github.com/Automattic/woocommerce-payments/issues/9676.
 		if ( did_action( 'upgrader_process_complete' ) ) {
 			return $settings_pages;
 		}
