@@ -177,19 +177,21 @@ abstract class UPE_Payment_Method {
 				$order = is_a( $order, 'WC_Order' ) ? $order : null;
 			}
 
+			$currency = get_woocommerce_currency();
 			if ( $order ) {
 				$currency = $order->get_currency();
-			} else {
-				$currency = get_woocommerce_currency();
 			}
+
 			// If the currency limits are not defined, we allow the PM for now (gateway has similar validation for limits).
-			// Additionally, we don't engage with limits verification in no-checkout context (cart is not available or empty).
-			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) ) {
-				if ( $order ) {
-					$amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-				} else {
-					$amount = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), $currency );
-				}
+			$total = null;
+			if ( $order ) {
+				$total = $order->get_total();
+			} elseif ( isset( WC()->cart ) ) {
+				$total = WC()->cart->get_total( '' );
+			}
+
+			if ( isset( $this->limits_per_currency[ $currency ], WC()->cart ) && ! empty( $total ) ) {
+				$amount = WC_Payments_Utils::prepare_amount( $total, $currency );
 
 				if ( $amount > 0 ) {
 					$range = null;
