@@ -43,9 +43,8 @@ rm( 'dist/*.map' );
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
 
-// copy the multi-currency files
-mkdir( '-p', targetFolder + '/multi-currency' );
-cp( '-R', 'multi-currency/src', targetFolder + '/multi-currency/src' );
+// remove the multi-currency/client source files
+rm( '-rf', targetFolder + '/includes/multi-currency/client' );
 
 const output = fs.createWriteStream(
 	releaseFolder + '/' + pluginSlug + '.zip'
