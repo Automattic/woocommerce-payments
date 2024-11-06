@@ -594,7 +594,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$bnpl_messaging_container = '<span id="stripe-pmme-container-' . $this->payment_method->get_id() . '" class="stripe-pmme-container"></span>';
 			}
 
-			$html  = '<div class="woopayments-rich-payment-method-label">';
+			// the "plain" payment method label is displayed on some sections of the app
+			// - like "pay for order" when a payment method is pre-selected or a payment has previously failed.
+			$html  = '<span class="woopayments-plain-payment-method-label">' . $title . '</span>';
+			$html .= '<div class="woopayments-rich-payment-method-label">';
 			$html .= '<div class="label-title-container">';
 			$html .= '<span class="payment-method-title">&nbsp;' . $title . '</span>';
 			$html .= $test_mode_badge;
