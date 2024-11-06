@@ -3,7 +3,6 @@
 /**
  * External dependencies
  */
-import { DepositsTableHeader } from 'wcpay/types/deposits';
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
 import { useMemo } from '@wordpress/element';
@@ -19,13 +18,15 @@ import {
 } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import { parseInt } from 'lodash';
 
 /**
  * Internal dependencies.
  */
+import type { DepositsTableHeader } from 'wcpay/types/deposits';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { useReportingExportLanguage } from 'data/index';
-import { displayType, displayStatus } from '../strings';
+import { displayType, depositStatusLabels } from '../strings';
 import {
 	formatExplicitCurrency,
 	formatExportAmount,
@@ -47,7 +48,6 @@ import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
-import { parseInt } from 'lodash';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
@@ -158,10 +158,8 @@ export const DepositsList = (): JSX.Element => {
 				),
 			},
 			status: {
-				value: displayStatus[ deposit.status ],
-				display: clickable(
-					<DepositStatusChip status={ deposit.status } />
-				),
+				value: depositStatusLabels[ deposit.status ],
+				display: clickable( <DepositStatusChip deposit={ deposit } /> ),
 			},
 			bankAccount: {
 				value: deposit.bankAccount,

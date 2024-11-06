@@ -5,7 +5,7 @@ HTMLOptionsCollection [
   <option
     value="paid"
   >
-    Paid
+    Completed
   </option>,
   <option
     value="pending"
