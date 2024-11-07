@@ -115,15 +115,14 @@ module.exports = {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [
 			path.join( process.cwd(), 'client' ),
-			path.join( process.cwd(), 'includes/multi-currency', 'client' ),
+			path.join( process.cwd(), 'includes/multi-currency/client' ),
 			'node_modules',
 		],
 		alias: {
 			assets: path.resolve( process.cwd(), 'assets' ),
 			'multi-currency': path.resolve(
 				process.cwd(),
-				'includes/multi-currency',
-				'client'
+				'includes/multi-currency/client'
 			),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(
