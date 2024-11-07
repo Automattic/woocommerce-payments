@@ -43,7 +43,8 @@ rm( 'dist/*.map' );
 // copy the directories to the release folder
 cp( '-Rf', filesToCopy, targetFolder );
 
-// remove the multi-currency/client source files
+// The '/includes/multi-currency/client' directory is removed because '/includes/multi-currency/*' should contain only server-side files.
+// Furthermore, the './client' directory is already included in 'dist' during the build step.
 rm( '-rf', targetFolder + '/includes/multi-currency/client' );
 
 const output = fs.createWriteStream(
