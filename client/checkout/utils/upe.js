@@ -119,6 +119,18 @@ export const getUpeSettings = () => {
 		};
 	}
 
+	if ( window.wcpayCustomerData ) {
+		upeSettings.defaultValues = {
+			billingDetails: {
+				name: window.wcpayCustomerData.name,
+				email: window.wcpayCustomerData.email,
+				address: {
+					country: window.wcpayCustomerData.billing_country,
+				},
+			},
+		};
+	}
+
 	return upeSettings;
 };
 
