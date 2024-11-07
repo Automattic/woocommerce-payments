@@ -127,9 +127,18 @@ class WC_Payments_Order_Success_Page {
 	 * @return string|false
 	 */
 	public function show_lpm_payment_method_name( $gateway, $payment_method ) {
+		$method_logo_url = apply_filters_deprecated(
+			'wc_payments_thank_you_page_bnpl_payment_method_logo_url',
+			[
+				$payment_method->get_payment_method_icon_for_location( 'checkout', false, $gateway->get_account_country() ),
+				$payment_method->get_id(),
+			],
+			'8.5.0',
+			'wc_payments_thank_you_page_lpm_payment_method_logo_url'
+		);
 		$method_logo_url = apply_filters(
 			'wc_payments_thank_you_page_lpm_payment_method_logo_url',
-			$payment_method->get_payment_method_icon_for_location( 'checkout', false, $gateway->get_account_country() ),
+			$method_logo_url,
 			$payment_method->get_id()
 		);
 
