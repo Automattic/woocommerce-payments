@@ -38,12 +38,12 @@ jobs:
 
       - name: "Echo artifact ID"
         run: |
-          echo "Build artifact ID: ${{ steps.upload_artifact.outputs.artifact_id }}"
+          echo "Build artifact ID: ${{ steps.upload_artifact.outputs.artifact-id }}"
 
       - name: "Post artifact ID as a PR comment"
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          COMMENT=":package: Build artifact ID: ${{ steps.upload_artifact.outputs.artifact_id }}"
+          COMMENT=":package: Build artifact ID: ${{ steps.upload_artifact.outputs.artifact-id }}"
           gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
