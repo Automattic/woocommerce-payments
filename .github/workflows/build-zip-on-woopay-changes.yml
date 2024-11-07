@@ -1,0 +1,50 @@
+name: "Build zip file on WooPay changes"
+
+# This action will run on PRs and monitor changes in specific directories
+on:
+  pull_request:
+    paths:
+      - 'client/checkout/woopay/**'
+      - 'client/components/woopay/**'
+      - 'includes/woopay/**'
+  workflow_dispatch:
+
+jobs:
+  build-zip:
+    name: "Build the zip file"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: "Upload the zip file as an artifact"
+        id: upload_artifact
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: "woocommerce-payments"
+          path: release
+          retention-days: 14
+
+      - name: "Echo artifact ID"
+        run: |
+          echo "Build artifact ID: ${{ steps.upload_artifact.outputs.artifact_id }}"
+
+      - name: "Post artifact ID as a PR comment"
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          COMMENT=":package: Build artifact ID: ${{ steps.upload_artifact.outputs.artifact_id }}"
+          gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
