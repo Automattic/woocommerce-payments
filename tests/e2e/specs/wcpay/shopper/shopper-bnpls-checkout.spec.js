@@ -8,9 +8,12 @@ import { uiUnblocked } from '@woocommerce/e2e-utils/build/page-utils';
  * Internal dependencies
  */
 import { merchantWCP, shopperWCP } from '../../../utils/flows';
-import { setupProductCheckout } from '../../../utils/payments';
+import {
+	selectOnCheckout,
+	setupProductCheckout,
+} from '../../../utils/payments';
 
-const bnplProviders = [ [ 'Affirm' ], [ 'Afterpay' ] ];
+const bnplProviders = [ [ 'affirm' ], [ 'afterpay_clearpay' ] ];
 
 const UPE_METHOD_CHECKBOXES = [
 	"//label[contains(text(), 'Affirm')]/preceding-sibling::span/input[@type='checkbox']", // affirm
@@ -49,8 +52,8 @@ describe.each( cardTestingPreventionStates )(
 
 		describe.each( bnplProviders )(
 			`Checkout with %s, carding protection ${ cardTestingPreventionEnabled }`,
-			( providerName ) => {
-				it( `should successfully place order with ${ providerName }`, async () => {
+			( providerId ) => {
+				it( `should successfully place order with ${ providerId }`, async () => {
 					await shopperWCP.emptyCart();
 					await setupProductCheckout(
 						config.get( 'addresses.customer.billing' ),
@@ -58,12 +61,7 @@ describe.each( cardTestingPreventionStates )(
 					);
 					await uiUnblocked();
 					// Select BNPL provider as payment method.
-					const xPathPaymentMethodSelector = `//*[@id='payment']/ul/li/label[contains(text(), '${ providerName }')]`;
-					await page.waitForXPath( xPathPaymentMethodSelector );
-					const [ paymentMethodLabel ] = await page.$x(
-						xPathPaymentMethodSelector
-					);
-					await paymentMethodLabel.click();
+					await selectOnCheckout( providerId, page );
 
 					// Check the token presence when card testing prevention is enabled.
 					if ( cardTestingPreventionEnabled ) {
