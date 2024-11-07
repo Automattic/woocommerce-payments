@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Keep multi-currency module in the same path to avoid autoload errors.
+
+
