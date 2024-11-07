@@ -30,6 +30,11 @@
 	border: none;
 }
 
+.woopayments-rich-payment-method-label {
+	// this will be displayed only on specific scenarios. Otherwise, the "legacy" label will be displayed.
+	display: none;
+}
+
 #payment .payment_methods {
 	li[class*='payment_method_woocommerce_payments'] > label > img {
 		float: right;
@@ -41,32 +46,68 @@
 
 	&.wc_payment_methods,
 	&.woocommerce-PaymentMethods {
-		li.payment_method_woocommerce_payments {
+		li[class*='payment_method_woocommerce_payments'] {
 			display: grid;
 			grid-template-columns: 0fr 0fr 1fr;
 			grid-template-rows: max-content;
 
-			> input[name='payment_method'] {
-				align-self: center;
+			.woopayments-plain-payment-method-label {
+				display: none;
 			}
+
+			> input[name='payment_method'] {
+				&:checked ~ label {
+					.payment-method-title {
+						margin-right: 8px; // 8px gap between .payment-method-title and .test-mode.badge
+					}
+
+					.test-mode.badge {
+						display: inline-block; // hiding the badge when the payment method is not selected
+					}
+
+					.stripe-pmme-container {
+						display: none;
+					}
+				}
+			}
+
 			> label {
 				grid-column: 3;
-				display: grid;
-				grid-template-columns: 0fr auto;
-				grid-template-rows: max-content;
-				grid-gap: 0;
 				margin-bottom: 0;
+			}
 
-				> .label-title-container {
-					grid-area: 1 / 2 / 2 / 3;
+			> div.payment_box {
+				grid-area: 2 / 1 / 3 / 4;
+			}
+
+			> label:has( .woopayments-rich-payment-method-label ) {
+				display: inline-flex;
+				align-items: center;
+				width: 100%;
+
+				> img {
+					display: none; // we'll display the image inside `.woopayments-rich-payment-method-label`, instead.
+				}
+			}
+
+			.woopayments-rich-payment-method-label {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				align-items: center;
+				margin-bottom: 0;
+				flex-grow: 1;
+
+				.label-title-container {
+					display: block;
 				}
 
 				.payment-method-title {
-					margin-right: 8px;
+					white-space: normal; // Allows wrapping if text is too long
+					vertical-align: middle;
 				}
 
 				.test-mode.badge {
-					display: inline-block;
+					display: none;
 					background-color: #fff2d7;
 					border-radius: 4px;
 					padding: 4px 6px;
@@ -75,73 +116,31 @@
 					line-height: 16px;
 					color: #4d3716;
 					vertical-align: middle;
+					white-space: nowrap; // Prevents the badge text from wrapping
 				}
 
 				img {
-					float: none;
-					grid-area: 1 / 4 / 2 / 5;
-					align-self: baseline;
+					border: 0;
+					padding: 0;
+					height: 24px !important;
+					max-height: 24px !important;
 					justify-self: end;
-					margin-left: 1em;
+					margin: 3px 0; // ensuring the images don't appear squished when all the payment methods are rendered next to each others, like in Elementor.
+					align-self: center;
 				}
-			}
-			> div.payment_box {
-				grid-area: 2 / 1 / 3 / 4;
-			}
-		}
-	}
-}
 
-li.wc_payment_method:has( .input-radio:not( :checked )
-		+ label
-		.stripe-pmme-container ) {
-	display: grid;
-	grid-template-columns: min-content 1fr;
-	grid-template-rows: auto auto;
-	align-items: baseline;
+				.stripe-pmme-container {
+					&:empty {
+						display: none; // hides container if empty, without affecting alignment
+					}
 
-	.input-radio {
-		grid-row: 1;
-		grid-column: 1;
-	}
-
-	label {
-		grid-column: 2;
-		grid-row: 1;
-	}
-
-	img {
-		grid-row: 1 / span 2;
-		align-self: center;
-	}
-
-	.stripe-pmme-container {
-		width: 100%;
-		grid-column: 1;
-		grid-row-start: 2;
-		pointer-events: none;
-	}
-
-	.payment_box {
-		flex: 0 0 100%;
-		grid-row: 2;
-		grid-column: 1 / span 2;
-	}
-}
-
-li.wc_payment_method:has( .input-radio:checked
-		+ label
-		.stripe-pmme-container ) {
-	display: block;
-
-	.input-radio:checked {
-		+ label {
-			.stripe-pmme-container {
-				display: none;
-			}
-
-			img {
-				grid-column: 2;
+					margin-left: 0.25em; // WooCommerce Core will add a &nbsp; on the left of the payment method's label - this spacing ensures that at least it's consistently aligned.
+					pointer-events: none;
+					grid-column: 1 / 2;
+					grid-row: 2 / 3;
+					align-self: start;
+					width: 100%;
+				}
 			}
 		}
 	}
