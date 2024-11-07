@@ -128,7 +128,7 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function show_lpm_payment_method_name( $gateway, $payment_method ) {
 		$method_logo_url = apply_filters(
-			'wc_payments_thank_you_page_bnpl_payment_method_logo_url',
+			'wc_payments_thank_you_page_lpm_payment_method_logo_url',
 			$payment_method->get_payment_method_icon_for_location( 'checkout', false, $gateway->get_account_country() ),
 			$payment_method->get_id()
 		);
