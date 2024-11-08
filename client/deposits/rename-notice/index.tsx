@@ -57,13 +57,13 @@ export const PayoutsRenameNotice = () => {
 						meta: {
 							name: 'deposits-now-payouts',
 							heading: __(
-								'Deposits are now Payouts!',
+								'Deposits are now known as Payouts!',
 								'woocommerce-payments'
 							),
 							descriptions: {
 								desktop: createInterpolateElement(
 									__(
-										"Heads up! We've given Deposits a new industry approved alias: Payouts! Don't worry, it's still the same reliable function, just with a little more style. <link>Learn More.</link>",
+										"Same reliable system for quick access to your earnings — now with a clearer name. To enhance your experience, 'Deposits' will now be called 'Payouts'. <link>Learn More.</link>",
 										'woocommerce'
 									),
 									{
