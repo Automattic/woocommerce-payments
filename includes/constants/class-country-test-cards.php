@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 /**
- * Class handling country-specific data for WooPayments
+ * Class handling country-specific test card numbers for WooPayments
  */
 class Country_Test_Cards extends Base_Constant {
 	/**
