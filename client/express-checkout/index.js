@@ -619,17 +619,21 @@ jQuery( ( $ ) => {
 				// If this is the cart or checkout page, we need to request the
 				// cart details.
 				api.paymentRequestGetCartDetails().then( ( cart ) => {
-					wcpayECE.startExpressCheckoutElement( {
-						mode: 'payment',
-						total: cart.total.amount,
-						currency: getExpressCheckoutData( 'checkout' )
-							?.currency_code,
-						requestShipping: cart.needs_shipping,
-						requestPhone:
-							getExpressCheckoutData( 'checkout' )
-								?.needs_payer_phone ?? false,
-						displayItems: cart.displayItems,
-					} );
+					if ( cart.total.amount === 0 ) {
+						wcpayECE.hide();
+					} else {
+						wcpayECE.startExpressCheckoutElement( {
+							mode: 'payment',
+							total: cart.total.amount,
+							currency: getExpressCheckoutData( 'checkout' )
+								?.currency_code,
+							requestShipping: cart.needs_shipping,
+							requestPhone:
+								getExpressCheckoutData( 'checkout' )
+									?.needs_payer_phone ?? false,
+							displayItems: cart.displayItems,
+						} );
+					}
 				} );
 			}
 
