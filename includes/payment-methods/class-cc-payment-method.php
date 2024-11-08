@@ -71,7 +71,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	 * @param string $account_country The country of the account.
 	 * @return string
 	 */
-	public function get_testing_instructions( string $account_country = null ) {
+	public function get_testing_instructions( string $account_country ) {
 		$test_card_number = Country_Test_Cards::get_test_card_for_country( $account_country );
 
 		return sprintf(

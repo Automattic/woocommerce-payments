@@ -273,7 +273,7 @@ abstract class UPE_Payment_Method {
 	 * @param string $account_country The country of the account.
 	 * @return string
 	 */
-	abstract public function get_testing_instructions( string $account_country = null );
+	abstract public function get_testing_instructions( string $account_country );
 
 	/**
 	 * Returns the payment method icon URL or an empty string.
