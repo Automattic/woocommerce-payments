@@ -134,9 +134,7 @@ class WC_Payments_Checkout {
 
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
-		$script = 'dist/checkout';
-
-		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
+		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', 'dist/checkout', $script_dependencies );
 	}
 
 	/**
@@ -417,32 +415,29 @@ class WC_Payments_Checkout {
 			}
 
 			// Output the form HTML.
-			?>
-			<?php if ( ! empty( $this->gateway->get_description() ) ) : ?>
+			if ( ! empty( $this->gateway->get_description() ) ) : ?>
 				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
-			<?php endif; ?>
+				<?php
+			endif;
 
-			<?php if ( WC_Payments::mode()->is_test() ) : ?>
+			if ( WC_Payments::mode()->is_test() && false !== $this->gateway->get_payment_method()->get_testing_instructions() ) :
+				?>
 				<p class="testmode-info">
-					<?php
-						$testing_instructions = $this->gateway->get_payment_method()->get_testing_instructions();
-					if ( false !== $testing_instructions ) {
+				<?php
 						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						echo WC_Payments_Utils::esc_interpolated_html(
+							echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
-							$testing_instructions,
-							[
-								'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-								'strong' => '<strong>',
-								'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
-							]
-						);
-					}
-					?>
+								$this->gateway->get_payment_method()->get_testing_instructions(),
+								[
+									'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+									'strong' => '<strong>',
+									'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
+								]
+							);
+				?>
 				</p>
-			<?php endif; ?>
-
-			<?php
+				<?php
+			endif;
 
 			if ( $display_tokenization ) {
 				$this->gateway->tokenization_script();

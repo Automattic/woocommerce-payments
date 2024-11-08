@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 
 /**
@@ -78,14 +79,16 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		$payment_method = $gateway->get_payment_method( $order );
+		// GooglePay/ApplePay/Link/Card to be supported later.
+		if ( $payment_method->get_id() === Payment_Method::CARD ) {
+			return $payment_method_title;
+		}
 
-		// If this is a BNPL order, return the html for the BNPL payment method name.
-		if ( $payment_method->is_bnpl() ) {
-			$bnpl_output = $this->show_bnpl_payment_method_name( $gateway, $payment_method );
+		// If this is an LPM (BNPL or local payment method) order, return the html for the payment method name.
+		$name_output = $this->show_lpm_payment_method_name( $gateway, $payment_method );
 
-			if ( false !== $bnpl_output ) {
-				return $bnpl_output;
-			}
+		if ( false !== $name_output ) {
+			return $name_output;
 		}
 
 		return $payment_method_title;
@@ -116,17 +119,26 @@ class WC_Payments_Order_Success_Page {
 	}
 
 	/**
-	 * Add the BNPL logo to the payment method name on the order received page.
+	 * Add the LPM logo to the payment method name on the order received page.
 	 *
 	 * @param WC_Payment_Gateway_WCPay                 $gateway the gateway being shown.
 	 * @param WCPay\Payment_Methods\UPE_Payment_Method $payment_method the payment method being shown.
 	 *
 	 * @return string|false
 	 */
-	public function show_bnpl_payment_method_name( $gateway, $payment_method ) {
-		$method_logo_url = apply_filters(
+	public function show_lpm_payment_method_name( $gateway, $payment_method ) {
+		$method_logo_url = apply_filters_deprecated(
 			'wc_payments_thank_you_page_bnpl_payment_method_logo_url',
-			$payment_method->get_payment_method_icon_for_location( 'checkout', false, $gateway->get_account_country() ),
+			[
+				$payment_method->get_payment_method_icon_for_location( 'checkout', false, $gateway->get_account_country() ),
+				$payment_method->get_id(),
+			],
+			'8.5.0',
+			'wc_payments_thank_you_page_lpm_payment_method_logo_url'
+		);
+		$method_logo_url = apply_filters(
+			'wc_payments_thank_you_page_lpm_payment_method_logo_url',
+			$method_logo_url,
 			$payment_method->get_id()
 		);
 
@@ -137,7 +149,7 @@ class WC_Payments_Order_Success_Page {
 
 		ob_start();
 		?>
-		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-bnpl-logo <?php echo esc_attr( $payment_method->get_id() ); ?>">
+		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-lpm-logo wc-payment-lpm-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
 			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
 		</div>
 		<?php
