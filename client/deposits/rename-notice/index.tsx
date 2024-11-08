@@ -10,7 +10,6 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { useDeposits } from 'wcpay/data';
 import './style.scss';
 
 export const PayoutsRenameNotice = () => {
