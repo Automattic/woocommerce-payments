@@ -324,7 +324,7 @@ class WC_Payments_Checkout {
 			$gateway_for_payment_method                            = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 			$settings[ $payment_method_id ]['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
 				/* translators: link to Stripe testing page */
-				$payment_method->get_testing_instructions(),
+				$payment_method->get_testing_instructions( $account_country ),
 				[
 					'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 					'strong' => '<strong>',
@@ -420,14 +420,14 @@ class WC_Payments_Checkout {
 				<?php
 			endif;
 
-			if ( WC_Payments::mode()->is_test() && false !== $this->gateway->get_payment_method()->get_testing_instructions() ) :
+			if ( WC_Payments::mode()->is_test() && false !== $this->gateway->get_payment_method()->get_testing_instructions( $this->account->get_account_country() ) ) :
 				?>
 				<p class="testmode-info">
 				<?php
 						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
-								$this->gateway->get_payment_method()->get_testing_instructions(),
+								$this->gateway->get_payment_method()->get_testing_instructions( $this->account->get_account_country() ),
 								[
 									'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
 									'strong' => '<strong>',
