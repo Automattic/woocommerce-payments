@@ -404,6 +404,10 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		 * @dataProvider non_reusable_payment_method_provider
 		 */
 	public function test_no_save_option_for_non_reusable_payment_method( $payment_method_id, $payment_method_class ) {
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
 			->method( 'get_payment_method_ids_enabled_at_checkout' )

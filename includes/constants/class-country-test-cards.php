@@ -90,6 +90,6 @@ class Country_Test_Cards extends Base_Constant {
 	 * @return string Test card number
 	 */
 	public static function get_test_card_for_country( string $country_code ) {
-		return self::$country_test_cards[ $country_code ] ?? self::$country_test_cards['US'];
+		return self::$country_test_cards[ $country_code ] ?? self::$country_test_cards[ Country_Code::UNITED_STATES ];
 	}
 }
