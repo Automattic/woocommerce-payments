@@ -5,7 +5,7 @@ module.exports = {
 	moduleDirectories: [
 		'node_modules',
 		'<rootDir>/client',
-		'<rootDir>/multi-currency/client',
+		'<rootDir>/includes/multi-currency/client',
 	],
 	moduleNameMapper: {
 		'^react$': '<rootDir>/node_modules/react',
@@ -13,7 +13,7 @@ module.exports = {
 		'^moment$': '<rootDir>/node_modules/moment',
 		'^moment-timezone$': '<rootDir>/node_modules/moment-timezone',
 		'^wcpay(.*)$': '<rootDir>/client$1',
-		'^multi-currency(.*)$': '<rootDir>/multi-currency/client$1',
+		'^multi-currency(.*)$': '<rootDir>/includes/multi-currency/client$1',
 		'^iti/utils$': '<rootDir>/node_modules/intl-tel-input/build/js/utils',
 		'^assets(.*?)(\\?.*)?$': '<rootDir>/assets$1',
 		'^@woocommerce/blocks-registry$':

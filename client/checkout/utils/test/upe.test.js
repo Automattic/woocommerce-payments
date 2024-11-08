@@ -284,6 +284,8 @@ describe( 'UPE checkout utils', () => {
 			if ( checkboxElement ) {
 				checkboxElement.remove();
 			}
+
+			delete window.wcpayCustomerData;
 		} );
 
 		it( 'should not provide terms when cart does not contain subscriptions and the saving checkbox is unchecked', () => {
@@ -353,6 +355,34 @@ describe( 'UPE checkout utils', () => {
 			const upeSettings = getUpeSettings();
 
 			expect( upeSettings.terms.card ).toEqual( 'always' );
+		} );
+
+		it( 'should define defaultValues when wcpayCustomerData is present', () => {
+			window.wcpayCustomerData = {
+				name: 'Test Person',
+				email: 'test@example.com',
+				billing_country: 'US',
+			};
+
+			const upeSettings = getUpeSettings();
+
+			expect( upeSettings.defaultValues ).toEqual( {
+				billingDetails: {
+					name: 'Test Person',
+					email: 'test@example.com',
+					address: {
+						country: 'US',
+					},
+				},
+			} );
+		} );
+
+		it( 'should not define defaultValues if wcpayCustomerData is not present', () => {
+			window.wcpayCustomerData = null;
+
+			const upeSettings = getUpeSettings();
+
+			expect( upeSettings.defaultValues ).toBeUndefined();
 		} );
 
 		function createCheckboxElementWhich( isChecked ) {

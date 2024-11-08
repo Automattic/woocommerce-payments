@@ -36,9 +36,10 @@ class Becs_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns testing credentials to be printed at checkout in test mode.
 	 *
+	 * @param string $account_country The country of the account.
 	 * @return string
 	 */
-	public function get_testing_instructions() {
+	public function get_testing_instructions( string $account_country ) {
 		return __( '<strong>Test mode:</strong> use the test account number <number>000123456</number>. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' );
 	}
 }

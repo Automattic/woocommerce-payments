@@ -26,11 +26,11 @@ module.exports = {
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',
 			'payment-gateways': './client/payment-gateways/index.js',
-			'multi-currency': './multi-currency/client/index.js',
+			'multi-currency': './includes/multi-currency/client/index.js',
 			'multi-currency-switcher-block':
-				'./multi-currency/client/blocks/currency-switcher.js',
+				'./includes/multi-currency/client/blocks/currency-switcher.js',
 			'multi-currency-analytics':
-				'./multi-currency/client/analytics/index.js',
+				'./includes/multi-currency/client/analytics/index.js',
 			order: './client/order/index.js',
 			'subscriptions-empty-state':
 				'./client/subscriptions-empty-state/index.js',
@@ -115,15 +115,14 @@ module.exports = {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [
 			path.join( process.cwd(), 'client' ),
-			path.join( process.cwd(), 'multi-currency', 'client' ),
+			path.join( process.cwd(), 'includes/multi-currency/client' ),
 			'node_modules',
 		],
 		alias: {
 			assets: path.resolve( process.cwd(), 'assets' ),
 			'multi-currency': path.resolve(
 				process.cwd(),
-				'multi-currency',
-				'client'
+				'includes/multi-currency/client'
 			),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(

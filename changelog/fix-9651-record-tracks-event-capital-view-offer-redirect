@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+
+When tracking is enabled, send a tracks event when the merchant is redirected to a Stripe Capital offer.
+

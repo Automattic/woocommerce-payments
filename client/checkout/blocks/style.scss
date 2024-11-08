@@ -43,6 +43,21 @@ button.wcpay-stripelink-modal-trigger:hover {
 }
 
 .wc-block-checkout__payment-method {
+	input:checked ~ div {
+		.wc-block-components-radio-control__label {
+			> .payment-method-label {
+				.test-mode.badge {
+					// hiding the badge when the payment method is not selected
+					display: inline-block;
+				}
+
+				&__pmme-container {
+					display: none;
+				}
+			}
+		}
+	}
+
 	.wc-block-components-radio-control__label {
 		width: 100%;
 		display: block !important;
@@ -77,6 +92,7 @@ button.wcpay-stripelink-modal-trigger:hover {
 				color: #4d3716;
 				justify-self: start;
 				width: max-content;
+				display: none;
 			}
 
 			@include breakpoint( '<480px' ) {
@@ -88,13 +104,14 @@ button.wcpay-stripelink-modal-trigger:hover {
 					justify-self: end;
 				}
 			}
-		}
 
-		.bnpl-message {
-			width: 100%;
+			&__pmme-container {
+				width: 100%;
+				pointer-events: none;
 
-			@include breakpoint( '<480px' ) {
-				margin-top: 8px;
+				@include breakpoint( '<480px' ) {
+					margin-top: 8px;
+				}
 			}
 		}
 	}
@@ -112,11 +129,6 @@ button.wcpay-stripelink-modal-trigger:hover {
 }
 
 #payment-method {
-	label.wc-block-components-radio-control__option-checked {
-		.StripeElement {
-			display: none;
-		}
-	}
 	/* stylelint-disable-next-line selector-id-pattern */
 	#radio-control-wc-payment-method-options-woocommerce_payments_affirm__label
 		img {
