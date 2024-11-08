@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect, Page } from '@playwright/test';
+import { test, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
