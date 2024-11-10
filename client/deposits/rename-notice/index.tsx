@@ -64,7 +64,7 @@ export const PayoutsRenameNotice = () => {
 								desktop: createInterpolateElement(
 									__(
 										"Same reliable system for quick access to your earnings — now with a clearer name. To enhance your experience, 'Deposits' will now be called 'Payouts'. <link>Learn More.</link>",
-										'woocommerce'
+										'woocommerce-payments'
 									),
 									{
 										link: (
