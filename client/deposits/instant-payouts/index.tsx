@@ -13,7 +13,7 @@ import { useState } from '@wordpress/element';
  */
 import './style.scss';
 import { formatCurrency } from 'multi-currency/interface/functions';
-import InstantDepositModal from './modal';
+import InstantPayoutModal from './modal';
 import { useInstantDeposit } from 'wcpay/data';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
@@ -26,10 +26,10 @@ const isButtonDisabled = ( instantBalance: AccountOverview.InstantBalance ) => {
 	return buttonDisabled;
 };
 
-interface InstantDepositButtonProps {
+interface InstantPayoutButtonProps {
 	instantBalance: AccountOverview.InstantBalance;
 }
-const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
+const InstantPayoutButton: React.FC< InstantPayoutButtonProps > = ( {
 	instantBalance,
 } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
@@ -52,7 +52,7 @@ const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
 			>
 				{ sprintf(
 					__(
-						/* translators: %s: Available instant deposit amount */
+						/* translators: %s: Available instant payout amount */
 						'Get %s now',
 						'woocommerce-payments'
 					),
@@ -63,7 +63,7 @@ const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
 				) }
 			</Button>
 			{ ( isModalOpen || inProgress ) && (
-				<InstantDepositModal
+				<InstantPayoutModal
 					instantBalance={ instantBalance }
 					inProgress={ inProgress }
 					onSubmit={ onSubmit }
@@ -74,4 +74,4 @@ const InstantDepositButton: React.FC< InstantDepositButtonProps > = ( {
 	);
 };
 
-export default InstantDepositButton;
+export default InstantPayoutButton;

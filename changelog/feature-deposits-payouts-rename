@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Rename 'deposit' to 'payout' across various places in the WooPayments admin UI, docs and doc URLs.

@@ -1,8 +1,11 @@
-# Deposits
+# Payouts
 
-The Deposits API endpoints provide access to an account's deposits data, including an overview of account balances, deposit schedule and deposit history.
+The Payouts API endpoints provide access to an account's payouts data, including an overview of account balances, payout schedule and payout history.
 
-## Deposit object
+>[!NOTE] 
+>Payouts have historically been referred to as deposits, therefore these terms may be used interchangeably in response objects.
+
+## Payout object
 
 ```json
 {
@@ -22,21 +25,21 @@ The Deposits API endpoints provide access to an account's deposits data, includi
 
 ### Properties
 
--   `id` _string_ - The deposit ID.
--   `date` _int_ - The arrival date of the deposit in unix timestamp milliseconds.
--   `type` _string_ - The type of deposit. `deposit` `withdrawal`
--   `amount` _int_ - The amount of the deposit.
--   `status` _string_ - The status of the deposit. `paid` `pending` `in_transit` `canceled` `failed`
--   `bankAccount` _string_ - The bank account the deposit was/will be paid to.
--   `currency` _string_ - The currency of the deposit. E.g. `eur`
+-   `id` _string_ - The payout ID.
+-   `date` _int_ - The arrival date of the payout in unix timestamp milliseconds.
+-   `type` _string_ - The type of payout. `deposit` `withdrawal`
+-   `amount` _int_ - The amount of the payout.
+-   `status` _string_ - The status of the payout. `paid` `pending` `in_transit` `canceled` `failed`
+-   `bankAccount` _string_ - The bank account the payout was/will be paid to.
+-   `currency` _string_ - The currency of the payout. E.g. `eur`
 -   `automatic` _bool_ - Returns `true` if the payout is created by an automated schedule and `false` if it’s requested manually.
--   `fee` _int_ - The fee amount of the deposit.
--   `fee_percentage` _int_ - The fee percentage of the deposit.
--   `created` _int_ - The arrival date of the deposit in unix timestamp seconds.
+-   `fee` _int_ - The fee amount of the payout.
+-   `fee_percentage` _int_ - The fee percentage of the payout.
+-   `created` _int_ - The arrival date of the payout in unix timestamp seconds.
 
-## Get deposits overview for all account deposit currencies
+## Get payouts overview for all account payout currencies
 
-Fetch an overview of account deposits for all deposit currencies. This includes details for the last paid deposit, next scheduled deposit, and last manual deposits.
+Fetch an overview of account payouts for all payout currencies. This includes details for the last paid payout, next scheduled payout, and last manual payouts.
 
 ### HTTP request
 
@@ -50,33 +53,33 @@ Fetch an overview of account deposits for all deposit currencies. This includes 
 ### Returns
 
 -   `deposit` _object_
-    -   `last_paid` _array_ of [**Deposit**](#deposit-object) - The last deposit that has been paid for each deposit currency.
-    -   `last_manual_deposits` _array_ of [**Deposit**](#deposit-object) - Manual deposits that have been paid in the last 24 hours.
+    -   `last_paid` _array_ of [**Payout**](#payout-object) - The last payout that has been paid for each payout currency.
+    -   `last_manual_deposits` _array_ of [**Payout**](#payout-object) - Manual payouts that have been paid in the last 24 hours.
 -   `balance` _object_
-    -   `pending` _array_ - The pending balance for each deposit currency.
+    -   `pending` _array_ - The pending balance for each payout currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-    -   `available` _array_ - The available balance for each deposit currency.
+    -   `available` _array_ - The available balance for each payout currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `source_types` _object_ | _null_ - The amount of the balance from each source type, e.g. `{ "card": 12345 }`
-    -   `instant` _array_ - The instant balance for each deposit currency.
+    -   `instant` _array_ - The instant balance for each payout currency.
         -   `amount` _int_ - The amount of the balance.
         -   `currency` _string_ - The currency of the balance. E.g. `usd`.
         -   `fee` _int_ - The fee amount of the balance.
         -   `fee_percentage` _int_ - The fee percentage of the balance.
         -   `net` _int_ - The net amount of the balance.
 -   `account` _object_
-    -   `deposits_enabled` _bool_ - Whether deposits are enabled for the account.
-    -   `deposits_blocked` _bool_ - Whether deposits are blocked for the account.
+    -   `deposits_enabled` _bool_ - Whether payouts are enabled for the account.
+    -   `deposits_blocked` _bool_ - Whether payouts are blocked for the account.
     -   `deposits_schedule` _object_
         -   `delay_days` _int_ - The number of days after a charge is created that the payment is paid out.
         -   `interval` _string_ - The interval at which payments are paid out. `manual` `daily` `weekly` `monthly`
         -   `weekly_anchor` _string_ | _undefined_ - The day of the week that payments are paid out, e.g. `monday`.
         -   `monthly_anchor` _int_ | _undefined_ - The day of the month that payments are paid out. Specified as a number between 1–31. 29-31 will instead use the last day of a shorter month.
     -   `default_currency` _string_ - The default currency for the account.
-    -   `default_external_accounts` _array_ - The default external payout accounts (deposit destinations) for the account.
+    -   `default_external_accounts` _array_ - The default external payout accounts (payout destinations) for the account.
         -   `currency` _string_ - The currency of the external account. e.g. `eur`, `chf`.
         -   `status` _string_ - The status of the external account. e.g. `new`, `errored`.
 
@@ -186,9 +189,9 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/overview-all \
 }
 ```
 
-## List deposits
+## List payouts
 
-Fetch a list of deposits.
+Fetch a list of payouts.
 
 ### HTTP request
 
@@ -218,8 +221,8 @@ Fetch a list of deposits.
 
 ### Returns
 
--   `data` _array_ of [**Deposit**](#deposit-object) - The list of deposits matching the query.
--   `total_count` _int_ - The total number of deposits matching the query.
+-   `data` _array_ of [**Payout**](#payout-object) - The list of payouts matching the query.
+-   `total_count` _int_ - The total number of payouts matching the query.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
@@ -262,11 +265,11 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits?sort=date \
 }
 ```
 
-## Get deposits summary
+## Get payouts summary
 
-Fetches a summary of deposits matching the query. This includes the total number of deposits matching the query and a list of deposits.
+Fetches a summary of payouts matching the query. This includes the total number of payouts matching the query and a list of payouts.
 
-Useful in combination with the **List deposits** endpoint to get a summary of deposits matching the query without having to fetch the full list of deposits.
+Useful in combination with the **List payouts** endpoint to get a summary of payouts matching the query without having to fetch the full list of payouts.
 
 ### HTTP request
 
@@ -289,9 +292,9 @@ Useful in combination with the **List deposits** endpoint to get a summary of de
 
 ### Returns
 
--   `count` _int_ - The total number of deposits matching the query.
--   `store_currencies` _array_ - The currencies of the deposits matching the query.
--   `total` _int_ - The total amount of the deposits matching the query.
+-   `count` _int_ - The total number of payouts matching the query.
+-   `store_currencies` _array_ - The currencies of the payouts matching the query.
+-   `total` _int_ - The total amount of the payouts matching the query.
 -   `currency` _string_ - The currency as provided by `store_currency_is` or the default currency of the account.
 
 ```shell
@@ -310,9 +313,9 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/summary \
 }
 ```
 
-## Get deposit
+## Get payout
 
-Fetches a deposit by ID.
+Fetches a payout by ID.
 
 ### HTTP request
 
@@ -325,9 +328,9 @@ Fetches a deposit by ID.
 
 ### Returns
 
-If a deposit is found for the provided ID, the response will return a [**Deposit**](#deposit-object) object.
+If a payout is found for the provided ID, the response will return a [**Payout**](#payout-object) object.
 
-If no deposit is found for the provided ID, the response will return a `500` status code.
+If no payout is found for the provided ID, the response will return a `500` status code.
 
 ```shell
 curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
@@ -352,9 +355,9 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/deposits/po_123abc \
 }
 ```
 
-## Submit an instant deposit
+## Submit an instant payout
 
-Submit an instant deposit for a list of transactions. Only for eligible accounts. See [Instant Deposits with WooPayments](https://woocommerce.com/document/woopayments/deposits/instant-deposits/) for more information.
+Submit an instant payout for a list of transactions. Only for eligible accounts. See [Instant Payouts with WooPayments](https://woocommerce.com/document/woopayments/payouts/instant-payouts/) for more information.
 
 ### HTTP request
 
@@ -367,8 +370,8 @@ Submit an instant deposit for a list of transactions. Only for eligible accounts
 
 ### Required body properties
 
--   `type`: _string_ - The type of deposit. `instant`
--   `currency`: _string_ - The currency of the balance to deposit. E.g. `usd`
+-   `type`: _string_ - The type of payout. `instant`
+-   `currency`: _string_ - The currency of the balance to payout. E.g. `usd`
 
 ```shell
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
@@ -379,9 +382,9 @@ curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits' \
     }'
 ```
 
-## Request a CSV export of deposits
+## Request a CSV export of payouts
 
-Request a CSV export of deposits matching the query. A link to the exported CSV will be emailed to the provided email address or the account's primary email address if no email address is provided.
+Request a CSV export of payouts matching the query. A link to the exported CSV will be emailed to the provided email address or the account's primary email address if no email address is provided.
 
 ### HTTP request
 
@@ -408,7 +411,7 @@ Request a CSV export of deposits matching the query. A link to the exported CSV 
 
 ### Returns
 
--   `exported_deposits` _int_ - The number of deposits exported.
+-   `exported_deposits` _int_ - The number of payouts exported.
 
 ```shell
 curl -X POST 'https://example.com/wp-json/wc/v3/payments/deposits/download?status_is=paid' \

@@ -24,7 +24,7 @@ const depositStatusOptions = Object.entries( depositStatusLabels )
 
 export const filters = [
 	{
-		label: __( 'Deposit currency', 'woocommerce-payments' ),
+		label: __( 'Payout currency', 'woocommerce-payments' ),
 		param: 'store_currency_is',
 		staticParams: [
 			'paged',
@@ -62,7 +62,7 @@ export const filters = [
 		showFilters: () => true,
 		filters: [
 			{
-				label: __( 'All deposits', 'woocommerce-payments' ),
+				label: __( 'All payouts', 'woocommerce-payments' ),
 				value: 'all',
 			},
 			{
@@ -83,21 +83,18 @@ export const advancedFilters = {
 	/** translators: A sentence describing filters for deposits. See screen shot for context: https://d.pr/i/NcGpwL */
 	title:
 		wooCommerceVersion < 7.8
-			? __(
-					'Deposits match {{select /}} filters',
-					'woocommerce-payments'
-			  )
-			: __( 'Deposits match <select /> filters', 'woocommerce-payments' ),
+			? __( 'Payouts match {{select /}} filters', 'woocommerce-payments' )
+			: __( 'Payouts match <select /> filters', 'woocommerce-payments' ),
 	filters: {
 		date: {
 			labels: {
 				add: __( 'Date', 'woocommerce-payments' ),
 				remove: __(
-					'Remove deposit date filter',
+					'Remove payout date filter',
 					'woocommerce-payments'
 				),
 				rule: __(
-					'Select a deposit date filter match',
+					'Select a payout date filter match',
 					'woocommerce-payments'
 				),
 				/* translators: A sentence describing a deposit date filter. See screen shot for context: https://d.pr/i/NcGpwL */
@@ -111,7 +108,7 @@ export const advancedFilters = {
 								'<title>Date</title> <rule /> <filter />',
 								'woocommerce-payments'
 						  ),
-				filter: __( 'Select a deposit date', 'woocommerce-payments' ),
+				filter: __( 'Select a payout date', 'woocommerce-payments' ),
 			},
 			rules: [
 				{
@@ -135,11 +132,11 @@ export const advancedFilters = {
 			labels: {
 				add: __( 'Status', 'woocommerce-payments' ),
 				remove: __(
-					'Remove deposit status filter',
+					'Remove payout status filter',
 					'woocommerce-payments'
 				),
 				rule: __(
-					'Select a deposit status filter match',
+					'Select a payout status filter match',
 					'woocommerce-payments'
 				),
 				/* translators: A sentence describing a deposit status filter. See screen shot for context: https://d.pr/i/NcGpwL */
@@ -153,20 +150,20 @@ export const advancedFilters = {
 								'<title>Status</title> <rule /> <filter />',
 								'woocommerce-payments'
 						  ),
-				filter: __( 'Select a deposit status', 'woocommerce-payments' ),
+				filter: __( 'Select a payout status', 'woocommerce-payments' ),
 			},
 			rules: [
 				{
 					value: 'is',
 					/* translators: Sentence fragment, logical, "Is" refers to searching for deposits matching a chosen deposit status. Screenshot for context: https://d.pr/i/NcGpwL */
-					label: _x( 'Is', 'deposit status', 'woocommerce-payments' ),
+					label: _x( 'Is', 'payout status', 'woocommerce-payments' ),
 				},
 				{
 					value: 'is_not',
 					/* translators: Sentence fragment, logical, "Is not" refers to searching for deposits that don\'t match a chosen deposit status. Screenshot for context: https://d.pr/i/NcGpwL */
 					label: _x(
 						'Is not',
-						'deposit status',
+						'payout status',
 						'woocommerce-payments'
 					),
 				},

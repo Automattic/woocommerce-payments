@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
+use WCPay\Constants\Country_Test_Cards;
 
 /**
  * Credit card Payment Method class extending UPE base class
@@ -67,9 +68,16 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns testing credentials to be printed at checkout in test mode.
 	 *
+	 * @param string $account_country The country of the account.
 	 * @return string
 	 */
-	public function get_testing_instructions() {
-		return __( 'Use test card <number>4242 4242 4242 4242</number> or refer to our <a>testing guide</a>.', 'woocommerce-payments' );
+	public function get_testing_instructions( string $account_country ) {
+		$test_card_number = Country_Test_Cards::get_test_card_for_country( $account_country );
+
+		return sprintf(
+			// Translators: %s is a test card number.
+			__( 'Use test card <number>%s</number> or refer to our <a>testing guide</a>.', 'woocommerce-payments' ),
+			$test_card_number
+		);
 	}
 }

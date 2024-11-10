@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Include missing scripts that handle refunds for non credit card payments in the order details page.

@@ -88,7 +88,7 @@ const DepositsOverview: React.FC = () => {
 		history.push(
 			getAdminUrl( {
 				page: 'wc-admin',
-				path: '/payments/deposits',
+				path: '/payments/payouts',
 			} )
 		);
 	};
@@ -98,7 +98,7 @@ const DepositsOverview: React.FC = () => {
 		return (
 			<Card className="wcpay-deposits-overview">
 				<CardHeader>
-					{ __( 'Deposits', 'woocommerce-payments' ) }
+					{ __( 'Payouts', 'woocommerce-payments' ) }
 				</CardHeader>
 
 				<CardBody className="wcpay-deposits-overview__schedule__container">
@@ -132,9 +132,7 @@ const DepositsOverview: React.FC = () => {
 
 	return (
 		<Card className="wcpay-deposits-overview">
-			<CardHeader>
-				{ __( 'Deposits', 'woocommerce-payments' ) }
-			</CardHeader>
+			<CardHeader>{ __( 'Payouts', 'woocommerce-payments' ) }</CardHeader>
 
 			{ /* Deposit schedule message */ }
 			{ isDepositsUnrestricted && !! account && hasScheduledDeposits && (
@@ -190,7 +188,7 @@ const DepositsOverview: React.FC = () => {
 				<>
 					<CardBody className="wcpay-deposits-overview__heading">
 						<span className="wcpay-deposits-overview__heading__title">
-							{ __( 'Deposit history', 'woocommerce-payments' ) }
+							{ __( 'Payout history', 'woocommerce-payments' ) }
 						</span>
 					</CardBody>
 					<RecentDepositsList deposits={ deposits } />
@@ -205,7 +203,7 @@ const DepositsOverview: React.FC = () => {
 							onClick={ navigateToDepositsHistory }
 						>
 							{ __(
-								'View full deposits history',
+								'View full payout history',
 								'woocommerce-payments'
 							) }
 						</Button>
@@ -219,7 +217,7 @@ const DepositsOverview: React.FC = () => {
 									page: 'wc-settings',
 									tab: 'checkout',
 									section: 'woocommerce_payments',
-								} ) + '#deposit-schedule'
+								} ) + '#payout-schedule'
 							}
 							onClick={ () =>
 								recordEvent(
@@ -228,7 +226,7 @@ const DepositsOverview: React.FC = () => {
 							}
 						>
 							{ __(
-								'Change deposit schedule',
+								'Change payout schedule',
 								'woocommerce-payments'
 							) }
 						</Button>

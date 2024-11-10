@@ -246,7 +246,7 @@ describe( 'Transactions list', () => {
 		};
 	} );
 
-	test( 'renders correctly when filtered by deposit', () => {
+	test( 'renders correctly when filtered by payout', () => {
 		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
 				( txn: Transaction ) => 'po_mock' === txn.deposit_id
@@ -275,7 +275,7 @@ describe( 'Transactions list', () => {
 		expect( mockUseTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
 	} );
 
-	describe( 'when not filtered by deposit', () => {
+	describe( 'when not filtered by payout', () => {
 		let container: Element;
 		let rerender: ( ui: React.ReactElement ) => void;
 		beforeEach( () => {
@@ -329,10 +329,10 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'sorts by amount', () => {
-			sortBy( 'Amount in Deposit Curency' );
+			sortBy( 'Amount in Payout Currency' );
 			expectSortingToBe( 'amount', 'desc' );
 
-			sortBy( 'Amount in Deposit Curency' );
+			sortBy( 'Amount in Payout Currency' );
 			expectSortingToBe( 'amount', 'asc' );
 		} );
 
@@ -583,7 +583,7 @@ describe( 'Transactions list', () => {
 		} );
 
 		// Test also makes sure that the currentUserEmail is included in the path in the API call.
-		test( 'should fetch export with deposit_id if deposits transactions page', async () => {
+		test( 'should fetch export with deposit_id if payouts transactions page', async () => {
 			window.confirm = jest.fn( () => true );
 
 			mockUseTransactionsSummary.mockReturnValue( {
@@ -627,7 +627,7 @@ describe( 'Transactions list', () => {
 				'Channel',
 				'"Paid Currency"',
 				'"Amount Paid"',
-				'"Deposit Currency"',
+				'"Payout Currency"',
 				'Amount',
 				'Fees',
 				'Net',
@@ -637,9 +637,9 @@ describe( 'Transactions list', () => {
 				'Email',
 				'Country',
 				'"Risk level"',
-				'"Deposit ID"',
-				'"Deposit date"',
-				'"Deposit status"',
+				'"Payout ID"',
+				'"Payout date"',
+				'"Payout status"',
 			];
 
 			// checking if columns in CSV are rendered correctly

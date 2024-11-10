@@ -27,7 +27,7 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 	if ( depositId && dateAvailable ) {
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			id: depositId,
 		} );
 
@@ -40,19 +40,19 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}
 
-	// Show an icon with a tooltip to communicate that the deposit will be available in the future.
+	// Show an icon with a tooltip to communicate that the payout will be available in the future.
 	return (
 		<>
-			{ __( 'Future deposit', 'woocommerce-payments' ) }
+			{ __( 'Future payout', 'woocommerce-payments' ) }
 			<ClickTooltip
 				content={ interpolateComponents( {
 					mixedString: __(
-						'This transaction will be included in an upcoming automated deposit. The date of the deposit will be displayed here once it is scheduled. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'This transaction will be included in an upcoming automated payout. The date of the payout will be displayed here once it is scheduled. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
 					components: {
 						learnMoreLink: (
-							<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#pending-funds" />
+							<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#pending-funds" />
 						),
 					},
 				} ) }

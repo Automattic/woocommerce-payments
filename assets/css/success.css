@@ -3,13 +3,13 @@
 	align-items: center;
 	flex-wrap: wrap;
 	line-height: 1;
+	padding-top: 4px;
 }
 
 .wc-payment-gateway-method-logo-wrapper img {
 	margin-right: 0.5rem;
-	padding-top: 4px;
 }
 
-.wc-payment-gateway-method-logo-wrapper.wc-payment-bnpl-logo img {
-	max-height: 30px;
+.wc-payment-gateway-method-logo-wrapper.wc-payment-lpm-logo img {
+	max-height: 26px;
 }

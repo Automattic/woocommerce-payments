@@ -7,7 +7,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import InstantDepositButton from '../';
+import InstantDepositButton from '..';
 import { useInstantDeposit } from 'wcpay/data';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
@@ -41,7 +41,7 @@ declare const global: {
 	};
 };
 
-describe( 'Instant deposit button and modal', () => {
+describe( 'Instant payout button and modal', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
@@ -74,7 +74,7 @@ describe( 'Instant deposit button and modal', () => {
 			<InstantDepositButton instantBalance={ mockInstantBalance } />
 		);
 		expect(
-			screen.queryByRole( 'dialog', { name: /instant deposit/i } )
+			screen.queryByRole( 'dialog', { name: /instant payout/i } )
 		).not.toBeInTheDocument();
 		fireEvent.click(
 			screen.getByRole( 'button', {
@@ -82,7 +82,7 @@ describe( 'Instant deposit button and modal', () => {
 			} )
 		);
 		const modal = screen.queryByRole( 'dialog', {
-			name: /instant deposit/i,
+			name: /instant payout/i,
 		} );
 		expect( modal ).toBeInTheDocument();
 		expect( modal ).toMatchSnapshot();

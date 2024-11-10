@@ -120,19 +120,19 @@ export const DepositsList = (): JSX.Element => {
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
-				href={ getDetailsURL( deposit.id, 'deposits' ) }
+				href={ getDetailsURL( deposit.id, 'payouts' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
 				{ children }
 			</ClickableCell>
 		);
 		const detailsLink = (
-			<DetailsLink id={ deposit.id } parentSegment="deposits" />
+			<DetailsLink id={ deposit.id } parentSegment="payouts" />
 		);
 
 		const dateDisplay = (
 			<Link
-				href={ getDetailsURL( deposit.id, 'deposits' ) }
+				href={ getDetailsURL( deposit.id, 'payouts' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
 				{ dateI18n(
@@ -186,8 +186,8 @@ export const DepositsList = (): JSX.Element => {
 		summary = [
 			{
 				label: _n(
-					'deposit',
-					'deposits',
+					'payout',
+					'payouts',
 					depositsSummary.count,
 					'woocommerce-payments'
 				),
@@ -212,7 +212,7 @@ export const DepositsList = (): JSX.Element => {
 		depositsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
 
-	const title = __( 'Deposits', 'woocommerce-payments' );
+	const title = __( 'Payouts', 'woocommerce-payments' );
 
 	const downloadable = !! rows.length;
 
@@ -317,7 +317,7 @@ export const DepositsList = (): JSX.Element => {
 			const csvColumns = [
 				{
 					...columns[ 0 ],
-					label: __( 'Deposit Id', 'woocommerce-payments' ),
+					label: __( 'Payout Id', 'woocommerce-payments' ),
 				},
 				...columns.slice( 1 ),
 			];
@@ -365,7 +365,7 @@ export const DepositsList = (): JSX.Element => {
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-deposits-list woocommerce-report-table"
-				title={ __( 'Deposit history', 'woocommerce-payments' ) }
+				title={ __( 'Payout history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '' ) || 25 }
 				totalRows={ totalRows }

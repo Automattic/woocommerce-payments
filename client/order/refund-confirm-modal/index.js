@@ -115,7 +115,7 @@ const RefundConfirmationModal = ( {
 						{ sprintf(
 							/* translators: %s: WooPayments */
 							__(
-								"Issue a full refund back to your customer's credit card using %s. " +
+								"Issue a full refund back to your customer's payment method using %s. " +
 									'This action can not be undone. To issue a partial refund, click "Cancel", and use ' +
 									'the "Refund" button in the order details below.',
 								'woocommerce-payments'
