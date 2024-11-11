@@ -1,4 +1,4 @@
-div.wcpay-instant-deposits-modal {
+div.wcpay-instant-payout-modal {
 	max-width: 500px;
 
 	p {
@@ -20,17 +20,17 @@ div.wcpay-instant-deposits-modal {
 			}
 		}
 
-		.wcpay-instant-deposits-modal__balance {
+		.wcpay-instant-payout-modal__balance {
 			padding-bottom: 0;
 		}
 
-		.wcpay-instant-deposits-modal__fee {
+		.wcpay-instant-payout-modal__fee {
 			span {
 				color: $studio-red-50;
 			}
 		}
 
-		.wcpay-instant-deposits-modal__net {
+		.wcpay-instant-payout-modal__net {
 			border-top: 1px solid $studio-gray-5;
 
 			span {

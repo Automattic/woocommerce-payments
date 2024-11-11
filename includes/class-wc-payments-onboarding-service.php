@@ -655,7 +655,7 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'path=/payments/onboarding' ) ) {
 			return self::FROM_ONBOARDING_WIZARD;
 		}
-		if ( false !== strpos( $referer, 'path=/payments/deposits' ) ) {
+		if ( false !== strpos( $referer, 'path=/payments/deposits' ) || false !== strpos( $referer, 'path=/payments/payouts' ) ) {
 			return self::FROM_PAYOUTS;
 		}
 		if ( false !== strpos( $referer, 'wordpress.com' ) ) {
@@ -858,7 +858,15 @@ class WC_Payments_Onboarding_Service {
 					'path' => '/payments/deposits',
 				]
 			)
-		) ) {
+		) || ( 2 === count(
+			array_intersect_assoc(
+				$referer_params,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/payouts',
+				]
+			)
+		) ) ) {
 			return self::SOURCE_WCPAY_PAYOUTS_PAGE;
 		}
 

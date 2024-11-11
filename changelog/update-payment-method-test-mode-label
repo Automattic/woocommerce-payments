@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: payment method "test mode" label at checkout to be displayed only when payment method is selected

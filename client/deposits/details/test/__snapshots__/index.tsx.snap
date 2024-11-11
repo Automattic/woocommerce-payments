@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Deposit overview renders automatic deposit correctly 1`] = `
+exports[`Deposit overview renders automatic payout correctly 1`] = `
 <div>
   <div
     class="wcpay-deposit-overview"
@@ -23,7 +23,7 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
               <div
                 class="woocommerce-summary__item-label"
               >
-                Deposit date: Jan 2, 2020
+                Payout date: Jan 2, 2020
               </div>
               <div
                 class="woocommerce-summary__item-data"
@@ -151,7 +151,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
   >
     <div
       aria-describedby="woocommerce-summary-helptext-1"
-      aria-label="Deposit overview"
+      aria-label="Payout overview"
       aria-orientation="horizontal"
       role="menu"
     >
@@ -173,7 +173,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Instant deposit date: Jan 2, 2020
+              Instant payout date: Jan 2, 2020
             </div>
             <div
               class="woocommerce-summary__item-data"
@@ -207,7 +207,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Deposit amount
+              Payout amount
             </div>
             <div
               class="woocommerce-summary__item-data"
@@ -251,7 +251,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Net deposit amount
+              Net payout amount
             </div>
             <div
               class="woocommerce-summary__item-data"

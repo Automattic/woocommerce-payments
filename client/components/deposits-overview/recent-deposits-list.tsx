@@ -45,7 +45,7 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 		<Flex className={ `${ tableClass }__row` } key={ deposit.id }>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				<Icon icon={ calendar } size={ 17 } />
-				<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
+				<Link href={ getDetailsURL( deposit.id, 'payouts' ) }>
 					{ getDepositDate( deposit ) }
 				</Link>
 			</FlexItem>

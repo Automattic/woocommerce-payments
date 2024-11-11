@@ -300,6 +300,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Payouts Rename Spotlight notice was dismissed.
+	 *
+	 * @return bool
+	 */
+	public static function is_payouts_rename_notice_dismissed(): bool {
+		return '1' === get_option( 'wcpay_payouts_rename_notice_dismissed', '0' );
+	}
+
+	/**
 	 * Checks whether the Stripe Billing feature is enabled.
 	 *
 	 * @return bool

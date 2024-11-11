@@ -1,19 +1,19 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Deposit renders with date and deposit available 1`] = `
+exports[`Deposit renders with date and payout available 1`] = `
 <div>
   <a
     data-link-type="wc-admin"
-    href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock"
+    href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock"
   >
     Jan 7, 2020
   </a>
 </div>
 `;
 
-exports[`Deposit renders with date available but no deposit 1`] = `
+exports[`Deposit renders with date available but no payout 1`] = `
 <div>
-  Future deposit
+  Future payout
   <button
     class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
     type="button"
@@ -44,9 +44,9 @@ exports[`Deposit renders with date available but no deposit 1`] = `
 </div>
 `;
 
-exports[`Deposit renders with deposit but no date available 1`] = `
+exports[`Deposit renders with no date or payout available 1`] = `
 <div>
-  Future deposit
+  Future payout
   <button
     class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
     type="button"
@@ -77,9 +77,9 @@ exports[`Deposit renders with deposit but no date available 1`] = `
 </div>
 `;
 
-exports[`Deposit renders with no date or deposit available 1`] = `
+exports[`Deposit renders with payout but no date available 1`] = `
 <div>
-  Future deposit
+  Future payout
   <button
     class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
     type="button"

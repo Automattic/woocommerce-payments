@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PayoutsRenameNotice should render notice if isPayoutsRenameNoticeDismissed is false 1`] = `
+<div>
+  <div>
+    Tour Component
+  </div>
+</div>
+`;

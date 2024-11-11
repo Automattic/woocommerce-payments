@@ -43,7 +43,7 @@ export const getUpdateBusinessDetailsTask = (
 		accountDetailsUpdateByDescription = sprintf(
 			/* translators: %s - formatted requirements current deadline (date) */
 			__(
-				'Update by %s to avoid a disruption in deposits.',
+				'Update by %s to avoid a disruption in payouts.',
 				'woocommerce-payments'
 			),
 			dateI18n(
@@ -70,14 +70,14 @@ export const getUpdateBusinessDetailsTask = (
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
 				__(
-					'Payments and deposits are disabled for this account until setup is completed.',
+					'Payments and payouts are disabled for this account until setup is completed.',
 					'woocommerce-payments'
 				);
 		} else {
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
 				__(
-					'Payments and deposits are disabled for this account until missing business information is updated.',
+					'Payments and payouts are disabled for this account until missing business information is updated.',
 					'woocommerce-payments'
 				);
 		}

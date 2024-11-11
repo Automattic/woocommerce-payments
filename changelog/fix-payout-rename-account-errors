@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Renamed deposit to Payout in account error messages. Main changelog will be added on feature branch.
+
+

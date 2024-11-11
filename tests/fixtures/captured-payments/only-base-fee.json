@@ -35,6 +35,6 @@
   },
   "expectation": {
     "feeString": "Base fee (2.9% + $0.30): -$0.74",
-    "netString": "Net deposit: $14.26 USD"
+    "netString": "Net payout: $14.26 USD"
   }
 }

@@ -16,7 +16,7 @@ describe( 'Admin deposits', () => {
 	it( 'page should load without any errors', async () => {
 		await merchantWCP.openDeposits();
 		await expect( page ).toMatchElement( 'h2', {
-			text: 'Deposit history',
+			text: 'Payout history',
 		} );
 		await takeScreenshot( 'merchant-admin-deposits' );
 	} );
