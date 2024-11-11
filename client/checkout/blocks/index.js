@@ -164,7 +164,7 @@ if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
 		registerExpressPaymentMethod(
 			tokenizedCartPaymentRequestPaymentMethod( api )
 		);
-	} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+	} else {
 		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 		registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
 	}

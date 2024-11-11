@@ -70,7 +70,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		if ( WC_Payments_Features::is_stripe_ece_enabled() ) {
+		if ( ! WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
 			return;
 		}
 
@@ -100,7 +100,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// It's used for displaying inbox notifications.
 		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
 
-		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
 			add_action(
 				'woocommerce_store_api_checkout_update_order_from_request',
 				[
@@ -111,7 +110,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				2
 			);
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
-		}
 	}
 
 	/**
