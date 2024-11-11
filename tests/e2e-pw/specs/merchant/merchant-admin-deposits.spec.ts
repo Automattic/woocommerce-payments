@@ -10,7 +10,7 @@ test.describe( 'Merchant deposits', () => {
 
 	test( 'Load the deposits list page', async ( { page } ) => {
 		await page.goto(
-			'/wp-admin/admin.php?page=wc-admin&path=/payments/deposits'
+			'/wp-admin/admin.php?page=wc-admin&path=/payments/payouts'
 		);
 
 		// Wait for the deposits table to load.
@@ -20,14 +20,14 @@ test.describe( 'Merchant deposits', () => {
 
 		expect(
 			page.getByRole( 'heading', {
-				name: 'Deposit history',
+				name: 'Payout history',
 			} )
 		).toBeVisible();
 	} );
 
 	test( 'Select deposits list advanced filters', async ( { page } ) => {
 		await page.goto(
-			'/wp-admin/admin.php?page=wc-admin&path=/payments/deposits'
+			'/wp-admin/admin.php?page=wc-admin&path=/payments/payouts'
 		);
 
 		// Wait for the deposits table to load.
@@ -36,7 +36,7 @@ test.describe( 'Merchant deposits', () => {
 			.waitFor( { state: 'hidden' } );
 
 		// Open the advanced filters.
-		await page.getByRole( 'button', { name: 'All deposits' } ).click();
+		await page.getByRole( 'button', { name: 'All payouts' } ).click();
 		await page.getByRole( 'button', { name: 'Advanced filters' } ).click();
 
 		// Select a filter
@@ -45,7 +45,7 @@ test.describe( 'Merchant deposits', () => {
 
 		// Select a filter option
 		await page
-			.getByLabel( 'Select a deposit status', {
+			.getByLabel( 'Select a payout status', {
 				exact: true,
 			} )
 			.selectOption( 'Pending' );

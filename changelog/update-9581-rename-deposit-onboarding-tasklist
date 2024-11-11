@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: Rename 'deposit' to 'payout' within the onboarding tasklist section. The change is a part of a larger project of doing this rename across the codebase.
+
+

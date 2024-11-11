@@ -112,7 +112,7 @@ export function* submitInstantDeposit( currency ) {
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			sprintf(
 				__(
-					'Instant deposit for %s in transit.',
+					'Instant payout for %s in transit.',
 					'woocommerce-payments'
 				),
 				formatCurrency( deposit.amount )
@@ -123,7 +123,7 @@ export function* submitInstantDeposit( currency ) {
 						label: __( 'View details', 'woocommerce-payments' ),
 						url: getAdminUrl( {
 							page: 'wc-admin',
-							path: '/payments/deposits/details',
+							path: '/payments/payouts/details',
 							id: deposit.id,
 						} ),
 					},
@@ -132,7 +132,7 @@ export function* submitInstantDeposit( currency ) {
 		);
 	} catch {
 		yield dispatch( 'core/notices' ).createErrorNotice(
-			__( 'Error creating instant deposit.', 'woocommerce-payments' )
+			__( 'Error creating instant payout.', 'woocommerce-payments' )
 		);
 	} finally {
 		yield dispatch( STORE_NAME ).finishResolution( 'getInstantDeposit', [

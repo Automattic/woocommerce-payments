@@ -18,27 +18,27 @@ import {
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import './style.scss';
 
-interface InstantDepositModalProps {
+interface InstantPayoutModalProps {
 	instantBalance: AccountOverview.InstantBalance;
 	onClose: () => void;
 	onSubmit: () => void;
 	inProgress: boolean;
 }
 
-const InstantDepositModal: React.FC< InstantDepositModalProps > = ( {
+const InstantPayoutModal: React.FC< InstantPayoutModalProps > = ( {
 	instantBalance: { amount, fee, net, fee_percentage: percentage },
 	onClose,
 	onSubmit,
 	inProgress,
 } ) => {
 	const learnMoreHref =
-		'https://woocommerce.com/document/woopayments/deposits/instant-deposits/';
+		'https://woocommerce.com/document/woopayments/payouts/instant-payouts/';
 	const feePercentage = `${ percentage }%`;
 	const description = createInterpolateElement(
 		/* translators: %s: amount representing the fee percentage, <a>: instant payout doc URL */
 		sprintf(
 			__(
-				'Need cash in a hurry? Instant deposits are available within 30 minutes for a nominal %s service fee. <a>Learn more</a>',
+				'Need cash in a hurry? Instant payouts are available within 30 minutes for a nominal %s service fee. <a>Learn more</a>',
 				'woocommerce-payments'
 			),
 			feePercentage
@@ -57,20 +57,20 @@ const InstantDepositModal: React.FC< InstantDepositModalProps > = ( {
 
 	return (
 		<Modal
-			title={ __( 'Instant deposit', 'woocommerce-payments' ) }
+			title={ __( 'Instant payout', 'woocommerce-payments' ) }
 			onRequestClose={ onClose }
-			className="wcpay-instant-deposits-modal"
+			className="wcpay-instant-payout-modal"
 		>
 			<p>{ description }</p>
 			<ul>
-				<li className="wcpay-instant-deposits-modal__balance">
+				<li className="wcpay-instant-payout-modal__balance">
 					{ __(
-						'Balance available for instant deposit: ',
+						'Balance available for instant payout: ',
 						'woocommerce-payments'
 					) }
 					<span>{ formatCurrency( amount ) }</span>
 				</li>
-				<li className="wcpay-instant-deposits-modal__fee">
+				<li className="wcpay-instant-payout-modal__fee">
 					{ sprintf(
 						/* translators: %s - amount representing the fee percentage */
 						__( '%s service fee: ', 'woocommerce-payments' ),
@@ -78,13 +78,13 @@ const InstantDepositModal: React.FC< InstantDepositModalProps > = ( {
 					) }
 					<span>-{ formatCurrency( fee ) }</span>
 				</li>
-				<li className="wcpay-instant-deposits-modal__net">
-					{ __( 'Net deposit amount: ', 'woocommerce-payments' ) }
+				<li className="wcpay-instant-payout-modal__net">
+					{ __( 'Net payout amount: ', 'woocommerce-payments' ) }
 					<span>{ formatExplicitCurrency( net ) }</span>
 				</li>
 			</ul>
 
-			<div className="wcpay-instant-deposits-modal__footer">
+			<div className="wcpay-instant-payout-modal__footer">
 				<Button isSecondary onClick={ onClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
@@ -95,8 +95,8 @@ const InstantDepositModal: React.FC< InstantDepositModalProps > = ( {
 					disabled={ inProgress }
 				>
 					{ sprintf(
-						/* translators: %s: Monetary amount to deposit */
-						__( 'Deposit %s now', 'woocommerce-payments' ),
+						/* translators: %s: Monetary amount to pay out */
+						__( 'Pay out %s now', 'woocommerce-payments' ),
 						formatExplicitCurrency( net )
 					) }
 				</Button>
@@ -105,4 +105,4 @@ const InstantDepositModal: React.FC< InstantDepositModalProps > = ( {
 	);
 };
 
-export default InstantDepositModal;
+export default InstantPayoutModal;

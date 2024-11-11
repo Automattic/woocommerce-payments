@@ -37,7 +37,7 @@ exports[`DepositFailureNotice Renders Renders DepositFailureNotice component cor
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
-          Deposits are currently paused because a recent deposit failed. Please 
+          Payouts are currently paused because a recent payout failed. Please 
           <a
             class="components-external-link"
             href="https://example.com?from=WCPAY_PAYOUTS&source=wcpay-payout-failure-notice"
@@ -93,7 +93,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
-        Deposits
+        Payouts
       </div>
       <div
         class="components-card__body components-card-body wcpay-deposits-overview__schedule__container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
@@ -113,7 +113,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             class="wcpay-tooltip__content-wrapper"
           >
             <div
-              aria-label="Deposit schedule tooltip"
+              aria-label="Payout schedule tooltip"
               role="button"
               tabindex="0"
             >
@@ -173,7 +173,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
-                It may take 1-3 business days for deposits to reach your bank account.
+                It may take 1-3 business days for payouts to reach your bank account.
               </div>
             </div>
             <div
@@ -190,7 +190,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
         <span
           class="wcpay-deposits-overview__heading__title"
         >
-          Deposit history
+          Payout history
         </span>
       </div>
       <div
@@ -262,7 +262,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             </svg>
             <a
               data-link-type="wc-admin"
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
             >
               January 2, 2020
             </a>
@@ -310,7 +310,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             </svg>
             <a
               data-link-type="wc-admin"
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
             >
               January 3, 2020
             </a>
@@ -358,7 +358,7 @@ exports[`Deposits Overview information Component Renders 1`] = `
             </svg>
             <a
               data-link-type="wc-admin"
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock3"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
             >
               January 4, 2020
             </a>
@@ -392,13 +392,13 @@ exports[`Deposits Overview information Component Renders 1`] = `
           class="components-button is-secondary"
           type="button"
         >
-          View full deposits history
+          View full payout history
         </button>
         <a
           class="components-button is-tertiary"
-          href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#deposit-schedule"
+          href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#payout-schedule"
         >
-          Change deposit schedule
+          Change payout schedule
         </a>
       </div>
     </div>
@@ -455,14 +455,14 @@ exports[`Suspended Deposit Notice Renders Component Renders 1`] = `
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
-          Your deposits are 
+          Your payouts are 
           <strong>
             temporarily suspended
           </strong>
           . 
           <a
             data-link-type="wc-admin"
-            href="https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/"
+            href="https://woocommerce.com/document/woopayments/payouts/why-payouts-suspended/"
           >
             Learn more
           </a>

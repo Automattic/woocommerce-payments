@@ -70,11 +70,11 @@ describe( 'Deposit overview', () => {
 		};
 	} );
 
-	test( 'renders automatic deposit correctly', () => {
+	test( 'renders automatic payout correctly', () => {
 		const { container: overview, getByText } = render(
 			<DepositOverview deposit={ mockDeposit } />
 		);
-		getByText( /Deposit date:/ );
+		getByText( /Payout date:/ );
 		getByText( 'Completed (paid)' );
 		expect( overview ).toMatchSnapshot();
 	} );

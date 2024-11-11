@@ -54,14 +54,14 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 };
 
 /**
- * Creates a timeline item about a deposit
+ * Creates a timeline item about a payout
  *
- * @param {Object} event An event affecting the deposit
+ * @param {Object} event An event affecting the payout
  * @param {string} formattedAmount Formatted amount string
  * @param {boolean} isPositive Whether the amount will be added or deducted
  * @param {Array} body Any extra subitems that should be included as item body
  *
- * @return {Object} Deposit timeline item
+ * @return {Object} Payout timeline item
  */
 const getDepositTimelineItem = (
 	event,
@@ -73,14 +73,14 @@ const getDepositTimelineItem = (
 	if ( event.deposit ) {
 		headline = sprintf(
 			isPositive
-				? // translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
+				? // translators: %1$s - formatted amount, %2$s - payout arrival date, <a> - link to the payout
 				  __(
-						'%1$s was added to your <a>%2$s deposit</a>.',
+						'%1$s was added to your <a>%2$s payout</a>.',
 						'woocommerce-payments'
 				  )
-				: // translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
+				: // translators: %1$s - formatted amount, %2$s - payout arrival date, <a> - link to the payout
 				  __(
-						'%1$s was deducted from your <a>%2$s deposit</a>.',
+						'%1$s was deducted from your <a>%2$s payout</a>.',
 						'woocommerce-payments'
 				  ),
 			formattedAmount,
@@ -91,7 +91,7 @@ const getDepositTimelineItem = (
 		);
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			id: event.deposit.id,
 		} );
 
@@ -104,12 +104,12 @@ const getDepositTimelineItem = (
 			isPositive
 				? // translators: %s - formatted amount
 				  __(
-						'%s will be added to a future deposit.',
+						'%s will be added to a future payout.',
 						'woocommerce-payments'
 				  )
 				: // translators: %s - formatted amount
 				  __(
-						'%s will be deducted from a future deposit.',
+						'%s will be deducted from a future payout.',
 						'woocommerce-payments'
 				  ),
 			formattedAmount
@@ -127,19 +127,19 @@ const getDepositTimelineItem = (
 /**
  * Creates a timeline item about a financing paydown
  *
- * @param {Object} event An event affecting the deposit
+ * @param {Object} event An event affecting the payout
  * @param {string} formattedAmount Formatted amount string
  * @param {Array} body Any extra subitems that should be included as item body
  *
- * @return {Object} Deposit timeline item
+ * @return {Object} Payout timeline item
  */
 const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 	let headline = '';
 	if ( event.deposit ) {
 		headline = sprintf(
-			// translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
+			// translators: %1$s - formatted amount, %2$s - payout arrival date, <a> - link to the payout
 			__(
-				'%1$s was subtracted from your <a>%2$s deposit</a>.',
+				'%1$s was subtracted from your <a>%2$s payout</a>.',
 				'woocommerce-payments'
 			),
 			formattedAmount,
@@ -151,7 +151,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			id: event.deposit.id,
 		} );
 
@@ -162,7 +162,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 	} else {
 		headline = sprintf(
 			__(
-				'%s will be subtracted from a future deposit.',
+				'%s will be subtracted from a future payout.',
 				'woocommerce-payments'
 			),
 			formattedAmount
@@ -245,7 +245,7 @@ const formatNetString = ( event ) => {
 export const composeNetString = ( event ) => {
 	return sprintf(
 		/* translators: %s is a monetary amount */
-		__( 'Net deposit: %s', 'woocommerce-payments' ),
+		__( 'Net payout: %s', 'woocommerce-payments' ),
 		formatNetString( event )
 	);
 };

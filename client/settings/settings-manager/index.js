@@ -84,17 +84,17 @@ const DepositsDescription = () => {
 
 	return (
 		<>
-			<h2>{ __( 'Deposits', 'woocommerce-payments' ) }</h2>
+			<h2>{ __( 'Payouts', 'woocommerce-payments' ) }</h2>
 			<p>
 				{ sprintf(
 					__(
-						'Funds are available for deposit %s business days after they’re received.',
+						'Funds are available for payout %s business days after they’re received.',
 						'woocommerce-payments'
 					),
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
@@ -242,7 +242,7 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection description={ DepositsDescription } id="deposits">
-				<div id={ 'deposit-schedule' }>
+				<div id="payout-schedule">
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
 							<Deposits />

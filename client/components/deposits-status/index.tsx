@@ -63,7 +63,7 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 	const { iconSize } = props;
 
 	const learnMoreHref =
-		'https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/';
+		'https://woocommerce.com/document/woopayments/payouts/why-payouts-suspended/';
 
 	const description = createInterpolateElement(
 		/* translators: <a> - suspended accounts FAQ URL */
