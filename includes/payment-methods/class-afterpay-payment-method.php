@@ -20,7 +20,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	const PAYMENT_METHOD_STRIPE_ID = 'afterpay_clearpay';
 
 	/**
-	 * Constructor for link payment method
+	 * Constructor for Afterpay payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Token class instance.
 	 */
