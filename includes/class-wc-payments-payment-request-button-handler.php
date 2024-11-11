@@ -88,8 +88,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
-		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
-
 		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
 		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
@@ -529,78 +527,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
-	}
-
-	/**
-	 * Displays the necessary HTML for the Pay for Order page.
-	 *
-	 * @param WC_Order $order The order that needs payment.
-	 */
-	public function display_pay_for_order_page_html( $order ) {
-		$currency = get_woocommerce_currency();
-
-		$data  = [];
-		$items = [];
-
-		foreach ( $order->get_items() as $item ) {
-			if ( method_exists( $item, 'get_total' ) ) {
-				$items[] = [
-					'label'  => $item->get_name(),
-					'amount' => WC_Payments_Utils::prepare_amount( $item->get_total(), $currency ),
-				];
-			}
-		}
-
-		if ( $order->get_total_tax() ) {
-			$items[] = [
-				'label'  => __( 'Tax', 'woocommerce-payments' ),
-				'amount' => WC_Payments_Utils::prepare_amount( $order->get_total_tax(), $currency ),
-			];
-		}
-
-		if ( $order->get_shipping_total() ) {
-			$shipping_label = sprintf(
-			// Translators: %s is the name of the shipping method.
-				__( 'Shipping (%s)', 'woocommerce-payments' ),
-				$order->get_shipping_method()
-			);
-
-			$items[] = [
-				'label'  => $shipping_label,
-				'amount' => WC_Payments_Utils::prepare_amount( $order->get_shipping_total(), $currency ),
-			];
-		}
-
-		foreach ( $order->get_fees() as $fee ) {
-			$items[] = [
-				'label'  => $fee->get_name(),
-				'amount' => WC_Payments_Utils::prepare_amount( $fee->get_amount(), $currency ),
-			];
-		}
-
-		$data['order']          = $order->get_id();
-		$data['displayItems']   = $items;
-		$data['needs_shipping'] = false; // This should be already entered/prepared.
-		$data['total']          = [
-			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_helper->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ),
-			'pending' => true,
-		];
-
-		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestPayForOrderParams', $data );
-	}
-
-	/**
-	 * Get cart data.
-	 *
-	 * @return mixed Returns false if on a product page, the product information otherwise.
-	 */
-	public function get_cart_data() {
-		if ( $this->express_checkout_helper->is_product() ) {
-			return false;
-		}
-
-		return $this->express_checkout_helper->build_display_items();
 	}
 
 	/**

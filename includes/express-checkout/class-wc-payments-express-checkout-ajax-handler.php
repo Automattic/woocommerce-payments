@@ -38,12 +38,12 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
-		add_action( 'wc_ajax_wcpay_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
-		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
-		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
-		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
-		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
+		add_action( 'wc_ajax_wcpay_ece_create_order', [ $this, 'ajax_create_order' ] );
+		add_action( 'wc_ajax_wcpay_ece_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
+		add_action( 'wc_ajax_wcpay_ece_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
+		add_action( 'wc_ajax_wcpay_ece_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
+		add_action( 'wc_ajax_wcpay_ece_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
+		add_action( 'wc_ajax_wcpay_ece_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
 	}
 
 	/**

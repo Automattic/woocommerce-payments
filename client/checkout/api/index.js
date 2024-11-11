@@ -318,7 +318,7 @@ export default class WCPayAPI {
 	 */
 	expressCheckoutECEUpdateShippingDetails( shippingOption ) {
 		return this.request(
-			getPaymentRequestAjaxURL( 'update_shipping_method' ),
+			getPaymentRequestAjaxURL( 'ece_update_shipping_method' ),
 			{
 				security: getPaymentRequestData( 'nonce' )?.update_shipping,
 				shipping_method: [ shippingOption.id ],
@@ -333,9 +333,12 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise for the request to the server.
 	 */
 	expressCheckoutECEGetCartDetails() {
-		return this.request( getPaymentRequestAjaxURL( 'get_cart_details' ), {
-			security: getPaymentRequestData( 'nonce' )?.get_cart_details,
-		} );
+		return this.request(
+			getPaymentRequestAjaxURL( 'ece_get_cart_details' ),
+			{
+				security: getPaymentRequestData( 'nonce' )?.get_cart_details,
+			}
+		);
 	}
 
 	/**
@@ -345,7 +348,7 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise for the request to the server.
 	 */
 	expressCheckoutECEAddToCart( productData ) {
-		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
+		return this.request( getPaymentRequestAjaxURL( 'ece_add_to_cart' ), {
 			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
 			...productData,
 		} );
@@ -359,7 +362,7 @@ export default class WCPayAPI {
 	 */
 	expressCheckoutECEGetSelectedProductData( productData ) {
 		return this.request(
-			getPaymentRequestAjaxURL( 'get_selected_product_data' ),
+			getPaymentRequestAjaxURL( 'ece_get_selected_product_data' ),
 			{
 				security: getPaymentRequestData( 'nonce' )
 					?.get_selected_product_data,
@@ -377,7 +380,7 @@ export default class WCPayAPI {
 	 */
 	expressCheckoutECECalculateShippingOptions( shippingAddress ) {
 		return this.request(
-			getExpressCheckoutAjaxURL( 'get_shipping_options' ),
+			getExpressCheckoutAjaxURL( 'ece_get_shipping_options' ),
 			{
 				security: getExpressCheckoutConfig( 'nonce' )?.shipping,
 				is_product_page: getExpressCheckoutConfig( 'is_product_page' ),
@@ -393,7 +396,7 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise for the request to the server.
 	 */
 	expressCheckoutECECreateOrder( paymentData ) {
-		return this.request( getExpressCheckoutAjaxURL( 'create_order' ), {
+		return this.request( getExpressCheckoutAjaxURL( 'ece_create_order' ), {
 			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.checkout,
 			...paymentData,
 		} );
@@ -407,7 +410,7 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise for the request to the server.
 	 */
 	expressCheckoutECEPayForOrder( order, paymentData ) {
-		return this.request( getExpressCheckoutAjaxURL( 'pay_for_order' ), {
+		return this.request( getExpressCheckoutAjaxURL( 'ece_pay_for_order' ), {
 			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.pay_for_order,
 			order,
 			...paymentData,
@@ -441,7 +444,7 @@ export default class WCPayAPI {
 		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 		const addToCartNonce = getConfig( 'addToCartNonce' );
 
-		return this.request( buildAjaxURL( wcAjaxUrl, 'add_to_cart' ), {
+		return this.request( buildAjaxURL( wcAjaxUrl, 'ece_add_to_cart' ), {
 			security: addToCartNonce,
 			...productData,
 		} );
