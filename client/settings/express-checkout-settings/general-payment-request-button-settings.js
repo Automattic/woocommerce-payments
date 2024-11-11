@@ -21,7 +21,7 @@ import { useContext } from '@wordpress/element';
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import interpolateComponents from '@automattic/interpolate-components';
-import { getPaymentRequestData } from 'utils/express-checkout';
+import { getExpressCheckoutConfig } from 'utils/express-checkout';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import InlineNotice from 'wcpay/components/inline-notice';
 import {
@@ -148,7 +148,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	} = useContext( WCPaySettingsContext );
 
 	const stripePromise = useMemo( () => {
-		const stripeSettings = getPaymentRequestData( 'stripe' );
+		const stripeSettings = getExpressCheckoutConfig( 'stripe' );
 		return loadStripe( stripeSettings.publishableKey, {
 			stripeAccount: stripeSettings.accountId,
 			locale: stripeSettings.locale,

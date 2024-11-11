@@ -35,7 +35,7 @@ jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
 
 jest.mock( 'utils/express-checkout', () => ( {
-	getPaymentRequestData: jest.fn().mockReturnValue( {
+	getExpressCheckoutConfig: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',
 		locale: 'en',
