@@ -311,30 +311,12 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Submits shipping address to get available shipping options
-	 * from Payment Request button.
-	 *
-	 * @param {Object} shippingAddress Shipping details.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	paymentRequestCalculateShippingOptions( shippingAddress ) {
-		return this.request(
-			getPaymentRequestAjaxURL( 'get_shipping_options' ),
-			{
-				security: getPaymentRequestData( 'nonce' )?.shipping,
-				is_product_page: getPaymentRequestData( 'is_product_page' ),
-				...shippingAddress,
-			}
-		);
-	}
-
-	/**
 	 * Updates cart with selected shipping option.
 	 *
 	 * @param {Object} shippingOption Shipping option.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestUpdateShippingDetails( shippingOption ) {
+	expressCheckoutECEUpdateShippingDetails( shippingOption ) {
 		return this.request(
 			getPaymentRequestAjaxURL( 'update_shipping_method' ),
 			{
@@ -350,7 +332,7 @@ export default class WCPayAPI {
 	 *
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestGetCartDetails() {
+	expressCheckoutECEGetCartDetails() {
 		return this.request( getPaymentRequestAjaxURL( 'get_cart_details' ), {
 			security: getPaymentRequestData( 'nonce' )?.get_cart_details,
 		} );
@@ -362,23 +344,10 @@ export default class WCPayAPI {
 	 * @param {Object} productData Product data.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestAddToCart( productData ) {
+	expressCheckoutECEAddToCart( productData ) {
 		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
 			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
 			...productData,
-		} );
-	}
-
-	/**
-	 * Empty the cart.
-	 *
-	 * @param {number} bookingId Booking ID (optional).
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	paymentRequestEmptyCart( bookingId ) {
-		return this.request( getPaymentRequestAjaxURL( 'empty_cart' ), {
-			security: getPaymentRequestData( 'nonce' )?.empty_cart,
-			booking_id: bookingId,
 		} );
 	}
 
@@ -388,7 +357,7 @@ export default class WCPayAPI {
 	 * @param {Object} productData Product data.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	paymentRequestGetSelectedProductData( productData ) {
+	expressCheckoutECEGetSelectedProductData( productData ) {
 		return this.request(
 			getPaymentRequestAjaxURL( 'get_selected_product_data' ),
 			{
@@ -397,19 +366,6 @@ export default class WCPayAPI {
 				...productData,
 			}
 		);
-	}
-
-	/**
-	 * Creates order based on Payment Request payment method.
-	 *
-	 * @param {Object} paymentData Order data.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	paymentRequestCreateOrder( paymentData ) {
-		return this.request( getPaymentRequestAjaxURL( 'create_order' ), {
-			_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
-			...paymentData,
-		} );
 	}
 
 	/**
@@ -488,14 +444,6 @@ export default class WCPayAPI {
 		return this.request( buildAjaxURL( wcAjaxUrl, 'add_to_cart' ), {
 			security: addToCartNonce,
 			...productData,
-		} );
-	}
-
-	paymentRequestPayForOrder( order, paymentData ) {
-		return this.request( getPaymentRequestAjaxURL( 'pay_for_order' ), {
-			_wpnonce: getPaymentRequestData( 'nonce' )?.pay_for_order,
-			order,
-			...paymentData,
 		} );
 	}
 

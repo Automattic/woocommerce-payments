@@ -18,7 +18,6 @@ import { SavedTokenHandler } from './saved-token-handler';
 import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
-import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import {
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
@@ -168,8 +167,6 @@ if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
 	} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
 		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 		registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
-	} else {
-		registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 	}
 }
 window.addEventListener( 'load', () => {

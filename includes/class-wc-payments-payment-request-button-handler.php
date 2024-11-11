@@ -939,7 +939,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
-		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() && ( $this->express_checkout_helper->is_product() || $this->express_checkout_helper->is_pay_for_order_page() || $this->express_checkout_helper->is_cart() || $this->express_checkout_helper->is_checkout() ) ) {
+		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
 			WC_Payments::register_script_with_dependencies(
 				'WCPAY_PAYMENT_REQUEST',
 				'dist/tokenized-payment-request',
@@ -953,21 +953,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				plugins_url( 'dist/tokenized-payment-request.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/tokenized-payment-request.css' )
-			);
-		} else {
-			WC_Payments::register_script_with_dependencies(
-				'WCPAY_PAYMENT_REQUEST',
-				'dist/payment-request',
-				[
-					'jquery',
-					'stripe',
-				]
-			);
-			WC_Payments_Utils::enqueue_style(
-				'WCPAY_PAYMENT_REQUEST',
-				plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
-				[],
-				WC_Payments::get_file_version( 'dist/payment-request.css' )
 			);
 		}
 
