@@ -1888,7 +1888,7 @@ class WC_Payments {
 		if ( ! $is_subscription ) {
 			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
 			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
-			echo wp_kses( $stripe_site_messaging->init(), 'post' );
+			echo wp_kses( $stripe_site_messaging->init() ?? '', 'post' );
 		}
 	}
 
