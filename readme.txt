@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.5.0 - 2024-11-13 =
+= 8.5.0-test-3 - unreleased =
 * Add - Add country-specific test card numbers for credit card testing
 * Add - Add risk level information to the fraud and risk box on the order details page.
 * Add - Add support for allowedShippingCountries in Express Checkout Element.
