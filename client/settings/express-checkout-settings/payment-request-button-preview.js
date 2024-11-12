@@ -76,6 +76,18 @@ const PaymentRequestButtonPreview = () => {
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 
+	if ( ! isWooPayEnabled && ! isPaymentRequestEnabled ) {
+		return (
+			<InlineNotice icon status="info" isDismissible={ false }>
+				{ __(
+					'To preview the express checkout buttons, ' +
+						'activate at least one express checkout.',
+					'woocommerce-payments'
+				) }
+			</InlineNotice>
+		);
+	}
+
 	/**
 	 * If stripe is loading, then display nothing.
 	 * If stripe finished loading but payment request button failed to load (null), display info section.
