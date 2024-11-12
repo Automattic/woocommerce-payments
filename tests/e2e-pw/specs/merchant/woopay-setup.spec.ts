@@ -5,16 +5,14 @@ import { test, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { getMerchant, getShopper } from '../../utils/helpers';
+import { getMerchant } from '../../utils/helpers';
 import { activateWooPay, deactivateWooPay } from '../../utils/merchant';
 
 test.describe( 'WooPay setup', () => {
 	let merchantPage: Page;
-	let shopperPage: Page;
 	let wasWooPayEnabled: boolean;
 
 	test.beforeAll( async ( { browser } ) => {
-		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 		wasWooPayEnabled = await activateWooPay( merchantPage );
 	} );
