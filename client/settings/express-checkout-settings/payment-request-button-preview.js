@@ -3,12 +3,9 @@
 /**
  * External dependencies
  */
-import { React, useState, useEffect } from 'react';
+import { React } from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	PaymentRequestButtonElement,
-	useStripe,
-} from '@stripe/react-stripe-js';
+import { useStripe } from '@stripe/react-stripe-js';
 
 /**
  * Internal dependencies
@@ -72,23 +69,12 @@ const PreviewRequirementsNotice = () => (
 
 const PaymentRequestButtonPreview = () => {
 	const stripe = useStripe();
-	const [ paymentRequest, setPaymentRequest ] = useState();
-	const [ isLoading, setIsLoading ] = useState( true );
 	const [ buttonType ] = usePaymentRequestButtonType();
 	const [ size ] = usePaymentRequestButtonSize();
 	const [ theme ] = usePaymentRequestButtonTheme();
 	const [ radius ] = usePaymentRequestButtonBorderRadius();
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
-
-	useEffect( () => {
-		if ( ! stripe ) {
-			return;
-		}
-
-		// We don't need a payment request when using the ECE buttons.
-		setIsLoading( false );
-	}, [ stripe, setPaymentRequest, setIsLoading ] );
 
 	/**
 	 * If stripe is loading, then display nothing.
@@ -121,37 +107,11 @@ const PaymentRequestButtonPreview = () => {
 		  ) ) || <PreviewRequirementsNotice />
 		: null;
 
-	const prbButtonPreview =
-		isPaymentRequestEnabled && paymentRequest && ! isLoading
-			? ( isHttpsEnabled && (
-					<PaymentRequestButtonElement
-						key={ `${ buttonType }-${ theme }-${ size }` }
-						onClick={ ( e ) => {
-							e.preventDefault();
-						} }
-						options={ {
-							paymentRequest: paymentRequest,
-							style: {
-								paymentRequestButton: {
-									type: buttonType,
-									theme: theme,
-									height: `${
-										buttonSizeToPxMap[ size ] ||
-										buttonSizeToPxMap.medium
-									}px`,
-								},
-							},
-						} }
-					/>
-			  ) ) || <PreviewRequirementsNotice />
-			: null;
-
-	if ( woopayPreview || expressCheckoutButtonPreview || prbButtonPreview ) {
+	if ( woopayPreview || expressCheckoutButtonPreview ) {
 		return (
 			<ButtonPreviewWrapper theme={ theme }>
 				{ woopayPreview }
-				{ /* We never want to show both ECE and PRB previews at the same time. */ }
-				{ expressCheckoutButtonPreview || prbButtonPreview }
+				{ expressCheckoutButtonPreview }
 			</ButtonPreviewWrapper>
 		);
 	}
