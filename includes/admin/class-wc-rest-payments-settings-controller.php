@@ -1042,7 +1042,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_REST_Response|null The response object, if this is a REST request.
 	 */
-	public function schedule_stripe_billing_migration( WP_REST_Request $request = null ) {
+	public function schedule_stripe_billing_migration( ?WP_REST_Request $request = null ) {
 
 		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
 			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
@@ -1065,7 +1065,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_REST_Response|WP_Error The response object, if this is a REST request.
 	 */
-	public function request_capability( WP_REST_Request $request = null ) {
+	public function request_capability( ?WP_REST_Request $request = null ) {
 		$request_result          = null;
 		$id                      = $request->get_param( 'id' );
 		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
