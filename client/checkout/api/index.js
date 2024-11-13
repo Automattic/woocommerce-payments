@@ -346,7 +346,7 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise for the request to the server.
 	 */
 	expressCheckoutECEAddToCart( productData ) {
-		return this.request( getExpressCheckoutAjaxURL( 'ece_add_to_cart' ), {
+		return this.request( getExpressCheckoutAjaxURL( 'add_to_cart' ), {
 			security: getExpressCheckoutConfig( 'nonce' )?.add_to_cart,
 			...productData,
 		} );
@@ -442,7 +442,7 @@ export default class WCPayAPI {
 		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 		const addToCartNonce = getConfig( 'addToCartNonce' );
 
-		return this.request( buildAjaxURL( wcAjaxUrl, 'ece_add_to_cart' ), {
+		return this.request( buildAjaxURL( wcAjaxUrl, 'add_to_cart' ), {
 			security: addToCartNonce,
 			...productData,
 		} );
