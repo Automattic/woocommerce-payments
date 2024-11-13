@@ -291,19 +291,13 @@ jQuery( function ( $ ) {
 		return Boolean(
 			billingFieldsToValidate.find( ( fieldName ) => {
 				const $field = document.querySelector( `#${ fieldName }` );
-				let isRequired = false;
+				let isRequired = enabledBillingFields[ fieldName ]?.required;
 
 				if ( country && locale && fieldName !== 'billing_email' ) {
 					const key = fieldName.replace( 'billing_', '' );
-					const fieldSettings = jQuery.extend(
-						true,
-						{},
-						locale.default[ key ],
-						locale[ country ][ key ]
-					);
-					isRequired = fieldSettings.required;
-				} else {
-					isRequired = enabledBillingFields[ fieldName ]?.required;
+					isRequired =
+						locale[ country ][ key ]?.required ??
+						locale.default[ key ]?.required;
 				}
 
 				const hasValue = $field?.value;
