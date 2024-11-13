@@ -246,7 +246,7 @@ class WC_Payments_Status {
 						<td>
 						<?php
 							$manual_capture_enabled = 'yes' === $this->gateway->get_option( 'manual_capture' );
-							echo esc_html( $manual_capture_enabled ? __( 'Enabled', 'woocommerce-payments' ) : __( 'Disabled', 'woocommerce-payments' ) );
+							echo $manual_capture_enabled ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' );
 						?>
 						</td>
 					</tr>
