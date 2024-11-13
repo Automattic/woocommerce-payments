@@ -68,6 +68,7 @@ test.describe( 'Klarna Checkout', () => {
 		await shopperPage
 			.locator( '.wc_payment_methods' )
 			.getByText( 'Klarna' )
+			.nth( 1 )
 			.click();
 
 		await shopper.placeOrder( shopperPage );

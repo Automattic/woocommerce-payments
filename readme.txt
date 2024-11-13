@@ -24,7 +24,7 @@ Features previously only available on your payment provider’s website are now 
 
 - View the details of [payments, refunds, and other transactions](https://woocommerce.com/document/woopayments/managing-money/).
 - View and respond to [disputes and chargebacks](https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/).
-- [Track deposits](https://woocommerce.com/document/woopayments/deposits/) into your bank account or debit card.
+- [Track payouts](https://woocommerce.com/document/woopayments/payouts/) into your bank account or debit card.
 
 **Pay as you go**
 
@@ -89,7 +89,7 @@ Please note that our support for the checkout block is still experimental and th
 
 1. View Transactions
 2. View Transaction Details
-3. Track Deposits
+3. Track Payouts
 4. Manage Disputes
 
 == Changelog ==

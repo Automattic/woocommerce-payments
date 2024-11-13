@@ -194,7 +194,7 @@ class WC_Payments_Captured_Event_Note {
 		// Format and return the net string.
 		return sprintf(
 			/* translators: %s is a monetary amount */
-			__( 'Net deposit: %s', 'woocommerce-payments' ),
+			__( 'Net payout: %s', 'woocommerce-payments' ),
 			WC_Payments_Utils::format_explicit_currency( $net, $currency )
 		);
 	}

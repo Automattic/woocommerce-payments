@@ -305,7 +305,7 @@ export default {
 					}
 				);
 			},
-			action_label: __( 'Set up deposits', 'woocommerce-payments' ),
+			action_label: __( 'Set up payouts', 'woocommerce-payments' ),
 		},
 		no_payment_30_days: {
 			title: __(
@@ -327,7 +327,7 @@ export default {
 		},
 		after_payment: {
 			title: __(
-				'Verify your bank account to start receiving deposits',
+				'Verify your bank account to start receiving payouts',
 				'woocommerce-payments'
 			),
 			description: ( dueDate: string ): React.ReactElement => {
@@ -345,13 +345,13 @@ export default {
 				);
 			},
 			action_label: __(
-				'Start receiving deposits',
+				'Start receiving payouts',
 				'woocommerce-payments'
 			),
 		},
 		balance_rising: {
 			title: __(
-				'Verify your bank account to start receiving deposits',
+				'Verify your bank account to start receiving payouts',
 				'woocommerce-payments'
 			),
 			description: ( dueDate: string ): React.ReactElement => {
@@ -369,7 +369,7 @@ export default {
 				);
 			},
 			action_label: __(
-				'Start receiving deposits',
+				'Start receiving payouts',
 				'woocommerce-payments'
 			),
 		},
@@ -389,7 +389,7 @@ export default {
 					}
 				);
 			},
-			action_label: __( 'Set up deposits', 'woocommerce-payments' ),
+			action_label: __( 'Set up payouts', 'woocommerce-payments' ),
 		},
 		threshold_reached: {
 			title: __(
@@ -400,7 +400,7 @@ export default {
 				return createInterpolateElement(
 					sprintf(
 						__(
-							'<strong>You have reached the deposit threshold of $5,000.00. Please verify your bank account now to reactivate payments.</strong> Your customers can no longer make purchases on your store until your account is verified.',
+							'<strong>You have reached the payout threshold of $5,000.00. Please verify your bank account now to reactivate payments.</strong> Your customers can no longer make purchases on your store until your account is verified.',
 							'woocommerce-payments'
 						),
 						dueDate

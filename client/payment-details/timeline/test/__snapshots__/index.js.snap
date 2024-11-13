@@ -181,9 +181,9 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         $115.00 was added to your 
                         <a
                           data-link-type="wc-admin"
-                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
+                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2d3"
                         >
-                          Apr 5, 2020 deposit
+                          Apr 5, 2020 payout
                         </a>
                         .
                       </span>
@@ -309,7 +309,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        $100.00 will be deducted from a future deposit.
+                        $100.00 will be deducted from a future payout.
                       </span>
                     </div>
                     <span
@@ -441,7 +441,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        $50.00 will be deducted from a future deposit.
+                        $50.00 will be deducted from a future payout.
                       </span>
                     </div>
                     <span
@@ -663,7 +663,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        $110.00 will be deducted from a future deposit.
+                        $110.00 will be deducted from a future payout.
                       </span>
                     </div>
                     <span
@@ -791,9 +791,9 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         $59.50 was added to your 
                         <a
                           data-link-type="wc-admin"
-                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
                         >
-                          Apr 2, 2020 deposit
+                          Apr 2, 2020 payout
                         </a>
                         .
                       </span>
@@ -852,7 +852,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                     </span>
                     <span />
                     <span>
-                      Net deposit: $59.50
+                      Net payout: $59.50
                     </span>
                   </div>
                 </li>
@@ -1441,7 +1441,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                         </g>
                       </svg>
                       <span>
-                        $0.66 will be added to a future deposit.
+                        $0.66 will be added to a future payout.
                       </span>
                     </div>
                     <span
@@ -1511,7 +1511,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                       </ul>
                     </span>
                     <span>
-                      Net deposit: $0.66
+                      Net payout: $0.66
                     </span>
                   </div>
                 </li>

@@ -63,6 +63,15 @@ const mockDeposits = [
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
 	} as CachedDeposit,
+	{
+		id: 'po_mock3',
+		date: '2020-01-04 17:46:02',
+		type: 'withdrawal',
+		amount: 4000,
+		status: 'paid',
+		bankAccount: 'MOCK BANK •••• 1234 (USD)',
+		currency: 'USD',
+	} as CachedDeposit,
 ];
 
 declare const global: {
@@ -272,7 +281,7 @@ describe( 'Deposits list', () => {
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const expected = [
-				'"Deposit Id"',
+				'"Payout Id"',
 				'Date',
 				'Type',
 				'Amount',
@@ -317,7 +326,9 @@ describe( 'Deposits list', () => {
 					csvFirstDeposit[ 3 ]
 				)
 			).not.toBe( -1 ); // amount
-			expect( csvFirstDeposit[ 4 ] ).toBe( displayFirstDeposit[ 3 ] ); // status
+			expect( csvFirstDeposit[ 4 ] ).toBe(
+				`"${ displayFirstDeposit[ 3 ] }"`
+			); // status
 			expect( csvFirstDeposit[ 5 ] ).toBe(
 				`"${ displayFirstDeposit[ 4 ] }"`
 			); // bank account

@@ -231,11 +231,11 @@ describe( 'AccountBalances', () => {
 		} );
 		fireEvent.click( tooltipButton );
 		const tooltip = screen.getByRole( 'tooltip', {
-			name: /Available funds have completed processing and are ready to be deposited into your bank account./,
+			name: /Available funds have completed processing and are ready to be dispatched to your bank account./,
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/'
+			'https://woocommerce.com/document/woopayments/payouts/payout-schedule/'
 		);
 	} );
 
@@ -289,11 +289,11 @@ describe( 'AccountBalances', () => {
 		} );
 		fireEvent.click( tooltipButton );
 		const tooltip = screen.getByRole( 'tooltip', {
-			name: /Total balance combines both pending funds \(transactions under processing\) and available funds \(ready for deposit\)\./,
+			name: /Total balance combines both pending funds \(transactions under processing\) and available funds \(ready for payout\)\./,
 		} );
 		expect( within( tooltip ).getByRole( 'link' ) ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/'
+			'https://woocommerce.com/document/woopayments/payouts/payout-schedule/'
 		);
 	} );
 

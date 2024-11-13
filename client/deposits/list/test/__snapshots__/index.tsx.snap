@@ -25,7 +25,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
             <span
               class="woocommerce-filters-label"
             >
-              Deposit currency
+              Payout currency
               :
             </span>
             <div
@@ -69,7 +69,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   class="woocommerce-dropdown-button__labels"
                 >
                   <span>
-                    All deposits
+                    All payouts
                   </span>
                 </div>
               </button>
@@ -96,7 +96,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
             data-wp-c16t="true"
             data-wp-component="Text"
           >
-            Deposit history
+            Payout history
           </h2>
           <div
             class="woocommerce-table__actions"
@@ -170,7 +170,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                 class="woocommerce-table__caption screen-reader-text"
                 id="caption-1"
               >
-                Deposit history
+                Payout history
               </caption>
               <tbody>
                 <tr>
@@ -321,7 +321,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                     >
                       <svg
                         class="gridicon gridicons-info-outline needs-offset"
@@ -343,7 +343,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                     >
                       Jan 2, 2020
                     </a>
@@ -354,10 +354,10 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      Deposit
+                      Payout
                     </a>
                   </td>
                   <td
@@ -366,7 +366,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
                       $20.00
@@ -378,13 +378,13 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
                       <span
                         class="chip chip-success"
                       >
-                        Paid
+                        Completed (paid)
                       </span>
                     </a>
                   </td>
@@ -394,7 +394,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
                       MOCK BANK •••• 1234 (USD)
@@ -408,7 +408,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                     >
                       <svg
                         class="gridicon gridicons-info-outline needs-offset"
@@ -430,7 +430,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                     >
                       Jan 3, 2020
                     </a>
@@ -441,7 +441,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
                       Withdrawal
@@ -453,7 +453,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
                       $30.00
@@ -465,7 +465,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
                       <span
@@ -481,7 +481,94 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
+                      tabindex="-1"
+                    >
+                      MOCK BANK •••• 1234 (USD)
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="woocommerce-table__item info-button is-sorted is-left-aligned"
+                    scope="row"
+                  >
+                    <a
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                    >
+                      <svg
+                        class="gridicon gridicons-info-outline needs-offset"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                          />
+                        </g>
+                      </svg>
+                    </a>
+                  </th>
+                  <td
+                    class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  >
+                    <a
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                    >
+                      Jan 4, 2020
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      Withdrawal
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      $40.00
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      <span
+                        class="chip chip-success"
+                      >
+                        Completed (deducted)
+                      </span>
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
                       tabindex="-1"
                     >
                       MOCK BANK •••• 1234 (USD)
@@ -512,7 +599,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
               <span
                 class="woocommerce-table__summary-label"
               >
-                deposit
+                payout
               </span>
             </li>
             <li
@@ -574,7 +661,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
             <span
               class="woocommerce-filters-label"
             >
-              Deposit currency
+              Payout currency
               :
             </span>
             <div
@@ -618,7 +705,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   class="woocommerce-dropdown-button__labels"
                 >
                   <span>
-                    All deposits
+                    All payouts
                   </span>
                 </div>
               </button>
@@ -645,7 +732,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
             data-wp-c16t="true"
             data-wp-component="Text"
           >
-            Deposit history
+            Payout history
           </h2>
           <div
             class="woocommerce-table__actions"
@@ -719,7 +806,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                 class="woocommerce-table__caption screen-reader-text"
                 id="caption-0"
               >
-                Deposit history
+                Payout history
               </caption>
               <tbody>
                 <tr>
@@ -870,7 +957,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                     >
                       <svg
                         class="gridicon gridicons-info-outline needs-offset"
@@ -892,7 +979,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                     >
                       Jan 2, 2020
                     </a>
@@ -903,10 +990,10 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      Deposit
+                      Payout
                     </a>
                   </td>
                   <td
@@ -915,7 +1002,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
                       $20.00
@@ -927,13 +1014,13 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
                       <span
                         class="chip chip-success"
                       >
-                        Paid
+                        Completed (paid)
                       </span>
                     </a>
                   </td>
@@ -943,7 +1030,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
                       MOCK BANK •••• 1234 (USD)
@@ -957,7 +1044,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                     >
                       <svg
                         class="gridicon gridicons-info-outline needs-offset"
@@ -979,7 +1066,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                   >
                     <a
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                     >
                       Jan 3, 2020
                     </a>
@@ -990,7 +1077,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
                       Withdrawal
@@ -1002,7 +1089,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
                       $30.00
@@ -1014,7 +1101,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
                       <span
@@ -1030,7 +1117,94 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
+                      tabindex="-1"
+                    >
+                      MOCK BANK •••• 1234 (USD)
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <th
+                    class="woocommerce-table__item info-button is-sorted is-left-aligned"
+                    scope="row"
+                  >
+                    <a
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                    >
+                      <svg
+                        class="gridicon gridicons-info-outline needs-offset"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        width="18"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                          />
+                        </g>
+                      </svg>
+                    </a>
+                  </th>
+                  <td
+                    class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  >
+                    <a
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                    >
+                      Jan 4, 2020
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      Withdrawal
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      $40.00
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      <span
+                        class="chip chip-success"
+                      >
+                        Completed (deducted)
+                      </span>
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
                       tabindex="-1"
                     >
                       MOCK BANK •••• 1234 (USD)
@@ -1061,7 +1235,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
               <span
                 class="woocommerce-table__summary-label"
               >
-                deposits
+                payouts
               </span>
             </li>
           </ul>

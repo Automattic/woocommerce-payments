@@ -11,7 +11,6 @@ import {
 } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
-import { Fragment } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -46,12 +45,12 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 		<Flex className={ `${ tableClass }__row` } key={ deposit.id }>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				<Icon icon={ calendar } size={ 17 } />
-				<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
+				<Link href={ getDetailsURL( deposit.id, 'payouts' ) }>
 					{ getDepositDate( deposit ) }
 				</Link>
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
-				<DepositStatusChip status={ deposit.status } />
+				<DepositStatusChip deposit={ deposit } />
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				{ formatCurrency( deposit.amount, deposit.currency ) }

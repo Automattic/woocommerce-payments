@@ -12,9 +12,50 @@ import './style.scss';
 import { useEffect, useState } from '@wordpress/element';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 
-export default ( { api, upeConfig, upeName, upeAppearanceTheme } ) => {
+const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
+const PaymentMethodMessageWrapper = ( {
+	upeName,
+	countries,
+	currentCountry,
+	amount,
+	appearance,
+	children,
+} ) => {
+	if ( ! bnplMethods.includes( upeName ) ) {
+		return null;
+	}
+
+	if ( amount <= 0 ) {
+		return null;
+	}
+
+	if ( ! currentCountry ) {
+		return null;
+	}
+
+	if ( ! appearance ) {
+		return null;
+	}
+
+	if ( countries.length !== 0 && ! countries.includes( currentCountry ) ) {
+		return null;
+	}
+
+	return (
+		<div className="payment-method-label__pmme-container">{ children }</div>
+	);
+};
+
+export default ( {
+	api,
+	title,
+	countries,
+	iconLight,
+	iconDark,
+	upeName,
+	upeAppearanceTheme,
+} ) => {
 	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
-	const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 	const isTestMode = getUPEConfig( 'testMode' );
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
@@ -35,8 +76,6 @@ export default ( { api, upeConfig, upeName, upeAppearanceTheme } ) => {
 		window.wcBlocksCheckoutData?.storeCountry ||
 		'US';
 
-	const isCreditCard = upeName === 'card';
-
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
@@ -56,10 +95,8 @@ export default ( { api, upeConfig, upeName, upeAppearanceTheme } ) => {
 	return (
 		<>
 			<div className="payment-method-label">
-				<span className="payment-method-label__label">
-					{ upeConfig.title }
-				</span>
-				{ isCreditCard && isTestMode && (
+				<span className="payment-method-label__label">{ title }</span>
+				{ isTestMode && (
 					<span className="test-mode badge">
 						{ __( 'Test Mode', 'woocommerce-payments' ) }
 					</span>
@@ -67,39 +104,35 @@ export default ( { api, upeConfig, upeName, upeAppearanceTheme } ) => {
 				<img
 					className="payment-methods--logos"
 					src={
-						upeAppearanceTheme === 'night'
-							? upeConfig.darkIcon
-							: upeConfig.icon
+						upeAppearanceTheme === 'night' ? iconDark : iconLight
 					}
-					alt={ upeConfig.title }
+					alt={ title }
 				/>
 			</div>
-			{ bnplMethods.includes( upeName ) &&
-				( upeConfig.countries.length === 0 ||
-					upeConfig.countries.includes( currentCountry ) ) &&
-				amount > 0 &&
-				currentCountry &&
-				appearance && (
-					<div className="bnpl-message">
-						<Elements
-							stripe={ api.getStripeForUPE( upeName ) }
-							options={ {
-								appearance: appearance,
-							} }
-						>
-							<PaymentMethodMessagingElement
-								options={ {
-									amount: amount || 0,
-									currency:
-										cartData.totals.currency_code || 'USD',
-									paymentMethodTypes: [ upeName ],
-									countryCode: currentCountry,
-									displayType: 'promotional_text',
-								} }
-							/>
-						</Elements>
-					</div>
-				) }
+			<PaymentMethodMessageWrapper
+				upeName={ upeName }
+				countries={ countries }
+				amount={ amount }
+				currentCountry={ currentCountry }
+				appearance={ appearance }
+			>
+				<Elements
+					stripe={ api.getStripeForUPE( upeName ) }
+					options={ {
+						appearance: appearance,
+					} }
+				>
+					<PaymentMethodMessagingElement
+						options={ {
+							amount: amount || 0,
+							currency: cartData.totals.currency_code || 'USD',
+							paymentMethodTypes: [ upeName ],
+							countryCode: currentCountry,
+							displayType: 'promotional_text',
+						} }
+					/>
+				</Elements>
+			</PaymentMethodMessageWrapper>
 		</>
 	);
 };

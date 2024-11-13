@@ -14,9 +14,9 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events with fe
     "headline": <React.Fragment>
       $20.97 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
-        Apr 2, 2020 deposit
+        Apr 2, 2020 payout
       </Link>
       .
     </React.Fragment>,
@@ -27,7 +27,7 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events with fe
       "1.00 EUR → 1.19944 USD: $21.59 USD",
       "Fee (2.9% + $0.30): -$0.62",
       undefined,
-      "Net deposit: $20.97 USD",
+      "Net payout: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of €18.00 EUR was successfully charged.",
@@ -52,9 +52,9 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events without
     "headline": <React.Fragment>
       $20.97 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
-        Apr 2, 2020 deposit
+        Apr 2, 2020 payout
       </Link>
       .
     </React.Fragment>,
@@ -65,7 +65,7 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events without
       "1.00 EUR → 1.19944 USD: $21.59 USD",
       "Fee: €0.52",
       undefined,
-      "Net deposit: $20.97 USD",
+      "Net payout: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of €18.00 EUR was successfully charged.",
@@ -91,7 +91,7 @@ exports[`mapTimelineEvents Multi-Currency events formats dispute_needs_response 
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "$36.60 USD will be deducted from a future deposit.",
+    "headline": "$36.60 USD will be deducted from a future payout.",
     "icon": <MinusIcon />,
   },
   {
@@ -122,9 +122,9 @@ exports[`mapTimelineEvents Multi-Currency events formats dispute_won events 1`] 
     "headline": <React.Fragment>
       $44.99 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2d3"
       >
-        Apr 5, 2020 deposit
+        Apr 5, 2020 payout
       </Link>
       .
     </React.Fragment>,
@@ -152,7 +152,7 @@ exports[`mapTimelineEvents Multi-Currency events formats full_refund events 1`] 
   {
     "body": [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "21,64 $ USD will be deducted from a future deposit.",
+    "headline": "21,64 $ USD will be deducted from a future payout.",
     "icon": <MinusIcon />,
   },
   {
@@ -180,7 +180,7 @@ exports[`mapTimelineEvents Multi-Currency events formats partial_refund events 1
   {
     "body": [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "6,00 $ USD will be deducted from a future deposit.",
+    "headline": "6,00 $ USD will be deducted from a future payout.",
     "icon": <MinusIcon />,
   },
   {
@@ -374,9 +374,9 @@ exports[`mapTimelineEvents single currency events formats captured events with f
     "headline": <React.Fragment>
       $59.50 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
-        Apr 2, 2020 deposit
+        Apr 2, 2020 payout
       </Link>
       .
     </React.Fragment>,
@@ -414,7 +414,7 @@ exports[`mapTimelineEvents single currency events formats captured events with f
         </li>
          
       </ul>,
-      "Net deposit: $59.50 USD",
+      "Net payout: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",
@@ -439,9 +439,9 @@ exports[`mapTimelineEvents single currency events formats captured events with j
     "headline": <React.Fragment>
       $59.50 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
-        Apr 2, 2020 deposit
+        Apr 2, 2020 payout
       </Link>
       .
     </React.Fragment>,
@@ -452,7 +452,7 @@ exports[`mapTimelineEvents single currency events formats captured events with j
       undefined,
       "Base fee (1.95% + $0.15): -$3.50",
       undefined,
-      "Net deposit: $59.50 USD",
+      "Net payout: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",
@@ -477,9 +477,9 @@ exports[`mapTimelineEvents single currency events formats captured events withou
     "headline": <React.Fragment>
       $59.50 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
-        Apr 2, 2020 deposit
+        Apr 2, 2020 payout
       </Link>
       .
     </React.Fragment>,
@@ -490,7 +490,7 @@ exports[`mapTimelineEvents single currency events formats captured events withou
       undefined,
       "Fee: $3.50",
       undefined,
-      "Net deposit: $59.50 USD",
+      "Net payout: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",
@@ -535,7 +535,7 @@ exports[`mapTimelineEvents single currency events formats dispute_needs_response
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
-    "headline": "$110.00 USD will be deducted from a future deposit.",
+    "headline": "$110.00 USD will be deducted from a future payout.",
     "icon": <MinusIcon />,
   },
   {
@@ -566,9 +566,9 @@ exports[`mapTimelineEvents single currency events formats dispute_won events 1`]
     "headline": <React.Fragment>
       $115.00 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2d3"
       >
-        Apr 5, 2020 deposit
+        Apr 5, 2020 payout
       </Link>
       .
     </React.Fragment>,
@@ -599,7 +599,7 @@ exports[`mapTimelineEvents single currency events formats financing paydown even
       </React.Fragment>,
     ],
     "date": 2022-02-01T12:04:04.000Z,
-    "headline": "$110.00 will be subtracted from a future deposit.",
+    "headline": "$110.00 will be subtracted from a future payout.",
     "icon": <MinusIcon />,
   },
 ]
@@ -616,7 +616,7 @@ exports[`mapTimelineEvents single currency events formats full_refund events 1`]
   {
     "body": [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "$100.00 USD will be deducted from a future deposit.",
+    "headline": "$100.00 USD will be deducted from a future payout.",
     "icon": <MinusIcon />,
   },
   {
@@ -644,7 +644,7 @@ exports[`mapTimelineEvents single currency events formats partial_refund events 
   {
     "body": [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "$50.00 USD will be deducted from a future deposit.",
+    "headline": "$50.00 USD will be deducted from a future payout.",
     "icon": <MinusIcon />,
   },
   {
@@ -675,9 +675,9 @@ exports[`mapTimelineEvents single currency events in person payments - tap to pa
     "headline": <React.Fragment>
       $19.19 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
-        Apr 2, 2020 deposit
+        Apr 2, 2020 payout
       </Link>
       .
     </React.Fragment>,
@@ -699,7 +699,7 @@ exports[`mapTimelineEvents single currency events in person payments - tap to pa
         </li>
          
       </ul>,
-      "Net deposit: $19.19 USD",
+      "Net payout: $19.19 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $19.80 USD was successfully charged.",
@@ -724,9 +724,9 @@ exports[`mapTimelineEvents single currency events should not render fee breakup 
     "headline": <React.Fragment>
       $59.50 USD was added to your 
       <Link
-        href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
-        Apr 2, 2020 deposit
+        Apr 2, 2020 payout
       </Link>
       .
     </React.Fragment>,
@@ -737,7 +737,7 @@ exports[`mapTimelineEvents single currency events should not render fee breakup 
       undefined,
       "Fee (1.95% + $0.15): -$3.50",
       undefined,
-      "Net deposit: $59.50 USD",
+      "Net payout: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",

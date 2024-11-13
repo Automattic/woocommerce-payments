@@ -3,7 +3,6 @@
 /**
  * External dependencies
  */
-import { DepositsTableHeader } from 'wcpay/types/deposits';
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
 import { useMemo } from '@wordpress/element';
@@ -19,13 +18,15 @@ import {
 } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import { parseInt } from 'lodash';
 
 /**
  * Internal dependencies.
  */
+import type { DepositsTableHeader } from 'wcpay/types/deposits';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { useReportingExportLanguage } from 'data/index';
-import { displayType, displayStatus } from '../strings';
+import { displayType, depositStatusLabels } from '../strings';
 import {
 	formatExplicitCurrency,
 	formatExportAmount,
@@ -47,7 +48,6 @@ import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
-import { parseInt } from 'lodash';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
@@ -120,19 +120,19 @@ export const DepositsList = (): JSX.Element => {
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
-				href={ getDetailsURL( deposit.id, 'deposits' ) }
+				href={ getDetailsURL( deposit.id, 'payouts' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
 				{ children }
 			</ClickableCell>
 		);
 		const detailsLink = (
-			<DetailsLink id={ deposit.id } parentSegment="deposits" />
+			<DetailsLink id={ deposit.id } parentSegment="payouts" />
 		);
 
 		const dateDisplay = (
 			<Link
-				href={ getDetailsURL( deposit.id, 'deposits' ) }
+				href={ getDetailsURL( deposit.id, 'payouts' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
 				{ dateI18n(
@@ -158,10 +158,8 @@ export const DepositsList = (): JSX.Element => {
 				),
 			},
 			status: {
-				value: displayStatus[ deposit.status ],
-				display: clickable(
-					<DepositStatusChip status={ deposit.status } />
-				),
+				value: depositStatusLabels[ deposit.status ],
+				display: clickable( <DepositStatusChip deposit={ deposit } /> ),
 			},
 			bankAccount: {
 				value: deposit.bankAccount,
@@ -188,8 +186,8 @@ export const DepositsList = (): JSX.Element => {
 		summary = [
 			{
 				label: _n(
-					'deposit',
-					'deposits',
+					'payout',
+					'payouts',
 					depositsSummary.count,
 					'woocommerce-payments'
 				),
@@ -214,7 +212,7 @@ export const DepositsList = (): JSX.Element => {
 		depositsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
 
-	const title = __( 'Deposits', 'woocommerce-payments' );
+	const title = __( 'Payouts', 'woocommerce-payments' );
 
 	const downloadable = !! rows.length;
 
@@ -319,7 +317,7 @@ export const DepositsList = (): JSX.Element => {
 			const csvColumns = [
 				{
 					...columns[ 0 ],
-					label: __( 'Deposit Id', 'woocommerce-payments' ),
+					label: __( 'Payout Id', 'woocommerce-payments' ),
 				},
 				...columns.slice( 1 ),
 			];
@@ -367,7 +365,7 @@ export const DepositsList = (): JSX.Element => {
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-deposits-list woocommerce-report-table"
-				title={ __( 'Deposit history', 'woocommerce-payments' ) }
+				title={ __( 'Payout history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '' ) || 25 }
 				totalRows={ totalRows }

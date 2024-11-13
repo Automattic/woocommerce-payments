@@ -465,6 +465,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-address-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-country-code.php';
+		include_once __DIR__ . '/constants/class-country-test-cards.php';
 		include_once __DIR__ . '/constants/class-currency-code.php';
 		include_once __DIR__ . '/constants/class-fraud-meta-box-type.php';
 		include_once __DIR__ . '/constants/class-order-mode.php';
@@ -1887,7 +1888,7 @@ class WC_Payments {
 		if ( ! $is_subscription ) {
 			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
 			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
-			echo wp_kses( $stripe_site_messaging->init(), 'post' );
+			echo wp_kses( $stripe_site_messaging->init() ?? '', 'post' );
 		}
 	}
 
@@ -1919,6 +1920,7 @@ class WC_Payments {
 				'woocommerce_remind_me_later_todo_tasks',
 				'woocommerce_deleted_todo_tasks',
 				'wcpay_fraud_protection_welcome_tour_dismissed',
+				'wcpay_payouts_rename_notice_dismissed',
 				'wcpay_capability_request_dismissed_notices',
 				'wcpay_onboarding_eligibility_modal_dismissed',
 				'wcpay_next_deposit_notice_dismissed',
