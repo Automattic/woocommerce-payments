@@ -20,6 +20,13 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Session_Service.
+	 *
+	 * @var WC_Payments_Session_Service|MockObject
+	 */
+	private $mock_session_service;
+
+	/**
 	 * Compatibility_Service.
 	 *
 	 * @var Compatibility_Service
@@ -69,7 +76,8 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
-		$this->compatibility_service = new Compatibility_Service( $this->mock_api_client );
+		$this->mock_session_service  = $this->createMock( WC_Payments_Session_Service::class );
+		$this->compatibility_service = new Compatibility_Service( $this->mock_api_client, $this->mock_session_service );
 		$this->compatibility_service->init_hooks();
 
 		$this->add_stylesheet_filter();
@@ -167,7 +175,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_update_compatibility_data_hook_active_plugins_false() {
 		// Arrange: Create the expected value to be passed to update_compatibility_data.
-		$expected = $this->get_mock_compatibility_data(
+		$expected = $this->get_mock_compatibility_hook_data(
 			[
 				'active_plugins' => [],
 			]
@@ -196,7 +204,7 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_update_compatibility_data_hook_permalinks_not_set( $page_name ) {
 		// Arrange: Create the expected value to be passed to update_compatibility_data.
-		$expected = $this->get_mock_compatibility_data(
+		$expected = $this->get_mock_compatibility_hook_data(
 			[
 				'woocommerce_' . $page_name => 'Not set',
 			]
@@ -252,6 +260,44 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 				'post_types_count'       => $this->post_types_count,
 			],
 			$args
+		);
+	}
+
+	/**
+	 * Returns the mock compatibility hook data.
+	 *
+	 * @param array $args If any values need to be overridden, the values can be added here.
+	 *
+	 * @return array
+	 */
+	private function get_mock_compatibility_hook_data( array $args = [] ): array {
+		$user_agent       = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+		$accept_language  = 'en-US';
+		$content_language = 'en-US';
+		$sift_session_id  = '12345';
+
+		wp_set_current_user( 1 );
+		wp_get_current_user()->locale = $content_language;
+
+		$_SERVER['HTTP_USER_AGENT']      = $user_agent;
+		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = $accept_language;
+
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( $sift_session_id );
+
+		return array_merge(
+			$this->get_mock_compatibility_data(),
+			[
+				'sift_session_id' => $sift_session_id,
+				'ip_address'      => '127.0.0.1',
+				'browser'         => [
+					'user_agent'       => $user_agent,
+					'accept_language'  => $accept_language,
+					'content_language' => $content_language,
+				],
+			],
+			$args,
 		);
 	}
 
