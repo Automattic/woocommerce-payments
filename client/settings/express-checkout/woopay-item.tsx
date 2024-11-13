@@ -85,6 +85,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement => {
 									) }
 									checked={ isWooPayEnabled }
 									onChange={ updateIsWooPayEnabled }
+									data-testid="woopay-toggle"
 								/>
 							) }
 						</div>
