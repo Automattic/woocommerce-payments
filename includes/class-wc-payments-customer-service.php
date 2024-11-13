@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Compatibility_Service;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
@@ -152,8 +153,7 @@ class WC_Payments_Customer_Service {
 	 * @throws API_Exception Error creating customer.
 	 */
 	public function create_customer_for_user( ?WP_User $user, array $customer_data = [] ): string {
-		// Include the session ID for the user.
-		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
+		$customer_data = $this->append_client_data_to_customer( $customer_data );
 
 		// Create a customer on the WCPay server.
 		$customer_id = $this->payments_api_client->create_customer( $customer_data );
@@ -204,6 +204,8 @@ class WC_Payments_Customer_Service {
 	 * @throws API_Exception Error updating the customer.
 	 */
 	public function update_customer_for_user( string $customer_id, ?WP_User $user, array $customer_data ): string {
+		$customer_data = $this->append_client_data_to_customer( $customer_data );
+
 		try {
 			// Update the customer on the WCPay server.
 			$this->payments_api_client->update_customer(
@@ -571,5 +573,20 @@ class WC_Payments_Customer_Service {
 			'billing_country' => $billing_country,
 			'address'         => $address,
 		];
+	}
+
+	/**
+	 * Appends client data to the customer array.
+	 *
+	 * @param array $customer_data The customer data.
+	 *
+	 * @return array The customer data with client data appended.
+	 */
+	private function append_client_data_to_customer( array $customer_data ) {
+		$customer_data['session_id'] = $this->session_service->get_sift_session_id() ?? null;
+		$customer_data['ip_address'] = \WC_Geolocation::get_ip_address();
+		$customer_data['browser']    = Compatibility_Service::get_browser_info();
+
+		return $customer_data;
 	}
 }

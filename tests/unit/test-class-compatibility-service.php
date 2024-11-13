@@ -271,30 +271,25 @@ class Compatibility_Service_Test extends WCPAY_UnitTestCase {
 	 * @return array
 	 */
 	private function get_mock_compatibility_hook_data( array $args = [] ): array {
-		$user_agent       = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
-		$accept_language  = 'en-US';
-		$content_language = 'en-US';
-		$sift_session_id  = '12345';
-
 		wp_set_current_user( 1 );
-		wp_get_current_user()->locale = $content_language;
+		wp_get_current_user()->locale = 'en-US';
 
-		$_SERVER['HTTP_USER_AGENT']      = $user_agent;
-		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = $accept_language;
+		$_SERVER['HTTP_USER_AGENT']      = 'Unit Test Agent/0.1.0';
+		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'en-US';
 
 		$this->mock_session_service
 			->method( 'get_sift_session_id' )
-			->willReturn( $sift_session_id );
+			->willReturn( '12345' );
 
 		return array_merge(
 			$this->get_mock_compatibility_data(),
 			[
-				'sift_session_id' => $sift_session_id,
+				'sift_session_id' => '12345',
 				'ip_address'      => '127.0.0.1',
 				'browser'         => [
-					'user_agent'       => $user_agent,
-					'accept_language'  => $accept_language,
-					'content_language' => $content_language,
+					'user_agent'       => 'Unit Test Agent/0.1.0',
+					'accept_language'  => 'en-US',
+					'content_language' => 'en-US',
 				],
 			],
 			$args,

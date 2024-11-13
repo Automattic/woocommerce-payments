@@ -79,7 +79,7 @@ class Compatibility_Service {
 			[
 				'sift_session_id' => $this->session_service->get_sift_session_id(),
 				'ip_address'      => \WC_Geolocation::get_ip_address(),
-				'browser'         => $this->get_browser_info(),
+				'browser'         => self::get_browser_info(),
 			],
 		);
 
@@ -103,7 +103,7 @@ class Compatibility_Service {
 	 *
 	 * @return array
 	 */
-	public function get_browser_info() {
+	public static function get_browser_info() {
 		return [
 			'user_agent'       => isset( $_SERVER['HTTP_USER_AGENT'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
 			'accept_language'  => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '',

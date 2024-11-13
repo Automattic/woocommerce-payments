@@ -184,20 +184,12 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
-		$mock_customer_data = $this->get_mock_customer_data();
-
-		$this->mock_session_service
-			->method( 'get_sift_session_id' )
-			->willReturn( 'sift_session_id' );
+		$mock_client_data   = $this->get_mock_client_data();
+		$mock_customer_data = $this->get_mock_customer_data( $mock_client_data );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
-			->with(
-				array_merge(
-					$mock_customer_data,
-					[ 'session_id' => 'sift_session_id' ]
-				)
-			)
+			->with( $mock_customer_data )
 			->willReturn( 'cus_test12345' );
 
 		$customer_id = $this->customer_service->create_customer_for_user( $user, $mock_customer_data );
@@ -215,20 +207,12 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
-		$mock_customer_data = $this->get_mock_customer_data();
-
-		$this->mock_session_service
-			->method( 'get_sift_session_id' )
-			->willReturn( 'sift_session_id' );
+		$mock_client_data   = $this->get_mock_client_data();
+		$mock_customer_data = $this->get_mock_customer_data( $mock_client_data );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
-			->with(
-				array_merge(
-					$mock_customer_data,
-					[ 'session_id' => 'sift_session_id' ]
-				)
-			)
+			->with( $mock_customer_data )
 			->willReturn( 'cus_test12345' );
 
 		$customer_id = $this->customer_service->create_customer_for_user( $user, $mock_customer_data );
@@ -246,7 +230,8 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	public function test_update_customer_for_user() {
 		$user = new WP_User( 0 );
 
-		$mock_customer_data = $this->get_mock_customer_data();
+		$mock_client_data   = $this->get_mock_client_data();
+		$mock_customer_data = $this->get_mock_customer_data( $mock_client_data );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_customer' )
@@ -268,22 +253,15 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	 * Test non logged in user keeps its customer id saved in the Session.
 	 */
 	public function test_non_logged_in_user_saves_customer_id_in_session() {
-		$user               = new WP_User( 0 );
-		$mock_customer_data = $this->get_mock_customer_data();
-		$customer_id        = 'cus_test12345';
+		$user        = new WP_User( 0 );
+		$customer_id = 'cus_test12345';
 
-		$this->mock_session_service
-			->method( 'get_sift_session_id' )
-			->willReturn( 'sift_session_id' );
+		$mock_client_data   = $this->get_mock_client_data();
+		$mock_customer_data = $this->get_mock_customer_data( $mock_client_data );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
-			->with(
-				array_merge(
-					$mock_customer_data,
-					[ 'session_id' => 'sift_session_id' ]
-				)
-			)
+			->with( $mock_customer_data )
 			->willReturn( $customer_id );
 
 		$this->customer_service->create_customer_for_user( $user, $mock_customer_data );
@@ -307,7 +285,8 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
-		$mock_customer_data = $this->get_mock_customer_data();
+		$mock_client_data   = $this->get_mock_client_data( [ 'session_id' => null ] );
+		$mock_customer_data = $this->get_mock_customer_data( $mock_client_data );
 
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
@@ -347,7 +326,8 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
-		$mock_customer_data = $this->get_mock_customer_data();
+		$mock_client_data   = $this->get_mock_client_data( [ 'session_id' => null ] );
+		$mock_customer_data = $this->get_mock_customer_data( $mock_client_data );
 
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
@@ -388,7 +368,8 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
-		$mock_customer_data = $this->get_mock_customer_data();
+		$mock_client_data   = $this->get_mock_client_data();
+		$mock_customer_data = $this->get_mock_customer_data( $mock_client_data );
 
 		// Wire the mock to throw a resource not found exception.
 		$this->mock_api_client->expects( $this->once() )
@@ -719,16 +700,12 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			],
 		];
 
-		$this->mock_session_service
-			->method( 'get_sift_session_id' )
-			->willReturn( 'sift_session_id' );
-
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
 			->with(
 				array_merge(
 					$mock_customer_data,
-					[ 'session_id' => 'sift_session_id' ]
+					$this->get_mock_client_data()
 				)
 			)
 			->willReturn( 'wcpay_cus_test12345' );
@@ -753,5 +730,32 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 				[ $expected_sepa_cache_key ]
 			);
 		$this->customer_service->clear_cached_payment_methods_for_user( 1 );
+	}
+
+	private function get_mock_client_data( $overrides = [] ) {
+		$data = array_merge(
+			[
+				'session_id' => 'sift_session_id',
+				'ip_address' => '127.0.0.1',
+				'browser'    => [
+					'user_agent'       => 'Unit Test Agent/0.1.0',
+					'accept_language'  => 'en-US',
+					'content_language' => 'en-US',
+				],
+			],
+			$overrides
+		);
+
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( $data['session_id'] );
+
+		wp_set_current_user( 1 );
+		wp_get_current_user()->locale = 'en-US';
+
+		$_SERVER['HTTP_USER_AGENT']      = 'Unit Test Agent/0.1.0';
+		$_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'en-US';
+
+		return $data;
 	}
 }
