@@ -100,16 +100,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// It's used for displaying inbox notifications.
 		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
 
-			add_action(
-				'woocommerce_store_api_checkout_update_order_from_request',
-				[
-					$this,
-					'tokenized_cart_set_payment_method_type',
-				],
-				10,
-				2
-			);
-			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+		add_action(
+			'woocommerce_store_api_checkout_update_order_from_request',
+			[
+				$this,
+				'tokenized_cart_set_payment_method_type',
+			],
+			10,
+			2
+		);
+		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
 	}
 
 	/**
