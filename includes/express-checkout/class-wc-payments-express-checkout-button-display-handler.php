@@ -116,10 +116,9 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_separator_if_necessary( $separator_starts_hidden = false ) {
-		$html_id = WC_Payments_Features::is_tokenized_cart_prb_enabled() ? 'wcpay-payment-request-button-separator' : 'wcpay-express-checkout-button-separator';
 		if ( $this->express_checkout_helper->is_checkout() ) {
 			?>
-			<p id="<?php echo esc_attr( $html_id ); ?>" style="margin-top:1.5em;text-align:center;<?php echo $separator_starts_hidden ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
+			<p id="wcpay-express-checkout-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $separator_starts_hidden ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 			<?php
 		}
 	}
@@ -145,7 +144,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 				$this->platform_checkout_button_handler->display_woopay_button_html();
 			}
 
-			if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
+			if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
 				$this->payment_request_button_handler->display_payment_request_button_html();
 			} else {
 				$this->express_checkout_button_handler->display_express_checkout_button_html();

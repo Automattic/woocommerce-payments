@@ -28,7 +28,7 @@ class WC_Payments_Features {
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME      = '_wcpay_feature_woopay_direct_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME            = '_wcpay_feature_auth_and_capture';
 	const DISPUTE_ISSUER_EVIDENCE               = '_wcpay_feature_dispute_issuer_evidence';
-	const TOKENIZED_CART_PRB_FLAG_NAME          = '_wcpay_feature_tokenized_cart_prb';
+	const TOKENIZED_CART_ECE_FLAG_NAME          = '_wcpay_feature_tokenized_cart_ece';
 	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME     = '_wcpay_feature_payment_overview_widget';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME = '_wcpay_feature_woopay_global_theme_support';
 
@@ -48,8 +48,8 @@ class WC_Payments_Features {
 	 *
 	 * @return bool
 	 */
-	public static function is_tokenized_cart_prb_enabled(): bool {
-		return '1' === get_option( self::TOKENIZED_CART_PRB_FLAG_NAME, '0' );
+	public static function is_tokenized_cart_ece_enabled(): bool {
+		return '1' === get_option( self::TOKENIZED_CART_ECE_FLAG_NAME, '0' );
 	}
 
 	/**

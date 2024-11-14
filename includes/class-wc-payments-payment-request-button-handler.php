@@ -70,7 +70,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		if ( ! WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
+		if ( ! WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
 			return;
 		}
 
@@ -855,7 +855,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
-		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
+		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
 			WC_Payments::register_script_with_dependencies(
 				'WCPAY_PAYMENT_REQUEST',
 				'dist/tokenized-payment-request',

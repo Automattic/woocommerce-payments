@@ -73,7 +73,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 
 		$script_dependencies = [ 'stripe' ];
 
-		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() && ( is_cart() || is_checkout() || is_product() || has_block( 'woocommerce/checkout' ) || has_block( 'woocommerce/cart' ) ) ) {
+		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() && ( is_cart() || is_checkout() || is_product() || has_block( 'woocommerce/checkout' ) || has_block( 'woocommerce/cart' ) ) ) {
 			$script_dependencies[] = 'WCPAY_PAYMENT_REQUEST';
 		}
 

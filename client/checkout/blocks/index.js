@@ -160,7 +160,7 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 }
 
 if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
-	if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
+	if ( getUPEConfig( 'isTokenizedCartEceEnabled' ) ) {
 		registerExpressPaymentMethod(
 			tokenizedCartPaymentRequestPaymentMethod( api )
 		);

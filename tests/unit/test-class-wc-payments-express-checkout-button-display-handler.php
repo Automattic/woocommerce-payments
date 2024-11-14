@@ -258,7 +258,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 
 		$this->assertStringContainsString( 'wcpay-woopay-button', ob_get_contents() );
 		$this->assertStringContainsString( 'wcpay-express-checkout-element', ob_get_contents() );
-		$this->assertStringNotContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
+		$this->assertStringNotContainsString( 'wcpay-express-checkout-button-separator', ob_get_contents() );
 		ob_end_clean();
 	}
 
@@ -299,7 +299,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_Uni
 		$this->express_checkout_button_display_handler->display_express_checkout_buttons();
 
 		$this->assertStringContainsString( 'wcpay-woopay-button', ob_get_contents() );
-		$this->assertStringNotContainsString( 'wcpay-payment-request-button-separator', ob_get_contents() );
+		$this->assertStringNotContainsString( 'wcpay-express-checkout-button-separator', ob_get_contents() );
 		ob_end_clean();
 	}
 

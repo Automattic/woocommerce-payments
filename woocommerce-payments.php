@@ -154,7 +154,7 @@ function wcpay_init() {
 	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
-	if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
+	if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
 		( new WC_Payments_Payment_Request_Session() )->init();
 	}
 }
