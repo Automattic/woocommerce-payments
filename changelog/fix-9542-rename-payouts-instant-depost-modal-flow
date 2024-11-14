@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Part of a larger change - renaming deposit to payout; this PR fixes instant payout modal + button
-
-
