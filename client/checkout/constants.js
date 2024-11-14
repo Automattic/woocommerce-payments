@@ -11,8 +11,6 @@ export const PAYMENT_METHOD_NAME_AFFIRM = 'woocommerce_payments_affirm';
 export const PAYMENT_METHOD_NAME_AFTERPAY =
 	'woocommerce_payments_afterpay_clearpay';
 export const PAYMENT_METHOD_NAME_KLARNA = 'woocommerce_payments_klarna';
-export const PAYMENT_METHOD_NAME_PAYMENT_REQUEST =
-	'woocommerce_payments_payment_request';
 export const PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT =
 	'woocommerce_payments_express_checkout';
 export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =

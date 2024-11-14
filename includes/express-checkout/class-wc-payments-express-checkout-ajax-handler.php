@@ -38,12 +38,12 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
-		add_action( 'wc_ajax_wcpay_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
-		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
-		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
-		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
-		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
+		add_action( 'wc_ajax_wcpay_ece_create_order', [ $this, 'ajax_create_order' ] );
+		add_action( 'wc_ajax_wcpay_ece_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
+		add_action( 'wc_ajax_wcpay_ece_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
+		add_action( 'wc_ajax_wcpay_ece_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
+		add_action( 'wc_ajax_wcpay_ece_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
+		add_action( 'wc_ajax_wcpay_ece_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
 	}
 
 	/**
@@ -420,25 +420,5 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		wp_send_json( $data );
-	}
-
-	/**
-	 * Empties the cart via AJAX. Used on the product page.
-	 */
-	public function ajax_empty_cart() {
-		check_ajax_referer( 'wcpay-empty-cart', 'security' );
-
-		$booking_id = isset( $_POST['booking_id'] ) ? absint( $_POST['booking_id'] ) : null;
-
-		WC()->cart->empty_cart();
-
-		if ( $booking_id ) {
-			// When a bookable product is added to the cart, a 'booking' is create with status 'in-cart'.
-			// This status is used to prevent the booking from being booked by another customer
-			// and should be removed when the cart is emptied for PRB purposes.
-			do_action( 'wc-booking-remove-inactive-cart', $booking_id ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
-		}
-
-		wp_send_json( [ 'result' => 'success' ] );
 	}
 }

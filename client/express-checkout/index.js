@@ -180,7 +180,7 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			return api.paymentRequestAddToCart( data );
+			return api.expressCheckoutECEAddToCart( data );
 		},
 
 		/**
@@ -403,7 +403,7 @@ jQuery( ( $ ) => {
 				...depositObject,
 			};
 
-			return api.paymentRequestGetSelectedProductData( data );
+			return api.expressCheckoutECEGetSelectedProductData( data );
 		},
 
 		/**
@@ -618,7 +618,7 @@ jQuery( ( $ ) => {
 			} else {
 				// If this is the cart or checkout page, we need to request the
 				// cart details.
-				api.paymentRequestGetCartDetails().then( ( cart ) => {
+				api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
 					wcpayECE.startExpressCheckoutElement( {
 						mode: 'payment',
 						total: cart.total.amount,

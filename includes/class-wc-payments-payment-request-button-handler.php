@@ -70,7 +70,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		if ( WC_Payments_Features::is_stripe_ece_enabled() ) {
+		if ( ! WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
 			return;
 		}
 
@@ -88,15 +88,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
-		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
-
-		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
-		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
-		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
-		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
-		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
-		add_action( 'wc_ajax_wcpay_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
-
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
 		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
@@ -109,18 +100,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// It's used for displaying inbox notifications.
 		add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
 
-		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
-			add_action(
-				'woocommerce_store_api_checkout_update_order_from_request',
-				[
-					$this,
-					'tokenized_cart_set_payment_method_type',
-				],
-				10,
-				2
-			);
-			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
-		}
+		add_action(
+			'woocommerce_store_api_checkout_update_order_from_request',
+			[
+				$this,
+				'tokenized_cart_set_payment_method_type',
+			],
+			10,
+			2
+		);
+		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
 	}
 
 	/**
@@ -532,78 +521,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * Displays the necessary HTML for the Pay for Order page.
-	 *
-	 * @param WC_Order $order The order that needs payment.
-	 */
-	public function display_pay_for_order_page_html( $order ) {
-		$currency = get_woocommerce_currency();
-
-		$data  = [];
-		$items = [];
-
-		foreach ( $order->get_items() as $item ) {
-			if ( method_exists( $item, 'get_total' ) ) {
-				$items[] = [
-					'label'  => $item->get_name(),
-					'amount' => WC_Payments_Utils::prepare_amount( $item->get_total(), $currency ),
-				];
-			}
-		}
-
-		if ( $order->get_total_tax() ) {
-			$items[] = [
-				'label'  => __( 'Tax', 'woocommerce-payments' ),
-				'amount' => WC_Payments_Utils::prepare_amount( $order->get_total_tax(), $currency ),
-			];
-		}
-
-		if ( $order->get_shipping_total() ) {
-			$shipping_label = sprintf(
-			// Translators: %s is the name of the shipping method.
-				__( 'Shipping (%s)', 'woocommerce-payments' ),
-				$order->get_shipping_method()
-			);
-
-			$items[] = [
-				'label'  => $shipping_label,
-				'amount' => WC_Payments_Utils::prepare_amount( $order->get_shipping_total(), $currency ),
-			];
-		}
-
-		foreach ( $order->get_fees() as $fee ) {
-			$items[] = [
-				'label'  => $fee->get_name(),
-				'amount' => WC_Payments_Utils::prepare_amount( $fee->get_amount(), $currency ),
-			];
-		}
-
-		$data['order']          = $order->get_id();
-		$data['displayItems']   = $items;
-		$data['needs_shipping'] = false; // This should be already entered/prepared.
-		$data['total']          = [
-			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_helper->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ),
-			'pending' => true,
-		];
-
-		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestPayForOrderParams', $data );
-	}
-
-	/**
-	 * Get cart data.
-	 *
-	 * @return mixed Returns false if on a product page, the product information otherwise.
-	 */
-	public function get_cart_data() {
-		if ( $this->express_checkout_helper->is_product() ) {
-			return false;
-		}
-
-		return $this->express_checkout_helper->build_display_items();
-	}
-
-	/**
 	 * Filters the gateway title to reflect Payment Request type
 	 *
 	 * @param string $title Gateway title.
@@ -900,7 +817,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$payment_request_params = [
 			'ajax_url'           => admin_url( 'admin-ajax.php' ),
-			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'             => [
 				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
@@ -939,7 +855,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
-		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() && ( $this->express_checkout_helper->is_product() || $this->express_checkout_helper->is_pay_for_order_page() || $this->express_checkout_helper->is_cart() || $this->express_checkout_helper->is_checkout() ) ) {
+		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
 			WC_Payments::register_script_with_dependencies(
 				'WCPAY_PAYMENT_REQUEST',
 				'dist/tokenized-payment-request',
@@ -953,21 +869,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				plugins_url( 'dist/tokenized-payment-request.css', WCPAY_PLUGIN_FILE ),
 				[],
 				WC_Payments::get_file_version( 'dist/tokenized-payment-request.css' )
-			);
-		} else {
-			WC_Payments::register_script_with_dependencies(
-				'WCPAY_PAYMENT_REQUEST',
-				'dist/payment-request',
-				[
-					'jquery',
-					'stripe',
-				]
-			);
-			WC_Payments_Utils::enqueue_style(
-				'WCPAY_PAYMENT_REQUEST',
-				plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
-				[],
-				WC_Payments::get_file_version( 'dist/payment-request.css' )
 			);
 		}
 
@@ -1062,362 +963,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		return $needs_shipping_address;
-	}
-
-	/**
-	 * Get cart details.
-	 */
-	public function ajax_get_cart_details() {
-		check_ajax_referer( 'wcpay-get-cart-details', 'security' );
-
-		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-		}
-
-		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
-			define( 'WOOCOMMERCE_CHECKOUT', true );
-		}
-
-		WC()->cart->calculate_totals();
-
-		wp_send_json( array_merge( $this->express_checkout_helper->build_display_items(), [ 'needs_shipping' => WC()->cart->needs_shipping() ] ) );
-	}
-
-	/**
-	 * Get shipping options.
-	 *
-	 * @see WC_Cart::get_shipping_packages().
-	 * @see WC_Shipping::calculate_shipping().
-	 * @see WC_Shipping::get_packages().
-	 */
-	public function ajax_get_shipping_options() {
-		check_ajax_referer( 'wcpay-payment-request-shipping', 'security' );
-
-		$shipping_address          = filter_input_array(
-			INPUT_POST,
-			[
-				'country'   => FILTER_SANITIZE_SPECIAL_CHARS,
-				'state'     => FILTER_SANITIZE_SPECIAL_CHARS,
-				'postcode'  => FILTER_SANITIZE_SPECIAL_CHARS,
-				'city'      => FILTER_SANITIZE_SPECIAL_CHARS,
-				'address_1' => FILTER_SANITIZE_SPECIAL_CHARS,
-				'address_2' => FILTER_SANITIZE_SPECIAL_CHARS,
-			]
-		);
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
-		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
-
-		$data = $this->get_shipping_options( $shipping_address, $should_show_itemized_view );
-		wp_send_json( $data );
-	}
-
-	/**
-	 * Gets shipping options available for specified shipping address
-	 *
-	 * @param array   $shipping_address Shipping address.
-	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
-	 *
-	 * @return array Shipping options data.
-	 *
-	 * phpcs:ignore Squiz.Commenting.FunctionCommentThrowTag
-	 */
-	public function get_shipping_options( $shipping_address, $itemized_display_items = false ) {
-		try {
-			// Set the shipping options.
-			$data = [];
-
-			// Remember current shipping method before resetting.
-			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
-			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
-
-			$packages = WC()->shipping->get_packages();
-
-			if ( ! empty( $packages ) && WC()->customer->has_calculated_shipping() ) {
-				foreach ( $packages as $package ) {
-					if ( empty( $package['rates'] ) ) {
-						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
-					}
-
-					foreach ( $package['rates'] as $rate ) {
-						$data['shipping_options'][] = [
-							'id'     => $rate->id,
-							'label'  => $rate->label,
-							'detail' => '',
-							'amount' => WC_Payments_Utils::prepare_amount( $rate->cost, get_woocommerce_currency() ),
-						];
-					}
-				}
-			} else {
-				throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
-			}
-
-			// The first shipping option is automatically applied on the client.
-			// Keep chosen shipping method by sorting shipping options if the method still available for new address.
-			// Fallback to the first available shipping method.
-			if ( isset( $data['shipping_options'][0] ) ) {
-				if ( isset( $chosen_shipping_methods[0] ) ) {
-					$chosen_method_id         = $chosen_shipping_methods[0];
-					$compare_shipping_options = function ( $a, $b ) use ( $chosen_method_id ) {
-						if ( $a['id'] === $chosen_method_id ) {
-							return - 1;
-						}
-
-						if ( $b['id'] === $chosen_method_id ) {
-							return 1;
-						}
-
-						return 0;
-					};
-					usort( $data['shipping_options'], $compare_shipping_options );
-				}
-
-				$first_shipping_method_id = $data['shipping_options'][0]['id'];
-				$this->update_shipping_method( [ $first_shipping_method_id ] );
-			}
-
-			WC()->cart->calculate_totals();
-
-			$this->maybe_restore_recurring_chosen_shipping_methods( $chosen_shipping_methods );
-
-			$data          += $this->express_checkout_helper->build_display_items( $itemized_display_items );
-			$data['result'] = 'success';
-		} catch ( Exception $e ) {
-			$data          += $this->express_checkout_helper->build_display_items( $itemized_display_items );
-			$data['result'] = 'invalid_shipping_address';
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Update shipping method.
-	 */
-	public function ajax_update_shipping_method() {
-		check_ajax_referer( 'wcpay-update-shipping-method', 'security' );
-
-		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-		}
-
-		$shipping_methods = filter_input( INPUT_POST, 'shipping_method', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
-		$this->update_shipping_method( $shipping_methods );
-
-		WC()->cart->calculate_totals();
-
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
-		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
-
-		$data           = [];
-		$data          += $this->express_checkout_helper->build_display_items( $should_show_itemized_view );
-		$data['result'] = 'success';
-
-		wp_send_json( $data );
-	}
-
-	/**
-	 * Updates shipping method in WC session
-	 *
-	 * @param array $shipping_methods Array of selected shipping methods ids.
-	 */
-	public function update_shipping_method( $shipping_methods ) {
-		$chosen_shipping_methods = (array) WC()->session->get( 'chosen_shipping_methods' );
-
-		if ( is_array( $shipping_methods ) ) {
-			foreach ( $shipping_methods as $i => $value ) {
-				$chosen_shipping_methods[ $i ] = wc_clean( $value );
-			}
-		}
-
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
-	}
-
-	/**
-	 * Gets the selected product data.
-	 *
-	 * @throws Exception If product or stock is unavailable - caught inside function.
-	 */
-	public function ajax_get_selected_product_data() {
-		check_ajax_referer( 'wcpay-get-selected-product-data', 'security' );
-
-		try {
-			$product_id      = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-			$qty             = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
-			$addon_value     = isset( $_POST['addon_value'] ) ? max( (float) $_POST['addon_value'], 0 ) : 0;
-			$product         = wc_get_product( $product_id );
-			$variation_id    = null;
-			$currency        = get_woocommerce_currency();
-			$is_deposit      = isset( $_POST['wc_deposit_option'] ) ? 'yes' === sanitize_text_field( wp_unslash( $_POST['wc_deposit_option'] ) ) : null;
-			$deposit_plan_id = isset( $_POST['wc_deposit_payment_plan'] ) ? absint( $_POST['wc_deposit_payment_plan'] ) : 0;
-
-			if ( ! is_a( $product, 'WC_Product' ) ) {
-				/* translators: product ID */
-				throw new Exception( sprintf( __( 'Product with the ID (%d) cannot be found.', 'woocommerce-payments' ), $product_id ) );
-			}
-
-			if ( ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) && isset( $_POST['attributes'] ) ) {
-				$attributes = wc_clean( wp_unslash( $_POST['attributes'] ) );
-
-				$data_store   = WC_Data_Store::load( 'product' );
-				$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
-
-				if ( ! empty( $variation_id ) ) {
-					$product = wc_get_product( $variation_id );
-				}
-			}
-
-			// Force quantity to 1 if sold individually and check for existing item in cart.
-			if ( $product->is_sold_individually() ) {
-				$qty = apply_filters( 'wcpay_payment_request_add_to_cart_sold_individually_quantity', 1, $qty, $product_id, $variation_id );
-			}
-
-			if ( ! $product->has_enough_stock( $qty ) ) {
-				/* translators: 1: product name 2: quantity in stock */
-				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
-			}
-
-			$price = $this->get_product_price( $product, $is_deposit, $deposit_plan_id );
-			$total = $qty * $price + $addon_value;
-
-			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';
-
-			$data  = [];
-			$items = [];
-
-			$items[] = [
-				'label'  => $product->get_name() . $quantity_label,
-				'amount' => WC_Payments_Utils::prepare_amount( $total, $currency ),
-			];
-
-			$total_tax = 0;
-			foreach ( $this->get_taxes_like_cart( $product, $price ) as $tax ) {
-				$total_tax += $tax;
-
-				$items[] = [
-					'label'   => __( 'Tax', 'woocommerce-payments' ),
-					'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
-					'pending' => 0 === $tax,
-				];
-			}
-
-			if ( wc_shipping_enabled() && $product->needs_shipping() ) {
-				$items[] = [
-					'label'   => __( 'Shipping', 'woocommerce-payments' ),
-					'amount'  => 0,
-					'pending' => true,
-				];
-
-				$data['shippingOptions'] = [
-					'id'     => 'pending',
-					'label'  => __( 'Pending', 'woocommerce-payments' ),
-					'detail' => '',
-					'amount' => 0,
-				];
-			}
-
-			$data['displayItems'] = $items;
-			$data['total']        = [
-				'label'   => $this->express_checkout_helper->get_total_label(),
-				'amount'  => WC_Payments_Utils::prepare_amount( $total + $total_tax, $currency ),
-				'pending' => true,
-			];
-
-			$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
-			$data['currency']       = strtolower( get_woocommerce_currency() );
-			$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
-
-			wp_send_json( $data );
-		} catch ( Exception $e ) {
-			if ( is_a( $e, Invalid_Price_Exception::class ) ) {
-				Logger::log( $e->getMessage() );
-			}
-			wp_send_json( [ 'error' => wp_strip_all_tags( $e->getMessage() ) ], 500 );
-		}
-	}
-
-	/**
-	 * Handles payment requests on the Pay for Order page.
-	 *
-	 * @throws Exception All exceptions are handled within the method.
-	 */
-	public function ajax_pay_for_order() {
-		check_ajax_referer( 'pay_for_order' );
-
-		if (
-			! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method']
-			|| ! isset( $_POST['order'] ) || ! intval( $_POST['order'] )
-			|| ! isset( $_POST['wcpay-payment-method'] ) || empty( $_POST['wcpay-payment-method'] )
-		) {
-			// Incomplete request.
-			$response = [
-				'result'   => 'error',
-				'messages' => __( 'Invalid request', 'woocommerce-payments' ),
-			];
-			wp_send_json( $response, 400 );
-
-			return;
-		}
-
-		try {
-			// Set up an environment, similar to core checkout.
-			wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
-			wc_set_time_limit( 0 );
-
-			// Load the order.
-			$order_id = intval( $_POST['order'] );
-			$order    = wc_get_order( $order_id );
-
-			if ( ! is_a( $order, WC_Order::class ) ) {
-				throw new Exception( __( 'Invalid order!', 'woocommerce-payments' ) );
-			}
-
-			if ( ! $order->needs_payment() ) {
-				throw new Exception( __( 'This order does not require payment!', 'woocommerce-payments' ) );
-			}
-
-			$this->add_order_meta( $order_id );
-
-			// Load the gateway.
-			$all_gateways = WC()->payment_gateways->get_available_payment_gateways();
-			$gateway      = $all_gateways['woocommerce_payments'];
-			$result       = $gateway->process_payment( $order_id );
-
-			// process_payment() should only return `success` or throw an exception.
-			if ( ! is_array( $result ) || ! isset( $result['result'] ) || 'success' !== $result['result'] || ! isset( $result['redirect'] ) ) {
-				throw new Exception( __( 'Unable to determine payment success.', 'woocommerce-payments' ) );
-			}
-
-			// Include the order ID in the result.
-			$result['order_id'] = $order_id;
-
-			$result = apply_filters( 'woocommerce_payment_successful_result', $result, $order_id );
-		} catch ( Exception $e ) {
-			$result = [
-				'result'   => 'error',
-				'messages' => $e->getMessage(),
-			];
-		}
-
-		wp_send_json( $result );
-	}
-
-	/**
-	 * Normalizes billing and shipping state fields.
-	 */
-	public function normalize_state() {
-		check_ajax_referer( 'woocommerce-process_checkout', '_wpnonce' );
-
-		$billing_country  = ! empty( $_POST['billing_country'] ) ? wc_clean( wp_unslash( $_POST['billing_country'] ) ) : '';
-		$shipping_country = ! empty( $_POST['shipping_country'] ) ? wc_clean( wp_unslash( $_POST['shipping_country'] ) ) : '';
-		$billing_state    = ! empty( $_POST['billing_state'] ) ? wc_clean( wp_unslash( $_POST['billing_state'] ) ) : '';
-		$shipping_state   = ! empty( $_POST['shipping_state'] ) ? wc_clean( wp_unslash( $_POST['shipping_state'] ) ) : '';
-
-		if ( $billing_state && $billing_country ) {
-			$_POST['billing_state'] = $this->get_normalized_state( $billing_state, $billing_country );
-		}
-
-		if ( $shipping_state && $shipping_country ) {
-			$_POST['shipping_state'] = $this->get_normalized_state( $shipping_state, $shipping_country );
-		}
 	}
 
 	/**
@@ -1530,152 +1075,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
-	 * The Payment Request API provides its own validation for the address form.
-	 * For some countries, it might not provide a state field, so we need to return a more descriptive
-	 * error message, indicating that the Payment Request button is not supported for that country.
-	 */
-	public function validate_state() {
-		$wc_checkout     = WC_Checkout::instance();
-		$posted_data     = $wc_checkout->get_posted_data();
-		$checkout_fields = $wc_checkout->get_checkout_fields();
-		$countries       = WC()->countries->get_countries();
-
-		$is_supported = true;
-		// Checks if billing state is missing and is required.
-		if ( ! empty( $checkout_fields['billing']['billing_state']['required'] ) && '' === $posted_data['billing_state'] ) {
-			$is_supported = false;
-		}
-
-		// Checks if shipping state is missing and is required.
-		if ( WC()->cart->needs_shipping_address() && ! empty( $checkout_fields['shipping']['shipping_state']['required'] ) && '' === $posted_data['shipping_state'] ) {
-			$is_supported = false;
-		}
-
-		if ( ! $is_supported ) {
-			wc_add_notice(
-				sprintf(
-				/* translators: %s: country. */
-					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
-					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
-				),
-				'error'
-			);
-		}
-	}
-
-	/**
-	 * Create order. Security is handled by WC.
-	 */
-	public function ajax_create_order() {
-		if ( WC()->cart->is_empty() ) {
-			wp_send_json_error( __( 'Empty cart', 'woocommerce-payments' ), 400 );
-		}
-
-		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
-			define( 'WOOCOMMERCE_CHECKOUT', true );
-		}
-
-		if ( ! defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) ) {
-			define( 'WCPAY_PAYMENT_REQUEST_CHECKOUT', true );
-		}
-
-		// In case the state is required, but is missing, add a more descriptive error notice.
-		$this->validate_state();
-
-		$this->normalize_state();
-
-		WC()->checkout()->process_checkout();
-
-		die( 0 );
-	}
-
-	/**
-	 * Calculate and set shipping method.
-	 *
-	 * @param array $address Shipping address.
-	 */
-	protected function calculate_shipping( $address = [] ) {
-		$country   = $address['country'];
-		$state     = $address['state'];
-		$postcode  = $address['postcode'];
-		$city      = $address['city'];
-		$address_1 = $address['address_1'];
-		$address_2 = $address['address_2'];
-
-		// Normalizes state to calculate shipping zones.
-		$state = $this->get_normalized_state( $state, $country );
-
-		// Normalizes postal code in case of redacted data from Apple Pay.
-		$postcode = $this->get_normalized_postal_code( $postcode, $country );
-
-		WC()->shipping->reset_shipping();
-
-		if ( $postcode && WC_Validation::is_postcode( $postcode, $country ) ) {
-			$postcode = wc_format_postcode( $postcode, $country );
-		}
-
-		if ( $country ) {
-			WC()->customer->set_location( $country, $state, $postcode, $city );
-			WC()->customer->set_shipping_location( $country, $state, $postcode, $city );
-		} else {
-			WC()->customer->set_billing_address_to_base();
-			WC()->customer->set_shipping_address_to_base();
-		}
-
-		WC()->customer->set_calculated_shipping( true );
-		WC()->customer->save();
-
-		$packages = [];
-
-		$packages[0]['contents']                 = WC()->cart->get_cart();
-		$packages[0]['contents_cost']            = 0;
-		$packages[0]['applied_coupons']          = WC()->cart->applied_coupons;
-		$packages[0]['user']['ID']               = get_current_user_id();
-		$packages[0]['destination']['country']   = $country;
-		$packages[0]['destination']['state']     = $state;
-		$packages[0]['destination']['postcode']  = $postcode;
-		$packages[0]['destination']['city']      = $city;
-		$packages[0]['destination']['address']   = $address_1;
-		$packages[0]['destination']['address_2'] = $address_2;
-
-		foreach ( WC()->cart->get_cart() as $item ) {
-			if ( $item['data']->needs_shipping() ) {
-				if ( isset( $item['line_total'] ) ) {
-					$packages[0]['contents_cost'] += $item['line_total'];
-				}
-			}
-		}
-
-		$packages = apply_filters( 'woocommerce_cart_shipping_packages', $packages );
-
-		WC()->shipping->calculate_shipping( $packages );
-	}
-
-	/**
-	 * Builds the shipping methods to pass to Payment Request
-	 *
-	 * @param array $shipping_methods Shipping methods.
-	 */
-	protected function build_shipping_methods( $shipping_methods ) {
-		if ( empty( $shipping_methods ) ) {
-			return [];
-		}
-
-		$shipping = [];
-
-		foreach ( $shipping_methods as $method ) {
-			$shipping[] = [
-				'id'     => $method['id'],
-				'label'  => $method['label'],
-				'detail' => '',
-				'amount' => WC_Payments_Utils::prepare_amount( $method['amount']['value'], get_woocommerce_currency() ),
-			];
-		}
-
-		return $shipping;
-	}
-
-	/**
 	 * Calculates whether Apple Pay is enabled for this store.
 	 * The option value is not stored in the database, and is calculated
 	 * using this function instead, and the values is returned by using the pre_option filter.
@@ -1746,41 +1145,5 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
 		return WC_Tax::calc_tax( $price, $rates, false );
-	}
-
-	/**
-	 * Restores the shipping methods previously chosen for each recurring cart after shipping was reset and recalculated
-	 * during the Payment Request get_shipping_options flow.
-	 *
-	 * When the cart contains multiple subscriptions with different billing periods, customers are able to select different shipping
-	 * methods for each subscription, however, this is not supported when purchasing with Apple Pay and Google Pay as it's
-	 * only concerned about handling the initial purchase.
-	 *
-	 * In order to avoid Woo Subscriptions's `WC_Subscriptions_Cart::validate_recurring_shipping_methods` throwing an error, we need to restore
-	 * the previously chosen shipping methods for each recurring cart.
-	 *
-	 * This function needs to be called after `WC()->cart->calculate_totals()` is run, otherwise `WC()->cart->recurring_carts` won't exist yet.
-	 *
-	 * @param array $previous_chosen_methods The previously chosen shipping methods.
-	 */
-	private function maybe_restore_recurring_chosen_shipping_methods( $previous_chosen_methods = [] ) {
-		if ( empty( WC()->cart->recurring_carts ) || ! method_exists( 'WC_Subscriptions_Cart', 'get_recurring_shipping_package_key' ) ) {
-			return;
-		}
-
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
-
-		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_index => $recurring_cart_package ) {
-				$package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $recurring_cart_package_index );
-
-				// If the recurring cart package key is found in the previous chosen methods, but not in the current chosen methods, restore it.
-				if ( isset( $previous_chosen_methods[ $package_key ] ) && ! isset( $chosen_shipping_methods[ $package_key ] ) ) {
-					$chosen_shipping_methods[ $package_key ] = $previous_chosen_methods[ $package_key ];
-				}
-			}
-		}
-
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
 	}
 }

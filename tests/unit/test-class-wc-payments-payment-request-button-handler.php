@@ -157,7 +157,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 
 		WC()->session->init();
 		WC()->cart->add_to_cart( $this->simple_product->get_id(), 1 );
-		$this->pr->update_shipping_method( [ self::get_shipping_option_rate_id( $this->flat_rate_id ) ] );
 		WC()->cart->calculate_totals();
 	}
 
@@ -243,24 +242,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$options         = get_option( $option_key );
 		$options['cost'] = $cost;
 		update_option( $option_key, $options );
-	}
-
-	/**
-	 * Composes shipping option object by shipping method instance id.
-	 *
-	 * @param string $instance_id Shipping method instance id.
-	 *
-	 * @return array Shipping option.
-	 */
-	private static function get_shipping_option( $instance_id ) {
-		$method = WC_Shipping_Zones::get_shipping_method( $instance_id );
-
-		return [
-			'id'     => $method->get_rate_id(),
-			'label'  => $method->title,
-			'detail' => '',
-			'amount' => WC_Payments_Utils::prepare_amount( $method->get_instance_option( 'cost' ) ),
-		];
 	}
 
 	/**
@@ -412,48 +393,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$this->assertSame( 'H3B', $billing_address['postcode'] );
 	}
 
-	public function test_get_shipping_options_returns_shipping_options() {
-		$data = $this->pr->get_shipping_options( self::SHIPPING_ADDRESS );
-
-		$expected_shipping_options = array_map(
-			'self::get_shipping_option',
-			[ $this->flat_rate_id, $this->local_pickup_id ]
-		);
-
-		$this->assertEquals( 'success', $data['result'] );
-		$this->assertEquals( $expected_shipping_options, $data['shipping_options'], 'Shipping options mismatch' );
-	}
-
-	public function test_get_shipping_options_returns_chosen_option() {
-		$data = $this->pr->get_shipping_options( self::SHIPPING_ADDRESS );
-
-		$flat_rate              = $this->get_shipping_option( $this->flat_rate_id );
-		$expected_display_items = [
-			[
-				'label'  => 'Shipping',
-				'amount' => $flat_rate['amount'],
-				'key'    => 'total_shipping',
-			],
-		];
-
-		$this->assertEquals( 1500, $data['total']['amount'], 'Total amount mismatch' );
-		$this->assertEquals( $expected_display_items, $data['displayItems'], 'Display items mismatch' );
-	}
-
-	public function test_get_shipping_options_keeps_chosen_option() {
-		$method_id = self::get_shipping_option_rate_id( $this->local_pickup_id );
-		$this->pr->update_shipping_method( [ $method_id ] );
-
-		$data = $this->pr->get_shipping_options( self::SHIPPING_ADDRESS );
-
-		$expected_shipping_options = array_map(
-			'self::get_shipping_option',
-			[ $this->local_pickup_id, $this->flat_rate_id ]
-		);
-
-		$this->assertEquals( 'success', $data['result'] );
-		$this->assertEquals( $expected_shipping_options, $data['shipping_options'], 'Shipping options mismatch' );
-	}
 
 	public function test_multiple_packages_in_cart_not_allowed() {
 		// Add fake packages to the cart.
@@ -754,10 +693,6 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$this->express_checkout_helper
 			->method( 'get_product' )
 			->willReturn( $this->simple_product );
-
-		$mock_pr = $this->getMockBuilder( WC_Payments_Payment_Request_Button_Handler::class )
-			->setConstructorArgs( [ $this->mock_wcpay_account, $this->mock_wcpay_gateway, $this->express_checkout_helper ] )
-			->getMock();
 
 		$get_product_data_result = $this->pr->get_product_data();
 
