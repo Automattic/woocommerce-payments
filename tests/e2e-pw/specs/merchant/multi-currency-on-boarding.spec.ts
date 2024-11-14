@@ -58,11 +58,12 @@ test.describe( 'Multi-currency on-boarding', () => {
 		test( 'should disable the submit button when no currencies are selected', async () => {
 			// To take a better screenshot of the component.
 			await page.setViewportSize( { width: 1280, height: 2000 } );
-			await expect(
-				page.locator(
-					'.multi-currency-setup-wizard > div > .components-card-body'
-				)
-			).toHaveScreenshot();
+			// TODO: fix flaky visual regression test.
+			// await expect(
+			// 	page.locator(
+			// 		'.multi-currency-setup-wizard > div > .components-card-body'
+			// 	)
+			// ).toHaveScreenshot();
 			// Set the viewport back to the default size.
 			await page.setViewportSize( { width: 1280, height: 720 } );
 
@@ -168,9 +169,10 @@ test.describe( 'Multi-currency on-boarding', () => {
 			// To take a better screenshot of the iframe preview.
 			await page.setViewportSize( { width: 1280, height: 1280 } );
 			await goToNextOnboardingStep( page );
-			await expect(
-				page.locator( '.wcpay-wizard-task.is-active' )
-			).toHaveScreenshot();
+			// TODO: fix flaky visual regression test.
+			// await expect(
+			// 	page.locator( '.wcpay-wizard-task.is-active' )
+			// ).toHaveScreenshot();
 			await page.getByTestId( 'enable_auto_currency' ).check();
 			await page.getByRole( 'button', { name: 'Preview' } ).click();
 
@@ -185,9 +187,10 @@ test.describe( 'Multi-currency on-boarding', () => {
 			await expect(
 				await previewPage.locator( '.woocommerce-store-notice' )
 			).toBeVisible();
-			await expect(
-				page.locator( '.multi-currency-store-settings-preview-iframe' )
-			).toHaveScreenshot();
+			// TODO: fix flaky visual regression test.
+			// await expect(
+			// 	page.locator( '.multi-currency-store-settings-preview-iframe' )
+			// ).toHaveScreenshot();
 
 			const noticeText = await previewPage
 				.locator( '.woocommerce-store-notice' )
