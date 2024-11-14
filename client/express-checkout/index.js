@@ -589,6 +589,11 @@ jQuery( ( $ ) => {
 					order,
 				} = wcpayECEPayForOrderParams;
 
+				if ( total === 0 ) {
+					wcpayECE.hide();
+					return;
+				}
+
 				wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total,
@@ -618,7 +623,7 @@ jQuery( ( $ ) => {
 			} else {
 				// If this is the cart or checkout page, we need to request the
 				// cart details.
-					api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
+				api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
 					if ( cart.total.amount === 0 ) {
 						wcpayECE.hide();
 					} else {
@@ -633,7 +638,8 @@ jQuery( ( $ ) => {
 									?.needs_payer_phone ?? false,
 							displayItems: cart.displayItems,
 						} );
-          }  
+					}
+				} );
 			}
 
 			// After initializing a new express checkout button, we need to reset the paymentAborted flag.
