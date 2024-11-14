@@ -1,4 +1,4 @@
-/* global jQuery */
+/* global jQuery, wc_address_i18n_params */
 
 /**
  * Internal dependencies
@@ -33,7 +33,17 @@ import { recordUserEvent } from 'tracks';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from 'wcpay/checkout/constants';
 import '../utils/copy-test-number';
 
+function getParsedLocale() {
+	try {
+		return JSON.parse(
+			wc_address_i18n_params.locale.replace( /&quot;/g, '"' )
+		);
+	} catch ( e ) {
+		return null;
+	}
+}
 jQuery( function ( $ ) {
+	const locale = getParsedLocale();
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	const publishableKey = getUPEConfig( 'publishableKey' );
 
@@ -237,7 +247,7 @@ jQuery( function ( $ ) {
 	}
 
 	function isBillingInformationMissing() {
-		const billingFieldsDisplayed = getUPEConfig( 'enabledBillingFields' );
+		const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
 
 		// first name and last name are kinda special - we just need one of them to be at checkout
 		const name = `${
@@ -251,12 +261,12 @@ jQuery( function ( $ ) {
 		}`.trim();
 		if (
 			! name &&
-			( billingFieldsDisplayed.includes(
+			( enabledBillingFields[
 				SHORTCODE_BILLING_ADDRESS_FIELDS.first_name
-			) ||
-				billingFieldsDisplayed.includes(
+			] ||
+				enabledBillingFields[
 					SHORTCODE_BILLING_ADDRESS_FIELDS.last_name
-				) )
+				] )
 		) {
 			return true;
 		}
@@ -267,16 +277,29 @@ jQuery( function ( $ ) {
 			SHORTCODE_BILLING_ADDRESS_FIELDS.address_1,
 			SHORTCODE_BILLING_ADDRESS_FIELDS.city,
 			SHORTCODE_BILLING_ADDRESS_FIELDS.postcode,
-		].filter( ( field ) => billingFieldsDisplayed.includes( field ) );
+		].filter( ( field ) => enabledBillingFields[ field ] );
+
+		const country = billingFieldsToValidate.includes(
+			SHORTCODE_BILLING_ADDRESS_FIELDS.country
+		)
+			? document.querySelector(
+					`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }`
+			  )?.value
+			: null;
 
 		// We need to just find one field with missing information. If even only one is missing, just return early.
 		return Boolean(
 			billingFieldsToValidate.find( ( fieldName ) => {
 				const $field = document.querySelector( `#${ fieldName }` );
-				const $formRow = $field.closest( '.form-row' );
-				const isRequired = $formRow.classList.contains(
-					'validate-required'
-				);
+				let isRequired = enabledBillingFields[ fieldName ]?.required;
+
+				if ( country && locale && fieldName !== 'billing_email' ) {
+					const key = fieldName.replace( 'billing_', '' );
+					isRequired =
+						locale[ country ][ key ]?.required ??
+						locale.default[ key ]?.required;
+				}
+
 				const hasValue = $field?.value;
 
 				return isRequired && ! hasValue;
