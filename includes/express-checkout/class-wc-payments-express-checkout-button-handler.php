@@ -264,9 +264,9 @@ class WC_Payments_Express_Checkout_Button_Handler {
 
 		WC_Payments_Utils::enqueue_style(
 			'WCPAY_EXPRESS_CHECKOUT_ECE',
-			plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/payment-request.css' )
+			WC_Payments::get_file_version( 'dist/express-checkout.css' )
 		);
 
 		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $payment_request_params );
