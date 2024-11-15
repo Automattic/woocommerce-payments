@@ -6,6 +6,7 @@
  *
  * Adapted from WooCommerce Stripe Gateway extension.
  *
+ * @deprecated We'll delete this class as part of https://github.com/Automattic/woocommerce-payments/issues/9722 .
  * @package WooCommerce\Payments
  */
 
@@ -17,10 +18,11 @@ use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
-use WCPay\Payment_Information;
 
 /**
  * WC_Payments_Payment_Request_Button_Handler class.
+ *
+ * @deprecated We'll delete this class as part of https://github.com/Automattic/woocommerce-payments/issues/9722 .
  */
 class WC_Payments_Payment_Request_Button_Handler {
 	const BUTTON_LOCATIONS = 'payment_request_button_locations';

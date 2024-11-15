@@ -13,6 +13,7 @@ use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_Payments_Payment_Request_Button_Handler_Test class.
+ * @deprecated We'll delete this as part of https://github.com/Automattic/woocommerce-payments/issues/9722 .
  */
 class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase {
 	const SHIPPING_ADDRESS = [

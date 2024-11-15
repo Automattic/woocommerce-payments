@@ -260,14 +260,39 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'dist/express-checkout', [ 'jquery', 'stripe' ] );
+		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
+			WC_Payments::register_script_with_dependencies(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				'dist/tokenized-express-checkout',
+				[
+					'jquery',
+					'stripe',
+				]
+			);
 
-		WC_Payments_Utils::enqueue_style(
-			'WCPAY_EXPRESS_CHECKOUT_ECE',
-			plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/express-checkout.css' )
-		);
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				plugins_url( 'dist/tokenized-express-checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/tokenized-express-checkout.css' )
+			);
+		} else {
+			WC_Payments::register_script_with_dependencies(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				'dist/express-checkout',
+				[
+					'jquery',
+					'stripe',
+				]
+			);
+
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/express-checkout.css' )
+			);
+		}
 
 		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $payment_request_params );
 
@@ -462,10 +487,11 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		$ece_data = [
-			'button' => $this->get_button_settings(),
-		];
-
-		$data_registry->add( 'ece_data', $ece_data );
+		$data_registry->add(
+			'ece_data',
+			[
+				'button' => $this->get_button_settings(),
+			]
+		);
 	}
 }
