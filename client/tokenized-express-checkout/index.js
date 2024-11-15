@@ -12,7 +12,8 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	normalizeLineItems,
-} from './utils/index';
+	displayLoginConfirmation,
+} from './utils';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -23,7 +24,9 @@ import {
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
-import { displayLoginConfirmation } from './utils';
+import ExpressCheckoutCartApi from './cart-api';
+import ExpressCheckoutOrderApi from './order-api';
+import { getUPEConfig } from 'wcpay/utils/checkout';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -55,6 +58,15 @@ jQuery( ( $ ) => {
 			} );
 		}
 	);
+
+	let cartApi = new ExpressCheckoutCartApi();
+	if ( getExpressCheckoutData( 'button_context' ) === 'pay_for_order' ) {
+		cartApi = new ExpressCheckoutOrderApi( {
+			orderId: getUPEConfig( 'order_id' ),
+			key: getUPEConfig( 'key' ),
+			billingEmail: getUPEConfig( 'billing_email' ),
+		} );
+	}
 
 	let wcPayECEError = '';
 	const defaultErrorMessage = __(

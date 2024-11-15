@@ -68,6 +68,9 @@ export interface WCPayExpressCheckoutParams {
 		platform_tracker: string;
 		shipping: string;
 		update_shipping: string;
+		tokenized_cart_nonce: string;
+		tokenized_cart_session_nonce: string;
+		store_api_nonce: string;
 	};
 
 	/**

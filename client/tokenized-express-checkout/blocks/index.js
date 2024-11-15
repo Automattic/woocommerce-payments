@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
 import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
-import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
+import { checkPaymentMethodIsAvailable } from './checkPaymentMethodIsAvailable';
 
 export const tokenizedExpressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,

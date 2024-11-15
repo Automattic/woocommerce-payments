@@ -12,7 +12,8 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	normalizeLineItems,
-} from './utils/index';
+	displayLoginConfirmation,
+} from './utils';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -23,7 +24,6 @@ import {
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
-import { displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
