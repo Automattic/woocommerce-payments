@@ -442,7 +442,6 @@ class WC_Payments {
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-ajax-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-handler.php';
-		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
