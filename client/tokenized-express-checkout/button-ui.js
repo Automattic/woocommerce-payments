@@ -1,18 +1,18 @@
 /* global jQuery */
 
+let $expressCheckoutSeparator = null;
 let $wcpayExpressCheckoutContainer = null;
+let expressCheckoutElementId = null;
 
 const expressCheckoutButtonUi = {
-	init: ( { $container } ) => {
-		$wcpayExpressCheckoutContainer = $container;
-	},
-
-	getElements: () => {
-		return $wcpayExpressCheckoutContainer;
+	init: ( { elementId, $separator } ) => {
+		expressCheckoutElementId = elementId;
+		$wcpayExpressCheckoutContainer = jQuery( expressCheckoutElementId );
+		$expressCheckoutSeparator = $separator;
 	},
 
 	getButtonSeparator: () => {
-		return jQuery( '#wcpay-express-checkout-button-separator' );
+		return $expressCheckoutSeparator;
 	},
 
 	blockButton: () => {
@@ -26,23 +26,23 @@ const expressCheckoutButtonUi = {
 	},
 
 	unblockButton: () => {
-		expressCheckoutButtonUi.show();
+		expressCheckoutButtonUi.showContainer();
 		$wcpayExpressCheckoutContainer.unblock();
 	},
 
-	showButton: ( eceButton ) => {
+	renderButton: ( eceButton ) => {
 		if ( $wcpayExpressCheckoutContainer?.length ) {
-			expressCheckoutButtonUi.show();
-			eceButton.mount( '#wcpay-express-checkout-element' );
+			expressCheckoutButtonUi.showContainer();
+			eceButton.mount( expressCheckoutElementId );
 		}
 	},
 
-	hide: () => {
-		expressCheckoutButtonUi.getElements().hide();
+	hideContainer: () => {
+		$wcpayExpressCheckoutContainer.hide();
 	},
 
-	show: () => {
-		expressCheckoutButtonUi.getElements().show();
+	showContainer: () => {
+		$wcpayExpressCheckoutContainer.show();
 	},
 };
 
