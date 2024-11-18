@@ -249,7 +249,7 @@ jQuery( ( $ ) => {
 				getExpressCheckoutButtonStyleSettings()
 			);
 
-			expressCheckoutButtonUi.showButton( eceButton );
+			expressCheckoutButtonUi.renderButton( eceButton );
 
 			eceButton.on( 'loaderror', () => {
 				wcPayECEError = __(

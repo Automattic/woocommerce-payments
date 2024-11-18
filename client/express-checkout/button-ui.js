@@ -30,7 +30,7 @@ const expressCheckoutButtonUi = {
 		$wcpayExpressCheckoutContainer.unblock();
 	},
 
-	showButton: ( eceButton ) => {
+	renderButton: ( eceButton ) => {
 		if ( $wcpayExpressCheckoutContainer?.length ) {
 			expressCheckoutButtonUi.show();
 			eceButton.mount( expressCheckoutElementId );
