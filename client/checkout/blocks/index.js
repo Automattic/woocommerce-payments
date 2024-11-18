@@ -22,7 +22,10 @@ import {
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
 } from '../../express-checkout/blocks';
-import tokenizedCartPaymentRequestPaymentMethod from '../../tokenized-payment-request/blocks';
+import {
+	tokenizedExpressCheckoutElementApplePay,
+	tokenizedExpressCheckoutElementGooglePay,
+} from 'wcpay/tokenized-express-checkout/blocks';
 
 import {
 	PAYMENT_METHOD_NAME_CARD,
@@ -162,7 +165,10 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
 	if ( getUPEConfig( 'isTokenizedCartEceEnabled' ) ) {
 		registerExpressPaymentMethod(
-			tokenizedCartPaymentRequestPaymentMethod( api )
+			tokenizedExpressCheckoutElementApplePay( api )
+		);
+		registerExpressPaymentMethod(
+			tokenizedExpressCheckoutElementGooglePay( api )
 		);
 	} else {
 		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );

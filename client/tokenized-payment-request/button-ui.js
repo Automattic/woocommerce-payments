@@ -9,7 +9,7 @@ const paymentRequestButtonUi = {
 
 	getElements: () => {
 		return jQuery(
-			'.wcpay-payment-request-wrapper,#wcpay-express-checkout-button-separator'
+			'.wcpay-express-checkout-wrapper,#wcpay-express-checkout-button-separator'
 		);
 	},
 
