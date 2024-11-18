@@ -19,6 +19,7 @@ import {
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
 
+// TODO ~FR note: used by both classic & shortcode-based checkout
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
 		const response = await api.expressCheckoutECECalculateShippingOptions(
@@ -41,6 +42,7 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	}
 };
 
+// TODO ~FR note: used by both classic & shortcode-based checkout
 export const shippingRateChangeHandler = async ( api, event, elements ) => {
 	try {
 		const response = await api.expressCheckoutECEUpdateShippingDetails(
@@ -60,6 +62,7 @@ export const shippingRateChangeHandler = async ( api, event, elements ) => {
 	}
 };
 
+// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onConfirmHandler = async (
 	api,
 	stripe,
@@ -125,6 +128,7 @@ export const onConfirmHandler = async (
 	}
 };
 
+// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onReadyHandler = async function ( { availablePaymentMethods } ) {
 	if ( availablePaymentMethods ) {
 		const enabledMethods = Object.entries( availablePaymentMethods )
@@ -154,6 +158,7 @@ const unblockUI = () => {
 	jQuery.unblockUI();
 };
 
+// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onClickHandler = async function ( { expressPaymentType } ) {
 	blockUI();
 	trackExpressCheckoutButtonClick(
@@ -162,14 +167,17 @@ export const onClickHandler = async function ( { expressPaymentType } ) {
 	);
 };
 
+// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onAbortPaymentHandler = () => {
 	unblockUI();
 };
 
+// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onCompletePaymentHandler = () => {
 	blockUI();
 };
 
+// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onCancelHandler = () => {
 	unblockUI();
 };
