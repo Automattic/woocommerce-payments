@@ -55,7 +55,7 @@
 	.is-mobile,
 	.is-small {
 		.wc-block-components-form.has-woopay-component
-			.wc-block-components-checkout-step::after {
+			#payment-method.wc-block-components-checkout-step::after {
 			height: 0;
 		}
 	}
