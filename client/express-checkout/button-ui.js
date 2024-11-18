@@ -26,22 +26,22 @@ const expressCheckoutButtonUi = {
 	},
 
 	unblockButton: () => {
-		expressCheckoutButtonUi.show();
+		expressCheckoutButtonUi.showContainer();
 		$wcpayExpressCheckoutContainer.unblock();
 	},
 
 	renderButton: ( eceButton ) => {
 		if ( $wcpayExpressCheckoutContainer?.length ) {
-			expressCheckoutButtonUi.show();
+			expressCheckoutButtonUi.showContainer();
 			eceButton.mount( expressCheckoutElementId );
 		}
 	},
 
-	hide: () => {
+	hideContainer: () => {
 		$wcpayExpressCheckoutContainer.hide();
 	},
 
-	show: () => {
+	showContainer: () => {
 		$wcpayExpressCheckoutContainer.show();
 	},
 };

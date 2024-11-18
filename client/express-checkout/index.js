@@ -355,7 +355,7 @@ jQuery( ( $ ) => {
 						onReadyParams.availablePaymentMethods
 					).filter( Boolean ).length
 				) {
-					expressCheckoutButtonUi.show();
+					expressCheckoutButtonUi.showContainer();
 					expressCheckoutButtonUi.getButtonSeparator().show();
 				}
 			} );
@@ -459,7 +459,7 @@ jQuery( ( $ ) => {
 							}
 						} )
 						.catch( () => {
-							expressCheckoutButtonUi.hide();
+							expressCheckoutButtonUi.hideContainer();
 							expressCheckoutButtonUi.getButtonSeparator().hide();
 						} )
 						.always( () => {
@@ -543,7 +543,7 @@ jQuery( ( $ ) => {
 				} = wcpayECEPayForOrderParams;
 
 				if ( total === 0 ) {
-					expressCheckoutButtonUi.hide();
+					expressCheckoutButtonUi.hideContainer();
 					expressCheckoutButtonUi.getButtonSeparator().hide();
 					return;
 				}
@@ -579,7 +579,7 @@ jQuery( ( $ ) => {
 				// cart details.
 				api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
 					if ( cart.total.amount === 0 ) {
-						expressCheckoutButtonUi.hide();
+						expressCheckoutButtonUi.hideContainer();
 						expressCheckoutButtonUi.getButtonSeparator().hide();
 					} else {
 						wcpayECE.startExpressCheckoutElement( {
