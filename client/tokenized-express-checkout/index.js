@@ -38,12 +38,13 @@ jQuery( ( $ ) => {
 	}
 
 	const publishableKey = wcpayExpressCheckoutParams.stripe.publishableKey;
-	const quantityInputSelector = '.quantity .qty[type=number]';
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
 		return;
 	}
+
+	const quantityInputSelector = '.quantity .qty[type=number]';
 
 	const api = new WCPayAPI(
 		{
@@ -307,6 +308,7 @@ jQuery( ( $ ) => {
 					}
 
 					// Add products to the cart if everything is right.
+					// TODO ~FR: use cartApi
 					wcpayECE.addToCart();
 				}
 
@@ -326,11 +328,11 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'shippingaddresschange', async ( event ) =>
-				shippingAddressChangeHandler( api, event, elements )
+				shippingAddressChangeHandler( api, event, elements, cartApi )
 			);
 
 			eceButton.on( 'shippingratechange', async ( event ) =>
-				shippingRateChangeHandler( api, event, elements )
+				shippingRateChangeHandler( api, event, elements, cartApi )
 			);
 
 			eceButton.on( 'confirm', async ( event ) => {
@@ -343,7 +345,8 @@ jQuery( ( $ ) => {
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
 					event,
-					order
+					order,
+					cartApi
 				);
 			} );
 
@@ -453,6 +456,7 @@ jQuery( ( $ ) => {
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
+							// TODO ~FR: this seems new
 							const isDeposits = wcpayECE.productHasDepositOption();
 							/**
 							 * If the customer aborted the express checkout,
