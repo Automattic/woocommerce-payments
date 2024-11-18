@@ -126,7 +126,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$separator_starts_hidden = ! $should_show_woopay;
 		if ( $should_show_woopay || $should_show_express_checkout_button ) {
 			?>
-			<div class='wcpay-payment-request-wrapper' >
+			<div class='wcpay-express-checkout-wrapper' >
 			<?php
 			if ( ! $this->express_checkout_helper->is_pay_for_order_page() || $this->is_pay_for_order_flow_supported() ) {
 				$this->platform_checkout_button_handler->display_woopay_button_html();
