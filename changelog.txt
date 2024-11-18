@@ -1,5 +1,18 @@
 *** WooPayments Changelog ***
 
+= 8.6.0-test-1 - 2024-xx-xx =
+* Fix - fix: express checkout to use its own css files.
+* Fix - Make sure the status of manual capture enablement is fetched from the right place.
+* Fix - Prevent express checkout from being used if cart total becomes zero after coupon usage.
+* Fix - Resolved issue with terminal payments in the payment intent failed webhook processing.
+* Fix - Update Link logo alignment issue when WooPay is enabled and a specific version of Gutenberg is enabled.
+* Fix - Validate required billing fields using data from objects instead of checking the labels.
+* Update - chore: rename wrapper from payment-request to express-checkout
+* Dev - chore: removed old PRB implementation for ApplePay/GooglePay in favor of the ECE implementation; cleaned up ECE feature flag;
+* Dev - Disable visual regression testing from Playwright until a more reliable approach is defined.
+* Dev - fix: E_DEPRECATED on BNPL empty PMME
+* Dev - Update snapshots for E2E Playwright screenshots
+
 = 8.5.0 - 2024-11-13 =
 * Add - Add country-specific test card numbers for credit card testing
 * Add - Add risk level information to the fraud and risk box on the order details page.
