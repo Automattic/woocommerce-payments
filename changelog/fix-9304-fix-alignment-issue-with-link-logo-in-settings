@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Update Link logo alignment issue when WooPay is enabled and a specific version of Gutenberg is enabled.

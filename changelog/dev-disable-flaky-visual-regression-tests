@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Disable visual regression testing from Playwright until a more reliable approach is defined.
