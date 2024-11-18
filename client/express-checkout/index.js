@@ -12,8 +12,7 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	normalizeLineItems,
-	displayLoginConfirmation,
-} from './utils';
+} from './utils/index';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -24,7 +23,7 @@ import {
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 } from './event-handlers';
-import expressCheckoutButtonUi from './button-ui';
+import { displayLoginConfirmation } from './utils';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -62,10 +61,6 @@ jQuery( ( $ ) => {
 		'There was an error getting the product information.',
 		'woocommerce-payments'
 	);
-
-	expressCheckoutButtonUi.init( {
-		$container: $( '#wcpay-express-checkout-element' ),
-	} );
 
 	/**
 	 * Object to handle Stripe payment forms.
@@ -248,7 +243,7 @@ jQuery( ( $ ) => {
 				getExpressCheckoutButtonStyleSettings()
 			);
 
-			expressCheckoutButtonUi.showButton( eceButton );
+			wcpayECE.renderButton( eceButton );
 
 			eceButton.on( 'loaderror', () => {
 				wcPayECEError = __(
@@ -256,7 +251,7 @@ jQuery( ( $ ) => {
 					'woocommerce-payments'
 				);
 				if ( ! document.getElementById( 'wcpay-woopay-button' ) ) {
-					expressCheckoutButtonUi.getButtonSeparator().hide();
+					wcpayECE?.getButtonSeparator()?.hide();
 				}
 			} );
 
@@ -354,8 +349,8 @@ jQuery( ( $ ) => {
 						onReadyParams.availablePaymentMethods
 					).filter( Boolean ).length
 				) {
-					expressCheckoutButtonUi.show();
-					expressCheckoutButtonUi.getButtonSeparator().show();
+					wcpayECE.show();
+					wcpayECE.getButtonSeparator().show();
 				}
 			} );
 
@@ -442,7 +437,7 @@ jQuery( ( $ ) => {
 			$( document.body )
 				.off( 'woocommerce_variation_has_changed' )
 				.on( 'woocommerce_variation_has_changed', () => {
-					expressCheckoutButtonUi.blockButton();
+					wcpayECE.blockExpressCheckoutButton();
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
@@ -470,11 +465,10 @@ jQuery( ( $ ) => {
 							}
 						} )
 						.catch( () => {
-							expressCheckoutButtonUi.hide();
-							expressCheckoutButtonUi.getButtonSeparator().hide();
+							wcpayECE.hide();
 						} )
 						.always( () => {
-							expressCheckoutButtonUi.unblockButton();
+							wcpayECE.unblockExpressCheckoutButton();
 						} );
 				} );
 
@@ -484,7 +478,7 @@ jQuery( ( $ ) => {
 					'input',
 					'.qty',
 					debounce( () => {
-						expressCheckoutButtonUi.blockButton();
+						wcpayECE.blockExpressCheckoutButton();
 						wcPayECEError = '';
 
 						$.when( wcpayECE.getSelectedProductData() )
@@ -517,7 +511,7 @@ jQuery( ( $ ) => {
 								}
 							)
 							.always( function () {
-								expressCheckoutButtonUi.unblockButton();
+								wcpayECE.unblockExpressCheckoutButton();
 							} );
 					}, 250 )
 				);
@@ -532,8 +526,46 @@ jQuery( ( $ ) => {
 			wcpayECE.init();
 		},
 
+		blockExpressCheckoutButton: () => {
+			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
+			// blockUI.isBlocked is either undefined or 0 when element is not blocked
+			if (
+				$( '#wcpay-express-checkout-element' ).data(
+					'blockUI.isBlocked'
+				)
+			) {
+				return;
+			}
+
+			$( '#wcpay-express-checkout-element' ).block( { message: null } );
+		},
+
+		unblockExpressCheckoutButton: () => {
+			wcpayECE.show();
+			$( '#wcpay-express-checkout-element' ).unblock();
+		},
+
+		getElements: () => {
+			return $( '#wcpay-express-checkout-element' );
+		},
+
 		getButtonSeparator: () => {
 			return $( '#wcpay-express-checkout-button-separator' );
+		},
+
+		show: () => {
+			wcpayECE.getElements().show();
+		},
+
+		hide: () => {
+			wcpayECE.getElements().hide();
+			wcpayECE.getButtonSeparator().hide();
+		},
+
+		renderButton: ( eceButton ) => {
+			if ( $( '#wcpay-express-checkout-element' ).length ) {
+				eceButton.mount( '#wcpay-express-checkout-element' );
+			}
 		},
 
 		productHasDepositOption() {
@@ -558,8 +590,7 @@ jQuery( ( $ ) => {
 				} = wcpayECEPayForOrderParams;
 
 				if ( total === 0 ) {
-					expressCheckoutButtonUi.hide();
-					expressCheckoutButtonUi.getButtonSeparator().hide();
+					wcpayECE.hide();
 					return;
 				}
 
@@ -594,8 +625,7 @@ jQuery( ( $ ) => {
 				// cart details.
 				api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
 					if ( cart.total.amount === 0 ) {
-						expressCheckoutButtonUi.hide();
-						expressCheckoutButtonUi.getButtonSeparator().hide();
+						wcpayECE.hide();
 					} else {
 						wcpayECE.startExpressCheckoutElement( {
 							mode: 'payment',
