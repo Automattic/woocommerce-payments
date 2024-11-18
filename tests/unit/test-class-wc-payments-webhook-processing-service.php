@@ -1733,4 +1733,31 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'No mode proceeds'                => [ null, $this->once() ],
 		];
 	}
+
+	public function test_process_throws_exception_when_order_not_found_for_intent_id() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['data']['object'] = [
+			'id'       => 'unresolvable_intent_id',
+			'currency' => 'usd',
+			'metadata' => [],
+			'charges'  => [
+				'data' => [],
+			],
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'unresolvable_intent_id' )
+			->willReturn( null );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'save' );
+
+		$this->expectException( WCPay\Exceptions\Invalid_Payment_Method_Exception::class );
+		$this->expectExceptionMessage( 'Could not find order via intent ID: unresolvable_intent_id' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
 }
