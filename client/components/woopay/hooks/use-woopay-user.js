@@ -10,7 +10,21 @@ const useWooPayUser = () => {
 
 	useEffect( () => {
 		const handleWooPayUserCheck = ( e ) => {
-			setIsRegisteredUser( e.detail.isRegisteredUser );
+			const { isRegisteredUser: isRegisteredUserEvent } = e.detail;
+
+			setIsRegisteredUser( isRegisteredUserEvent );
+
+			if ( isRegisteredUserEvent ) {
+				document
+					.querySelector( '#remember-me' )
+					.parentElement.classList.remove( 'has-woopay-component' );
+
+				return;
+			}
+
+			document
+				.querySelector( '#remember-me' )
+				.parentElement.classList.add( 'has-woopay-component' );
 		};
 
 		const currentWindowRef = windowRef.current;

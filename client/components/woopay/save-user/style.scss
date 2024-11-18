@@ -28,11 +28,34 @@
 	}
 }
 
+#remember-me {
+	padding-top: 0;
+	margin-bottom: 0;
+
+	&::after {
+		height: 0;
+	}
+}
+
+.wc-block-components-form.has-woopay-component {
+	#remember-me {
+		margin: 36px 0 0 0;
+		padding-top: 0;
+
+		h2 {
+			font-size: 18px;
+			font-weight: 600;
+			line-height: 21.6px;
+			letter-spacing: -0.01em;
+		}
+	}
+}
+
 @media ( max-width: 600px ) {
 	.is-mobile,
 	.is-small {
-		.wc-block-components-form
-			.wc-block-components-checkout-step.is-woopay::after {
+		.wc-block-components-form.has-woopay-component
+			.wc-block-components-checkout-step::after {
 			height: 0;
 		}
 	}
