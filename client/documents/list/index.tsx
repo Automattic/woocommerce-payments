@@ -55,7 +55,7 @@ const getColumns = (): Column[] =>
 		},
 		{
 			key: 'download',
-			label: '',
+			label: __( 'Download', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Download', 'woocommerce-payments' ),
 			isLeftAligned: false,
 			isNumeric: true,
