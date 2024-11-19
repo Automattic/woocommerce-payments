@@ -50,6 +50,7 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 		}
 
 		elements.update( {
+			// TODO ~FR: fix price transformation for Japanese Yen.
 			amount: transformPrice(
 				parseInt( cartData.totals.total_price, 10 ) -
 					parseInt( cartData.totals.total_refund || 0, 10 ),
