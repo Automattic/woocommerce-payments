@@ -538,48 +538,6 @@ jQuery( ( $ ) => {
 			wcpayECE.init();
 		},
 
-		blockExpressCheckoutButton: () => {
-			// check if element isn't already blocked before calling block() to avoid blinking overlay issues
-			// blockUI.isBlocked is either undefined or 0 when element is not blocked
-			if (
-				$( '#wcpay-express-checkout-element' ).data(
-					'blockUI.isBlocked'
-				)
-			) {
-				return;
-			}
-
-			$( '#wcpay-express-checkout-element' ).block( { message: null } );
-		},
-
-		unblockExpressCheckoutButton: () => {
-			wcpayECE.show();
-			$( '#wcpay-express-checkout-element' ).unblock();
-		},
-
-		getElements: () => {
-			return $( '#wcpay-express-checkout-element' );
-		},
-
-		getButtonSeparator: () => {
-			return $( '#wcpay-express-checkout-button-separator' );
-		},
-
-		show: () => {
-			wcpayECE.getElements().show();
-		},
-
-		hide: () => {
-			wcpayECE.getElements().hide();
-			wcpayECE.getButtonSeparator().hide();
-		},
-
-		renderButton: ( eceButton ) => {
-			if ( $( '#wcpay-express-checkout-element' ).length ) {
-				eceButton.mount( '#wcpay-express-checkout-element' );
-			}
-		},
-
 		productHasDepositOption() {
 			return !! $( 'form' ).has(
 				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
