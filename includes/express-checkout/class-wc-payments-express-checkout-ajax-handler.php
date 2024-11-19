@@ -527,6 +527,30 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
+	 * Allows certain "redacted" postcodes for some countries to bypass WC core validation.
+	 *
+	 * @param bool   $valid Whether the postcode is valid.
+	 * @param string $postcode The postcode in question.
+	 * @param string $country The country for the postcode.
+	 *
+	 * @return bool
+	 */
+	public function maybe_skip_postcode_validation( $valid, $postcode, $country ) {
+		if ( ! in_array( $country, [ Country_Code::UNITED_KINGDOM, Country_Code::CANADA ], true ) ) {
+			return $valid;
+		}
+
+		// We padded the string with `0` in the `get_normalized_postal_code` method.
+		// It's a flimsy check, but better than nothing.
+		// Plus, this check is only made for the scenarios outlined in the `tokenized_cart_store_api_address_normalization` method.
+		if ( substr( $postcode, - 1 ) === '0' ) {
+			return true;
+		}
+
+		return $valid;
+	}
+
+	/**
 	 * Transform a GooglePay/ApplePay state address data fields into values that are valid for WooCommerce.
 	 *
 	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
