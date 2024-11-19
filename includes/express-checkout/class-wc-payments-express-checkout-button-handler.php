@@ -109,15 +109,15 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return array
 	 */
 	public function get_button_settings() {
-		$button_type                     = $this->gateway->get_option( 'payment_request_button_type' );
-		$common_settings                 = $this->express_checkout_helper->get_common_button_settings();
-		$payment_request_button_settings = [
+		$button_type                      = $this->gateway->get_option( 'payment_request_button_type' );
+		$common_settings                  = $this->express_checkout_helper->get_common_button_settings();
+		$express_checkout_button_settings = [
 			// Default format is en_US.
 			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
 			'branded_type' => 'default' === $button_type ? 'short' : 'long',
 		];
 
-		return array_merge( $common_settings, $payment_request_button_settings );
+		return array_merge( $common_settings, $express_checkout_button_settings );
 	}
 
 	/**
@@ -222,7 +222,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		$payment_request_params = [
+		$express_checkout_params = [
 			'ajax_url'           => admin_url( 'admin-ajax.php' ),
 			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'             => [
@@ -298,7 +298,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			);
 		}
 
-		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $payment_request_params );
+		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $express_checkout_params );
 
 		wp_set_script_translations( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'woocommerce-payments' );
 
