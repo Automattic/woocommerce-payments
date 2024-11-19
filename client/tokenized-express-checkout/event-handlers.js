@@ -18,6 +18,11 @@ import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
+import ExpressCheckoutCartApi from './cart-api';
+
+let cartApi = new ExpressCheckoutCartApi();
+export const setCartApiHandler = ( handler ) => ( cartApi = handler );
+export const getCartApiHandler = () => cartApi;
 
 // TODO ~FR note: used by both classic & shortcode-based checkout
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {

@@ -23,8 +23,8 @@ import {
 	onReadyHandler,
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
+	setCartApiHandler,
 } from './event-handlers';
-import ExpressCheckoutCartApi from './cart-api';
 import ExpressCheckoutOrderApi from './order-api';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import expressCheckoutButtonUi from './button-ui';
@@ -60,14 +60,16 @@ jQuery( ( $ ) => {
 		}
 	);
 
-	let cartApi = new ExpressCheckoutCartApi();
 	if ( getExpressCheckoutData( 'button_context' ) === 'pay_for_order' ) {
-		cartApi = new ExpressCheckoutOrderApi( {
-			orderId: getUPEConfig( 'order_id' ),
-			key: getUPEConfig( 'key' ),
-			billingEmail: getUPEConfig( 'billing_email' ),
-		} );
+		setCartApiHandler(
+			new ExpressCheckoutOrderApi( {
+				orderId: getUPEConfig( 'order_id' ),
+				key: getUPEConfig( 'key' ),
+				billingEmail: getUPEConfig( 'billing_email' ),
+			} )
+		);
 	}
+
 	expressCheckoutButtonUi.init( {
 		elementId: '#wcpay-express-checkout-element',
 		$separator: jQuery( '#wcpay-express-checkout-button-separator' ),
@@ -333,11 +335,11 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'shippingaddresschange', async ( event ) =>
-				shippingAddressChangeHandler( api, event, elements, cartApi )
+				shippingAddressChangeHandler( api, event, elements )
 			);
 
 			eceButton.on( 'shippingratechange', async ( event ) =>
-				shippingRateChangeHandler( api, event, elements, cartApi )
+				shippingRateChangeHandler( api, event, elements )
 			);
 
 			eceButton.on( 'confirm', async ( event ) => {
@@ -350,8 +352,7 @@ jQuery( ( $ ) => {
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
 					event,
-					order,
-					cartApi
+					order
 				);
 			} );
 
