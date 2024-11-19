@@ -244,8 +244,8 @@ jQuery( ( $ ) => {
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );
 
-			const eceButton = wcpayECE.createButton(
-				elements,
+			const eceButton = elements.create(
+				'expressCheckout',
 				getExpressCheckoutButtonStyleSettings()
 			);
 
