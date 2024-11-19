@@ -22,6 +22,7 @@ import {
 // TODO ~FR note: used by both classic & shortcode-based checkout
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
+		// TODO ~FR: replace with cartApi
 		const response = await api.expressCheckoutECECalculateShippingOptions(
 			normalizeShippingAddress( event.address )
 		);
@@ -45,6 +46,7 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 // TODO ~FR note: used by both classic & shortcode-based checkout
 export const shippingRateChangeHandler = async ( api, event, elements ) => {
 	try {
+		// TODO ~FR: replace with cartApi
 		const response = await api.expressCheckoutECEUpdateShippingDetails(
 			event.shippingRate
 		);
@@ -89,10 +91,12 @@ export const onConfirmHandler = async (
 		// Kick off checkout processing step.
 		let orderResponse;
 		if ( ! order ) {
+			// TODO ~FR: replace with cartApi
 			orderResponse = await api.expressCheckoutECECreateOrder(
 				normalizeOrderData( event, paymentMethod.id )
 			);
 		} else {
+			// TODO ~FR: replace with cartApi
 			orderResponse = await api.expressCheckoutECEPayForOrder(
 				order,
 				normalizePayForOrderData( event, paymentMethod.id )

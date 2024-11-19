@@ -30,8 +30,8 @@ export default class ExpressCheckoutCartApi {
 			...options,
 			parse: false,
 			path: addQueryArgs( options.path, {
-				// `wcpayPaymentRequestParams` will always be defined if this file is needed.
-				// If there's an issue with it, ask yourself why this file is queued and `wcpayPaymentRequestParams` isn't present.
+				// `wcpayExpressCheckoutParams` will always be defined if this file is needed.
+				// If there's an issue with it, ask yourself why this file is queued and `wcpayExpressCheckoutParams` isn't present.
 				currency: getExpressCheckoutData(
 					'checkout'
 				).currency_code.toUpperCase(),

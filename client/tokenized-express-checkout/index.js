@@ -197,6 +197,7 @@ jQuery( ( $ ) => {
 				}
 			} );
 
+			// TODO ~FR: replace with cartApi
 			return api.expressCheckoutECEAddToCart( data );
 		},
 
@@ -422,6 +423,7 @@ jQuery( ( $ ) => {
 				...depositObject,
 			};
 
+			// TODO ~FR: replace with cartApi
 			return api.expressCheckoutECEGetSelectedProductData( data );
 		},
 
@@ -633,6 +635,7 @@ jQuery( ( $ ) => {
 			} else {
 				// If this is the cart or checkout page, we need to request the
 				// cart details.
+				// TODO ~FR: replace with cartApi
 				api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
 					if ( cart.total.amount === 0 ) {
 						expressCheckoutButtonUi.hideContainer();
