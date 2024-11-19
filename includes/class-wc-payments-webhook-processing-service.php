@@ -715,7 +715,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception   Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve intent ID to order.
 	 *
-	 * @return null|WC_Order
+	 * @return null|WC_Abstract_Order
 	 */
 	private function get_order_from_event_body( $event_body ) {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
@@ -745,7 +745,7 @@ class WC_Payments_Webhook_Processing_Service {
 			}
 		}
 
-		if ( ! $order ) {
+		if ( ! $order instanceof \WC_Abstract_Order ) {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
 				/* translators: %1: intent ID */
