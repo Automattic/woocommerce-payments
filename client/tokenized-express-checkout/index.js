@@ -101,7 +101,7 @@ jQuery( ( $ ) => {
 		 */
 		abortPayment: ( payment, message ) => {
 			payment.paymentFailed( { reason: 'fail' } );
-			onAbortPaymentHandler( payment, message );
+			onAbortPaymentHandler();
 
 			$( '.woocommerce-error' ).remove();
 
@@ -129,7 +129,7 @@ jQuery( ( $ ) => {
 		 * @param {string} url Order thank you page URL.
 		 */
 		completePayment: ( url ) => {
-			onCompletePaymentHandler( url );
+			onCompletePaymentHandler();
 			window.location = url;
 		},
 
