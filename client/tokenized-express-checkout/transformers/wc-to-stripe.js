@@ -33,7 +33,7 @@ export const transformPrice = ( price, priceObject ) => {
  * See https://docs.stripe.com/js/appendix/payment_item_object for the data structure
  *
  * @param {Object} cartData Store API Cart response object.
- * @return {{pending: boolean, label: string, amount: integer}} `displayItems` for Stripe.
+ * @return {{pending: boolean, name: string, amount: integer}} `displayItems` for Stripe.
  */
 export const transformCartDataForDisplayItems = ( cartData ) => {
 	const displayItems = cartData.items.map( ( item ) => ( {
@@ -41,7 +41,7 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 			parseInt( item.prices.price, 10 ),
 			item.prices
 		),
-		label: [
+		name: [
 			item.name,
 			item.quantity > 1 && `(x${ item.quantity })`,
 			item.variation &&
@@ -61,7 +61,7 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 	if ( taxAmount ) {
 		displayItems.push( {
 			amount: transformPrice( taxAmount, cartData.totals ),
-			label: __( 'Tax', 'woocommerce-payments' ),
+			name: __( 'Tax', 'woocommerce-payments' ),
 		} );
 	}
 
@@ -72,7 +72,7 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 	if ( shippingAmount ) {
 		displayItems.push( {
 			amount: transformPrice( shippingAmount, cartData.totals ),
-			label: __( 'Shipping', 'woocommerce-payments' ),
+			name: __( 'Shipping', 'woocommerce-payments' ),
 		} );
 	}
 
@@ -80,7 +80,7 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 	if ( refundAmount ) {
 		displayItems.push( {
 			amount: -transformPrice( refundAmount, cartData.totals ),
-			label: __( 'Refund', 'woocommerce-payments' ),
+			name: __( 'Refund', 'woocommerce-payments' ),
 		} );
 	}
 
@@ -96,7 +96,7 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 export const transformCartDataForShippingOptions = ( cartData ) =>
 	cartData.shipping_rates[ 0 ].shipping_rates.map( ( rate ) => ( {
 		id: rate.rate_id,
-		label: decodeEntities( rate.name ),
+		displayName: decodeEntities( rate.name ),
 		amount: transformPrice( parseInt( rate.price, 10 ), rate ),
 		detail: [
 			rate.meta_data.find(

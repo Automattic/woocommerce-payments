@@ -10,8 +10,6 @@ import {
 	getErrorMessageFromNotice,
 	normalizeOrderData,
 	normalizePayForOrderData,
-	normalizeShippingAddress,
-	normalizeLineItems,
 	getExpressCheckoutData,
 } from './utils';
 import {
@@ -19,52 +17,72 @@ import {
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
 import ExpressCheckoutCartApi from './cart-api';
+import { transformStripeShippingAddressForStoreApi } from './transformers/stripe-to-wc';
+import {
+	transformCartDataForDisplayItems,
+	transformCartDataForShippingOptions,
+	transformPrice,
+} from './transformers/wc-to-stripe';
 
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
 
-// TODO ~FR note: used by both classic & shortcode-based checkout
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
-		// TODO ~FR: replace with cartApi
-		const response = await api.expressCheckoutECECalculateShippingOptions(
-			normalizeShippingAddress( event.address )
-		);
+		// Please note that the `event.address` might not contain all the fields.
+		// Some fields might not be present (like `line_1` or `line_2`) due to semi-anonymized data.
+		const cartData = await cartApi.updateCustomer( {
+			shipping_address: transformStripeShippingAddressForStoreApi(
+				event.name,
+				event.address
+			),
+		} );
 
-		if ( response.result === 'success' ) {
-			elements.update( {
-				amount: response.total.amount,
-			} );
-			event.resolve( {
-				shippingRates: response.shipping_options,
-				lineItems: normalizeLineItems( response.displayItems ),
-			} );
-		} else {
+		const shippingOptions = transformCartDataForShippingOptions( cartData );
+
+		// when no shipping options are returned, the API still returns a 200 status code.
+		// We need to ensure that shipping options are present - otherwise the PRB dialog won't update correctly.
+		if ( shippingOptions.length === 0 ) {
 			event.reject();
+
+			return;
 		}
-	} catch ( e ) {
+
+		elements.update( {
+			amount: transformPrice(
+				parseInt( cartData.totals.total_price, 10 ) -
+					parseInt( cartData.totals.total_refund || 0, 10 ),
+				cartData.totals
+			),
+		} );
+		event.resolve( {
+			shippingRates: transformCartDataForShippingOptions( cartData ),
+			lineItems: transformCartDataForDisplayItems( cartData ),
+		} );
+	} catch ( error ) {
 		event.reject();
 	}
 };
 
-// TODO ~FR note: used by both classic & shortcode-based checkout
 export const shippingRateChangeHandler = async ( api, event, elements ) => {
 	try {
-		// TODO ~FR: replace with cartApi
-		const response = await api.expressCheckoutECEUpdateShippingDetails(
-			event.shippingRate
-		);
+		const cartData = await cartApi.selectShippingRate( {
+			package_id: 0,
+			rate_id: event.shippingRate.id,
+		} );
 
-		if ( response.result === 'success' ) {
-			elements.update( { amount: response.total.amount } );
-			event.resolve( {
-				lineItems: normalizeLineItems( response.displayItems ),
-			} );
-		} else {
-			event.reject();
-		}
-	} catch ( e ) {
+		elements.update( {
+			amount: transformPrice(
+				parseInt( cartData.totals.total_price, 10 ) -
+					parseInt( cartData.totals.total_refund || 0, 10 ),
+				cartData.totals
+			),
+		} );
+		event.resolve( {
+			lineItems: transformCartDataForDisplayItems( cartData ),
+		} );
+	} catch ( error ) {
 		event.reject();
 	}
 };

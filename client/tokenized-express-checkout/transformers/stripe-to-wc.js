@@ -2,33 +2,25 @@
  * Transform shipping address information from Stripe's address object to
  * the cart shipping address object shape.
  *
+ * @param {string} name Stripe's shipping address item
  * @param {Object} shippingAddress Stripe's shipping address item
  *
  * @return {Object} The shipping address in the shape expected by the cart.
  */
 export const transformStripeShippingAddressForStoreApi = (
+	name,
 	shippingAddress
 ) => {
 	return {
-		shipping_address: {
-			first_name:
-				shippingAddress.recipient
-					?.split( ' ' )
-					?.slice( 0, 1 )
-					?.join( ' ' ) ?? '',
-			last_name:
-				shippingAddress.recipient
-					?.split( ' ' )
-					?.slice( 1 )
-					?.join( ' ' ) ?? '',
-			company: shippingAddress.organization ?? '',
-			address_1: shippingAddress.addressLine?.[ 0 ] ?? '',
-			address_2: shippingAddress.addressLine?.[ 1 ] ?? '',
-			city: shippingAddress.city ?? '',
-			state: shippingAddress.region ?? '',
-			country: shippingAddress.country ?? '',
-			postcode: shippingAddress.postalCode?.replace( ' ', '' ) ?? '',
-		},
+		first_name: name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
+		last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
+		company: shippingAddress.organization ?? '',
+		address_1: shippingAddress.line1 ?? '',
+		address_2: shippingAddress.line2 ?? '',
+		city: shippingAddress.city ?? '',
+		state: shippingAddress.state ?? '',
+		postcode: shippingAddress.postal_code?.replace( ' ', '' ) ?? '',
+		country: shippingAddress.country ?? '',
 	};
 };
 
@@ -45,7 +37,6 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 			paymentData.payerName ) ||
 		'';
 	const billing = paymentData.paymentMethod?.billing_details?.address ?? {};
-	const shipping = paymentData.shippingAddress ?? {};
 
 	const paymentRequestType =
 		paymentData.walletName === 'applePay' ? 'apple_pay' : 'google_pay';
@@ -74,8 +65,10 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 		},
 		// refreshing any shipping address data, now that the customer is placing the order.
 		shipping_address: {
-			...transformStripeShippingAddressForStoreApi( shipping )
-				.shipping_address,
+			...transformStripeShippingAddressForStoreApi(
+				paymentData.shippingAddress?.name,
+				paymentData.shippingAddress?.address
+			),
 			// adding the phone number, because it might be needed.
 			// Stripe doesn't provide us with a different phone number for shipping, so we're going to use the same phone used for billing.
 			phone: billingPhone,
