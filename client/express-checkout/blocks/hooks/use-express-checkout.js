@@ -11,7 +11,7 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	normalizeLineItems,
-} from '../../utils';
+} from 'wcpay/express-checkout/utils';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -19,7 +19,7 @@ import {
 	onCompletePaymentHandler,
 	onConfirmHandler,
 	onReadyHandler,
-} from '../../event-handlers';
+} from 'wcpay/express-checkout/event-handlers';
 
 export const useExpressCheckout = ( {
 	api,
