@@ -412,18 +412,6 @@ jQuery( ( $ ) => {
 			return api.expressCheckoutECEGetSelectedProductData( data );
 		},
 
-		/**
-		 * Creates Stripe Express Checkout Element.
-		 *
-		 * @param {Object} elements       Stripe elements instance.
-		 * @param {Object} options 		  Options for creating the Express Checkout Element.
-		 *
-		 * @return {Object} Stripe Express Checkout Element.
-		 */
-		createButton: ( elements, options ) => {
-			return elements.create( 'expressCheckout', options );
-		},
-
 		attachProductPageEventListeners: ( elements ) => {
 			// WooCommerce Deposits support.
 			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
