@@ -2,13 +2,14 @@
  * Internal dependencies
  */
 import { getErrorMessageFromNotice, getExpressCheckoutData } from '..';
+import { WCPayExpressCheckoutParams } from 'wcpay/express-checkout/utils';
 
 describe( 'Express checkout utils', () => {
 	test( 'getExpressCheckoutData returns null for missing option', () => {
 		expect(
 			getExpressCheckoutData(
 				// Force wrong usage, just in case this is called from JS with incorrect params.
-				'does-not-exist'
+				'does-not-exist' as keyof WCPayExpressCheckoutParams
 			)
 		).toBeNull();
 	} );
@@ -18,7 +19,7 @@ describe( 'Express checkout utils', () => {
 		// the type assertion is fine.
 		window.wcpayExpressCheckoutParams = {
 			ajax_url: 'test',
-		};
+		} as WCPayExpressCheckoutParams;
 
 		expect( getExpressCheckoutData( 'ajax_url' ) ).toBe( 'test' );
 	} );
