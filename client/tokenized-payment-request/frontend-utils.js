@@ -128,6 +128,18 @@ export const displayLoginConfirmationDialog = ( paymentRequestType ) => {
 };
 
 /**
+ * Parses HTML error notice and returns single error message.
+ *
+ * @param {string} notice Error notice DOM HTML.
+ * @return {string} Error message content
+ */
+export const getErrorMessageFromNotice = ( notice ) => {
+	const div = document.createElement( 'div' );
+	div.innerHTML = notice.trim();
+	return div.firstChild ? div.firstChild.textContent : '';
+};
+
+/**
  * Searches object for matching key and returns corresponding property value from matched item.
  *
  * @param {Object} obj Object to search for key.
