@@ -44,20 +44,6 @@ export interface WCPayExpressCheckoutParams {
 	 */
 	has_block: boolean;
 
-	/**
-	 * True if we're on the checkout page.
-	 */
-	is_checkout_page: boolean;
-
-	/**
-	 * True if we're on a product page.
-	 */
-	is_product_page: boolean;
-
-	/**
-	 * True if we're on the pay for order page.
-	 */
-	is_pay_for_order_page: boolean;
 	nonce: {
 		add_to_cart: string;
 		checkout: string;
@@ -111,7 +97,9 @@ export const getExpressCheckoutData = <
 ) => {
 	if ( typeof window.wcpayExpressCheckoutParams !== 'undefined' ) {
 		return window.wcpayExpressCheckoutParams[ key ] ?? null;
-	} else if ( typeof window.wc?.wcSettings !== 'undefined' ) {
+	}
+
+	if ( typeof window.wc?.wcSettings !== 'undefined' ) {
 		return window.wc.wcSettings.getSetting( 'ece_data' )?.[ key ] ?? null;
 	}
 
