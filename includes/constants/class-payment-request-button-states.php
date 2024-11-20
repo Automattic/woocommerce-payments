@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Express_Checkout_Element_States
+ * Class Payment_Request_Button_States
  *
  * @package WooCommerce\Payments
  */
@@ -34,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *        AC (Ascension Island), IC (Canary Islands), EA (Ceuta & Melilla), CP (Clipperton Island), DG (Diego Garcia),
  *        TA (Tristan da Cunha), XK (Kosovo).
  */
-class Express_Checkout_Element_States {
+class Payment_Request_Button_States {
 	/**
 	 * A list of states which is compatible with Chromium based browsers for the Payment Request API.
 	 * If the input comes from Chrome, we will always match with `code`, but if the request comes from
