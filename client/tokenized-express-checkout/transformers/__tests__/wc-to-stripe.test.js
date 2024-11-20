@@ -350,19 +350,19 @@ describe( 'wc-to-stripe transformers', () => {
 			).toEqual( [
 				{
 					amount: 1000,
-					detail: '',
+					deliveryEstimate: '',
 					id: 'flat_rate:14',
 					displayName: 'CA Flat rate',
 				},
 				{
 					amount: 350,
-					detail: '',
+					deliveryEstimate: '',
 					id: 'local_pickup:15',
 					displayName: 'Local pickup',
 				},
 				{
 					amount: 0,
-					detail: '',
+					deliveryEstimate: '',
 					id: 'free_shipping:13',
 					displayName: 'Free shipping',
 				},
@@ -430,7 +430,7 @@ describe( 'wc-to-stripe transformers', () => {
 			).toEqual( [
 				{
 					amount: 0,
-					detail:
+					deliveryEstimate:
 						'42 Wallaby Way, Sydney New South Wales 200, Australia - Ask for P. Sherman',
 					id: 'pickup_location:1',
 					displayName:

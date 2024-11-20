@@ -42,7 +42,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 		const shippingOptions = transformCartDataForShippingOptions( cartData );
 
 		// when no shipping options are returned, the API still returns a 200 status code.
-		// We need to ensure that shipping options are present - otherwise the PRB dialog won't update correctly.
+		// We need to ensure that shipping options are present - otherwise the ECE dialog won't update correctly.
 		if ( shippingOptions.length === 0 ) {
 			event.reject();
 

@@ -29,7 +29,7 @@ export const transformPrice = ( price, priceObject ) => {
 };
 
 /**
- * Transforms the data from the Store API Cart response to `displayItems` for the Stripe PRB.
+ * Transforms the data from the Store API Cart response to `displayItems` for the Stripe ECE.
  * See https://docs.stripe.com/js/appendix/payment_item_object for the data structure
  *
  * @param {Object} cartData Store API Cart response object.
@@ -88,17 +88,17 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 };
 
 /**
- * Transforms the data from the Store API Cart response to `shippingOptions` for the Stripe PRB.
+ * Transforms the data from the Store API Cart response to `shippingOptions` for the Stripe ECE.
  *
  * @param {Object} cartData Store API Cart response object.
- * @return {{id: string, label: string, amount: integer, detail: string}} `shippingOptions` for Stripe.
+ * @return {{id: string, label: string, amount: integer, deliveryEstimate: string}} `shippingOptions` for Stripe.
  */
 export const transformCartDataForShippingOptions = ( cartData ) =>
 	cartData.shipping_rates[ 0 ].shipping_rates.map( ( rate ) => ( {
 		id: rate.rate_id,
 		displayName: decodeEntities( rate.name ),
 		amount: transformPrice( parseInt( rate.price, 10 ), rate ),
-		detail: [
+		deliveryEstimate: [
 			rate.meta_data.find(
 				( metadata ) => metadata.key === 'pickup_address'
 			)?.value,
