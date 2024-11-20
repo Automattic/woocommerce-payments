@@ -10,19 +10,17 @@
 export const transformStripeShippingAddressForStoreApi = (
 	name,
 	shippingAddress
-) => {
-	return {
-		first_name: name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
-		last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
-		company: shippingAddress.organization ?? '',
-		address_1: shippingAddress.line1 ?? '',
-		address_2: shippingAddress.line2 ?? '',
-		city: shippingAddress.city ?? '',
-		state: shippingAddress.state ?? '',
-		postcode: shippingAddress.postal_code?.replace( ' ', '' ) ?? '',
-		country: shippingAddress.country ?? '',
-	};
-};
+) => ( {
+	first_name: name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
+	last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
+	company: shippingAddress.organization ?? '',
+	address_1: shippingAddress.line1 ?? '',
+	address_2: shippingAddress.line2 ?? '',
+	city: shippingAddress.city ?? '',
+	state: shippingAddress.state ?? '',
+	postcode: shippingAddress.postal_code?.replace( ' ', '' ) ?? '',
+	country: shippingAddress.country ?? '',
+} );
 
 /**
  * Transform order data from Stripe's object to the expected format for WC.
@@ -60,15 +58,19 @@ export const transformStripePaymentMethodForStoreApi = (
 			phone: billingPhone,
 		},
 		// refreshing any shipping address data, now that the customer is placing the order.
-		shipping_address: {
-			...transformStripeShippingAddressForStoreApi(
-				paymentData.shippingAddress?.name || '',
-				paymentData.shippingAddress?.address
-			),
-			// adding the phone number, because it might be needed.
-			// Stripe doesn't provide us with a different phone number for shipping, so we're going to use the same phone used for billing.
-			phone: billingPhone,
-		},
+		// in the case of pay-for-order, the shipping address property might not be present.
+		shipping_address: paymentData.shippingAddress
+			? {
+					...transformStripeShippingAddressForStoreApi(
+						paymentData.shippingAddress.name || '',
+						paymentData.shippingAddress.address
+					),
+					// adding the phone number, because it might be needed.
+					// Stripe doesn't provide us with a different phone number for shipping,
+					// so we're going to use the same phone used for billing.
+					phone: billingPhone,
+			  }
+			: undefined,
 		payment_method: 'woocommerce_payments',
 		payment_data: [
 			{

@@ -151,7 +151,7 @@ export const onConfirmHandler = async (
 	} catch ( e ) {
 		return abortPayment(
 			event,
-			e.message ||
+			getErrorMessageFromNotice( e.message ) ||
 				e.payment_result?.payment_details.find(
 					( detail ) => detail.key === 'errorMessage'
 				)?.value ||
