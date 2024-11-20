@@ -25,7 +25,6 @@ import {
 	shippingRateChangeHandler,
 } from './event-handlers';
 import expressCheckoutButtonUi from './button-ui';
-import { getExpressCheckoutConfig } from 'wcpay/utils/express-checkout';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -568,7 +567,7 @@ jQuery( ( $ ) => {
 					order,
 				} );
 			} else if (
-				getExpressCheckoutConfig( 'button_context' ) === 'product'
+				getExpressCheckoutData( 'button_context' ) === 'product'
 			) {
 				wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
@@ -613,7 +612,7 @@ jQuery( ( $ ) => {
 
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
-		! getExpressCheckoutData( 'button_context' ) === 'checkout' ||
+		getExpressCheckoutData( 'button_context' ) !== 'checkout' ||
 		getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
 	) {
 		wcpayECE.init();

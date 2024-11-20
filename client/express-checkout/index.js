@@ -611,7 +611,10 @@ jQuery( ( $ ) => {
 	};
 
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
-	if ( getExpressCheckoutData( 'button_context' ) !== 'checkout' ) {
+	if (
+		getExpressCheckoutData( 'button_context' ) !== 'checkout' ||
+		getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
+	) {
 		wcpayECE.init();
 	}
 
