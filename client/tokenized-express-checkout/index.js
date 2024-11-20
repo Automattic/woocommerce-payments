@@ -583,7 +583,9 @@ jQuery( ( $ ) => {
 					displayItems,
 					order,
 				} );
-			} else if ( wcpayExpressCheckoutParams.is_product_page ) {
+			} else if (
+				getExpressCheckoutData( 'button_context' ) === 'product'
+			) {
 				wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: getExpressCheckoutData( 'product' )?.total.amount,
@@ -628,7 +630,7 @@ jQuery( ( $ ) => {
 
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
-		! wcpayExpressCheckoutParams.is_checkout_page ||
+		getExpressCheckoutData( 'button_context' ) !== 'checkout' ||
 		getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
 	) {
 		wcpayECE.init();
