@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { useEffect, useState } from '@wordpress/element';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
+import { useStripeForUPE } from './hooks';
 
 const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 const PaymentMethodMessageWrapper = ( {
@@ -92,6 +93,12 @@ export default ( {
 		}
 	}, [ api, appearance ] );
 
+	const stripe = useStripeForUPE( api, upeName );
+
+	if ( ! stripe ) {
+		return null;
+	}
+
 	return (
 		<>
 			<div className="payment-method-label">
@@ -117,7 +124,7 @@ export default ( {
 				appearance={ appearance }
 			>
 				<Elements
-					stripe={ api.getStripeForUPE( upeName ) }
+					stripe={ stripe }
 					options={ {
 						appearance: appearance,
 					} }

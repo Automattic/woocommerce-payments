@@ -51,11 +51,24 @@ export default class WCPayAPI {
 	 * @param {string} paymentMethodType The payment method type.
 	 * @return {Object} The Stripe Object.
 	 */
-	getStripeForUPE( paymentMethodType ) {
+	async getStripeForUPE( paymentMethodType ) {
 		this.options.forceNetworkSavedCards = getUPEConfig(
 			'paymentMethodsConfig'
 		)[ paymentMethodType ].forceNetworkSavedCards;
-		return this.getStripe();
+		return this.getStripeAsync();
+	}
+
+	async getStripeAsync( forceAccountRequest = false ) {
+		const maxWaitCycles = 1200;
+		let currentWaitCycle = 0;
+		while ( ! window.Stripe ) {
+			await new Promise( ( resolve ) => setTimeout( resolve, 100 ) );
+			currentWaitCycle++;
+			if ( currentWaitCycle > maxWaitCycles ) {
+				throw new Error( 'Stripe object not found' );
+			}
+		}
+		return this.getStripe( forceAccountRequest );
 	}
 
 	/**
@@ -105,17 +118,15 @@ export default class WCPayAPI {
 	 *
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
-	loadStripeForExpressCheckout() {
-		return new Promise( ( resolve ) => {
-			try {
-				// Force Stripe to be loadded with the connected account.
-				resolve( this.getStripe( true ) );
-			} catch ( error ) {
-				// In order to avoid showing console error publicly to users,
-				// we resolve instead of rejecting when there is an error.
-				resolve( { error } );
-			}
-		} );
+	async loadStripeForExpressCheckout() {
+		// Force Stripe to be loadded with the connected account.
+		try {
+			return await this.getStripeAsync( true );
+		} catch ( error ) {
+			// In order to avoid showing console error publicly to users,
+			// we resolve instead of rejecting when there is an error.
+			return { error };
+		}
 	}
 
 	/**
