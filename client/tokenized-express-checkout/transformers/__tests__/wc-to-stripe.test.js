@@ -3,7 +3,7 @@
  */
 import {
 	transformPrice,
-	transformCartDataForShippingOptions,
+	transformCartDataForShippingRates,
 	transformCartDataForDisplayItems,
 } from '../wc-to-stripe';
 
@@ -254,10 +254,10 @@ describe( 'wc-to-stripe transformers', () => {
 		} );
 	} );
 
-	describe( 'transformCartDataForShippingOptions', () => {
+	describe( 'transformCartDataForShippingRates', () => {
 		it( 'transforms shipping rates', () => {
 			expect(
-				transformCartDataForShippingOptions( {
+				transformCartDataForShippingRates( {
 					shipping_rates: [
 						{
 							package_id: 0,
@@ -371,7 +371,7 @@ describe( 'wc-to-stripe transformers', () => {
 
 		it( 'transforms shipping options for local pickup', () => {
 			expect(
-				transformCartDataForShippingOptions( {
+				transformCartDataForShippingRates( {
 					shipping_rates: [
 						{
 							package_id: 0,

@@ -20,7 +20,7 @@ import {
 } from './transformers/stripe-to-wc';
 import {
 	transformCartDataForDisplayItems,
-	transformCartDataForShippingOptions,
+	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
 
@@ -39,11 +39,11 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			),
 		} );
 
-		const shippingOptions = transformCartDataForShippingOptions( cartData );
+		const shippingRates = transformCartDataForShippingRates( cartData );
 
 		// when no shipping options are returned, the API still returns a 200 status code.
 		// We need to ensure that shipping options are present - otherwise the ECE dialog won't update correctly.
-		if ( shippingOptions.length === 0 ) {
+		if ( shippingRates.length === 0 ) {
 			event.reject();
 
 			return;
@@ -57,7 +57,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			),
 		} );
 		event.resolve( {
-			shippingRates: transformCartDataForShippingOptions( cartData ),
+			shippingRates: transformCartDataForShippingRates( cartData ),
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
 	} catch ( error ) {

@@ -90,12 +90,12 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
 };
 
 /**
- * Transforms the data from the Store API Cart response to `shippingOptions` for the Stripe ECE.
+ * Transforms the data from the Store API Cart response to `shippingRates` for the Stripe ECE.
  *
  * @param {Object} cartData Store API Cart response object.
- * @return {{id: string, label: string, amount: integer, deliveryEstimate: string}} `shippingOptions` for Stripe.
+ * @return {{id: string, label: string, amount: integer, deliveryEstimate: string}} `shippingRates` for Stripe.
  */
-export const transformCartDataForShippingOptions = ( cartData ) =>
+export const transformCartDataForShippingRates = ( cartData ) =>
 	cartData.shipping_rates[ 0 ].shipping_rates.map( ( rate ) => ( {
 		id: rate.rate_id,
 		displayName: decodeEntities( rate.name ),
