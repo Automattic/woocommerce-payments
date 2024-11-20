@@ -252,9 +252,9 @@ jQuery( ( $ ) => {
 			}
 
 			const elements = api.getStripe().elements( {
-				mode: options?.mode ?? 'payment',
-				amount: options?.total,
-				currency: options?.currency,
+				mode: options.mode ?? 'payment',
+				amount: options.total,
+				currency: options.currency,
 				paymentMethodCreation: 'manual',
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
