@@ -1,13 +1,13 @@
 /* global jQuery */
 
 let $expressCheckoutSeparator = null;
-let $wcpayExpressCheckoutContainer = null;
 let expressCheckoutElementId = null;
+
+const get$Container = () => jQuery( expressCheckoutElementId );
 
 const expressCheckoutButtonUi = {
 	init: ( { elementId, $separator } ) => {
 		expressCheckoutElementId = elementId;
-		$wcpayExpressCheckoutContainer = jQuery( expressCheckoutElementId );
 		$expressCheckoutSeparator = $separator;
 	},
 
@@ -18,31 +18,31 @@ const expressCheckoutButtonUi = {
 	blockButton: () => {
 		// check if element isn't already blocked before calling block() to avoid blinking overlay issues
 		// blockUI.isBlocked is either undefined or 0 when element is not blocked
-		if ( $wcpayExpressCheckoutContainer.data( 'blockUI.isBlocked' ) ) {
+		if ( get$Container().data( 'blockUI.isBlocked' ) ) {
 			return;
 		}
 
-		$wcpayExpressCheckoutContainer.block( { message: null } );
+		get$Container().block( { message: null } );
 	},
 
 	unblockButton: () => {
 		expressCheckoutButtonUi.showContainer();
-		$wcpayExpressCheckoutContainer.unblock();
+		get$Container().unblock();
 	},
 
 	renderButton: ( eceButton ) => {
-		if ( $wcpayExpressCheckoutContainer?.length ) {
+		if ( get$Container()?.length ) {
 			expressCheckoutButtonUi.showContainer();
 			eceButton.mount( expressCheckoutElementId );
 		}
 	},
 
 	hideContainer: () => {
-		$wcpayExpressCheckoutContainer.hide();
+		get$Container().hide();
 	},
 
 	showContainer: () => {
-		$wcpayExpressCheckoutContainer.show();
+		get$Container().show();
 	},
 };
 
