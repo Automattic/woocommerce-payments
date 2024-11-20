@@ -251,13 +251,10 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			],
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
-			'is_product_page'    => $this->express_checkout_helper->is_product(),
 			'button_context'     => $this->express_checkout_helper->get_button_context(),
-			'is_pay_for_order'   => $this->express_checkout_helper->is_pay_for_order_page(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->express_checkout_helper->get_product_data(),
 			'total_label'        => $this->express_checkout_helper->get_total_label(),
-			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
 		];
 
 		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {

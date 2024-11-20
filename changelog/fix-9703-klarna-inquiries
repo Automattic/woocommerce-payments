@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Evidence submission is no longer available for Klarna inquiries as this is not supported by Stripe / Klarna.
