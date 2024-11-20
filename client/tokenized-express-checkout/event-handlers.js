@@ -28,7 +28,7 @@ let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
 
-export const shippingAddressChangeHandler = async ( api, event, elements ) => {
+export const shippingAddressChangeHandler = async ( event, elements ) => {
 	try {
 		// Please note that the `event.address` might not contain all the fields.
 		// Some fields might not be present (like `line_1` or `line_2`) due to semi-anonymized data.
@@ -65,7 +65,7 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	}
 };
 
-export const shippingRateChangeHandler = async ( api, event, elements ) => {
+export const shippingRateChangeHandler = async ( event, elements ) => {
 	try {
 		const cartData = await cartApi.selectShippingRate( {
 			package_id: 0,

@@ -339,11 +339,11 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'shippingaddresschange', async ( event ) =>
-				shippingAddressChangeHandler( api, event, elements )
+				shippingAddressChangeHandler( event, elements )
 			);
 
 			eceButton.on( 'shippingratechange', async ( event ) =>
-				shippingRateChangeHandler( api, event, elements )
+				shippingRateChangeHandler( event, elements )
 			);
 
 			eceButton.on( 'confirm', async ( event ) => {
