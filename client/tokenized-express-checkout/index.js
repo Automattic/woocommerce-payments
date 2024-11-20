@@ -7,6 +7,9 @@ import { debounce } from 'lodash';
  */
 import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
+import './compatibility/wc-deposits';
+import './compatibility/wc-order-attribution';
+import './compatibility/wc-product-variations';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
