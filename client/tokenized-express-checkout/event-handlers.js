@@ -155,7 +155,6 @@ export const onConfirmHandler = async (
 	}
 };
 
-// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onReadyHandler = async function ( { availablePaymentMethods } ) {
 	if ( availablePaymentMethods ) {
 		const enabledMethods = Object.entries( availablePaymentMethods )
@@ -185,7 +184,6 @@ const unblockUI = () => {
 	jQuery.unblockUI();
 };
 
-// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onClickHandler = async function ( { expressPaymentType } ) {
 	blockUI();
 	trackExpressCheckoutButtonClick(
@@ -194,17 +192,14 @@ export const onClickHandler = async function ( { expressPaymentType } ) {
 	);
 };
 
-// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onAbortPaymentHandler = () => {
 	unblockUI();
 };
 
-// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onCompletePaymentHandler = () => {
 	blockUI();
 };
 
-// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onCancelHandler = () => {
 	unblockUI();
 };
