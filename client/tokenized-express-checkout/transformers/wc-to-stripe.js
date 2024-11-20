@@ -30,7 +30,9 @@ export const transformPrice = ( price, priceObject ) => {
 
 /**
  * Transforms the data from the Store API Cart response to `displayItems` for the Stripe ECE.
- * See https://docs.stripe.com/js/appendix/payment_item_object for the data structure
+ * See for the data structure:
+ * - https://docs.stripe.com/js/elements_object/express_checkout_element_shippingaddresschange_event
+ * - https://docs.stripe.com/js/elements_object/express_checkout_element_shippingratechange_event
  *
  * @param {Object} cartData Store API Cart response object.
  * @return {{pending: boolean, name: string, amount: integer}} `displayItems` for Stripe.
