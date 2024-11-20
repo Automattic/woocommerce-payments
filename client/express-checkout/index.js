@@ -526,11 +526,9 @@ jQuery( ( $ ) => {
 		},
 
 		productHasDepositOption() {
-			return Boolean(
-				$( 'form' ).has(
-					'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-				).length
-			);
+			return !! $( 'form' ).has(
+				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
+			).length;
 		},
 
 		/**
