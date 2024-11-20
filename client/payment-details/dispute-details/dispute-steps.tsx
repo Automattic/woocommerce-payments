@@ -25,6 +25,7 @@ interface Props {
 	dispute: Dispute;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
+	isDefendable?: boolean;
 }
 
 export const DisputeSteps: React.FC< Props > = ( {
@@ -170,6 +171,7 @@ export const InquirySteps: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
+	isDefendable,
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
@@ -195,8 +197,8 @@ export const InquirySteps: React.FC< Props > = ( {
 			// Translators: %1$s is the customer name, %2$s is the dispute date, %3$s is the dispute amount with currency-code e.g. $15 USD, %4$s is the charge date.
 			__(
 				`Hello %1$s,\n\n` +
-					`We noticed that on %2$s, you disputed a %3$s charge on %4$s. We wanted to contact you to make sure everything was all right with your purchase and see if there's anything else we can do to resolve any problems you might have had.\n\n` +
-					`Alternatively, if the dispute was a mistake, you can easily withdraw it by calling the number on the back of your card. Thank you so much - we appreciate your business and look forward to working with you.`,
+					`We noticed that on %2$s, you raised a question with your payment provider about a %3$s charge made on %4$s. We wanted to reach out to ensure everything is all right with your purchase and to see if there’s anything we can do to resolve any problems you might have had.\n\n` +
+					`Alternatively, if this was a mistake, please contact your payment provider to resolve it. Thank you so much - we appreciate your business and look forward to working with you.`,
 				'woocommerce-payments'
 			),
 			customerName,
@@ -209,71 +211,96 @@ export const InquirySteps: React.FC< Props > = ( {
 		) }&body=${ encodeURIComponent( emailBody ) }`;
 	}
 
+	const steps = [];
+	steps.push(
+		<li key={ 0 }>
+			{ customer?.email
+				? createInterpolateElement(
+						__(
+							'<a>Email the customer</a> to identify the issue and work towards a resolution where possible.',
+							'woocommerce-payments'
+						),
+						{
+							a: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									target="_blank"
+									rel="noopener noreferrer"
+									href={ emailLink }
+								/>
+							),
+						}
+				  )
+				: __(
+						'Email the customer to identify the issue and work towards a resolution where possible.',
+						'woocommerce-payments'
+				  ) }
+		</li>
+	);
+	if ( isDefendable ) {
+		steps.push(
+			<li key={ 1 }>
+				{ createInterpolateElement(
+					__(
+						'Submit evidence <submitEvidenceIcon/> or issue a refund by <dueByDate/>.',
+						'woocommerce-payments'
+					),
+					{
+						submitEvidenceIcon: (
+							<ClickTooltip
+								buttonIcon={ <HelpOutlineIcon /> }
+								buttonLabel={ __(
+									'Submit evidence tooltip',
+									'woocommerce-payments'
+								) }
+								content={ createInterpolateElement(
+									__(
+										"To submit evidence, provide documentation that supports your case. Keep in mind that submitting evidence doesn't ensure a favorable outcome. If the cardholder agrees to withdraw the inquiry, you'll still need to officially submit your evidence to prevent bank escalation. <learnMoreLink>Learn more</learnMoreLink>",
+										'woocommerce-payments'
+									),
+									{
+										learnMoreLink: (
+											<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
+										),
+									}
+								) }
+							/>
+						),
+						dueByDate: (
+							<DisputeDueByDate
+								dueBy={ dispute.evidence_details.due_by }
+							/>
+						),
+					}
+				) }
+			</li>
+		);
+	} else {
+		steps.push(
+			<li key={ 1 }>
+				{ createInterpolateElement(
+					__(
+						'Issue a refund by <dueByDate/>.',
+						'woocommerce-payments'
+					),
+					{
+						dueByDate: (
+							<DisputeDueByDate
+								dueBy={ dispute.evidence_details.due_by }
+							/>
+						),
+					}
+				) }
+			</li>
+		);
+	}
+
 	return (
 		<div className="dispute-steps">
 			<div className="dispute-steps__header">
 				{ __( 'Steps to resolve:', 'woocommerce-payments' ) }
 			</div>
-			<ol className="dispute-steps__steps">
-				<li>
-					{ customer?.email
-						? createInterpolateElement(
-								__(
-									'<a>Email the customer</a> to identify the issue and work towards a resolution where possible.',
-									'woocommerce-payments'
-								),
-								{
-									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href={ emailLink }
-										/>
-									),
-								}
-						  )
-						: __(
-								'Email the customer to identify the issue and work towards a resolution where possible.',
-								'woocommerce-payments'
-						  ) }
-				</li>
-				<li>
-					{ createInterpolateElement(
-						__(
-							'Submit evidence <submitEvidenceIcon/> or issue a refund by <dueByDate/>.',
-							'woocommerce-payments'
-						),
-						{
-							submitEvidenceIcon: (
-								<ClickTooltip
-									buttonIcon={ <HelpOutlineIcon /> }
-									buttonLabel={ __(
-										'Submit evidence tooltip',
-										'woocommerce-payments'
-									) }
-									content={ createInterpolateElement(
-										__(
-											"To submit evidence, provide documentation that supports your case. Keep in mind that submitting evidence doesn't ensure a favorable outcome. If the cardholder agrees to withdraw the inquiry, you'll still need to officially submit your evidence to prevent bank escalation. <learnMoreLink>Learn more</learnMoreLink>",
-											'woocommerce-payments'
-										),
-										{
-											learnMoreLink: (
-												<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
-											),
-										}
-									) }
-								/>
-							),
-							dueByDate: (
-								<DisputeDueByDate
-									dueBy={ dispute.evidence_details.due_by }
-								/>
-							),
-						}
-					) }
-				</li>
-			</ol>
+			<ol className="dispute-steps__steps">{ steps }</ol>
 		</div>
 	);
 };
