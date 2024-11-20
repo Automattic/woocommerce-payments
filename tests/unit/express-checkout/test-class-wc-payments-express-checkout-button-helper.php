@@ -11,7 +11,7 @@ use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 /**
- * WC_Payments_Payment_Request_Button_Handler_Test class.
+ * WC_Payments_Express_Checkout_Button_Helper_Test class.
  */
 class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase {
 	/**

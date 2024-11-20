@@ -632,6 +632,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							customer={ charge.billing_details }
 							chargeCreated={ charge.created }
 							orderUrl={ charge.order?.url }
+							paymentMethod={
+								charge.payment_method_details?.type
+							}
 						/>
 					) : (
 						<DisputeResolutionFooter dispute={ charge.dispute } />
