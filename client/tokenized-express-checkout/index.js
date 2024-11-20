@@ -1,4 +1,4 @@
-/* global jQuery, wcpayExpressCheckoutParams, wcpayECEPayForOrderParams */
+/* global jQuery, wcpayExpressCheckoutParams */
 import { __ } from '@wordpress/i18n';
 import { debounce } from 'lodash';
 
@@ -14,7 +14,6 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
-	normalizeLineItems,
 	displayLoginConfirmation,
 } from './utils';
 import {
@@ -27,10 +26,16 @@ import {
 	shippingAddressChangeHandler,
 	shippingRateChangeHandler,
 	setCartApiHandler,
+	getCartApiHandler,
 } from './event-handlers';
 import ExpressCheckoutOrderApi from './order-api';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import expressCheckoutButtonUi from './button-ui';
+import {
+	transformCartDataForDisplayItems,
+	transformCartDataForShippingRates,
+	transformPrice,
+} from 'wcpay/tokenized-express-checkout/transformers/wc-to-stripe';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -212,48 +217,6 @@ jQuery( ( $ ) => {
 		 * @param {Object} options ECE options.
 		 */
 		startExpressCheckoutElement: ( options ) => {
-			const getShippingRates = () => {
-				if ( ! options.requestShipping ) {
-					return [];
-				}
-
-				if (
-					getExpressCheckoutData( 'button_context' ) === 'product'
-				) {
-					// Despite the name of the property, this seems to be just a single option that's not in an array.
-					const {
-						shippingOptions: shippingOption,
-					} = getExpressCheckoutData( 'product' );
-
-					return [
-						{
-							id: shippingOption.id,
-							amount: shippingOption.amount,
-							displayName: shippingOption.label,
-						},
-					];
-				}
-
-				return options.displayItems
-					.filter( ( i ) => i.key === 'total_shipping' )
-					.map( ( i ) => ( {
-						id: `rate-${ i.label }`,
-						amount: i.amount,
-						displayName: i.label,
-					} ) );
-			};
-
-			const shippingRates = getShippingRates();
-
-			// This is a bit of a hack, but we need some way to get the shipping information before rendering the button, and
-			// since we don't have any address information at this point it seems best to rely on what came with the cart response.
-			// Relying on what's provided in the cart response seems safest since it should always include a valid shipping
-			// rate if one is required and available.
-			// If no shipping rate is found we can't render the button so we just exit.
-			if ( options.requestShipping && ! shippingRates.length ) {
-				return;
-			}
-
 			const elements = api.getStripe().elements( {
 				mode: options.mode ?? 'payment',
 				amount: options.total,
@@ -327,11 +290,11 @@ jQuery( ( $ ) => {
 				}
 
 				const clickOptions = {
-					lineItems: normalizeLineItems( options.displayItems ),
+					lineItems: options.displayItems,
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,
 					phoneNumberRequired: options.requestPhone,
-					shippingRates,
+					shippingRates: options.shippingRates,
 					allowedShippingCountries: getExpressCheckoutData(
 						'checkout'
 					).allowed_shipping_countries,
@@ -552,38 +515,7 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: () => {
-			if (
-				getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
-			) {
-				if ( ! window.wcpayECEPayForOrderParams ) {
-					return;
-				}
-
-				const {
-					total: { amount: total },
-					displayItems,
-				} = wcpayECEPayForOrderParams;
-
-				if ( total === 0 ) {
-					expressCheckoutButtonUi.hideContainer();
-					expressCheckoutButtonUi.getButtonSeparator().hide();
-					return;
-				}
-
-				wcpayECE.startExpressCheckoutElement( {
-					mode: 'payment',
-					total,
-					currency: getExpressCheckoutData( 'checkout' )
-						?.currency_code,
-					requestShipping: false,
-					requestPhone:
-						getExpressCheckoutData( 'checkout' )
-							?.needs_payer_phone ?? false,
-					displayItems,
-				} );
-			} else if (
-				getExpressCheckoutData( 'button_context' ) === 'product'
-			) {
+			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
 				wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: getExpressCheckoutData( 'product' )?.total.amount,
@@ -598,27 +530,49 @@ jQuery( ( $ ) => {
 						.displayItems,
 				} );
 			} else {
-				// If this is the cart or checkout page, we need to request the
-				// cart details.
-				// TODO ~FR: replace with cartApi
-				api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
-					if ( cart.total.amount === 0 ) {
-						expressCheckoutButtonUi.hideContainer();
-						expressCheckoutButtonUi.getButtonSeparator().hide();
-					} else {
-						wcpayECE.startExpressCheckoutElement( {
-							mode: 'payment',
-							total: cart.total.amount,
-							currency: getExpressCheckoutData( 'checkout' )
-								?.currency_code,
-							requestShipping: cart.needs_shipping,
-							requestPhone:
-								getExpressCheckoutData( 'checkout' )
-									?.needs_payer_phone ?? false,
-							displayItems: cart.displayItems,
-						} );
-					}
-				} );
+				// If this is the cart page, or checkout page, or pay-for-order page, we need to request the cart details.
+				getCartApiHandler()
+					.getCart()
+					.then( ( cartData ) => {
+						const total = transformPrice(
+							parseInt( cartData.totals.total_price, 10 ) -
+								parseInt(
+									cartData.totals.total_refund || 0,
+									10
+								),
+							cartData.totals
+						);
+						if ( total === 0 ) {
+							expressCheckoutButtonUi.hideContainer();
+							expressCheckoutButtonUi.getButtonSeparator().hide();
+						} else {
+							wcpayECE.startExpressCheckoutElement( {
+								mode: 'payment',
+								total,
+								currency: cartData.totals.currency_code.toLowerCase(),
+								// pay-for-order should never display the shipping selection.
+								requestShipping:
+									getExpressCheckoutData(
+										'button_context'
+									) !== 'pay_for_order' &&
+									cartData.needs_shipping,
+								shippingRates:
+									getExpressCheckoutData(
+										'button_context'
+									) === 'pay_for_order'
+										? []
+										: transformCartDataForShippingRates(
+												cartData
+										  ),
+								requestPhone:
+									getExpressCheckoutData( 'checkout' )
+										?.needs_payer_phone ?? false,
+								displayItems: transformCartDataForDisplayItems(
+									cartData
+								),
+							} );
+						}
+					} );
 			}
 
 			// After initializing a new express checkout button, we need to reset the paymentAborted flag.
