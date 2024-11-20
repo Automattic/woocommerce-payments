@@ -347,16 +347,13 @@ jQuery( ( $ ) => {
 			);
 
 			eceButton.on( 'confirm', async ( event ) => {
-				const order = options.order ?? 0;
-
 				return onConfirmHandler(
 					api,
 					api.getStripe(),
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
-					event,
-					order
+					event
 				);
 			} );
 
@@ -562,7 +559,6 @@ jQuery( ( $ ) => {
 				const {
 					total: { amount: total },
 					displayItems,
-					order,
 				} = wcpayECEPayForOrderParams;
 
 				if ( total === 0 ) {
@@ -581,7 +577,6 @@ jQuery( ( $ ) => {
 						getExpressCheckoutData( 'checkout' )
 							?.needs_payer_phone ?? false,
 					displayItems,
-					order,
 				} );
 			} else if (
 				getExpressCheckoutData( 'button_context' ) === 'product'

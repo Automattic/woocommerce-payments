@@ -28,23 +28,22 @@ export const transformStripeShippingAddressForStoreApi = (
  * Transform order data from Stripe's object to the expected format for WC.
  *
  * @param {Object} paymentData Stripe's order object.
+ * @param {string} paymentMethodId Stripe's payment method id.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
-export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
-	const name =
-		( paymentData.paymentMethod?.billing_details?.name ??
-			paymentData.payerName ) ||
-		'';
-	const billing = paymentData.paymentMethod?.billing_details?.address ?? {};
-
-	const paymentRequestType =
-		paymentData.walletName === 'applePay' ? 'apple_pay' : 'google_pay';
+export const transformStripePaymentMethodForStoreApi = (
+	paymentData,
+	paymentMethodId
+) => {
+	const name = paymentData.billingDetails?.name || '';
+	const billing = paymentData.billingDetails?.address ?? {};
 
 	const billingPhone =
-		paymentData.paymentMethod?.billing_details?.phone ??
-		paymentData.payerPhone?.replace( '/[() -]/g', '' ) ??
+		paymentData.billingDetails?.phone?.replace( /[() -]/g, '' ) ??
+		paymentData.payerPhone?.replace( /[() -]/g, '' ) ??
 		'';
+
 	return {
 		customer_note: paymentData.order_comments,
 		billing_address: {
@@ -57,16 +56,13 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 			state: billing.state ?? '',
 			postcode: billing.postal_code ?? '',
 			country: billing.country ?? '',
-			email:
-				paymentData.paymentMethod?.billing_details?.email ??
-				paymentData.payerEmail ??
-				'',
+			email: paymentData.billingDetails?.email ?? '',
 			phone: billingPhone,
 		},
 		// refreshing any shipping address data, now that the customer is placing the order.
 		shipping_address: {
 			...transformStripeShippingAddressForStoreApi(
-				paymentData.shippingAddress?.name,
+				paymentData.shippingAddress?.name || '',
 				paymentData.shippingAddress?.address
 			),
 			// adding the phone number, because it might be needed.
@@ -81,7 +77,7 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 			},
 			{
 				key: 'payment_request_type',
-				value: paymentRequestType,
+				value: paymentData.expressPaymentType,
 			},
 			{
 				key: 'wcpay-fraud-prevention-token',
@@ -89,7 +85,11 @@ export const transformStripePaymentMethodForStoreApi = ( paymentData ) => {
 			},
 			{
 				key: 'wcpay-payment-method',
-				value: paymentData.paymentMethod?.id,
+				value: paymentMethodId,
+			},
+			{
+				key: 'express_payment_type',
+				value: paymentData.expressPaymentType,
 			},
 		],
 	};

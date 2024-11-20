@@ -3,21 +3,21 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
+
 /**
  * Internal dependencies
  */
-import {
-	getErrorMessageFromNotice,
-	normalizeOrderData,
-	normalizePayForOrderData,
-	getExpressCheckoutData,
-} from './utils';
+import { getErrorMessageFromNotice, getExpressCheckoutData } from './utils';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
 import ExpressCheckoutCartApi from './cart-api';
-import { transformStripeShippingAddressForStoreApi } from './transformers/stripe-to-wc';
+import {
+	transformStripePaymentMethodForStoreApi,
+	transformStripeShippingAddressForStoreApi,
+} from './transformers/stripe-to-wc';
 import {
 	transformCartDataForDisplayItems,
 	transformCartDataForShippingOptions,
@@ -94,8 +94,7 @@ export const onConfirmHandler = async (
 	elements,
 	completePayment,
 	abortPayment,
-	event,
-	order = 0 // Order ID for the pay for order flow.
+	event
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
@@ -112,32 +111,39 @@ export const onConfirmHandler = async (
 
 	try {
 		// Kick off checkout processing step.
-		let orderResponse;
-		if ( ! order ) {
-			// TODO ~FR: replace with cartApi
-			orderResponse = await api.expressCheckoutECECreateOrder(
-				normalizeOrderData( event, paymentMethod.id )
-			);
-		} else {
-			// TODO ~FR: replace with cartApi
-			orderResponse = await api.expressCheckoutECEPayForOrder(
-				order,
-				normalizePayForOrderData( event, paymentMethod.id )
-			);
-		}
+		const orderResponse = await cartApi.placeOrder( {
+			// adding extension data as a separate action,
+			// so that we make it harder for external plugins to modify or intercept checkout data.
+			...transformStripePaymentMethodForStoreApi(
+				event,
+				paymentMethod.id
+			),
+			extensions: applyFilters(
+				'wcpay.payment-request.cart-place-order-extension-data',
+				{}
+			),
+		} );
 
-		if ( orderResponse.result !== 'success' ) {
+		if ( orderResponse.payment_result.payment_status !== 'success' ) {
 			return abortPayment(
 				event,
-				getErrorMessageFromNotice( orderResponse.messages )
+				getErrorMessageFromNotice(
+					orderResponse.message ??
+						orderResponse.payment_result?.payment_details.find(
+							( detail ) => detail.key === 'errorMessage'
+						)?.value ??
+						''
+				)
 			);
 		}
 
-		const confirmationRequest = api.confirmIntent( orderResponse.redirect );
+		const confirmationRequest = api.confirmIntent(
+			orderResponse.payment_result.redirect_url
+		);
 
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
-			completePayment( orderResponse.redirect );
+			completePayment( orderResponse.payment_result.redirect_url );
 		} else {
 			const redirectUrl = await confirmationRequest;
 
@@ -146,7 +152,10 @@ export const onConfirmHandler = async (
 	} catch ( e ) {
 		return abortPayment(
 			event,
-			e.message ??
+			error.message ||
+				error.payment_result?.payment_details.find(
+					( detail ) => detail.key === 'errorMessage'
+				)?.value ||
 				__(
 					'There was a problem processing the order.',
 					'woocommerce-payments'
