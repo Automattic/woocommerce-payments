@@ -198,7 +198,7 @@ export const InquirySteps: React.FC< Props > = ( {
 			__(
 				`Hello %1$s,\n\n` +
 					`We noticed that on %2$s, you raised a question with your payment provider about a %3$s charge made on %4$s. We wanted to reach out to ensure everything is all right with your purchase and to see if there’s anything we can do to resolve any problems you might have had.\n\n` +
-					`Alternatively, if this was a mistake please contact your payment provider to resolve it. Thank you so much - we appreciate your business and look forward to working with you.`,
+					`Alternatively, if this was a mistake, please contact your payment provider to resolve it. Thank you so much - we appreciate your business and look forward to working with you.`,
 				'woocommerce-payments'
 			),
 			customerName,
