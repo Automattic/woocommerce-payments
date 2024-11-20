@@ -543,9 +543,11 @@ jQuery( ( $ ) => {
 		},
 
 		productHasDepositOption() {
-			return !! $( 'form' ).has(
-				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-			).length;
+			return Boolean(
+				$( 'form' ).has(
+					'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
+				).length
+			);
 		},
 
 		/**
