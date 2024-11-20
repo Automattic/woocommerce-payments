@@ -32,13 +32,13 @@ import expressCheckoutButtonUi from './button-ui';
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if (
-		wcpayExpressCheckoutParams.has_block &&
-		! wcpayExpressCheckoutParams.is_pay_for_order
+		getExpressCheckoutData( 'has_block' ) &&
+		getExpressCheckoutData( 'button_context' ) !== 'pay_for_order'
 	) {
 		return;
 	}
 
-	const publishableKey = wcpayExpressCheckoutParams.stripe.publishableKey;
+	const publishableKey = getExpressCheckoutData( 'stripe' ).publishableKey;
 	const quantityInputSelector = '.quantity .qty[type=number]';
 
 	if ( ! publishableKey ) {
@@ -49,8 +49,8 @@ jQuery( ( $ ) => {
 	const api = new WCPayAPI(
 		{
 			publishableKey,
-			accountId: wcpayExpressCheckoutParams.stripe.accountId,
-			locale: wcpayExpressCheckoutParams.stripe.locale,
+			accountId: getExpressCheckoutData( 'stripe' ).accountId,
+			locale: getExpressCheckoutData( 'stripe' ).locale,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -214,7 +214,9 @@ jQuery( ( $ ) => {
 					return [];
 				}
 
-				if ( getExpressCheckoutData( 'is_product_page' ) ) {
+				if (
+					getExpressCheckoutData( 'button_context' ) === 'product'
+				) {
 					// Despite the name of the property, this seems to be just a single option that's not in an array.
 					const {
 						shippingOptions: shippingOption,
@@ -282,7 +284,9 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				if ( getExpressCheckoutData( 'is_product_page' ) ) {
+				if (
+					getExpressCheckoutData( 'button_context' ) === 'product'
+				) {
 					const addToCartButton = $( '.single_add_to_cart_button' );
 
 					// First check if product can be added to cart.
@@ -375,7 +379,7 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			if ( getExpressCheckoutData( 'is_product_page' ) ) {
+			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
 				wcpayECE.attachProductPageEventListeners( elements );
 			}
 		},
@@ -548,7 +552,9 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: () => {
-			if ( wcpayExpressCheckoutParams.is_pay_for_order ) {
+			if (
+				getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
+			) {
 				if ( ! window.wcpayECEPayForOrderParams ) {
 					return;
 				}
@@ -588,8 +594,8 @@ jQuery( ( $ ) => {
 					requestPhone:
 						getExpressCheckoutData( 'checkout' )
 							?.needs_payer_phone ?? false,
-					displayItems:
-						wcpayExpressCheckoutParams.product.displayItems,
+					displayItems: getExpressCheckoutData( 'product' )
+						.displayItems,
 				} );
 			} else {
 				// If this is the cart or checkout page, we need to request the
@@ -623,7 +629,7 @@ jQuery( ( $ ) => {
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
 		! wcpayExpressCheckoutParams.is_checkout_page ||
-		wcpayExpressCheckoutParams.is_pay_for_order
+		getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
 	) {
 		wcpayECE.init();
 	}
