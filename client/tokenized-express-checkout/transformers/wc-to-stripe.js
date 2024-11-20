@@ -96,7 +96,7 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
  * @return {{id: string, label: string, amount: integer, deliveryEstimate: string}} `shippingRates` for Stripe.
  */
 export const transformCartDataForShippingRates = ( cartData ) =>
-	cartData.shipping_rates[ 0 ].shipping_rates.map( ( rate ) => ( {
+	cartData.shipping_rates?.[ 0 ].shipping_rates.map( ( rate ) => ( {
 		id: rate.rate_id,
 		displayName: decodeEntities( rate.name ),
 		amount: transformPrice( parseInt( rate.price, 10 ), rate ),

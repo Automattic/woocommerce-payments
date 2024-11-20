@@ -556,14 +556,9 @@ jQuery( ( $ ) => {
 										'button_context'
 									) !== 'pay_for_order' &&
 									cartData.needs_shipping,
-								shippingRates:
-									getExpressCheckoutData(
-										'button_context'
-									) === 'pay_for_order'
-										? []
-										: transformCartDataForShippingRates(
-												cartData
-										  ),
+								shippingRates: transformCartDataForShippingRates(
+									cartData
+								),
 								requestPhone:
 									getExpressCheckoutData( 'checkout' )
 										?.needs_payer_phone ?? false,
