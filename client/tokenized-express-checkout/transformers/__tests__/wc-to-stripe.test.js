@@ -139,8 +139,8 @@ describe( 'wc-to-stripe transformers', () => {
 					totals: {},
 				} )
 			).toStrictEqual( [
-				{ amount: 4500, label: 'Physical subscription' },
-				{ amount: 150, label: 'WC Bookings – Equipment Rental' },
+				{ amount: 4500, name: 'Physical subscription' },
+				{ amount: 150, name: 'WC Bookings – Equipment Rental' },
 			] );
 		} );
 
@@ -176,7 +176,7 @@ describe( 'wc-to-stripe transformers', () => {
 						currency_suffix: '',
 					},
 				} )
-			).toStrictEqual( [ { amount: 545, label: 'Tax' } ] );
+			).toStrictEqual( [ { amount: 545, name: 'Tax' } ] );
 		} );
 
 		it( 'transforms the tax amount when not present', () => {
@@ -352,19 +352,19 @@ describe( 'wc-to-stripe transformers', () => {
 					amount: 1000,
 					detail: '',
 					id: 'flat_rate:14',
-					label: 'CA Flat rate',
+					displayName: 'CA Flat rate',
 				},
 				{
 					amount: 350,
 					detail: '',
 					id: 'local_pickup:15',
-					label: 'Local pickup',
+					displayName: 'Local pickup',
 				},
 				{
 					amount: 0,
 					detail: '',
 					id: 'free_shipping:13',
-					label: 'Free shipping',
+					displayName: 'Free shipping',
 				},
 			] );
 		} );
@@ -433,7 +433,7 @@ describe( 'wc-to-stripe transformers', () => {
 					detail:
 						'42 Wallaby Way, Sydney New South Wales 200, Australia - Ask for P. Sherman',
 					id: 'pickup_location:1',
-					label:
+					displayName:
 						'Local pickup – options coming from WooCommerce Blocks (Australian warehouse)',
 				},
 			] );
