@@ -87,7 +87,6 @@ export const shippingRateChangeHandler = async ( api, event, elements ) => {
 	}
 };
 
-// TODO ~FR note: used by both classic & shortcode-based checkout
 export const onConfirmHandler = async (
 	api,
 	stripe,
