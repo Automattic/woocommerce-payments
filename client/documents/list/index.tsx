@@ -197,7 +197,8 @@ export const DocumentsList = (): JSX.Element => {
 				value: getDocumentUrl( document.document_id ),
 				display: (
 					<Button
-						isLink
+						className="documents-list__download-button"
+						variant="link"
 						onClick={ () =>
 							downloadDocument(
 								document.document_id,
