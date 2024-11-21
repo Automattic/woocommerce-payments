@@ -7,73 +7,10 @@
 	}
 }
 
-.is-mobile,
-.is-small {
-	.woopay-save-new-user-container.wc-version-greater-than-91::after {
-		background: currentColor;
-		box-shadow: -50vw 0 0 0 currentColor, 50vw 0 0 0 currentColor;
-		content: '';
-		height: 1px;
-		opacity: 0.11;
-		width: 100%;
-		margin-top: 22px;
-	}
-}
-
-.is-medium,
-.is-large {
-	.woopay-save-new-user-container.wc-version-greater-than-91 {
-		border-bottom: 1px solid hsla( 0, 0%, 7%, 0.11 );
-		margin-bottom: 48px;
-	}
-}
-
-#remember-me {
-	padding-top: 0;
-	margin-bottom: 0;
-
-	&::after {
-		height: 0;
-	}
-}
-
-.wc-block-components-form.has-woopay-component {
-	#remember-me {
-		margin: 36px 0 0 0;
-		padding-top: 0;
-
-		h2 {
-			font-size: 18px;
-			font-weight: 600;
-			line-height: 21.6px;
-			letter-spacing: -0.01em;
-		}
-	}
-}
-
-@media ( max-width: 600px ) {
-	.is-mobile,
-	.is-small {
-		.wc-block-components-form.has-woopay-component
-			#payment-method.wc-block-components-checkout-step::after {
-			height: 0;
-		}
-	}
-}
-
 .woopay-save-new-user-container {
 	.save-details {
 		.wc-block-components-text-input input:-webkit-autofill {
 			padding: 1.5em 0.5em 1.5em 0.5em;
-		}
-	}
-
-	&.wc-version-greater-than-91 {
-		@media ( min-width: 601px ),
-			( min-width: 566px ) and ( max-width: 568px ) {
-			.save-details {
-				margin-bottom: 48px;
-			}
 		}
 	}
 
