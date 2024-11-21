@@ -35,8 +35,9 @@ export const getSelectedUPEGatewayPaymentMethod = () => {
 	let selectedGatewayId = null;
 
 	// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
-	const radio = document.querySelector(
-		'li.wc_payment_method input.input-radio:checked, li.woocommerce-PaymentMethod input.input-radio:checked'
+	const paymentContainer = document.querySelector( '#payment' );
+	const radio = paymentContainer?.querySelector(
+		'input[name="payment_method"]:checked'
 	);
 	if ( radio !== null ) {
 		selectedGatewayId = radio.id;
