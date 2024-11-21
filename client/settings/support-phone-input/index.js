@@ -30,7 +30,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
 	if ( supportPhone === '' ) {
 		supportPhoneError = __(
-			'Support phone cannot be empty.',
+			'Support phone number cannot be empty.',
 			'woocommerce-payments'
 		);
 	}

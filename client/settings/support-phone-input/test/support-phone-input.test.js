@@ -83,7 +83,7 @@ describe( 'SupportPhoneInput', () => {
 
 		expect(
 			container.querySelector( '.components-notice.is-error' ).textContent
-		).toEqual( 'Support phone cannot be empty.' );
+		).toEqual( 'Support phone number cannot be empty.' );
 	} );
 
 	it( 'displays the error message for invalid phone', async () => {
