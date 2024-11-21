@@ -126,8 +126,9 @@ function shouldIncludeTerms() {
 		return true;
 	}
 
-	const savePaymentMethodCheckbox = document.getElementById(
-		'wc-woocommerce_payments-new-payment-method'
+	const paymentContainer = document.querySelector( '#payment' );
+	const savePaymentMethodCheckbox = paymentContainer?.querySelector(
+		'input[name="wc-woocommerce_payments-new-payment-method"]'
 	);
 	if (
 		savePaymentMethodCheckbox !== null &&
