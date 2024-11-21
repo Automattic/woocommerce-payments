@@ -59,12 +59,15 @@ export default class WCPayAPI {
 	}
 
 	async getStripe( forceAccountRequest = false ) {
-		const maxWaitCycles = 1200;
-		let currentWaitCycle = 0;
+		const maxWaitTime = 600 * 1000; // 600 seconds
+		const waitInterval = 100;
+		let currentWaitTime = 0;
 		while ( ! window.Stripe ) {
-			await new Promise( ( resolve ) => setTimeout( resolve, 100 ) );
-			currentWaitCycle++;
-			if ( currentWaitCycle > maxWaitCycles ) {
+			await new Promise( ( resolve ) =>
+				setTimeout( resolve, waitInterval )
+			);
+			currentWaitTime += waitInterval;
+			if ( currentWaitTime > maxWaitTime ) {
 				throw new Error( 'Stripe object not found' );
 			}
 		}
