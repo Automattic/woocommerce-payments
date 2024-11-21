@@ -11,7 +11,7 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	normalizeLineItems,
-} from 'wcpay/express-checkout/utils';
+} from '../../utils';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -19,7 +19,7 @@ import {
 	onCompletePaymentHandler,
 	onConfirmHandler,
 	onReadyHandler,
-} from 'wcpay/express-checkout/event-handlers';
+} from '../../event-handlers';
 
 export const useExpressCheckout = ( {
 	api,
@@ -40,14 +40,14 @@ export const useExpressCheckout = ( {
 	};
 
 	const completePayment = ( redirectUrl ) => {
-		onCompletePaymentHandler( redirectUrl );
+		onCompletePaymentHandler();
 		window.location = redirectUrl;
 	};
 
 	const abortPayment = ( onConfirmEvent, message ) => {
 		onConfirmEvent.paymentFailed( { reason: 'fail' } );
 		setExpressPaymentError( message );
-		onAbortPaymentHandler( onConfirmEvent, message );
+		onAbortPaymentHandler();
 	};
 
 	const onButtonClick = useCallback(

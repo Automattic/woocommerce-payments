@@ -55,7 +55,7 @@ const getColumns = (): Column[] =>
 		},
 		{
 			key: 'download',
-			label: '',
+			label: __( 'Download', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Download', 'woocommerce-payments' ),
 			isLeftAligned: false,
 			isNumeric: true,
@@ -197,7 +197,8 @@ export const DocumentsList = (): JSX.Element => {
 				value: getDocumentUrl( document.document_id ),
 				display: (
 					<Button
-						isLink
+						className="documents-list__download-button"
+						variant="link"
 						onClick={ () =>
 							downloadDocument(
 								document.document_id,
