@@ -8,7 +8,7 @@ export function useStripeAsync( api, forceAccountRequest = false ) {
 
 	useEffect( () => {
 		( async () => {
-			const initializedStripe = await api.getStripeAsync(
+			const initializedStripe = await api.getStripe(
 				forceAccountRequest
 			);
 			setStripe( initializedStripe );

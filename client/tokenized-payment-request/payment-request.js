@@ -89,7 +89,7 @@ export default class WooPaymentsPaymentRequest {
 	async startPaymentRequest() {
 		// reference to this class' instance, to be used inside callbacks to avoid `this` misunderstandings.
 		const _self = this;
-		const stripe = await this.wcpayApi.getStripeAsync();
+		const stripe = await this.wcpayApi.getStripe();
 		const paymentRequest = getPaymentRequest( {
 			stripe,
 			cartData: this.cachedCartData,

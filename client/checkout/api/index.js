@@ -55,10 +55,10 @@ export default class WCPayAPI {
 		this.options.forceNetworkSavedCards = getUPEConfig(
 			'paymentMethodsConfig'
 		)[ paymentMethodType ].forceNetworkSavedCards;
-		return this.getStripeAsync();
+		return this.getStripe();
 	}
 
-	async getStripeAsync( forceAccountRequest = false ) {
+	async getStripe( forceAccountRequest = false ) {
 		const maxWaitCycles = 1200;
 		let currentWaitCycle = 0;
 		while ( ! window.Stripe ) {
@@ -68,7 +68,7 @@ export default class WCPayAPI {
 				throw new Error( 'Stripe object not found' );
 			}
 		}
-		return this.getStripe( forceAccountRequest );
+		return this.__getStripe( forceAccountRequest );
 	}
 
 	/**
@@ -77,7 +77,7 @@ export default class WCPayAPI {
 	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Object} The Stripe Object.
 	 */
-	getStripe( forceAccountRequest = false ) {
+	__getStripe( forceAccountRequest = false ) {
 		const {
 			publishableKey,
 			accountId,
@@ -121,7 +121,7 @@ export default class WCPayAPI {
 	async loadStripeForExpressCheckout() {
 		// Force Stripe to be loadded with the connected account.
 		try {
-			return await this.getStripeAsync( true );
+			return this.getStripe( true );
 		} catch ( error ) {
 			// In order to avoid showing console error publicly to users,
 			// we resolve instead of rejecting when there is an error.
@@ -178,8 +178,8 @@ export default class WCPayAPI {
 			);
 
 			// If this is a setup intent we're not processing a woopay payment so we can
-			// use the regular getStripeAsync function.
-			const stripe = await this.getStripeAsync();
+			// use the regular getStripe function.
+			const stripe = await this.getStripe();
 			if ( isSetupIntent ) {
 				return stripe.handleNextAction( {
 					clientSecret: clientSecret,
@@ -198,9 +198,7 @@ export default class WCPayAPI {
 
 			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
-			const stripeWithForcedAccountRequest = await this.getStripeAsync(
-				true
-			);
+			const stripeWithForcedAccountRequest = await this.getStripe( true );
 			return stripeWithForcedAccountRequest.handleNextAction( {
 				clientSecret: clientSecret,
 			} );
@@ -282,7 +280,7 @@ export default class WCPayAPI {
 			return response.data;
 		}
 
-		const stripe = await this.getStripeAsync();
+		const stripe = await this.getStripe();
 
 		const confirmedSetupIntent = await stripe.confirmCardSetup(
 			response.data.client_secret

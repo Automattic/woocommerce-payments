@@ -99,7 +99,7 @@ export const initializeBnplSiteMessaging = async () => {
 			fonts: getFontRulesFromPage(),
 		};
 
-		const stripe = await api.getStripeAsync();
+		const stripe = await api.getStripe();
 
 		paymentMessageElement = stripe
 			.elements( elementsOptions )

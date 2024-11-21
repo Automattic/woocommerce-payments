@@ -47,7 +47,7 @@ const enableStripeLinkPaymentMethod = async ( options ) => {
 		return;
 	}
 
-	const stripe = await options.api.getStripeAsync();
+	const stripe = await options.api.getStripe();
 	// https://stripe.com/docs/payments/link/autofill-modal
 	const linkAutofill = stripe.linkAutofillModal( options.elements );
 

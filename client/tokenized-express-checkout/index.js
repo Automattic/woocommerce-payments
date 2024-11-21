@@ -237,7 +237,7 @@ jQuery( ( $ ) => {
 				return;
 			}
 
-			const stripe = await api.getStripeAsync();
+			const stripe = await api.getStripe();
 
 			const elements = stripe.elements( {
 				mode: options?.mode ?? 'payment',
