@@ -725,7 +725,7 @@ class WC_Payments_Webhook_Processing_Service {
 		// Look up the order related to this intent.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
 
-		if ( ! $order ) {
+		if ( ! $order instanceof \WC_Order ) {
 			// Retrieving order with order_id in case intent_id was not properly set.
 			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
 			$metadata = $this->read_webhook_property( $event_object, 'metadata' );
