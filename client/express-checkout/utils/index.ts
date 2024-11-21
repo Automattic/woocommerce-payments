@@ -97,7 +97,9 @@ export const getExpressCheckoutData = <
 ) => {
 	if ( typeof window.wcpayExpressCheckoutParams !== 'undefined' ) {
 		return window.wcpayExpressCheckoutParams[ key ] ?? null;
-	} else if ( typeof window.wc?.wcSettings !== 'undefined' ) {
+	}
+
+	if ( typeof window.wc?.wcSettings !== 'undefined' ) {
 		return window.wc.wcSettings.getSetting( 'ece_data' )?.[ key ] ?? null;
 	}
 
