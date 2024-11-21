@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure Taxes is enabled before determining how it is calculated.
