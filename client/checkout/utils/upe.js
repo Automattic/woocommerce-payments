@@ -185,17 +185,16 @@ export const appendFraudPreventionTokenInputToForm = ( $form ) => {
  * @return {boolean} Boolean indicating whether a saved payment method is being used.
  */
 export function isUsingSavedPaymentMethod( paymentMethodType ) {
-	const prefix = '#wc-woocommerce_payments';
-	const suffix = '-payment-token-new';
-	const savedPaymentSelector =
+	const paymentContainer = document.querySelector( '#payment' );
+	const tokenInputId =
 		paymentMethodType === 'card' || paymentMethodType === 'link'
-			? prefix + suffix
-			: prefix + '_' + paymentMethodType + suffix;
+			? 'wc-woocommerce_payments-payment-token-new'
+			: `wc-woocommerce_payments_${ paymentMethodType }-payment-token-new`;
 
-	return (
-		document.querySelector( savedPaymentSelector ) !== null &&
-		! document.querySelector( savedPaymentSelector ).checked
+	const savedPaymentInput = paymentContainer?.querySelector(
+		`input#${ tokenInputId }`
 	);
+	return savedPaymentInput !== null && ! savedPaymentInput.checked;
 }
 
 export function dispatchChangeEventFor( element ) {
