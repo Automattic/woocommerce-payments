@@ -128,7 +128,7 @@ function shouldIncludeTerms() {
 
 	const paymentContainer = document.querySelector( '#payment' );
 	const savePaymentMethodCheckbox = paymentContainer?.querySelector(
-		'input[name="wc-woocommerce_payments-new-payment-method"]'
+		'input#wc-woocommerce_payments-new-payment-method'
 	);
 	if (
 		savePaymentMethodCheckbox !== null &&
