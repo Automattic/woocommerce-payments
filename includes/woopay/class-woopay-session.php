@@ -45,7 +45,7 @@ class WooPay_Session {
 		add_filter( 'woocommerce_session_handler', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 20 );
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'woopay_order_payment_status_changed' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
-		add_filter( 'woocommerce_order_needs_payment', [ __CLASS__, 'woopay_order_needs_payment' ], 20, 3 );
+		add_filter( 'woocommerce_order_needs_payment', [ __CLASS__, 'woopay_trial_subscriptions_handler' ], 20, 3 );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 
@@ -274,14 +274,13 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Restore the order customer ID after 10 minutes
-	 * on requests with email verified.
+	 * Process trial subscriptions for WooPay.
 	 *
-	 * @param bool      $needs_payment The order.
+	 * @param bool      $needs_payment If the order needs payment.
 	 * @param \WC_Order $order The order.
-	 * @param array     $valid_order_statuses The order.
+	 * @param array     $valid_order_statuses The valid order statuses.
 	 */
-	public static function woopay_order_needs_payment( $needs_payment, $order, $valid_order_statuses ) {
+	public static function woopay_trial_subscriptions_handler( $needs_payment, $order, $valid_order_statuses ) {
 		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
 			return $needs_payment;
 		}
