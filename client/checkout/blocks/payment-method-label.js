@@ -6,12 +6,12 @@ import {
 	PaymentMethodMessagingElement,
 } from '@stripe/react-stripe-js';
 import { normalizeCurrencyToMinorUnit } from '../utils';
+import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { useEffect, useState } from '@wordpress/element';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
-import { useStripeForUPE } from './hooks';
 
 const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 const PaymentMethodMessageWrapper = ( {

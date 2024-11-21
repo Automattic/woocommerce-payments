@@ -503,8 +503,8 @@ export async function mountStripePaymentMethodMessagingElement(
 	const appearance = await initializeAppearance( api, location );
 
 	try {
-		const paymentMethodMessagingElement = api
-			.getStripe()
+		const stripe = await api.getStripeAsync();
+		const paymentMethodMessagingElement = stripe
 			.elements( {
 				appearance: appearance,
 				fonts: getFontRulesFromPage(),

@@ -194,7 +194,7 @@ jQuery( ( $ ) => {
 		 *
 		 * @param {Object} options ECE options.
 		 */
-		startExpressCheckoutElement: ( options ) => {
+		startExpressCheckoutElement: async ( options ) => {
 			const getShippingRates = () => {
 				if ( ! options.requestShipping ) {
 					return [];
@@ -237,7 +237,9 @@ jQuery( ( $ ) => {
 				return;
 			}
 
-			const elements = api.getStripe().elements( {
+			const stripe = await api.getStripeAsync();
+
+			const elements = stripe.elements( {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
 				currency: options?.currency,
@@ -336,7 +338,7 @@ jQuery( ( $ ) => {
 
 				return onConfirmHandler(
 					api,
-					api.getStripe(),
+					stripe,
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,

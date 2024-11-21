@@ -78,15 +78,3 @@ export const useFingerprint = () => {
 
 	return [ fingerprint, error ];
 };
-
-export const useStripeForUPE = ( api, paymentMethodId ) => {
-	const [ stripe, setStripe ] = useState( null );
-
-	useEffect( () => {
-		api.getStripeForUPE( paymentMethodId ).then( ( initializedStripe ) => {
-			setStripe( initializedStripe );
-		} );
-	}, [ api, paymentMethodId ] );
-
-	return stripe;
-};

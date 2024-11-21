@@ -338,7 +338,7 @@ jQuery( ( $ ) => {
 
 				return onConfirmHandler(
 					api,
-					api.getStripe(),
+					stripe,
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
