@@ -17,6 +17,11 @@ $space-header-item: 12px;
 	}
 }
 
+// Adjusting the "Download"padding to match the column header alignment
+button.components-button.documents-list__download-button {
+	padding: 3px;
+}
+
 /**
  * Sourced from https://github.com/woocommerce/woocommerce-admin/blob/ec36a00b77b5c0e313985a5a64c88aaec9eb154e/client/analytics/components/report-table/style.scss.
  * Depending on the wc-admin version, these styles are not loaded if not using the analytics report components, so they need to be included here.
