@@ -306,7 +306,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	}
 
 	/**
-	 * Display the payment request button.
+	 * Display the express checkout button.
 	 */
 	public function display_express_checkout_button_html() {
 		if ( ! $this->express_checkout_helper->should_show_express_checkout_button() ) {

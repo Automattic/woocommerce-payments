@@ -245,7 +245,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Gets settings that are shared between the Payment Request button and the WooPay button.
+	 * Gets settings that are shared between the Express Checkout button and the WooPay button.
 	 *
 	 * @return array
 	 */
@@ -361,7 +361,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks whether Payment Request Button should be available on this page.
+	 * Checks whether Express Checkout Element Button should be available on this page.
 	 *
 	 * @return bool
 	 */
@@ -400,13 +400,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Product page, but has unsupported product type.
 		if ( $this->is_product() && ! $this->is_product_supported() ) {
-			Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
+			Logger::log( 'Product page has unsupported product type ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
-			Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
+			Logger::log( 'Items in the cart have unsupported product type ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
@@ -439,7 +439,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
-			Logger::log( 'Order price is 0 ( Payment Request button disabled )' );
+			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
@@ -509,11 +509,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 
 			/**
-			 * Filter whether product supports Payment Request Button on cart page.
+			 * Filter whether product supports Express Checkout Element Button on cart page.
 			 *
 			 * @since 6.9.0
 			 *
-			 * @param boolean $is_supported Whether product supports Payment Request Button on cart page.
+			 * @param boolean $is_supported Whether product supports Express Checkout Element Button on cart page.
 			 * @param object  $_product     Product object.
 			 */
 			if ( ! apply_filters( 'wcpay_payment_request_is_cart_supported', true, $_product ) ) {
@@ -530,7 +530,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 		}
 
-		// We don't support multiple packages with Payment Request Buttons because we can't offer a good UX.
+		// We don't support multiple packages with Express Checkout Element Buttons because we can't offer a good UX.
 		$packages = WC()->cart->get_shipping_packages();
 		if ( 1 < ( is_countable( $packages ) ? count( $packages ) : 0 ) ) {
 			return false;
@@ -902,11 +902,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * The Payment Request API provides its own validation for the address form.
+	 * The Express Checkout Element API provides its own validation for the address form.
 	 * For some countries, it might not provide a state field, so we need to return a more descriptive
-	 * error message, indicating that the Payment Request button is not supported for that country.
+	 * error message, indicating that the Express Checkout Element button is not supported for that country.
 	 */
-	public static function validate_state() {
+	public function validate_state() {
 		$wc_checkout     = WC_Checkout::instance();
 		$posted_data     = $wc_checkout->get_posted_data();
 		$checkout_fields = $wc_checkout->get_checkout_fields();
@@ -927,7 +927,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			wc_add_notice(
 				sprintf(
 					/* translators: %s: country. */
-					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
+					__( 'The express checkout is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
 					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
 				),
 				'error'
