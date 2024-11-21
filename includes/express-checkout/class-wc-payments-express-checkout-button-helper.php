@@ -415,9 +415,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return true;
 		}
 
-		// Non-shipping product and billing is calculated based on shopper billing addres. Excludes Pay for Order page.
+		// Non-shipping product and billing is calculated based on shopper billing address. Excludes Pay for Order page.
 		if (
-			// If the product doesn't needs shipping.
+			// If the product doesn't need shipping.
 			(
 				// on the product page.
 				( $this->is_product() && ! $this->product_needs_shipping( $this->get_product() ) ) ||
@@ -435,7 +435,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// Cart total is 0 or is on product page and product price is 0.
 		// Exclude pay-for-order pages from this check.
 		if (
-			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
+			( ! $this->is_product() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
