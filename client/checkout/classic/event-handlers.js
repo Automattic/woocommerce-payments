@@ -92,6 +92,22 @@ jQuery( function ( $ ) {
 		return processPaymentIfNotUsingSavedMethod( $( this ) );
 	} );
 
+	$( document.body ).on( 'payment_method_selected', function () {
+		// Get selected payment method using WooCommerce's approach, see /legacy/js/frontend/checkout.js
+		const selectedPaymentMethod = $(
+			'.woocommerce-checkout input[name="payment_method"]:checked'
+		).attr( 'value' );
+
+		document
+			.querySelectorAll( '.wcpay-upe-form' )
+			.forEach( ( container ) => {
+				container.toggleAttribute(
+					'checked',
+					container.dataset.gatewayId === selectedPaymentMethod
+				);
+			} );
+	} );
+
 	$checkoutForm.on( 'click', '#place_order', function () {
 		const isWCPay = document.getElementById(
 			'payment_method_woocommerce_payments'

@@ -30,34 +30,10 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
  * @return {string} Stripe payment method type
  */
 export const getSelectedUPEGatewayPaymentMethod = () => {
-	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-	const gatewayCardId = getUPEConfig( 'gatewayId' );
-	
-	// Find the container with checked="checked" attribute
-	const containers = document.querySelectorAll('.wcpay-upe-form');
-	const checkedContainer = Array.from(containers).find(
-		container => container.getAttribute('checked') === 'checked'
+	const selectedContainer = document.querySelector(
+		'.wcpay-upe-form[checked]'
 	);
-
-	if (!checkedContainer) {
-		return null;
-	}
-
-	const paymentMethodType = checkedContainer.dataset.paymentMethodType;
-	
-	// If it's the default WCPay gateway, return card
-	if (paymentMethodType === 'card') {
-		return 'card';
-	}
-
-	// Match the payment method type from config
-	for (const configPaymentMethodType in paymentMethodsConfig) {
-		if (paymentMethodType === configPaymentMethodType) {
-			return configPaymentMethodType;
-		}
-	}
-
-	return null;
+	return selectedContainer?.dataset.paymentMethodType || null;
 };
 
 export const getHiddenBillingFields = ( enabledBillingFields ) => {
@@ -124,9 +100,8 @@ function shouldIncludeTerms() {
 		return true;
 	}
 
-	const paymentContainer = document.querySelector( '#payment' );
-	const savePaymentMethodCheckbox = paymentContainer?.querySelector(
-		'input#wc-woocommerce_payments-new-payment-method'
+	const savePaymentMethodCheckbox = document.getElementById(
+		'wc-woocommerce_payments-new-payment-method'
 	);
 	if (
 		savePaymentMethodCheckbox !== null &&
