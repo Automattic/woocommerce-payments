@@ -326,18 +326,17 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		wcpayCustomerData?.billing_country ||
 		'';
 
-	const upeContainer = document.querySelector(
-		'.payment_method_woocommerce_payments_' + paymentMethodType
-	);
+	const upeContainer = upeElement.closest( 'li.wc_payment_method' );
 	if ( supportedCountries.includes( billingCountry ) ) {
 		upeContainer.style.removeProperty( 'display' );
 	} else {
 		upeContainer.style.display = 'none';
 		// if the toggled off payment method was selected, we need to fall back to credit card
 		if ( paymentMethodType === selectedPaymentMethod ) {
-			document
-				.querySelector( '#payment_method_woocommerce_payments' )
-				.click();
+			const paymentsForm = document.querySelector(
+				`.wcpay-upe-form[data-payment-method-type="card"]`
+			);
+			paymentsForm.closest( 'li.wc_payment_method' )?.click();
 		}
 	}
 };
