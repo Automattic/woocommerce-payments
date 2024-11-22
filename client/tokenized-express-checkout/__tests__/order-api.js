@@ -6,22 +6,22 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import PaymentRequestOrderApi from '../order-api';
+import ExpressCheckoutOrderApi from '../order-api';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
-global.wcpayPaymentRequestParams = {};
-global.wcpayPaymentRequestParams.nonce = {};
-global.wcpayPaymentRequestParams.nonce.store_api_nonce =
+global.wcpayExpressCheckoutParams = {};
+global.wcpayExpressCheckoutParams.nonce = {};
+global.wcpayExpressCheckoutParams.nonce.store_api_nonce =
 	'global_store_api_nonce';
 
-describe( 'PaymentRequestOrderApi', () => {
+describe( 'ExpressCheckoutOrderApi', () => {
 	afterEach( () => {
 		jest.resetAllMocks();
 	} );
 
 	it( 'gets order data with the provided arguments', async () => {
-		const api = new PaymentRequestOrderApi( {
+		const api = new ExpressCheckoutOrderApi( {
 			orderId: '1',
 			key: 'key_123',
 			billingEmail: 'cheese@toast.com',
@@ -40,7 +40,7 @@ describe( 'PaymentRequestOrderApi', () => {
 	} );
 
 	it( 'places an order', async () => {
-		const api = new PaymentRequestOrderApi( {
+		const api = new ExpressCheckoutOrderApi( {
 			orderId: '1',
 			key: 'key_123',
 			billingEmail: 'cheese@toast.com',
@@ -74,7 +74,7 @@ describe( 'PaymentRequestOrderApi', () => {
 	} );
 
 	it( 'places an order with the previous API request data', async () => {
-		const api = new PaymentRequestOrderApi( {
+		const api = new ExpressCheckoutOrderApi( {
 			orderId: '1',
 			key: 'key_123',
 			billingEmail: 'cheese@toast.com',
