@@ -25,7 +25,7 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 };
 
 /**
- * Finds selected payment gateway and returns matching Stripe payment method for gateway.
+ * Returns Stripe payment method for selected payment gateway.
  *
  * @return {string} Stripe payment method type
  */
@@ -58,9 +58,11 @@ export const getHiddenBillingFields = ( enabledBillingFields ) => {
 	};
 };
 
-export const getUpeSettings = () => {
+export const getUpeSettings = ( paymentMethodType ) => {
 	const upeSettings = {};
-	const showTerms = shouldIncludeTerms() ? 'always' : 'never';
+	const showTerms = shouldIncludeTerms( paymentMethodType )
+		? 'always'
+		: 'never';
 
 	upeSettings.terms = getTerms(
 		getUPEConfig( 'paymentMethodsConfig' ),
@@ -95,22 +97,23 @@ export const getUpeSettings = () => {
 	return upeSettings;
 };
 
-function shouldIncludeTerms() {
+function shouldIncludeTerms( paymentMethodType ) {
 	if ( getUPEConfig( 'cartContainsSubscription' ) ) {
 		return true;
 	}
 
-	const savePaymentMethodCheckbox = document.getElementById(
-		'wc-woocommerce_payments-new-payment-method'
+	const container = document.querySelector(
+		`.wcpay-upe-form[data-payment-method-type="${ paymentMethodType }"]`
 	);
-	if (
-		savePaymentMethodCheckbox !== null &&
-		savePaymentMethodCheckbox.checked
-	) {
-		return true;
+	if ( ! container ) {
+		return false;
 	}
 
-	return false;
+	const savePaymentMethodCheckbox = container.querySelector(
+		'#wc-woocommerce_payments-new-payment-method'
+	);
+
+	return savePaymentMethodCheckbox?.checked || false;
 }
 
 export const generateCheckoutEventNames = () => {
