@@ -96,19 +96,27 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
  * @return {{id: string, label: string, amount: integer, deliveryEstimate: string}} `shippingRates` for Stripe.
  */
 export const transformCartDataForShippingRates = ( cartData ) =>
-	cartData.shipping_rates?.[ 0 ].shipping_rates.map( ( rate ) => ( {
-		id: rate.rate_id,
-		displayName: decodeEntities( rate.name ),
-		amount: transformPrice( parseInt( rate.price, 10 ), rate ),
-		deliveryEstimate: [
-			rate.meta_data.find(
-				( metadata ) => metadata.key === 'pickup_address'
-			)?.value,
-			rate.meta_data.find(
-				( metadata ) => metadata.key === 'pickup_details'
-			)?.value,
-		]
-			.filter( Boolean )
-			.map( decodeEntities )
-			.join( ' - ' ),
-	} ) );
+	cartData.shipping_rates?.[ 0 ].shipping_rates
+		.sort( ( rateA, rateB ) => {
+			if ( rateA.selected === rateB.selected ) {
+				return 0; // Keep relative order if both have the same value for 'selected'
+			}
+
+			return rateA.selected ? -1 : 1; // Objects with 'selected: true' come first
+		} )
+		.map( ( rate ) => ( {
+			id: rate.rate_id,
+			displayName: decodeEntities( rate.name ),
+			amount: transformPrice( parseInt( rate.price, 10 ), rate ),
+			deliveryEstimate: [
+				rate.meta_data.find(
+					( metadata ) => metadata.key === 'pickup_address'
+				)?.value,
+				rate.meta_data.find(
+					( metadata ) => metadata.key === 'pickup_details'
+				)?.value,
+			]
+				.filter( Boolean )
+				.map( decodeEntities )
+				.join( ' - ' ),
+		} ) );

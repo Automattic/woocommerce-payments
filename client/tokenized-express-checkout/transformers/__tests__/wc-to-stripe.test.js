@@ -255,7 +255,7 @@ describe( 'wc-to-stripe transformers', () => {
 	} );
 
 	describe( 'transformCartDataForShippingRates', () => {
-		it( 'transforms shipping rates', () => {
+		it( 'transforms shipping rates, placing the selected one at the top of the list', () => {
 			expect(
 				transformCartDataForShippingRates( {
 					shipping_rates: [
@@ -286,7 +286,7 @@ describe( 'wc-to-stripe transformers', () => {
 											value: 'Beanie &times; 1',
 										},
 									],
-									selected: true,
+									selected: false,
 									currency_code: 'USD',
 									currency_symbol: '$',
 									currency_minor_unit: 2,
@@ -310,7 +310,7 @@ describe( 'wc-to-stripe transformers', () => {
 											value: 'Beanie &times; 1',
 										},
 									],
-									selected: false,
+									selected: true,
 									currency_code: 'USD',
 									currency_symbol: '$',
 									currency_minor_unit: 2,
@@ -349,16 +349,16 @@ describe( 'wc-to-stripe transformers', () => {
 				} )
 			).toEqual( [
 				{
-					amount: 1000,
-					deliveryEstimate: '',
-					id: 'flat_rate:14',
-					displayName: 'CA Flat rate',
-				},
-				{
 					amount: 350,
 					deliveryEstimate: '',
 					id: 'local_pickup:15',
 					displayName: 'Local pickup',
+				},
+				{
+					amount: 1000,
+					deliveryEstimate: '',
+					id: 'flat_rate:14',
+					displayName: 'CA Flat rate',
 				},
 				{
 					amount: 0,
