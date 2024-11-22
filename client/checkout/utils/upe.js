@@ -102,14 +102,14 @@ function shouldIncludeTerms( paymentMethodType ) {
 		return true;
 	}
 
-	const container = document.querySelector(
+	const paymentsForm = document.querySelector(
 		`.wcpay-upe-form[data-payment-method-type="${ paymentMethodType }"]`
 	);
-	if ( ! container ) {
+	if ( ! paymentsForm ) {
 		return false;
 	}
 
-	const savePaymentMethodCheckbox = container.querySelector(
+	const savePaymentMethodCheckbox = paymentsForm.querySelector(
 		'#wc-woocommerce_payments-new-payment-method'
 	);
 
@@ -161,16 +161,26 @@ export const appendFraudPreventionTokenInputToForm = ( $form ) => {
  * @return {boolean} Boolean indicating whether a saved payment method is being used.
  */
 export function isUsingSavedPaymentMethod( paymentMethodType ) {
-	const paymentContainer = document.querySelector( '#payment' );
+	const paymentsForm = document.querySelector(
+		`.wcpay-upe-form[data-payment-method-type="${ paymentMethodType }"]`
+	);
+	if ( ! paymentsForm ) {
+		return false;
+	}
+
 	const tokenInputId =
 		paymentMethodType === 'card' || paymentMethodType === 'link'
 			? 'wc-woocommerce_payments-payment-token-new'
 			: `wc-woocommerce_payments_${ paymentMethodType }-payment-token-new`;
 
-	const savedPaymentInput = paymentContainer?.querySelector(
+	const newPaymentTokenInput = paymentsForm.querySelector(
 		`input#${ tokenInputId }`
 	);
-	return savedPaymentInput !== null && ! savedPaymentInput.checked;
+	if ( ! newPaymentTokenInput ) {
+		return false;
+	}
+
+	return newPaymentTokenInput !== null && ! newPaymentTokenInput.checked;
 }
 
 export function dispatchChangeEventFor( element ) {
