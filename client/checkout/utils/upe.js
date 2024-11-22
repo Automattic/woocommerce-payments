@@ -32,34 +32,32 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 export const getSelectedUPEGatewayPaymentMethod = () => {
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const gatewayCardId = getUPEConfig( 'gatewayId' );
-	let selectedGatewayId = null;
-
-	// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
-	const paymentContainer = document.querySelector( '#payment' );
-	const radio = paymentContainer?.querySelector(
-		'input[name="payment_method"]:checked'
+	
+	// Find the container with checked="checked" attribute
+	const containers = document.querySelectorAll('.wcpay-upe-form');
+	const checkedContainer = Array.from(containers).find(
+		container => container.getAttribute('checked') === 'checked'
 	);
-	if ( radio !== null ) {
-		selectedGatewayId = radio.id;
+
+	if (!checkedContainer) {
+		return null;
 	}
 
-	if ( selectedGatewayId === 'payment_method_woocommerce_payments' ) {
-		selectedGatewayId = 'payment_method_woocommerce_payments_card';
+	const paymentMethodType = checkedContainer.dataset.paymentMethodType;
+	
+	// If it's the default WCPay gateway, return card
+	if (paymentMethodType === 'card') {
+		return 'card';
 	}
 
-	let selectedPaymentMethod = null;
-
-	for ( const paymentMethodType in paymentMethodsConfig ) {
-		if (
-			`payment_method_${ gatewayCardId }_${ paymentMethodType }` ===
-			selectedGatewayId
-		) {
-			selectedPaymentMethod = paymentMethodType;
-			break;
+	// Match the payment method type from config
+	for (const configPaymentMethodType in paymentMethodsConfig) {
+		if (paymentMethodType === configPaymentMethodType) {
+			return configPaymentMethodType;
 		}
 	}
 
-	return selectedPaymentMethod;
+	return null;
 };
 
 export const getHiddenBillingFields = ( enabledBillingFields ) => {
