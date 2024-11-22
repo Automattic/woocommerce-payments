@@ -580,6 +580,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_title() {
 		$title = parent::get_title();
 
+		/**
+		 * Allows themes or other plugins to override whether the "rich" payment method label
+		 * (normally displayed on shortcode checkout/my account/pay-for-order pages) will be used.
+		 *
+		 * @since 8.6.0
+		 *
+		 * @param $use_plain_method_label boolean Whether the "plain" payment method label will be displayed.
+		 */
+		if ( apply_filters( 'wcpay_checkout_use_plain_method_label', false ) ) {
+			return $title;
+		}
+
 		if (
 			( is_checkout() || is_add_payment_method_page() ) &&
 			! isset( $_GET['change_payment_method'] )  // phpcs:ignore WordPress.Security.NonceVerification
