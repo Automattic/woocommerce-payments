@@ -289,11 +289,11 @@ class WooPay_Session {
 			return $needs_payment;
 		}
 
-		if ( ! class_exists( 'WC_Subscriptions' ) || $order->get_total() > 0 ) {
+		if ( ! class_exists( 'WC_Subscriptions_Cart' ) || $order->get_total() > 0 ) {
 			return $needs_payment;
 		}
 
-		if ( $order->get_meta( 'order_has_subscriptions' ) ) {
+		if ( \WC_Subscriptions_Cart::cart_contains_subscription() ) {
 			return true;
 		}
 

@@ -1241,11 +1241,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// Set the order status to "pending payment".
 				$order->update_status( 'pending' );
 
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing
-				if ( isset( $_POST['order_has_subscriptions'] ) ) {
-					$order->update_meta_data( 'order_has_subscriptions', '1' );
-				}
-
 				// Bail out with success so we don't process the payment now,
 				// but still let WooPay continue with the payment processing.
 				return [
