@@ -10,9 +10,9 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
-import { getPaymentRequestData } from './frontend-utils';
+import { getExpressCheckoutData } from './utils';
 
-export default class PaymentRequestCartApi {
+export default class ExpressCheckoutCartApi {
 	// Used on product pages to interact with an anonymous cart.
 	// This anonymous cart is separate from the customer's cart, which might contain additional products.
 	// This functionality is also useful to calculate product/shipping pricing (and shipping needs)
@@ -30,23 +30,23 @@ export default class PaymentRequestCartApi {
 			...options,
 			parse: false,
 			path: addQueryArgs( options.path, {
-				// `wcpayPaymentRequestParams` will always be defined if this file is needed.
-				// If there's an issue with it, ask yourself why this file is queued and `wcpayPaymentRequestParams` isn't present.
-				currency: getPaymentRequestData(
+				// `wcpayExpressCheckoutParams` will always be defined if this file is needed.
+				// If there's an issue with it, ask yourself why this file is queued and `wcpayExpressCheckoutParams` isn't present.
+				currency: getExpressCheckoutData(
 					'checkout'
 				).currency_code.toUpperCase(),
 			} ),
 			headers: {
 				// the Store API nonce, which could later be overwritten in subsequent requests.
-				Nonce: getPaymentRequestData( 'nonce' ).store_api_nonce,
+				Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
 				// needed for validation of address data, etc.
 				'X-WooPayments-Tokenized-Cart-Nonce':
-					getPaymentRequestData( 'nonce' ).tokenized_cart_nonce ||
+					getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce ||
 					undefined,
 				// necessary to validate any request made to the backend from the PDP.
 				'X-WooPayments-Tokenized-Cart-Session-Nonce':
-					getPaymentRequestData( 'button_context' ) === 'product'
-						? getPaymentRequestData( 'nonce' )
+					getExpressCheckoutData( 'button_context' ) === 'product'
+						? getExpressCheckoutData( 'nonce' )
 								.tokenized_cart_session_nonce
 						: undefined,
 				...this.cartRequestHeaders,
@@ -170,7 +170,7 @@ export default class PaymentRequestCartApi {
 			method: 'POST',
 			path: '/wc/store/v1/cart/add-item',
 			data: applyFilters(
-				'wcpay.payment-request.cart-add-item',
+				'wcpay.express-checkout.cart-add-item',
 				productData
 			),
 		} );
