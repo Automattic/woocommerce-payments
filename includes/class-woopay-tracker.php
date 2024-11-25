@@ -294,6 +294,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			return false;
 		}
 
+		$properties = apply_filters( 'wcpay_tracks_event_properties', $properties, $event_name );
+
 		if ( isset( $properties['record_event_data'] ) ) {
 			if ( isset( $properties['record_event_data']['is_admin_event'] ) ) {
 				$is_admin_event = $properties['record_event_data']['is_admin_event'];
