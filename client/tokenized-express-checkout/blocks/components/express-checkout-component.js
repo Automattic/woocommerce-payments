@@ -95,10 +95,10 @@ const ExpressCheckoutComponent = ( {
 	} );
 	const onClickHandler = ! isPreview ? onButtonClick : () => {};
 	const onShippingAddressChange = ( event ) =>
-		shippingAddressChangeHandler( api, event, elements );
+		shippingAddressChangeHandler( event, elements );
 
 	const onShippingRateChange = ( event ) =>
-		shippingRateChangeHandler( api, event, elements );
+		shippingRateChangeHandler( event, elements );
 
 	const onElementsReady = ( event ) => {
 		const paymentMethodContainer = document.getElementById(
@@ -134,9 +134,9 @@ const ExpressCheckoutComponent = ( {
 	return (
 		<ExpressCheckoutElement
 			options={ {
-				...withBlockOverride( buttonOptions ),
+				...withBlockOverride(),
 				...adjustButtonHeights(
-					withBlockOverride( buttonOptions ),
+					withBlockOverride(),
 					expressPaymentMethod
 				),
 				...getPaymentMethodsOverride( expressPaymentMethod ),

@@ -28,6 +28,12 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 		isTestModeOnboarding && supportPhone === '+10000000000';
 
 	const [ isPhoneValid, setPhoneValidity ] = useState( true );
+	if ( supportPhone === '' ) {
+		supportPhoneError = __(
+			'Support phone number cannot be empty.',
+			'woocommerce-payments'
+		);
+	}
 	if ( ! isTestPhoneValid && ! isPhoneValid && ! isEmptyPhoneValid ) {
 		supportPhoneError = __(
 			'Please enter a valid phone number.',

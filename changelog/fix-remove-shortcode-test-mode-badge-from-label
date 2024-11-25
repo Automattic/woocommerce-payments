@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: remove "test mode" badge from shortcode checkout.

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add the missing "Download" column heading label and toggle menu option to the Payments → Documents list view table.
