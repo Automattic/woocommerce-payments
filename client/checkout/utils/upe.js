@@ -271,7 +271,8 @@ export const getPaymentMethodTypes = ( paymentMethodType ) => {
  * @return {string} The value of email input.
  */
 export const getBlocksEmailValue = () => {
-	return document.getElementById( 'email' ).value;
+	const cartData = wp.data.select( 'wc/store/cart' ).getCustomerData();
+	return cartData.billingAddress.email;
 };
 
 /**
