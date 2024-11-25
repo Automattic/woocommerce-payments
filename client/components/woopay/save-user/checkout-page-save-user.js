@@ -302,7 +302,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								name="save_user_in_woopay"
 								id="save_user_in_woopay"
 								value="true"
-								className={ `save-details-checkbox without-margin-right ${
+								className={ `save-details-checkbox ${
 									isBlocksCheckout
 										? 'wc-block-components-checkbox__input'
 										: ''

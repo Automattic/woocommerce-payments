@@ -47,10 +47,6 @@
 				text-indent: 0;
 			}
 
-			input:not( .without-margin-right ) {
-				margin-right: $gap-small;
-			}
-
 			span {
 				@include breakpoint( '>960px' ) {
 					margin-right: 1.25rem;
