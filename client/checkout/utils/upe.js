@@ -2,7 +2,10 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getPaymentMethodsConstants } from '../constants';
+import {
+	getPaymentMethodsConstants,
+	UPE_PAYMENT_FORM_CLASS,
+} from '../constants';
 
 /**
  * Generates terms parameter for UPE, with value set for reusable payment methods
@@ -31,7 +34,7 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
  */
 export const getSelectedUPEGatewayPaymentMethod = () => {
 	const selectedContainer = document.querySelector(
-		'.wcpay-upe-form[checked]'
+		`.${ UPE_PAYMENT_FORM_CLASS }[checked]`
 	);
 	return selectedContainer?.dataset.paymentMethodType || null;
 };
@@ -103,7 +106,7 @@ function shouldIncludeTerms( paymentMethodType ) {
 	}
 
 	const paymentsForm = document.querySelector(
-		`.wcpay-upe-form[data-payment-method-type="${ paymentMethodType }"]`
+		`.${ UPE_PAYMENT_FORM_CLASS }[data-payment-method-type="${ paymentMethodType }"]`
 	);
 	if ( ! paymentsForm ) {
 		return false;
@@ -162,7 +165,7 @@ export const appendFraudPreventionTokenInputToForm = ( $form ) => {
  */
 export function isUsingSavedPaymentMethod( paymentMethodType ) {
 	const paymentsForm = document.querySelector(
-		`.wcpay-upe-form[data-payment-method-type="${ paymentMethodType }"]`
+		`.${ UPE_PAYMENT_FORM_CLASS }[data-payment-method-type="${ paymentMethodType }"]`
 	);
 	if ( ! paymentsForm ) {
 		return false;
@@ -354,7 +357,7 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		upeContainer.style.display = 'none';
 		if ( paymentMethodType === selectedPaymentMethod ) {
 			const paymentsForm = document.querySelector(
-				`.wcpay-upe-form[data-payment-method-type="card"]`
+				`.${ UPE_PAYMENT_FORM_CLASS }[data-payment-method-type="card"]`
 			);
 			paymentsForm.closest( 'li.wc_payment_method' )?.click();
 		}

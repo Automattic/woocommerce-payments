@@ -30,7 +30,10 @@ import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
-import { SHORTCODE_BILLING_ADDRESS_FIELDS } from 'wcpay/checkout/constants';
+import {
+	SHORTCODE_BILLING_ADDRESS_FIELDS,
+	UPE_PAYMENT_FORM_CLASS,
+} from 'wcpay/checkout/constants';
 import '../utils/copy-test-number';
 
 function getParsedLocale() {
@@ -99,7 +102,7 @@ jQuery( function ( $ ) {
 		).attr( 'value' );
 
 		document
-			.querySelectorAll( '.wcpay-upe-form' )
+			.querySelectorAll( `.${ UPE_PAYMENT_FORM_CLASS }` )
 			.forEach( ( container ) => {
 				container.toggleAttribute(
 					'checked',
