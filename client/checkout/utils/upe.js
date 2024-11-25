@@ -8,7 +8,7 @@ import {
 } from '../constants';
 
 /**
- * Generates terms parameter for UPE, with value set for reusable payment methods
+ * Generates terms for reusable payment methods
  *
  * @param {Object} paymentMethodsConfig Object mapping payment method strings to their settings.
  * @param {string} value The terms value for each available payment method.
@@ -28,17 +28,23 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 };
 
 /**
- * Returns Stripe payment method for selected payment gateway.
+ * Returns Stripe payment method (e.g. card, bancontact ) for selected payment gateway.
  *
- * @return {string} Stripe payment method type
+ * @return {string} Payment method name
  */
 export const getSelectedUPEGatewayPaymentMethod = () => {
-	const selectedContainer = document.querySelector(
+	const selectedGateway = document.querySelector(
 		`.${ UPE_PAYMENT_FORM_CLASS }[checked]`
 	);
-	return selectedContainer?.dataset.paymentMethodType || null;
+	return selectedGateway?.dataset.paymentMethodType || null;
 };
 
+/**
+ * Determines which billing fields should be hidden in the Stripe payment element.
+ *
+ * @param {Object} enabledBillingFields Object containing all the billing fields for the WooCommerce checkout.
+ * @return {Object} Object mapping billing field names to their hidden status.
+ */
 export const getHiddenBillingFields = ( enabledBillingFields ) => {
 	return {
 		name:
@@ -61,6 +67,13 @@ export const getHiddenBillingFields = ( enabledBillingFields ) => {
 	};
 };
 
+/**
+ * Generates payment method specific settings object for the Stripe Payment Elements.
+ * Includes terms visibility, billing fields configuration, and default customer values.
+ *
+ * @param {string} paymentMethodType The type of payment method being configured (e.g. card, bancontact)
+ * @return {Object} Settings object for Payment Elements
+ */
 export const getUpeSettings = ( paymentMethodType ) => {
 	const upeSettings = {};
 	const showTerms = shouldIncludeTerms( paymentMethodType )
@@ -287,13 +300,9 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 	const upeContainer = document.querySelector( '.wcpay-payment-element' );
 	if ( ! upeContainer ) return;
 
-	// Find parent containing email input
-	let parent = upeContainer.parentElement;
-	while ( parent && ! parent.querySelector( 'input[type="email"]' ) ) {
-		parent = parent.parentElement;
-	}
-
-	const emailInput = parent?.querySelector( 'input[type="email"]' );
+	const emailInput = upeContainer
+		.closest( 'form' )
+		?.querySelector( 'input[type="email"]' );
 	if ( ! emailInput ) return;
 
 	const stripeLinkButton = document.createElement( 'button' );
@@ -330,15 +339,10 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
 	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
-
-	// First try finding billing country input by traversing up
-	let currentNode = upeElement.parentElement;
-	let billingInput = null;
-
-	while ( currentNode && ! billingInput ) {
-		billingInput = currentNode.querySelector( '#billing_country' );
-		currentNode = currentNode.parentElement;
-	}
+	// Simplified approach - find the form ancestor and then search within it
+	let billingInput = upeElement
+		.closest( 'form.checkout' )
+		?.querySelector( '#billing_country' );
 
 	// If not found, try finding it in the document
 	if ( ! billingInput ) {
@@ -356,10 +360,17 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	} else {
 		upeContainer.style.display = 'none';
 		if ( paymentMethodType === selectedPaymentMethod ) {
+			const defaultPaymentMethod = 'card';
 			const paymentsForm = document.querySelector(
-				`.${ UPE_PAYMENT_FORM_CLASS }[data-payment-method-type="card"]`
+				`.${ UPE_PAYMENT_FORM_CLASS }[data-payment-method-type="${ defaultPaymentMethod }"]`
 			);
-			paymentsForm.closest( 'li.wc_payment_method' )?.click();
+			const paymentMethodLi = paymentsForm.closest(
+				'li.wc_payment_method'
+			);
+			const radioInput = paymentMethodLi?.querySelector(
+				`input[name="payment_method"][value="${ paymentsForm.dataset.gatewayId }"]`
+			);
+			radioInput?.click();
 		}
 	}
 };
