@@ -320,7 +320,8 @@ export default class WCPayAPI {
 			{
 				security: getExpressCheckoutConfig( 'nonce' )?.update_shipping,
 				shipping_method: [ shippingOption.id ],
-				is_product_page: getExpressCheckoutConfig( 'is_product_page' ),
+				is_product_page:
+					getExpressCheckoutConfig( 'button_context' ) === 'product',
 			}
 		);
 	}
@@ -381,7 +382,8 @@ export default class WCPayAPI {
 			getExpressCheckoutAjaxURL( 'ece_get_shipping_options' ),
 			{
 				security: getExpressCheckoutConfig( 'nonce' )?.shipping,
-				is_product_page: getExpressCheckoutConfig( 'is_product_page' ),
+				is_product_page:
+					getExpressCheckoutConfig( 'button_context' ) === 'product',
 				...shippingAddress,
 			}
 		);

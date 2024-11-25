@@ -13,7 +13,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\WooPay\WooPay_Utilities;
 
 /**
- * WC_Payments_WooPay_Button_Handler_Test class.
+ * WC_Payments_Express_Checkout_Button_Display_Handler_Test class.
  */
 class WC_Payments_Express_Checkout_Button_Display_Handler_Test extends WCPAY_UnitTestCase {
 	/**

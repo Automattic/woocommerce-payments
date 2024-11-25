@@ -856,7 +856,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $amount, $notes[0]->content );
 		$this->assertStringContainsString( 'Product not received', $notes[0]->content );
 		$this->assertStringContainsString( $deadline, $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
 
 		// Assert: Check that order status change note was added.
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
@@ -910,7 +910,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to Completed', $notes[1]->content );
 		$this->assertStringContainsString( 'Payment dispute has been closed with status won', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
 		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
@@ -938,7 +938,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'On hold to Refunded', $notes[1]->content );
 		$this->assertStringContainsString( 'Payment dispute has been closed with status lost', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Check for created refund, and the amount is correct.
 		$refunds = $this->order->get_refunds();
