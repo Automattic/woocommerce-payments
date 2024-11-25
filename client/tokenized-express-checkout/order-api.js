@@ -3,9 +3,13 @@
  */
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
-import { getPaymentRequestData } from './frontend-utils';
 
-export default class PaymentRequestOrderApi {
+/**
+ * Internal dependencies
+ */
+import { getExpressCheckoutData } from './utils';
+
+export default class ExpressCheckoutOrderApi {
 	// parameters used in every request, just in different ways.
 	orderId;
 	key;
@@ -44,7 +48,7 @@ export default class PaymentRequestOrderApi {
 			method: 'POST',
 			path: `/wc/store/v1/checkout/${ this.orderId }`,
 			headers: {
-				Nonce: getPaymentRequestData( 'nonce' ).store_api_nonce,
+				Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
 			},
 			data: {
 				...paymentData,

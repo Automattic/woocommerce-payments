@@ -427,7 +427,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			)
 
 			// ...and billing is calculated based on billing address.
-			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
+			&& wc_tax_enabled() && 'billing' === get_option( 'woocommerce_tax_based_on' )
 		) {
 			return false;
 		}
