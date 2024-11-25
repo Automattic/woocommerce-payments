@@ -328,19 +328,30 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		paymentMethodsConfig[ paymentMethodType ].countries;
 	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
 
+	// First try finding billing country input by traversing up
+	let currentNode = upeElement.parentElement;
+	let billingInput = null;
+
+	while ( currentNode && ! billingInput ) {
+		billingInput = currentNode.querySelector( '#billing_country' );
+		currentNode = currentNode.parentElement;
+	}
+
+	// If not found, try finding it in the document
+	if ( ! billingInput ) {
+		billingInput = document.querySelector( '#billing_country' );
+	}
+
 	/* global wcpayCustomerData */
 	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
 	const billingCountry =
-		document.getElementById( 'billing_country' )?.value ||
-		wcpayCustomerData?.billing_country ||
-		'';
+		billingInput?.value || wcpayCustomerData?.billing_country || '';
 
 	const upeContainer = upeElement.closest( 'li.wc_payment_method' );
 	if ( supportedCountries.includes( billingCountry ) ) {
 		upeContainer.style.removeProperty( 'display' );
 	} else {
 		upeContainer.style.display = 'none';
-		// if the toggled off payment method was selected, we need to fall back to credit card
 		if ( paymentMethodType === selectedPaymentMethod ) {
 			const paymentsForm = document.querySelector(
 				`.wcpay-upe-form[data-payment-method-type="card"]`
