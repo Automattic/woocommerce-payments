@@ -281,16 +281,24 @@ export const getBlocksEmailValue = () => {
  * @param {Object} linkAutofill Stripe Link Autofill instance.
  */
 export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
-	const emailInput = document.getElementById( 'email' );
+	const upeContainer = document.querySelector( '.wcpay-payment-element' );
+	if ( ! upeContainer ) return;
+
+	// Find parent containing email input
+	let parent = upeContainer.parentElement;
+	while ( parent && ! parent.querySelector( 'input[type="email"]' ) ) {
+		parent = parent.parentElement;
+	}
+
+	const emailInput = parent?.querySelector( 'input[type="email"]' );
+	if ( ! emailInput ) return;
 
 	const stripeLinkButton = document.createElement( 'button' );
 	stripeLinkButton.setAttribute( 'class', 'wcpay-stripelink-modal-trigger' );
 	stripeLinkButton.style.display = emailInput.value ? 'inline-block' : 'none';
 	stripeLinkButton.addEventListener( 'click', ( event ) => {
 		event.preventDefault();
-		linkAutofill.launch( {
-			email: document.getElementById( 'email' ).value,
-		} );
+		linkAutofill.launch( { email: emailInput.value } );
 	} );
 
 	emailInput.parentNode.appendChild( stripeLinkButton );
