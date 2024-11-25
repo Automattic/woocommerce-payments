@@ -110,7 +110,7 @@ function shouldIncludeTerms( paymentMethodType ) {
 	}
 
 	const savePaymentMethodCheckbox = paymentsForm.querySelector(
-		'#wc-woocommerce_payments-new-payment-method'
+		`#wc-${ paymentsForm.dataset.gatewayId }-new-payment-method`
 	);
 
 	return savePaymentMethodCheckbox?.checked || false;
