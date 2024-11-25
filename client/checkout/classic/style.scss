@@ -127,6 +127,8 @@
 					justify-self: end;
 					margin: 3px 0; // ensuring the images don't appear squished when all the payment methods are rendered next to each others, like in Elementor.
 					align-self: center;
+					grid-column: 2; // Be explicit that the image should be in the second column of the grid container.
+					grid-row: 1 / span 2; // Makes the image span two rows of the grid container.
 				}
 
 				.stripe-pmme-container {
