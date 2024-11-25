@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix ECE Tracks events not triggering when WooPay is disabled.
