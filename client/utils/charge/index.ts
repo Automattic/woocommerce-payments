@@ -179,7 +179,7 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
  * In the individual transaction page, we are getting the data from Stripe, so we pass the transaction.type
  * which can be card_present or interac_present for In-Person payments.
  * In the list of transactions, the type holds the brand of the payment method, so we aren't passing it.
- * Instead, we pass the transaction.channel directly, which might be in_person|online.
+ * Instead, we pass the transaction.channel directly, which might be in_person|in_person_pos|online.
  *
  * @param {string} type The transaction type.
  * @return {string} Online or In-Person.
@@ -192,6 +192,8 @@ export const getChargeChannel = ( type: string ): string => {
 		type === 'in_person'
 	) {
 		return __( 'In-Person', 'woocommerce-payments' );
+	} else if ( type === 'in_person_pos' ) {
+		return __( 'In-Person (POS)', 'woocommerce-payments' );
 	}
 
 	return __( 'Online', 'woocommerce-payments' );
