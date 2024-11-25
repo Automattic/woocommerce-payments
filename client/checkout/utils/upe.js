@@ -266,13 +266,13 @@ export const getPaymentMethodTypes = ( paymentMethodType ) => {
 };
 
 /**
- * Returns the value of the email input on the blocks checkout page.
+ * Returns the email value from store API.
  *
- * @return {string} The value of email input.
+ * @return {string} The email value.
  */
 export const getBlocksEmailValue = () => {
 	const cartData = wp.data.select( 'wc/store/cart' ).getCustomerData();
-	return cartData.billingAddress.email;
+	return cartData?.billingAddress?.email || '';
 };
 
 /**
