@@ -31,7 +31,6 @@ import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
-import { UPE_PAYMENT_FORM_CLASS } from 'wcpay/checkout/constants';
 import '../utils/copy-test-number';
 
 jQuery( function ( $ ) {
@@ -90,7 +89,7 @@ jQuery( function ( $ ) {
 		).attr( 'value' );
 
 		document
-			.querySelectorAll( `.${ UPE_PAYMENT_FORM_CLASS }` )
+			.querySelectorAll( `.wcpay-upe-form` )
 			.forEach( ( container ) => {
 				container.toggleAttribute(
 					'checked',

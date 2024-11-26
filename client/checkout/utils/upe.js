@@ -7,7 +7,6 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	getPaymentMethodsConstants,
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
-	UPE_PAYMENT_FORM_CLASS,
 } from '../constants';
 
 /**
@@ -37,7 +36,7 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
  */
 export const getSelectedUPEGatewayPaymentMethod = () => {
 	const selectedGateway = document.querySelector(
-		`.${ UPE_PAYMENT_FORM_CLASS }[checked]`
+		`.wcpay-upe-form[checked]`
 	);
 	return selectedGateway?.dataset.paymentMethodType || null;
 };
@@ -122,7 +121,7 @@ function shouldIncludeTerms( paymentMethodType ) {
 	}
 
 	const paymentsForm = document.querySelector(
-		`.${ UPE_PAYMENT_FORM_CLASS }[data-payment-method-type="${ paymentMethodType }"]`
+		`.wcpay-upe-form[data-payment-method-type="${ paymentMethodType }"]`
 	);
 	if ( ! paymentsForm ) {
 		return false;
@@ -181,7 +180,7 @@ export const appendFraudPreventionTokenInputToForm = ( $form ) => {
  */
 export function isUsingSavedPaymentMethod( paymentMethodType ) {
 	const paymentsForm = document.querySelector(
-		`.${ UPE_PAYMENT_FORM_CLASS }[data-payment-method-type="${ paymentMethodType }"]`
+		`.wcpay-upe-form[data-payment-method-type="${ paymentMethodType }"]`
 	);
 	if ( ! paymentsForm ) {
 		return false;
@@ -361,7 +360,7 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		if ( paymentMethodType === selectedPaymentMethod ) {
 			const defaultPaymentMethod = 'card';
 			const cardPaymentForm = document.querySelector(
-				`.${ UPE_PAYMENT_FORM_CLASS }[data-payment-method-type="${ defaultPaymentMethod }"]`
+				`.wcpay-upe-form[data-payment-method-type="${ defaultPaymentMethod }"]`
 			);
 
 			const cardPaymentMethodInput = cardPaymentForm

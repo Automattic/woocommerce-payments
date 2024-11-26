@@ -1,5 +1,3 @@
-export const UPE_PAYMENT_FORM_CLASS = 'wcpay-upe-form';
-
 export const PAYMENT_METHOD_NAME_CARD = 'woocommerce_payments';
 export const PAYMENT_METHOD_NAME_BANCONTACT = 'woocommerce_payments_bancontact';
 export const PAYMENT_METHOD_NAME_BECS = 'woocommerce_payments_au_becs_debit';
