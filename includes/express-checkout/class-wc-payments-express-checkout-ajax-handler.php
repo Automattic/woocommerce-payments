@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 
@@ -38,12 +39,25 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
-		add_action( 'wc_ajax_wcpay_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
-		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
-		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
-		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
-		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
+		add_action( 'wc_ajax_wcpay_ece_create_order', [ $this, 'ajax_create_order' ] );
+		add_action( 'wc_ajax_wcpay_ece_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
+		add_action( 'wc_ajax_wcpay_ece_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
+		add_action( 'wc_ajax_wcpay_ece_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
+		add_action( 'wc_ajax_wcpay_ece_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
+		add_action( 'wc_ajax_wcpay_ece_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
+
+		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
+			add_action(
+				'woocommerce_store_api_checkout_update_order_from_request',
+				[
+					$this,
+					'tokenized_cart_set_payment_method_type',
+				],
+				10,
+				2
+			);
+			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+		}
 	}
 
 	/**
@@ -423,22 +437,160 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Empties the cart via AJAX. Used on the product page.
+	 * Updates the checkout order based on the request, to set the Apple Pay/Google Pay payment method title.
+	 *
+	 * @param \WC_Order        $order The order to be updated.
+	 * @param \WP_REST_Request $request Store API request to update the order.
 	 */
-	public function ajax_empty_cart() {
-		check_ajax_referer( 'wcpay-empty-cart', 'security' );
-
-		$booking_id = isset( $_POST['booking_id'] ) ? absint( $_POST['booking_id'] ) : null;
-
-		WC()->cart->empty_cart();
-
-		if ( $booking_id ) {
-			// When a bookable product is added to the cart, a 'booking' is create with status 'in-cart'.
-			// This status is used to prevent the booking from being booked by another customer
-			// and should be removed when the cart is emptied for PRB purposes.
-			do_action( 'wc-booking-remove-inactive-cart', $booking_id ); // phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores
+	public function tokenized_cart_set_payment_method_type( \WC_Order $order, \WP_REST_Request $request ) {
+		if ( ! isset( $request['payment_method'] ) || 'woocommerce_payments' !== $request['payment_method'] ) {
+			return;
 		}
 
-		wp_send_json( [ 'result' => 'success' ] );
+		if ( empty( $request['payment_data'] ) ) {
+			return;
+		}
+
+		$payment_data = [];
+		foreach ( $request['payment_data'] as $data ) {
+			$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
+		}
+
+		if ( empty( $payment_data['payment_request_type'] ) ) {
+			return;
+		}
+
+		$payment_request_type = wc_clean( wp_unslash( $payment_data['payment_request_type'] ) );
+
+		$payment_method_titles = [
+			'apple_pay'  => 'Apple Pay',
+			'google_pay' => 'Google Pay',
+		];
+
+		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+		if ( ! empty( $suffix ) ) {
+			$suffix = " ($suffix)";
+		}
+
+		$payment_method_title = isset( $payment_method_titles[ $payment_request_type ] ) ? $payment_method_titles[ $payment_request_type ] : 'Payment Request';
+		$order->set_payment_method_title( $payment_method_title . $suffix );
+	}
+
+	/**
+	 * Google Pay/Apple Pay parameters for address data might need some massaging for some of the countries.
+	 * Ensuring that the Store API doesn't throw a `rest_invalid_param` error message for some of those scenarios.
+	 *
+	 * @param mixed            $response Response to replace the requested version with.
+	 * @param \WP_REST_Server  $server Server instance.
+	 * @param \WP_REST_Request $request Request used to generate the response.
+	 *
+	 * @return mixed
+	 */
+	public function tokenized_cart_store_api_address_normalization( $response, $server, $request ) {
+		if ( 'true' !== $request->get_header( 'X-WooPayments-Tokenized-Cart' ) ) {
+			return $response;
+		}
+
+		// header added as additional layer of security.
+		$nonce = $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
+		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+			return $response;
+		}
+
+		// This route is used to get shipping rates.
+		// GooglePay/ApplePay might provide us with "trimmed" zip codes.
+		// If that's the case, let's temporarily allow to skip the zip code validation, in order to get some shipping rates.
+		$is_update_customer_route = $request->get_route() === '/wc/store/v1/cart/update-customer';
+		if ( $is_update_customer_route ) {
+			add_filter( 'woocommerce_validate_postcode', [ $this, 'maybe_skip_postcode_validation' ], 10, 3 );
+		}
+
+		$request_data = $request->get_json_params();
+		if ( isset( $request_data['shipping_address'] ) ) {
+			$request->set_param( 'shipping_address', $this->transform_ece_address_state_data( $request_data['shipping_address'] ) );
+			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+			// we need to modify the zip code to ensure that shipping zone identification still works.
+			if ( $is_update_customer_route ) {
+				$request->set_param( 'shipping_address', $this->transform_ece_address_postcode_data( $request_data['shipping_address'] ) );
+			}
+		}
+		if ( isset( $request_data['billing_address'] ) ) {
+			$request->set_param( 'billing_address', $this->transform_ece_address_state_data( $request_data['billing_address'] ) );
+			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+			// we need to modify the zip code to ensure that shipping zone identification still works.
+			if ( $is_update_customer_route ) {
+				$request->set_param( 'billing_address', $this->transform_ece_address_postcode_data( $request_data['billing_address'] ) );
+			}
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Allows certain "redacted" postcodes for some countries to bypass WC core validation.
+	 *
+	 * @param bool   $valid Whether the postcode is valid.
+	 * @param string $postcode The postcode in question.
+	 * @param string $country The country for the postcode.
+	 *
+	 * @return bool
+	 */
+	public function maybe_skip_postcode_validation( $valid, $postcode, $country ) {
+		if ( ! in_array( $country, [ Country_Code::UNITED_KINGDOM, Country_Code::CANADA ], true ) ) {
+			return $valid;
+		}
+
+		// We padded the string with `0` in the `get_normalized_postal_code` method.
+		// It's a flimsy check, but better than nothing.
+		// Plus, this check is only made for the scenarios outlined in the `tokenized_cart_store_api_address_normalization` method.
+		if ( substr( $postcode, - 1 ) === '0' ) {
+			return true;
+		}
+
+		return $valid;
+	}
+
+	/**
+	 * Transform a GooglePay/ApplePay state address data fields into values that are valid for WooCommerce.
+	 *
+	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 *
+	 * @return array
+	 */
+	private function transform_ece_address_state_data( $address ) {
+		$country = $address['country'] ?? '';
+		if ( empty( $country ) ) {
+			return $address;
+		}
+
+		// States from Apple Pay or Google Pay are in long format, we need their short format..
+		$state = $address['state'] ?? '';
+		if ( ! empty( $state ) ) {
+			$address['state'] = $this->express_checkout_button_helper->get_normalized_state( $state, $country );
+		}
+
+		return $address;
+	}
+
+	/**
+	 * Transform a GooglePay/ApplePay postcode address data fields into values that are valid for WooCommerce.
+	 *
+	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 *
+	 * @return array
+	 */
+	private function transform_ece_address_postcode_data( $address ) {
+		$country = $address['country'] ?? '';
+		if ( empty( $country ) ) {
+			return $address;
+		}
+
+		// Normalizes postal code in case of redacted data from Apple Pay or Google Pay.
+		$postcode = $address['postcode'] ?? '';
+		if ( ! empty( $postcode ) ) {
+			$address['postcode'] = $this->express_checkout_button_helper->get_normalized_postal_code( $postcode, $country );
+		}
+
+		return $address;
 	}
 }

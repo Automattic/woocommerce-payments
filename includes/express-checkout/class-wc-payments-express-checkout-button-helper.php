@@ -251,17 +251,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function get_common_button_settings() {
 		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
-		$settings    = [
+
+		return [
 			'type'   => $button_type,
 			'theme'  => $this->gateway->get_option( 'payment_request_button_theme' ),
 			'height' => $this->get_button_height(),
+			'radius' => $this->gateway->get_option( 'payment_request_button_border_radius' ),
 		];
-
-		if ( WC_Payments_Features::is_stripe_ece_enabled() ) {
-			$settings['radius'] = $this->gateway->get_option( 'payment_request_button_border_radius' );
-		}
-
-		return $settings;
 	}
 
 	/**
@@ -431,7 +427,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			)
 
 			// ...and billing is calculated based on billing address.
-			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
+			&& wc_tax_enabled() && 'billing' === get_option( 'woocommerce_tax_based_on' )
 		) {
 			return false;
 		}
@@ -893,7 +889,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		// Try to match state from the Payment Request API list of states.
-		$state = $this->get_normalized_state_from_pr_states( $state, $country );
+		$state = $this->get_normalized_state_from_ece_states( $state, $country );
 
 		// If it's normalized, return.
 		if ( $this->is_normalized_state( $state, $country ) ) {
@@ -980,10 +976,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * @return string Normalized state or original state input value.
 	 */
-	public function get_normalized_state_from_pr_states( $state, $country ) {
-		// Include Payment Request API State list for compatibility with WC countries/states.
-		include_once WCPAY_ABSPATH . 'includes/constants/class-payment-request-button-states.php';
-		$pr_states = \WCPay\Constants\Payment_Request_Button_States::STATES;
+	public function get_normalized_state_from_ece_states( $state, $country ) {
+		// Include Express Checkout Element API State list for compatibility with WC countries/states.
+		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
+		$pr_states = \WCPay\Constants\Express_Checkout_Element_States::STATES;
 
 		if ( ! isset( $pr_states[ $country ] ) ) {
 			return $state;

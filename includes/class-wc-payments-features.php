@@ -23,13 +23,12 @@ class WC_Payments_Features {
 	 */
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME         = '_wcpay_feature_subscriptions';
 	const STRIPE_BILLING_FLAG_NAME              = '_wcpay_feature_stripe_billing';
-	const STRIPE_ECE_FLAG_NAME                  = '_wcpay_feature_stripe_ece';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME     = '_wcpay_feature_woopay_express_checkout';
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME     = '_wcpay_feature_woopay_first_party_auth';
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME      = '_wcpay_feature_woopay_direct_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME            = '_wcpay_feature_auth_and_capture';
 	const DISPUTE_ISSUER_EVIDENCE               = '_wcpay_feature_dispute_issuer_evidence';
-	const TOKENIZED_CART_PRB_FLAG_NAME          = '_wcpay_feature_tokenized_cart_prb';
+	const TOKENIZED_CART_ECE_FLAG_NAME          = '_wcpay_feature_tokenized_cart_ece';
 	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME     = '_wcpay_feature_payment_overview_widget';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME = '_wcpay_feature_woopay_global_theme_support';
 
@@ -49,8 +48,8 @@ class WC_Payments_Features {
 	 *
 	 * @return bool
 	 */
-	public static function is_tokenized_cart_prb_enabled(): bool {
-		return '1' === get_option( self::TOKENIZED_CART_PRB_FLAG_NAME, '0' );
+	public static function is_tokenized_cart_ece_enabled(): bool {
+		return '1' === get_option( self::TOKENIZED_CART_ECE_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -354,15 +353,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Stripe Express Checkout Element feature is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_stripe_ece_enabled(): bool {
-		return '1' === get_option( self::STRIPE_ECE_FLAG_NAME, '1' );
-	}
-
-	/**
 	 * Checks whether Dispute issuer evidence feature should be enabled. Disabled by default.
 	 *
 	 * @return bool
@@ -395,7 +385,6 @@ class WC_Payments_Features {
 				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
-				'isStripeEceEnabled'             => self::is_stripe_ece_enabled(),
 			]
 		);
 	}

@@ -1,5 +1,42 @@
 *** WooPayments Changelog ***
 
+= 8.5.1 - 2024-11-25 =
+* Fix - fix: remove "test mode" badge from shortcode checkout.
+
+= 8.5.0 - 2024-11-13 =
+* Add - Add country-specific test card numbers for credit card testing
+* Add - Add risk level information to the fraud and risk box on the order details page.
+* Add - Add support for allowedShippingCountries in Express Checkout Element.
+* Fix - Avoid PHP warnings for requests with an empty path.
+* Fix - BNPL methods now work properly in Pay for Order when they are available. Default values are also provided when available.
+* Fix - fix: payment method icon alt text
+* Fix - Fix compatibility issues with CustomSelectControl component styles for WordPress 6.7
+* Fix - Fix duplicate saving of 3DS card entry after checkout
+* Fix - Fixed single product page view tracks when BNPL and PRB payment methods are inactive.
+* Fix - Fix PMME appearance in checkout
+* Fix - Fix settings display on the advanced fraud protection page.
+* Fix - Fix WooPay button preview in plugin settings.
+* Fix - Fix WooPay duplicated Save my info section.
+* Fix - Include missing scripts that handle refunds for non credit card payments in the order details page.
+* Fix - Introducing consistency in colors for deposits across pages
+* Fix - Prevent dead space on product pages when no BNPL offers are available.
+* Fix - Provide backwards-compatible method for retrieving the multi-currency instance.
+* Fix - Register Expresss Checkout block only when enabled in the settings
+* Fix - Remove unnecessary '.woocommerce-table' css overrides to fix WC Analytics styling and a11y issues
+* Fix - Use 'Withdrawal' and 'Deducted' labels when referring to withdrawal deposits, to more accurately communicate the type of transaction that has occurred
+* Update - Add in-memory cache fallback for our database-cached objects in case of database write failures.
+* Update - Decoupled Multi-currency module from gateway dependencies.
+* Update - Improvements to events during onboarding flow.
+* Update - Refactor loadStripe for Express Checkouts.
+* Update - Rename 'deposit' to 'payout' across various places in the WooPayments admin UI, docs and doc URLs.
+* Update - update: payment method "test mode" label at checkout to be displayed only when payment method is selected
+* Update - update: show LPM payment method icon on order success page
+* Update - Use preview versions of the actual ECE buttons in the Block editor.
+* Update - When tracking is enabled, send a tracks event when the merchant is redirected to a Stripe Capital offer.
+* Dev - Add Jest tests for the disputed order notices
+* Dev - Add unit tests for the Capital Loans page component.
+* Dev - Bump WC tested up to version to 9.4.0
+
 = 8.4.0 - 2024-10-23 =
 * Add - Add test mode badge to classic checkout and add payment method.
 * Add - Using Floating Labels with Stripe Appearance API for Blocks Checkout
