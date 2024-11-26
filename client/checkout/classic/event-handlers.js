@@ -122,7 +122,7 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	if ( $addPaymentMethodForm.length || $payForOrderForm.length ) {
+	if ( $addPaymentMethodForm.length ) {
 		maybeMountStripePaymentElement( 'add_payment_method' );
 	}
 

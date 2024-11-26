@@ -4,54 +4,50 @@
 import enableStripeLinkPaymentMethod from '..';
 import WCPayAPI from 'wcpay/checkout/api';
 
-jest.mock( 'wcpay/checkout/api', () => {
-	const mockOn = jest.fn();
-	const mockLaunch = jest.fn();
+const mockOn = jest.fn();
+const mockLaunch = jest.fn();
 
-	const mockLaunchAutofillModal = jest.fn( () => {
-		return {
-			launch: mockLaunch,
-			on: mockOn,
-		};
-	} );
+const mockLaunchAutofillModal = jest.fn( () => {
+	return {
+		launch: mockLaunch,
+		on: mockOn,
+	};
+} );
 
-	const mockedStripe = jest.fn( () => {
-		return {
-			linkAutofillModal: mockLaunchAutofillModal,
-		};
-	} );
-
-	return jest.fn().mockImplementation( () => {
-		return {
-			getStripe: mockedStripe,
-		};
+const mockedStripe = jest.fn( () => {
+	return Promise.resolve( {
+		linkAutofillModal: mockLaunchAutofillModal,
 	} );
 } );
+
+jest.mock( 'wcpay/checkout/api', () =>
+	jest.fn().mockImplementation( () => ( {
+		getStripe: mockedStripe,
+	} ) )
+);
 
 const billingEmail = 'example@example.com';
 
 describe( 'Stripe Link elements behavior', () => {
-	test( 'Should stop if emailId is not found', () => {
-		enableStripeLinkPaymentMethod( {
+	test( 'Should stop if emailId is not found', async () => {
+		await enableStripeLinkPaymentMethod( {
 			emailId: 'not_existing_email@example.com',
 		} );
-		expect(
-			WCPayAPI().getStripe().linkAutofillModal
-		).not.toHaveBeenCalled();
+		expect( mockLaunchAutofillModal ).not.toHaveBeenCalled();
 	} );
 
-	test( 'Should call linkAutofillModal when email is present', () => {
+	test( 'Should call linkAutofillModal when email is present', async () => {
 		createStripeLinkElements();
-		enableStripeLinkPaymentMethod( {
+		await enableStripeLinkPaymentMethod( {
 			api: WCPayAPI(),
 			emailId: 'billing_email',
 			onAutofill: () => null,
 			onButtonShow: () => null,
 		} );
-		expect( WCPayAPI().getStripe().linkAutofillModal ).toHaveBeenCalled();
+		expect( mockLaunchAutofillModal ).toHaveBeenCalled();
 	} );
 
-	test( 'Should add keyup event listener to email input', () => {
+	test( 'Should add keyup event listener to email input', async () => {
 		createStripeLinkElements();
 		const billingEmailInput = document.getElementById( 'billing_email' );
 		const addEventListenerSpy = jest.spyOn(
@@ -59,7 +55,7 @@ describe( 'Stripe Link elements behavior', () => {
 			'addEventListener'
 		);
 
-		enableStripeLinkPaymentMethod( {
+		await enableStripeLinkPaymentMethod( {
 			api: WCPayAPI(),
 			emailId: 'billing_email',
 			onAutofill: () => null,
@@ -71,15 +67,15 @@ describe( 'Stripe Link elements behavior', () => {
 			'keyup',
 			expect.any( Function )
 		);
-		expect(
-			WCPayAPI().getStripe().linkAutofillModal().launch
-		).toHaveBeenCalledWith( { email: billingEmail } );
+		expect( mockLaunch ).toHaveBeenCalledWith( {
+			email: billingEmail,
+		} );
 	} );
 
-	test( 'Stripe Link button should call onButtonShow configuration value', () => {
+	test( 'Stripe Link button should call onButtonShow configuration value', async () => {
 		createStripeLinkElements();
 		const handleButtonShow = jest.fn();
-		enableStripeLinkPaymentMethod( {
+		await enableStripeLinkPaymentMethod( {
 			api: WCPayAPI(),
 			emailId: 'billing_email',
 			onAutofill: () => null,

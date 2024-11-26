@@ -51,11 +51,27 @@ export default class WCPayAPI {
 	 * @param {string} paymentMethodType The payment method type.
 	 * @return {Object} The Stripe Object.
 	 */
-	getStripeForUPE( paymentMethodType ) {
+	async getStripeForUPE( paymentMethodType ) {
 		this.options.forceNetworkSavedCards = getUPEConfig(
 			'paymentMethodsConfig'
 		)[ paymentMethodType ].forceNetworkSavedCards;
 		return this.getStripe();
+	}
+
+	async getStripe( forceAccountRequest = false ) {
+		const maxWaitTime = 600 * 1000; // 600 seconds
+		const waitInterval = 100;
+		let currentWaitTime = 0;
+		while ( ! window.Stripe ) {
+			await new Promise( ( resolve ) =>
+				setTimeout( resolve, waitInterval )
+			);
+			currentWaitTime += waitInterval;
+			if ( currentWaitTime > maxWaitTime ) {
+				throw new Error( 'Stripe object not found' );
+			}
+		}
+		return this.__getStripe( forceAccountRequest );
 	}
 
 	/**
@@ -64,7 +80,7 @@ export default class WCPayAPI {
 	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Object} The Stripe Object.
 	 */
-	getStripe( forceAccountRequest = false ) {
+	__getStripe( forceAccountRequest = false ) {
 		const {
 			publishableKey,
 			accountId,
@@ -105,17 +121,15 @@ export default class WCPayAPI {
 	 *
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
-	loadStripeForExpressCheckout() {
-		return new Promise( ( resolve ) => {
-			try {
-				// Force Stripe to be loadded with the connected account.
-				resolve( this.getStripe( true ) );
-			} catch ( error ) {
-				// In order to avoid showing console error publicly to users,
-				// we resolve instead of rejecting when there is an error.
-				resolve( { error } );
-			}
-		} );
+	async loadStripeForExpressCheckout() {
+		// Force Stripe to be loadded with the connected account.
+		try {
+			return this.getStripe( true );
+		} catch ( error ) {
+			// In order to avoid showing console error publicly to users,
+			// we resolve instead of rejecting when there is an error.
+			return { error };
+		}
 	}
 
 	/**
@@ -160,7 +174,7 @@ export default class WCPayAPI {
 			orderId = orderIdPartials[ 0 ];
 		}
 
-		const confirmPaymentOrSetup = () => {
+		const confirmPaymentOrSetup = async () => {
 			const { locale, publishableKey } = this.options;
 			const accountIdForIntentConfirmation = getConfig(
 				'accountIdForIntentConfirmation'
@@ -168,8 +182,9 @@ export default class WCPayAPI {
 
 			// If this is a setup intent we're not processing a woopay payment so we can
 			// use the regular getStripe function.
+			const stripe = await this.getStripe();
 			if ( isSetupIntent ) {
-				return this.getStripe().handleNextAction( {
+				return stripe.handleNextAction( {
 					clientSecret: clientSecret,
 				} );
 			}
@@ -186,7 +201,8 @@ export default class WCPayAPI {
 
 			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
-			return this.getStripe( true ).handleNextAction( {
+			const stripeWithForcedAccountRequest = await this.getStripe( true );
+			return stripeWithForcedAccountRequest.handleNextAction( {
 				clientSecret: clientSecret,
 			} );
 		};
@@ -251,32 +267,34 @@ export default class WCPayAPI {
 	 * @param {string} paymentMethodId The ID of the payment method.
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	setupIntent( paymentMethodId ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
+	async setupIntent( paymentMethodId ) {
+		const response = await this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_setup_intent',
 			'wcpay-payment-method': paymentMethodId,
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
-		} ).then( ( response ) => {
-			if ( ! response.success ) {
-				throw response.data.error;
-			}
-
-			if ( response.data.status === 'succeeded' ) {
-				// No need for further authentication.
-				return response.data;
-			}
-
-			return this.getStripe()
-				.confirmCardSetup( response.data.client_secret )
-				.then( ( confirmedSetupIntent ) => {
-					const { setupIntent, error } = confirmedSetupIntent;
-					if ( error ) {
-						throw error;
-					}
-
-					return setupIntent;
-				} );
 		} );
+
+		if ( ! response.success ) {
+			throw response.data.error;
+		}
+
+		if ( response.data.status === 'succeeded' ) {
+			// No need for further authentication.
+			return response.data;
+		}
+
+		const stripe = await this.getStripe();
+
+		const confirmedSetupIntent = await stripe.confirmCardSetup(
+			response.data.client_secret
+		);
+
+		const { setupIntent, error } = confirmedSetupIntent;
+		if ( error ) {
+			throw error;
+		}
+
+		return setupIntent;
 	}
 
 	/**
