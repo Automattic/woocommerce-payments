@@ -440,7 +440,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$intent_status = $this->read_webhook_property( $event_object, 'status' );
 
-		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );  }
+		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
+	}
 
 	/**
 	 * Process webhook for a successful payment intent.
@@ -714,7 +715,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception   Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve intent ID to order.
 	 *
-	 * @return boolean|WC_Order|WC_Order_Refund
+	 * @return null|WC_Order
 	 */
 	private function get_order_from_event_body( $event_body ) {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
@@ -724,7 +725,7 @@ class WC_Payments_Webhook_Processing_Service {
 		// Look up the order related to this intent.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
 
-		if ( ! $order ) {
+		if ( ! $order instanceof \WC_Order ) {
 			// Retrieving order with order_id in case intent_id was not properly set.
 			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
 			$metadata = $this->read_webhook_property( $event_object, 'metadata' );
@@ -740,11 +741,11 @@ class WC_Payments_Webhook_Processing_Service {
 				$order = $this->wcpay_db->order_from_order_id( $order_id );
 			} elseif ( ! empty( $event_object['invoice'] ) ) {
 				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
-				return false;
+				return null;
 			}
 		}
 
-		if ( ! $order ) {
+		if ( ! $order instanceof \WC_Order ) {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
 				/* translators: %1: intent ID */
