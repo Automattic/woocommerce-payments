@@ -1,9 +1,12 @@
+/* global wc_address_i18n_params */
+
 /**
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	getPaymentMethodsConstants,
+	SHORTCODE_BILLING_ADDRESS_FIELDS,
 	UPE_PAYMENT_FORM_CLASS,
 } from '../constants';
 
@@ -184,13 +187,9 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 		return false;
 	}
 
-	const tokenInputId =
-		paymentMethodType === 'card' || paymentMethodType === 'link'
-			? 'wc-woocommerce_payments-payment-token-new'
-			: `wc-woocommerce_payments_${ paymentMethodType }-payment-token-new`;
-
+	const newPaymentTokenInputId = `wc-${ paymentsForm.dataset.gatewayId }-payment-token-new`;
 	const newPaymentTokenInput = paymentsForm.querySelector(
-		`input#${ tokenInputId }`
+		`input#${ newPaymentTokenInputId }`
 	);
 	if ( ! newPaymentTokenInput ) {
 		return false;
@@ -341,10 +340,10 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
 	// Simplified approach - find the form ancestor and then search within it
 	let billingInput = upeElement
-		.closest( 'form.checkout' )
+		?.closest( 'form.checkout, form#add_payment_method' )
 		?.querySelector( '#billing_country' );
 
-	// If not found, try finding it in the document
+	// If not found, fallback to the search in the whole document
 	if ( ! billingInput ) {
 		billingInput = document.querySelector( '#billing_country' );
 	}
@@ -354,23 +353,91 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const billingCountry =
 		billingInput?.value || wcpayCustomerData?.billing_country || '';
 
-	const upeContainer = upeElement.closest( 'li.wc_payment_method' );
+	const upeContainer = upeElement?.closest( '.wc_payment_method' );
 	if ( supportedCountries.includes( billingCountry ) ) {
 		upeContainer.style.removeProperty( 'display' );
 	} else {
 		upeContainer.style.display = 'none';
 		if ( paymentMethodType === selectedPaymentMethod ) {
 			const defaultPaymentMethod = 'card';
-			const paymentsForm = document.querySelector(
+			const cardPaymentForm = document.querySelector(
 				`.${ UPE_PAYMENT_FORM_CLASS }[data-payment-method-type="${ defaultPaymentMethod }"]`
 			);
-			const paymentMethodLi = paymentsForm.closest(
-				'li.wc_payment_method'
-			);
-			const radioInput = paymentMethodLi?.querySelector(
-				`input[name="payment_method"][value="${ paymentsForm.dataset.gatewayId }"]`
-			);
-			radioInput?.click();
+
+			const cardPaymentMethodInput = cardPaymentForm
+				?.closest( '.wc_payment_method' )
+				.querySelector(
+					`input[name="payment_method"][value="${ cardPaymentForm.dataset.gatewayId }"]`
+				);
+
+			cardPaymentMethodInput?.click();
 		}
 	}
+};
+
+function getParsedLocale() {
+	try {
+		return JSON.parse(
+			wc_address_i18n_params.locale.replace( /&quot;/g, '"' )
+		);
+	} catch ( e ) {
+		return null;
+	}
+}
+
+export const isBillingInformationMissing = ( $form ) => {
+	const form = $form[ 0 ];
+	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
+
+	// first name and last name are kinda special - we just need one of them to be at checkout
+	const name = `${
+		form.querySelector(
+			`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name }`
+		)?.value || ''
+	} ${
+		form.querySelector( `#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }` )
+			?.value || ''
+	}`.trim();
+	if (
+		! name &&
+		( enabledBillingFields[ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name ] ||
+			enabledBillingFields[ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name ] )
+	) {
+		return true;
+	}
+
+	const billingFieldsToValidate = [
+		'billing_email',
+		SHORTCODE_BILLING_ADDRESS_FIELDS.country,
+		SHORTCODE_BILLING_ADDRESS_FIELDS.address_1,
+		SHORTCODE_BILLING_ADDRESS_FIELDS.city,
+		SHORTCODE_BILLING_ADDRESS_FIELDS.postcode,
+	].filter( ( field ) => enabledBillingFields[ field ] );
+
+	const country = billingFieldsToValidate.includes(
+		SHORTCODE_BILLING_ADDRESS_FIELDS.country
+	)
+		? form.querySelector( `#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }` )
+				?.value
+		: null;
+
+	// We need to just find one field with missing information. If even only one is missing, just return early.
+	return Boolean(
+		billingFieldsToValidate.find( ( fieldName ) => {
+			const $field = form.querySelector( `#${ fieldName }` );
+			let isRequired = enabledBillingFields[ fieldName ]?.required;
+			const locale = getParsedLocale();
+
+			if ( country && locale && fieldName !== 'billing_email' ) {
+				const key = fieldName.replace( 'billing_', '' );
+				isRequired =
+					locale[ country ][ key ]?.required ??
+					locale.default[ key ]?.required;
+			}
+
+			const hasValue = $field?.value;
+
+			return isRequired && ! hasValue;
+		} )
+	);
 };
