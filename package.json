@@ -62,6 +62,7 @@
     "lint:css": "stylelint 'client/**/*.scss' 'client/**/*.css' 'assets/**/*.scss' 'assets/**/*.css'",
     "lint:js": "tsc --noEmit && eslint . --ext=js,jsx,ts,tsx",
     "lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
+    "lint:php-compatibility": "./vendor/bin/phpcs --standard=phpcs-compat.xml.dist $(git ls-files | grep .php$)",
     "lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "format": "npm run format:js && npm run format:css",
     "format:js": "npm run format:provided '**/*.js' '**/*.ts' '**/*.tsx'",
