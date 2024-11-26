@@ -11,19 +11,24 @@
 
 			img {
 				height: 22px;
-				margin-bottom: $gap-large;
+				margin-bottom: $gap-small;
+			}
+
+			h2 {
+				margin: $gap-large 0;
 			}
 
 			@media screen and ( min-width: $break-small ) {
 				h2 {
-					margin-right: 7%;
 					@include wp-title-large;
+					line-height: normal;
 				}
 			}
 		}
 
 		&__content {
 			padding: $gap-large;
+			padding-top: 0;
 		}
 
 		&__payment-methods {
