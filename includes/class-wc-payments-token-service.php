@@ -62,7 +62,7 @@ class WC_Payments_Token_Service {
 	 *
 	 * @param   array   $payment_method                                          Payment method to be added.
 	 * @param   WP_User $user                                                    User to attach payment method to.
-	 * @return  WC_Payment_Token|WC_Payment_Token_CC|WC_Payment_Token_WCPay_SEPA The WC object for the payment token.
+	 * @return  WC_Payment_Token The WC object for the payment token.
 	 */
 	public function add_token_to_user( $payment_method, $user ) {
 		// Clear cached payment methods.
