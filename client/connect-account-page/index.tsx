@@ -464,7 +464,11 @@ const ConnectAccountPage: React.FC = () => {
 	}
 
 	return (
-		<Page isNarrow className="connect-account-page">
+		<Page
+			isNarrow
+			id="connect-account-page"
+			className="connect-account-page"
+		>
 			{ errorMessage && (
 				<BannerNotice
 					status="error"
