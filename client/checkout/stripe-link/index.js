@@ -65,15 +65,14 @@ const enableStripeLinkPaymentMethod = async ( options ) => {
 
 	options.onButtonShow( linkAutofill );
 
-	const handleAutofill = ( event ) => {
+	linkAutofill.on( 'autofill', ( event ) => {
 		const { billingAddress, shippingAddress } = event.value;
 		options.onAutofill(
 			transformStripeLinkAddress( billingAddress ),
 			transformStripeLinkAddress( shippingAddress )
 		);
 		switchToNewPaymentTokenElement();
-	};
-	linkAutofill.on( 'autofill', handleAutofill );
+	} );
 
 	return () => {
 		emailField.removeEventListener( 'keyup', handleKeyup );
