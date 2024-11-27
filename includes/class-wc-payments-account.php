@@ -1167,6 +1167,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		 *         5.1.3 All other cases -> redirect to ONBOARDING WIZARD
 		 *    5.2 If PARTIALLY onboarded Stripe account connected -> redirect to STRIPE KYC
 		 *    5.3 If fully onboarded Stripe account connected -> redirect to OVERVIEW PAGE
+		 *         5.3.1 If redirect to settings page flags set -> redirect to SETTINGS PAGE
 		 *
 		 * This logic is so complex because we use connect links as a catch-all place to
 		 * handle everything and anything related to the WooPayments account setup. It reduces the complexity on the
@@ -1182,6 +1183,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 			$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 			$create_test_drive_account   = ! empty( $_GET['test_drive'] ) && 'true' === $_GET['test_drive'];
+			$redirect_to_settings_page   = ! empty( $_GET['redirect_to_settings_page'] ) && 'true' === $_GET['redirect_to_settings_page'];
 			// There is no point in auto starting test drive onboarding if we are not in the test drive mode.
 			$auto_start_test_drive_onboarding = $create_test_drive_account &&
 												! empty( $_GET['auto_start_test_drive_onboarding'] ) &&
@@ -1343,15 +1345,23 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				&& $this->has_working_jetpack_connection()
 				&& $this->is_stripe_account_valid() ) {
 
+				$params = [
+					'source'                   => $onboarding_source,
+					// Carry over some parameters as they may be used by our frontend logic.
+					'wcpay-connection-success' => ! empty( $_GET['wcpay-connection-success'] ) ? '1' : false,
+					'wcpay-sandbox-success'    => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
+					'test_drive_error'         => ! empty( $_GET['test_drive_error'] ) ? 'true' : false,
+				];
+				if ( $redirect_to_settings_page ) {
+					$this->redirect_service->redirect_to_settings_page(
+						$from,
+						$params
+					);
+					return;
+				}
 				$this->redirect_service->redirect_to_overview_page(
 					$from,
-					[
-						'source'                   => $onboarding_source,
-						// Carry over some parameters as they may be used by our frontend logic.
-						'wcpay-connection-success' => ! empty( $_GET['wcpay-connection-success'] ) ? '1' : false,
-						'wcpay-sandbox-success'    => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
-						'test_drive_error'         => ! empty( $_GET['test_drive_error'] ) ? 'true' : false,
-					]
+					$params
 				);
 				return;
 			}

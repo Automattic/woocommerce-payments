@@ -193,6 +193,8 @@ const ConnectAccountPage: React.FC = () => {
 					'wcpay-sandbox-success': 'true',
 					source: determineTrackingSource(),
 					from: 'WCPAY_CONNECT',
+					redirect_to_settings_page:
+						urlParams.get( 'redirect_to_settings_page' ) || '',
 				} );
 			} else {
 				setTimeout( checkAccountStatus, 2000 );
