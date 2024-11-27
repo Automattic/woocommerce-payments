@@ -97,6 +97,11 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 		screenReaderLabel: __( 'Bank account', 'woocommerce-payments' ),
 		isLeftAligned: true,
 	},
+	{
+		key: 'traceId',
+		label: __( 'Trace ID', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Trace ID', 'woocommerce-payments' ),
+	},
 ];
 
 export const DepositsList = (): JSX.Element => {
@@ -164,6 +169,10 @@ export const DepositsList = (): JSX.Element => {
 			bankAccount: {
 				value: deposit.bankAccount,
 				display: clickable( deposit.bankAccount ),
+			},
+			traceId: {
+				value: deposit.trace_id,
+				display: clickable( deposit.trace_id ),
 			},
 		};
 
