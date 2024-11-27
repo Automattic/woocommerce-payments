@@ -50,6 +50,8 @@ class Payment_Method_Deprecation_Settings_Update {
 	 *
 	 * @param WC_Payment_Gateway_WCPay $main_gateway WCPay gateway.
 	 * @param array                    $all_registered_gateways All registered gateways.
+	 * @param string                   $payment_method_id Stripe payment method ID of payment method to deprecate.
+	 * @param string                   $migration_version Plugin version after which migration should run.
 	 */
 	public function __construct( WC_Payment_Gateway_WCPay $main_gateway, $all_registered_gateways, $payment_method_id, $migration_version ) {
 		$this->main_gateway            = $main_gateway;
