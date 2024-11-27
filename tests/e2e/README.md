@@ -135,7 +135,7 @@ E2E_WC_VERSION='<woocommerce_version>'
   - WC E2E Client: http://localhost:8084
   - WC E2E Server: http://localhost:8088 (Available only when using local server)
 
-  **Note:** Be aware that the server port may change in the `docker-compose.e2e.yml` configuration, so when you can't access the server, try running `docker port woocommerce_payments_server_wordpress_e2e 80` to find out the bound port of the E2E server container.
+  **Note:** Be aware that the server port may change in the `docker-compose.e2e.yml` configuration, so when you can't access the server, try running `docker port transact_platform_server_wordpress_e2e 80` to find out the bound port of the E2E server container.
 
 </p>
 </details>
