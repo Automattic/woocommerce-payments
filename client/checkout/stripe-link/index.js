@@ -58,20 +58,27 @@ const enableStripeLinkPaymentMethod = async ( options ) => {
 	// https://stripe.com/docs/payments/link/autofill-modal
 	const linkAutofill = stripe.linkAutofillModal( options.elements );
 
-	emailField.addEventListener( 'keyup', ( event ) => {
+	const handleKeyup = ( event ) => {
 		linkAutofill.launch( { email: event.target.value } );
-	} );
+	};
+	emailField.addEventListener( 'keyup', handleKeyup );
 
 	options.onButtonShow( linkAutofill );
 
-	linkAutofill.on( 'autofill', ( event ) => {
+	const handleAutofill = ( event ) => {
 		const { billingAddress, shippingAddress } = event.value;
 		options.onAutofill(
 			transformStripeLinkAddress( billingAddress ),
 			transformStripeLinkAddress( shippingAddress )
 		);
 		switchToNewPaymentTokenElement();
-	} );
+	};
+	linkAutofill.on( 'autofill', handleAutofill );
+
+	return () => {
+		emailField.removeEventListener( 'keyup', handleKeyup );
+		removeLinkButton();
+	};
 };
 
 export default enableStripeLinkPaymentMethod;
