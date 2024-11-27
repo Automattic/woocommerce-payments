@@ -480,7 +480,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			'is_array'
 		);
 
-		return $payment_methods;
+		return $payment_methods ?? [];
 	}
 
 	/**
