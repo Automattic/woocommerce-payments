@@ -11,6 +11,7 @@ import { StoreNotice } from '@woocommerce/blocks-checkout';
  */
 import './style.scss';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { useFingerprint } from './hooks';
 import { LoadableBlock } from 'wcpay/components/loadable';
@@ -18,7 +19,8 @@ import PaymentProcessor from './payment-processor';
 import { getPaymentMethodTypes } from 'wcpay/checkout/utils/upe';
 
 const PaymentElements = ( { api, ...props } ) => {
-	const stripe = api.getStripeForUPE( props.paymentMethodId );
+	const stripeForUPE = useStripeForUPE( api, props.paymentMethodId );
+
 	const [ errorMessage, setErrorMessage ] = useState( null );
 	const [
 		paymentProcessorLoadErrorMessage,
@@ -59,10 +61,14 @@ const PaymentElements = ( { api, ...props } ) => {
 		props.paymentMethodId,
 	] );
 
+	if ( ! stripeForUPE ) {
+		return <LoadableBlock isLoading numLines={ 3 }></LoadableBlock>;
+	}
+
 	return (
 		<LoadableBlock isLoading={ ! appearance } numLines={ 3 }>
 			<Elements
-				stripe={ stripe }
+				stripe={ stripeForUPE }
 				options={ {
 					mode: amount < 1 ? 'setup' : 'payment',
 					amount: amount,

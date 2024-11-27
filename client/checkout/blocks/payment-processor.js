@@ -183,16 +183,16 @@ const PaymentProcessor = ( {
 						};
 					}
 
-					const result = await api
-						.getStripeForUPE( paymentMethodId )
-						.createPaymentMethod( {
-							elements,
-							params: {
-								billing_details: getBillingDetails(
-									billingData
-								),
-							},
-						} );
+					const stripeForUPE = await api.getStripeForUPE(
+						paymentMethodId
+					);
+
+					const result = await stripeForUPE.createPaymentMethod( {
+						elements,
+						params: {
+							billing_details: getBillingDetails( billingData ),
+						},
+					} );
 
 					if ( result.error ) {
 						return {
