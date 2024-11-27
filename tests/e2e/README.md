@@ -24,18 +24,18 @@ DEBUG=false
 ---
 
 <details>
-<summary>Choose WCPay Server instance</summary>
+<summary>Choose Transact Platform Server instance</summary>
 <p>
 
-It is possible to use the live server or a local docker instance of WCPay server locally. On Github Actions, live server is used for tests. Add the following env variables to your `local.env` based on your preference (replace values as required).
+It is possible to use the live server or a local docker instance of Transact Platform Server locally. On Github Actions, live server is used for tests. Add the following env variables to your `local.env` based on your preference (replace values as required).
 
 **Using Local Server on Docker**
 
-By default, the local E2E environment is configured to use WCPay local server instance. Add the following env variables to configure the local server instance.
+By default, the local E2E environment is configured to use Transact Platform local server instance. Add the following env variables to configure the local server instance.
 
 ```
-# WooCommerce Payments Server Repo
-WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+# Transact Platform Server Repo
+TRANSACT_PLATFORM_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
 
 # Stripe account data. Need to support level 3 data to run tests successfully.
 # These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys
