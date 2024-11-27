@@ -4501,6 +4501,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Get recommended payment methods for a given country.
+	 *
+	 * @param string $country_code Country code.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_recommended_payment_methods( string $country_code ) {
+		return $this->payments_api_client->get_recommended_payment_methods( $country_code );
+	}
+
+	/**
 	 * Determine whether redirection is needed for the non-card UPE payment method.
 	 *
 	 * @param array $payment_methods The list of payment methods used for the order processing, usually consists of one method only.

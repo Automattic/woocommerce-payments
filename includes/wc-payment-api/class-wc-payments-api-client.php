@@ -81,6 +81,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 	const COMPATIBILITY_API            = 'compatibility';
 	const REPORTING_API                = 'reporting/payment_activity';
+	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -451,6 +452,35 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
+	}
+
+	/**
+	 * Get recommended payment methods for a given country.
+	 *
+	 * @param string $country_code Country code.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function get_recommended_payment_methods( string $country_code ): array {
+		$payment_methods = \WC_Payments::get_database_cache()->get_or_add(
+			Database_Cache::RECOMMENDED_PAYMENT_METHODS . '_' . $country_code,
+			function () use ( $country_code ) {
+				try {
+					$filters                 = [];
+					$filters['country_code'] = $country_code;
+					$filters['locale']       = get_locale();
+					return $this->request( $filters, self::RECOMMENDED_PAYMENT_METHODS, self::GET, false );
+				} catch ( API_Exception $e ) {
+					// Log the error and return an empty array.
+					Logger::error( 'Failed to fetch recommended payment methods.', [ 'error' => $e ] );
+					return [];
+				}
+			},
+			'is_array'
+		);
+
+		return $payment_methods;
 	}
 
 	/**
