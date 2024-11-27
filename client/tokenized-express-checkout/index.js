@@ -216,8 +216,9 @@ jQuery( ( $ ) => {
 		 *
 		 * @param {Object} options ECE options.
 		 */
-		startExpressCheckoutElement: ( options ) => {
-			const elements = api.getStripe().elements( {
+		startExpressCheckoutElement: async ( options ) => {
+			const stripe = await api.getStripe();
+			const elements = stripe.elements( {
 				mode: options.mode ?? 'payment',
 				amount: options.total,
 				currency: options.currency,
@@ -315,7 +316,7 @@ jQuery( ( $ ) => {
 			eceButton.on( 'confirm', async ( event ) => {
 				return onConfirmHandler(
 					api,
-					api.getStripe(),
+					stripe,
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
@@ -514,9 +515,9 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: () => {
+		init: async () => {
 			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				wcpayECE.startExpressCheckoutElement( {
+				await wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: getExpressCheckoutData( 'product' )?.total.amount,
 					currency: getExpressCheckoutData( 'product' )?.currency,
@@ -531,43 +532,35 @@ jQuery( ( $ ) => {
 				} );
 			} else {
 				// If this is the cart page, or checkout page, or pay-for-order page, we need to request the cart details.
-				getCartApiHandler()
-					.getCart()
-					.then( ( cartData ) => {
-						const total = transformPrice(
-							parseInt( cartData.totals.total_price, 10 ) -
-								parseInt(
-									cartData.totals.total_refund || 0,
-									10
-								),
-							cartData.totals
-						);
-						if ( total === 0 ) {
-							expressCheckoutButtonUi.hideContainer();
-							expressCheckoutButtonUi.getButtonSeparator().hide();
-						} else {
-							wcpayECE.startExpressCheckoutElement( {
-								mode: 'payment',
-								total,
-								currency: cartData.totals.currency_code.toLowerCase(),
-								// pay-for-order should never display the shipping selection.
-								requestShipping:
-									getExpressCheckoutData(
-										'button_context'
-									) !== 'pay_for_order' &&
-									cartData.needs_shipping,
-								shippingRates: transformCartDataForShippingRates(
-									cartData
-								),
-								requestPhone:
-									getExpressCheckoutData( 'checkout' )
-										?.needs_payer_phone ?? false,
-								displayItems: transformCartDataForDisplayItems(
-									cartData
-								),
-							} );
-						}
+				const cartData = await getCartApiHandler().getCart();
+				const total = transformPrice(
+					parseInt( cartData.totals.total_price, 10 ) -
+						parseInt( cartData.totals.total_refund || 0, 10 ),
+					cartData.totals
+				);
+				if ( total === 0 ) {
+					expressCheckoutButtonUi.hideContainer();
+					expressCheckoutButtonUi.getButtonSeparator().hide();
+				} else {
+					await wcpayECE.startExpressCheckoutElement( {
+						mode: 'payment',
+						total,
+						currency: cartData.totals.currency_code.toLowerCase(),
+						// pay-for-order should never display the shipping selection.
+						requestShipping:
+							getExpressCheckoutData( 'button_context' ) !==
+								'pay_for_order' && cartData.needs_shipping,
+						shippingRates: transformCartDataForShippingRates(
+							cartData
+						),
+						requestPhone:
+							getExpressCheckoutData( 'checkout' )
+								?.needs_payer_phone ?? false,
+						displayItems: transformCartDataForDisplayItems(
+							cartData
+						),
 					} );
+				}
 			}
 
 			// After initializing a new express checkout button, we need to reset the paymentAborted flag.

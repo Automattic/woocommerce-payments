@@ -11,6 +11,7 @@ import { select } from '@wordpress/data';
  * Internal dependencies
  */
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { useStripeAsync } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../../checkout/api';
 import request from '../../checkout/utils/request';
@@ -47,6 +48,8 @@ const ProductDetail = ( { cart, context } ) => {
 
 	const [ fontRules ] = useState( getFontRulesFromPage() );
 
+	const stripe = useStripeAsync( api );
+
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
@@ -62,6 +65,10 @@ const ProductDetail = ( { cart, context } ) => {
 			generateUPEAppearance();
 		}
 	}, [ appearance ] );
+
+	if ( ! stripe ) {
+		return null;
+	}
 
 	if ( Object.keys( appearance ).length === 0 ) {
 		return null;
@@ -90,8 +97,6 @@ const ProductDetail = ( { cart, context } ) => {
 		paymentMethodTypes: paymentMethods || [],
 		countryCode: country, // Customer's country or base country of the store.
 	};
-
-	const stripe = api.getStripe();
 
 	return (
 		<div className="wc-block-components-bnpl-wrapper">
