@@ -70,8 +70,6 @@ import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 import { formatUserDateTime } from 'wcpay/utils/date-time';
-import { Icon } from '@wordpress/components';
-import interpolateComponents from '@automattic/interpolate-components';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -159,38 +157,7 @@ const getColumns = (
 		},
 		{
 			key: 'date',
-			label: (
-				<>
-					{ __( 'Date / Time', 'woocommerce-payments' ) }
-					<HoverTooltip
-						isVisible={ false }
-						content={ interpolateComponents( {
-							mixedString: __(
-								'Adjust date & time format in ' +
-									'{{learnMoreLink}}Settings{{/learnMoreLink}}',
-								'woocommerce-payments'
-							),
-							components: {
-								learnMoreLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<a
-										target="_blank"
-										rel="noreferrer"
-										title={ __(
-											'Learn more about adjusting date and time formats',
-											'woocommerce-payments'
-										) }
-										/* eslint-disable-next-line max-len */
-										href={ 'todo' }
-									/>
-								),
-							},
-						} ) }
-					>
-						<Icon icon="info-outline" className="my-icon" />
-					</HoverTooltip>
-				</>
-			),
+			label: __( 'Date / Time', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
 			labelInCsv: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
 			required: true,
