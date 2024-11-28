@@ -4,6 +4,7 @@ exports[`Disputes list renders correctly 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-disputes"

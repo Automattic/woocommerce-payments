@@ -4,6 +4,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-deposits"
@@ -692,6 +693,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-deposits"
