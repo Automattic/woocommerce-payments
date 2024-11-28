@@ -25,6 +25,7 @@ import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 import { formatUserDateTime } from 'wcpay/utils/date-time';
+import moment from 'moment';
 
 const columns = [
 	{
@@ -80,7 +81,9 @@ const getLoanStatusText = ( loan: CapitalLoan ) => {
 	return loan.fully_paid_at
 		? __( 'Paid off', 'woocommerce-payments' ) +
 				': ' +
-				formatUserDateTime( loan.fully_paid_at )
+				formatUserDateTime(
+					moment.utc( loan.fully_paid_at ).toISOString()
+				)
 		: __( 'Active', 'woocommerce-payments' );
 };
 
@@ -112,7 +115,11 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 		const data = {
 			paid_out_at: {
 				value: loan.paid_out_at,
-				display: clickable( formatUserDateTime( loan.paid_out_at ) ),
+				display: clickable(
+					formatUserDateTime(
+						moment.utc( loan.paid_out_at ).toISOString()
+					)
+				),
 			},
 			status: {
 				value: getLoanStatusText( loan ),
@@ -150,7 +157,11 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 				value: loan.first_paydown_at,
 				display: clickable(
 					loan.first_paydown_at
-						? formatUserDateTime( loan.first_paydown_at )
+						? formatUserDateTime(
+								moment
+									.utc( loan.first_paydown_at )
+									.toISOString()
+						  )
 						: '-'
 				),
 			},
