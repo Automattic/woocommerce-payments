@@ -194,7 +194,7 @@ jQuery( ( $ ) => {
 		 *
 		 * @param {Object} options ECE options.
 		 */
-		startExpressCheckoutElement: ( options ) => {
+		startExpressCheckoutElement: async ( options ) => {
 			const getShippingRates = () => {
 				if ( ! options.requestShipping ) {
 					return [];
@@ -237,7 +237,9 @@ jQuery( ( $ ) => {
 				return;
 			}
 
-			const elements = api.getStripe().elements( {
+			const stripe = await api.getStripe();
+
+			const elements = stripe.elements( {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
 				currency: options?.currency,
@@ -336,7 +338,7 @@ jQuery( ( $ ) => {
 
 				return onConfirmHandler(
 					api,
-					api.getStripe(),
+					stripe,
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
@@ -534,7 +536,7 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: () => {
+		init: async () => {
 			if (
 				getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
 			) {
@@ -554,7 +556,7 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				wcpayECE.startExpressCheckoutElement( {
+				await wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total,
 					currency: getExpressCheckoutData( 'checkout' )
@@ -569,7 +571,7 @@ jQuery( ( $ ) => {
 			} else if (
 				getExpressCheckoutData( 'button_context' ) === 'product'
 			) {
-				wcpayECE.startExpressCheckoutElement( {
+				await wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: getExpressCheckoutData( 'product' )?.total.amount,
 					currency: getExpressCheckoutData( 'product' )?.currency,
@@ -585,24 +587,23 @@ jQuery( ( $ ) => {
 			} else {
 				// If this is the cart or checkout page, we need to request the
 				// cart details.
-				api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
-					if ( cart.total.amount === 0 ) {
-						expressCheckoutButtonUi.hideContainer();
-						expressCheckoutButtonUi.getButtonSeparator().hide();
-					} else {
-						wcpayECE.startExpressCheckoutElement( {
-							mode: 'payment',
-							total: cart.total.amount,
-							currency: getExpressCheckoutData( 'checkout' )
-								?.currency_code,
-							requestShipping: cart.needs_shipping,
-							requestPhone:
-								getExpressCheckoutData( 'checkout' )
-									?.needs_payer_phone ?? false,
-							displayItems: cart.displayItems,
-						} );
-					}
-				} );
+				const cart = await api.expressCheckoutECEGetCartDetails();
+				if ( cart.total.amount === 0 ) {
+					expressCheckoutButtonUi.hideContainer();
+					expressCheckoutButtonUi.getButtonSeparator().hide();
+				} else {
+					await wcpayECE.startExpressCheckoutElement( {
+						mode: 'payment',
+						total: cart.total.amount,
+						currency: getExpressCheckoutData( 'checkout' )
+							?.currency_code,
+						requestShipping: cart.needs_shipping,
+						requestPhone:
+							getExpressCheckoutData( 'checkout' )
+								?.needs_payer_phone ?? false,
+						displayItems: cart.displayItems,
+					} );
+				}
 			}
 
 			// After initializing a new express checkout button, we need to reset the paymentAborted flag.

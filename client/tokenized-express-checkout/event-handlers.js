@@ -3,59 +3,86 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { applyFilters } from '@wordpress/hooks';
+
 /**
  * Internal dependencies
  */
-import {
-	getErrorMessageFromNotice,
-	normalizeOrderData,
-	normalizePayForOrderData,
-	normalizeShippingAddress,
-	normalizeLineItems,
-	getExpressCheckoutData,
-} from './utils';
+import { getErrorMessageFromNotice, getExpressCheckoutData } from './utils';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
+import ExpressCheckoutCartApi from './cart-api';
+import {
+	transformStripePaymentMethodForStoreApi,
+	transformStripeShippingAddressForStoreApi,
+} from './transformers/stripe-to-wc';
+import {
+	transformCartDataForDisplayItems,
+	transformCartDataForShippingRates,
+	transformPrice,
+} from './transformers/wc-to-stripe';
 
-export const shippingAddressChangeHandler = async ( api, event, elements ) => {
+let cartApi = new ExpressCheckoutCartApi();
+export const setCartApiHandler = ( handler ) => ( cartApi = handler );
+export const getCartApiHandler = () => cartApi;
+
+export const shippingAddressChangeHandler = async ( event, elements ) => {
 	try {
-		const response = await api.expressCheckoutECECalculateShippingOptions(
-			normalizeShippingAddress( event.address )
-		);
+		// Please note that the `event.address` might not contain all the fields.
+		// Some fields might not be present (like `line_1` or `line_2`) due to semi-anonymized data.
+		const cartData = await cartApi.updateCustomer( {
+			shipping_address: transformStripeShippingAddressForStoreApi(
+				event.name,
+				event.address
+			),
+		} );
 
-		if ( response.result === 'success' ) {
-			elements.update( {
-				amount: response.total.amount,
-			} );
-			event.resolve( {
-				shippingRates: response.shipping_options,
-				lineItems: normalizeLineItems( response.displayItems ),
-			} );
-		} else {
+		const shippingRates = transformCartDataForShippingRates( cartData );
+
+		// when no shipping options are returned, the API still returns a 200 status code.
+		// We need to ensure that shipping options are present - otherwise the ECE dialog won't update correctly.
+		if ( shippingRates.length === 0 ) {
 			event.reject();
+
+			return;
 		}
-	} catch ( e ) {
+
+		elements.update( {
+			amount: transformPrice(
+				parseInt( cartData.totals.total_price, 10 ) -
+					parseInt( cartData.totals.total_refund || 0, 10 ),
+				cartData.totals
+			),
+		} );
+		event.resolve( {
+			shippingRates: transformCartDataForShippingRates( cartData ),
+			lineItems: transformCartDataForDisplayItems( cartData ),
+		} );
+	} catch ( error ) {
 		event.reject();
 	}
 };
 
-export const shippingRateChangeHandler = async ( api, event, elements ) => {
+export const shippingRateChangeHandler = async ( event, elements ) => {
 	try {
-		const response = await api.expressCheckoutECEUpdateShippingDetails(
-			event.shippingRate
-		);
+		const cartData = await cartApi.selectShippingRate( {
+			package_id: 0,
+			rate_id: event.shippingRate.id,
+		} );
 
-		if ( response.result === 'success' ) {
-			elements.update( { amount: response.total.amount } );
-			event.resolve( {
-				lineItems: normalizeLineItems( response.displayItems ),
-			} );
-		} else {
-			event.reject();
-		}
-	} catch ( e ) {
+		elements.update( {
+			amount: transformPrice(
+				parseInt( cartData.totals.total_price, 10 ) -
+					parseInt( cartData.totals.total_refund || 0, 10 ),
+				cartData.totals
+			),
+		} );
+		event.resolve( {
+			lineItems: transformCartDataForDisplayItems( cartData ),
+		} );
+	} catch ( error ) {
 		event.reject();
 	}
 };
@@ -66,8 +93,7 @@ export const onConfirmHandler = async (
 	elements,
 	completePayment,
 	abortPayment,
-	event,
-	order = 0 // Order ID for the pay for order flow.
+	event
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
@@ -84,30 +110,39 @@ export const onConfirmHandler = async (
 
 	try {
 		// Kick off checkout processing step.
-		let orderResponse;
-		if ( ! order ) {
-			orderResponse = await api.expressCheckoutECECreateOrder(
-				normalizeOrderData( event, paymentMethod.id )
-			);
-		} else {
-			orderResponse = await api.expressCheckoutECEPayForOrder(
-				order,
-				normalizePayForOrderData( event, paymentMethod.id )
-			);
-		}
+		const orderResponse = await cartApi.placeOrder( {
+			// adding extension data as a separate action,
+			// so that we make it harder for external plugins to modify or intercept checkout data.
+			...transformStripePaymentMethodForStoreApi(
+				event,
+				paymentMethod.id
+			),
+			extensions: applyFilters(
+				'wcpay.payment-request.cart-place-order-extension-data',
+				{}
+			),
+		} );
 
-		if ( orderResponse.result !== 'success' ) {
+		if ( orderResponse.payment_result.payment_status !== 'success' ) {
 			return abortPayment(
 				event,
-				getErrorMessageFromNotice( orderResponse.messages )
+				getErrorMessageFromNotice(
+					orderResponse.message ??
+						orderResponse.payment_result?.payment_details.find(
+							( detail ) => detail.key === 'errorMessage'
+						)?.value ??
+						''
+				)
 			);
 		}
 
-		const confirmationRequest = api.confirmIntent( orderResponse.redirect );
+		const confirmationRequest = api.confirmIntent(
+			orderResponse.payment_result.redirect_url
+		);
 
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
-			completePayment( orderResponse.redirect );
+			completePayment( orderResponse.payment_result.redirect_url );
 		} else {
 			const redirectUrl = await confirmationRequest;
 
@@ -116,7 +151,10 @@ export const onConfirmHandler = async (
 	} catch ( e ) {
 		return abortPayment(
 			event,
-			e.message ??
+			getErrorMessageFromNotice( e.message ) ||
+				e.payment_result?.payment_details.find(
+					( detail ) => detail.key === 'errorMessage'
+				)?.value ||
 				__(
 					'There was a problem processing the order.',
 					'woocommerce-payments'

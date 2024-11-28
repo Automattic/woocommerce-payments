@@ -109,15 +109,15 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return array
 	 */
 	public function get_button_settings() {
-		$button_type                     = $this->gateway->get_option( 'payment_request_button_type' );
-		$common_settings                 = $this->express_checkout_helper->get_common_button_settings();
-		$payment_request_button_settings = [
+		$button_type                      = $this->gateway->get_option( 'payment_request_button_type' );
+		$common_settings                  = $this->express_checkout_helper->get_common_button_settings();
+		$express_checkout_button_settings = [
 			// Default format is en_US.
 			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
 			'branded_type' => 'default' === $button_type ? 'short' : 'long',
 		];
 
-		return array_merge( $common_settings, $payment_request_button_settings );
+		return array_merge( $common_settings, $express_checkout_button_settings );
 	}
 
 	/**
@@ -222,7 +222,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		$payment_request_params = [
+		$express_checkout_params = [
 			'ajax_url'           => admin_url( 'admin-ajax.php' ),
 			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'             => [
@@ -231,18 +231,23 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],
 			'nonce'              => [
-				'get_cart_details'          => wp_create_nonce( 'wcpay-get-cart-details' ),
-				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
-				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
-				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
-				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
-				'empty_cart'                => wp_create_nonce( 'wcpay-empty-cart' ),
-				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
-				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
-				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
+				'get_cart_details'             => wp_create_nonce( 'wcpay-get-cart-details' ),
+				'shipping'                     => wp_create_nonce( 'wcpay-payment-request-shipping' ),
+				'update_shipping'              => wp_create_nonce( 'wcpay-update-shipping-method' ),
+				'checkout'                     => wp_create_nonce( 'woocommerce-process_checkout' ),
+				'add_to_cart'                  => wp_create_nonce( 'wcpay-add-to-cart' ),
+				'empty_cart'                   => wp_create_nonce( 'wcpay-empty-cart' ),
+				'get_selected_product_data'    => wp_create_nonce( 'wcpay-get-selected-product-data' ),
+				'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
+				'pay_for_order'                => wp_create_nonce( 'pay_for_order' ),
+				// needed to communicate via the Store API.
+				'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
+				'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
+				'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
 			],
 			'checkout'           => [
 				'currency_code'              => strtolower( get_woocommerce_currency() ),
+				'currency_decimals'          => WC_Payments::get_localization_service()->get_currency_format( get_woocommerce_currency() )['num_decimals'],
 				'country_code'               => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
 				'needs_shipping'             => WC()->cart->needs_shipping(),
 				// Defaults to 'required' to match how core initializes this option.
@@ -291,7 +296,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			);
 		}
 
-		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $payment_request_params );
+		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $express_checkout_params );
 
 		wp_set_script_translations( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'woocommerce-payments' );
 

@@ -6,28 +6,28 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import PaymentRequestCartApi from '../cart-api';
+import ExpressCheckoutCartApi from '../cart-api';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
-global.wcpayPaymentRequestParams = {};
-global.wcpayPaymentRequestParams.nonce = {};
-global.wcpayPaymentRequestParams.nonce.store_api_nonce =
+global.wcpayExpressCheckoutParams = {};
+global.wcpayExpressCheckoutParams.nonce = {};
+global.wcpayExpressCheckoutParams.nonce.store_api_nonce =
 	'global_store_api_nonce';
-global.wcpayPaymentRequestParams.nonce.tokenized_cart_nonce =
+global.wcpayExpressCheckoutParams.nonce.tokenized_cart_nonce =
 	'global_tokenized_cart_nonce';
-global.wcpayPaymentRequestParams.nonce.tokenized_cart_session_nonce =
+global.wcpayExpressCheckoutParams.nonce.tokenized_cart_session_nonce =
 	'global_tokenized_cart_session_nonce';
-global.wcpayPaymentRequestParams.checkout = {};
-global.wcpayPaymentRequestParams.checkout.currency_code = 'USD';
+global.wcpayExpressCheckoutParams.checkout = {};
+global.wcpayExpressCheckoutParams.checkout.currency_code = 'USD';
 
-describe( 'PaymentRequestCartApi', () => {
+describe( 'ExpressCheckoutCartApi', () => {
 	afterEach( () => {
 		jest.resetAllMocks();
 	} );
 
 	it( 'should allow to create an anonymous cart for a specific class instance, without affecting other instances', async () => {
-		global.wcpayPaymentRequestParams.button_context = 'product';
+		global.wcpayExpressCheckoutParams.button_context = 'product';
 		const headers = new Headers();
 		headers.append(
 			'X-WooPayments-Tokenized-Cart-Session',
@@ -39,8 +39,8 @@ describe( 'PaymentRequestCartApi', () => {
 			json: () => Promise.resolve( {} ),
 		} );
 
-		const api = new PaymentRequestCartApi();
-		const anotherApi = new PaymentRequestCartApi();
+		const api = new ExpressCheckoutCartApi();
+		const anotherApi = new ExpressCheckoutCartApi();
 
 		api.useSeparateCart();
 		await api.getCart();
@@ -120,12 +120,12 @@ describe( 'PaymentRequestCartApi', () => {
 	} );
 
 	it( 'should call `/cart/update-customer` with the global headers if the cart is not anonymous', async () => {
-		global.wcpayPaymentRequestParams.button_context = 'cart';
+		global.wcpayExpressCheckoutParams.button_context = 'cart';
 		apiFetch.mockResolvedValue( {
 			headers: new Headers(),
 			json: () => Promise.resolve( {} ),
 		} );
-		const api = new PaymentRequestCartApi();
+		const api = new ExpressCheckoutCartApi();
 
 		await api.updateCustomer( {
 			billing_address: { last_name: 'Last' },
@@ -150,14 +150,14 @@ describe( 'PaymentRequestCartApi', () => {
 	} );
 
 	it( 'should store received header information for subsequent usage', async () => {
-		global.wcpayPaymentRequestParams.button_context = 'cart';
+		global.wcpayExpressCheckoutParams.button_context = 'cart';
 		const headers = new Headers();
 		headers.append( 'Nonce', 'nonce-value' );
 		apiFetch.mockResolvedValue( {
 			headers,
 			json: () => Promise.resolve( {} ),
 		} );
-		const api = new PaymentRequestCartApi();
+		const api = new ExpressCheckoutCartApi();
 
 		await api.getCart();
 

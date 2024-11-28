@@ -93,6 +93,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			add_action( 'woocommerce_pay_order_before_payment', [ $this, 'display_express_checkout_buttons' ], 1 );
 		}
 
+		add_filter( 'wcpay_tracks_event_properties', [ $this, 'record_all_ece_tracks_events' ], 10, 2 );
+
 		if ( $this->is_pay_for_order_flow_supported() ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'add_pay_for_order_params_to_js_config' ], 5 );
 		}
@@ -217,5 +219,28 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			);
 		}
 		// phpcs:enable WordPress.Security.NonceVerification
+	}
+
+	/**
+	 * Record all ECE tracks events by adding the track_on_all_stores flag to the event.
+	 *
+	 * @param array  $properties Event properties.
+	 * @param string $event_name Event name.
+	 * @return array
+	 */
+	public function record_all_ece_tracks_events( $properties, $event_name ) {
+		$tracked_events_prefixes = [
+			'wcpay_applepay',
+			'wcpay_gpay',
+		];
+
+		foreach ( $tracked_events_prefixes as $prefix ) {
+			if ( strpos( $event_name, $prefix ) === 0 ) {
+				$properties['record_event_data']['track_on_all_stores'] = true;
+				break;
+			}
+		}
+
+		return $properties;
 	}
 }

@@ -1880,10 +1880,11 @@ class WC_Payments {
 		$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
 		if ( $are_subscriptions_enabled ) {
 				global $product;
-				$is_subscription = $product && WC_Subscriptions_Product::is_subscription( $product );
+				$is_subscription            = $product && WC_Subscriptions_Product::is_subscription( $product );
+				$cart_contains_subscription = is_cart() && WC_Subscriptions_Cart::cart_contains_subscription();
 		}
 
-		if ( ! $is_subscription ) {
+		if ( ! $is_subscription && ! $cart_contains_subscription ) {
 			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
 			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
 			echo wp_kses( $stripe_site_messaging->init() ?? '', 'post' );
