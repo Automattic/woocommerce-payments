@@ -1386,13 +1386,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				in_array(
 					$from,
 					[
-						WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
 						WC_Payments_Onboarding_Service::FROM_STRIPE,
 					],
 					true
 				)
 				// This is a weird case, but it is best to handle it.
 				|| ( WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD === $from && ! $this->has_working_jetpack_connection() )
+				// Redirect merchants coming from settings page to the connect page only if $redirect_to_settings_page is false.
+				|| ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS === $from && ! $redirect_to_settings_page )
 			) {
 				$this->redirect_service->redirect_to_connect_page(
 					! empty( $_GET['wcpay-connection-error'] ) ? sprintf(
@@ -1505,6 +1506,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 								'auto_start_test_drive_onboarding' => 'true', // This is critical.
 								'test_mode'  => $should_onboard_in_test_mode ? 'true' : false,
 								'source'     => $onboarding_source,
+								'redirect_to_settings_page' => $redirect_to_settings_page ? 'true' : false,
 							]
 						);
 						return;
