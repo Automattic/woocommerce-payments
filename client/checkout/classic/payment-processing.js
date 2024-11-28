@@ -166,7 +166,7 @@ function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
  * @param {string} paymentMethodType The type of Stripe payment method to create.
  * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
-function createStripePaymentMethod(
+async function createStripePaymentMethod(
 	api,
 	elements,
 	jQueryForm,
@@ -235,9 +235,9 @@ function createStripePaymentMethod(
 		delete params.billing_details.address;
 	}
 
-	return api
-		.getStripeForUPE( paymentMethodType )
-		.createPaymentMethod( { elements, params: params } );
+	const stripe = await api.getStripeForUPE( paymentMethodType );
+
+	return stripe.createPaymentMethod( { elements, params: params } );
 }
 
 /**
@@ -274,9 +274,9 @@ async function createStripePaymentElement(
 		fonts: getFontRulesFromPage(),
 	};
 
-	const elements = api
-		.getStripeForUPE( paymentMethodType )
-		.elements( options );
+	const stripe = await api.getStripeForUPE( paymentMethodType );
+
+	const elements = stripe.elements( options );
 	const createdStripePaymentElement = elements.create( 'payment', {
 		...getUpeSettings(),
 		wallets: {
@@ -503,8 +503,8 @@ export async function mountStripePaymentMethodMessagingElement(
 	const appearance = await initializeAppearance( api, location );
 
 	try {
-		const paymentMethodMessagingElement = api
-			.getStripe()
+		const stripe = await api.getStripe();
+		const paymentMethodMessagingElement = stripe
 			.elements( {
 				appearance: appearance,
 				fonts: getFontRulesFromPage(),
