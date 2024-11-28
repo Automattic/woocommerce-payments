@@ -156,6 +156,33 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Builds the line items to pass to Payment Request and WooPay
+	 */
+	public function build_woopay_items() {
+		$cart_contains_subscription              = false;
+		$cart_subscriptions_renewal_need_payment = false;
+
+		if ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			$cart_contains_subscription = true;
+
+			if ( ! empty( wc()->cart->recurring_carts ) ) {
+				foreach ( wc()->cart->recurring_carts as $cart_key => $cart ) {
+					if ( (int) $cart->get_total() > 0 ) {
+						$cart_subscriptions_renewal_need_payment = true;
+						break;
+					}
+				}
+			}
+		}
+
+		return [
+			'needs_shipping'                          => WC()->cart->needs_shipping(),
+			'cart_contains_subscription'              => $cart_contains_subscription,
+			'cart_subscriptions_renewal_need_payment' => $cart_subscriptions_renewal_need_payment,
+		];
+	}
+
+	/**
 	 * Whether tax should be displayed on separate line in cart.
 	 * returns true if tax is disabled or display of tax in checkout is set to inclusive.
 	 *

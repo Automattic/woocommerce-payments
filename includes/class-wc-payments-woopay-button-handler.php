@@ -368,22 +368,18 @@ class WC_Payments_WooPay_Button_Handler {
 
 		WC()->cart->calculate_totals();
 
-		$cart_contains_subscription = false;
-
-		if ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) {
-			$cart_contains_subscription = true;
-		}
-
 		$currency    = get_woocommerce_currency();
 		$order_total = WC()->cart->get_total( '' );
 
 		wp_send_json(
-			[
-				'cart_contains_subscription' => $cart_contains_subscription,
-				'total'                      => [
-					'amount' => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
-				],
-			]
+			array_merge(
+				$this->express_checkout_helper->build_woopay_items(),
+				[
+					'total' => [
+						'amount' => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
+					],
+				]
+			)
 		);
 	}
 

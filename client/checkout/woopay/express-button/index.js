@@ -76,16 +76,23 @@ jQuery( ( $ ) => {
 
 	listenForCartChanges.start();
 
-	// On classic checkout, hide the WooPay button when the cart total is 0
-	// and there are no subscriptions in the cart.
+	// On classic checkout, hide the WooPay button when the cart total is 0,
+	// does not require shipping and there are no subscriptions in the cart.
 	const handleWooPayExpressCheckoutButtonVisibility = async (
 		_event,
 		cart
 	) => {
-		if ( cart.total.amount === 0 && ! cart.cart_contains_subscription ) {
-			$( '#wcpay-woopay-button' ).hide();
-			$( '#wcpay-express-checkout-button-separator' ).hide();
-			return;
+		// Hide WooPay button when cart total is 0 and do not need shipping.
+		if ( cart.total.amount === 0 && ! cart.needs_shipping ) {
+			// Hide WooPay button if the cart has no subscriptions or if the recurring total value is 0.
+			if (
+				! cart.cart_contains_subscription ||
+				! cart.cart_subscriptions_renewal_need_payment
+			) {
+				$( '#wcpay-woopay-button' ).hide();
+				$( '#wcpay-express-checkout-button-separator' ).hide();
+				return;
+			}
 		}
 
 		$( '#wcpay-woopay-button' ).show();

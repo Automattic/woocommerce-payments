@@ -68,12 +68,20 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 			return false;
 		}
 
-		// Hide WooPay button when cart total is 0 and there are no subscriptions in the cart.
+		// Hide WooPay button when cart total is 0 and do not need shipping.
 		if (
 			Number( cart.cartTotals.total_price ) === 0 &&
-			! cart.cartItems.find( ( item ) => item.type === 'subscription' )
+			! cart.needs_shipping
 		) {
-			return false;
+			// Hide WooPay button if the cart has no subscriptions or if the recurring total value is 0.
+			if (
+				! cart.cartItems.find(
+					( item ) => item.type === 'subscription'
+				) ||
+				cart.extensions.subscriptions.totals.total_price === 0
+			) {
+				return false;
+			}
 		}
 
 		return true;
