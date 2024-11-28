@@ -126,7 +126,7 @@ describe( 'Express checkout event handlers', () => {
 
 		beforeEach( () => {
 			api = {
-				expressCheckoutECEUpdateShippingDetails: jest.fn(),
+				paymentRequestUpdateShippingDetails: jest.fn(),
 			};
 			event = {
 				shippingRate: {
@@ -153,7 +153,7 @@ describe( 'Express checkout event handlers', () => {
 				displayItems: [ { label: 'Sample Item', amount: 1000 } ],
 			};
 
-			api.expressCheckoutECEUpdateShippingDetails.mockResolvedValue(
+			api.paymentRequestUpdateShippingDetails.mockResolvedValue(
 				response
 			);
 
@@ -163,7 +163,7 @@ describe( 'Express checkout event handlers', () => {
 				response.displayItems
 			);
 			expect(
-				api.expressCheckoutECEUpdateShippingDetails
+				api.paymentRequestUpdateShippingDetails
 			).toHaveBeenCalledWith( event.shippingRate );
 			expect( elements.update ).toHaveBeenCalledWith( { amount: 1500 } );
 			expect( event.resolve ).toHaveBeenCalledWith( {
@@ -177,14 +177,14 @@ describe( 'Express checkout event handlers', () => {
 				result: 'error',
 			};
 
-			api.expressCheckoutECEUpdateShippingDetails.mockResolvedValue(
+			api.paymentRequestUpdateShippingDetails.mockResolvedValue(
 				response
 			);
 
 			await shippingRateChangeHandler( api, event, elements );
 
 			expect(
-				api.expressCheckoutECEUpdateShippingDetails
+				api.paymentRequestUpdateShippingDetails
 			).toHaveBeenCalledWith( event.shippingRate );
 			expect( elements.update ).not.toHaveBeenCalled();
 			expect( event.resolve ).not.toHaveBeenCalled();
@@ -192,14 +192,14 @@ describe( 'Express checkout event handlers', () => {
 		} );
 
 		test( 'should handle API call failure', async () => {
-			api.expressCheckoutECEUpdateShippingDetails.mockRejectedValue(
+			api.paymentRequestUpdateShippingDetails.mockRejectedValue(
 				new Error( 'API error' )
 			);
 
 			await shippingRateChangeHandler( api, event, elements );
 
 			expect(
-				api.expressCheckoutECEUpdateShippingDetails
+				api.paymentRequestUpdateShippingDetails
 			).toHaveBeenCalledWith( event.shippingRate );
 			expect( elements.update ).not.toHaveBeenCalled();
 			expect( event.resolve ).not.toHaveBeenCalled();

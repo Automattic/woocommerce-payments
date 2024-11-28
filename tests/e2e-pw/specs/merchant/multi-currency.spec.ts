@@ -41,10 +41,9 @@ test.describe( 'Multi-currency', () => {
 			page.getByRole( 'heading', { name: 'Enabled currencies' } )
 		).toBeVisible();
 		await expect( page.getByText( 'Default currency' ) ).toBeVisible();
-		// TODO: fix flaky visual regression test.
-		// await expect(
-		// 	page.locator( '.multi-currency-settings' ).last()
-		// ).toHaveScreenshot();
+		await expect(
+			page.locator( '.multi-currency-settings' ).last()
+		).toHaveScreenshot();
 	} );
 
 	test( 'add the currency switcher to the sidebar', async () => {

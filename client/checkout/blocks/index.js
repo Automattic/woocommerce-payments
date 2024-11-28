@@ -18,14 +18,12 @@ import { SavedTokenHandler } from './saved-token-handler';
 import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
+import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import {
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
 } from '../../express-checkout/blocks';
-import {
-	tokenizedExpressCheckoutElementApplePay,
-	tokenizedExpressCheckoutElementGooglePay,
-} from 'wcpay/tokenized-express-checkout/blocks';
+import tokenizedCartPaymentRequestPaymentMethod from '../../tokenized-payment-request/blocks';
 
 import {
 	PAYMENT_METHOD_NAME_CARD,
@@ -103,8 +101,9 @@ Object.entries( enabledPaymentMethodsConfig )
 				const isAvailableInTheCountry =
 					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
-				// We used to check if stripe was loaded with `getStripeForUPE`, but we can't guarantee it will be loaded synchronously.
-				return isAvailableInTheCountry;
+				return (
+					isAvailableInTheCountry && !! api.getStripeForUPE( upeName )
+				);
 			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
@@ -162,16 +161,15 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 }
 
 if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
-	if ( getUPEConfig( 'isTokenizedCartEceEnabled' ) ) {
+	if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
 		registerExpressPaymentMethod(
-			tokenizedExpressCheckoutElementApplePay( api )
+			tokenizedCartPaymentRequestPaymentMethod( api )
 		);
-		registerExpressPaymentMethod(
-			tokenizedExpressCheckoutElementGooglePay( api )
-		);
-	} else {
+	} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
 		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 		registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+	} else {
+		registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 	}
 }
 window.addEventListener( 'load', () => {

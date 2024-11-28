@@ -51,7 +51,7 @@ jest.mock( '@stripe/stripe-js', () => ( {
 } ) );
 
 jest.mock( 'utils/express-checkout', () => ( {
-	getExpressCheckoutConfig: jest.fn().mockReturnValue( {
+	getPaymentRequestData: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',
 		locale: 'en',

@@ -45,7 +45,6 @@ class WooPay_Session {
 		add_filter( 'woocommerce_session_handler', [ __CLASS__, 'add_woopay_store_api_session_handler' ], 20 );
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'woopay_order_payment_status_changed' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
-		add_filter( 'woocommerce_order_needs_payment', [ __CLASS__, 'woopay_trial_subscriptions_handler' ], 20, 3 );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 
@@ -271,33 +270,6 @@ class WooPay_Session {
 		$automatewoo_referral = (int) wc_clean( wp_unslash( $_GET['automatewoo_referral_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		return $automatewoo_referral;
-	}
-
-	/**
-	 * Process trial subscriptions for WooPay.
-	 *
-	 * @param bool      $needs_payment If the order needs payment.
-	 * @param \WC_Order $order The order.
-	 * @param array     $valid_order_statuses The valid order statuses.
-	 */
-	public static function woopay_trial_subscriptions_handler( $needs_payment, $order, $valid_order_statuses ) {
-		if ( ! self::is_request_from_woopay() || ! \WC_Payments_Utils::is_store_api_request() ) {
-			return $needs_payment;
-		}
-
-		if ( ! self::is_woopay_enabled() ) {
-			return $needs_payment;
-		}
-
-		if ( ! class_exists( 'WC_Subscriptions_Cart' ) || $order->get_total() > 0 ) {
-			return $needs_payment;
-		}
-
-		if ( \WC_Subscriptions_Cart::cart_contains_subscription() ) {
-			return true;
-		}
-
-		return $needs_payment;
 	}
 
 	/**

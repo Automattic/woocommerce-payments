@@ -5,9 +5,11 @@
  */
 import { getConfig, getUPEConfig } from 'utils/checkout';
 import {
-	getExpressCheckoutConfig,
+	getPaymentRequestData,
+	getPaymentRequestAjaxURL,
 	buildAjaxURL,
 	getExpressCheckoutAjaxURL,
+	getExpressCheckoutConfig,
 } from 'utils/express-checkout';
 import { getAppearance } from 'checkout/upe-styles';
 import { getAppearanceType } from '../utils';
@@ -51,27 +53,11 @@ export default class WCPayAPI {
 	 * @param {string} paymentMethodType The payment method type.
 	 * @return {Object} The Stripe Object.
 	 */
-	async getStripeForUPE( paymentMethodType ) {
+	getStripeForUPE( paymentMethodType ) {
 		this.options.forceNetworkSavedCards = getUPEConfig(
 			'paymentMethodsConfig'
 		)[ paymentMethodType ].forceNetworkSavedCards;
 		return this.getStripe();
-	}
-
-	async getStripe( forceAccountRequest = false ) {
-		const maxWaitTime = 600 * 1000; // 600 seconds
-		const waitInterval = 100;
-		let currentWaitTime = 0;
-		while ( ! window.Stripe ) {
-			await new Promise( ( resolve ) =>
-				setTimeout( resolve, waitInterval )
-			);
-			currentWaitTime += waitInterval;
-			if ( currentWaitTime > maxWaitTime ) {
-				throw new Error( 'Stripe object not found' );
-			}
-		}
-		return this.__getStripe( forceAccountRequest );
 	}
 
 	/**
@@ -80,7 +66,7 @@ export default class WCPayAPI {
 	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Object} The Stripe Object.
 	 */
-	__getStripe( forceAccountRequest = false ) {
+	getStripe( forceAccountRequest = false ) {
 		const {
 			publishableKey,
 			accountId,
@@ -121,15 +107,17 @@ export default class WCPayAPI {
 	 *
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
-	async loadStripeForExpressCheckout() {
-		// Force Stripe to be loadded with the connected account.
-		try {
-			return this.getStripe( true );
-		} catch ( error ) {
-			// In order to avoid showing console error publicly to users,
-			// we resolve instead of rejecting when there is an error.
-			return { error };
-		}
+	loadStripeForExpressCheckout() {
+		return new Promise( ( resolve ) => {
+			try {
+				// Force Stripe to be loadded with the connected account.
+				resolve( this.getStripe( true ) );
+			} catch ( error ) {
+				// In order to avoid showing console error publicly to users,
+				// we resolve instead of rejecting when there is an error.
+				resolve( { error } );
+			}
+		} );
 	}
 
 	/**
@@ -174,7 +162,7 @@ export default class WCPayAPI {
 			orderId = orderIdPartials[ 0 ];
 		}
 
-		const confirmPaymentOrSetup = async () => {
+		const confirmPaymentOrSetup = () => {
 			const { locale, publishableKey } = this.options;
 			const accountIdForIntentConfirmation = getConfig(
 				'accountIdForIntentConfirmation'
@@ -182,9 +170,8 @@ export default class WCPayAPI {
 
 			// If this is a setup intent we're not processing a woopay payment so we can
 			// use the regular getStripe function.
-			const stripe = await this.getStripe();
 			if ( isSetupIntent ) {
-				return stripe.handleNextAction( {
+				return this.getStripe().handleNextAction( {
 					clientSecret: clientSecret,
 				} );
 			}
@@ -201,8 +188,7 @@ export default class WCPayAPI {
 
 			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
-			const stripeWithForcedAccountRequest = await this.getStripe( true );
-			return stripeWithForcedAccountRequest.handleNextAction( {
+			return this.getStripe( true ).handleNextAction( {
 				clientSecret: clientSecret,
 			} );
 		};
@@ -221,9 +207,9 @@ export default class WCPayAPI {
 							result.error.setup_intent.id );
 
 					// In case this is being called via payment request button from a product page,
-					// the getConfig function won't work, so fallback to getExpressCheckoutConfig.
+					// the getConfig function won't work, so fallback to getPaymentRequestData.
 					const ajaxUrl =
-						getExpressCheckoutConfig( 'ajax_url' ) ??
+						getPaymentRequestData( 'ajax_url' ) ??
 						getConfig( 'ajaxUrl' );
 
 					const ajaxCall = this.request( ajaxUrl, {
@@ -267,34 +253,32 @@ export default class WCPayAPI {
 	 * @param {string} paymentMethodId The ID of the payment method.
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	async setupIntent( paymentMethodId ) {
-		const response = await this.request( getConfig( 'ajaxUrl' ), {
+	setupIntent( paymentMethodId ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
 			action: 'create_setup_intent',
 			'wcpay-payment-method': paymentMethodId,
 			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+		} ).then( ( response ) => {
+			if ( ! response.success ) {
+				throw response.data.error;
+			}
+
+			if ( response.data.status === 'succeeded' ) {
+				// No need for further authentication.
+				return response.data;
+			}
+
+			return this.getStripe()
+				.confirmCardSetup( response.data.client_secret )
+				.then( ( confirmedSetupIntent ) => {
+					const { setupIntent, error } = confirmedSetupIntent;
+					if ( error ) {
+						throw error;
+					}
+
+					return setupIntent;
+				} );
 		} );
-
-		if ( ! response.success ) {
-			throw response.data.error;
-		}
-
-		if ( response.data.status === 'succeeded' ) {
-			// No need for further authentication.
-			return response.data;
-		}
-
-		const stripe = await this.getStripe();
-
-		const confirmedSetupIntent = await stripe.confirmCardSetup(
-			response.data.client_secret
-		);
-
-		const { setupIntent, error } = confirmedSetupIntent;
-		if ( error ) {
-			throw error;
-		}
-
-		return setupIntent;
 	}
 
 	/**
@@ -327,19 +311,36 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Submits shipping address to get available shipping options
+	 * from Payment Request button.
+	 *
+	 * @param {Object} shippingAddress Shipping details.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestCalculateShippingOptions( shippingAddress ) {
+		return this.request(
+			getPaymentRequestAjaxURL( 'get_shipping_options' ),
+			{
+				security: getPaymentRequestData( 'nonce' )?.shipping,
+				is_product_page: getPaymentRequestData( 'is_product_page' ),
+				...shippingAddress,
+			}
+		);
+	}
+
+	/**
 	 * Updates cart with selected shipping option.
 	 *
 	 * @param {Object} shippingOption Shipping option.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	expressCheckoutECEUpdateShippingDetails( shippingOption ) {
+	paymentRequestUpdateShippingDetails( shippingOption ) {
 		return this.request(
-			getExpressCheckoutAjaxURL( 'ece_update_shipping_method' ),
+			getPaymentRequestAjaxURL( 'update_shipping_method' ),
 			{
-				security: getExpressCheckoutConfig( 'nonce' )?.update_shipping,
+				security: getPaymentRequestData( 'nonce' )?.update_shipping,
 				shipping_method: [ shippingOption.id ],
-				is_product_page:
-					getExpressCheckoutConfig( 'button_context' ) === 'product',
+				is_product_page: getPaymentRequestData( 'is_product_page' ),
 			}
 		);
 	}
@@ -349,13 +350,10 @@ export default class WCPayAPI {
 	 *
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	expressCheckoutECEGetCartDetails() {
-		return this.request(
-			getExpressCheckoutAjaxURL( 'ece_get_cart_details' ),
-			{
-				security: getExpressCheckoutConfig( 'nonce' )?.get_cart_details,
-			}
-		);
+	paymentRequestGetCartDetails() {
+		return this.request( getPaymentRequestAjaxURL( 'get_cart_details' ), {
+			security: getPaymentRequestData( 'nonce' )?.get_cart_details,
+		} );
 	}
 
 	/**
@@ -364,10 +362,23 @@ export default class WCPayAPI {
 	 * @param {Object} productData Product data.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	expressCheckoutECEAddToCart( productData ) {
-		return this.request( getExpressCheckoutAjaxURL( 'add_to_cart' ), {
-			security: getExpressCheckoutConfig( 'nonce' )?.add_to_cart,
+	paymentRequestAddToCart( productData ) {
+		return this.request( getPaymentRequestAjaxURL( 'add_to_cart' ), {
+			security: getPaymentRequestData( 'nonce' )?.add_to_cart,
 			...productData,
+		} );
+	}
+
+	/**
+	 * Empty the cart.
+	 *
+	 * @param {number} bookingId Booking ID (optional).
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestEmptyCart( bookingId ) {
+		return this.request( getPaymentRequestAjaxURL( 'empty_cart' ), {
+			security: getPaymentRequestData( 'nonce' )?.empty_cart,
+			booking_id: bookingId,
 		} );
 	}
 
@@ -377,15 +388,28 @@ export default class WCPayAPI {
 	 * @param {Object} productData Product data.
 	 * @return {Promise} Promise for the request to the server.
 	 */
-	expressCheckoutECEGetSelectedProductData( productData ) {
+	paymentRequestGetSelectedProductData( productData ) {
 		return this.request(
-			getExpressCheckoutAjaxURL( 'ece_get_selected_product_data' ),
+			getPaymentRequestAjaxURL( 'get_selected_product_data' ),
 			{
-				security: getExpressCheckoutConfig( 'nonce' )
+				security: getPaymentRequestData( 'nonce' )
 					?.get_selected_product_data,
 				...productData,
 			}
 		);
+	}
+
+	/**
+	 * Creates order based on Payment Request payment method.
+	 *
+	 * @param {Object} paymentData Order data.
+	 * @return {Promise} Promise for the request to the server.
+	 */
+	paymentRequestCreateOrder( paymentData ) {
+		return this.request( getPaymentRequestAjaxURL( 'create_order' ), {
+			_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
+			...paymentData,
+		} );
 	}
 
 	/**
@@ -397,11 +421,10 @@ export default class WCPayAPI {
 	 */
 	expressCheckoutECECalculateShippingOptions( shippingAddress ) {
 		return this.request(
-			getExpressCheckoutAjaxURL( 'ece_get_shipping_options' ),
+			getExpressCheckoutAjaxURL( 'get_shipping_options' ),
 			{
 				security: getExpressCheckoutConfig( 'nonce' )?.shipping,
-				is_product_page:
-					getExpressCheckoutConfig( 'button_context' ) === 'product',
+				is_product_page: getExpressCheckoutConfig( 'is_product_page' ),
 				...shippingAddress,
 			}
 		);
@@ -414,7 +437,7 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise for the request to the server.
 	 */
 	expressCheckoutECECreateOrder( paymentData ) {
-		return this.request( getExpressCheckoutAjaxURL( 'ece_create_order' ), {
+		return this.request( getExpressCheckoutAjaxURL( 'create_order' ), {
 			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.checkout,
 			...paymentData,
 		} );
@@ -428,7 +451,7 @@ export default class WCPayAPI {
 	 * @return {Promise} Promise for the request to the server.
 	 */
 	expressCheckoutECEPayForOrder( order, paymentData ) {
-		return this.request( getExpressCheckoutAjaxURL( 'ece_pay_for_order' ), {
+		return this.request( getExpressCheckoutAjaxURL( 'pay_for_order' ), {
 			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.pay_for_order,
 			order,
 			...paymentData,
@@ -465,6 +488,14 @@ export default class WCPayAPI {
 		return this.request( buildAjaxURL( wcAjaxUrl, 'add_to_cart' ), {
 			security: addToCartNonce,
 			...productData,
+		} );
+	}
+
+	paymentRequestPayForOrder( order, paymentData ) {
+		return this.request( getPaymentRequestAjaxURL( 'pay_for_order' ), {
+			_wpnonce: getPaymentRequestData( 'nonce' )?.pay_for_order,
+			order,
+			...paymentData,
 		} );
 	}
 

@@ -6,7 +6,6 @@ import {
 	PaymentMethodMessagingElement,
 } from '@stripe/react-stripe-js';
 import { normalizeCurrencyToMinorUnit } from '../utils';
-import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
@@ -93,12 +92,6 @@ export default ( {
 		}
 	}, [ api, appearance ] );
 
-	const stripe = useStripeForUPE( api, upeName );
-
-	if ( ! stripe ) {
-		return null;
-	}
-
 	return (
 		<>
 			<div className="payment-method-label">
@@ -124,7 +117,7 @@ export default ( {
 				appearance={ appearance }
 			>
 				<Elements
-					stripe={ stripe }
+					stripe={ api.getStripeForUPE( upeName ) }
 					options={ {
 						appearance: appearance,
 					} }

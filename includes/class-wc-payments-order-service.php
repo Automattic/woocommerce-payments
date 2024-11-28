@@ -1657,13 +1657,12 @@ class WC_Payments_Order_Service {
 				/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
 				__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
 				[
-					'a' => '<a href="%4$s" target="_blank" rel="noopener noreferrer">',
+					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
 				]
 			),
 			$amount,
 			$reason,
-			$due_by,
-			$dispute_url
+			$due_by
 		);
 	}
 
@@ -1682,11 +1681,10 @@ class WC_Payments_Order_Service {
 				/* translators: %1: the dispute status */
 				__( 'Payment dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
 				[
-					'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
+					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
 				]
 			),
-			$status,
-			$dispute_url
+			$status
 		);
 	}
 
@@ -1749,7 +1747,7 @@ class WC_Payments_Order_Service {
 		return add_query_arg(
 			[
 				'page' => 'wc-admin',
-				'path' => rawurlencode( '/payments/transactions/details' ),
+				'path' => '/payments/transactions/details',
 				'id'   => $charge_id,
 			],
 			admin_url( 'admin.php' )

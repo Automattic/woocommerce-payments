@@ -20,7 +20,7 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	const PAYMENT_METHOD_STRIPE_ID = 'affirm';
 
 	/**
-	 * Constructor for Affirm payment method
+	 * Constructor for link payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Token class instance.
 	 */

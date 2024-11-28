@@ -40,14 +40,14 @@ export const useExpressCheckout = ( {
 	};
 
 	const completePayment = ( redirectUrl ) => {
-		onCompletePaymentHandler();
+		onCompletePaymentHandler( redirectUrl );
 		window.location = redirectUrl;
 	};
 
 	const abortPayment = ( onConfirmEvent, message ) => {
 		onConfirmEvent.paymentFailed( { reason: 'fail' } );
 		setExpressPaymentError( message );
-		onAbortPaymentHandler();
+		onAbortPaymentHandler( onConfirmEvent, message );
 	};
 
 	const onButtonClick = useCallback(

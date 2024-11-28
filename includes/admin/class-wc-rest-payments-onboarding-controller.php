@@ -219,7 +219,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
-	 * @return WP_REST_Response|WP_Error
+	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
 	 */
 	public function finalize_embedded_kyc( WP_REST_Request $request ) {
 		$source         = $request->get_param( 'source' ) ?? '';

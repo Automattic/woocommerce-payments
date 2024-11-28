@@ -36,7 +36,10 @@ const tokenizedCartPaymentRequestPaymentMethod = ( api ) => ( {
 			return false;
 		}
 
-		if ( typeof wcpayConfig !== 'undefined' ) {
+		if (
+			typeof wcpayConfig !== 'undefined' &&
+			wcpayConfig.isExpressCheckoutElementEnabled
+		) {
 			return false;
 		}
 

@@ -5,7 +5,7 @@ import {
 	WCPayExpressCheckoutParams,
 	getErrorMessageFromNotice,
 	getExpressCheckoutData,
-} from '..';
+} from '../index';
 
 describe( 'Express checkout utils', () => {
 	test( 'getExpressCheckoutData returns null for missing option', () => {

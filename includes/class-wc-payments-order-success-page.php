@@ -81,7 +81,7 @@ class WC_Payments_Order_Success_Page {
 		$payment_method = $gateway->get_payment_method( $order );
 		// GooglePay/ApplePay/Link/Card to be supported later.
 		if ( $payment_method->get_id() === Payment_Method::CARD ) {
-			return $this->show_card_payment_method_name( $order, $payment_method );
+			return $payment_method_title;
 		}
 
 		// If this is an LPM (BNPL or local payment method) order, return the html for the payment method name.
@@ -92,37 +92,6 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		return $payment_method_title;
-	}
-
-	/**
-	 * Returns the HTML to add the card brand logo and the last 4 digits of the card used to the
-	 * payment method name on the order received page.
-	 *
-	 * @param WC_Order                                 $order the order being shown.
-	 * @param WCPay\Payment_Methods\UPE_Payment_Method $payment_method the payment method being shown.
-	 *
-	 * @return string
-	 */
-	public function show_card_payment_method_name( $order, $payment_method ) {
-		$card_brand = $order->get_meta( '_card_brand' );
-
-		if ( ! $card_brand ) {
-			return $payment_method->get_title();
-		}
-
-		ob_start();
-		?>
-		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( plugins_url( "assets/images/cards/{$card_brand}.svg", WCPAY_PLUGIN_FILE ) ); ?>">
-			<?php
-			if ( $order->get_meta( 'last4' ) ) {
-				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
-				echo esc_html( $order->get_meta( 'last4' ) );
-			}
-			?>
-		</div>
-		<?php
-		return ob_get_clean();
 	}
 
 	/**

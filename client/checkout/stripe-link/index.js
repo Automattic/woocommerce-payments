@@ -40,16 +40,17 @@ const transformStripeLinkAddress = ( address ) => {
 	};
 };
 
-const enableStripeLinkPaymentMethod = async ( options ) => {
+const enableStripeLinkPaymentMethod = ( options ) => {
 	const emailField = document.getElementById( options.emailId );
 
 	if ( ! emailField ) {
 		return;
 	}
 
-	const stripe = await options.api.getStripe();
 	// https://stripe.com/docs/payments/link/autofill-modal
-	const linkAutofill = stripe.linkAutofillModal( options.elements );
+	const linkAutofill = options.api
+		.getStripe()
+		.linkAutofillModal( options.elements );
 
 	emailField.addEventListener( 'keyup', ( event ) => {
 		linkAutofill.launch( { email: event.target.value } );

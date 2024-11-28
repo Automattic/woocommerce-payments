@@ -331,6 +331,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		$settings = $this->get_button_settings();
+		$radius   = WC_Payments_Features::is_stripe_ece_enabled() ? $settings['radius'] : WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX;
 
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->express_checkout_helper->is_product() ); ?>>
@@ -341,7 +342,7 @@ class WC_Payments_WooPay_Button_Handler {
 				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
 				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
 				data-size="<?php echo esc_attr( $settings['size'] ); ?>"
-				style="height: <?php echo esc_attr( $settings['height'] ); ?>px; border-radius: <?php echo esc_attr( $settings['radius'] ); ?>px"
+				style="height: <?php echo esc_attr( $settings['height'] ); ?>px; border-radius: <?php echo esc_attr( $radius ); ?>px"
 				disabled
 			></button>
 		</div>

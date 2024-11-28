@@ -1,10 +1,13 @@
 <?php
 /**
- * Class WC_Payments_WooPay_Direct_Checkout
+ * Class WC_Payments_Payment_Request_Button_Handler
  * Adds support for WooPay direct checkout feature.
  *
  * @package WooCommerce\Payments
  */
+
+use WCPay\WooPay\WooPay_Session;
+use WCPay\WooPay\WooPay_Utilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

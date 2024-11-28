@@ -160,11 +160,6 @@ describe( 'CheckoutPageSaveUser', () => {
 				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeChecked();
-		expect(
-			screen.queryAllByLabelText(
-				'Securely save my information for 1-click checkout'
-			)
-		).toHaveLength( 1 );
 	} );
 
 	it( 'should not render checkbox for saving WooPay user when user is already registered', () => {
@@ -189,7 +184,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should not render checkbox for saving WooPay user when selected payment method is not card', () => {
+	it( 'should render checkbox for saving WooPay user when selected payment method is not card', () => {
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: false,
 		} ) );
@@ -240,7 +235,6 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		expect( label ).toBeChecked();
 		expect( screen.queryByTestId( 'save-user-form' ) ).toBeInTheDocument();
-		expect( screen.getAllByTestId( 'save-user-form' ) ).toHaveLength( 1 );
 	} );
 
 	it( 'should not call `request` on classic checkout when checkbox is clicked', () => {

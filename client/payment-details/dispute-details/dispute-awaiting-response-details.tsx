@@ -42,7 +42,6 @@ interface Props {
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
 	orderUrl: string | undefined;
-	paymentMethod: string | null;
 }
 
 /**
@@ -161,7 +160,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	customer,
 	chargeCreated,
 	orderUrl,
-	paymentMethod,
 } ) => {
 	const {
 		doAccept,
@@ -206,10 +204,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		isDisputeAcceptRequestPending,
 	} );
 
-	const isDefendable = ! (
-		paymentMethod === 'klarna' && isInquiry( dispute.status )
-	); // Only Klarna inquires are not defendable
-
 	const challengeButtonDefaultText = isInquiry( dispute.status )
 		? __( 'Submit evidence', 'woocommerce-payments' )
 		: __( 'Challenge dispute', 'woocommerce-payments' );
@@ -238,7 +232,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							dispute={ dispute }
 							customer={ customer }
 							chargeCreated={ chargeCreated }
-							isDefendable={ isDefendable }
 						/>
 					) : (
 						<DisputeSteps
@@ -257,52 +250,44 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 					{ /* Dispute Actions */ }
 					{
 						<div className="transaction-details-dispute-details-body__actions">
-							{ isDefendable && (
-								<Link
-									href={
-										// Prevent the user navigating to the challenge screen if the accept request is in progress.
-										isDisputeAcceptRequestPending
-											? ''
-											: getAdminUrl( {
-													page: 'wc-admin',
-													path:
-														'/payments/disputes/challenge',
-													id: dispute.id,
-											  } )
-									}
+							<Link
+								href={
+									// Prevent the user navigating to the challenge screen if the accept request is in progress.
+									isDisputeAcceptRequestPending
+										? ''
+										: getAdminUrl( {
+												page: 'wc-admin',
+												path:
+													'/payments/disputes/challenge',
+												id: dispute.id,
+										  } )
+								}
+							>
+								<Button
+									variant="primary"
+									data-testid="challenge-dispute-button"
+									disabled={ isDisputeAcceptRequestPending }
+									onClick={ () => {
+										recordEvent(
+											'wcpay_dispute_challenge_clicked',
+											{
+												dispute_status: dispute.status,
+												on_page: 'transaction_details',
+											}
+										);
+									} }
 								>
-									<Button
-										variant="primary"
-										data-testid="challenge-dispute-button"
-										disabled={
-											isDisputeAcceptRequestPending
-										}
-										onClick={ () => {
-											recordEvent(
-												'wcpay_dispute_challenge_clicked',
-												{
-													dispute_status:
-														dispute.status,
-													on_page:
-														'transaction_details',
-												}
-											);
-										} }
-									>
-										{ hasStagedEvidence
-											? __(
-													'Continue with challenge',
-													'woocommerce-payments'
-											  )
-											: challengeButtonDefaultText }
-									</Button>
-								</Link>
-							) }
+									{ hasStagedEvidence
+										? __(
+												'Continue with challenge',
+												'woocommerce-payments'
+										  )
+										: challengeButtonDefaultText }
+								</Button>
+							</Link>
 
 							<Button
-								variant={
-									isDefendable ? 'tertiary' : 'primary'
-								}
+								variant="tertiary"
 								disabled={ isDisputeAcceptRequestPending }
 								data-testid="open-accept-dispute-modal-button"
 								onClick={ () => {

@@ -105,12 +105,10 @@ const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
 
 const apiMock = {
 	saveUPEAppearance: jest.fn().mockResolvedValue( {} ),
-	getStripeForUPE: jest.fn( () =>
-		Promise.resolve( {
-			elements: mockElements,
-			createPaymentMethod: mockCreatePaymentMethod,
-		} )
-	),
+	getStripeForUPE: jest.fn( () => ( {
+		elements: mockElements,
+		createPaymentMethod: mockCreatePaymentMethod,
+	} ) ),
 	setupIntent: jest.fn().mockResolvedValue( {} ),
 };
 

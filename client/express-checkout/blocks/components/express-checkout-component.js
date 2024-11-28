@@ -134,9 +134,9 @@ const ExpressCheckoutComponent = ( {
 	return (
 		<ExpressCheckoutElement
 			options={ {
-				...withBlockOverride(),
+				...withBlockOverride( buttonOptions ),
 				...adjustButtonHeights(
-					withBlockOverride(),
+					withBlockOverride( buttonOptions ),
 					expressPaymentMethod
 				),
 				...getPaymentMethodsOverride( expressPaymentMethod ),

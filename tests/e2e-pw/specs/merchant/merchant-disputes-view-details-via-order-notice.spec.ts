@@ -74,10 +74,9 @@ test.describe(
 			).toBeVisible();
 
 			// Visual regression test for the dispute notice.
-			// TODO: This visual regression test is not flaky, but we should revisit the approach.
-			// await expect(
-			// 	merchantPage.locator( '.dispute-notice' )
-			// ).toHaveScreenshot();
+			await expect(
+				merchantPage.locator( '.dispute-notice' )
+			).toHaveScreenshot();
 		} );
 	}
 );
