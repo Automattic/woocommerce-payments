@@ -172,7 +172,7 @@ export const DepositsList = (): JSX.Element => {
 			},
 			traceId: {
 				value: deposit.trace_id,
-				display: clickable( deposit.trace_id ),
+				display: clickable( deposit.trace_id ?? 'N/A' ),
 			},
 		};
 
