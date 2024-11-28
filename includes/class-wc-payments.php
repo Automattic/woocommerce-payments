@@ -29,6 +29,7 @@ use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
+use WCPay\Payment_Methods\Main_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
@@ -53,7 +54,7 @@ class WC_Payments {
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
-	private static $card_gateway;
+	private static $main_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -422,6 +423,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-main-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-method.php';
@@ -581,18 +583,19 @@ class WC_Payments {
 
 			$split_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service );
 
-			// Card gateway hooks are registered once below.
-			if ( 'card' !== $payment_method->get_id() ) {
-				$split_gateway->init_hooks();
-			}
+			$split_gateway->init_hooks();
 
 			self::$payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 		}
 
-		self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
+		$main_payment_method        = new Main_Payment_Method( self::$token_service );
+		self::$main_gateway         = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $main_payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service );
 		self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 
-		self::$card_gateway->init_hooks();
+		self::$payment_method_map[ $main_payment_method->get_id() ]  = $main_payment_method;
+		self::$payment_gateway_map[ $main_payment_method->get_id() ] = self::$main_gateway;
+
+		self::$main_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
@@ -743,7 +746,7 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
 
-		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
+		self::$duplicate_payment_prevention_service->init( self::$main_gateway, self::$order_service );
 
 		wcpay_get_container()->get( \WCPay\Internal\PluginManagement\TranslationsLoader::class )->init_hooks();
 	}
@@ -824,11 +827,11 @@ class WC_Payments {
 	public static function register_gateway( $gateways ) {
 		$payment_methods = array_keys( self::get_payment_method_map() );
 
-		$gateways[]       = self::$card_gateway;
+		$gateways[]       = self::$main_gateway;
 		$all_gateways     = [];
 		$reusable_methods = [];
 		foreach ( $payment_methods as $payment_method_id ) {
-			if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
+			if ( 'main' === $payment_method_id || 'link' === $payment_method_id ) {
 				continue;
 			}
 			$gateway        = self::get_payment_gateway_by_id( $payment_method_id );
@@ -873,10 +876,16 @@ class WC_Payments {
 	 */
 	public static function set_gateway_top_of_list( $ordering ) {
 		$ordering = (array) $ordering;
-		$id       = self::get_gateway()->id;
-		// Only tweak the ordering if the list hasn't been reordered with WooPayments in it already.
-		if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
-			$ordering[ $id ] = empty( $ordering ) ? 0 : ( min( $ordering ) - 1 );
+
+		$ordering[ self::get_gateway()->id ] = empty( $ordering ) ? 9999 : max( $ordering ) + 1;
+
+		$card_gateway = self::get_payment_gateway_by_id( 'card' );
+		if ( $card_gateway && $card_gateway->is_enabled() ) {
+			$id = $card_gateway->id;
+			// Only tweak the ordering if the list hasn't been reordered with WooPayments in it already.
+			if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
+				$ordering[ $id ] = empty( $ordering ) ? 0 : ( min( $ordering ) - 1 );
+			}
 		}
 		return $ordering;
 	}
@@ -1252,7 +1261,7 @@ class WC_Payments {
 	 * @return WC_Payment_Gateway_WCPay gateway instance
 	 */
 	public static function get_gateway() {
-		return self::$card_gateway;
+		return self::$main_gateway;
 	}
 
 	/**
@@ -1297,7 +1306,7 @@ class WC_Payments {
 	 * @param WC_Payment_Gateway_WCPay $gateway The card gateway instance..
 	 */
 	public static function set_gateway( $gateway ) {
-		self::$card_gateway = $gateway;
+		self::$main_gateway = $gateway;
 	}
 
 	/**
@@ -1886,7 +1895,7 @@ class WC_Payments {
 
 		if ( ! $is_subscription && ! $cart_contains_subscription ) {
 			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
-			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
+			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$main_gateway );
 			echo wp_kses( $stripe_site_messaging->init() ?? '', 'post' );
 		}
 	}

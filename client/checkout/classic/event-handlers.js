@@ -134,7 +134,7 @@ jQuery( function ( $ ) {
 		if (
 			$addPaymentMethodForm
 				.find( "input:checked[name='payment_method']" )
-				.val() !== 'woocommerce_payments'
+				.val() !== 'woocommerce_payments_card'
 		) {
 			return;
 		}
@@ -236,6 +236,10 @@ jQuery( function ( $ ) {
 			! $( '.wcpay-upe-element' ).children().length
 		) {
 			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
+				if ( upeElement.dataset.paymentMethodType === 'main' ) {
+					continue;
+				}
+
 				await mountStripePaymentElement(
 					api,
 					upeElement,

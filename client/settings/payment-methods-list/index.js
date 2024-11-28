@@ -33,10 +33,6 @@ const PaymentMethodsList = ( { methodIds } ) => {
 		( methodId ) => methodsConfiguration[ methodId ]
 	);
 
-	const isCreditCardEnabled = enabledMethodIds.includes(
-		PAYMENT_METHOD_IDS.CARD
-	);
-
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null
 	);
@@ -142,11 +138,8 @@ const PaymentMethodsList = ( { methodIds } ) => {
 										getStatusAndRequirements( id ).status
 								}
 								// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
-								required={ PAYMENT_METHOD_IDS.CARD === id }
-								locked={
-									PAYMENT_METHOD_IDS.CARD === id &&
-									isCreditCardEnabled
-								}
+								required={ false }
+								locked={ false }
 								Icon={ Icon }
 								status={ getStatusAndRequirements( id ).status }
 								isSetupRequired={ isSetupRequired }

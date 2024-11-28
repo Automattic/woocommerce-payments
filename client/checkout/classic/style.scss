@@ -31,6 +31,10 @@
 }
 
 #payment .payment_methods {
+	li.payment_method_woocommerce_payments {
+		display: none;
+	}
+
 	li[class*='payment_method_woocommerce_payments'] label img {
 		float: right;
 		border: 0;

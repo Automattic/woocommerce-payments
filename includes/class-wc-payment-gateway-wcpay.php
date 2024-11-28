@@ -60,6 +60,7 @@ use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
+use WCPay\Payment_Methods\Main_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
@@ -322,7 +323,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'refunds',
 		];
 
-		if ( 'card' !== $this->stripe_id ) {
+		if ( 'main' !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooPayments ($this->title)";
 		}
@@ -825,6 +826,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
+		if ( self::GATEWAY_ID === $this->id ) {
+			if ( wc_post_content_has_shortcode( 'woocommerce_checkout' ) ) {
+				return false;
+			}
+			return WC_Payments::get_gateway()->is_enabled();
+		}
+
 		if ( ! WC_Payments::get_gateway()->is_enabled() ) {
 			return false;
 		}
