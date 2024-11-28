@@ -1240,6 +1240,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'charge'           => 'test_charge_id',
 			'reason'           => 'test_reason',
 			'amount'           => 9900,
+			'status'           => 'test_status',
 			'evidence_details' => [
 				'due_by' => 'test_due_by',
 			],
