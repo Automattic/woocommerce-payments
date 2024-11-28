@@ -1290,7 +1290,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'add_order_note' )
 			->with(
 				$this->matchesRegularExpression(
-					'/Payment dispute has been closed with status test_status/'
+					'/Dispute has been closed with status test_status/'
 				)
 			);
 
