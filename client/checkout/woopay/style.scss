@@ -123,7 +123,7 @@
 }
 
 .woopay-express-button {
-	font-size: 18px;
+	font-size: 26px;
 	font-weight: 500;
 	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
 		'Helvetica', 'Roboto', 'Arial', sans-serif;
@@ -142,6 +142,14 @@
 	white-space: nowrap;
 	text-transform: none;
 	list-style-type: none;
+
+	.button-content {
+		display: flex;
+		align-content: center;
+		justify-content: center;
+		transform: scale( 0.8 );
+		line-height: 24px;
+	}
 
 	&:not( :disabled ):hover {
 		background: #e0e0e0 !important;
@@ -162,6 +170,8 @@
 	svg {
 		fill: $studio-woocommerce-purple-60;
 		position: relative;
+		min-width: 100px;
+		transform-origin: left;
 	}
 
 	&[data-type='buy'],
@@ -170,14 +180,7 @@
 		min-width: 200px;
 
 		svg {
-			flex-shrink: 0.4;
 			margin-left: 6px;
-		}
-	}
-
-	&[data-width-type='wide'] {
-		svg {
-			flex-shrink: 1;
 		}
 	}
 
@@ -188,6 +191,7 @@
 
 		svg {
 			fill: $white;
+			min-width: 109px;
 		}
 		&:not( :disabled ):hover {
 			background: $studio-woocommerce-purple-70 !important;
@@ -202,12 +206,7 @@
 	}
 
 	&[data-size='medium'] {
-		font-size: 22px;
 		height: 48px;
-
-		svg {
-			min-width: 60px;
-		}
 
 		&[data-type='buy'],
 		&[data-type='book'],
@@ -215,29 +214,17 @@
 			min-width: 229px;
 
 			svg {
-				flex-shrink: 0.6;
 				margin-left: 8px;
 			}
 		}
 
-		&[data-width-type='wide'] {
-			&[data-type='buy'],
-			&[data-type='book'],
-			&[data-type='donate'] {
-				svg {
-					flex-shrink: 1;
-				}
-			}
+		.button-content {
+			transform: scale( 0.9 );
 		}
 	}
 
 	&[data-size='large'] {
-		font-size: 26px;
 		height: 55px;
-
-		svg {
-			min-width: 100px;
-		}
 
 		&[data-type='buy'],
 		&[data-type='book'],
@@ -245,21 +232,12 @@
 			min-width: 229px;
 
 			svg {
-				flex-shrink: 0.6;
 				margin-left: 10px;
-				margin-bottom: 0.25rem;
 			}
 		}
 
-		&[data-width-type='wide'] {
-			&[data-type='buy'],
-			&[data-type='book'],
-			&[data-type='donate'] {
-				svg {
-					flex-shrink: 1;
-					margin-bottom: 0;
-				}
-			}
+		.button-content {
+			transform: scale( 1 );
 		}
 
 		// For this width range, the button's text is too large to fit

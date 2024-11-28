@@ -386,7 +386,7 @@ export const WoopayExpressCheckoutButton = ( {
 			{ isLoading ? (
 				<span className="wc-block-components-spinner" />
 			) : (
-				<>
+				<div className="button-content">
 					{ interpolateComponents( {
 						mixedString: buttonText.replace(
 							ButtonTypeTextMap.default,
@@ -396,7 +396,7 @@ export const WoopayExpressCheckoutButton = ( {
 							wooPayLogo: <ThemedWooPayIcon />,
 						},
 					} ) }
-				</>
+				</div>
 			) }
 		</button>
 	);
