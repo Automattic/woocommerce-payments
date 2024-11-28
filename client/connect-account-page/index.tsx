@@ -32,7 +32,7 @@ import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
-import WooPaymentsLogo from 'assets/images/logo.svg?asset';
+import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
@@ -53,7 +53,7 @@ const TestDriveLoader: React.FunctionComponent< {
 	progress: number;
 } > = ( { progress } ) => (
 	<Loader className="connect-account-page__preloader">
-		<img className="logo" src={ WooPaymentsLogo } alt="" />
+		<img className="logo" src={ WooLogo } alt="" />
 		<Loader.Layout>
 			<Loader.Illustration>
 				<img src={ SetupImg } alt="setup" />
