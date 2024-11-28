@@ -37,6 +37,7 @@ export interface WCPayExpressCheckoutParams {
 		currency_code: string;
 		needs_payer_phone: boolean;
 		needs_shipping: boolean;
+		currency_decimals: number;
 	};
 
 	/**
@@ -54,6 +55,9 @@ export interface WCPayExpressCheckoutParams {
 		platform_tracker: string;
 		shipping: string;
 		update_shipping: string;
+		tokenized_cart_nonce: string;
+		tokenized_cart_session_nonce: string;
+		store_api_nonce: string;
 	};
 
 	/**

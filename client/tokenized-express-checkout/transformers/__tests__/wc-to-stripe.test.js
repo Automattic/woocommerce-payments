@@ -3,12 +3,12 @@
  */
 import {
 	transformPrice,
-	transformCartDataForShippingOptions,
+	transformCartDataForShippingRates,
 	transformCartDataForDisplayItems,
 } from '../wc-to-stripe';
 
-global.wcpayPaymentRequestParams = {};
-global.wcpayPaymentRequestParams.checkout = {};
+global.wcpayExpressCheckoutParams = {};
+global.wcpayExpressCheckoutParams.checkout = {};
 
 describe( 'wc-to-stripe transformers', () => {
 	describe( 'transformCartDataForDisplayItems', () => {
@@ -139,8 +139,8 @@ describe( 'wc-to-stripe transformers', () => {
 					totals: {},
 				} )
 			).toStrictEqual( [
-				{ amount: 4500, label: 'Physical subscription' },
-				{ amount: 150, label: 'WC Bookings – Equipment Rental' },
+				{ amount: 4500, name: 'Physical subscription' },
+				{ amount: 150, name: 'WC Bookings – Equipment Rental' },
 			] );
 		} );
 
@@ -176,7 +176,7 @@ describe( 'wc-to-stripe transformers', () => {
 						currency_suffix: '',
 					},
 				} )
-			).toStrictEqual( [ { amount: 545, label: 'Tax' } ] );
+			).toStrictEqual( [ { amount: 545, name: 'Tax' } ] );
 		} );
 
 		it( 'transforms the tax amount when not present', () => {
@@ -211,7 +211,7 @@ describe( 'wc-to-stripe transformers', () => {
 
 	describe( 'transformPrice', () => {
 		afterEach( () => {
-			delete global.wcpayPaymentRequestParams.checkout.currency_decimals;
+			delete global.wcpayExpressCheckoutParams.checkout.currency_decimals;
 		} );
 
 		it( 'transforms the price', () => {
@@ -237,7 +237,7 @@ describe( 'wc-to-stripe transformers', () => {
 		} );
 
 		it( 'transforms the price if the currency is a zero decimal currency (e.g.: Yen)', () => {
-			global.wcpayPaymentRequestParams.checkout.currency_decimals = 0;
+			global.wcpayExpressCheckoutParams.checkout.currency_decimals = 0;
 			// with zero decimals, `18` would mean `18`.
 			expect( transformPrice( 18, { currency_minor_unit: 0 } ) ).toBe(
 				18
@@ -245,7 +245,7 @@ describe( 'wc-to-stripe transformers', () => {
 		} );
 
 		it( 'transforms the price if the currency a zero decimal currency (e.g.: Yen) but it is configured with one decimal', () => {
-			global.wcpayPaymentRequestParams.checkout.currency_decimals = 0;
+			global.wcpayExpressCheckoutParams.checkout.currency_decimals = 0;
 			// with zero decimals, `18` would mean `18`.
 			// But since Stripe expects the price to be in the minimum currency amount, the return value should be `18`
 			expect( transformPrice( 180, { currency_minor_unit: 1 } ) ).toBe(
@@ -254,10 +254,10 @@ describe( 'wc-to-stripe transformers', () => {
 		} );
 	} );
 
-	describe( 'transformCartDataForShippingOptions', () => {
-		it( 'transforms shipping rates', () => {
+	describe( 'transformCartDataForShippingRates', () => {
+		it( 'transforms shipping rates, placing the selected one at the top of the list', () => {
 			expect(
-				transformCartDataForShippingOptions( {
+				transformCartDataForShippingRates( {
 					shipping_rates: [
 						{
 							package_id: 0,
@@ -286,7 +286,7 @@ describe( 'wc-to-stripe transformers', () => {
 											value: 'Beanie &times; 1',
 										},
 									],
-									selected: true,
+									selected: false,
 									currency_code: 'USD',
 									currency_symbol: '$',
 									currency_minor_unit: 2,
@@ -310,7 +310,7 @@ describe( 'wc-to-stripe transformers', () => {
 											value: 'Beanie &times; 1',
 										},
 									],
-									selected: false,
+									selected: true,
 									currency_code: 'USD',
 									currency_symbol: '$',
 									currency_minor_unit: 2,
@@ -349,29 +349,29 @@ describe( 'wc-to-stripe transformers', () => {
 				} )
 			).toEqual( [
 				{
-					amount: 1000,
-					detail: '',
-					id: 'flat_rate:14',
-					label: 'CA Flat rate',
+					amount: 350,
+					deliveryEstimate: '',
+					id: 'local_pickup:15',
+					displayName: 'Local pickup',
 				},
 				{
-					amount: 350,
-					detail: '',
-					id: 'local_pickup:15',
-					label: 'Local pickup',
+					amount: 1000,
+					deliveryEstimate: '',
+					id: 'flat_rate:14',
+					displayName: 'CA Flat rate',
 				},
 				{
 					amount: 0,
-					detail: '',
+					deliveryEstimate: '',
 					id: 'free_shipping:13',
-					label: 'Free shipping',
+					displayName: 'Free shipping',
 				},
 			] );
 		} );
 
 		it( 'transforms shipping options for local pickup', () => {
 			expect(
-				transformCartDataForShippingOptions( {
+				transformCartDataForShippingRates( {
 					shipping_rates: [
 						{
 							package_id: 0,
@@ -430,10 +430,10 @@ describe( 'wc-to-stripe transformers', () => {
 			).toEqual( [
 				{
 					amount: 0,
-					detail:
+					deliveryEstimate:
 						'42 Wallaby Way, Sydney New South Wales 200, Australia - Ask for P. Sherman',
 					id: 'pickup_location:1',
-					label:
+					displayName:
 						'Local pickup – options coming from WooCommerce Blocks (Australian warehouse)',
 				},
 			] );
