@@ -209,6 +209,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
+		// Restore the cache service in the main class.
+		WC_Payments::set_database_cache( $this->_cache );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
