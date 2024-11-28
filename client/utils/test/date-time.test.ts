@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { formatUserDateTime } from 'wcpay/utils/date-time';
-import { dateI18n } from '@wordpress/date';
+import { dateI18n, getSettings, setSettings } from '@wordpress/date';
 
 describe( 'formatUserDateTime', () => {
 	const originalWcpaySettings = window.wcpaySettings;
@@ -10,6 +10,18 @@ describe( 'formatUserDateTime', () => {
 		dateFormat: 'Y-m-d',
 		timeFormat: 'H:i',
 	};
+	const originalWPDateSettings = getSettings();
+	// Mock the WP Settings timezone to be Africa/Nairobi which differs from the browser's timezone set in tests/js/jest-global-setup.js
+	// to test that the WP Settings timezone is respected.
+	setSettings( {
+		...originalWPDateSettings,
+		timezone: {
+			offset: '3',
+			offsetFormatted: '+03:00',
+			string: 'Africa/Nairobi',
+			abbr: 'EAT',
+		},
+	} );
 
 	beforeAll( () => {
 		window.wcpaySettings = mockWcpaySettings as typeof wcpaySettings;
@@ -17,39 +29,41 @@ describe( 'formatUserDateTime', () => {
 
 	afterAll( () => {
 		window.wcpaySettings = originalWcpaySettings;
+		setSettings( originalWPDateSettings );
 	} );
 
 	describe( 'with string input', () => {
 		it( 'should format using default WordPress settings', () => {
-			const dateTime = '2024-10-23 15:28:26';
+			const dateTime = '2024-10-23 15:28:26Z';
 			const formatted = formatUserDateTime( dateTime, {
 				includeTime: true,
 			} );
 
-			expect( formatted ).toBe( '2024-10-23 / 15:28' );
+			// 15:28 UTC is 18:28 in Nairobi
+			expect( formatted ).toBe( '2024-10-23 / 18:28' );
 		} );
 
 		it( 'should use custom format if provided', () => {
-			const dateTime = '2024-10-23 15:28:26';
+			const dateTime = '2024-10-23 15:28:26Z';
 			const options = { customFormat: 'd-m-Y H:i:s' };
 			const formatted = formatUserDateTime( dateTime, options );
 
-			expect( formatted ).toBe( '23-10-2024 15:28:26' );
+			expect( formatted ).toBe( '23-10-2024 18:28:26' );
 		} );
 
 		it( 'should exclude time if includeTime is set to false', () => {
-			const dateTime = '2024-10-23 15:28:26';
+			const dateTime = '2024-10-23 15:28:26Z';
 			const formatted = formatUserDateTime( dateTime );
 
 			expect( formatted ).toBe( '2024-10-23' );
 		} );
 
 		it( 'should use custom separator when provided', () => {
-			const dateTime = '2024-10-23 15:28:26';
+			const dateTime = '2024-10-23 15:28:26Z';
 			const options = { separator: ' - ', includeTime: true };
 			const formatted = formatUserDateTime( dateTime, options );
 
-			expect( formatted ).toBe( '2024-10-23 - 15:28' );
+			expect( formatted ).toBe( '2024-10-23 - 18:28' );
 		} );
 
 		it( 'should handle GMT/UTC setting correctly when useGmt is true', () => {
