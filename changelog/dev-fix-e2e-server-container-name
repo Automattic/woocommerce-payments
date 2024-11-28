@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Change E2E server docker to transact_platform_server_wordpress_e2e
+
+
