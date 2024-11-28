@@ -35,11 +35,12 @@ echo
 
 if [ ! -f "${JT_DIR}/config.env" ]; then
     touch "${JT_DIR}/config.env"
+else
+    > "${JT_DIR}/config.env"
 fi
 
 echo "username=${username}" >> ${JT_DIR}/config.env
 echo "subdomain=${subdomain}" >> ${JT_DIR}/config.env
-echo "port=8082" >> ${JT_DIR}/config.env
 
 echo "Setup complete!"
 echo "Use the command: npm run tube:start from the root directory of your WooPayments project to start running Jurassic Tube."
