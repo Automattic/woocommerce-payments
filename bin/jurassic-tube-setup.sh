@@ -14,9 +14,14 @@ if [ ! -d "$JT_DIR" ]; then
     mkdir -p "$JT_DIR"
 fi
 
-# Download and run the installer
-echo "Downloading the standalone installer..."
-curl "https://jurassic.tube/installer-standalone.sh" -o "$JT_DIR/installer.sh" && chmod +x "$JT_DIR/installer.sh" && "$JT_DIR/installer.sh"
+# Download the installer only if it's not already present
+if [ ! -f "$JT_DIR/installer.sh" ]; then
+    echo "Downloading the standalone installer..."
+    curl "https://jurassic.tube/installer-standalone.sh" -o "$JT_DIR/installer.sh" && chmod +x "$JT_DIR/installer.sh"
+fi
+
+# Run the installer
+"$JT_DIR/installer.sh"
 
 echo
 read -p "Go to https://jurassic.tube/ in a browser, paste your public key which was printed above into the box, and click 'Add Public Key'. Press enter to continue"
