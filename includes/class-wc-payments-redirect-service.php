@@ -187,11 +187,10 @@ class WC_Payments_Redirect_Service {
 	 *
 	 * Note that this function immediately ends the execution.
 	 *
-	 * @param string|null $error_message     Optional. Error message to show in a notice.
 	 * @param string|null $from              Optional. Source of the redirect.
 	 * @param array       $additional_params Optional. Additional URL params to add to the redirect URL.
 	 */
-	public function redirect_to_settings_page( ?string $error_message = null, ?string $from = null, array $additional_params = [] ): void {
+	public function redirect_to_settings_page( ?string $from = null, array $additional_params = [] ): void {
 		$params = [
 			'page' => 'wc-settings',
 			'tab'  => 'checkout',
@@ -200,11 +199,6 @@ class WC_Payments_Redirect_Service {
 		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			// We are already in the settings page. Do nothing.
 			return;
-		}
-
-		// If we were given an error message, store it in a very short-lived transient to show it on the page.
-		if ( ! empty( $error_message ) ) {
-			set_transient( WC_Payments_Account::ERROR_MESSAGE_TRANSIENT, $error_message, 30 );
 		}
 
 		$params = array_merge( $params, $additional_params );

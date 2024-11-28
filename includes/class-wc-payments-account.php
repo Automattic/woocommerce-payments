@@ -1143,12 +1143,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		 *
 		 * 0. Make changes to the account data if needed (e.g. reset account, disable test mode onboarding)
 		 *    as instructed by the GET params.
-		 *    0.1 If we reset the account -> redirect to CONNECT PAGE
+		 *    0.1 If we reset the account -> redirect to CONNECT PAGE / SETTINGS PAGE If redirect to settings page flag set
 		 * 1. Returning from the WPCOM/Jetpack connection screen.
 		 *      1.1 SUCCESSFUL connection
 		 *          1.1.1 NO Stripe account connected -> redirect to ONBOARDING WIZARD
 		 *          1.1.2 Stripe account connected -> redirect to OVERVIEW PAGE
-		 *      1.2 UNSUCCESSFUL connection -> redirect to CONNECT PAGE with ERROR message
+		 *      1.2 UNSUCCESSFUL connection -> redirect to CONNECT PAGE with ERROR message / SETTINGS PAGE if redirect to settings page flag set
 		 * 2. Working WPCOM/Jetpack connection and fully onboarded Stripe account -> redirect to OVERVIEW PAGE
 		 * 3. Specific `from` places -> redirect to CONNECT PAGE regardless of the account status
 		 * 4. NO [working] WPCOM/Jetpack connection:
@@ -1255,7 +1255,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 				$this->cleanup_on_account_reset();
 
-				// When we reset the account we want to always go the Connect page. Redirect immediately!
+				// When we reset the account and want to go back to the settings page - redirect immediately!
+				if ( $redirect_to_settings_page ) {
+					$this->redirect_service->redirect_to_settings_page(
+						WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
+						[ 'source' => $onboarding_source ]
+					);
+					return;
+				}
+
+				// Otherwise, when we reset the account we want to always go the Connect page. Redirect immediately!
 				$this->redirect_service->redirect_to_connect_page(
 					null,
 					WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
@@ -1316,11 +1325,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 					if ( $redirect_to_settings_page ) {
 						$this->redirect_service->redirect_to_settings_page(
-							sprintf(
-							/* translators: %s: WooPayments */
-								__( 'There was a problem connecting your WordPress.com account - please try again.', 'woocommerce-payments' ),
-								'WooPayments'
-							),
 							WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							[
 								'source' => $onboarding_source,
@@ -1369,7 +1373,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				];
 				if ( $redirect_to_settings_page ) {
 					$this->redirect_service->redirect_to_settings_page(
-						null,
 						$from,
 						$params
 					);
