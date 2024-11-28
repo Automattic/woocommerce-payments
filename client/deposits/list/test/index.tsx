@@ -336,6 +336,9 @@ describe( 'Deposits list', () => {
 			expect( csvFirstDeposit[ 5 ] ).toBe(
 				`"${ displayFirstDeposit[ 4 ] }"`
 			); // bank account
+			expect( csvFirstDeposit[ 6 ] ).toBe(
+				`${ displayFirstDeposit[ 5 ] }`
+			); // Trace ID
 		} );
 
 		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 1000.', async () => {
