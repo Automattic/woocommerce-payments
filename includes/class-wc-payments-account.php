@@ -1324,6 +1324,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 							WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							[
 								'source' => $onboarding_source,
+								'wcpay-connect-jetpack-error' => '1',
 							]
 						);
 					}
