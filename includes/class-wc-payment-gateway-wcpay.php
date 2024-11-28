@@ -2127,8 +2127,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order_id        = $order instanceof WC_Order ? $order->get_id() : null;
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
 		} else {
-			// Final fallback case, if all else fails.
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+			// Final fallback case, if all else fails. WooPay payments will use this case.
+			$payment_methods = [ Payment_Method::CARD ];
 		}
 
 		return $payment_methods;
