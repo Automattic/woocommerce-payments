@@ -588,6 +588,9 @@ jQuery( ( $ ) => {
 				// If this is the cart or checkout page, we need to request the
 				// cart details.
 				const cart = await api.expressCheckoutECEGetCartDetails();
+
+				$( document.body ).trigger( 'updated_cart_details', cart );
+
 				if ( cart.total.amount === 0 ) {
 					expressCheckoutButtonUi.hideContainer();
 					expressCheckoutButtonUi.getButtonSeparator().hide();

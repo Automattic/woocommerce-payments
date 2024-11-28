@@ -204,6 +204,7 @@ class WC_Payments_Checkout {
 			'wcpayVersionNumber'                => WCPAY_VERSION_NUMBER,
 			'woopaySignatureNonce'              => wp_create_nonce( 'woopay_signature_nonce' ),
 			'woopaySessionNonce'                => wp_create_nonce( 'woopay_session_nonce' ),
+			'woopayCartDetailsNonce'            => wp_create_nonce( 'woopay_cart_details_nonce' ),
 			'woopayMerchantId'                  => Jetpack_Options::get_option( 'id' ),
 			'icon'                              => $this->gateway->get_icon_url(),
 			'woopayMinimumSessionData'          => WooPay_Session::get_woopay_minimum_session_data(),

@@ -196,6 +196,9 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	public function ajax_get_cart_details() {
 		check_ajax_referer( 'wcpay-get-cart-details', 'security' );
 
+		// Process added gift cards.
+		add_filter( 'woocommerce_gc_disable_ui', '__return_false' );
+
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
 		}
@@ -206,11 +209,18 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		WC()->cart->calculate_totals();
 
+		$cart_contains_subscription = false;
+
+		if ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			$cart_contains_subscription = true;
+		}
+
 		wp_send_json(
 			array_merge(
 				$this->express_checkout_button_helper->build_display_items(),
 				[
-					'needs_shipping' => WC()->cart->needs_shipping(),
+					'needs_shipping'             => WC()->cart->needs_shipping(),
+					'cart_contains_subscription' => $cart_contains_subscription,
 				]
 			)
 		);

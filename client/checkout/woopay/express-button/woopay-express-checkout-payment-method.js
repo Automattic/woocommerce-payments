@@ -63,7 +63,21 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 			emailSelector="#email"
 		/>
 	),
-	canMakePayment: () => typeof wcpayConfig !== 'undefined',
+	canMakePayment: ( { cart } ) => {
+		if ( typeof wcpayConfig === 'undefined' ) {
+			return false;
+		}
+
+		// Hide WooPay button when cart total is 0 and there are no subscriptions in the cart.
+		if (
+			Number( cart.cartTotals.total_price ) === 0 &&
+			! cart.cartItems.find( ( item ) => item.type === 'subscription' )
+		) {
+			return false;
+		}
+
+		return true;
+	},
 	paymentMethodId: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	supports: {
 		features: getConfig( 'features' ),

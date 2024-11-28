@@ -1670,6 +1670,7 @@ class WC_Payments {
 				'testMode'                      => $is_test_mode,
 				'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 				'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
+				'woopayCartDetailsNonce'        => wp_create_nonce( 'woopay_cart_details_nonce' ),
 				'woopayMerchantId'              => Jetpack_Options::get_option( 'id' ),
 				'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
 				'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),

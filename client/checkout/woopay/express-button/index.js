@@ -11,6 +11,7 @@ import { getConfig } from 'utils/checkout';
 import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 
 const oldWoopayContainers = [];
 
@@ -74,6 +75,47 @@ jQuery( ( $ ) => {
 	};
 
 	listenForCartChanges.start();
+
+	// On classic checkout, hide the WooPay button when the cart total is 0
+	// and there are no subscriptions in the cart.
+	const handleWooPayExpressCheckoutButtonVisibility = async (
+		_event,
+		cart
+	) => {
+		if ( cart.total.amount === 0 && ! cart.cart_contains_subscription ) {
+			$( '#wcpay-woopay-button' ).hide();
+			$( '#wcpay-express-checkout-button-separator' ).hide();
+			return;
+		}
+
+		$( '#wcpay-woopay-button' ).show();
+		$( '#wcpay-express-checkout-button-separator' ).show();
+	};
+
+	if ( getConfig( 'isPaymentRequestEnabled' ) ) {
+		// Reuse express buttons ece_get_cart_details call to prevent calling both endpoints.
+		$( document.body ).on(
+			'updated_cart_details',
+			handleWooPayExpressCheckoutButtonVisibility
+		);
+
+		return;
+	}
+
+	const getCartDetails = async () => {
+		const cart = await request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'woopay_get_cart_details' ),
+			{
+				_ajax_nonce: getConfig( 'woopayCartDetailsNonce' ),
+			}
+		);
+
+		handleWooPayExpressCheckoutButtonVisibility( null, cart );
+	};
+
+	$( document.body ).on( 'updated_checkout', getCartDetails );
+
+	$( document.body ).on( 'updated_cart_totals', getCartDetails );
 } );
 
 window.addEventListener(

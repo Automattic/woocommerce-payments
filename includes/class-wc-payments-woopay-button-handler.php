@@ -139,6 +139,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 		add_action( 'wp_ajax_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 		add_action( 'wp_ajax_nopriv_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
+		add_action( 'wc_ajax_wcpay_woopay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 	}
 
 	/**
@@ -346,6 +347,44 @@ class WC_Payments_WooPay_Button_Handler {
 			></button>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Get cart details.
+	 */
+	public function ajax_get_cart_details() {
+		check_ajax_referer( 'woopay_cart_details_nonce' );
+
+		// Process added gift cards.
+		add_filter( 'woocommerce_gc_disable_ui', '__return_false' );
+
+		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			define( 'WOOCOMMERCE_CHECKOUT', true );
+		}
+
+		WC()->cart->calculate_totals();
+
+		$cart_contains_subscription = false;
+
+		if ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			$cart_contains_subscription = true;
+		}
+
+		$currency    = get_woocommerce_currency();
+		$order_total = WC()->cart->get_total( '' );
+
+		wp_send_json(
+			[
+				'cart_contains_subscription' => $cart_contains_subscription,
+				'total'                      => [
+					'amount' => max( 0, apply_filters( 'wcpay_calculated_total', WC_Payments_Utils::prepare_amount( $order_total, $currency ), $order_total, WC()->cart ) ),
+				],
+			]
+		);
 	}
 
 	/**
