@@ -1314,6 +1314,20 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						array_merge( $tracks_props, [ 'mode' => WC_Payments_Onboarding_Service::is_test_mode_enabled() ? 'test' : 'live' ] )
 					);
 
+					if ( $redirect_to_settings_page ) {
+						$this->redirect_service->redirect_to_settings_page(
+							sprintf(
+							/* translators: %s: WooPayments */
+								__( 'There was a problem connecting your WordPress.com account - please try again.', 'woocommerce-payments' ),
+								'WooPayments'
+							),
+							WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
+							[
+								'source' => $onboarding_source,
+							]
+						);
+					}
+
 					$this->redirect_service->redirect_to_connect_page(
 						sprintf(
 						/* translators: %s: WooPayments */
