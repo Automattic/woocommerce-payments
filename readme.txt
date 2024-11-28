@@ -89,7 +89,7 @@ Please note that our support for the checkout block is still experimental and th
 
 1. View Transactions
 2. View Transaction Details
-3. Track Deposits
+3. Track Payouts
 4. Manage Disputes
 
 == Changelog ==

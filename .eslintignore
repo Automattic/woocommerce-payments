@@ -10,3 +10,7 @@ vendor/*
 release/*
 tests/e2e/docker*
 tests/e2e/deps*
+
+# We'll delete the directory and its contents as part of https://github.com/Automattic/woocommerce-payments/issues/9722 .
+# ignoring it because we're temporariily cleaning it up.
+client/tokenized-payment-request

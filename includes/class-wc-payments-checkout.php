@@ -190,9 +190,8 @@ class WC_Payments_Checkout {
 			'locale'                            => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isPreview'                         => is_preview(),
 			'isSavedCardsEnabled'               => $this->gateway->is_saved_cards_enabled(),
-			'isExpressCheckoutElementEnabled'   => WC_Payments_Features::is_stripe_ece_enabled(),
 			'isPaymentRequestEnabled'           => $this->gateway->is_payment_request_enabled(),
-			'isTokenizedCartPrbEnabled'         => WC_Payments_Features::is_tokenized_cart_prb_enabled(),
+			'isTokenizedCartEceEnabled'         => WC_Payments_Features::is_tokenized_cart_ece_enabled(),
 			'isWooPayEnabled'                   => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_cart_or_checkout(),
 			'isWoopayExpressCheckoutEnabled'    => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'     => $this->woopay_util->is_woopay_first_party_auth_enabled(),
@@ -238,7 +237,9 @@ class WC_Payments_Checkout {
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
 			if ( ! isset( $billing_field_options['enabled'] ) || $billing_field_options['enabled'] ) {
-				$enabled_billing_fields[] = $billing_field;
+				$enabled_billing_fields[ $billing_field ] = [
+					'required' => $billing_field_options['required'],
+				];
 			}
 		}
 		$payment_fields['enabledBillingFields'] = $enabled_billing_fields;

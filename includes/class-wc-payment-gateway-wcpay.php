@@ -1850,8 +1850,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
 
-			if ( $order->get_meta( 'is_woopay' ) && 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
+			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
 				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+				if ( isset( $payment_method_details['card']['brand'] ) ) {
+					$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
+				}
 				$order->save_meta_data();
 			}
 		} else {
@@ -4293,20 +4296,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array WooCommerce checkout fields.
 	 */
 	public function checkout_update_email_field_priority( $fields ) {
-		$is_link_enabled = in_array(
-			Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
-			true
-		);
+		if ( is_checkout() || has_block( 'woocommerce/checkout' ) ) {
+			$is_link_enabled = in_array(
+				Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+				\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
+				true
+			);
 
-		if ( $is_link_enabled && isset( $fields['billing_email'] ) ) {
-			// Update the field priority.
-			$fields['billing_email']['priority'] = 1;
+			if ( $is_link_enabled && isset( $fields['billing_email'] ) ) {
+				// Update the field priority.
+				$fields['billing_email']['priority'] = 1;
 
-			// Add extra `wcpay-checkout-email-field` class.
-			$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
+				// Add extra `wcpay-checkout-email-field` class.
+				$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
 
-			add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
+				add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
+			}
 		}
 
 		return $fields;
