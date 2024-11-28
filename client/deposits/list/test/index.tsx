@@ -53,6 +53,7 @@ const mockDeposits = [
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		trace_id: 'mock_trace_id',
 	} as CachedDeposit,
 	{
 		id: 'po_mock2',
@@ -62,6 +63,7 @@ const mockDeposits = [
 		status: 'pending',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		trace_id: 'mock_trace_id',
 	} as CachedDeposit,
 	{
 		id: 'po_mock3',
@@ -71,6 +73,7 @@ const mockDeposits = [
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		trace_id: 'mock_trace_id',
 	} as CachedDeposit,
 ];
 
@@ -287,6 +290,7 @@ describe( 'Deposits list', () => {
 				'Amount',
 				'Status',
 				'"Bank account"',
+				'"Trace ID"',
 			];
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
