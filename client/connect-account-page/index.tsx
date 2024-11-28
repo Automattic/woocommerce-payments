@@ -27,6 +27,7 @@ import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
+import SetupImg from 'assets/images/illustrations/setup.svg?asset';
 import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
@@ -52,18 +53,19 @@ const TestDriveLoader: React.FunctionComponent< {
 	progress: number;
 } > = ( { progress } ) => (
 	<Loader className="connect-account-page__preloader">
-		<img src={ WooPaymentsLogo } alt="" />
+		<img className="logo" src={ WooPaymentsLogo } alt="" />
 		<Loader.Layout>
+			<Loader.Illustration>
+				<img src={ SetupImg } alt="setup" />
+			</Loader.Illustration>
+
 			<Loader.Title>
-				{ __(
-					'Creating your sandbox account',
-					'woocommerce-payments'
-				) }
+				{ __( 'Finishing payments setup', 'woocommerce-payments' ) }
 			</Loader.Title>
 			<Loader.ProgressBar progress={ progress ?? 0 } />
 			<Loader.Sequence interval={ 0 }>
 				{ __(
-					'In just a few moments, you will be ready to test payments on your store.'
+					"In just a few moments, you'll be ready to test payments on your store."
 				) }
 			</Loader.Sequence>
 		</Loader.Layout>
