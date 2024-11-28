@@ -1368,6 +1368,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				];
 				if ( $redirect_to_settings_page ) {
 					$this->redirect_service->redirect_to_settings_page(
+						null,
 						$from,
 						$params
 					);
