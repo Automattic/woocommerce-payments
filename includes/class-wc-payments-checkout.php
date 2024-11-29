@@ -456,7 +456,7 @@ class WC_Payments_Checkout {
 				}
 				?>
 
-			<fieldset style="padding: 7px" id="wc-<?php echo esc_attr( $this->gateway->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
+			<fieldset style="padding: 7px" class="wc-payment-form">
 				<?php
 					$this->gateway->display_gateway_html();
 				if ( $this->gateway->is_saved_cards_enabled() && $this->gateway->should_support_saved_payments() ) {
