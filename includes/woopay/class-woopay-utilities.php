@@ -52,6 +52,16 @@ class WooPay_Utilities {
 			return false;
 		}
 
+		// Disable WooPay when the cart total is 0 and do not need shipping,
+		// and if the cart has no subscriptions or the recurring total value is 0.
+		if (
+			! empty( WC()->cart ) &&
+			(int) WC()->cart->get_total( 'edit' ) === 0 &&
+			! WC()->cart->needs_shipping()
+		) {
+			return false;
+		}
+
 		if ( ! is_user_logged_in() ) {
 			// If there's a subscription product in the cart and the customer isn't logged in we
 			// should not enable WooPay since that situation is currently not supported.
@@ -66,6 +76,13 @@ class WooPay_Utilities {
 			if ( ! $this->is_guest_checkout_enabled() ) {
 				return false;
 			}
+		} elseif (
+			// Disable WooPay when the cart does not need shipping,
+			// has subscriptions and the recurring total value and sign fee is 0.
+			! WC()->cart->needs_shipping() &&
+			$this->cart_subscriptions_renewal_need_payment()
+		) {
+			return false;
 		}
 
 		return true;
@@ -98,21 +115,7 @@ class WooPay_Utilities {
 	 * @return bool
 	 */
 	public function is_woopay_email_input_enabled() {
-		$should_enable = true;
-
-		// Disable WooPay when the cart total is 0, do not need shipping,
-		// and if the cart has no subscriptions or the recurring total value is 0.
-		if (
-			! empty( WC()->cart ) &&
-			(int) WC()->cart->get_total( 'edit' ) === 0 &&
-			! WC()->cart->needs_shipping() &&
-			( ! ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) ||
-			! $this->cart_subscriptions_renewal_need_payment() )
-		) {
-			$should_enable = false;
-		}
-
-		return apply_filters( 'wcpay_is_woopay_email_input_enabled', $should_enable );
+		return apply_filters( 'wcpay_is_woopay_email_input_enabled', true );
 	}
 
 	/**
@@ -166,7 +169,11 @@ class WooPay_Utilities {
 	 * Check if the cart has subscriptions with renewals that needs payment.
 	 */
 	public function cart_subscriptions_renewal_need_payment() {
-		if ( ! empty( wc()->cart->recurring_carts ) ) {
+		if (
+			class_exists( 'WC_Subscriptions_Cart' ) &&
+			\WC_Subscriptions_Cart::cart_contains_subscription() &&
+			! empty( wc()->cart->recurring_carts )
+		) {
 			foreach ( wc()->cart->recurring_carts as $cart_key => $cart ) {
 				if ( (int) $cart->get_total() > 0 ) {
 					return true;

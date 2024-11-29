@@ -312,13 +312,6 @@ class WC_Payments_WooPay_Button_Handler {
 			if ( ! $this->woopay_utilities->is_guest_checkout_enabled() ) {
 				return false;
 			}
-		} elseif (
-			// Hide WooPay button when cart total is 0 and do not need shipping,
-			// and if the cart has no subscriptions or the recurring total value is 0.
-			( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) &&
-			! $this->woopay_utilities->is_woopay_email_input_enabled()
-		) {
-			return false;
 		}
 
 		/**

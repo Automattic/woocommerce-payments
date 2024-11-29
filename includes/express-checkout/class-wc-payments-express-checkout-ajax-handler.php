@@ -209,22 +209,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		WC()->cart->calculate_totals();
 
-		$cart_contains_subscription              = false;
-		$cart_subscriptions_renewal_need_payment = false;
-
-		if ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) {
-			$cart_contains_subscription = true;
-
-			if ( ! empty( wc()->cart->recurring_carts ) ) {
-				foreach ( wc()->cart->recurring_carts as $cart_key => $cart ) {
-					if ( (int) $cart->get_total() > 0 ) {
-						$cart_subscriptions_renewal_need_payment = true;
-						break;
-					}
-				}
-			}
-		}
-
 		wp_send_json(
 			array_merge(
 				$this->express_checkout_button_helper->build_display_items(),
