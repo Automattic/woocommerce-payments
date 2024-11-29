@@ -76,7 +76,9 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 			( ! cart.cartItems.find(
 				( item ) => item.type === 'subscription'
 			) ||
-				cart.extensions.subscriptions.totals.total_price === 0 )
+				cart.extensions.subscriptions.reduce( ( prev, curr ) => {
+					return prev + Number( curr.totals.total_price );
+				}, 0 ) === 0 )
 		) {
 			return false;
 		}
