@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add Bank reference key column in Payout reports. This will help reconcile WooPayments Payouts with bank statements.
