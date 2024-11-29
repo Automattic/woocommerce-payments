@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React from 'react';
-import moment from 'moment';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { ExternalLink } from '@wordpress/components';
@@ -16,7 +15,7 @@ import InfoOutlineIcon from 'gridicons/dist/info-outline';
  */
 import { getAdminUrl } from 'utils';
 import { ClickTooltip } from 'components/tooltip';
-import { formatUserDateTime } from 'wcpay/utils/date-time';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface DepositProps {
 	depositId?: string;
@@ -31,8 +30,8 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 			id: depositId,
 		} );
 
-		const formattedDateAvailable = formatUserDateTime(
-			moment.utc( dateAvailable ).toISOString(),
+		const formattedDateAvailable = formatDateTimeFromString(
+			dateAvailable,
 			{
 				useGmt: true, // TODO: should we allow user settings
 			}

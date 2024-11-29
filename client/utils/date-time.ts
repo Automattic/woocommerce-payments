@@ -2,31 +2,26 @@
  * External dependencies
  */
 import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
 
 type DateTimeFormat = string | null;
 
 interface FormatDateTimeOptions {
-	includeTime?: boolean; // Whether to include time in the formatted string (defaults to true)
+	includeTime?: boolean; // Whether to include time in the formatted string (defaults to false)
 	useGmt?: boolean; // Whether to display the time in GMT/UTC (defaults to false)
 	separator?: string; // Separator between date and time (defaults to ' / ')
 	customFormat?: DateTimeFormat; // Custom format to use instead of WordPress settings
 }
 
 /**
- * Formats a date and time string according to WordPress settings or a custom format.
+ * Formats a date/time string in YYYY-MM-DD HH:MM:SS format according to WordPress settings.
  *
- * @param { string | Date } dateTime - The date and time string (e.g., '2024-10-23 15:28:26') or a JS Date object.
- * @param { FormatDateTimeOptions } options - Additional options to control time inclusion and whether to use GMT/UTC.
- * @return { string } - The formatted date and time string.
+ * @param dateTimeStr - Date time string in YYYY-MM-DD HH:MM:SS format
+ * @param options - Formatting options
  */
-export function formatUserDateTime(
-	dateTime: string | Date,
-	options: FormatDateTimeOptions = {
-		includeTime: false,
-		useGmt: false,
-		separator: ' / ',
-		customFormat: null,
-	}
+export function formatDateTimeFromString(
+	dateTimeStr: string,
+	options: FormatDateTimeOptions = {}
 ): string {
 	const {
 		customFormat = null,
@@ -35,7 +30,9 @@ export function formatUserDateTime(
 		separator = ' / ',
 	} = options;
 
-	// Use the WordPress settings for date and time format if no custom format is provided
+	// Convert to UTC ISO string for consistent handling
+	const utcDateTime = moment.utc( dateTimeStr ).toISOString();
+
 	const format =
 		customFormat ||
 		`${ window.wcpaySettings.dateFormat }${
@@ -44,5 +41,36 @@ export function formatUserDateTime(
 				: ''
 		}`;
 
-	return dateI18n( format, dateTime, useGmt );
+	return dateI18n( format, utcDateTime, useGmt );
+}
+
+/**
+ * Formats a Unix timestamp according to WordPress settings.
+ *
+ * @param timestamp - Unix timestamp (seconds since epoch)
+ * @param options - Formatting options
+ */
+export function formatDateTimeFromTimestamp(
+	timestamp: number,
+	options: FormatDateTimeOptions = {}
+): string {
+	const {
+		customFormat = null,
+		includeTime = false,
+		useGmt = false,
+		separator = ' / ',
+	} = options;
+
+	// Convert to UTC ISO string for consistent handling
+	const utcDateTime = moment.unix( timestamp ).utc().toISOString();
+
+	const format =
+		customFormat ||
+		`${ window.wcpaySettings.dateFormat }${
+			includeTime
+				? `${ separator }${ window.wcpaySettings.timeFormat }`
+				: ''
+		}`;
+
+	return dateI18n( format, utcDateTime, useGmt );
 }

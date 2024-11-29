@@ -24,7 +24,7 @@ import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
-import { formatUserDateTime } from 'wcpay/utils/date-time';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import moment from 'moment';
 
 const columns = [
@@ -81,9 +81,7 @@ const getLoanStatusText = ( loan: CapitalLoan ) => {
 	return loan.fully_paid_at
 		? __( 'Paid off', 'woocommerce-payments' ) +
 				': ' +
-				formatUserDateTime(
-					moment.utc( loan.fully_paid_at ).toISOString()
-				)
+				formatDateTimeFromString( loan.fully_paid_at )
 		: __( 'Active', 'woocommerce-payments' );
 };
 
@@ -116,9 +114,7 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 			paid_out_at: {
 				value: loan.paid_out_at,
 				display: clickable(
-					formatUserDateTime(
-						moment.utc( loan.paid_out_at ).toISOString()
-					)
+					formatDateTimeFromString( loan.paid_out_at )
 				),
 			},
 			status: {
@@ -157,11 +153,7 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 				value: loan.first_paydown_at,
 				display: clickable(
 					loan.first_paydown_at
-						? formatUserDateTime(
-								moment
-									.utc( loan.first_paydown_at )
-									.toISOString()
-						  )
+						? formatDateTimeFromString( loan.first_paydown_at )
 						: '-'
 				),
 			},

@@ -23,7 +23,7 @@ import { useActiveLoanSummary } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
-import { formatUserDateTime } from 'wcpay/utils/date-time';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 const Block = ( {
 	title,
@@ -210,11 +210,8 @@ const ActiveLoanSummary = (): JSX.Element => {
 								'Repaid this period (until %s)',
 								'woocommerce-payments'
 							),
-							formatUserDateTime(
-								new Date(
-									details.current_repayment_interval.due_at *
-										1000
-								),
+							formatDateTimeFromTimestamp(
+								details.current_repayment_interval.due_at,
 								{ useGmt: true }
 							)
 						) }
@@ -251,8 +248,8 @@ const ActiveLoanSummary = (): JSX.Element => {
 					<Block
 						title={ __( 'Loan disbursed', 'woocommerce-payments' ) }
 					>
-						{ formatUserDateTime(
-							new Date( details.advance_paid_out_at * 1000 ),
+						{ formatDateTimeFromTimestamp(
+							details.advance_paid_out_at,
 							{ useGmt: true }
 						) }
 					</Block>
@@ -278,8 +275,8 @@ const ActiveLoanSummary = (): JSX.Element => {
 					<Block
 						title={ __( 'First paydown', 'woocommerce-payments' ) }
 					>
-						{ formatUserDateTime(
-							new Date( details.repayments_begin_at * 1000 ),
+						{ formatDateTimeFromTimestamp(
+							details.repayments_begin_at,
 							{ useGmt: true }
 						) }
 					</Block>

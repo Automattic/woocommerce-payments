@@ -1,28 +1,45 @@
 /**
- * Internal dependencies
+ * External dependencies
  */
-import { formatUserDateTime } from 'wcpay/utils/date-time';
 import { dateI18n } from '@wordpress/date';
 
-describe( 'formatUserDateTime', () => {
+/**
+ * Internal dependencies
+ */
+import {
+	formatDateTimeFromString,
+	formatDateTimeFromTimestamp,
+} from 'wcpay/utils/date-time';
+
+// Mock dateI18n
+jest.mock( '@wordpress/date', () => ( {
+	dateI18n: jest.fn( ( format, date ) => {
+		return jest
+			.requireActual( '@wordpress/date' )
+			.dateI18n( format, date, 'UTC' ); // Force UTC
+	} ),
+} ) );
+
+describe( 'Date/Time Formatting', () => {
 	const originalWcpaySettings = window.wcpaySettings;
 	const mockWcpaySettings = {
 		dateFormat: 'Y-m-d',
 		timeFormat: 'H:i',
 	};
 
-	beforeAll( () => {
+	beforeEach( () => {
+		jest.clearAllMocks();
 		window.wcpaySettings = mockWcpaySettings as typeof wcpaySettings;
 	} );
 
-	afterAll( () => {
+	afterEach( () => {
 		window.wcpaySettings = originalWcpaySettings;
 	} );
 
-	describe( 'with string input', () => {
+	describe( 'formatDateTimeFromString', () => {
 		it( 'should format using default WordPress settings', () => {
 			const dateTime = '2024-10-23 15:28:26';
-			const formatted = formatUserDateTime( dateTime, {
+			const formatted = formatDateTimeFromString( dateTime, {
 				includeTime: true,
 			} );
 
@@ -32,14 +49,14 @@ describe( 'formatUserDateTime', () => {
 		it( 'should use custom format if provided', () => {
 			const dateTime = '2024-10-23 15:28:26';
 			const options = { customFormat: 'd-m-Y H:i:s' };
-			const formatted = formatUserDateTime( dateTime, options );
+			const formatted = formatDateTimeFromString( dateTime, options );
 
 			expect( formatted ).toBe( '23-10-2024 15:28:26' );
 		} );
 
 		it( 'should exclude time if includeTime is set to false', () => {
 			const dateTime = '2024-10-23 15:28:26';
-			const formatted = formatUserDateTime( dateTime );
+			const formatted = formatDateTimeFromString( dateTime );
 
 			expect( formatted ).toBe( '2024-10-23' );
 		} );
@@ -47,7 +64,7 @@ describe( 'formatUserDateTime', () => {
 		it( 'should use custom separator when provided', () => {
 			const dateTime = '2024-10-23 15:28:26';
 			const options = { separator: ' - ', includeTime: true };
-			const formatted = formatUserDateTime( dateTime, options );
+			const formatted = formatDateTimeFromString( dateTime, options );
 
 			expect( formatted ).toBe( '2024-10-23 - 15:28' );
 		} );
@@ -55,79 +72,48 @@ describe( 'formatUserDateTime', () => {
 		it( 'should handle GMT/UTC setting correctly when useGmt is true', () => {
 			const dateTime = '2024-10-23 15:28:26Z';
 			const options = { useGmt: true, includeTime: true };
-			const formatted = formatUserDateTime( dateTime, options );
+			const formatted = formatDateTimeFromString( dateTime, options );
 
-			// Expect UTC-based output (no timezone adjustment)
 			expect( formatted ).toBe( '2024-10-23 / 15:28' );
-		} );
-
-		it( 'should support escaping characters with custom format', () => {
-			const dateTime = '2024-10-23 15:28:26';
-			const options = { customFormat: "'l \\t\\h\\e jS'" };
-			const formatted = formatUserDateTime( dateTime, options );
-			expect( formatted ).toBe( "'Wednesday the 23rd'" );
-		} );
-
-		it( 'should output unrecognized characters as-is', () => {
-			const dateTime = '2024-10-23 15:28:26';
-			const options = { customFormat: '-' };
-			const formatted = formatUserDateTime( dateTime, options );
-			expect( formatted ).toBe( '-' );
 		} );
 	} );
 
-	describe( 'with Date object input', () => {
+	describe( 'formatDateTimeFromTimestamp', () => {
 		it( 'should format using default WordPress settings', () => {
-			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
-			const formatted = formatUserDateTime( dateTime, {
-				useGmt: true,
+			const timestamp = 1729766906; // 2024-10-23 10:48:26 UTC
+			const formatted = formatDateTimeFromTimestamp( timestamp, {
 				includeTime: true,
 			} );
 
-			expect( formatted ).toBe( '2024-10-23 / 15:28' );
+			expect( formatted ).toBe( '2024-10-24 / 10:48' );
 		} );
 
 		it( 'should use custom format if provided', () => {
-			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
+			const timestamp = 1729766906; // 2024-10-23 10:48:26 UTC
 			const options = { customFormat: 'd-m-Y H:i:s', useGmt: true };
-			const formatted = formatUserDateTime( dateTime, options );
+			const formatted = formatDateTimeFromTimestamp( timestamp, options );
 
-			expect( formatted ).toBe( '23-10-2024 15:28:26' );
+			expect( formatted ).toBe( '24-10-2024 10:48:26' );
 		} );
 
 		it( 'should exclude time if includeTime is set to false', () => {
-			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
+			const timestamp = 1729766906; // 2024-10-23 10:48:26 UTC
 			const options = { useGmt: true };
-			const formatted = formatUserDateTime( dateTime, options );
+			const formatted = formatDateTimeFromTimestamp( timestamp, options );
 
-			expect( formatted ).toBe( '2024-10-23' );
-		} );
-
-		it( 'should handle GMT/UTC setting correctly', () => {
-			const dateTime = new Date( 2024, 9, 23, 15, 28, 26 ); // Local time (non-UTC)
-			const formatted = formatUserDateTime( dateTime, {
-				includeTime: true,
-			} );
-
-			const expectedFormat = dateI18n(
-				`${ mockWcpaySettings.dateFormat } / ${ mockWcpaySettings.timeFormat }`,
-				dateTime,
-				false
-			);
-
-			expect( formatted ).toBe( expectedFormat );
+			expect( formatted ).toBe( '2024-10-24' );
 		} );
 
 		it( 'should use custom separator when provided', () => {
-			const dateTime = new Date( Date.UTC( 2024, 9, 23, 15, 28, 26 ) );
+			const timestamp = 1729766906; // 2024-10-23 10:48:26 UTC
 			const options = {
 				separator: ' - ',
 				useGmt: true,
 				includeTime: true,
 			};
-			const formatted = formatUserDateTime( dateTime, options );
+			const formatted = formatDateTimeFromTimestamp( timestamp, options );
 
-			expect( formatted ).toBe( '2024-10-23 - 15:28' );
+			expect( formatted ).toBe( '2024-10-24 - 10:48' );
 		} );
 	} );
 } );

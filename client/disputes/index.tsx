@@ -57,7 +57,7 @@ import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
-import { formatUserDateTime } from 'wcpay/utils/date-time';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -201,7 +201,7 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 			</span>
 		);
 	}
-	return formatUserDateTime( moment.utc( dispute.due_by ).toISOString(), {
+	return formatDateTimeFromString( dispute.due_by, {
 		includeTime: true,
 	} );
 };
@@ -300,10 +300,9 @@ export const DisputesList = (): JSX.Element => {
 			created: {
 				value: dispute.created,
 				display: clickable(
-					formatUserDateTime(
-						moment.utc( dispute.created ).toISOString(),
-						{ includeTime: true }
-					)
+					formatDateTimeFromString( dispute.created, {
+						includeTime: true,
+					} )
 				),
 			},
 			dueBy: {
@@ -482,16 +481,18 @@ export const DisputesList = (): JSX.Element => {
 					{
 						// Disputed On.
 						...row[ 10 ],
-						value: formatUserDateTime(
-							moment.utc( row[ 10 ].value ).toISOString()
+						value: formatDateTimeFromString(
+							row[ 10 ].value as string
 						),
 					},
 					{
 						// Respond by.
 						...row[ 11 ],
-						value: formatUserDateTime(
-							moment.utc( row[ 11 ].value ).toISOString(),
-							{ includeTime: true }
+						value: formatDateTimeFromString(
+							row[ 11 ].value as string,
+							{
+								includeTime: true,
+							}
 						),
 					},
 				];

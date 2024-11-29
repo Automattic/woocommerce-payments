@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React from 'react';
-import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { __ } from '@wordpress/i18n';
 
@@ -19,7 +18,7 @@ import { formatStringValue } from 'wcpay/utils';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import Paragraphs from 'wcpay/components/paragraphs';
 import DisputeDueByDate from './dispute-due-by-date';
-import { formatUserDateTime } from 'wcpay/utils/date-time';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 interface Props {
 	dispute: Dispute;
@@ -39,10 +38,10 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 		{
 			title: __( 'Disputed On', 'woocommerce-payments' ),
 			content: dispute.created
-				? formatUserDateTime(
-						moment.unix( dispute.created ).utc().toISOString(),
-						{ separator: ', ', includeTime: true }
-				  )
+				? formatDateTimeFromTimestamp( dispute.created, {
+						separator: ', ',
+						includeTime: true,
+				  } )
 				: '–',
 		},
 		{

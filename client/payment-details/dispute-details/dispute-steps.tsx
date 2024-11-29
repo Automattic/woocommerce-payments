@@ -19,7 +19,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import DisputeDueByDate from './dispute-due-by-date';
-import { formatUserDateTime } from 'wcpay/utils/date-time';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 interface Props {
 	dispute: Dispute;
@@ -34,12 +34,8 @@ export const DisputeSteps: React.FC< Props > = ( {
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
-		const chargeDate = formatUserDateTime(
-			moment.unix( chargeCreated ).utc().toISOString()
-		);
-		const disputeDate = formatUserDateTime(
-			moment.unix( dispute.created ).utc().toISOString()
-		);
+		const chargeDate = formatDateTimeFromTimestamp( chargeCreated );
+		const disputeDate = formatDateTimeFromTimestamp( dispute.created );
 		const emailSubject = sprintf(
 			// Translators: %1$s is the store name, %2$s is the charge date.
 			__(
@@ -171,14 +167,12 @@ export const InquirySteps: React.FC< Props > = ( {
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
-		const chargeDate = formatUserDateTime(
-			moment.unix( chargeCreated ).utc().toISOString(),
-			{ includeTime: true }
-		);
-		const disputeDate = formatUserDateTime(
-			moment.unix( dispute.created ).utc().toISOString(),
-			{ includeTime: true }
-		);
+		const chargeDate = formatDateTimeFromTimestamp( chargeCreated, {
+			includeTime: true,
+		} );
+		const disputeDate = formatDateTimeFromTimestamp( dispute.created, {
+			includeTime: true,
+		} );
 		const emailSubject = sprintf(
 			// Translators: %1$s is the store name, %2$s is the charge date.
 			__(

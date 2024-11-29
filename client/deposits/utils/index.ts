@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
-import { formatUserDateTime } from 'wcpay/utils/date-time';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface DepositObject {
 	date: number | string;
@@ -11,7 +11,7 @@ interface DepositObject {
 
 export const getDepositDate = ( deposit?: DepositObject | null ): string =>
 	deposit
-		? formatUserDateTime( moment.utc( deposit?.date ).toISOString(), {
+		? formatDateTimeFromString( deposit?.date as string, {
 				useGmt: true,
 		  } )
 		: '—';
