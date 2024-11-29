@@ -690,8 +690,8 @@ export default ( { query } ) => {
 				},
 			} );
 			setDispute( updatedDispute );
-			handleSaveSuccess( submit );
 			setEvidence( {} );
+			handleSaveSuccess( submit );
 			updateDisputeInStore( updatedDispute );
 		} catch ( err ) {
 			handleSaveError( err, submit );
