@@ -412,7 +412,7 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Products with 0 total price and do not need shipping.
-		if ( (int) $product->get_price() === 0 && ! $product->needs_shipping() ) {
+		if ( is_a( $product, 'WC_Product' ) && (int) $product->get_price() === 0 && ! $product->needs_shipping() ) {
 			$is_supported = false;
 		}
 
