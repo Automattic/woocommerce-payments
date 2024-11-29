@@ -411,7 +411,12 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
-		// Subscription with 0 renewal value and 0 sign up fee.
+		// Products with 0 total price and do not need shipping.
+		if ( (int) $product->get_price() === 0 && ! $product->needs_shipping() ) {
+			$is_supported = false;
+		}
+
+		// Subscription with 0 renewal price and 0 sign up fee.
 		if ( class_exists( 'WC_Product_Subscription' ) &&
 			class_exists( 'WC_Product_Subscription_Variation' ) &&
 			( is_a( $product, 'WC_Product_Subscription' ) || is_a( $product, 'WC_Product_Subscription_Variation' ) ) &&
