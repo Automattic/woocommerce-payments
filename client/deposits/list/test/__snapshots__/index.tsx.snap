@@ -321,12 +321,12 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Trace ID
+                      Bank reference key
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Trace ID
+                      Bank reference key
                     </span>
                   </th>
                 </tr>
@@ -425,7 +425,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      mock_trace_id
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>
@@ -524,7 +524,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
-                      mock_trace_id
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>
@@ -623,7 +623,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
                       tabindex="-1"
                     >
-                      mock_trace_id
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>
@@ -1009,12 +1009,12 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Trace ID
+                      Bank reference key
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Trace ID
+                      Bank reference key
                     </span>
                   </th>
                 </tr>
@@ -1113,7 +1113,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      mock_trace_id
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>
@@ -1212,7 +1212,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
-                      mock_trace_id
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>
@@ -1311,7 +1311,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
                       tabindex="-1"
                     >
-                      mock_trace_id
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>

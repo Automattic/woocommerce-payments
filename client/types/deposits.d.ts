@@ -9,7 +9,7 @@ export interface DepositsTableHeader extends TableCardColumn {
 		| 'amount'
 		| 'status'
 		| 'bankAccount'
-		| 'traceId';
+		| 'bankReferenceKey';
 	cellClassName?: string;
 }
 
@@ -31,7 +31,7 @@ export interface CachedDeposit {
 	status: DepositStatus;
 	bankAccount: string;
 	automatic: boolean;
-	trace_id: string;
+	bank_reference_key: string;
 }
 
 export interface DepositsSummaryCache {
