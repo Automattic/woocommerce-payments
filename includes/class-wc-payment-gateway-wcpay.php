@@ -2520,6 +2520,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * CC should be enabled by default.
+	 *
+	 * @param array $field An element from the $this->form_fields array.
+	 * @return array
+	 */
+	protected function set_defaults( $field ) {
+		$field = parent::set_defaults( $field );
+
+		if ( 'card' === $this->stripe_id && 'Enable/disable' === $field['title'] ) {
+			$field['default'] = 'yes';
+		}
+
+		return $field;
+	}
+
+	/**
 	 * Return the name of the option in the WP DB.
 	 * Overrides parent method so the option key is the same as the parent class.
 	 */
