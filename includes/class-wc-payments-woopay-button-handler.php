@@ -416,10 +416,16 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
-		// Subscription with 0 renewal price and 0 sign up fee.
-		if ( class_exists( 'WC_Product_Subscription' ) &&
-			class_exists( 'WC_Product_Subscription_Variation' ) &&
+		// Subscription with 0 renewal price and 0 sign up fee that do not need shipping.
+		/**
+		 * Psalm throws an error here even though we check the class existence.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
+		if (
+			class_exists( 'WC_Subscriptions_Product' ) &&
 			( is_a( $product, 'WC_Product_Subscription' ) || is_a( $product, 'WC_Product_Subscription_Variation' ) ) &&
+			! $product->needs_shipping() &&
 			(int) WC_Subscriptions_Product::get_price( $product ) === 0 &&
 			(int) WC_Subscriptions_Product::get_sign_up_fee( $product ) === 0 ) {
 				$is_supported = false;
