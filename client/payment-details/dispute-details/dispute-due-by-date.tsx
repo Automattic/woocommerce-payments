@@ -12,10 +12,10 @@ const DisputeDueByDate: React.FC< {
 	showRemainingDays?: boolean;
 } > = ( { dueBy, showRemainingDays = true } ) => {
 	const daysRemaining = Math.floor(
-		moment.unix( dueBy ).diff( moment(), 'days', true )
+		moment.unix( dueBy ).utc().diff( moment().utc(), 'days', true )
 	);
 	const respondByDate = formatUserDateTime(
-		moment( dueBy * 1000 ).toISOString(),
+		moment.unix( dueBy ).utc().toISOString(),
 		{
 			separator: ', ',
 			includeTime: true,
