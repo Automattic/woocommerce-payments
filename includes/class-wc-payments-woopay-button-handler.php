@@ -411,8 +411,10 @@ class WC_Payments_WooPay_Button_Handler {
 			$is_supported = false;
 		}
 
-		if ( class_exists( 'WC_Subscriptions_Product' )
-			&& is_a( $product, 'WC_Product_Simple' ) &&
+		// Subscription with 0 renewal value and 0 sign up fee.
+		if ( class_exists( 'WC_Product_Subscription' ) &&
+			class_exists( 'WC_Product_Subscription_Variation' ) &&
+			( is_a( $product, 'WC_Product_Subscription' ) || is_a( $product, 'WC_Product_Subscription_Variation' ) ) &&
 			(int) WC_Subscriptions_Product::get_price( $product ) === 0 &&
 			(int) WC_Subscriptions_Product::get_sign_up_fee( $product ) === 0 ) {
 				$is_supported = false;
