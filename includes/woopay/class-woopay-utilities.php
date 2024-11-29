@@ -78,6 +78,8 @@ class WooPay_Utilities {
 		} elseif (
 			// Disable WooPay when the cart does not need shipping,
 			// has subscriptions and the recurring total value and sign fee is 0.
+			! empty( WC()->cart ) &&
+			(int) WC()->cart->get_total( 'edit' ) === 0 &&
 			! WC()->cart->needs_shipping() &&
 			$this->cart_subscriptions_renewal_need_payment()
 		) {
