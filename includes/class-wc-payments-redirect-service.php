@@ -183,6 +183,34 @@ class WC_Payments_Redirect_Service {
 	}
 
 	/**
+	 * Immediately redirect to the settings page.
+	 *
+	 * Note that this function immediately ends the execution.
+	 *
+	 * @param string|null $from              Optional. Source of the redirect.
+	 * @param array       $additional_params Optional. Additional URL params to add to the redirect URL.
+	 */
+	public function redirect_to_settings_page( ?string $from = null, array $additional_params = [] ): void {
+		$params = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+		];
+
+		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			// We are already in the settings page. Do nothing.
+			return;
+		}
+
+		$params = array_merge( $params, $additional_params );
+
+		if ( ! empty( $from ) ) {
+			$params['from'] = $from;
+		}
+
+		$this->redirect_to( admin_url( add_query_arg( $params, 'admin.php' ) ) );
+	}
+
+	/**
 	 * Redirect to the overview page.
 	 *
 	 * @param string $from              Optional. Source of the redirect.

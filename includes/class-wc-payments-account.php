@@ -1143,12 +1143,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		 *
 		 * 0. Make changes to the account data if needed (e.g. reset account, disable test mode onboarding)
 		 *    as instructed by the GET params.
-		 *    0.1 If we reset the account -> redirect to CONNECT PAGE
+		 *    0.1 If we reset the account -> redirect to CONNECT PAGE / SETTINGS PAGE If redirect to settings page flag set
 		 * 1. Returning from the WPCOM/Jetpack connection screen.
 		 *      1.1 SUCCESSFUL connection
 		 *          1.1.1 NO Stripe account connected -> redirect to ONBOARDING WIZARD
 		 *          1.1.2 Stripe account connected -> redirect to OVERVIEW PAGE
-		 *      1.2 UNSUCCESSFUL connection -> redirect to CONNECT PAGE with ERROR message
+		 *      1.2 UNSUCCESSFUL connection -> redirect to CONNECT PAGE with ERROR message / SETTINGS PAGE if redirect to settings page flag set
 		 * 2. Working WPCOM/Jetpack connection and fully onboarded Stripe account -> redirect to OVERVIEW PAGE
 		 * 3. Specific `from` places -> redirect to CONNECT PAGE regardless of the account status
 		 * 4. NO [working] WPCOM/Jetpack connection:
@@ -1167,6 +1167,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		 *         5.1.3 All other cases -> redirect to ONBOARDING WIZARD
 		 *    5.2 If PARTIALLY onboarded Stripe account connected -> redirect to STRIPE KYC
 		 *    5.3 If fully onboarded Stripe account connected -> redirect to OVERVIEW PAGE
+		 *         5.3.1 If redirect to settings page flags set -> redirect to SETTINGS PAGE
 		 *
 		 * This logic is so complex because we use connect links as a catch-all place to
 		 * handle everything and anything related to the WooPayments account setup. It reduces the complexity on the
@@ -1182,6 +1183,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 			$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 			$create_test_drive_account   = ! empty( $_GET['test_drive'] ) && 'true' === $_GET['test_drive'];
+			$redirect_to_settings_page   = ! empty( $_GET['redirect_to_settings_page'] ) && 'true' === $_GET['redirect_to_settings_page'];
 			// There is no point in auto starting test drive onboarding if we are not in the test drive mode.
 			$auto_start_test_drive_onboarding = $create_test_drive_account &&
 												! empty( $_GET['auto_start_test_drive_onboarding'] ) &&
@@ -1253,7 +1255,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 				$this->cleanup_on_account_reset();
 
-				// When we reset the account we want to always go the Connect page. Redirect immediately!
+				// When we reset the account and want to go back to the settings page - redirect immediately!
+				if ( $redirect_to_settings_page ) {
+					$this->redirect_service->redirect_to_settings_page(
+						WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
+						[ 'source' => $onboarding_source ]
+					);
+					return;
+				}
+
+				// Otherwise, when we reset the account we want to always go the Connect page. Redirect immediately!
 				$this->redirect_service->redirect_to_connect_page(
 					null,
 					WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
@@ -1312,6 +1323,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						array_merge( $tracks_props, [ 'mode' => WC_Payments_Onboarding_Service::is_test_mode_enabled() ? 'test' : 'live' ] )
 					);
 
+					if ( $redirect_to_settings_page ) {
+						$this->redirect_service->redirect_to_settings_page(
+							WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
+							[
+								'source' => $onboarding_source,
+								'wcpay-connect-jetpack-error' => '1',
+							]
+						);
+					}
+
 					$this->redirect_service->redirect_to_connect_page(
 						sprintf(
 						/* translators: %s: WooPayments */
@@ -1343,15 +1364,23 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				&& $this->has_working_jetpack_connection()
 				&& $this->is_stripe_account_valid() ) {
 
+				$params = [
+					'source'                   => $onboarding_source,
+					// Carry over some parameters as they may be used by our frontend logic.
+					'wcpay-connection-success' => ! empty( $_GET['wcpay-connection-success'] ) ? '1' : false,
+					'wcpay-sandbox-success'    => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
+					'test_drive_error'         => ! empty( $_GET['test_drive_error'] ) ? 'true' : false,
+				];
+				if ( $redirect_to_settings_page ) {
+					$this->redirect_service->redirect_to_settings_page(
+						$from,
+						$params
+					);
+					return;
+				}
 				$this->redirect_service->redirect_to_overview_page(
 					$from,
-					[
-						'source'                   => $onboarding_source,
-						// Carry over some parameters as they may be used by our frontend logic.
-						'wcpay-connection-success' => ! empty( $_GET['wcpay-connection-success'] ) ? '1' : false,
-						'wcpay-sandbox-success'    => ! empty( $_GET['wcpay-sandbox-success'] ) ? 'true' : false,
-						'test_drive_error'         => ! empty( $_GET['test_drive_error'] ) ? 'true' : false,
-					]
+					$params
 				);
 				return;
 			}
@@ -1361,13 +1390,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				in_array(
 					$from,
 					[
-						WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
 						WC_Payments_Onboarding_Service::FROM_STRIPE,
 					],
 					true
 				)
 				// This is a weird case, but it is best to handle it.
 				|| ( WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD === $from && ! $this->has_working_jetpack_connection() )
+				// Redirect merchants coming from settings page to the connect page only if $redirect_to_settings_page is false.
+				|| ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS === $from && ! $redirect_to_settings_page )
 			) {
 				$this->redirect_service->redirect_to_connect_page(
 					! empty( $_GET['wcpay-connection-error'] ) ? sprintf(
@@ -1410,7 +1440,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 							'auto_start_test_drive_onboarding' => $auto_start_test_drive_onboarding ? 'true' : false,
 							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							'source'                      => $onboarding_source,
-
+							'redirect_to_settings_page'   => $redirect_to_settings_page ? 'true' : false,
 						],
 						self::get_connect_url( $wcpay_connect_param ) // Instruct Jetpack to return here (connect link).
 					),
@@ -1480,6 +1510,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 								'auto_start_test_drive_onboarding' => 'true', // This is critical.
 								'test_mode'  => $should_onboard_in_test_mode ? 'true' : false,
 								'source'     => $onboarding_source,
+								'redirect_to_settings_page' => $redirect_to_settings_page ? 'true' : false,
 							]
 						);
 						return;
