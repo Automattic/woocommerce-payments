@@ -10,11 +10,11 @@ const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 export async function fillCardDetails( page, card ) {
 	if (
 		await page.$(
-			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
+			'#payment .payment_method_woocommerce_payments_card .wcpay-upe-element'
 		)
 	) {
 		const frameHandle = await page.waitForSelector(
-			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
+			'#payment .payment_method_woocommerce_payments_card .wcpay-upe-element iframe'
 		);
 
 		const stripeFrame = await frameHandle.contentFrame();
@@ -80,14 +80,14 @@ export async function clearCardDetails() {
 	} else {
 		// Handling Stripe UPE element
 		const frameHandle = await page.waitForSelector(
-			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe[name^="__privateStripeFrame"]'
+			'#payment .payment_method_woocommerce_payments_card .wcpay-upe-element iframe[name^="__privateStripeFrame"]'
 		);
 
 		await page.waitForTimeout( 1000 );
 
 		await page.evaluate( ( selector ) => {
 			document.querySelector( selector ).scrollIntoView();
-		}, '#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe[name^="__privateStripeFrame"]' );
+		}, '#payment .payment_method_woocommerce_payments_card .wcpay-upe-element iframe[name^="__privateStripeFrame"]' );
 
 		await page.waitForTimeout( 500 );
 
@@ -118,7 +118,7 @@ export async function clearCardDetails() {
 export async function fillCardDetailsPayForOrder( page, card ) {
 	await page.waitForSelector( '.__PrivateStripeElement' );
 	const frameHandle = await page.waitForSelector(
-		'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
+		'#payment .payment_method_woocommerce_payments_card .wcpay-upe-element iframe'
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 

@@ -30,7 +30,7 @@ const testSelectors = {
 	newPaymentMethodCheckbox: 'input#wc-woocommerce_payments-payment-token-new',
 	subscriptionPaymentMethod: '.subscription-payment-method',
 	savedTokensCheckboxes:
-		'.payment_method_woocommerce_payments .woocommerce-SavedPaymentMethods-tokenInput',
+		'.payment_method_woocommerce_payments_card .woocommerce-SavedPaymentMethods-tokenInput',
 };
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
