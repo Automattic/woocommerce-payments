@@ -197,7 +197,7 @@ describe( 'UPE checkout utils', () => {
 							name="payment_method"
 							value="woocommerce_payments"
 						>
-						<div class="wcpay-upe-form" data-payment-method-type="card" data-gateway-id="woocommerce_payments" checked>
+						<div class="wcpay-upe-form" data-payment-method-type="card">
 							<div class="wcpay-upe-element" data-payment-method-type="card"></div>
 						</div>
 					</li>
@@ -209,7 +209,7 @@ describe( 'UPE checkout utils', () => {
 							name="payment_method"
 							value="woocommerce_payments_bancontact"
 						>
-						<div class="wcpay-upe-form" data-payment-method-type="bancontact" data-gateway-id="woocommerce_payments">
+						<div class="wcpay-upe-form" data-payment-method-type="bancontact">
 							<div class="wcpay-upe-element" data-payment-method-type="bancontact"></div>
 						</div>
 					</li>
@@ -335,7 +335,7 @@ describe( 'UPE checkout utils', () => {
 		it( 'should provide terms when cart does not contain subscriptions but the saving checkbox is checked', () => {
 			const container = document.createElement( 'div' );
 			container.innerHTML = `
-				<div class="wcpay-upe-form" data-payment-method-type="card" data-gateway-id="woocommerce_payments">
+				<div class="wcpay-upe-form" data-payment-method-type="card">
 					<div class="wcpay-upe-element" data-payment-method-type="card"></div>
 					<input
 						type="radio"
@@ -667,13 +667,13 @@ describe( 'isUsingSavedPaymentMethod', () => {
 	beforeAll( () => {
 		container = document.createElement( 'div' );
 		container.innerHTML = `
-			<div class="wcpay-upe-form" data-payment-method-type="card" data-gateway-id="woocommerce_payments">
+			<div class="wcpay-upe-form" data-payment-method-type="card">
 			<label>
 				<input type="radio" id="wc-woocommerce_payments-payment-token-new" value="new">
 				Use a new payment method
 				</label>
 			</div>
-			<div class="wcpay-upe-form" data-payment-method-type="sepa_debit" data-gateway-id="woocommerce_payments_sepa_debit">
+			<div class="wcpay-upe-form" data-payment-method-type="sepa_debit">
 				<label>
 					<input type="radio" id="wc-woocommerce_payments_sepa_debit-payment-token-new" value="new">
 					Use a new payment method
