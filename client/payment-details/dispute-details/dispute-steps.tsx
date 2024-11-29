@@ -35,10 +35,10 @@ export const DisputeSteps: React.FC< Props > = ( {
 	let emailLink;
 	if ( customer?.email ) {
 		const chargeDate = formatUserDateTime(
-			moment( chargeCreated * 1000 ).toISOString()
+			moment.unix( chargeCreated ).utc().toISOString()
 		);
 		const disputeDate = formatUserDateTime(
-			moment( dispute.created * 1000 ).toISOString()
+			moment.unix( dispute.created ).utc().toISOString()
 		);
 		const emailSubject = sprintf(
 			// Translators: %1$s is the store name, %2$s is the charge date.
@@ -172,11 +172,11 @@ export const InquirySteps: React.FC< Props > = ( {
 	let emailLink;
 	if ( customer?.email ) {
 		const chargeDate = formatUserDateTime(
-			moment( chargeCreated * 1000 ).toISOString(),
+			moment.unix( chargeCreated ).utc().toISOString(),
 			{ includeTime: true }
 		);
 		const disputeDate = formatUserDateTime(
-			moment( dispute.created * 1000 ).toISOString(),
+			moment.unix( dispute.created ).utc().toISOString(),
 			{ includeTime: true }
 		);
 		const emailSubject = sprintf(
