@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Hide WooPay button on zero total orders without shipping address.
