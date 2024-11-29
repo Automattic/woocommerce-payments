@@ -376,18 +376,11 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	} else {
 		upeContainer.style.display = 'none';
 		if ( paymentMethodType === selectedPaymentMethod ) {
-			const defaultPaymentMethod = 'card';
 			const cardPaymentForm = document.querySelector(
-				`.wcpay-upe-form[data-payment-method-type="${ defaultPaymentMethod }"]`
+				'input[name="payment_method"][value="woocommerce_payments"]'
 			);
 
-			const cardPaymentMethodInput = cardPaymentForm
-				?.closest( '.wc_payment_method' )
-				.querySelector(
-					`input[name="payment_method"][value="${ cardPaymentForm.dataset.gatewayId }"]`
-				);
-
-			cardPaymentMethodInput?.click();
+			cardPaymentForm?.click();
 		}
 	}
 };

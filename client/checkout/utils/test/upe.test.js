@@ -54,14 +54,27 @@ describe( 'UPE checkout utils', () => {
 		} );
 
 		test( 'Selected UPE Payment Method is card', () => {
-			container.innerHTML = `<div class="wcpay-upe-form" data-payment-method-type="card" checked></div>`;
+			container.innerHTML = `<input 
+				id="payment_method_woocommerce_payments"
+				value="woocommerce_payments"
+				name="payment_method"
+				type="radio"
+				class="input-radio"
+				checked
+			></input>`;
 			expect( getSelectedUPEGatewayPaymentMethod() ).toBe( 'card' );
 		} );
 
 		test( 'Selected UPE Payment Method is bancontact', () => {
 			container.innerHTML = `
-				<div class="wcpay-upe-form" data-payment-method-type="bancontact" checked></div>
-				<div class="wcpay-upe-form" data-payment-method-type="card"></div>
+				<input 
+					id="payment_method_woocommerce_payments_bancontact" 
+					value="woocommerce_payments_bancontact" 
+					name="payment_method" 
+					type="radio" 
+					class="input-radio" 
+					checked
+				></input>
 			`;
 			expect( getSelectedUPEGatewayPaymentMethod() ).toBe( 'bancontact' );
 		} );
@@ -189,7 +202,13 @@ describe( 'UPE checkout utils', () => {
 						</div>
 					</li>
 					<li class="wc_payment_method payment_method_woocommerce_payments_bancontact" data-payment-method-type="bancontact">
-						<input id="payment_method payment_method_woocommerce_payments_bancontact" type="radio" class="input-radio">
+						<input
+							id="payment_method payment_method_woocommerce_payments_bancontact"
+							type="radio"
+							class="input-radio"
+							name="payment_method"
+							value="woocommerce_payments_bancontact"
+						>
 						<div class="wcpay-upe-form" data-payment-method-type="bancontact" data-gateway-id="woocommerce_payments">
 							<div class="wcpay-upe-element" data-payment-method-type="bancontact"></div>
 						</div>
@@ -221,9 +240,9 @@ describe( 'UPE checkout utils', () => {
 			window.wcpayCustomerData = { billing_country: 'BE' };
 		} );
 
-		// afterEach( () => {
-		// 	window.wcpayCustomerData = null;
-		// } );
+		afterEach( () => {
+			window.wcpayCustomerData = null;
+		} );
 
 		it( 'should show payment method if country is supported', () => {
 			const upeElement = document.querySelector(
@@ -251,12 +270,15 @@ describe( 'UPE checkout utils', () => {
 			const input = document.getElementById(
 				'payment_method payment_method_woocommerce_payments_bancontact'
 			);
-			input.checked = true;
+			input.setAttribute( 'checked', 'checked' );
 
-			const upeElement = document.querySelector( '.wcpay-upe-element' );
+			const upeElement = document
+				.querySelector(
+					`.wcpay-upe-form[data-payment-method-type="bancontact"]`
+				)
+				.querySelector( '.wcpay-upe-element' );
 			const upeContainer = upeElement.closest( '.wc_payment_method' );
-			document.getElementById( 'billing_country' ).value = 'BE';
-
+			document.getElementById( 'billing_country' ).value = 'US';
 			const cardPaymentMethod = document
 				.querySelector(
 					`.wcpay-upe-form[data-payment-method-type="card"]`
