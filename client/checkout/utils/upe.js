@@ -36,9 +36,24 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
  */
 export const getSelectedUPEGatewayPaymentMethod = () => {
 	const selectedGateway = document.querySelector(
-		`.wcpay-upe-form[checked]`
+		'input[name="payment_method"][value*="woocommerce_payments"]:checked'
 	);
-	return selectedGateway?.dataset.paymentMethodType || null;
+
+	if ( ! selectedGateway ) {
+		return null;
+	}
+
+	// 'woocommerce_payments_affirm' => 'affirm'
+	// 'woocommerce_payments_p24' -> 'p24'
+	// 'woocommerce_payments' -> ''
+	const paymentMethodType = selectedGateway.value
+		// non-card elements are prefixed with `woocommerce_payments_*`
+		.replace( 'woocommerce_payments_', '' )
+		// the card element is just called `woocommerce_payments` - we need to account for variation in the name
+		.replace( 'woocommerce_payments', '' );
+
+	// if the string is empty, it's the card element
+	return paymentMethodType || 'card';
 };
 
 /**

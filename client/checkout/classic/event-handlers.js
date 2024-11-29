@@ -82,22 +82,6 @@ jQuery( function ( $ ) {
 		return processPaymentIfNotUsingSavedMethod( $( this ) );
 	} );
 
-	$( document.body ).on( 'payment_method_selected', function () {
-		// Get selected payment method using WooCommerce's approach, see /legacy/js/frontend/checkout.js
-		const selectedPaymentMethod = $(
-			'.woocommerce-checkout input[name="payment_method"]:checked'
-		).attr( 'value' );
-
-		document
-			.querySelectorAll( `.wcpay-upe-form` )
-			.forEach( ( container ) => {
-				container.toggleAttribute(
-					'checked',
-					container.dataset.gatewayId === selectedPaymentMethod
-				);
-			} );
-	} );
-
 	$checkoutForm.on( 'click', '#place_order', function () {
 		// Use the existing utility function to check if any WCPay payment method is selected
 		const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
