@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Use paragraph selector instead of label for pmme appearance
