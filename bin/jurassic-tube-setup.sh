@@ -49,7 +49,16 @@ else
     > "${JT_DIR}/config.env"
 fi
 
-PORT=$(grep "ports" ${PWD}/docker-compose.yml -A 1 | grep "8082" | grep -o "8082")
+# Find the WordPress container section and get its port
+CLIENT_WORDPRESS_CONTAINER_SECTION=$(grep -A 20 "container_name: woocommerce_payments_wordpress" ${PWD}/docker-compose.yml)
+PORTS_LINE=$(echo "${CLIENT_WORDPRESS_CONTAINER_SECTION}" | grep "ports:" -A 1 | grep "\-")
+PORT=$(echo "${PORTS_LINE}" | grep -o '"[0-9]\+:' | cut -d'"' -f2 | cut -d: -f1)
+
+# Use default if extraction failed
+if [ -z "$PORT" ]; then
+    PORT=8082  # Default fallback
+    echo "Could not extract WordPress container port, using default: ${PORT}"
+fi
 
 echo "username=${username}" >> "${JT_DIR}/config.env"
 echo "subdomain=${subdomain}" >> "${JT_DIR}/config.env"
