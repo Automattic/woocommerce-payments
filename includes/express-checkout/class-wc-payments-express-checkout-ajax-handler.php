@@ -196,6 +196,9 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	public function ajax_get_cart_details() {
 		check_ajax_referer( 'wcpay-get-cart-details', 'security' );
 
+		// Process added gift cards.
+		add_filter( 'woocommerce_gc_disable_ui', '__return_false' );
+
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
 		}

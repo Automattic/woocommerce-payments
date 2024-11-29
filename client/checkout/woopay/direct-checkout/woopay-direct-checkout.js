@@ -1,8 +1,4 @@
 /**
- * External dependencies
- */
-import { select } from '@wordpress/data';
-/**
  * Internal dependencies
  */
 import { getConfig } from 'wcpay/utils/checkout';
@@ -11,7 +7,6 @@ import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import UserConnect from 'wcpay/checkout/woopay/connect/user-connect';
 import SessionConnect from 'wcpay/checkout/woopay/connect/session-connect';
 import { setPostMessageTimeout } from 'wcpay/checkout/woopay/connect/connect-utils';
-import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
 /**
  * The WooPayDirectCheckout class is responsible for injecting the WooPayConnectIframe into the
@@ -301,8 +296,6 @@ class WooPayDirectCheckout {
 		elements,
 		userIsLoggedIn = false
 	) {
-		const cartStore = select( WC_STORE_CART );
-
 		/**
 		 * Adds a loading spinner to the given element.
 		 *
@@ -365,43 +358,12 @@ class WooPayDirectCheckout {
 			return isCheckoutButton && isParentProceedToCheckout;
 		};
 
-		const cartHasSubscription = () => {
-			if ( cartStore ) {
-				// Blocks checkout.
-				const { items: cartItems } = cartStore.getCartData();
-
-				if (
-					cartItems.find( ( item ) => item.type === 'subscription' )
-				) {
-					return true;
-				}
-			}
-
-			// Classic checkout.
-			const cartWidget = document.querySelector(
-				'.widget_shopping_cart_content .subscription-details'
-			);
-			const cartForm = document.querySelector(
-				'.woocommerce-cart-form .subscription-details'
-			);
-
-			if ( cartWidget || cartForm ) {
-				return true;
-			}
-
-			return false;
-		};
-
 		elements.forEach( ( element ) => {
 			const elementState = {
 				is_loading: false,
 			};
 
 			element.addEventListener( 'click', async ( event ) => {
-				if ( cartHasSubscription() ) {
-					return;
-				}
-
 				if ( elementState.is_loading ) {
 					event.preventDefault();
 					return;
