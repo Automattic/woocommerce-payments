@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: unhandled request rejection in ECE implementation.
