@@ -420,7 +420,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 		if ( class_exists( 'WC_Subscriptions_Product' )
 			&& is_a( $product, 'WC_Product_Simple' ) &&
-			(int) \WC_Subscriptions_Product::get_price( $product ) === 0 &&
+			(int) WC_Subscriptions_Product::get_price( $product ) === 0 &&
 			(int) WC_Subscriptions_Product::get_sign_up_fee( $product ) === 0 ) {
 				$is_supported = false;
 		}
