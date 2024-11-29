@@ -314,7 +314,7 @@ export const getBlocksEmailValue = () => {
 	return document
 		.querySelector( '.wcpay-payment-element' )
 		?.closest( 'form' )
-		?.querySelector( 'input[type="email"]' )?.value;
+		?.querySelector( '#billing_email' )?.value;
 };
 
 /**
