@@ -156,23 +156,14 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Builds the line items to pass to Payment Request and WooPay
+	 * Builds the line items to pass to Payment Request and WooPay.
 	 */
 	public function build_woopay_items() {
-		$cart_contains_subscription              = false;
+		$cart_contains_subscription              = class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription();
 		$cart_subscriptions_renewal_need_payment = false;
 
-		if ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) {
-			$cart_contains_subscription = true;
-
-			if ( ! empty( wc()->cart->recurring_carts ) ) {
-				foreach ( wc()->cart->recurring_carts as $cart_key => $cart ) {
-					if ( (int) $cart->get_total() > 0 ) {
-						$cart_subscriptions_renewal_need_payment = true;
-						break;
-					}
-				}
-			}
+		if ( $cart_contains_subscription ) {
+			$cart_subscriptions_renewal_need_payment = $this->cart_subscriptions_renewal_need_payment();
 		}
 
 		return [
@@ -180,6 +171,21 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			'cart_contains_subscription'              => $cart_contains_subscription,
 			'cart_subscriptions_renewal_need_payment' => $cart_subscriptions_renewal_need_payment,
 		];
+	}
+
+	/**
+	 * Check if the cart has subscriptions with renewals that needs payment.
+	 */
+	public function cart_subscriptions_renewal_need_payment() {
+		if ( ! empty( wc()->cart->recurring_carts ) ) {
+			foreach ( wc()->cart->recurring_carts as $cart_key => $cart ) {
+				if ( (int) $cart->get_total() > 0 ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

@@ -312,6 +312,13 @@ class WC_Payments_WooPay_Button_Handler {
 			if ( ! $this->woopay_utilities->is_guest_checkout_enabled() ) {
 				return false;
 			}
+		} elseif (
+			// Hide WooPay button when cart total is 0 and do not need shipping,
+			// and if the cart has no subscriptions or the recurring total value is 0.
+			( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) &&
+			! $this->woopay_utilities->is_woopay_email_input_enabled()
+		) {
+			return false;
 		}
 
 		/**
@@ -409,6 +416,13 @@ class WC_Payments_WooPay_Button_Handler {
 		// WC Bookings require confirmation products are not supported.
 		if ( is_a( $product, 'WC_Product_Booking' ) && $product->get_requires_confirmation() ) {
 			$is_supported = false;
+		}
+
+		if ( class_exists( 'WC_Subscriptions_Product' )
+			&& is_a( $product, 'WC_Product_Simple' ) &&
+			(int) \WC_Subscriptions_Product::get_price( $product ) === 0 &&
+			(int) WC_Subscriptions_Product::get_sign_up_fee( $product ) === 0 ) {
+				$is_supported = false;
 		}
 
 		return apply_filters( 'wcpay_woopay_button_is_product_supported', $is_supported, $product );

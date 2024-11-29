@@ -68,20 +68,17 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 			return false;
 		}
 
-		// Hide WooPay button when cart total is 0 and do not need shipping.
+		// Hide WooPay button when cart total is 0 and do not need shipping,
+		// and if the cart has no subscriptions or the recurring total value is 0.
 		if (
 			Number( cart.cartTotals.total_price ) === 0 &&
-			! cart.needs_shipping
+			! cart.needs_shipping &&
+			( ! cart.cartItems.find(
+				( item ) => item.type === 'subscription'
+			) ||
+				cart.extensions.subscriptions.totals.total_price === 0 )
 		) {
-			// Hide WooPay button if the cart has no subscriptions or if the recurring total value is 0.
-			if (
-				! cart.cartItems.find(
-					( item ) => item.type === 'subscription'
-				) ||
-				cart.extensions.subscriptions.totals.total_price === 0
-			) {
-				return false;
-			}
+			return false;
 		}
 
 		return true;
