@@ -49,8 +49,11 @@ else
     > "${JT_DIR}/config.env"
 fi
 
+PORT=$(grep "ports" ${PWD}/docker-compose.yml -A 1 | grep "8082" | grep -o "8082")
+
 echo "username=${username}" >> "${JT_DIR}/config.env"
 echo "subdomain=${subdomain}" >> "${JT_DIR}/config.env"
+echo "localhost=localhost:${PORT}" >> "${JT_DIR}/config.env"
 
 echo "Setup complete!"
 echo "Use the command: npm run tube:start from the root directory of your WC Payments project to start running Jurassic Tube."
