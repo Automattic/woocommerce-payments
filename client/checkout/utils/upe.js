@@ -328,7 +328,7 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 
 	const emailInput = upeContainer
 		.closest( 'form' )
-		?.querySelector( 'input[type="email"]' );
+		?.querySelector( '#billing_email' );
 	if ( ! emailInput ) return;
 
 	const stripeLinkButton = document.createElement( 'button' );
