@@ -419,7 +419,6 @@ class WC_Payments_Checkout {
 			<div class="wcpay-upe-form" 
 				data-payment-method-type="<?php echo esc_attr( $this->gateway->get_stripe_id() ); ?>"
 				data-gateway-id="<?php echo esc_attr( $this->gateway->id ); ?>"
-				<?php checked( $this->gateway->chosen, true ); ?>
 				>
 				<?php
 
