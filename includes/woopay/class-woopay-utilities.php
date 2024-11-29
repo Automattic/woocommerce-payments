@@ -52,8 +52,7 @@ class WooPay_Utilities {
 			return false;
 		}
 
-		// Disable WooPay when the cart total is 0 and do not need shipping,
-		// and if the cart has no subscriptions or the recurring total value is 0.
+		// Disable WooPay when the cart total is 0 and do not need shipping.
 		if (
 			! empty( WC()->cart ) &&
 			(int) WC()->cart->get_total( 'edit' ) === 0 &&
