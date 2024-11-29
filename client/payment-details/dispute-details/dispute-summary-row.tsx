@@ -40,7 +40,7 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 			title: __( 'Disputed On', 'woocommerce-payments' ),
 			content: dispute.created
 				? formatUserDateTime(
-						moment( dispute.created * 1000 ).toISOString(),
+						moment.unix( dispute.created ).utc().toISOString(),
 						{ separator: ', ', includeTime: true }
 				  )
 				: '–',
