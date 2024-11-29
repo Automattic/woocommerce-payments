@@ -130,6 +130,14 @@ export const getUpeSettings = ( paymentMethodType ) => {
 	return upeSettings;
 };
 
+function getGatewayIdBy( paymentMethodType ) {
+	const gatewayPrefix = 'woocommerce_payments';
+	// Only append underscore and payment method type for non-card payments
+	return paymentMethodType === 'card'
+		? gatewayPrefix
+		: `${ gatewayPrefix }_${ paymentMethodType }`;
+}
+
 function shouldIncludeTerms( paymentMethodType ) {
 	if ( getUPEConfig( 'cartContainsSubscription' ) ) {
 		return true;
@@ -143,7 +151,7 @@ function shouldIncludeTerms( paymentMethodType ) {
 	}
 
 	const savePaymentMethodCheckbox = paymentsForm.querySelector(
-		`#wc-${ paymentsForm.dataset.gatewayId }-new-payment-method`
+		`#wc-${ getGatewayIdBy( paymentMethodType ) }-new-payment-method`
 	);
 
 	return savePaymentMethodCheckbox?.checked || false;
@@ -201,7 +209,9 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 		return false;
 	}
 
-	const newPaymentTokenInputId = `wc-${ paymentsForm.dataset.gatewayId }-payment-token-new`;
+	const newPaymentTokenInputId = `wc-${ getGatewayIdBy(
+		paymentMethodType
+	) }-payment-token-new`;
 	const newPaymentTokenInput = paymentsForm.querySelector(
 		`input#${ newPaymentTokenInputId }`
 	);
