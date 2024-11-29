@@ -313,6 +313,22 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       Bank account
                     </span>
                   </th>
+                  <th
+                    class="woocommerce-table__header is-left-aligned"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Bank reference key
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Bank reference key
+                    </span>
+                  </th>
                 </tr>
                 <tr>
                   <th
@@ -398,6 +414,18 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       tabindex="-1"
                     >
                       MOCK BANK •••• 1234 (USD)
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
+                      tabindex="-1"
+                    >
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>
@@ -487,6 +515,18 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       MOCK BANK •••• 1234 (USD)
                     </a>
                   </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
+                      tabindex="-1"
+                    >
+                      mock_reference_key
+                    </a>
+                  </td>
                 </tr>
                 <tr>
                   <th
@@ -572,6 +612,18 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       tabindex="-1"
                     >
                       MOCK BANK •••• 1234 (USD)
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>
@@ -949,6 +1001,22 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       Bank account
                     </span>
                   </th>
+                  <th
+                    class="woocommerce-table__header is-left-aligned"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <span
+                      aria-hidden="true"
+                    >
+                      Bank reference key
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Bank reference key
+                    </span>
+                  </th>
                 </tr>
                 <tr>
                   <th
@@ -1034,6 +1102,18 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       tabindex="-1"
                     >
                       MOCK BANK •••• 1234 (USD)
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
+                      tabindex="-1"
+                    >
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>
@@ -1123,6 +1203,18 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       MOCK BANK •••• 1234 (USD)
                     </a>
                   </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
+                      tabindex="-1"
+                    >
+                      mock_reference_key
+                    </a>
+                  </td>
                 </tr>
                 <tr>
                   <th
@@ -1208,6 +1300,18 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       tabindex="-1"
                     >
                       MOCK BANK •••• 1234 (USD)
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-left-aligned"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      mock_reference_key
                     </a>
                   </td>
                 </tr>
