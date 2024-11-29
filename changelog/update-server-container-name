@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Updates server container name used by E2E tests
+
+
