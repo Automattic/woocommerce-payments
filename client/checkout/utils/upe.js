@@ -285,8 +285,11 @@ export const getPaymentMethodTypes = ( paymentMethodType ) => {
  * @return {string} The email value.
  */
 export const getBlocksEmailValue = () => {
-	const cartData = wp.data.select( 'wc/store/cart' ).getCustomerData();
-	return cartData?.billingAddress?.email || '';
+	// .wcpay-payment-element container is rendered only when new payment method is selected
+	return document
+		.querySelector( '.wcpay-payment-element' )
+		?.closest( 'form' )
+		?.querySelector( 'input[type="email"]' )?.value;
 };
 
 /**
