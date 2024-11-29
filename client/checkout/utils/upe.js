@@ -426,7 +426,7 @@ export const isBillingInformationMissing = ( $form ) => {
 	// We need to just find one field with missing information. If even only one is missing, just return early.
 	return Boolean(
 		billingFieldsToValidate.find( ( fieldName ) => {
-			const $field = form.querySelector( `#${ fieldName }` );
+			const field = form.querySelector( `#${ fieldName }` );
 			let isRequired = enabledBillingFields[ fieldName ]?.required;
 			const locale = getParsedLocale();
 
