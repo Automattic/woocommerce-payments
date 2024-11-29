@@ -99,7 +99,7 @@ jQuery( ( $ ) => {
 	};
 
 	if ( getConfig( 'isPaymentRequestEnabled' ) ) {
-		// Reuse express buttons ece_get_cart_details call to prevent calling both endpoints.
+		// Reuse express buttons ece_get_cart_details call to prevent calling two endpoints.
 		$( document.body ).on(
 			'updated_cart_details',
 			handleWooPayExpressCheckoutButtonVisibility

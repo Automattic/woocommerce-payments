@@ -13,6 +13,7 @@ import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import { getConfig } from '../../../utils/checkout';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
+import { shouldDisableWooPay } from './utils';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -68,22 +69,7 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 			return false;
 		}
 
-		// Hide WooPay button when cart total is 0 and do not need shipping,
-		// and if the cart has no subscriptions or the recurring total value is 0.
-		if (
-			Number( cart.cartTotals.total_price ) === 0 &&
-			! cart.needs_shipping &&
-			( ! cart.cartItems.find(
-				( item ) => item.type === 'subscription'
-			) ||
-				cart.extensions.subscriptions.reduce( ( prev, curr ) => {
-					return prev + Number( curr.totals.total_price );
-				}, 0 ) === 0 )
-		) {
-			return false;
-		}
-
-		return true;
+		return ! shouldDisableWooPay( cart );
 	},
 	paymentMethodId: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	supports: {

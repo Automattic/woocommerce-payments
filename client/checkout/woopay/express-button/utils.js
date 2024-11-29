@@ -50,3 +50,20 @@ export const showErrorMessage = ( context, errorMessage ) => {
 			} );
 	}
 };
+
+export const shouldDisableWooPay = ( cart ) => {
+	// Disable WooPay when cart total is 0, do not need shipping,
+	// and if the cart has no subscriptions or the recurring total value is 0.
+	if (
+		Number( cart.cartTotals.total_price ) === 0 &&
+		! cart.needs_shipping &&
+		( ! cart.cartItems.find( ( item ) => item.type === 'subscription' ) ||
+			cart.extensions.subscriptions.reduce( ( prev, curr ) => {
+				return prev + Number( curr.totals.total_price );
+			}, 0 ) === 0 )
+	) {
+		return true;
+	}
+
+	return false;
+};

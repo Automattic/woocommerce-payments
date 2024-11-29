@@ -100,9 +100,11 @@ class WooPay_Utilities {
 	public function is_woopay_email_input_enabled() {
 		$should_enable = true;
 
-		// Disable WooPay when the cart total is 0 and do not need shipping,
+		// Disable WooPay when the cart total is 0, do not need shipping,
 		// and if the cart has no subscriptions or the recurring total value is 0.
-		if ( (int) WC()->cart->get_total( 'edit' ) === 0 &&
+		if (
+			! empty( WC()->cart ) &&
+			(int) WC()->cart->get_total( 'edit' ) === 0 &&
 			! WC()->cart->needs_shipping() &&
 			( ! ( class_exists( 'WC_Subscriptions_Cart' ) && \WC_Subscriptions_Cart::cart_contains_subscription() ) ||
 			! $this->cart_subscriptions_renewal_need_payment() )
