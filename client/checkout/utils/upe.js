@@ -387,8 +387,7 @@ function getParsedLocale() {
 	}
 }
 
-export const isBillingInformationMissing = ( $form ) => {
-	const form = $form[ 0 ];
+export const isBillingInformationMissing = ( form ) => {
 	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
 
 	// first name and last name are kinda special - we just need one of them to be at checkout

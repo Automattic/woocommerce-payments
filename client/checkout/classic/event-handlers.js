@@ -75,7 +75,7 @@ jQuery( function ( $ ) {
 	} );
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
-		if ( isBillingInformationMissing( $( this ) ) ) {
+		if ( isBillingInformationMissing( this ) ) {
 			return;
 		}
 
