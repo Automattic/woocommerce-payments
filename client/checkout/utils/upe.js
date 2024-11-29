@@ -437,7 +437,7 @@ export const isBillingInformationMissing = ( $form ) => {
 					locale.default[ key ]?.required;
 			}
 
-			const hasValue = $field?.value;
+			const hasValue = field?.value;
 
 			return isRequired && ! hasValue;
 		} )
