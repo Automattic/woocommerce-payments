@@ -15,7 +15,7 @@ else
     mkdir -p "${JT_DIR}"
 fi
 
-echo "Downloading the latest version of the installer script..."
+echo "Checking if the installer is present and downloading it if not..."
 echo 
 
 # Download the installer (if it's not already present):
