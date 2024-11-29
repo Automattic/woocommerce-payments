@@ -6,9 +6,9 @@ import { dispatchChangeEventFor } from '../utils/upe';
 export const switchToNewPaymentTokenElement = () => {
 	// Switch to card payment method before enabling new payment token element
 	document
-		.querySelector( '.wcpay-upe-element[data-payment-method-type="card"]' )
-		?.closest( '.wc_payment_method' )
-		?.querySelector( 'input[type="radio"]' )
+		.querySelector(
+			'input[name="payment_method"][value="woocommerce_payments"]'
+		)
 		?.click();
 
 	const newPaymentTokenElement = document.getElementById(
