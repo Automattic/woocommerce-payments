@@ -331,6 +331,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Define setting fields.
 		$this->form_fields = [
 			'enabled'                            => [
+				'key'         => 'enabled', // Used in set_defaults().
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
 				'label'       => sprintf(
 					/* translators: %s: WooPayments */
@@ -2528,7 +2529,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function set_defaults( $field ) {
 		$field = parent::set_defaults( $field );
 
-		if ( 'card' === $this->stripe_id && 'Enable/disable' === $field['title'] ) {
+		if ( 'card' === $this->stripe_id && 'enabled' === ( $field['key'] ?? '' ) ) {
 			$field['default'] = 'yes';
 		}
 
