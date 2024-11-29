@@ -358,7 +358,7 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	// Simplified approach - find the form ancestor and then search within it
 	let billingInput = upeElement
 		?.closest( 'form.checkout, form#add_payment_method' )
-		?.querySelector( '#billing_country' );
+		?.querySelector( '[name="billing_country"]' );
 
 	// If not found, fallback to the search in the whole document
 	if ( ! billingInput ) {

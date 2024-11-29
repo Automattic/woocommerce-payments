@@ -242,7 +242,7 @@ jQuery( function ( $ ) {
 
 			const billingInput = upeElement
 				?.closest( 'form.checkout' )
-				?.querySelector( '#billing_country' );
+				?.querySelector( '[name="billing_country"]' );
 			if ( billingInput ) {
 				// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
 				$( billingInput ).on( 'change', function () {
