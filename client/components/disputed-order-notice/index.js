@@ -84,8 +84,10 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 		return null;
 	}
 
-	const now = moment();
-	const dueBy = moment.unix( dispute.evidence_details?.due_by );
+	// Get current time in UTC for consistent timezone-independent comparison
+	const now = moment().utc();
+	// Parse the Unix timestamp as UTC since it's stored that way in the API
+	const dueBy = moment.unix( dispute.evidence_details?.due_by ).utc();
 
 	// If the dispute is due in the past, don't show notice.
 	if ( ! now.isBefore( dueBy ) ) {
@@ -131,7 +133,7 @@ const UrgentDisputeNoticeBody = ( {
 		formatString,
 		formattedAmount,
 		reasons[ disputeReason ].display,
-		formatUserDateTime( dueBy.local().toISOString() )
+		formatUserDateTime( dueBy.toISOString() )
 	);
 
 	let suffix = sprintf(
@@ -182,7 +184,7 @@ const RegularDisputeNoticeBody = ( {
 	const suffix = sprintf(
 		// Translators: %1$s is the dispute due date.
 		__( 'Please respond before %1$s.', 'woocommerce-payments' ),
-		formatUserDateTime( dueBy.local().toISOString() )
+		formatUserDateTime( dueBy.toISOString() )
 	);
 
 	return (
