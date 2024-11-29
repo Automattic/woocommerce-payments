@@ -76,8 +76,7 @@ jQuery( ( $ ) => {
 
 	listenForCartChanges.start();
 
-	// On classic checkout, hide the WooPay button when the cart total is 0,
-	// does not require shipping and there are no subscriptions in the cart.
+	// On classic checkout, hide the WooPay button when meeting certain conditions.
 	const handleWooPayExpressCheckoutButtonVisibility = async (
 		_event,
 		cart
