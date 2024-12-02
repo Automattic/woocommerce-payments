@@ -57,7 +57,6 @@ export function formatDateTimeFromTimestamp(
 	const {
 		customFormat = null,
 		includeTime = false,
-		useGmt = false,
 		separator = ' / ',
 	} = options;
 
@@ -72,5 +71,5 @@ export function formatDateTimeFromTimestamp(
 				: ''
 		}`;
 
-	return dateI18n( format, utcDateTime, useGmt );
+	return dateI18n( format, utcDateTime );
 }
