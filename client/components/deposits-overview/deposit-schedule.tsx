@@ -120,7 +120,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 		<>
 			{ interpolateComponents( {
 				mixedString: __(
-					'The exact timing and amount of your payouts can vary based on several factors. Please see our {{link}}payout schedule guide{{/link}} for more information.',
+					'The timing and amount of your payouts may vary due to several factors. Check out our {{link}}payout schedule guide{{/link}} for details.',
 					'woocommerce-payments'
 				),
 				components: {
