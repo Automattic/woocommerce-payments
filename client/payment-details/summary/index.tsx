@@ -257,7 +257,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<Flex direction="row" align="start">
 					<div className="payment-details-summary">
 						<div className="payment-details-summary__section">
-							<div className="payment-details-summary__amount_wrapper">
+							<div className="payment-details-summary__amount-wrapper">
 								<p className="payment-details-summary__amount">
 									<Loadable
 										isLoading={ isLoading }

@@ -19,13 +19,13 @@
 		flex-grow: 1;
 	}
 
-	.payment-details-summary__amount_wrapper {
+	.payment-details-summary__amount-wrapper {
 		display: flex;
 		align-items: center;
 	}
 
 	@media screen and ( max-width: $break-small ) {
-		.payment-details-summary__amount_wrapper {
+		.payment-details-summary__amount-wrapper {
 			flex-direction: column;
 			align-items: flex-start;
 

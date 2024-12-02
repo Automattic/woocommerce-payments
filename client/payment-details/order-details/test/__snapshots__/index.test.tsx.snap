@@ -31,7 +31,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
                 class="payment-details-summary__section"
               >
                 <div
-                  class="payment-details-summary__amount_wrapper"
+                  class="payment-details-summary__amount-wrapper"
                 >
                   <p
                     class="payment-details-summary__amount"

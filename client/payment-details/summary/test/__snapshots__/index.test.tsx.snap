@@ -27,7 +27,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -367,7 +367,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -717,7 +717,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -1042,7 +1042,7 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -1353,7 +1353,7 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -1678,7 +1678,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -2026,7 +2026,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -2378,7 +2378,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -2680,7 +2680,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -2924,7 +2924,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -3252,7 +3252,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"
@@ -3577,7 +3577,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
               class="payment-details-summary__section"
             >
               <div
-                class="payment-details-summary__amount_wrapper"
+                class="payment-details-summary__amount-wrapper"
               >
                 <p
                   class="payment-details-summary__amount"

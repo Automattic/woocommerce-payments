@@ -31,7 +31,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
                 class="payment-details-summary__section"
               >
                 <div
-                  class="payment-details-summary__amount_wrapper"
+                  class="payment-details-summary__amount-wrapper"
                 >
                   <p
                     class="payment-details-summary__amount"
@@ -503,7 +503,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                 class="payment-details-summary__section"
               >
                 <div
-                  class="payment-details-summary__amount_wrapper"
+                  class="payment-details-summary__amount-wrapper"
                 >
                   <p
                     class="payment-details-summary__amount"
