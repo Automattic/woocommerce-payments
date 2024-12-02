@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
@@ -149,7 +150,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			if ( is_wp_error( $order ) ) {
 				throw new Invalid_Webhook_Data_Exception( __( 'Unable to generate renewal order for subscription on the "invoice.paid" event.', 'woocommerce-payments' ) );
 			} else {
-				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::CARD );
 				$this->invoice_service->set_order_invoice_id( $order, $wcpay_invoice_id );
 			}
 		}

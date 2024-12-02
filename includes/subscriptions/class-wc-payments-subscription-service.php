@@ -159,7 +159,7 @@ class WC_Payments_Subscription_Service {
 		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
 		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'show_wcpay_subscription_id' ] );
 
-		add_action( 'woocommerce_subscription_payment_method_updated_from_' . WC_Payment_Gateway_WCPay::GATEWAY_ID, [ $this, 'maybe_cancel_subscription' ], 10, 2 );
+		add_action( 'woocommerce_subscription_payment_method_updated_from_woocommerce_payments_card', [ $this, 'maybe_cancel_subscription' ], 10, 2 );
 	}
 
 	/**
@@ -270,7 +270,7 @@ class WC_Payments_Subscription_Service {
 	 * @return bool
 	 */
 	public static function is_wcpay_subscription( WC_Subscription $subscription ): bool {
-		return ! WC_Payments_Subscriptions::is_duplicate_site() && WC_Payment_Gateway_WCPay::GATEWAY_ID === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
+		return ! WC_Payments_Subscriptions::is_duplicate_site() && 'woocommerce_payments_card' === $subscription->get_payment_method() && (bool) self::get_wcpay_subscription_id( $subscription );
 	}
 
 	/**
@@ -375,7 +375,7 @@ class WC_Payments_Subscription_Service {
 		 * - A different payment gateway was used to purchase the subscription (e.g. PayPal).
 		 * - The subscription is free (i.e. $0) and payment details were not captured during checkout.
 		 */
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $subscription->get_payment_method() ) {
+		if ( 'woocommerce_payments_card' !== $subscription->get_payment_method() ) {
 			return;
 		}
 
@@ -444,7 +444,7 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function maybe_create_subscription_from_update_payment_method( WC_Subscription $subscription, string $new_payment_method ) {
 		// Not changing the subscription payment method to WooPayments, bail.
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+		if ( 'woocommerce_payments_card' !== $new_payment_method ) {
 			return;
 		}
 
@@ -841,7 +841,7 @@ class WC_Payments_Subscription_Service {
 	public function maybe_cancel_subscription( $subscription, $new_payment_method ) {
 		$wcpay_subscription_id = self::get_wcpay_subscription_id( $subscription );
 
-		if ( (bool) $wcpay_subscription_id && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+		if ( (bool) $wcpay_subscription_id && 'woocommerce_payments_card' !== $new_payment_method ) {
 			$this->cancel_subscription( $subscription );
 
 			// Delete the WCPay Subscription meta but keep a record of it.

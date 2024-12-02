@@ -19,7 +19,7 @@ use WCPay\Constants\Payment_Method;
  */
 class WC_Payments_Token_Service {
 	const REUSABLE_GATEWAYS_BY_PAYMENT_METHOD = [
-		Payment_Method::CARD => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		Payment_Method::CARD => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::CARD,
 		Payment_Method::SEPA => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
 		Payment_Method::LINK => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 	];
@@ -77,13 +77,13 @@ class WC_Payments_Token_Service {
 				break;
 			case Payment_Method::LINK:
 				$token      = new WC_Payment_Token_WCPay_Link();
-				$gateway_id = CC_Payment_Gateway::GATEWAY_ID;
+				$gateway_id = 'woocommerce_payments_card';
 				$token->set_gateway_id( $gateway_id );
 				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
 				break;
 			case Payment_Method::CARD_PRESENT:
 				$token = new WC_Payment_Token_CC();
-				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token->set_gateway_id( 'woocommerce_payments_card' );
 				$token->set_expiry_month( $payment_method[ Payment_Method::CARD_PRESENT ]['exp_month'] );
 				$token->set_expiry_year( $payment_method[ Payment_Method::CARD_PRESENT ]['exp_year'] );
 				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD_PRESENT ]['brand'] ) );
@@ -91,7 +91,7 @@ class WC_Payments_Token_Service {
 				break;
 			default:
 				$token = new WC_Payment_Token_CC();
-				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token->set_gateway_id( 'woocommerce_payments_card' );
 				$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
 				$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
 				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['display_brand'] ?? $payment_method[ Payment_Method::CARD ]['networks']['preferred'] ?? $payment_method[ Payment_Method::CARD ]['brand'] ) );
