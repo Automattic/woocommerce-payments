@@ -314,7 +314,7 @@ export const getBlocksEmailValue = () => {
 	return document
 		.querySelector( '.wcpay-payment-element' )
 		?.closest( 'form' )
-		?.querySelector( '#billing_email' )?.value;
+		?.querySelector( '#email' )?.value;
 };
 
 /**
@@ -328,7 +328,7 @@ export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
 
 	const emailInput = upeContainer
 		.closest( 'form' )
-		?.querySelector( '#billing_email' );
+		?.querySelector( '#email' );
 	if ( ! emailInput ) return;
 
 	const stripeLinkButton = document.createElement( 'button' );

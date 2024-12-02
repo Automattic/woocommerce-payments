@@ -610,7 +610,7 @@ describe( 'blocksShowLinkButtonHandler', () => {
 
 		container = document.createElement( 'div' );
 		container.innerHTML = `
-			<input id="billing_email" type="email" value="">
+			<input id="email" type="email" value="">
 			<label for="email">Email address</label>
 		`;
 		form.appendChild( container );
@@ -649,7 +649,7 @@ describe( 'blocksShowLinkButtonHandler', () => {
 	} );
 
 	test( 'should show link button if email input is present', () => {
-		document.getElementById( 'billing_email' ).value = 'admin@example.com';
+		document.getElementById( 'email' ).value = 'admin@example.com';
 
 		blocksShowLinkButtonHandler( autofill );
 
