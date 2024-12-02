@@ -1571,7 +1571,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$payment_methods = $this->get_payment_method_types( $payment_information );
 			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 			// for a string that will only contain latin alphanumeric characters and underscores.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1602,6 +1601,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( empty( $intent ) ) {
+				$payment_methods = $this->get_payment_method_types( $payment_information );
+
 				$request = Create_And_Confirm_Intention::create();
 				$request->set_amount( $converted_amount );
 				$request->set_currency_code( $currency );
@@ -2126,9 +2127,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order           = $payment_information->get_order();
 			$order_id        = $order instanceof WC_Order ? $order->get_id() : null;
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
-		} else {
-			// Final fallback case, if all else fails.
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 		}
 
 		return $payment_methods;
