@@ -268,4 +268,15 @@ class WC_Payments_Redirect_Service_Test extends WCPAY_UnitTestCase {
 		// Act.
 		$this->redirect_service->redirect_to_connect_page( null, null, [ 'source' => 'some-source' ] );
 	}
+
+	public function test_redirect_to_settings_page_redirects() {
+		// Assert.
+		$this->redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to' )
+			->with( admin_url( 'admin.php?page=wc-settings&tab=checkout' ) );
+
+		// Act.
+		$this->redirect_service->redirect_to_settings_page();
+	}
 }

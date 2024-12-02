@@ -103,9 +103,8 @@ Object.entries( enabledPaymentMethodsConfig )
 				const isAvailableInTheCountry =
 					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
-				return (
-					isAvailableInTheCountry && !! api.getStripeForUPE( upeName )
-				);
+				// We used to check if stripe was loaded with `getStripeForUPE`, but we can't guarantee it will be loaded synchronously.
+				return isAvailableInTheCountry;
 			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss

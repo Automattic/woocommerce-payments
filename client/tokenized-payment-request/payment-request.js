@@ -89,8 +89,9 @@ export default class WooPaymentsPaymentRequest {
 	async startPaymentRequest() {
 		// reference to this class' instance, to be used inside callbacks to avoid `this` misunderstandings.
 		const _self = this;
+		const stripe = await this.wcpayApi.getStripe();
 		const paymentRequest = getPaymentRequest( {
-			stripe: this.wcpayApi.getStripe(),
+			stripe,
 			cartData: this.cachedCartData,
 			productData: this.initialProductData,
 		} );
@@ -124,8 +125,7 @@ export default class WooPaymentsPaymentRequest {
 			this.paymentRequestCartApi.useSeparateCart();
 		}
 
-		const paymentRequestButton = this.wcpayApi
-			.getStripe()
+		const paymentRequestButton = stripe
 			.elements()
 			.create( 'paymentRequestButton', {
 				paymentRequest: paymentRequest,

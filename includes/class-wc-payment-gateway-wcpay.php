@@ -573,58 +573,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Returns the gateway title
-	 *
-	 * @return string
-	 * */
-	public function get_title() {
-		$title = parent::get_title();
-
-		/**
-		 * Allows themes or other plugins to override whether the "rich" payment method label
-		 * (normally displayed on shortcode checkout/my account/pay-for-order pages) will be used.
-		 *
-		 * @since 8.6.0
-		 *
-		 * @param $use_plain_method_label boolean Whether the "plain" payment method label will be displayed.
-		 */
-		if ( apply_filters( 'wcpay_checkout_use_plain_method_label', false ) ) {
-			return $title;
-		}
-
-		if (
-			( is_checkout() || is_add_payment_method_page() ) &&
-			! isset( $_GET['change_payment_method'] )  // phpcs:ignore WordPress.Security.NonceVerification
-		) {
-			$test_mode_badge = '';
-			if ( WC_Payments::mode()->is_test() ) {
-				$test_mode_badge = '<span class="test-mode badge">' . __( 'Test Mode', 'woocommerce-payments' ) . '</span>';
-			}
-
-			$bnpl_messaging_container = '';
-			if ( $this->payment_method->is_bnpl() ) {
-				$bnpl_messaging_container = '<span id="stripe-pmme-container-' . $this->payment_method->get_id() . '" class="stripe-pmme-container"></span>';
-			}
-
-			// the "plain" payment method label is displayed on some sections of the app
-			// - like "pay for order" when a payment method is pre-selected or a payment has previously failed.
-			$html  = '<span class="woopayments-plain-payment-method-label">' . $title . '</span>';
-			$html .= '<div class="woopayments-rich-payment-method-label">';
-			$html .= '<div class="label-title-container">';
-			$html .= '<span class="payment-method-title">&nbsp;' . $title . '</span>';
-			$html .= $test_mode_badge;
-			$html .= '</div>';
-			$html .= $this->get_icon();
-			$html .= $bnpl_messaging_container;
-			$html .= '</div>';
-
-			return $html;
-		}
-
-		return $title;
-	}
-
-	/**
 	 * Updates icon and title using the account country.
 	 * This method runs on init is not in the controller because get_account_country might
 	 * make a request to the API if the account data is not cached.
@@ -3259,15 +3207,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->payments_api_client->save_fraud_ruleset( $ruleset );
 			set_transient( 'wcpay_fraud_protection_settings', $ruleset, DAY_IN_SECONDS );
 		}
-	}
-
-	/**
-	 * Overriding the base method because the `alt` tag would otherwise output the markup returned by the `get_title()` method in this class - which we don't want.
-	 *
-	 * @return string
-	 */
-	public function get_icon() {
-		return '<img src="' . esc_url( WC_HTTPS::force_https_url( $this->get_theme_icon() ) ) . '" alt="' . esc_attr( $this->payment_method->get_title() ) . ' payment method logo" />';
 	}
 
 	/**
