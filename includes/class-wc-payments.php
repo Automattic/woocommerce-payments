@@ -558,6 +558,7 @@ class WC_Payments {
 		self::$compatibility_service->init_hooks();
 
 		$payment_method_classes = [
+			Main_Payment_Method::class,
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,
 			Sepa_Payment_Method::class,
@@ -588,14 +589,9 @@ class WC_Payments {
 			self::$payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 		}
 
-		$main_payment_method        = new Main_Payment_Method( self::$token_service );
-		self::$main_gateway         = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $main_payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service );
+		self::$main_gateway         = self::get_payment_gateway_by_id( Main_Payment_Method::PAYMENT_METHOD_STRIPE_ID );
 		self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 
-		self::$payment_method_map[ $main_payment_method->get_id() ]  = $main_payment_method;
-		self::$payment_gateway_map[ $main_payment_method->get_id() ] = self::$main_gateway;
-
-		self::$main_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
@@ -877,7 +873,8 @@ class WC_Payments {
 	public static function set_gateway_top_of_list( $ordering ) {
 		$ordering = (array) $ordering;
 
-		$ordering[ self::get_gateway()->id ] = empty( $ordering ) ? 9999 : max( $ordering ) + 1;
+		// Main Gateway won't be visible so it should never be the default.
+		$ordering[ self::get_gateway()->id ] = 9999;
 
 		$card_gateway = self::get_payment_gateway_by_id( 'card' );
 		if ( $card_gateway && $card_gateway->is_enabled() ) {
