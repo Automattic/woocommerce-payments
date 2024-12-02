@@ -7,9 +7,12 @@ import moment from 'moment';
 type DateTimeFormat = string | null;
 
 interface FormatDateTimeOptions {
-	includeTime?: boolean; // Whether to include time in the formatted string (defaults to false)
-	separator?: string; // Separator between date and time (defaults to ' / ')
-	customFormat?: DateTimeFormat; // Custom format to use instead of WordPress settings
+	/** Whether to include time in the formatted string (defaults to true) */
+	includeTime?: boolean;
+	/** Separator between date and time (defaults to ' / ') */
+	separator?: string;
+	/** Custom format to use instead of WordPress settings */
+	customFormat?: DateTimeFormat;
 }
 
 /**
