@@ -66,7 +66,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 				{
 					a: (
 						<ExternalLink
-							className="dispute-notice-link"
+							className="dispute-notice__link"
 							href={ learnMoreDocsUrl }
 						/>
 					),
