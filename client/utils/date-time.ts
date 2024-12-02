@@ -14,6 +14,7 @@ interface FormatDateTimeOptions {
 
 /**
  * Formats a date/time string in YYYY-MM-DD HH:MM:SS format according to WordPress settings.
+ * The input date string is converted to UTC for consistent handling across timezones.
  *
  * @param dateTimeStr - Date time string in YYYY-MM-DD HH:MM:SS format
  * @param options - Formatting options
@@ -44,6 +45,7 @@ export function formatDateTimeFromString(
 
 /**
  * Formats a Unix timestamp according to WordPress settings.
+ * The input timestamp is converted to UTC for consistent handling across timezones.
  *
  * @param timestamp - Unix timestamp (seconds since epoch)
  * @param options - Formatting options
