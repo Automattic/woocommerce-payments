@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import moment from 'moment';
 import { __, sprintf } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { createInterpolateElement } from '@wordpress/element';

@@ -7,7 +7,6 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
-import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**

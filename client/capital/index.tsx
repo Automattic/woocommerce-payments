@@ -25,7 +25,6 @@ import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import moment from 'moment';
 
 const columns = [
 	{

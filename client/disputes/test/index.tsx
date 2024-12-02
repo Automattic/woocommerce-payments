@@ -25,7 +25,6 @@ import {
 	DisputeStatus,
 } from 'wcpay/types/disputes';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import moment from 'moment';
 
 jest.mock( '@woocommerce/csv-export', () => {
 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );

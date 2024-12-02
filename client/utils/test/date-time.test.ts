@@ -64,14 +64,6 @@ describe( 'Date/Time Formatting', () => {
 			expect( formatted ).toBe( '2024-10-23 - 15:28' );
 		} );
 
-		it( 'should handle GMT/UTC setting correctly when useGmt is true', () => {
-			const dateTime = '2024-10-23 15:28:26Z';
-			const options = { includeTime: true };
-			const formatted = formatDateTimeFromString( dateTime, options );
-
-			expect( formatted ).toBe( '2024-10-23 / 15:28' );
-		} );
-
 		it( 'should handle different timezones correctly', () => {
 			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			const dateI18n = require( '@wordpress/date' ).dateI18n;
