@@ -91,6 +91,15 @@ const mockDeposits = [
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
 	} as CachedDeposit,
+	{
+		id: 'po_mock3',
+		date: '2020-01-04 17:46:02',
+		type: 'withdrawal',
+		amount: 4000,
+		status: 'paid',
+		bankAccount: 'MOCK BANK •••• 1234 (USD)',
+		currency: 'USD',
+	} as CachedDeposit,
 ];
 
 // Creates a mock Overview object for the given currency code and balance amounts.
@@ -259,8 +268,8 @@ describe( 'Deposits Overview information', () => {
 
 		const { container, getByText } = render( <DepositsOverview /> );
 		// Check that the button and link is rendered.
-		getByText( 'View full deposits history' );
-		getByText( 'Change deposit schedule' );
+		getByText( 'View full payout history' );
+		getByText( 'Change payout schedule' );
 		expect( container ).toMatchSnapshot();
 	} );
 
@@ -297,7 +306,7 @@ describe( 'Deposits Overview information', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 		const { getByText, queryByText } = render( <DepositsOverview /> );
-		getByText( /Your first deposit is held for/, {
+		getByText( /Your first payout is held for/, {
 			ignore: '.a11y-speak-region',
 		} );
 		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
@@ -320,10 +329,10 @@ describe( 'Deposits Overview information', () => {
 
 		const { getByText, queryByText } = render( <DepositsOverview /> );
 
-		getByText( /Your deposits are temporarily suspended/ );
+		getByText( /Your payouts are temporarily suspended/ );
 
 		// Check that the buttons are rendered as expected.
-		getByText( 'View full deposits history' );
+		getByText( 'View full payout history' );
 		// This one is not rendered when deposits are blocked.
 		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
 	} );
@@ -388,7 +397,7 @@ describe( 'Deposits Overview information', () => {
 
 		expect(
 			queryByText(
-				'deposit will include funds from your WooCommerce Capital loan',
+				'payout will include funds from your WooCommerce Capital loan',
 				{
 					exact: false,
 					ignore: '.a11y-speak-region',
@@ -417,7 +426,7 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { queryByText } = render( <DepositsOverview /> );
-		expect( queryByText( /Your first deposit is held for/ ) ).toBeFalsy();
+		expect( queryByText( /Your first payout is held for/ ) ).toBeFalsy();
 	} );
 
 	test( 'Confirm new account waiting period notice shows if within waiting period', () => {
@@ -435,12 +444,12 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { getByText, getByRole } = render( <DepositsOverview /> );
-		getByText( /Your first deposit is held for/, {
+		getByText( /Your first payout is held for/, {
 			ignore: '.a11y-speak-region',
 		} );
 		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#new-accounts'
+			'https://woocommerce.com/document/woopayments/payouts/payout-schedule/#new-accounts'
 		);
 	} );
 } );
@@ -567,7 +576,7 @@ describe( 'DepositFailureNotice Renders', () => {
 		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText(
-				/Deposits are currently paused because a recent deposit failed./,
+				/Payouts are currently paused because a recent payout failed./,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -606,7 +615,7 @@ describe( 'DepositFailureNotice Renders', () => {
 		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText(
-				/Deposits are currently paused because a recent deposit failed./,
+				/Payouts are currently paused because a recent payout failed./,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -645,7 +654,7 @@ describe( 'DepositFailureNotice Renders', () => {
 		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText(
-				/Deposits are currently paused because a recent deposit failed./,
+				/Payouts are currently paused because a recent payout failed./,
 				{
 					ignore: '.a11y-speak-region',
 				}
@@ -670,7 +679,7 @@ describe( 'Paused Deposit notice Renders', () => {
 		} );
 
 		const { getByText } = render( <DepositsOverview /> );
-		getByText( /Deposits may be interrupted/, {
+		getByText( /Payouts may be interrupted/, {
 			ignore: '.a11y-speak-region',
 		} );
 	} );
@@ -684,7 +693,7 @@ describe( 'Paused Deposit notice Renders', () => {
 		mockDepositOverviews( [ accountOverview ] );
 
 		const { queryByText } = render( <DepositsOverview /> );
-		expect( queryByText( /Deposits may be interrupted/ ) ).toBeFalsy();
+		expect( queryByText( /Payouts may be interrupted/ ) ).toBeFalsy();
 	} );
 	test( 'When available balance is negative', () => {
 		const accountOverview = createMockNewAccountOverview(
@@ -696,7 +705,7 @@ describe( 'Paused Deposit notice Renders', () => {
 		mockDepositOverviews( [ accountOverview ] );
 
 		const { queryByText } = render( <DepositsOverview /> );
-		expect( queryByText( /Deposits may be interrupted/ ) ).toBeFalsy();
+		expect( queryByText( /Payouts may be interrupted/ ) ).toBeFalsy();
 	} );
 } );
 
@@ -725,7 +734,7 @@ describe( 'Minimum Deposit Amount Notice', () => {
 
 		const { getByText } = render( <DepositsOverview /> );
 		getByText(
-			/Deposits are paused while your available funds balance remains below €5.00/,
+			/Payouts are paused while your available funds balance remains below €5.00/,
 			{
 				ignore: '.a11y-speak-region',
 			}
@@ -745,7 +754,7 @@ describe( 'Minimum Deposit Amount Notice', () => {
 		const { queryByText } = render( <DepositsOverview /> );
 		expect(
 			queryByText(
-				/Deposits are paused while your available funds balance remains below/
+				/Payouts are paused while your available funds balance remains below/
 			)
 		).toBeFalsy();
 	} );

@@ -448,7 +448,7 @@ describe( 'getTasks()', () => {
 					completed: false,
 					level: 3,
 					title:
-						'Verify your bank account to start receiving deposits',
+						'Verify your bank account to start receiving payouts',
 				} ),
 			] )
 		);
@@ -550,7 +550,7 @@ describe( 'taskSort()', () => {
 				key: 'verify-bank-details-po',
 				completed: false,
 				level: 3,
-				title: 'Verify your bank account to start receiving deposits',
+				title: 'Verify your bank account to start receiving payouts',
 			} )
 		);
 	} );

@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: express checkout initialization page location checks

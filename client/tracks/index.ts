@@ -8,7 +8,7 @@ import domReady from '@wordpress/dom-ready';
  */
 import { Event } from './event';
 import { getConfig } from 'wcpay/utils/checkout';
-import { getPaymentRequestData } from 'wcpay/utils/express-checkout';
+import { getExpressCheckoutConfig } from 'wcpay/utils/express-checkout';
 
 /**
  * Checks if site tracking is enabled.
@@ -69,9 +69,9 @@ export const recordUserEvent = (
 ): void => {
 	const nonce =
 		getConfig( 'platformTrackerNonce' ) ??
-		getPaymentRequestData( 'nonce' )?.platform_tracker;
+		getExpressCheckoutConfig( 'nonce' )?.platform_tracker;
 	const ajaxUrl =
-		getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
+		getConfig( 'ajaxUrl' ) ?? getExpressCheckoutConfig( 'ajax_url' );
 	const body = new FormData();
 
 	body.append( 'tracksNonce', nonce );
@@ -118,9 +118,9 @@ export const getTracksIdentity = async (): Promise< string | undefined > => {
 	// Otherwise get it via an Ajax request.
 	const nonce =
 		getConfig( 'platformTrackerNonce' ) ??
-		getPaymentRequestData( 'nonce' )?.platform_tracker;
+		getExpressCheckoutConfig( 'nonce' )?.platform_tracker;
 	const ajaxUrl =
-		getConfig( 'ajaxUrl' ) ?? getPaymentRequestData( 'ajax_url' );
+		getConfig( 'ajaxUrl' ) ?? getExpressCheckoutConfig( 'ajax_url' );
 	const body = new FormData();
 
 	body.append( 'tracksNonce', nonce );

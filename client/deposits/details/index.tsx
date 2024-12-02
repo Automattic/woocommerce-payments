@@ -36,16 +36,34 @@ import {
 	formatCurrency,
 	formatExplicitCurrency,
 } from 'multi-currency/interface/functions';
-import { displayStatus } from '../strings';
+import { depositStatusLabels } from '../strings';
 import './style.scss';
+import { PayoutsRenameNotice } from '../rename-notice';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
  */
-const Status: React.FC< { status: string } > = ( { status } ) => (
-	<OrderStatus order={ { status } } orderStatusMap={ displayStatus } />
-);
+const DepositStatusIndicator: React.FC< {
+	deposit: Pick< CachedDeposit, 'status' | 'type' >;
+} > = ( { deposit } ) => {
+	let displayStatusMap = depositStatusLabels;
+
+	// Withdrawals are displayed as 'Deducted' instead of 'Paid' when the status is 'paid'.
+	if ( deposit.type === 'withdrawal' ) {
+		displayStatusMap = {
+			...displayStatusMap,
+			paid: displayStatusMap.deducted,
+		};
+	}
+
+	return (
+		<OrderStatus
+			order={ { status: deposit.status } }
+			orderStatusMap={ displayStatusMap }
+		/>
+	);
+};
 
 interface SummaryItemProps {
 	label: string;
@@ -101,9 +119,15 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 		);
 	}
 
-	const depositDateLabel = deposit.automatic
-		? __( 'Deposit date', 'woocommerce-payments' )
-		: __( 'Instant deposit date', 'woocommerce-payments' );
+	const isWithdrawal = deposit.type === 'withdrawal';
+
+	let depositDateLabel = __( 'Payout date', 'woocommerce-payments' );
+	if ( ! deposit.automatic ) {
+		depositDateLabel = __( 'Instant payout date', 'woocommerce-payments' );
+	}
+	if ( isWithdrawal ) {
+		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
+	}
 
 	const depositDateItem = (
 		<SummaryItem
@@ -112,7 +136,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 				`${ depositDateLabel }: ` +
 				formatDateTimeFromString( deposit.date )
 			}
-			value={ <Status status={ deposit.status } /> }
+			value={ <DepositStatusIndicator deposit={ deposit } /> }
 			detail={ deposit.bankAccount }
 		/>
 	);
@@ -133,16 +157,30 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 				</Card>
 			) : (
 				<SummaryList
-					label={ __( 'Deposit overview', 'woocommerce-payments' ) }
+					label={
+						isWithdrawal
+							? __(
+									'Withdrawal overview',
+									'woocommerce-payments'
+							  )
+							: __( 'Payout overview', 'woocommerce-payments' )
+					}
 				>
 					{ () => [
 						depositDateItem,
 						<SummaryItem
 							key="depositAmount"
-							label={ __(
-								'Deposit amount',
-								'woocommerce-payments'
-							) }
+							label={
+								isWithdrawal
+									? __(
+											'Withdrawal amount',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Payout amount',
+											'woocommerce-payments'
+									  )
+							}
 							value={ formatExplicitCurrency(
 								deposit.amount + deposit.fee,
 								deposit.currency
@@ -165,10 +203,17 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 						/>,
 						<SummaryItem
 							key="netDepositAmount"
-							label={ __(
-								'Net deposit amount',
-								'woocommerce-payments'
-							) }
+							label={
+								isWithdrawal
+									? __(
+											'Net withdrawal amount',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Net payout amount',
+											'woocommerce-payments'
+									  )
+							}
 							value={ formatExplicitCurrency(
 								deposit.amount,
 								deposit.currency
@@ -197,6 +242,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 
 	return (
 		<Page>
+			<PayoutsRenameNotice />
 			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 			<ErrorBoundary>
 				{ isLoading ? (
@@ -215,7 +261,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 							<CardHeader>
 								<Text size={ 16 } weight={ 600 } as="h2">
 									{ __(
-										'Deposit transactions',
+										'Payout transactions',
 										'woocommerce-payments'
 									) }
 								</Text>
@@ -224,12 +270,12 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 								{ interpolateComponents( {
 									/* Translators: {{learnMoreLink}} is a link element (<a/>). */
 									mixedString: __(
-										`We're unable to show transaction history on instant deposits. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
+										`We're unable to show transaction history on instant payouts. {{learnMoreLink}}Learn more{{/learnMoreLink}}`,
 										'woocommerce-payments'
 									),
 									components: {
 										learnMoreLink: (
-											<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/#transactions" />
+											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#transactions" />
 										),
 									},
 								} ) }

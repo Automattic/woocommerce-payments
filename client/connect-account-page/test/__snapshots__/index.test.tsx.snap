@@ -50,7 +50,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
                 class="components-button is-link"
                 type="button"
               >
-                enable deposits.
+                enable payouts.
               </button>
             </div>
           </div>
@@ -133,7 +133,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
           >
             <div>
               <p>
-                Deposits
+                Payouts
               </p>
               <span>
                 Automatic - Daily
@@ -315,7 +315,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
                 class="components-button is-link"
                 type="button"
               >
-                enable deposits.
+                enable payouts.
               </button>
             </div>
           </div>
@@ -398,7 +398,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
           >
             <div>
               <p>
-                Deposits
+                Payouts
               </p>
               <span>
                 Automatic - Daily
@@ -542,7 +542,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
                 class="components-button is-link"
                 type="button"
               >
-                enable deposits.
+                enable payouts.
               </button>
             </div>
           </div>
@@ -625,7 +625,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
           >
             <div>
               <p>
-                Deposits
+                Payouts
               </p>
               <span>
                 Automatic - Daily

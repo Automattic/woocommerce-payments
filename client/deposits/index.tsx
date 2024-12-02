@@ -17,6 +17,7 @@ import { __ } from '@wordpress/i18n';
 import { TestModeNotice } from 'components/test-mode-notice';
 import BannerNotice from 'components/banner-notice';
 import DepositSchedule from 'components/deposits-overview/deposit-schedule';
+import { PayoutsRenameNotice } from './rename-notice';
 import { useAllDepositsOverviews } from 'data';
 import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
@@ -118,7 +119,7 @@ const DepositFailureNotice: React.FC = () => {
 		>
 			{ interpolateComponents( {
 				mixedString: __(
-					'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+					'Payouts are currently paused because a recent payout failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
 					'woocommerce-payments'
 				),
 				components: {
@@ -149,6 +150,7 @@ const DepositsPage: React.FC = () => {
 	return (
 		<Page>
 			<TestModeNotice currentPage="deposits" />
+			<PayoutsRenameNotice />
 			<NextDepositNotice />
 			<DepositFailureNotice />
 			<DepositsList />

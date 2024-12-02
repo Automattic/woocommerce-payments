@@ -82,7 +82,7 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 				) }
 				<Icon icon={ currencyDollar } />
 				{ __(
-					'We will need your banking details in order to process any deposits to you.',
+					'We will need your banking details in order to process any payouts to you.',
 					'woocommerce-payments'
 				) }
 			</div>

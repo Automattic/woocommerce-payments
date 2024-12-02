@@ -243,7 +243,12 @@ class WC_Payments_Status {
 					<tr>
 						<td data-export-label="Auth and Capture"><?php esc_html_e( 'Auth and Capture', 'woocommerce-payments' ); ?>:</td>
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the store has the Auth & Capture feature enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
-						<td><?php WC_Payments_Features::is_auth_and_capture_enabled() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
+						<td>
+						<?php
+							$manual_capture_enabled = 'yes' === $this->gateway->get_option( 'manual_capture' );
+							echo $manual_capture_enabled ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' );
+						?>
+						</td>
 					</tr>
 					<tr>
 						<td data-export-label="Documents"><?php esc_html_e( 'Documents', 'woocommerce-payments' ); ?>:</td>

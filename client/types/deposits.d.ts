@@ -2,7 +2,14 @@
 import { TableCardColumn } from '@woocommerce/components';
 
 export interface DepositsTableHeader extends TableCardColumn {
-	key: 'details' | 'date' | 'type' | 'amount' | 'status' | 'bankAccount';
+	key:
+		| 'details'
+		| 'date'
+		| 'type'
+		| 'amount'
+		| 'status'
+		| 'bankAccount'
+		| 'bankReferenceKey';
 	cellClassName?: string;
 }
 
@@ -24,6 +31,7 @@ export interface CachedDeposit {
 	status: DepositStatus;
 	bankAccount: string;
 	automatic: boolean;
+	bank_reference_key: string;
 }
 
 export interface DepositsSummaryCache {

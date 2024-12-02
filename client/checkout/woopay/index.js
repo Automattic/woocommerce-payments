@@ -46,8 +46,6 @@ const renderSaveUserSection = () => {
 					checkoutPageSaveUserContainer,
 					paymentOptions.nextSibling
 				);
-
-				paymentOptions.classList.add( 'is-woopay' );
 			}
 		}
 

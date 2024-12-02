@@ -442,7 +442,6 @@ class WC_Payments {
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-ajax-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-handler.php';
-		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -465,6 +464,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-address-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-country-code.php';
+		include_once __DIR__ . '/constants/class-country-test-cards.php';
 		include_once __DIR__ . '/constants/class-currency-code.php';
 		include_once __DIR__ . '/constants/class-fraud-meta-box-type.php';
 		include_once __DIR__ . '/constants/class-order-mode.php';
@@ -1703,12 +1703,11 @@ class WC_Payments {
 	 */
 	public static function maybe_display_express_checkout_buttons() {
 		if ( WC_Payments_Features::are_payments_enabled() ) {
-			$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway(), self::get_express_checkout_helper() );
-			$woopay_button_handler          = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, self::get_express_checkout_helper() );
+			$woopay_button_handler = new WC_Payments_WooPay_Button_Handler( self::$account, self::get_gateway(), self::$woopay_util, self::get_express_checkout_helper() );
 
 			$express_checkout_ajax_handler           = new WC_Payments_Express_Checkout_Ajax_Handler( self::get_express_checkout_helper() );
 			$express_checkout_element_button_handler = new WC_Payments_Express_Checkout_Button_Handler( self::$account, self::get_gateway(), self::get_express_checkout_helper(), $express_checkout_ajax_handler );
-			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $payment_request_button_handler, $woopay_button_handler, $express_checkout_element_button_handler, $express_checkout_ajax_handler, self::get_express_checkout_helper() );
+			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $woopay_button_handler, $express_checkout_element_button_handler, $express_checkout_ajax_handler, self::get_express_checkout_helper() );
 			$express_checkout_button_display_handler->init();
 		}
 	}
@@ -1881,13 +1880,14 @@ class WC_Payments {
 		$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
 		if ( $are_subscriptions_enabled ) {
 				global $product;
-				$is_subscription = $product && WC_Subscriptions_Product::is_subscription( $product );
+				$is_subscription            = $product && WC_Subscriptions_Product::is_subscription( $product );
+				$cart_contains_subscription = is_cart() && WC_Subscriptions_Cart::cart_contains_subscription();
 		}
 
-		if ( ! $is_subscription ) {
+		if ( ! $is_subscription && ! $cart_contains_subscription ) {
 			require_once __DIR__ . '/class-wc-payments-payment-method-messaging-element.php';
 			$stripe_site_messaging = new WC_Payments_Payment_Method_Messaging_Element( self::$account, self::$card_gateway );
-			echo wp_kses( $stripe_site_messaging->init(), 'post' );
+			echo wp_kses( $stripe_site_messaging->init() ?? '', 'post' );
 		}
 	}
 
@@ -1919,6 +1919,7 @@ class WC_Payments {
 				'woocommerce_remind_me_later_todo_tasks',
 				'woocommerce_deleted_todo_tasks',
 				'wcpay_fraud_protection_welcome_tour_dismissed',
+				'wcpay_payouts_rename_notice_dismissed',
 				'wcpay_capability_request_dismissed_notices',
 				'wcpay_onboarding_eligibility_modal_dismissed',
 				'wcpay_next_deposit_notice_dismissed',

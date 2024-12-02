@@ -20,7 +20,7 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 	const PAYMENT_METHOD_STRIPE_ID = 'klarna';
 
 	/**
-	 * Constructor for link payment method
+	 * Constructor for Klarna payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Token class instance.
 	 */
@@ -70,9 +70,10 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns testing credentials to be printed at checkout in test mode.
 	 *
+	 * @param string $account_country The country of the account.
 	 * @return string
 	 */
-	public function get_testing_instructions() {
+	public function get_testing_instructions( string $account_country ) {
 		return '';
 	}
 }

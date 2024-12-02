@@ -47,6 +47,6 @@
       "base": "Base fee: 2.9% + $0.30",
       "additional-fx": "Foreign exchange fee: 1%"
     },
-    "netString": "Net deposit: $100.65 USD"
+    "netString": "Net payout: $100.65 USD"
   }
 }

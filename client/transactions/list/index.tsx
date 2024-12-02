@@ -40,7 +40,7 @@ import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
-import { displayStatus as displayDepositStatus } from 'deposits/strings';
+import { depositStatusLabels } from 'deposits/strings';
 import {
 	formatStringValue,
 	isExportModalDismissed,
@@ -203,8 +203,8 @@ const getColumns = (
 		},
 		{
 			key: 'deposit_currency',
-			label: __( 'Deposit Currency', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Deposit Currency', 'woocommerce-payments' ),
+			label: __( 'Payout Currency', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Payout Currency', 'woocommerce-payments' ),
 			isSortable: true,
 			visible: false,
 		},
@@ -212,7 +212,7 @@ const getColumns = (
 			key: 'amount',
 			label: __( 'Amount', 'woocommerce-payments' ),
 			screenReaderLabel: __(
-				'Amount in Deposit Curency',
+				'Amount in Payout Currency',
 				'woocommerce-payments'
 			),
 			isNumeric: true,
@@ -282,22 +282,22 @@ const getColumns = (
 		},
 		includeDeposit && {
 			key: 'deposit_id',
-			label: __( 'Deposit ID', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Deposit ID', 'woocommerce-payments' ),
+			label: __( 'Payout ID', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Payout ID', 'woocommerce-payments' ),
 			cellClassName: 'deposit',
 			isLeftAligned: true,
 			visible: false,
 		},
 		includeDeposit && {
 			key: 'deposit',
-			label: __( 'Deposit date', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Deposit date', 'woocommerce-payments' ),
+			label: __( 'Payout date', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Payout date', 'woocommerce-payments' ),
 			cellClassName: 'deposit',
 			isLeftAligned: true,
 		},
 		includeDeposit && {
 			key: 'deposit_status',
-			label: __( 'Deposit status', 'woocommerce-payments' ),
+			label: __( 'Payout status', 'woocommerce-payments' ),
 			visible: false,
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
@@ -453,7 +453,7 @@ export const TransactionsList = (
 		);
 
 		const depositStatus = txn.deposit_status
-			? displayDepositStatus[ txn.deposit_status ]
+			? depositStatusLabels[ txn.deposit_status ]
 			: '';
 
 		// Map transaction into table row.
@@ -595,9 +595,7 @@ export const TransactionsList = (
 				'woocommerce-payments'
 		  );
 
-	const title = props.depositId
-		? __( 'Deposit transactions', 'woocommerce-payments' )
-		: __( 'Transactions', 'woocommerce-payments' );
+	const title = __( 'Transactions', 'woocommerce-payments' );
 
 	const downloadable = !! rows.length;
 

@@ -573,30 +573,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Returns the gateway title
-	 *
-	 * @return string
-	 * */
-	public function get_title() {
-		$title = parent::get_title();
-
-		if (
-			Payment_Method::CARD === $this->stripe_id &&
-			( is_checkout() || is_add_payment_method_page() ) &&
-			! isset( $_GET['change_payment_method'] )  // phpcs:ignore WordPress.Security.NonceVerification
-		) {
-			if ( WC_Payments::mode()->is_test() ) {
-				$test_mode_badge = '<span class="test-mode badge">' . __( 'Test Mode', 'woocommerce-payments' ) . '</span>';
-			} else {
-				$test_mode_badge = '';
-			}
-			return '<div class="label-title-container"><span class="payment-method-title">&nbsp;' . $title . '</span>' . $test_mode_badge . '</div>';
-		}
-
-		return $title;
-	}
-
-	/**
 	 * Updates icon and title using the account country.
 	 * This method runs on init is not in the controller because get_account_country might
 	 * make a request to the API if the account data is not cached.
@@ -1874,8 +1850,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
 
-			if ( $order->get_meta( 'is_woopay' ) && 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
+			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
 				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+				if ( isset( $payment_method_details['card']['brand'] ) ) {
+					$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
+				}
 				$order->save_meta_data();
 			}
 		} else {
@@ -3231,15 +3210,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Overriding the base method because the `alt` tag would otherwise output the markup returned by the `get_title()` method in this class - which we don't want.
-	 *
-	 * @return string
-	 */
-	public function get_icon() {
-		return '<img src="' . esc_url( WC_HTTPS::force_https_url( $this->get_icon_url() ) ) . '" alt="' . esc_attr( $this->payment_method->get_title() ) . ' payment method logo" />';
-	}
-
-	/**
 	 * The URL for the current payment method's icon.
 	 *
 	 * @return string The payment method icon URL.
@@ -3608,7 +3578,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				wc_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
-				if ( ! empty( $payment_method_id ) ) {
+				$is_subscription            = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order );
+				$should_save_payment_method = $is_subscription || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] );
+				if ( $should_save_payment_method && ! empty( $payment_method_id ) ) {
 					try {
 						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
 						$this->add_token_to_order( $order, $token );
@@ -4324,20 +4296,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array WooCommerce checkout fields.
 	 */
 	public function checkout_update_email_field_priority( $fields ) {
-		$is_link_enabled = in_array(
-			Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
-			true
-		);
+		if ( is_checkout() || has_block( 'woocommerce/checkout' ) ) {
+			$is_link_enabled = in_array(
+				Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+				\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
+				true
+			);
 
-		if ( $is_link_enabled && isset( $fields['billing_email'] ) ) {
-			// Update the field priority.
-			$fields['billing_email']['priority'] = 1;
+			if ( $is_link_enabled && isset( $fields['billing_email'] ) ) {
+				// Update the field priority.
+				$fields['billing_email']['priority'] = 1;
 
-			// Add extra `wcpay-checkout-email-field` class.
-			$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
+				// Add extra `wcpay-checkout-email-field` class.
+				$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
 
-			add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
+				add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
+			}
 		}
 
 		return $fields;

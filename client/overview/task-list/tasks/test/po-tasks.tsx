@@ -100,7 +100,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 				completed: false,
 				expanded: true,
 				isDismissable: false,
-				actionLabel: 'Set up deposits',
+				actionLabel: 'Set up payouts',
 				showActionButton: true,
 				visible: true,
 				time: '2 minutes',
@@ -154,12 +154,12 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				title: 'Verify your bank account to start receiving deposits',
+				title: 'Verify your bank account to start receiving payouts',
 				level: 3,
 				completed: false,
 				expanded: true,
 				showActionButton: true,
-				actionLabel: 'Start receiving deposits',
+				actionLabel: 'Start receiving payouts',
 				visible: true,
 				time: '2 minutes',
 			} )
@@ -182,14 +182,14 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				title: 'Verify your bank account to start receiving deposits',
+				title: 'Verify your bank account to start receiving payouts',
 				level: 2,
 				completed: false,
 				visible: true,
 				expanded: true,
 				isDismissable: false,
 				showActionButton: true,
-				actionLabel: 'Start receiving deposits',
+				actionLabel: 'Start receiving payouts',
 				time: '2 minutes',
 			} )
 		);
@@ -211,12 +211,12 @@ describe( 'getVerifyBankAccountTask()', () => {
 		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
-				title: 'Verify your bank account to start receiving deposits',
+				title: 'Verify your bank account to start receiving payouts',
 				level: 2,
 				completed: false,
 				expanded: true,
 				isDismissable: false,
-				actionLabel: 'Start receiving deposits',
+				actionLabel: 'Start receiving payouts',
 				showActionButton: true,
 				visible: true,
 				time: '2 minutes',
@@ -246,7 +246,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 				expanded: true,
 				isDismissable: false,
 				showActionButton: true,
-				actionLabel: 'Set up deposits',
+				actionLabel: 'Set up payouts',
 				visible: true,
 				time: '2 minutes',
 			} )
@@ -275,7 +275,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 				expanded: true,
 				isDismissable: false,
 				showActionButton: true,
-				actionLabel: 'Set up deposits',
+				actionLabel: 'Set up payouts',
 				visible: true,
 				time: '2 minutes',
 			} )

@@ -119,7 +119,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 	const nextDepositHelpContent = (
 		<>
 			{ __(
-				'Deposits are initiated based on the following criteria:',
+				'Payouts are initiated based on the following criteria:',
 				'woocommerce-payments'
 			) }
 			<ul>
@@ -136,7 +136,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 									rel="external noopener noreferrer"
 									target="_blank"
 									href={
-										'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#pending-period-chart'
+										'https://woocommerce.com/document/woopayments/payouts/payout-schedule/#pending-period-chart'
 									}
 								/>
 							),
@@ -156,7 +156,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 									rel="external noopener noreferrer"
 									target="_blank"
 									href={
-										'https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#available-funds'
+										'https://woocommerce.com/document/woopayments/payouts/payout-schedule/#available-funds'
 									}
 								/>
 							),
@@ -166,7 +166,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 				<li>
 					{ interpolateComponents( {
 						mixedString: __(
-							'Your {{link}}deposit schedule{{/link}} settings',
+							'Your {{link}}payout schedule{{/link}} settings',
 							'woocommerce-payments'
 						),
 						components: {
@@ -176,7 +176,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 									rel="external noopener noreferrer"
 									target="_blank"
 									href={
-										'https://woocommerce.com/document/woopayments/deposits/change-deposit-schedule/'
+										'https://woocommerce.com/document/woopayments/payouts/change-payout-schedule/'
 									}
 								/>
 							),
@@ -193,7 +193,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 			<ClickTooltip
 				content={ nextDepositHelpContent }
 				buttonIcon={ <HelpOutlineIcon /> }
-				buttonLabel={ 'Deposit schedule tooltip' }
+				buttonLabel={ 'Payout schedule tooltip' }
 			/>
 		</>
 	);

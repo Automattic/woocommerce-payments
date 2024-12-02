@@ -59,27 +59,33 @@ const LinkExpressCheckoutItem = (): React.ReactElement => {
 					<div className="express-checkout__row">
 						<div className="express-checkout__checkbox">
 							{ isWooPayEnabled ? (
-								<HoverTooltip
-									content={ __(
-										'To enable Link by Stripe, you must first disable WooPay.',
-										'woocommerce-payments'
-									) }
-								>
-									<div className="loadable-checkbox__icon">
-										<NoticeOutlineIcon />
-										<div
-											className="loadable-checkbox__icon-warning"
-											data-testid="loadable-checkbox-icon-warning"
-										>
-											<VisuallyHidden>
-												{ __(
-													'Link by Stripe cannot be enabled at checkout. Click to expand.',
+								<div className="components-base-control components-checkbox-control">
+									<div className="components-base-control__field">
+										<span className="components-checkbox-control__input-container">
+											<HoverTooltip
+												content={ __(
+													'To enable Link by Stripe, you must first disable WooPay.',
 													'woocommerce-payments'
 												) }
-											</VisuallyHidden>
-										</div>
+											>
+												<div className="loadable-checkbox__icon">
+													<NoticeOutlineIcon />
+													<div
+														className="loadable-checkbox__icon-warning"
+														data-testid="loadable-checkbox-icon-warning"
+													>
+														<VisuallyHidden>
+															{ __(
+																'Link by Stripe cannot be enabled at checkout. Click to expand.',
+																'woocommerce-payments'
+															) }
+														</VisuallyHidden>
+													</div>
+												</div>
+											</HoverTooltip>
+										</span>
 									</div>
-								</HoverTooltip>
+								</div>
 							) : (
 								<CheckboxControl
 									label={ __(

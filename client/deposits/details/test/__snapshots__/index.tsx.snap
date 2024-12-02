@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Deposit overview renders automatic deposit correctly 1`] = `
+exports[`Deposit overview renders automatic payout correctly 1`] = `
 <div>
   <div
     class="wcpay-deposit-overview"
@@ -23,7 +23,7 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
               <div
                 class="woocommerce-summary__item-label"
               >
-                Deposit date: Jan 2, 2020
+                Payout date: Jan 2, 2020
               </div>
               <div
                 class="woocommerce-summary__item-data"
@@ -37,7 +37,7 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
                     <span
                       class="woocommerce-order-status__indicator is-paid"
                     />
-                    Paid
+                    Completed (paid)
                   </div>
                 </div>
               </div>
@@ -72,6 +72,78 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
 </div>
 `;
 
+exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
+<div>
+  <div
+    class="wcpay-deposit-overview"
+  >
+    <div
+      class="components-surface components-card wcpay-deposit-automatic css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <ul>
+          <li
+            class="woocommerce-summary__item-container"
+          >
+            <div
+              class="woocommerce-summary__item"
+            >
+              <div
+                class="woocommerce-summary__item-label"
+              >
+                Withdrawal date: Jan 2, 2020
+              </div>
+              <div
+                class="woocommerce-summary__item-data"
+              >
+                <div
+                  class="woocommerce-summary__item-value"
+                >
+                  <div
+                    class="woocommerce-order-status"
+                  >
+                    <span
+                      class="woocommerce-order-status__indicator is-paid"
+                    />
+                    Completed (deducted)
+                  </div>
+                </div>
+              </div>
+              <div
+                class="wcpay-summary__item-detail"
+              >
+                MOCK BANK •••• 1234 (USD)
+              </div>
+            </div>
+          </li>
+          <li
+            class="wcpay-deposit-amount"
+          >
+            -$20.00
+          </li>
+        </ul>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Deposit overview renders instant deposit correctly 1`] = `
 <div>
   <div
@@ -79,7 +151,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
   >
     <div
       aria-describedby="woocommerce-summary-helptext-1"
-      aria-label="Deposit overview"
+      aria-label="Payout overview"
       aria-orientation="horizontal"
       role="menu"
     >
@@ -101,7 +173,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Instant deposit date: Jan 2, 2020
+              Instant payout date: Jan 2, 2020
             </div>
             <div
               class="woocommerce-summary__item-data"
@@ -115,7 +187,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
                   <span
                     class="woocommerce-order-status__indicator is-paid"
                   />
-                  Paid
+                  Completed (paid)
                 </div>
               </div>
             </div>
@@ -135,7 +207,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Deposit amount
+              Payout amount
             </div>
             <div
               class="woocommerce-summary__item-data"
@@ -179,7 +251,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Net deposit amount
+              Net payout amount
             </div>
             <div
               class="woocommerce-summary__item-data"
