@@ -85,6 +85,35 @@ describe( 'Stripe Link elements behavior', () => {
 		expect( handleButtonShow ).toHaveBeenCalled();
 	} );
 
+	test( 'Should properly clean up when cleanup function is called', async () => {
+		createStripeLinkElements();
+		const billingEmailInput = document.getElementById( 'billing_email' );
+		const removeEventListenerSpy = jest.spyOn(
+			billingEmailInput,
+			'removeEventListener'
+		);
+		const removeLinkButtonSpy = jest.spyOn(
+			document.querySelector( '.wcpay-stripelink-modal-trigger' ),
+			'remove'
+		);
+
+		const cleanup = await enableStripeLinkPaymentMethod( {
+			api: WCPayAPI(),
+			emailId: 'billing_email',
+			onAutofill: () => null,
+			onButtonShow: () => null,
+		} );
+
+		// Call the cleanup function
+		cleanup();
+
+		expect( removeEventListenerSpy ).toHaveBeenCalledWith(
+			'keyup',
+			expect.any( Function )
+		);
+		expect( removeLinkButtonSpy ).toHaveBeenCalled();
+	} );
+
 	function createStripeLinkElements() {
 		// Create the input field
 		const billingEmailInput = document.createElement( 'input' );
