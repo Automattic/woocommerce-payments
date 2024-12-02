@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.6.0 - 2024-12-04 =
+= 8.6.0-test-3 - unreleased =
 * Add - Add Bank reference key column in Payout reports. This will help reconcile WooPayments Payouts with bank statements.
 * Add - Display credit card brand icons on order received page.
 * Fix - Add support to load stripe js asynchronously when it is not immediately available in the global scope.
