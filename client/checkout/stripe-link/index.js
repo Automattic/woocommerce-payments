@@ -51,7 +51,7 @@ const enableStripeLinkPaymentMethod = async ( options ) => {
 	const emailField = document.getElementById( options.emailId );
 
 	if ( ! emailField ) {
-		return;
+		return Promise.resolve( () => null );
 	}
 
 	const stripe = await options.api.getStripe();
