@@ -154,7 +154,7 @@ describe( 'Deposits list', () => {
 			reporting: {
 				exportModalDismissed: true,
 			},
-			dateFormat: 'M j, Y',
+			dateFormat: 'M j Y',
 		};
 	} );
 

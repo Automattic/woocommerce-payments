@@ -559,7 +559,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       data-link-type="wc-admin"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
                     >
-                      Jan 4, 2020
+                      Jan 4 2020
                     </a>
                   </td>
                   <td
@@ -1247,7 +1247,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       data-link-type="wc-admin"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
                     >
-                      Jan 4, 2020
+                      Jan 4 2020
                     </a>
                   </td>
                   <td
