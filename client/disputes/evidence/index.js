@@ -477,7 +477,7 @@ export default ( { query } ) => {
 		);
 
 	const confirmationNavigationCallback = useConfirmNavigation( () => {
-		if ( pristine ) {
+		if ( pristine || redirectAfterSave ) {
 			return;
 		}
 
@@ -490,6 +490,7 @@ export default ( { query } ) => {
 	useEffect( confirmationNavigationCallback, [
 		pristine,
 		confirmationNavigationCallback,
+		redirectAfterSave,
 	] );
 
 	useEffect( () => {
