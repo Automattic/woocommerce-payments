@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Add support to load stripe js asynchronously when it is not immediately available in the global scope.
