@@ -323,7 +323,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$is_inquiry = strpos( $status, 'warning' ) === 0;
+		$is_inquiry = strpos( $status, 'warning_' ) === 0;
 		$note       = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
