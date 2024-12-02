@@ -32,6 +32,7 @@ import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
+import { SHORTCODE_BILLING_ADDRESS_FIELDS } from '../constants';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -242,7 +243,9 @@ jQuery( function ( $ ) {
 
 			const billingInput = upeElement
 				?.closest( 'form.checkout' )
-				?.querySelector( '[name="billing_country"]' );
+				?.querySelector(
+					`[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]`
+				);
 			if ( billingInput ) {
 				// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
 				$( billingInput ).on( 'change', function () {

@@ -219,7 +219,7 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 		return false;
 	}
 
-	return newPaymentTokenInput !== null && ! newPaymentTokenInput.checked;
+	return ! newPaymentTokenInput.checked;
 }
 
 export function dispatchChangeEventFor( element ) {
