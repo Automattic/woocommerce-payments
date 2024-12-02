@@ -584,7 +584,10 @@ class WC_Payments {
 
 			$split_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service );
 
-			$split_gateway->init_hooks();
+			// Card gateway hooks are registered once below.
+			if ( Main_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $payment_method->get_id() ) {
+				$split_gateway->init_hooks();
+			}
 
 			self::$payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 		}
@@ -592,6 +595,7 @@ class WC_Payments {
 		self::$main_gateway         = self::get_payment_gateway_by_id( Main_Payment_Method::PAYMENT_METHOD_STRIPE_ID );
 		self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 
+		self::$main_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
