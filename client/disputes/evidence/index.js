@@ -455,6 +455,8 @@ export default ( { query } ) => {
 	const [ dispute, setDispute ] = useState();
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
+	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
+
 	const {
 		createSuccessNotice,
 		createErrorNotice,
@@ -603,11 +605,6 @@ export default ( { query } ) => {
 		const message = submit
 			? __( 'Evidence submitted!', 'woocommerce-payments' )
 			: __( 'Evidence saved!', 'woocommerce-payments' );
-		const href = getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/disputes',
-			filter: 'awaiting_response',
-		} );
 
 		recordEvent(
 			submit
@@ -639,8 +636,19 @@ export default ( { query } ) => {
 			],
 		} );
 
-		window.location.replace( href );
+		setRedirectAfterSave( true );
 	};
+
+	useEffect( () => {
+		if ( redirectAfterSave && pristine ) {
+			const href = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} );
+			window.location.replace( href );
+		}
+	}, [ redirectAfterSave, pristine ] );
 
 	const handleSaveError = ( err, submit ) => {
 		recordEvent(
