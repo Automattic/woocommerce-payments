@@ -11,7 +11,7 @@
 .payment-details-summary {
 	display: flex;
 	flex: 1;
-	@include breakpoint( '<660px' ) {
+	@media screen and ( max-width: $break-medium ) {
 		flex-direction: column;
 	}
 
@@ -109,7 +109,7 @@
 		justify-content: initial;
 		flex-direction: column;
 		flex-wrap: nowrap;
-		@include breakpoint( '>660px' ) {
+		@media screen and ( min-width: $break-medium ) {
 			justify-content: flex-start;
 			align-items: flex-end;
 		}
