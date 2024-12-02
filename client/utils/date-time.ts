@@ -8,7 +8,6 @@ type DateTimeFormat = string | null;
 
 interface FormatDateTimeOptions {
 	includeTime?: boolean; // Whether to include time in the formatted string (defaults to false)
-	useGmt?: boolean; // Whether to display the time in GMT/UTC (defaults to false)
 	separator?: string; // Separator between date and time (defaults to ' / ')
 	customFormat?: DateTimeFormat; // Custom format to use instead of WordPress settings
 }
@@ -26,7 +25,6 @@ export function formatDateTimeFromString(
 	const {
 		customFormat = null,
 		includeTime = false,
-		useGmt = false,
 		separator = ' / ',
 	} = options;
 
@@ -41,7 +39,7 @@ export function formatDateTimeFromString(
 				: ''
 		}`;
 
-	return dateI18n( format, utcDateTime, useGmt );
+	return dateI18n( format, utcDateTime );
 }
 
 /**

@@ -715,7 +715,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										.utc( authorization.created )
 										.add( 7, 'days' )
 										.toISOString(),
-									{ useGmt: true, includeTime: true }
+									{ includeTime: true }
 								) }
 							>
 								<b>

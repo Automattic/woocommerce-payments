@@ -31,10 +31,7 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 		} );
 
 		const formattedDateAvailable = formatDateTimeFromString(
-			dateAvailable,
-			{
-				useGmt: true, // TODO: should we allow user settings
-			}
+			dateAvailable
 		);
 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}

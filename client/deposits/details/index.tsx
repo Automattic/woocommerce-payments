@@ -5,7 +5,6 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import {
 	Card,
 	CardBody,
@@ -111,9 +110,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 			key="depositDate"
 			label={
 				`${ depositDateLabel }: ` +
-				formatDateTimeFromString( deposit.date, {
-					useGmt: true,
-				} )
+				formatDateTimeFromString( deposit.date )
 			}
 			value={ <Status status={ deposit.status } /> }
 			detail={ deposit.bankAccount }

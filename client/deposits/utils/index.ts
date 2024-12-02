@@ -10,11 +10,7 @@ interface DepositObject {
 }
 
 export const getDepositDate = ( deposit?: DepositObject | null ): string =>
-	deposit
-		? formatDateTimeFromString( deposit?.date as string, {
-				useGmt: true,
-		  } )
-		: '—';
+	deposit ? formatDateTimeFromString( deposit?.date as string ) : '—';
 
 interface GetDepositMonthlyAnchorLabelProps {
 	monthlyAnchor: number;

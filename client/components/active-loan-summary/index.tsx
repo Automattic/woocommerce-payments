@@ -211,8 +211,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 								'woocommerce-payments'
 							),
 							formatDateTimeFromTimestamp(
-								details.current_repayment_interval.due_at,
-								{ useGmt: true }
+								details.current_repayment_interval.due_at
 							)
 						) }
 					>
@@ -249,8 +248,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 						title={ __( 'Loan disbursed', 'woocommerce-payments' ) }
 					>
 						{ formatDateTimeFromTimestamp(
-							details.advance_paid_out_at,
-							{ useGmt: true }
+							details.advance_paid_out_at
 						) }
 					</Block>
 					<Block
@@ -276,8 +274,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 						title={ __( 'First paydown', 'woocommerce-payments' ) }
 					>
 						{ formatDateTimeFromTimestamp(
-							details.repayments_begin_at,
-							{ useGmt: true }
+							details.repayments_begin_at
 						) }
 					</Block>
 				</Flex>

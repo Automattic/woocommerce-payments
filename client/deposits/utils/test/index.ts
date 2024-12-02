@@ -14,8 +14,18 @@ declare const global: {
 	};
 };
 
+// Mock dateI18n
+jest.mock( '@wordpress/date', () => ( {
+	dateI18n: jest.fn( ( format, date ) => {
+		return jest
+			.requireActual( '@wordpress/date' )
+			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
+	} ),
+} ) );
+
 describe( 'Deposits Overview Utils / getDepositDate', () => {
 	beforeEach( () => {
+		jest.clearAllMocks();
 		global.wcpaySettings = {
 			dateFormat: 'F j, Y',
 		};

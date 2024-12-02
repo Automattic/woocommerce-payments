@@ -11,11 +11,25 @@ import { render } from '@testing-library/react';
  */
 import Deposit from '../deposit';
 
+// Mock dateI18n
+jest.mock( '@wordpress/date', () => ( {
+	dateI18n: jest.fn( ( format, date ) => {
+		return jest
+			.requireActual( '@wordpress/date' )
+			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
+	} ),
+} ) );
+
 describe( 'Deposit', () => {
 	beforeEach( () => {
 		// Mock the window.wcpaySettings property
 		window.wcpaySettings.dateFormat = 'M j, Y';
 		window.wcpaySettings.timeFormat = 'g:i a';
+	} );
+
+	afterEach( () => {
+		// Reset the mock
+		jest.clearAllMocks();
 	} );
 
 	test( 'renders with date and deposit available', () => {

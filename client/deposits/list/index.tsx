@@ -8,7 +8,6 @@ import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
 import { useMemo } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import {
@@ -135,9 +134,7 @@ export const DepositsList = (): JSX.Element => {
 				href={ getDetailsURL( deposit.id, 'deposits' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
-				{ formatDateTimeFromString( deposit.date, {
-					useGmt: true,
-				} ) }
+				{ formatDateTimeFromString( deposit.date ) }
 			</Link>
 		);
 
@@ -326,9 +323,7 @@ export const DepositsList = (): JSX.Element => {
 				row[ 0 ],
 				{
 					...row[ 1 ],
-					value: formatDateTimeFromString( row[ 1 ].value as string, {
-						useGmt: true,
-					} ),
+					value: formatDateTimeFromString( row[ 1 ].value as string ),
 				},
 				...row.slice( 2 ),
 			] );

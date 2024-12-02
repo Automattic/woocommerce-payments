@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { dateI18n } from '@wordpress/date';
-
-/**
  * Internal dependencies
  */
 import {
@@ -16,7 +11,7 @@ jest.mock( '@wordpress/date', () => ( {
 	dateI18n: jest.fn( ( format, date ) => {
 		return jest
 			.requireActual( '@wordpress/date' )
-			.dateI18n( format, date, 'UTC' ); // Force UTC
+			.dateI18n( format, date, 'UTC' ); // Force UTC by default
 	} ),
 } ) );
 
@@ -71,10 +66,30 @@ describe( 'Date/Time Formatting', () => {
 
 		it( 'should handle GMT/UTC setting correctly when useGmt is true', () => {
 			const dateTime = '2024-10-23 15:28:26Z';
-			const options = { useGmt: true, includeTime: true };
+			const options = { includeTime: true };
 			const formatted = formatDateTimeFromString( dateTime, options );
 
 			expect( formatted ).toBe( '2024-10-23 / 15:28' );
+		} );
+
+		it( 'should handle different timezones correctly', () => {
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			const dateI18n = require( '@wordpress/date' ).dateI18n;
+			// Temporarily modify the mock to use a different timezone: America/New_York
+			dateI18n.mockImplementationOnce(
+				( format: string, date: string | number ) => {
+					return jest
+						.requireActual( '@wordpress/date' )
+						.dateI18n( format, date, 'America/New_York' );
+				}
+			);
+
+			const dateTime = '2024-10-23 15:28:26';
+			const formatted = formatDateTimeFromString( dateTime, {
+				includeTime: true,
+			} );
+
+			expect( formatted ).toBe( '2024-10-23 / 11:28' );
 		} );
 	} );
 
@@ -90,7 +105,7 @@ describe( 'Date/Time Formatting', () => {
 
 		it( 'should use custom format if provided', () => {
 			const timestamp = 1729766906; // 2024-10-23 10:48:26 UTC
-			const options = { customFormat: 'd-m-Y H:i:s', useGmt: true };
+			const options = { customFormat: 'd-m-Y H:i:s' };
 			const formatted = formatDateTimeFromTimestamp( timestamp, options );
 
 			expect( formatted ).toBe( '24-10-2024 10:48:26' );
@@ -98,8 +113,7 @@ describe( 'Date/Time Formatting', () => {
 
 		it( 'should exclude time if includeTime is set to false', () => {
 			const timestamp = 1729766906; // 2024-10-23 10:48:26 UTC
-			const options = { useGmt: true };
-			const formatted = formatDateTimeFromTimestamp( timestamp, options );
+			const formatted = formatDateTimeFromTimestamp( timestamp );
 
 			expect( formatted ).toBe( '2024-10-24' );
 		} );
@@ -108,12 +122,32 @@ describe( 'Date/Time Formatting', () => {
 			const timestamp = 1729766906; // 2024-10-23 10:48:26 UTC
 			const options = {
 				separator: ' - ',
-				useGmt: true,
 				includeTime: true,
 			};
 			const formatted = formatDateTimeFromTimestamp( timestamp, options );
 
 			expect( formatted ).toBe( '2024-10-24 - 10:48' );
+		} );
+
+		it( 'should handle different timezones correctly', () => {
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			const dateI18n = require( '@wordpress/date' ).dateI18n;
+			// Temporarily modify the mock to use a different timezone: America/New_York
+			dateI18n.mockImplementationOnce(
+				( format: string, date: string | number ) => {
+					return jest
+						.requireActual( '@wordpress/date' )
+						.dateI18n( format, date, 'America/New_York' );
+				}
+			);
+
+			const timestamp = 1729766906; // 2024-10-24 10:48:26 UTC
+			const formatted = formatDateTimeFromTimestamp( timestamp, {
+				includeTime: true,
+			} );
+
+			// In New York (EDT), this should be 4 hours behind UTC
+			expect( formatted ).toBe( '2024-10-24 / 06:48' );
 		} );
 	} );
 } );
