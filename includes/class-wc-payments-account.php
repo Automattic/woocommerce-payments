@@ -682,8 +682,50 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		// We use the locale for the current user (defaults to the site locale).
 		$recommended_pms = $this->onboarding_service->get_recommended_payment_methods( $country_code, get_user_locale() );
+		$recommended_pms = is_array( $recommended_pms ) ? array_values( $recommended_pms ) : [];
 
-		return is_array( $recommended_pms ) ? array_values( $recommended_pms ) : [];
+		// Validate the recommended payment methods.
+		// Each must have an ID and a title.
+		$recommended_pms = array_filter(
+			$recommended_pms,
+			function ( $pm ) {
+				return isset( $pm['id'] ) && isset( $pm['title'] );
+			}
+		);
+
+		// Standardize/normalize.
+		// Determine if the payment method should be recommended as enabled.
+		$recommended_pms = array_map(
+			function ( $pm ) {
+				if ( ! isset( $pm['enabled'] ) ) {
+					// Default to enabled since this is a recommended list.
+					$pm['enabled'] = true;
+					// Look at the type, if available, to determine if it should be enabled.
+					if ( isset( $pm['type'] ) ) {
+						$pm['enabled'] = 'available' !== $pm['type'];
+					}
+				}
+
+				return $pm;
+			},
+			$recommended_pms
+		);
+		// Fill in the priority entries with a fallback to the index of the recommendation in the list.
+		$recommended_pms = array_map(
+			function ( $pm, $index ) {
+				if ( ! isset( $pm['priority'] ) ) {
+					$pm['priority'] = $index;
+				} else {
+					$pm['priority'] = intval( $pm['priority'] );
+				}
+
+				return $pm;
+			},
+			$recommended_pms,
+			array_keys( $recommended_pms )
+		);
+
+		return $recommended_pms;
 	}
 
 	/**
