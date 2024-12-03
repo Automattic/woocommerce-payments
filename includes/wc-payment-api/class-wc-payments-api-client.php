@@ -455,32 +455,25 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Get recommended payment methods for a given country.
+	 * Fetch account recommended payment methods data for a given country.
 	 *
-	 * @param string $country_code Country code.
+	 * @param string $country_code The account's business location country code. Provide a 2-letter ISO country code.
+	 * @param string $locale       Optional. The locale to instruct the platform to use for i18n.
 	 *
-	 * @return array
-	 * @throws API_Exception
+	 * @return array The recommended payment methods data.
+	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_recommended_payment_methods( string $country_code ): array {
-		$payment_methods = \WC_Payments::get_database_cache()->get_or_add(
-			Database_Cache::RECOMMENDED_PAYMENT_METHODS . '_' . $country_code,
-			function () use ( $country_code ) {
-				try {
-					$filters                 = [];
-					$filters['country_code'] = $country_code;
-					$filters['locale']       = get_locale();
-					return $this->request( $filters, self::RECOMMENDED_PAYMENT_METHODS, self::GET, false );
-				} catch ( API_Exception $e ) {
-					// Log the error and return an empty array.
-					Logger::error( 'Failed to fetch recommended payment methods.', [ 'error' => $e ] );
-					return [];
-				}
-			},
-			'is_array'
+	public function get_recommended_payment_methods( string $country_code, string $locale = '' ): array {
+		return $this->request(
+			[
+				'country_code' => $country_code,
+				'locale'       => $locale,
+			],
+			self::RECOMMENDED_PAYMENT_METHODS,
+			self::GET,
+			// This route is used pre-onboarding and doesn't require a connected store.
+			false
 		);
-
-		return $payment_methods ?? [];
 	}
 
 	/**

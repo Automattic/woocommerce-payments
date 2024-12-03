@@ -666,6 +666,27 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Get the account recommended payment methods to use during onboarding.
+	 *
+	 * @param string $country_code The account's business location country code. Provide a 2-letter ISO country code.
+	 *
+	 * @return array List of recommended payment methods for the given country.
+	 *               Empty array if there are no recommendations, we failed to retrieve recommendations,
+	 *               or the country is not supported by WooPayments.
+	 */
+	public function get_recommended_payment_methods( string $country_code ): array {
+		// Return early if the country is not supported.
+		if ( ! array_key_exists( $country_code, $this->get_supported_countries() ) ) {
+			return [];
+		}
+
+		// We use the locale for the current user (defaults to the site locale).
+		$recommended_pms = $this->onboarding_service->get_recommended_payment_methods( $country_code, get_user_locale() );
+
+		return is_array( $recommended_pms ) ? $recommended_pms : [];
+	}
+
+	/**
 	 * Gets the account live mode value.
 	 *
 	 * @return bool|null Account is_live value.

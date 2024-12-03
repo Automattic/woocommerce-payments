@@ -4501,15 +4501,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Get recommended payment methods for a given country.
+	 * Get the recommended payment methods list.
 	 *
-	 * @param string $country_code Country code.
+	 * @param string $country_code The business location country code. Provide a 2-letter ISO country code.
 	 *
-	 * @return array
-	 * @throws API_Exception
+	 * @return array List of recommended payment methods for the given country.
+	 *               Empty array if there are no recommendations available.
 	 */
-	public function get_recommended_payment_methods( string $country_code ) {
-		return $this->payments_api_client->get_recommended_payment_methods( $country_code );
+	public function get_recommended_payment_methods( string $country_code ): array {
+		return $this->account->get_recommended_payment_methods( $country_code );
 	}
 
 	/**
