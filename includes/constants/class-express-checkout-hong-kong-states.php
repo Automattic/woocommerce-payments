@@ -20,6 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * More info in pc4etw-bY-p2.
  *
+ * Note: The following code has been kindly sourced from the WooCommerce Stripe Payment Gateway implementation,
+ * which addresses the same issue in that plugin. See https://github.com/woocommerce/woocommerce-gateway-stripe/pull/1593.
+ *
  * @since x.x.x
  */
 class Express_Checkout_Hong_Kong_States {
