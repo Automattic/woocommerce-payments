@@ -26,7 +26,6 @@ import request from '../../../checkout/utils/request';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { recordUserEvent } from 'tracks';
 import './style.scss';
-import { compare } from 'compare-versions';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const errorId = 'invalid-woopay-phone-number';
@@ -57,12 +56,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	);
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
-	const wooCommerceVersionString = window.wcSettings?.wcVersion;
-	const wcVersionGreaterThan91 = compare(
-		wooCommerceVersionString,
-		'9.1',
-		'>='
-	);
 
 	useEffect( () => {
 		if ( ! isBlocksCheckout ) {
@@ -291,10 +284,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	}
 
 	return (
-		<Container
-			isBlocksCheckout={ isBlocksCheckout }
-			wcVersionGreaterThan91={ wcVersionGreaterThan91 }
-		>
+		<Container isBlocksCheckout={ isBlocksCheckout }>
 			<div className="save-details">
 				<div className="save-details-header">
 					<div
@@ -313,10 +303,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								id="save_user_in_woopay"
 								value="true"
 								className={ `save-details-checkbox ${
-									wcVersionGreaterThan91
-										? 'without-margin-right'
-										: ''
-								} ${
 									isBlocksCheckout
 										? 'wc-block-components-checkbox__input'
 										: ''

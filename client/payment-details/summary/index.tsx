@@ -257,37 +257,41 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				<Flex direction="row" align="start">
 					<div className="payment-details-summary">
 						<div className="payment-details-summary__section">
-							<p className="payment-details-summary__amount">
-								<Loadable
-									isLoading={ isLoading }
-									placeholder={ __(
-										'Amount placeholder',
-										'woocommerce-payments'
-									) }
-								>
-									{ formattedAmount }
-									<span className="payment-details-summary__amount-currency">
-										{ charge.currency || 'USD' }
-									</span>
-									{ charge.dispute ? (
-										<DisputeStatusChip
-											status={ charge.dispute.status }
-											dueBy={
-												charge.dispute.evidence_details
-													?.due_by
-											}
-											prefixDisputeType={ true }
-										/>
-									) : (
-										<PaymentStatusChip
-											status={ getChargeStatus(
-												charge,
-												paymentIntent
-											) }
-										/>
-									) }
-								</Loadable>
-							</p>
+							<div className="payment-details-summary__amount-wrapper">
+								<p className="payment-details-summary__amount">
+									<Loadable
+										isLoading={ isLoading }
+										placeholder={ __(
+											'Amount placeholder',
+											'woocommerce-payments'
+										) }
+									>
+										{ formattedAmount }
+										<span className="payment-details-summary__amount-currency">
+											{ charge.currency || 'USD' }
+										</span>
+									</Loadable>
+								</p>
+								{ charge.dispute ? (
+									<DisputeStatusChip
+										className="payment-details-summary__status"
+										status={ charge.dispute.status }
+										dueBy={
+											charge.dispute.evidence_details
+												?.due_by
+										}
+										prefixDisputeType={ true }
+									/>
+								) : (
+									<PaymentStatusChip
+										className="payment-details-summary__status"
+										status={ getChargeStatus(
+											charge,
+											paymentIntent
+										) }
+									/>
+								) }
+							</div>
 							<div className="payment-details-summary__breakdown">
 								{ renderStorePrice ? (
 									<p className="payment-details-summary__breakdown__settlement-currency">

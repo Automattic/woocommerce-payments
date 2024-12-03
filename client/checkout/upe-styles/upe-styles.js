@@ -55,6 +55,7 @@ const borderOutlineBackgroundProps = [
 ];
 const upeSupportedProperties = {
 	'.Label': [ ...paddingColorProps, ...textFontTransitionProps ],
+	'.Text': [ ...paddingColorProps, ...textFontTransitionProps ],
 	'.Input': [
 		...paddingColorProps,
 		...textFontTransitionProps,
@@ -112,4 +113,6 @@ export const upeRestrictedProperties = {
 	'.TabLabel': upeSupportedProperties[ '.TabLabel' ],
 	'.Block': upeSupportedProperties[ '.Block' ],
 	'.Container': upeSupportedProperties[ '.Container' ],
+	'.Text': upeSupportedProperties[ '.Text' ],
+	'.Text--redirect': upeSupportedProperties[ '.Text' ],
 };

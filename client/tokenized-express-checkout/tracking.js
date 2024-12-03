@@ -17,20 +17,29 @@ export const trackExpressCheckoutButtonClick = ( paymentMethod, source ) => {
 	recordUserEvent( event, { source } );
 };
 
+const debouncedTrackApplePayButtonLoad = debounce( ( { source } ) => {
+	recordUserEvent( 'applepay_button_load', { source } );
+}, 1000 );
+
+const debouncedTrackGooglePayButtonLoad = debounce( ( { source } ) => {
+	recordUserEvent( 'gpay_button_load', { source } );
+}, 1000 );
+
 // Track the button load event.
-export const trackExpressCheckoutButtonLoad = debounce(
-	( { paymentMethods, source } ) => {
-		const expressPaymentTypeEvents = {
-			googlePay: 'gpay_button_load',
-			applePay: 'applepay_button_load',
-		};
+export const trackExpressCheckoutButtonLoad = ( {
+	paymentMethods,
+	source,
+} ) => {
+	const expressPaymentTypeEvents = {
+		googlePay: debouncedTrackGooglePayButtonLoad,
+		applePay: debouncedTrackApplePayButtonLoad,
+	};
 
-		for ( const paymentMethod of paymentMethods ) {
-			const event = expressPaymentTypeEvents[ paymentMethod ];
-			if ( ! event ) continue;
+	for ( const paymentMethod of paymentMethods ) {
+		const debouncedTrackFunction =
+			expressPaymentTypeEvents[ paymentMethod ];
+		if ( ! debouncedTrackFunction ) continue;
 
-			recordUserEvent( event, { source } );
-		}
-	},
-	1000
-);
+		debouncedTrackFunction( { source } );
+	}
+};
