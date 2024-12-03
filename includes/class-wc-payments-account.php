@@ -683,7 +683,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// We use the locale for the current user (defaults to the site locale).
 		$recommended_pms = $this->onboarding_service->get_recommended_payment_methods( $country_code, get_user_locale() );
 
-		return is_array( $recommended_pms ) ? $recommended_pms : [];
+		return is_array( $recommended_pms ) ? array_values( $recommended_pms ) : [];
 	}
 
 	/**
