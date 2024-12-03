@@ -59,7 +59,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Builds the line items to pass to Payment Request
+	 * Builds the line items to pass to Express Checkout
 	 *
 	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
 	 */
@@ -182,7 +182,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return int
 	 */
 	public function get_quantity() {
-		// Payment Request Button sends the quantity as qty. WooPay sends it as quantity.
+		// Express Checkout Element sends the quantity as qty. WooPay sends it as quantity.
 		if ( isset( $_POST['quantity'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return absint( $_POST['quantity'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		} elseif ( isset( $_POST['qty'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -373,7 +373,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// If no SSL, bail.
 		if ( ! WC_Payments::mode()->is_test() && ! is_ssl() ) {
-			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
+			Logger::log( 'Stripe Express Checkout live mode requires SSL.' );
 
 			return false;
 		}
@@ -618,7 +618,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 	/**
 	 * Restores the shipping methods previously chosen for each recurring cart after shipping was reset and recalculated
-	 * during the Payment Request get_shipping_options flow.
+	 * during the Express Checkout get_shipping_options flow.
 	 *
 	 * When the cart contains multiple subscriptions with different billing periods, customers are able to select different shipping
 	 * methods for each subscription, however, this is not supported when purchasing with Apple Pay and Google Pay as it's
@@ -888,7 +888,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return $state;
 		}
 
-		// Try to match state from the Payment Request API list of states.
+		// Try to match state from the Express Checkout API list of states.
 		$state = $this->get_normalized_state_from_ece_states( $state, $country );
 
 		// If it's normalized, return.
@@ -969,7 +969,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Get normalized state from Payment Request API dropdown list of states.
+	 * Get normalized state from Express Checkout API dropdown list of states.
 	 *
 	 * @param string $state Full state name or state code.
 	 * @param string $country Two-letter country code.
@@ -987,7 +987,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		foreach ( $pr_states[ $country ] as $wc_state_abbr => $pr_state ) {
 			$sanitized_state_string = $this->sanitize_string( $state );
-			// Checks if input state matches with Payment Request state code (0), name (1) or localName (2).
+			// Checks if input state matches with Express Checkout state code (0), name (1) or localName (2).
 			if (
 				( ! empty( $pr_state[0] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[0] ) ) ||
 				( ! empty( $pr_state[1] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[1] ) ) ||

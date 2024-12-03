@@ -204,7 +204,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
 		}
 
-		// If automatically generate username/password are disabled, the Payment Request API
+		// If automatically generate username/password are disabled, the Express Checkout API
 		// can't include any of those fields, so account creation is not possible.
 		return (
 			$is_signup_from_checkout_allowed &&
