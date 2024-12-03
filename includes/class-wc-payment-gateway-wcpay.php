@@ -4503,7 +4503,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Get the recommended payment methods list.
 	 *
-	 * @param string $country_code The business location country code. Provide a 2-letter ISO country code.
+	 * @param string $country_code Optional. The business location country code. Provide a 2-letter ISO country code.
+	 *                             If not provided, the account country will be used if the account is connected.
+	 *                             Otherwise, the store's base country will be used.
 	 *
 	 * @return array List of recommended payment methods for the given country.
 	 *               Empty array if there are no recommendations available.
@@ -4511,9 +4513,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *               - @string id: The payment method ID.
 	 *               - @string title: The payment method title/name.
 	 *               - @bool enabled: Whether the payment method is enabled.
-	 *               - @int priority: The priority of the payment method.
+	 *               - @int order/priority: The order/priority of the payment method.
 	 */
-	public function get_recommended_payment_methods( string $country_code ): array {
+	public function get_recommended_payment_methods( string $country_code = '' ): array {
+		if ( empty( $country_code ) ) {
+			// If the account is connected, use the account country.
+			if ( $this->account->is_provider_connected() ) {
+				$country_code = $this->get_account_country();
+			} else {
+				// If the account is not connected, use the store's base country.
+				$country_code = WC()->countries->get_base_country();
+			}
+		}
+
 		return $this->account->get_recommended_payment_methods( $country_code );
 	}
 
