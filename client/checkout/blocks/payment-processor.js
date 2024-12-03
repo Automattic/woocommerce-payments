@@ -32,6 +32,7 @@ import {
 	PAYMENT_METHOD_ERROR,
 	PAYMENT_METHOD_NAME_CARD,
 } from 'wcpay/checkout/constants';
+import { registerElementsComponent } from 'wcpay/components/upe-appearance-editor';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -83,6 +84,10 @@ const PaymentProcessor = ( {
 		setShippingAddress,
 		setBillingAddress,
 	} = useCustomerData();
+
+	useEffect( () => {
+		registerElementsComponent( elements, 'blocks_checkout' );
+	}, [ elements ] );
 
 	useEffect( () => {
 		if (

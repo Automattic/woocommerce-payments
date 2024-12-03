@@ -32,6 +32,10 @@ import {
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
 	PAYMENT_METHOD_ERROR,
 } from 'wcpay/checkout/constants';
+import {
+	initializeUpeAppearanceEditor,
+	registerElementsComponent,
+} from 'wcpay/components/upe-appearance-editor';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
@@ -62,9 +66,14 @@ async function initializeAppearance( api, elementsLocation ) {
 	const upeConfigProperty =
 		upeConfigMap[ elementsLocation ] ?? 'upeAppearance';
 	const appearance = getUPEConfig( upeConfigProperty );
+
 	if ( appearance ) {
+		initializeUpeAppearanceEditor( appearance, elementsLocation, api );
 		return Promise.resolve( appearance );
 	}
+
+	const computedAppearance = getAppearance( elementsLocation );
+	initializeUpeAppearanceEditor( computedAppearance, elementsLocation, api );
 
 	return await api.saveUPEAppearance(
 		getAppearance( elementsLocation ),
@@ -277,6 +286,9 @@ async function createStripePaymentElement(
 	const stripe = await api.getStripeForUPE( paymentMethodType );
 
 	const elements = stripe.elements( options );
+
+	registerElementsComponent( elements, elementsLocation );
+
 	const createdStripePaymentElement = elements.create( 'payment', {
 		...getUpeSettings(),
 		wallets: {
@@ -504,12 +516,16 @@ export async function mountStripePaymentMethodMessagingElement(
 
 	try {
 		const stripe = await api.getStripe();
-		const paymentMethodMessagingElement = stripe
-			.elements( {
-				appearance: appearance,
-				fonts: getFontRulesFromPage(),
-			} )
-			.create( 'paymentMethodMessaging', {
+		const elements = stripe.elements( {
+			appearance: appearance,
+			fonts: getFontRulesFromPage(),
+		} );
+
+		registerElementsComponent( elements, location );
+
+		const paymentMethodMessagingElement = elements.create(
+			'paymentMethodMessaging',
+			{
 				currency: cartData.currency,
 				amount: normalizeCurrencyToMinorUnit(
 					cartData.amount,
@@ -518,7 +534,8 @@ export async function mountStripePaymentMethodMessagingElement(
 				countryCode: cartData.country, // Customer's country or base country of the store.
 				paymentMethodTypes: [ paymentMethodType ],
 				displayType: 'promotional_text',
-			} );
+			}
+		);
 
 		return paymentMethodMessagingElement.mount( domElement );
 	} finally {

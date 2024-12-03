@@ -7,6 +7,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import apiRequest from 'wcpay/checkout/utils/request';
+// import { initializeUpeAppearanceEditor } from 'wcpay/components/upe-appearance-editor';
 
 const elementsLocations = {
 	bnplProductPage: {
@@ -32,15 +33,22 @@ const elementsLocations = {
 async function initializeAppearance( api, location ) {
 	const { configKey, appearanceKey } = elementsLocations[ location ];
 
+	// TODO: this does not work as expected, config is always null in Product page and Cart so it always re-computes.
 	const appearance = getUPEConfig( configKey );
 	if ( appearance ) {
+		// initializeUpeAppearanceEditor( appearance, appearanceKey, api, [
+		// 	'pmme',
+		// ] );
 		return Promise.resolve( appearance );
 	}
 
-	return await api.saveUPEAppearance(
-		getAppearance( appearanceKey ),
-		appearanceKey
-	);
+	const computedAppearance = getAppearance( appearanceKey );
+
+	// initializeUpeAppearanceEditor( computedAppearance, appearanceKey, api, [
+	// 	'pmme',
+	// ] );
+
+	return await api.saveUPEAppearance( computedAppearance, appearanceKey );
 }
 
 export const initializeBnplSiteMessaging = async () => {

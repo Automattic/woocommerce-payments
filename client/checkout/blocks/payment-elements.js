@@ -17,6 +17,7 @@ import { useFingerprint } from './hooks';
 import { LoadableBlock } from 'wcpay/components/loadable';
 import PaymentProcessor from './payment-processor';
 import { getPaymentMethodTypes } from 'wcpay/checkout/utils/upe';
+import { initializeUpeAppearanceEditor } from 'wcpay/components/upe-appearance-editor';
 
 const PaymentElements = ( { api, ...props } ) => {
 	const stripeForUPE = useStripeForUPE( api, props.paymentMethodId );
@@ -43,11 +44,18 @@ const PaymentElements = ( { api, ...props } ) => {
 				upeAppearance,
 				'blocks_checkout'
 			);
+			initializeUpeAppearanceEditor(
+				upeAppearance,
+				'blocks_checkout',
+				api
+			);
 			setAppearance( upeAppearance );
 		}
 
 		if ( ! appearance ) {
 			generateUPEAppearance();
+		} else {
+			initializeUpeAppearanceEditor( appearance, 'blocks_checkout', api );
 		}
 
 		if ( fingerprintErrorMessage ) {

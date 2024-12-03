@@ -1,0 +1,44 @@
+.upe-appearance-editor {
+	position: fixed;
+	width: 500px;
+	height: 500px;
+
+	&.bottom-left {
+		bottom: 10px;
+		left: 10px;
+	}
+
+	&.bottom-right {
+		bottom: 10px;
+		right: 10px;
+	}
+
+	&.top-left {
+		top: 10px;
+		left: 10px;
+	}
+
+	&.top-right {
+		top: 10px;
+		right: 10px;
+	}
+
+	> div {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.components-card__body {
+		overflow: auto;
+	}
+
+	.components-base-control__label {
+		margin-right: 0.5rem;
+	}
+
+	.components-select-control {
+		flex-direction: row;
+		column-gap: 0.5rem;
+		align-items: end;
+	}
+}

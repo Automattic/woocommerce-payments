@@ -12,6 +12,7 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { useEffect, useState } from '@wordpress/element';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
+import { initializeUpeAppearanceEditor } from 'wcpay/components/upe-appearance-editor';
 
 const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 const PaymentMethodMessageWrapper = ( {
@@ -80,12 +81,19 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 				upeAppearance,
 				'blocks_checkout'
 			);
+			initializeUpeAppearanceEditor(
+				upeAppearance,
+				'blocks_checkout',
+				api
+			);
 			setAppearance( upeAppearance );
 			setUpeAppearanceTheme( upeAppearance.theme );
 		}
 
 		if ( ! appearance ) {
 			generateUPEAppearance();
+		} else {
+			initializeUpeAppearanceEditor( appearance, 'blocks_checkout', api );
 		}
 	}, [ api, appearance ] );
 

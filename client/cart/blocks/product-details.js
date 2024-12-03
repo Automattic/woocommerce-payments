@@ -16,6 +16,7 @@ import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../../checkout/api';
 import request from '../../checkout/utils/request';
 import { useEffect, useState } from 'react';
+import { initializeUpeAppearanceEditor } from 'wcpay/components/upe-appearance-editor';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -59,10 +60,20 @@ const ProductDetail = ( { cart, context } ) => {
 				'bnpl_cart_block'
 			);
 			setAppearance( upeAppearance );
+			initializeUpeAppearanceEditor(
+				upeAppearance,
+				'bnpl_cart_block',
+				api,
+				[ 'pmme' ]
+			);
 		}
 
 		if ( Object.keys( appearance ).length === 0 ) {
 			generateUPEAppearance();
+		} else {
+			initializeUpeAppearanceEditor( appearance, 'bnpl_cart_block', api, [
+				'pmme',
+			] );
 		}
 	}, [ appearance ] );
 
