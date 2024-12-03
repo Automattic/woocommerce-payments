@@ -26,21 +26,25 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-primary"
+                  class="chip chip-primary payment-details-summary__status"
                 >
                   Payment authorized
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -362,21 +366,25 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-warning"
+                  class="chip chip-warning payment-details-summary__status"
                 >
                   Needs review
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -708,21 +716,25 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-success"
+                  class="chip chip-success payment-details-summary__status"
                 >
                   Paid
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -1029,21 +1041,25 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-success"
+                  class="chip chip-success payment-details-summary__status"
                 >
                   Paid
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -1336,21 +1352,25 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-success"
+                  class="chip chip-success payment-details-summary__status"
                 >
                   Paid
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -1657,21 +1677,25 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-success"
+                  class="chip chip-success payment-details-summary__status"
                 >
                   Paid
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -2001,21 +2025,25 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-success"
+                  class="chip chip-success payment-details-summary__status"
                 >
                   Paid
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -2349,21 +2377,25 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-light"
+                  class="chip chip-light payment-details-summary__status"
                 >
                   Refunded
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -2647,19 +2679,23 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  USD
-                </span>
+                  
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    USD
+                  </span>
+                </p>
                 <span
-                  class="chip chip-light"
+                  class="chip chip-light payment-details-summary__status"
                 />
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -2887,21 +2923,25 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-light"
+                  class="chip chip-light payment-details-summary__status"
                 >
                   Partial refund
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -3211,21 +3251,25 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-success"
+                  class="chip chip-success payment-details-summary__status"
                 >
                   Paid
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
@@ -3532,21 +3576,25 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             <div
               class="payment-details-summary__section"
             >
-              <p
-                class="payment-details-summary__amount"
+              <div
+                class="payment-details-summary__amount-wrapper"
               >
-                $20.00
-                <span
-                  class="payment-details-summary__amount-currency"
+                <p
+                  class="payment-details-summary__amount"
                 >
-                  usd
-                </span>
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
                 <span
-                  class="chip chip-success"
+                  class="chip chip-success payment-details-summary__status"
                 >
                   Disputed: Won
                 </span>
-              </p>
+              </div>
               <div
                 class="payment-details-summary__breakdown"
               >
