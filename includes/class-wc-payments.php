@@ -347,8 +347,6 @@ class WC_Payments {
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
-		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
-
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
@@ -512,9 +510,6 @@ class WC_Payments {
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
 
-		// // Load woopay save user section if feature is enabled.
-		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_woopay' ] );
-
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
 
@@ -554,6 +549,79 @@ class WC_Payments {
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
 		self::$compatibility_service->init_hooks();
+
+		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
+
+		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
+		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
+		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
+		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
+		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
+		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
+
+		// Add note query support for source.
+		add_filter( 'woocommerce_rest_notes_object_query', [ __CLASS__, 'possibly_add_source_to_notes_query' ], 10, 2 );
+		add_filter( 'woocommerce_note_where_clauses', [ __CLASS__, 'possibly_add_note_source_where_clause' ], 10, 2 );
+
+		// Priority 5 so we can manipulate the registered gateways before they are shown.
+		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
+
+		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
+		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
+		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
+		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
+		require_once __DIR__ . '/migrations/class-link-woopay-mutual-exclusion-handler.php';
+		require_once __DIR__ . '/migrations/class-gateway-settings-sync.php';
+		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
+		require_once __DIR__ . '/migrations/class-giropay-deprecation-settings-update.php';
+		require_once __DIR__ . '/migrations/class-erase-bnpl-announcement-meta.php';
+		require_once __DIR__ . '/migrations/class-erase-deprecated-flags-and-options.php';
+		require_once __DIR__ . '/migrations/class-manual-capture-payment-method-settings-update.php';
+
+		include_once WCPAY_ABSPATH . 'includes/class-wc-payments-captured-event-note.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/fraud-prevention/class-order-fraud-and-risk-meta-box.php';
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
+
+		// Add admin screens.
+		if ( is_admin() ) {
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
+		}
+
+		// Load Stripe Billing subscription integration.
+		if ( self::should_load_stripe_billing_integration() ) {
+			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
+			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
+		}
+
+		add_action( 'init', [ __CLASS__, 'load_gateways' ] );
+
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
+			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
+		}
+
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
+
+		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
+
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
+
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
+
+		wcpay_get_container()->get( \WCPay\Internal\PluginManagement\TranslationsLoader::class )->init_hooks();
+	}
+
+	/**
+	 * Entry point for gateways initialization logic.
+	 */
+	public static function load_gateways() {
+		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
+
+		// // Load woopay save user section if feature is enabled.
+		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_woopay' ] );
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
@@ -643,31 +711,6 @@ class WC_Payments {
 			}
 		}
 
-		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
-		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
-		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
-		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
-		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
-		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
-
-		// Add note query support for source.
-		add_filter( 'woocommerce_rest_notes_object_query', [ __CLASS__, 'possibly_add_source_to_notes_query' ], 10, 2 );
-		add_filter( 'woocommerce_note_where_clauses', [ __CLASS__, 'possibly_add_note_source_where_clause' ], 10, 2 );
-
-		// Priority 5 so we can manipulate the registered gateways before they are shown.
-		add_action( 'woocommerce_admin_field_payment_gateways', [ __CLASS__, 'hide_gateways_on_settings_page' ], 5 );
-
-		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
-		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-sizes-update.php';
-		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
-		require_once __DIR__ . '/migrations/class-additional-payment-methods-admin-notes-removal.php';
-		require_once __DIR__ . '/migrations/class-link-woopay-mutual-exclusion-handler.php';
-		require_once __DIR__ . '/migrations/class-gateway-settings-sync.php';
-		require_once __DIR__ . '/migrations/class-delete-active-woopay-webhook.php';
-		require_once __DIR__ . '/migrations/class-giropay-deprecation-settings-update.php';
-		require_once __DIR__ . '/migrations/class-erase-bnpl-announcement-meta.php';
-		require_once __DIR__ . '/migrations/class-erase-deprecated-flags-and-options.php';
-		require_once __DIR__ . '/migrations/class-manual-capture-payment-method-settings-update.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -680,17 +723,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 
-		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
-
-		include_once WCPAY_ABSPATH . 'includes/class-wc-payments-captured-event-note.php';
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
-		include_once WCPAY_ABSPATH . 'includes/fraud-prevention/class-order-fraud-and-risk-meta-box.php';
-
-		// Add admin screens.
-		if ( is_admin() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			$admin = new WC_Payments_Admin(
@@ -722,30 +755,7 @@ class WC_Payments {
 			$wcpay_order_frt_meta_box->init_hooks();
 		}
 
-		// Load Stripe Billing subscription integration.
-		if ( self::should_load_stripe_billing_integration() ) {
-			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
-		}
-
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
-			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
-		}
-
-		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
-
-		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
-
-		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
-
-		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
-		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
-		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
-
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
-
-		wcpay_get_container()->get( \WCPay\Internal\PluginManagement\TranslationsLoader::class )->init_hooks();
 	}
 
 	/**
