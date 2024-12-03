@@ -81,7 +81,7 @@ class LoggerContext {
 
 		$entries = [];
 
-		if ( is_array( $this->context ) && [] !== $this->context ) {
+		if ( [] !== $this->context ) {
 			$encoded = wp_json_encode( $this->context );
 			if ( false !== $encoded ) {
 				$entries[] = sprintf( 'CONTEXT: %s', $encoded );
