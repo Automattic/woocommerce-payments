@@ -32,7 +32,7 @@ export interface Transaction {
 	transaction_id: string;
 	date: string;
 	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
-	channel: 'in_person' | 'online';
+	channel: 'in_person' | 'in_person_pos' | 'online';
 	// A field to identify the payment's source.
 	// Usually last 4 digits for card payments, bank name for bank transfers...
 	source_identifier: string;
