@@ -47,19 +47,14 @@ const PaymentMethodMessageWrapper = ( {
 	);
 };
 
-export default ( {
-	api,
-	title,
-	countries,
-	iconLight,
-	iconDark,
-	upeName,
-	upeAppearanceTheme,
-} ) => {
+export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
 	const isTestMode = getUPEConfig( 'testMode' );
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
+	);
+	const [ upeAppearanceTheme, setUpeAppearanceTheme ] = useState(
+		getUPEConfig( 'wcBlocksUPEAppearanceTheme' )
 	);
 
 	// Stripe expects the amount to be sent as the minor unit of 2 digits.
@@ -86,6 +81,7 @@ export default ( {
 				'blocks_checkout'
 			);
 			setAppearance( upeAppearance );
+			setUpeAppearanceTheme( upeAppearance.theme );
 		}
 
 		if ( ! appearance ) {
