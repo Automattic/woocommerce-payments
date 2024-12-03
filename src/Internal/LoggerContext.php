@@ -7,6 +7,8 @@
 
 namespace WCPay\Internal;
 
+use WCPay\Internal\Logger;
+
 /**
  * Logger Context class.
  */
@@ -87,7 +89,7 @@ class LoggerContext {
 		$entry_context = is_array( $context ) && array_key_exists( 'context', $context )
 			? $context['context']
 			: [];
-		if ( ! array_key_exists( 'source', $entry_context ) || 'woopayments' !== $entry_context['source'] ) {
+		if ( ! array_key_exists( 'source', $entry_context ) || Logger::LOG_FILENAME !== $entry_context['source'] ) {
 			return $entry;
 		}
 
