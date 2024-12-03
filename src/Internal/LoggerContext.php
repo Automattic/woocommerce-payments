@@ -50,13 +50,13 @@ class LoggerContext {
 	 * @param string                     $key   The key to set.
 	 * @param string|int|float|bool|null $value The value to set. Null removes value.
 	 *
-	 * @return mixed The value.
+	 * @return void
 	 */
 	public function set_value( $key, $value ) {
 		if ( null === $value && array_key_exists( $key, $this->context ) ) {
 			unset( $this->context[ $key ] );
 		} else {
-			$this->context[ $key ] = $value;
+			$this->context[ $key ] = (string) $value;
 		}
 	}
 

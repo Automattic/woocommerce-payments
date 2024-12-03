@@ -30,7 +30,7 @@ class Logger_Context {
 	 * @param string                     $key   The key to set.
 	 * @param string|int|float|bool|null $value The value to set. Null removes value.
 	 *
-	 * @return mixed The value.
+	 * @return void
 	 */
 	public static function set_value( $key, $value ) {
 		wcpay_get_container()->get( InternalLoggerContext::class )->set_value( $key, $value );
