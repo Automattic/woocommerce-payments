@@ -5,7 +5,6 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
-import { tip } from '@wordpress/icons';
 import { ExternalLink } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -101,22 +100,6 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 				),
 			},
 		} ) }
-	</InlineNotice>
-);
-
-/**
- * Renders a notice informing the user of the number of days it may take for deposits to appear in their bank account.
- */
-export const DepositTransitDaysNotice: React.FC = () => (
-	<InlineNotice
-		icon={ tip }
-		isDismissible={ false }
-		className="wcpay-deposit-transit-days-notice"
-	>
-		{ __(
-			'It may take 1-3 business days for payouts to reach your bank account.',
-			'woocommerce-payments'
-		) }
 	</InlineNotice>
 );
 
