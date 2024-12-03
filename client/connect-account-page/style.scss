@@ -249,12 +249,12 @@
 		z-index: 999999;
 		text-align: center;
 
-		img {
+		img.logo {
 			position: absolute;
-			height: 44px;
-			width: 167px;
+			height: 40px;
+			width: 40px;
 			top: 18px;
-			left: calc( 50% - 84px );
+			left: 36px;
 		}
 	}
 }

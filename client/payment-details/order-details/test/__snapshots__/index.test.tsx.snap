@@ -30,21 +30,25 @@ exports[`Order details page should match the snapshot - Charge without payment i
               <div
                 class="payment-details-summary__section"
               >
-                <p
-                  class="payment-details-summary__amount"
+                <div
+                  class="payment-details-summary__amount-wrapper"
                 >
-                  $15.00
-                  <span
-                    class="payment-details-summary__amount-currency"
+                  <p
+                    class="payment-details-summary__amount"
                   >
-                    USD
-                  </span>
+                    $15.00
+                    <span
+                      class="payment-details-summary__amount-currency"
+                    >
+                      USD
+                    </span>
+                  </p>
                   <span
-                    class="chip chip-light"
+                    class="chip chip-light payment-details-summary__status"
                   >
                     Pending
                   </span>
-                </p>
+                </div>
                 <div
                   class="payment-details-summary__breakdown"
                 >
