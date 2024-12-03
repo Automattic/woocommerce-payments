@@ -33,13 +33,28 @@ class LoggerContext {
 	private $hooks_set = false;
 
 	/**
+	 * If context has been updated.
+	 *
+	 * @var bool
+	 */
+	private $context_updated = false;
+
+	/**
+	 * Sequential number for the log entry.
+	 *
+	 * @var int
+	 */
+	private $entry_number = 0;
+
+	/**
 	 * Initialises the logger context.
 	 *
 	 * @return void
 	 */
 	public function init() {
-		$this->request_id = uniqid();
-		$this->context    = [];
+		$this->request_id   = uniqid();
+		$this->context      = [];
+		$this->entry_number = 0;
 
 		$this->setup_hooks();
 	}
@@ -58,6 +73,7 @@ class LoggerContext {
 		} else {
 			$this->context[ $key ] = (string) $value;
 		}
+		$this->context_updated = true;
 	}
 
 	/**
@@ -75,26 +91,34 @@ class LoggerContext {
 			return $entry;
 		}
 
+		$entry_number  = ++$this->entry_number;
 		$time_string   = gmdate( 'c', $context['timestamp'] );
 		$level_string  = strtoupper( $context['level'] );
-		$format_string = sprintf( '%s %s %s %%s', $time_string, $level_string, $this->request_id );
+		$format_string = sprintf( '%s %s %s-%04d %%s', $time_string, $level_string, $this->request_id, $entry_number );
 
-		$entries = [];
+		$entries = [ $context['message'] ];
 
-		if ( [] !== $this->context ) {
-			$encoded = wp_json_encode( $this->context );
+		if ( $this->context_updated ) {
+			$encoded = wp_json_encode( $this->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
 			if ( false !== $encoded ) {
 				$entries[] = sprintf( 'CONTEXT: %s', $encoded );
 			}
+			$this->context_updated = false;
 		}
-
-		$entries[] = $context['message'];
 
 		return implode(
 			"\n",
 			array_map(
 				function ( $entry ) use ( $format_string ) {
-					return sprintf( $format_string, $entry );
+					return implode(
+						"\n",
+						array_map(
+							function ( $line ) use ( $format_string ) {
+								return sprintf( $format_string, $line );
+							},
+							explode( "\n", $entry )
+						)
+					);
 				},
 				$entries
 			)
