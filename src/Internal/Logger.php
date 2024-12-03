@@ -35,51 +35,14 @@ class Logger {
 	private $mode;
 
 	/**
-	 * Request identifier.
-	 *
-	 * @var string
-	 */
-	private $request_id;
-
-	/**
-	 * Context data.
-	 *
-	 * @var array<string, string>
-	 */
-	private $context = [];
-
-	/**
-	 * Flag to determine if the logger has been initialized.
-	 *
-	 * @var bool
-	 */
-	private $initialized = false;
-
-	/**
 	 * Logger constructor.
 	 *
 	 * @param WC_Logger_Interface $wc_logger    WC_Logger_Interface.
 	 * @param Mode                $mode         Mode.
 	 */
 	public function __construct( WC_Logger_Interface $wc_logger, Mode $mode ) {
-		$this->wc_logger  = $wc_logger;
-		$this->mode       = $mode;
-		$this->request_id = uniqid();
-	}
-
-	/**
-	 * Initialize the logger.
-	 *
-	 * @return void
-	 */
-	public function init() {
-		if ( $this->initialized ) {
-			return;
-		}
-
-		add_filter( 'woocommerce_format_log_entry', [ $this, 'filter_log_entry' ], 10, 2 );
-
-		$this->initialized = true;
+		$this->wc_logger = $wc_logger;
+		$this->mode      = $mode;
 	}
 
 	/**
@@ -101,14 +64,7 @@ class Logger {
 		if ( ! $this->can_log() ) {
 			return;
 		}
-		$this->init();
-		$context = array_merge(
-			$context,
-			[
-				'woopayments' => $this->context,
-				'source'      => self::LOG_FILENAME,
-			]
-		);
+		$context = array_merge( $context, [ 'source' => self::LOG_FILENAME ] );
 		$this->wc_logger->log( $level, $message, $context );
 	}
 
@@ -203,55 +159,5 @@ class Logger {
 	 */
 	public function debug( $message ): void {
 		$this->log( $message, WC_Log_Levels::DEBUG );
-	}
-
-	/**
-	 * Set the request ID.
-	 *
-	 * @param string $request_id Request ID.
-	 */
-	public function set_request_id( $request_id ): void {
-		$this->request_id = $request_id;
-	}
-
-	/**
-	 * Filter the log entry to include the request ID and context.
-	 *
-	 * @param string $entry   Log entry.
-	 * @param array  $context Log entry context.
-	 * @return string
-	 */
-	public function filter_log_entry( $entry, $context ): string {
-		$entry_context = is_array( $context ) && array_key_exists( 'context', $context )
-			? $context['context']
-			: [];
-		if ( array_key_exists( 'woopayments', $entry_context ) ) {
-			$time_string   = gmdate( 'c', $context['timestamp'] );
-			$level_string  = strtoupper( $context['level'] );
-			$format_string = sprintf( '%s %s %s %%s', $time_string, $level_string, $this->request_id );
-
-			$entries = [];
-
-			if ( is_array( $entry_context['woopayments'] ) ) {
-				$encoded = wp_json_encode( $entry_context['woopayments'] );
-				if ( false !== $encoded ) {
-					$entries[] = sprintf( 'CONTEXT: %s', $encoded );
-				}
-			}
-
-			$entries[] = $context['message'];
-
-			return implode(
-				"\n",
-				array_map(
-					function ( $entry ) use ( $format_string ) {
-						return sprintf( $format_string, $entry );
-					},
-					$entries
-				)
-			);
-		} else {
-			return $entry;
-		}
 	}
 }
