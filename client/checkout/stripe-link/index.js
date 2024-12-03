@@ -4,6 +4,13 @@
 import { dispatchChangeEventFor } from '../utils/upe';
 
 export const switchToNewPaymentTokenElement = () => {
+	// Switch to card payment method before enabling new payment token element
+	document
+		.querySelector(
+			'input[name="payment_method"][value="woocommerce_payments"]'
+		)
+		?.click();
+
 	const newPaymentTokenElement = document.getElementById(
 		'wc-woocommerce_payments-payment-token-new'
 	);
@@ -44,16 +51,17 @@ const enableStripeLinkPaymentMethod = async ( options ) => {
 	const emailField = document.getElementById( options.emailId );
 
 	if ( ! emailField ) {
-		return;
+		return Promise.resolve( () => null );
 	}
 
 	const stripe = await options.api.getStripe();
 	// https://stripe.com/docs/payments/link/autofill-modal
 	const linkAutofill = stripe.linkAutofillModal( options.elements );
 
-	emailField.addEventListener( 'keyup', ( event ) => {
+	const handleKeyup = ( event ) => {
 		linkAutofill.launch( { email: event.target.value } );
-	} );
+	};
+	emailField.addEventListener( 'keyup', handleKeyup );
 
 	options.onButtonShow( linkAutofill );
 
@@ -65,6 +73,11 @@ const enableStripeLinkPaymentMethod = async ( options ) => {
 		);
 		switchToNewPaymentTokenElement();
 	} );
+
+	return () => {
+		emailField.removeEventListener( 'keyup', handleKeyup );
+		removeLinkButton();
+	};
 };
 
 export default enableStripeLinkPaymentMethod;
