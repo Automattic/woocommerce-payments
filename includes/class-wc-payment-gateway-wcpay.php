@@ -4507,6 +4507,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array List of recommended payment methods for the given country.
 	 *               Empty array if there are no recommendations available.
+	 *               Each item in the array should be an associative array with at least the following entries:
+	 *               - @string id: The payment method ID.
+	 *               - @string title: The payment method title/name.
+	 *               - @bool enabled: Whether the payment method is enabled.
+	 *               - @int priority: The priority of the payment method.
 	 */
 	public function get_recommended_payment_methods( string $country_code ): array {
 		return $this->account->get_recommended_payment_methods( $country_code );
@@ -4516,7 +4521,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Determine whether redirection is needed for the non-card UPE payment method.
 	 *
 	 * @param array $payment_methods The list of payment methods used for the order processing, usually consists of one method only.
-	 * @return boolean True if the arrray consist of only one payment method which is not a card. False otherwise.
+	 * @return boolean True if the array consist of only one payment method which is not a card. False otherwise.
 	 */
 	private function upe_needs_redirection( $payment_methods ) {
 		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
