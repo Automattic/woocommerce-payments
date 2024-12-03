@@ -8,10 +8,10 @@ import {
 
 // Mock dateI18n
 jest.mock( '@wordpress/date', () => ( {
-	dateI18n: jest.fn( ( format, date ) => {
+	dateI18n: jest.fn( ( format, date, timezone ) => {
 		return jest
 			.requireActual( '@wordpress/date' )
-			.dateI18n( format, date, 'UTC' ); // Force UTC by default
+			.dateI18n( format, date, timezone || 'UTC' ); // Use provided timezone or fallback to UTC
 	} ),
 } ) );
 
@@ -83,6 +83,24 @@ describe( 'Date/Time Formatting', () => {
 
 			expect( formatted ).toBe( '2024-10-23 / 11:28' );
 		} );
+
+		it( 'should respect explicitly provided timezone', () => {
+			const dateTime = '2024-10-23 15:28:26';
+
+			// Test with UTC timezone
+			const formattedUTC = formatDateTimeFromString( dateTime, {
+				includeTime: true,
+				timezone: 'UTC',
+			} );
+			expect( formattedUTC ).toBe( '2024-10-23 / 15:28' );
+
+			// Test with New York timezone
+			const formattedNY = formatDateTimeFromString( dateTime, {
+				includeTime: true,
+				timezone: 'America/New_York',
+			} );
+			expect( formattedNY ).toBe( '2024-10-23 / 11:28' );
+		} );
 	} );
 
 	describe( 'formatDateTimeFromTimestamp', () => {
@@ -140,6 +158,24 @@ describe( 'Date/Time Formatting', () => {
 
 			// In New York (EDT), this should be 4 hours behind UTC
 			expect( formatted ).toBe( '2024-10-24 / 06:48' );
+		} );
+
+		it( 'should respect explicitly provided timezone', () => {
+			const timestamp = 1729766906; // 2024-10-24 10:48:26 UTC
+
+			// Test with UTC timezone
+			const formattedUTC = formatDateTimeFromTimestamp( timestamp, {
+				includeTime: true,
+				timezone: 'UTC',
+			} );
+			expect( formattedUTC ).toBe( '2024-10-24 / 10:48' );
+
+			// Test with New York timezone
+			const formattedNY = formatDateTimeFromTimestamp( timestamp, {
+				includeTime: true,
+				timezone: 'America/New_York',
+			} );
+			expect( formattedNY ).toBe( '2024-10-24 / 06:48' );
 		} );
 	} );
 } );

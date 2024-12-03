@@ -13,6 +13,8 @@ interface FormatDateTimeOptions {
 	separator?: string;
 	/** Custom format to use instead of WordPress settings */
 	customFormat?: DateTimeFormat;
+	/** Timezone string (e.g., 'UTC', 'America/New_York'). If undefined, uses site default */
+	timezone?: string;
 }
 
 /**
@@ -30,6 +32,7 @@ export function formatDateTimeFromString(
 		customFormat = null,
 		includeTime = false,
 		separator = ' / ',
+		timezone = undefined,
 	} = options;
 
 	// Convert to UTC ISO string for consistent handling
@@ -43,7 +46,7 @@ export function formatDateTimeFromString(
 				: ''
 		}`;
 
-	return dateI18n( format, utcDateTime );
+	return dateI18n( format, utcDateTime, timezone );
 }
 
 /**
@@ -61,6 +64,7 @@ export function formatDateTimeFromTimestamp(
 		customFormat = null,
 		includeTime = false,
 		separator = ' / ',
+		timezone = undefined,
 	} = options;
 
 	// Convert to UTC ISO string for consistent handling
@@ -74,5 +78,5 @@ export function formatDateTimeFromTimestamp(
 				: ''
 		}`;
 
-	return dateI18n( format, utcDateTime );
+	return dateI18n( format, utcDateTime, timezone );
 }
