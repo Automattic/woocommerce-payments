@@ -4121,6 +4121,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$elements_location = isset( $_POST['elements_location'] ) ? wc_clean( wp_unslash( $_POST['elements_location'] ) ) : null;
 			$appearance        = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
+			$storage_type      = isset( $_POST['storage_type'] ) ? wc_clean( wp_unslash( $_POST['storage_type'] ) ) : null;
 
 			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block', 'add_payment_method' ];
 			if ( ! $elements_location || ! in_array( $elements_location, $valid_locations, true ) ) {
@@ -4168,11 +4169,75 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			][ $elements_location ];
 
 			if ( null !== $appearance ) {
-				set_transient( $appearance_transient, $appearance, DAY_IN_SECONDS );
-				set_transient( $appearance_theme_transient, $appearance->theme, DAY_IN_SECONDS );
+				if ( 'persistent' === $storage_type ) {
+					update_option( $appearance_transient, $appearance );
+					update_option( $appearance_theme_transient, $appearance->theme );
+				} else {
+					set_transient( $appearance_transient, $appearance, DAY_IN_SECONDS );
+					set_transient( $appearance_theme_transient, $appearance->theme, DAY_IN_SECONDS );
+				}
 			}
 
 			wp_send_json_success( $appearance, 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
+					],
+				],
+				WC_Payments_Utils::get_filtered_error_status_code( $e )
+			);
+		}
+	}
+
+	/**
+	 * Handle AJAX request for resetting UPE appearance values.
+	 *
+	 * @throws Exception - If nonce or setup intent is invalid.
+	 */
+	public function reset_upe_appearance_ajax() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_reset_upe_appearance_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Exception(
+					__( 'Unable to reset UPE appearance values at this time.', 'woocommerce-payments' )
+				);
+			}
+
+			$elements_location = isset( $_POST['elements_location'] ) ? wc_clean( wp_unslash( $_POST['elements_location'] ) ) : null;
+
+			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block', 'add_payment_method' ];
+			if ( ! $elements_location || ! in_array( $elements_location, $valid_locations, true ) ) {
+				throw new Exception(
+					__( 'Unable to reset UPE appearance values at this time.', 'woocommerce-payments' )
+				);
+			}
+
+			$appearance_transient       = [
+				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
+				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT,
+				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
+				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
+				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
+				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT,
+			][ $elements_location ];
+			$appearance_theme_transient = [
+				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
+				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT,
+				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
+				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
+			][ $elements_location ];
+
+			delete_option( $appearance_transient );
+			delete_option( $appearance_theme_transient );
+			delete_transient( $appearance_transient );
+			delete_transient( $appearance_theme_transient );
+
+			wp_send_json_success( true, 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(

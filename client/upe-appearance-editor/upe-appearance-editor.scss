@@ -3,6 +3,20 @@
 	width: 500px;
 	height: 500px;
 
+	&.collapsed {
+		height: auto;
+		width: auto;
+		.components-card__header {
+			select {
+				display: none;
+			}
+		}
+		.components-card__body,
+		.components-card__footer {
+			display: none;
+		}
+	}
+
 	&.bottom-left {
 		bottom: 10px;
 		left: 10px;
@@ -28,8 +42,21 @@
 		flex-direction: column;
 	}
 
+	.components-card__header {
+		cursor: pointer;
+	}
+
 	.components-card__body {
 		overflow: auto;
+		padding-top: 0;
+		padding-bottom: 0;
+		position: relative;
+
+		.elements-location {
+			position: absolute;
+			top: 0.5rem;
+			right: 0.5rem;
+		}
 	}
 
 	.components-base-control__label {

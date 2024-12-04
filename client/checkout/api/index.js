@@ -302,16 +302,49 @@ export default class WCPayAPI {
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
 	 * @param {string} elementsLocation The location of the elements.
+	 * @param {string} storageType One of 'transient' or 'persistent'.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	saveUPEAppearance( appearance, elementsLocation ) {
+	saveUPEAppearance(
+		appearance,
+		elementsLocation,
+		storageType = 'transient'
+	) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			elements_location: elementsLocation,
+			storage_type: storageType,
 			appearance: JSON.stringify( appearance ),
 			action: 'save_upe_appearance',
 			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
+		} )
+			.then( ( response ) => {
+				return response.data;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+
+	/**
+	 * Resets all custom and computed UPE appearance values.
+	 *
+	 * @param {string} elementsLocation The location of the elements.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	resetUPEAppearance( elementsLocation ) {
+		return this.request( getConfig( 'ajaxUrl' ), {
+			elements_location: elementsLocation,
+			action: 'reset_upe_appearance',
+			// eslint-disable-next-line camelcase
+			_ajax_nonce: getConfig( 'resetUPEAppearanceNonce' ),
 		} )
 			.then( ( response ) => {
 				return response.data;
