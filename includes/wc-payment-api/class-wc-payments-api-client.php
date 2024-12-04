@@ -464,16 +464,53 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
 	public function get_recommended_payment_methods( string $country_code, string $locale = '' ): array {
-		return $this->request(
+		// We can't use the request method here because this route doesn't require a connected store
+		// and we request this data pre-onboarding.
+		// By this point, we have an expired transient or the store context has changed.
+		// Query for incentives by calling the WooPayments API.
+		$url = add_query_arg(
 			[
 				'country_code' => $country_code,
 				'locale'       => $locale,
 			],
-			self::RECOMMENDED_PAYMENT_METHODS,
-			self::GET,
-			// This route is used pre-onboarding and doesn't require a connected store.
-			false
+			self::ENDPOINT_BASE . '/' . self::ENDPOINT_REST_BASE . '/' . self::RECOMMENDED_PAYMENT_METHODS,
 		);
+
+		$response = wp_remote_get(
+			$url,
+			[
+				'headers'    => apply_filters(
+					'wcpay_api_request_headers',
+					[
+						'Content-type' => 'application/json; charset=utf-8',
+					]
+				),
+				'user-agent' => $this->user_agent,
+				'timeout'    => self::API_TIMEOUT_SECONDS,
+				'sslverify'  => false,
+			]
+		);
+
+		if ( is_wp_error( $response ) ) {
+			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			$message = sprintf(
+			// translators: %1: original error message.
+				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
+				$response->get_error_message()
+			);
+			throw new API_Exception( $message, 'wcpay_http_request_failed', 500 );
+		}
+
+		$results = [];
+		if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
+			// Decode the results, falling back to an empty array.
+			$results = $this->extract_response_body( $response );
+			if ( ! is_array( $results ) ) {
+				$results = [];
+			}
+		}
+
+		return $results;
 	}
 
 	/**
