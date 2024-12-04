@@ -1,5 +1,38 @@
 *** WooPayments Changelog ***
 
+= 8.6.0 - 2024-12-04 =
+* Add - Add Bank reference key column in Payout reports. This will help reconcile WooPayments Payouts with bank statements.
+* Add - Display credit card brand icons on order received page.
+* Fix - Add support to load stripe js asynchronously when it is not immediately available in the global scope.
+* Fix - Add the missing "Download" column heading label and toggle menu option to the Payments → Documents list view table.
+* Fix - Ensure ECE button load events are triggered for multiple buttons on the same page.
+* Fix - Ensure ECE is displayed correctly taking into account the tax settings.
+* Fix - Evidence submission is no longer available for Klarna inquiries as this is not supported by Stripe / Klarna.
+* Fix - fix: express checkout to use its own css files.
+* Fix - fix: missing ece is_product_page checks
+* Fix - Fix ECE Tracks events not triggering when WooPay is disabled.
+* Fix - Fix WooPay component spacing.
+* Fix - Fix WooPay trial subscriptions purchases.
+* Fix - Make sure the status of manual capture enablement is fetched from the right place.
+* Fix - Prevent express checkout from being used if cart total becomes zero after coupon usage.
+* Fix - Resolved issue with terminal payments in the payment intent failed webhook processing.
+* Fix - Set the support phone field as mandatory in the settings page.
+* Fix - Update Link logo alignment issue when WooPay is enabled and a specific version of Gutenberg is enabled.
+* Fix - Use paragraph selector instead of label for pmme appearance
+* Fix - Validate required billing fields using data from objects instead of checking the labels.
+* Update - Avoid getting the appearance for pay for order page with the wrong appearance key.
+* Update - chore: rename wrapper from payment-request to express-checkout
+* Update - feat: add `wcpay_checkout_use_plain_method_label` filter to allow themes or merchants to force the "plain" WooPayments label on shortcode checkout.
+* Update - refactor: express checkout initialization page location checks
+* Update - refactor: express checkout utility for button UI interactions
+* Dev - Allow redirect to the settings page from WCPay connect
+* Dev - chore: removed old PRB implementation for ApplePay/GooglePay in favor of the ECE implementation; cleaned up ECE feature flag;
+* Dev - Disable visual regression testing from Playwright until a more reliable approach is defined.
+* Dev - Ensure proper return types in the webhook processing service.
+* Dev - fix: E_DEPRECATED on BNPL empty PMME
+* Dev - Fix return types
+* Dev - Update snapshots for E2E Playwright screenshots
+
 = 8.5.1 - 2024-11-25 =
 * Fix - fix: remove "test mode" badge from shortcode checkout.
 

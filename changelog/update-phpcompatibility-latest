@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Update phpcompatibility to develop version to get sniffs for PHP 8. No need to include it in the changelog since it is a dev task that doesn't impact WooPayments.
-
-
