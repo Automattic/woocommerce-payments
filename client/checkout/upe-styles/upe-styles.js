@@ -78,8 +78,16 @@ const upeSupportedProperties = {
 		...borderOutlineBackgroundProps.slice( 1 ), // Remove backgroundColor
 	],
 	'.Container': [ ...borderOutlineBackgroundProps ],
-	'.Header': [ ...borderOutlineBackgroundProps, ...textFontTransitionProps ],
-	'.Footer': [ ...borderOutlineBackgroundProps, ...textFontTransitionProps ],
+	'.Header': [
+		...paddingColorProps,
+		...borderOutlineBackgroundProps,
+		...textFontTransitionProps,
+	],
+	'.Footer': [
+		...paddingColorProps,
+		...borderOutlineBackgroundProps,
+		...textFontTransitionProps,
+	],
 };
 
 // Restricted properties allowed to generate the automated theming of UPE.
