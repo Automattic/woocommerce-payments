@@ -78,6 +78,8 @@ const upeSupportedProperties = {
 		...borderOutlineBackgroundProps.slice( 1 ), // Remove backgroundColor
 	],
 	'.Container': [ ...borderOutlineBackgroundProps ],
+	'.Header': [ ...borderOutlineBackgroundProps, ...textFontTransitionProps ],
+	'.Footer': [ ...borderOutlineBackgroundProps, ...textFontTransitionProps ],
 };
 
 // Restricted properties allowed to generate the automated theming of UPE.
@@ -113,6 +115,8 @@ export const upeRestrictedProperties = {
 	'.TabLabel': upeSupportedProperties[ '.TabLabel' ],
 	'.Block': upeSupportedProperties[ '.Block' ],
 	'.Container': upeSupportedProperties[ '.Container' ],
+	'.Header': upeSupportedProperties[ '.Header' ],
+	'.Footer': upeSupportedProperties[ '.Footer' ],
 	'.Text': upeSupportedProperties[ '.Text' ],
 	'.Text--redirect': upeSupportedProperties[ '.Text' ],
 };
