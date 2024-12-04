@@ -27,11 +27,12 @@ import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
+import SetupImg from 'assets/images/illustrations/setup.svg?asset';
 import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
-import WooPaymentsLogo from 'assets/images/logo.svg?asset';
+import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
@@ -52,18 +53,19 @@ const TestDriveLoader: React.FunctionComponent< {
 	progress: number;
 } > = ( { progress } ) => (
 	<Loader className="connect-account-page__preloader">
-		<img src={ WooPaymentsLogo } alt="" />
+		<img className="logo" src={ WooLogo } alt="" />
 		<Loader.Layout>
+			<Loader.Illustration>
+				<img src={ SetupImg } alt="setup" />
+			</Loader.Illustration>
+
 			<Loader.Title>
-				{ __(
-					'Creating your sandbox account',
-					'woocommerce-payments'
-				) }
+				{ __( 'Finishing payments setup', 'woocommerce-payments' ) }
 			</Loader.Title>
 			<Loader.ProgressBar progress={ progress ?? 0 } />
 			<Loader.Sequence interval={ 0 }>
 				{ __(
-					'In just a few moments, you will be ready to test payments on your store.'
+					"In just a few moments, you'll be ready to test payments on your store."
 				) }
 			</Loader.Sequence>
 		</Loader.Layout>
@@ -193,6 +195,8 @@ const ConnectAccountPage: React.FC = () => {
 					'wcpay-sandbox-success': 'true',
 					source: determineTrackingSource(),
 					from: 'WCPAY_CONNECT',
+					redirect_to_settings_page:
+						urlParams.get( 'redirect_to_settings_page' ) || '',
 				} );
 			} else {
 				setTimeout( checkAccountStatus, 2000 );

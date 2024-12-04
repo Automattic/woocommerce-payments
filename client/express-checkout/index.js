@@ -29,13 +29,13 @@ import expressCheckoutButtonUi from './button-ui';
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if (
-		wcpayExpressCheckoutParams.has_block &&
-		! wcpayExpressCheckoutParams.is_pay_for_order
+		getExpressCheckoutData( 'has_block' ) &&
+		getExpressCheckoutData( 'button_context' ) !== 'pay_for_order'
 	) {
 		return;
 	}
 
-	const publishableKey = wcpayExpressCheckoutParams.stripe.publishableKey;
+	const publishableKey = getExpressCheckoutData( 'stripe' ).publishableKey;
 	const quantityInputSelector = '.quantity .qty[type=number]';
 
 	if ( ! publishableKey ) {
@@ -46,8 +46,8 @@ jQuery( ( $ ) => {
 	const api = new WCPayAPI(
 		{
 			publishableKey,
-			accountId: wcpayExpressCheckoutParams.stripe.accountId,
-			locale: wcpayExpressCheckoutParams.stripe.locale,
+			accountId: getExpressCheckoutData( 'stripe' ).accountId,
+			locale: getExpressCheckoutData( 'stripe' ).locale,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -194,13 +194,15 @@ jQuery( ( $ ) => {
 		 *
 		 * @param {Object} options ECE options.
 		 */
-		startExpressCheckoutElement: ( options ) => {
+		startExpressCheckoutElement: async ( options ) => {
 			const getShippingRates = () => {
 				if ( ! options.requestShipping ) {
 					return [];
 				}
 
-				if ( getExpressCheckoutData( 'is_product_page' ) ) {
+				if (
+					getExpressCheckoutData( 'button_context' ) === 'product'
+				) {
 					// Despite the name of the property, this seems to be just a single option that's not in an array.
 					const {
 						shippingOptions: shippingOption,
@@ -235,7 +237,9 @@ jQuery( ( $ ) => {
 				return;
 			}
 
-			const elements = api.getStripe().elements( {
+			const stripe = await api.getStripe();
+
+			const elements = stripe.elements( {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
 				currency: options?.currency,
@@ -268,7 +272,9 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				if ( getExpressCheckoutData( 'is_product_page' ) ) {
+				if (
+					getExpressCheckoutData( 'button_context' ) === 'product'
+				) {
 					const addToCartButton = $( '.single_add_to_cart_button' );
 
 					// First check if product can be added to cart.
@@ -332,7 +338,7 @@ jQuery( ( $ ) => {
 
 				return onConfirmHandler(
 					api,
-					api.getStripe(),
+					stripe,
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
@@ -360,7 +366,7 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			if ( getExpressCheckoutData( 'is_product_page' ) ) {
+			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
 				wcpayECE.attachProductPageEventListeners( elements );
 			}
 		},
@@ -530,8 +536,10 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: () => {
-			if ( wcpayExpressCheckoutParams.is_pay_for_order ) {
+		init: async () => {
+			if (
+				getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
+			) {
 				if ( ! window.wcpayECEPayForOrderParams ) {
 					return;
 				}
@@ -548,7 +556,7 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				wcpayECE.startExpressCheckoutElement( {
+				await wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total,
 					currency: getExpressCheckoutData( 'checkout' )
@@ -560,8 +568,10 @@ jQuery( ( $ ) => {
 					displayItems,
 					order,
 				} );
-			} else if ( wcpayExpressCheckoutParams.is_product_page ) {
-				wcpayECE.startExpressCheckoutElement( {
+			} else if (
+				getExpressCheckoutData( 'button_context' ) === 'product'
+			) {
+				await wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: getExpressCheckoutData( 'product' )?.total.amount,
 					currency: getExpressCheckoutData( 'product' )?.currency,
@@ -571,30 +581,29 @@ jQuery( ( $ ) => {
 					requestPhone:
 						getExpressCheckoutData( 'checkout' )
 							?.needs_payer_phone ?? false,
-					displayItems:
-						wcpayExpressCheckoutParams.product.displayItems,
+					displayItems: getExpressCheckoutData( 'product' )
+						.displayItems,
 				} );
 			} else {
 				// If this is the cart or checkout page, we need to request the
 				// cart details.
-				api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
-					if ( cart.total.amount === 0 ) {
-						expressCheckoutButtonUi.hideContainer();
-						expressCheckoutButtonUi.getButtonSeparator().hide();
-					} else {
-						wcpayECE.startExpressCheckoutElement( {
-							mode: 'payment',
-							total: cart.total.amount,
-							currency: getExpressCheckoutData( 'checkout' )
-								?.currency_code,
-							requestShipping: cart.needs_shipping,
-							requestPhone:
-								getExpressCheckoutData( 'checkout' )
-									?.needs_payer_phone ?? false,
-							displayItems: cart.displayItems,
-						} );
-					}
-				} );
+				const cart = await api.expressCheckoutECEGetCartDetails();
+				if ( cart.total.amount === 0 ) {
+					expressCheckoutButtonUi.hideContainer();
+					expressCheckoutButtonUi.getButtonSeparator().hide();
+				} else {
+					await wcpayECE.startExpressCheckoutElement( {
+						mode: 'payment',
+						total: cart.total.amount,
+						currency: getExpressCheckoutData( 'checkout' )
+							?.currency_code,
+						requestShipping: cart.needs_shipping,
+						requestPhone:
+							getExpressCheckoutData( 'checkout' )
+								?.needs_payer_phone ?? false,
+						displayItems: cart.displayItems,
+					} );
+				}
 			}
 
 			// After initializing a new express checkout button, we need to reset the paymentAborted flag.
@@ -604,8 +613,8 @@ jQuery( ( $ ) => {
 
 	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
 	if (
-		! wcpayExpressCheckoutParams.is_checkout_page ||
-		wcpayExpressCheckoutParams.is_pay_for_order
+		getExpressCheckoutData( 'button_context' ) !== 'checkout' ||
+		getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
 	) {
 		wcpayECE.init();
 	}

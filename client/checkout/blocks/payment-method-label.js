@@ -6,6 +6,7 @@ import {
 	PaymentMethodMessagingElement,
 } from '@stripe/react-stripe-js';
 import { normalizeCurrencyToMinorUnit } from '../utils';
+import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
@@ -46,19 +47,14 @@ const PaymentMethodMessageWrapper = ( {
 	);
 };
 
-export default ( {
-	api,
-	title,
-	countries,
-	iconLight,
-	iconDark,
-	upeName,
-	upeAppearanceTheme,
-} ) => {
+export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
 	const isTestMode = getUPEConfig( 'testMode' );
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
+	);
+	const [ upeAppearanceTheme, setUpeAppearanceTheme ] = useState(
+		getUPEConfig( 'wcBlocksUPEAppearanceTheme' )
 	);
 
 	// Stripe expects the amount to be sent as the minor unit of 2 digits.
@@ -85,12 +81,19 @@ export default ( {
 				'blocks_checkout'
 			);
 			setAppearance( upeAppearance );
+			setUpeAppearanceTheme( upeAppearance.theme );
 		}
 
 		if ( ! appearance ) {
 			generateUPEAppearance();
 		}
 	}, [ api, appearance ] );
+
+	const stripe = useStripeForUPE( api, upeName );
+
+	if ( ! stripe ) {
+		return null;
+	}
 
 	return (
 		<>
@@ -117,7 +120,7 @@ export default ( {
 				appearance={ appearance }
 			>
 				<Elements
-					stripe={ api.getStripeForUPE( upeName ) }
+					stripe={ stripe }
 					options={ {
 						appearance: appearance,
 					} }

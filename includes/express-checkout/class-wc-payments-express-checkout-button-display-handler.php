@@ -93,6 +93,8 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			add_action( 'woocommerce_pay_order_before_payment', [ $this, 'display_express_checkout_buttons' ], 1 );
 		}
 
+		add_filter( 'wcpay_tracks_event_properties', [ $this, 'record_all_ece_tracks_events' ], 10, 2 );
+
 		if ( $this->is_pay_for_order_flow_supported() ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'add_pay_for_order_params_to_js_config' ], 5 );
 		}
@@ -121,7 +123,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$should_show_woopay                  = $this->platform_checkout_button_handler->should_show_woopay_button();
 		$should_show_express_checkout_button = $this->express_checkout_helper->should_show_express_checkout_button();
 
-		// When Payment Request button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any payment request methods to display.
+		// When Express Checkout button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any express payment methods to display.
 		// More details: https://github.com/Automattic/woocommerce-payments/pull/5399#discussion_r1073633776.
 		$separator_starts_hidden = ! $should_show_woopay;
 		if ( $should_show_woopay || $should_show_express_checkout_button ) {
@@ -217,5 +219,28 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			);
 		}
 		// phpcs:enable WordPress.Security.NonceVerification
+	}
+
+	/**
+	 * Record all ECE tracks events by adding the track_on_all_stores flag to the event.
+	 *
+	 * @param array  $properties Event properties.
+	 * @param string $event_name Event name.
+	 * @return array
+	 */
+	public function record_all_ece_tracks_events( $properties, $event_name ) {
+		$tracked_events_prefixes = [
+			'wcpay_applepay',
+			'wcpay_gpay',
+		];
+
+		foreach ( $tracked_events_prefixes as $prefix ) {
+			if ( strpos( $event_name, $prefix ) === 0 ) {
+				$properties['record_event_data']['track_on_all_stores'] = true;
+				break;
+			}
+		}
+
+		return $properties;
 	}
 }
