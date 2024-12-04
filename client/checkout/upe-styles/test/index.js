@@ -225,6 +225,18 @@ describe( 'Getting styles for automated theming', () => {
 				'.Container': {
 					backgroundColor: 'rgba(0, 0, 0, 0)',
 				},
+				'.Footer': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+				},
+				'.Header': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+				},
 			},
 			labels: 'above',
 		} );
