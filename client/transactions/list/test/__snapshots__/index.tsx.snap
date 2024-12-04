@@ -79,6 +79,76 @@ exports[`Transactions list renders correctly when can filter by several currenci
       </div>
     </div>
     <div
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
+    >
+      <div
+        class="components-notice__content"
+      >
+        <div
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              class="gridicon gridicons-info-outline"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                />
+              </g>
+            </svg>
+          </div>
+          <div
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            The date and time formats now match your preferences. You can update them anytime in the 
+            <a
+              href="/wp-admin/options-general.php"
+              rel="noreferrer"
+              target="_blank"
+              title="Settings"
+            >
+              settings
+            </a>
+            .
+          </div>
+        </div>
+        <div
+          class="components-notice__actions"
+        />
+      </div>
+      <button
+        aria-label="Dismiss this notice"
+        class="components-button components-notice__dismiss has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
       class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
@@ -1067,6 +1137,76 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
       </div>
     </div>
     <div
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
+    >
+      <div
+        class="components-notice__content"
+      >
+        <div
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              class="gridicon gridicons-info-outline"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                />
+              </g>
+            </svg>
+          </div>
+          <div
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            The date and time formats now match your preferences. You can update them anytime in the 
+            <a
+              href="/wp-admin/options-general.php"
+              rel="noreferrer"
+              target="_blank"
+              title="Settings"
+            >
+              settings
+            </a>
+            .
+          </div>
+        </div>
+        <div
+          class="components-notice__actions"
+        />
+      </div>
+      <button
+        aria-label="Dismiss this notice"
+        class="components-button components-notice__dismiss has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
       class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
@@ -2052,6 +2192,76 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
     class=" woocommerce-payments-page"
   >
     <div
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
+    >
+      <div
+        class="components-notice__content"
+      >
+        <div
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              class="gridicon gridicons-info-outline"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                />
+              </g>
+            </svg>
+          </div>
+          <div
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            The date and time formats now match your preferences. You can update them anytime in the 
+            <a
+              href="/wp-admin/options-general.php"
+              rel="noreferrer"
+              target="_blank"
+              title="Settings"
+            >
+              settings
+            </a>
+            .
+          </div>
+        </div>
+        <div
+          class="components-notice__actions"
+        />
+      </div>
+      <button
+        aria-label="Dismiss this notice"
+        class="components-button components-notice__dismiss has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
       class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
@@ -2726,6 +2936,76 @@ exports[`Transactions list subscription column renders correctly 1`] = `
           </div>
         </div>
       </div>
+    </div>
+    <div
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
+    >
+      <div
+        class="components-notice__content"
+      >
+        <div
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              class="gridicon gridicons-info-outline"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                />
+              </g>
+            </svg>
+          </div>
+          <div
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            The date and time formats now match your preferences. You can update them anytime in the 
+            <a
+              href="/wp-admin/options-general.php"
+              rel="noreferrer"
+              target="_blank"
+              title="Settings"
+            >
+              settings
+            </a>
+            .
+          </div>
+        </div>
+        <div
+          class="components-notice__actions"
+        />
+      </div>
+      <button
+        aria-label="Dismiss this notice"
+        class="components-button components-notice__dismiss has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
     </div>
     <div
       class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
@@ -3790,6 +4070,76 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
       </div>
     </div>
     <div
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
+    >
+      <div
+        class="components-notice__content"
+      >
+        <div
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              class="gridicon gridicons-info-outline"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                />
+              </g>
+            </svg>
+          </div>
+          <div
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            The date and time formats now match your preferences. You can update them anytime in the 
+            <a
+              href="/wp-admin/options-general.php"
+              rel="noreferrer"
+              target="_blank"
+              title="Settings"
+            >
+              settings
+            </a>
+            .
+          </div>
+        </div>
+        <div
+          class="components-notice__actions"
+        />
+      </div>
+      <button
+        aria-label="Dismiss this notice"
+        class="components-button components-notice__dismiss has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
       class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
@@ -4818,6 +5168,76 @@ exports[`Transactions list when not filtered by payout renders table summary onl
           </div>
         </div>
       </div>
+    </div>
+    <div
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
+    >
+      <div
+        class="components-notice__content"
+      >
+        <div
+          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              class="gridicon gridicons-info-outline"
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g>
+                <path
+                  d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                />
+              </g>
+            </svg>
+          </div>
+          <div
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            The date and time formats now match your preferences. You can update them anytime in the 
+            <a
+              href="/wp-admin/options-general.php"
+              rel="noreferrer"
+              target="_blank"
+              title="Settings"
+            >
+              settings
+            </a>
+            .
+          </div>
+        </div>
+        <div
+          class="components-notice__actions"
+        />
+      </div>
+      <button
+        aria-label="Dismiss this notice"
+        class="components-button components-notice__dismiss has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
     </div>
     <div
       class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
