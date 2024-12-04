@@ -695,6 +695,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				[
 					'jquery',
 					'stripe',
+					'lodash',
 				]
 			);
 			WC_Payments_Utils::enqueue_style(

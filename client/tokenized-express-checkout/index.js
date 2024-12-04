@@ -1,6 +1,5 @@
 /* global jQuery, wcpayExpressCheckoutParams */
 import { __ } from '@wordpress/i18n';
-import { debounce } from 'lodash';
 
 /**
  * Internal dependencies
@@ -9,7 +8,7 @@ import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
 import './compatibility/wc-order-attribution';
-import './compatibility/wc-product-variations';
+import './compatibility/wc-product-page';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
@@ -35,7 +34,12 @@ import {
 	transformCartDataForDisplayItems,
 	transformCartDataForShippingRates,
 	transformPrice,
-} from 'wcpay/tokenized-express-checkout/transformers/wc-to-stripe';
+} from './transformers/wc-to-stripe';
+
+/**
+ * External dependencies
+ */
+import { addFilter, removeFilter } from '@wordpress/hooks';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -343,158 +347,59 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				wcpayECE.attachProductPageEventListeners( elements );
-			}
-		},
-
-		getSelectedProductData: () => {
-			let productId = $( '.single_add_to_cart_button' ).val();
-
-			// Check if product is a variable product.
-			if ( $( '.single_variation_wrap' ).length ) {
-				productId = $( '.single_variation_wrap' )
-					.find( 'input[name="product_id"]' )
-					.val();
-			}
-
-			if ( $( '.wc-bookings-booking-form' ).length ) {
-				productId = $( '.wc-booking-product-id' ).val();
-			}
-
-			const addons =
-				$( '#product-addons-total' ).data( 'price_data' ) || [];
-			const addonValue = addons.reduce(
-				( sum, addon ) => sum + addon.cost,
-				0
+			removeFilter(
+				'wcpay.express-checkout.update-button-data',
+				'automattic/wcpay/express-checkout'
 			);
+			addFilter(
+				'wcpay.express-checkout.update-button-data',
+				'automattic/wcpay/express-checkout',
+				async ( previousPromise ) => {
+					// Wait for previous filters
+					await previousPromise;
 
-			// WC Deposits Support.
-			const depositObject = {};
-			if ( $( 'input[name=wc_deposit_option]' ).length ) {
-				depositObject.wc_deposit_option = $(
-					'input[name=wc_deposit_option]:checked'
-				).val();
-			}
-			if ( $( 'input[name=wc_deposit_payment_plan]' ).length ) {
-				depositObject.wc_deposit_payment_plan = $(
-					'input[name=wc_deposit_payment_plan]:checked'
-				).val();
-			}
+					const newCartData = await _self.getCartData();
+					// checking if items needed shipping, before assigning new cart data.
+					const didItemsNeedShipping =
+						_self.initialProductData?.needs_shipping ||
+						_self.cachedCartData?.needs_shipping;
 
-			const data = {
-				product_id: productId,
-				qty: $( quantityInputSelector ).val(),
-				attributes: $( '.variations_form' ).length
-					? wcpayECE.getAttributes().data
-					: [],
-				addon_value: addonValue,
-				...depositObject,
-			};
+					_self.cachedCartData = newCartData;
 
-			// TODO ~FR: replace with cartApi
-			return api.expressCheckoutECEGetSelectedProductData( data );
-		},
-
-		attachProductPageEventListeners: ( elements ) => {
-			// WooCommerce Deposits support.
-			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
-			// Needs to be defined before the `woocommerce_variation_has_changed` event handler is set.
-			$(
-				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-			)
-				.off( 'change' )
-				.on( 'change', () => {
-					$( 'form' )
-						.has(
-							'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-						)
-						.trigger( 'woocommerce_variation_has_changed' );
-				} );
-
-			$( document.body )
-				.off( 'woocommerce_variation_has_changed' )
-				.on( 'woocommerce_variation_has_changed', () => {
-					expressCheckoutButtonUi.blockButton();
-
-					$.when( wcpayECE.getSelectedProductData() )
-						.then( ( response ) => {
-							// TODO ~FR: this seems new
-							const isDeposits = wcpayECE.productHasDepositOption();
-							/**
-							 * If the customer aborted the express checkout,
-							 * we need to re init the express checkout button to ensure the shipping
-							 * options are refetched. If the customer didn't abort the express checkout,
-							 * and the product's shipping status is consistent,
-							 * we can simply update the express checkout button with the new total and display items.
-							 */
-							const needsShipping =
-								! wcpayECE.paymentAborted &&
-								getExpressCheckoutData( 'product' )
-									.needs_shipping === response.needs_shipping;
-
-							if ( ! isDeposits && needsShipping ) {
-								elements.update( {
-									amount: response.total.amount,
-								} );
-							} else {
-								wcpayECE.reInitExpressCheckoutElement(
-									response
-								);
-							}
-						} )
-						.catch( () => {
-							expressCheckoutButtonUi.hideContainer();
-							expressCheckoutButtonUi.getButtonSeparator().hide();
-						} )
-						.always( () => {
-							expressCheckoutButtonUi.unblockButton();
+					/**
+					 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
+					 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
+					 * consistent, we can simply update the payment request button with the new total and display items.
+					 */
+					if (
+						! _self.isPaymentAborted &&
+						didItemsNeedShipping === newCartData.needs_shipping
+					) {
+						elements.update( {
+							total: {
+								label: getExpressCheckoutData( 'total_label' ),
+								amount: transformPrice(
+									parseInt(
+										newCartData.totals.total_price,
+										10
+									) -
+										parseInt(
+											newCartData.totals.total_refund ||
+												0,
+											10
+										),
+									newCartData.totals
+								),
+							},
+							displayItems: transformCartDataForDisplayItems(
+								newCartData
+							),
 						} );
-				} );
-
-			$( '.quantity' )
-				.off( 'input', '.qty' )
-				.on(
-					'input',
-					'.qty',
-					debounce( () => {
-						expressCheckoutButtonUi.blockButton();
-						wcPayECEError = '';
-
-						$.when( wcpayECE.getSelectedProductData() )
-							.then(
-								( response ) => {
-									// In case the server returns an unexpected response
-									if ( typeof response !== 'object' ) {
-										wcPayECEError = defaultErrorMessage;
-									}
-
-									if (
-										! wcpayECE.paymentAborted &&
-										getExpressCheckoutData( 'product' )
-											.needs_shipping ===
-											response.needs_shipping
-									) {
-										elements.update( {
-											amount: response.total.amount,
-										} );
-									} else {
-										wcpayECE.reInitExpressCheckoutElement(
-											response
-										);
-									}
-								},
-								( response ) => {
-									wcPayECEError =
-										response.responseJSON?.error ??
-										defaultErrorMessage;
-								}
-							)
-							.always( function () {
-								expressCheckoutButtonUi.unblockButton();
-							} );
-					}, 250 )
-				);
+					} else {
+						await _self.init();
+					}
+				}
+			);
 		},
 
 		reInitExpressCheckoutElement: ( response ) => {
@@ -507,9 +412,11 @@ jQuery( ( $ ) => {
 		},
 
 		productHasDepositOption() {
-			return !! $( 'form' ).has(
-				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-			).length;
+			return Boolean(
+				$( 'form' ).has(
+					'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
+				).length
+			);
 		},
 
 		/**
@@ -517,6 +424,11 @@ jQuery( ( $ ) => {
 		 */
 		init: async () => {
 			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
+				// on product pages, we need to interact with an anonymous cart to checkout the product,
+				// so that we don't affect the products in the main cart.
+				// On cart, checkout, place order pages we instead use the cart itself.
+				getCartApiHandler().useSeparateCart();
+
 				await wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: getExpressCheckoutData( 'product' )?.total.amount,
