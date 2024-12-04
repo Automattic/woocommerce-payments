@@ -26,16 +26,19 @@
 		display: block;
 		width: 1.2em;
 		height: 1.2em;
-		background: url( 'assets/images/icons/copy.svg?asset' ) no-repeat center;
-		background-size: contain;
+		mask-image: url( 'assets/images/icons/copy.svg?asset' );
+		mask-size: contain;
+		mask-repeat: no-repeat;
+		mask-position: center;
+		background-color: currentColor;
 	}
 
 	&:hover {
 		background-color: transparent;
-		filter: invert( 0.3 );
+		opacity: 0.7;
 
 		i {
-			filter: invert( 0.3 );
+			opacity: 0.7;
 		}
 	}
 
@@ -43,15 +46,13 @@
 		transform: scale( 0.9 );
 	}
 
-	&.state--success {
-		i {
-			background-image: url( 'assets/images/icons/check-green.svg?asset' );
-		}
+	&:focus {
+		outline: none;
 	}
 
-	.theme--night & {
+	&.state--success {
 		i {
-			filter: invert( 100% ) hue-rotate( 180deg );
+			mask-image: url( 'assets/images/icons/check-green.svg?asset' );
 		}
 	}
 }

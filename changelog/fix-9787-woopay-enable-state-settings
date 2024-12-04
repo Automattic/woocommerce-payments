@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Consider WooPay eligibility when retrieving WooPay enable state in the settings.

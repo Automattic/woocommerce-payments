@@ -9,7 +9,7 @@ runs:
           # Use +e to trap errors when running E2E tests.
           shell: /bin/bash +e {0}
           run: npm run test:e2e-pw-ci
-        - uses: actions/upload-artifact@v3
+        - uses: actions/upload-artifact@v4
           if: always()
           with:
               name: playwright-report

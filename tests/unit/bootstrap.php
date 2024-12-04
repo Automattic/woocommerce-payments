@@ -96,6 +96,8 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-customer-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
 
+	require_once $_plugin_dir . 'includes/class-wc-payments-payment-request-button-handler.php';
+
 	// Load currency helper class early to ensure its implementation is used over the one resolved during further test initialization.
 	require_once __DIR__ . '/helpers/class-wc-helper-site-currency.php';
 

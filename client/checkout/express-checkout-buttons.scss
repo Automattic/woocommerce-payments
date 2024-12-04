@@ -1,4 +1,4 @@
-.wcpay-payment-request-wrapper {
+.wcpay-express-checkout-wrapper {
 	margin-top: 1em;
 	width: 100%;
 	clear: both;
@@ -21,7 +21,7 @@
 }
 
 // This fixes width calculation issues inside the iframe for blocks and shortcode pages.
-.wcpay-payment-request-wrapper,
+.wcpay-express-checkout-wrapper,
 .wc-block-components-express-payment__event-buttons {
 	.StripeElement iframe {
 		max-width: unset;

@@ -23,11 +23,13 @@ interface Props {
 	status: DisputeStatus | string;
 	dueBy?: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
 	prefixDisputeType?: boolean;
+	className?: string;
 }
 const DisputeStatusChip: React.FC< Props > = ( {
 	status,
 	dueBy,
 	prefixDisputeType,
+	className,
 } ) => {
 	const mapping = displayStatus[ status ] || {};
 	let message = mapping.message || formatStringValue( status );
@@ -50,7 +52,7 @@ const DisputeStatusChip: React.FC< Props > = ( {
 		type = 'alert';
 	}
 
-	return <Chip message={ message } type={ type } />;
+	return <Chip className={ className } message={ message } type={ type } />;
 };
 
 export default DisputeStatusChip;
