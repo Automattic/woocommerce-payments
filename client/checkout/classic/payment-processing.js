@@ -35,7 +35,7 @@ import {
 import {
 	initializeUpeAppearanceEditor,
 	registerElementsComponent,
-} from 'wcpay/components/upe-appearance-editor';
+} from 'wcpay/utils/upe-appearance-editor';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};

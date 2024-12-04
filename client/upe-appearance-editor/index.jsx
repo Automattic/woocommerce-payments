@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
 import { UpeAppearanceEditor } from './UpeAppearanceEditor';
 import { debounce } from 'lodash';
 
-export function initializeUpeAppearanceEditor(
+function initializeUpeAppearanceEditor(
 	initialAppearance,
 	elementsLocation,
 	api,
@@ -44,14 +44,14 @@ export function initializeUpeAppearanceEditor(
 
 const elementsComponents = {};
 
-export function registerElementsComponent( elements, elementsLocation ) {
+function registerElementsComponent( elements, elementsLocation ) {
 	if ( ! elementsComponents[ elementsLocation ] ) {
 		elementsComponents[ elementsLocation ] = [];
 	}
 	elementsComponents[ elementsLocation ].push( elements );
 }
 
-export function updateElementsAppearance( elementsLocation, appearance ) {
+function updateElementsAppearance( elementsLocation, appearance ) {
 	if ( ! elementsComponents[ elementsLocation ] ) {
 		return;
 	}
@@ -60,3 +60,6 @@ export function updateElementsAppearance( elementsLocation, appearance ) {
 		elements.update( { appearance } );
 	} );
 }
+
+window.initializeUpeAppearanceEditor = initializeUpeAppearanceEditor;
+window.registerElementsComponent = registerElementsComponent;

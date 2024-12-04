@@ -16,7 +16,7 @@ import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../../checkout/api';
 import request from '../../checkout/utils/request';
 import { useEffect, useState } from 'react';
-import { initializeUpeAppearanceEditor } from 'wcpay/components/upe-appearance-editor';
+import { initializeUpeAppearanceEditor } from 'wcpay/utils/upe-appearance-editor';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(

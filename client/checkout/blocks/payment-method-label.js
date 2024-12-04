@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { useEffect, useState } from '@wordpress/element';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
-import { initializeUpeAppearanceEditor } from 'wcpay/components/upe-appearance-editor';
+import { initializeUpeAppearanceEditor } from 'wcpay/utils/upe-appearance-editor';
 
 const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 const PaymentMethodMessageWrapper = ( {

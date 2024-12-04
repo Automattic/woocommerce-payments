@@ -742,6 +742,7 @@ class WC_Payments {
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_upe_appearance_editor_scripts' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
 
@@ -1847,6 +1848,25 @@ class WC_Payments {
 			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-cart-block-frontend' ] );
 			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
 		}
+	}
+
+	/**
+	 * Enqueue the UPE Appearance Editor scripts only for users with enough permissions in frontend pages.
+	 */
+	public static function enqueue_upe_appearance_editor_scripts() {
+		if ( is_admin() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		self::register_script_with_dependencies( 'WCPAY_UPE_APPEARANCE_EDITOR', 'dist/upe-appearance-editor' );
+		wp_enqueue_script( 'WCPAY_UPE_APPEARANCE_EDITOR' );
+		WC_Payments_Utils::enqueue_style(
+			'WCPAY_UPE_APPEARANCE_EDITOR',
+			plugins_url( 'dist/upe-appearance-editor.css', WCPAY_PLUGIN_FILE ),
+			[],
+			self::get_file_version( 'dist/upe-appearance-editor.css' ),
+			'all'
+		);
 	}
 
 	/**

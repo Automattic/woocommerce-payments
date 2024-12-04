@@ -17,7 +17,7 @@ import { useFingerprint } from './hooks';
 import { LoadableBlock } from 'wcpay/components/loadable';
 import PaymentProcessor from './payment-processor';
 import { getPaymentMethodTypes } from 'wcpay/checkout/utils/upe';
-import { initializeUpeAppearanceEditor } from 'wcpay/components/upe-appearance-editor';
+import { initializeUpeAppearanceEditor } from 'wcpay/utils/upe-appearance-editor';
 
 const PaymentElements = ( { api, ...props } ) => {
 	const stripeForUPE = useStripeForUPE( api, props.paymentMethodId );

@@ -7,7 +7,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import apiRequest from 'wcpay/checkout/utils/request';
-// import { initializeUpeAppearanceEditor } from 'wcpay/components/upe-appearance-editor';
+// import { initializeUpeAppearanceEditor } from 'wcpay/utils/upe-appearance-editor';
 
 const elementsLocations = {
 	bnplProductPage: {
