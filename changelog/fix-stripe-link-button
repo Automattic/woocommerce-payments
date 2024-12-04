@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Restrict Stripe Link to credit card payment method and improve cleanup.

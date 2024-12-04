@@ -123,7 +123,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$should_show_woopay                  = $this->platform_checkout_button_handler->should_show_woopay_button();
 		$should_show_express_checkout_button = $this->express_checkout_helper->should_show_express_checkout_button();
 
-		// When Payment Request button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any payment request methods to display.
+		// When Express Checkout button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any express payment methods to display.
 		// More details: https://github.com/Automattic/woocommerce-payments/pull/5399#discussion_r1073633776.
 		$separator_starts_hidden = ! $should_show_woopay;
 		if ( $should_show_woopay || $should_show_express_checkout_button ) {
