@@ -828,9 +828,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function is_available() {
 		if ( self::GATEWAY_ID === $this->id ) {
-			if ( wc_post_content_has_shortcode( 'woocommerce_checkout' ) ) {
-				return false;
-			}
 			return WC_Payments::get_gateway()->is_enabled();
 		}
 
@@ -2203,7 +2200,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$payment_method_title = $payment_method->get_title( $this->get_account_country(), $payment_method_details );
 
-		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
+		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID . '_' . Payment_Method::CARD : self::GATEWAY_ID . '_' . $payment_method_type;
 
 		$order->set_payment_method( $payment_gateway );
 		$order->set_payment_method_title( $payment_method_title );
