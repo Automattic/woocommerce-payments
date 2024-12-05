@@ -11,10 +11,10 @@ const getWCPayRadioButtonStatus = () => {
 };
 
 const getNewPaymentTokenRadioButtonStatus = () =>
-	document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
+	document.querySelector( '#wc-woocommerce_payments_card-payment-token-new' )
 		?.checked ||
 	! document.querySelector(
-		'[type=radio][name="wc-woocommerce_payments-payment-token"]'
+		'[type=radio][name="wc-woocommerce_payments_card-payment-token"]'
 	);
 
 const getPaymentMethods = () => {
