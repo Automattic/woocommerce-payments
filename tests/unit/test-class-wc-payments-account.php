@@ -257,6 +257,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$has_working_jetpack_connection,
 		$is_stripe_connected,
 		$create_test_drive_account,
+		$redirect_to_settings_page,
 		$expected_next_step
 	) {
 
@@ -278,9 +279,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['page'] = 'wc-admin';
 		$_GET['path'] = '/payments/some-bogus-page';
 
-		$_GET['from']       = $onboarding_from;
-		$_GET['source']     = $onboarding_source;
-		$_GET['test_drive'] = $create_test_drive_account ? 'true' : null;
+		$_GET['from']                      = $onboarding_from;
+		$_GET['source']                    = $onboarding_source;
+		$_GET['test_drive']                = $create_test_drive_account ? 'true' : null;
+		$_GET['redirect_to_settings_page'] = $redirect_to_settings_page ? 'true' : null;
 
 		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
@@ -398,6 +400,18 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 						)
 					);
 				break;
+			case 'settings_page':
+				$this->mock_api_client
+					->expects( $this->never() )
+					->method( 'start_server_connection' );
+				$mock_redirect_service
+					->expects( $this->once() )
+					->method( 'redirect_to' )
+					->with(
+						// It should redirect to settings page URL.
+						$this->stringContains( 'page=wc-settings&tab=checkout' ),
+					);
+				break;
 			default:
 				$this->fail( 'Unexpected redirect type: ' . $expected_next_step );
 				break;
@@ -431,12 +445,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 				true,
+				false,
 				false,
 				false,
 				'onboarding_wizard',
@@ -447,6 +463,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			'From Connect page - no Jetpack connection, Stripe connected' => [
@@ -455,12 +472,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Connect page - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE, // Some other original source.
 				true,
+				false,
 				false,
 				false,
 				'onboarding_wizard',
@@ -471,6 +490,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			'From Connect page - no Jetpack connection, Stripe connected - test-drive' => [
@@ -479,6 +499,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				true,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Connect page - Jetpack connection, Stripe not connected - test-drive' => [
@@ -487,6 +508,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				true,
+				false,
 				'init_stripe_onboarding',
 			],
 			'From Connect page - Jetpack connection, Stripe connected - test-drive' => [
@@ -495,7 +517,17 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				true,
+				false,
 				'overview_page',
+			],
+			'From Connect page - Jetpack connection, Stripe connected - test-drive, redirect to settings' => [
+				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE, // Some other original source.
+				true,
+				true,
+				true,
+				true,
+				'settings_page',
 			],
 			'From Woo Payments Settings - no Jetpack connection, Stripe connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
@@ -503,12 +535,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'connect_page',
 			],
 			'From Woo Payments Settings - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
 				true,
+				false,
 				false,
 				false,
 				'connect_page',
@@ -519,6 +553,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			'From Incentive page - no Jetpack connection, Stripe connected' => [
@@ -527,12 +562,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Incentive page - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_INCENTIVE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				true,
+				false,
 				false,
 				false,
 				'onboarding_wizard',
@@ -543,12 +580,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			// This is a weird scenario that should not happen under normal circumstances.
 			'From Onboarding wizard - no Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				false,
 				false,
 				false,
 				false,
@@ -560,6 +599,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
+				false,
 				'init_stripe_onboarding',
 			],
 			'From Onboarding wizard - Jetpack connection, Stripe connected' => [
@@ -567,6 +607,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				true,
 				true,
+				false,
 				false,
 				'overview_page',
 			],
