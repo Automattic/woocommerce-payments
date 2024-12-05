@@ -44,6 +44,7 @@ const mockAppearance = {
 		'.Link': {},
 		'.Container': {},
 		'.Footer': {},
+		'.Footer-link': {},
 		'.Header': {},
 	},
 	theme: 'stripe',
