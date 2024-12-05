@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Support 'type_is_in' filter for Transactions list report, to allow easy filtering by multiple types. 

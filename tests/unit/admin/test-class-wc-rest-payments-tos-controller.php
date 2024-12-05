@@ -78,12 +78,12 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 			$action_scheduler_service,
 			$mock_payment_method,
 			[ 'card' => $mock_payment_method ],
-			$mock_rate_limiter,
 			$order_service,
 			$mock_dpps,
 			$this->createMock( WC_Payments_Localization_Service::class ),
 			$mock_fraud_service,
-			$mock_duplicates_detection_service
+			$mock_duplicates_detection_service,
+			$mock_rate_limiter
 		);
 		$this->controller = new WC_REST_Payments_Tos_Controller( $mock_api_client, $this->gateway, $mock_wcpay_account );
 
