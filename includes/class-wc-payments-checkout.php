@@ -162,21 +162,6 @@ class WC_Payments_Checkout {
 	}
 
 	/**
-	 * Gets the appearance value from the transient or the persistent option.
-	 *
-	 * @param string $appearance_transient The transient where the appearance is stored.
-	 * @return array|null The appearance value or null if it's not set.
-	 */
-	private function get_appearance_value( $appearance_transient ) {
-		$persistent_appearance = get_option( $appearance_transient );
-		if ( $persistent_appearance ) {
-			return $persistent_appearance;
-		}
-
-		return get_transient( $appearance_transient );
-	}
-
-	/**
 	 * Generates the configuration values, needed for payment fields.
 	 *
 	 * Isolated as a separate method in order to be available both
@@ -240,13 +225,13 @@ class WC_Payments_Checkout {
 		$payment_fields['isCheckout']                    = is_checkout();
 		$payment_fields['paymentMethodsConfig']          = $this->get_enabled_payment_method_config();
 		$payment_fields['testMode']                      = WC_Payments::mode()->is_test();
-		$payment_fields['upeAppearance']                 = $this->get_appearance_value( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['upeAddPaymentMethodAppearance'] = $this->get_appearance_value( WC_Payment_Gateway_WCPay::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT );
-		$payment_fields['upeBnplProductPageAppearance']  = $this->get_appearance_value( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
-		$payment_fields['upeBnplClassicCartAppearance']  = $this->get_appearance_value( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
-		$payment_fields['upeBnplCartBlockAppearance']    = $this->get_appearance_value( WC_Payment_Gateway_WCPay::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearance']         = $this->get_appearance_value( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearanceTheme']    = $this->get_appearance_value( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
+		$payment_fields['upeAppearance']                 = WC_Payments_Utils::get_appearance_value( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['upeAddPaymentMethodAppearance'] = WC_Payments_Utils::get_appearance_value( WC_Payment_Gateway_WCPay::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT );
+		$payment_fields['upeBnplProductPageAppearance']  = WC_Payments_Utils::get_appearance_value( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
+		$payment_fields['upeBnplClassicCartAppearance']  = WC_Payments_Utils::get_appearance_value( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
+		$payment_fields['upeBnplCartBlockAppearance']    = WC_Payments_Utils::get_appearance_value( WC_Payment_Gateway_WCPay::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT );
+		$payment_fields['wcBlocksUPEAppearance']         = WC_Payments_Utils::get_appearance_value( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
+		$payment_fields['wcBlocksUPEAppearanceTheme']    = WC_Payments_Utils::get_appearance_value( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
 		$payment_fields['cartContainsSubscription']      = $this->gateway->is_subscription_item_in_cart();
 		$payment_fields['currency']                      = get_woocommerce_currency();
 		$cart_total                                      = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );

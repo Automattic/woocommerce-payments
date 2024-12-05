@@ -28,7 +28,9 @@ function initializeUpeAppearanceEditor(
 
 	const mountElement = document.createElement( 'div' );
 	mountElement.id = mountElementID;
-	document.body.appendChild( mountElement );
+	const parentElement =
+		document.querySelector( '.woocommerce' ) || document.body;
+	parentElement.appendChild( mountElement );
 
 	const root = ReactDOM.createRoot( mountElement );
 	root.render(

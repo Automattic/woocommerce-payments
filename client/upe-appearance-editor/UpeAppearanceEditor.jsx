@@ -3,7 +3,6 @@
  */
 import React, { useState, useCallback, useEffect } from 'react';
 import {
-	Card,
 	CardHeader,
 	CardBody,
 	CardFooter,
@@ -33,6 +32,7 @@ export function UpeAppearanceEditor( {
 	sections = [ 'labels', 'inputs', 'text', 'pmme' ],
 } ) {
 	const [ position, setPosition ] = useState( initialPosition );
+	const [ loading, setLoading ] = useState( false );
 	const [ appearance, setAppearance ] = useState( initialAppearance );
 	const [ displayState, setDisplayState ] = useState( 'collapsed' );
 
@@ -59,11 +59,19 @@ export function UpeAppearanceEditor( {
 	}, [ appearance, applyAppearance ] );
 
 	const saveAppearance = useCallback( () => {
+		setLoading( true );
 		applyAppearance( appearance );
-		api.saveUPEAppearance( appearance, elementsLocation, 'persistent' );
+		api.saveUPEAppearance(
+			appearance,
+			elementsLocation,
+			'persistent'
+		).then( () => {
+			setLoading( false );
+		} );
 	}, [ appearance, api, elementsLocation, applyAppearance ] );
 
 	const resetAppearance = useCallback( () => {
+		setLoading( true );
 		api.resetUPEAppearance( elementsLocation ).then( () => {
 			window.location.reload();
 		} );
@@ -123,164 +131,181 @@ export function UpeAppearanceEditor( {
 	};
 
 	return (
-		<Card
+		<div
 			className={ `upe-appearance-editor ${ position } ${ displayState }` }
 		>
-			<CardHeader onClick={ toggleDisplay }>
-				<span>Customize WooPayments</span>
-			</CardHeader>
+			<div>
+				<CardHeader onClick={ toggleDisplay }>
+					<span>Customize WooPayments</span>
+				</CardHeader>
 
-			<CardBody>
-				<small className="elements-location">
-					Location: { elementsLocation }
-				</small>
-				{ sections.includes( 'labels' ) && (
-					<fieldset>
-						<legend>Labels</legend>
-						<SelectControl
-							label="Positioning"
-							value={ appearance.labels }
-							options={ [
-								{ label: 'Above', value: 'above' },
-								{ label: 'Floating', value: 'floating' },
-							] }
-							onChange={ ( value ) =>
-								setAppearance( {
-									...appearance,
-									labels: value,
-								} )
-							}
-						/>
-						{ mapFieldsForRule( '.Label' ) }
-					</fieldset>
-				) }
-
-				{ sections.includes( 'inputs' ) && (
-					<fieldset>
-						<legend>Inputs</legend>
-						{ mapFieldsForRule( '.Input' ) }
-					</fieldset>
-				) }
-
-				{ sections.includes( 'inputs' ) && (
-					<fieldset>
-						<legend>
-							Inputs (Invalid)&nbsp;
-							<Button
-								size="small"
-								onClick={ () => {
+				<CardBody>
+					<small className="elements-location">
+						Form: { elementsLocation }
+					</small>
+					{ sections.includes( 'labels' ) && (
+						<fieldset>
+							<legend>Labels</legend>
+							<SelectControl
+								label="Positioning"
+								value={ appearance.labels }
+								options={ [
+									{ label: 'Above', value: 'above' },
+									{ label: 'Floating', value: 'floating' },
+								] }
+								onChange={ ( value ) =>
 									setAppearance( {
 										...appearance,
-										rules: {
-											...appearance.rules,
-											'.Input--invalid': {
-												...appearance.rules[ '.Input' ],
+										labels: value,
+									} )
+								}
+							/>
+							{ mapFieldsForRule( '.Label' ) }
+						</fieldset>
+					) }
+
+					{ sections.includes( 'inputs' ) && (
+						<fieldset>
+							<legend>Inputs</legend>
+							{ mapFieldsForRule( '.Input' ) }
+						</fieldset>
+					) }
+
+					{ sections.includes( 'inputs' ) && (
+						<fieldset>
+							<legend>
+								Inputs (Invalid)&nbsp;
+								<Button
+									className="small"
+									onClick={ () => {
+										setAppearance( {
+											...appearance,
+											rules: {
+												...appearance.rules,
+												'.Input--invalid': {
+													...appearance.rules[
+														'.Input'
+													],
+												},
 											},
+										} );
+									} }
+								>
+									Copy from Inputs
+								</Button>
+							</legend>
+							{ mapFieldsForRule( '.Input--invalid' ) }
+						</fieldset>
+					) }
+
+					{ sections.includes( 'text' ) && (
+						<fieldset>
+							<legend>Text (Redirect Payment Methods)</legend>
+							{ mapFieldsForRule( '.Text--redirect' ) }
+						</fieldset>
+					) }
+
+					{ sections.includes( 'pmme' ) && (
+						<fieldset>
+							<legend>
+								Payment Messaging Elements (Klarna, Afterpay,
+								etc.)
+							</legend>
+							<SelectControl
+								label="Icon Theme"
+								value={ appearance.theme }
+								options={ [
+									{ label: 'Regular Icons', value: 'stripe' },
+									{
+										label: 'For Dark Backgrounds',
+										value: 'night',
+									},
+								] }
+								onChange={ ( value ) =>
+									setAppearance( {
+										...appearance,
+										theme: value,
+									} )
+								}
+							/>
+							<TextControl
+								label="Font Size"
+								type="number"
+								value={ appearance.variables.fontSizeBase.replace(
+									'px',
+									''
+								) }
+								onChange={ ( value ) =>
+									setAppearance( {
+										...appearance,
+										variables: {
+											...appearance.variables,
+											fontSizeBase: `${ value }px`,
 										},
-									} );
-								} }
-							>
-								Copy from Inputs
-							</Button>
-						</legend>
-						{ mapFieldsForRule( '.Input--invalid' ) }
-					</fieldset>
-				) }
-
-				{ sections.includes( 'text' ) && (
-					<fieldset>
-						<legend>Text (Redirect Payment Methods)</legend>
-						{ mapFieldsForRule( '.Text--redirect' ) }
-					</fieldset>
-				) }
-
-				{ sections.includes( 'pmme' ) && (
-					<fieldset>
-						<legend>
-							Payment Messaging Elements (Klarna, Afterpay, etc.)
-							<br />
-							<small>
-								Require Saving and a Page Reload to take effect
-							</small>
-						</legend>
-						<SelectControl
-							label="Icon Theme"
-							value={ appearance.theme }
-							options={ [
-								{ label: 'Regular Icons', value: 'stripe' },
-								{
-									label: 'For Dark Backgrounds',
-									value: 'night',
-								},
-							] }
-							onChange={ ( value ) =>
-								setAppearance( { ...appearance, theme: value } )
-							}
-						/>
-						<TextControl
-							label="Font Size"
-							type="number"
-							value={ appearance.variables.fontSizeBase.replace(
-								'px',
-								''
+									} )
+								}
+							/>
+							{ /* <TextControl
+							label="Background Color"
+							type="color"
+							value={ rgbToHex(
+								appearance.variables.colorBackground
 							) }
 							onChange={ ( value ) =>
 								setAppearance( {
 									...appearance,
 									variables: {
 										...appearance.variables,
-										fontSizeBase: `${ value }px`,
+										colorBackground: value,
 									},
 								} )
 							}
-						/>
-						{ /* <TextControl
-						label="Background Color"
-						type="color"
-						value={ rgbToHex(
-							appearance.variables.colorBackground
-						) }
-						onChange={ ( value ) =>
-							setAppearance( {
-								...appearance,
-								variables: {
-									...appearance.variables,
-									colorBackground: value,
-								},
-							} )
-						}
-					/> */ }
+						/> */ }
 
-						<TextControl
-							label="Text Color"
-							type="color"
-							value={ rgbToHex( appearance.variables.colorText ) }
-							onChange={ ( value ) =>
-								setAppearance( {
-									...appearance,
-									variables: {
-										...appearance.variables,
-										colorText: value,
-									},
-								} )
-							}
-						/>
-					</fieldset>
-				) }
-			</CardBody>
-			<CardFooter>
-				<Button onClick={ togglePosition }>
-					{ position === 'bottom-left' ? '→' : '←' }
-				</Button>
+							<TextControl
+								label="Text Color"
+								type="color"
+								value={ rgbToHex(
+									appearance.variables.colorText
+								) }
+								onChange={ ( value ) =>
+									setAppearance( {
+										...appearance,
+										variables: {
+											...appearance.variables,
+											colorText: value,
+										},
+									} )
+								}
+							/>
+							<small>
+								Requires Saving and a Page Reload to take effect
+							</small>
+						</fieldset>
+					) }
+				</CardBody>
+				<CardFooter>
+					<Button onClick={ togglePosition } className="button small">
+						{ position === 'bottom-left' ? '→' : '←' }
+					</Button>
 
-				<Button variant="danger" onClick={ resetAppearance }>
-					Reset
-				</Button>
+					<Button
+						className="button"
+						disabled={ loading }
+						onClick={ resetAppearance }
+					>
+						Reset
+					</Button>
 
-				<Button variant="primary" onClick={ saveAppearance }>
-					Save
-				</Button>
-			</CardFooter>
-		</Card>
+					<Button
+						className="alt"
+						disabled={ loading }
+						onClick={ saveAppearance }
+					>
+						Save
+					</Button>
+				</CardFooter>
+			</div>
+		</div>
 	);
 }

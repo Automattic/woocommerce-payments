@@ -1029,6 +1029,21 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Gets the appearance value from the transient or the persistent option.
+	 *
+	 * @param string $appearance_transient The transient where the appearance is stored.
+	 * @return array|null The appearance value or null if it's not set.
+	 */
+	public static function get_appearance_value( $appearance_transient ) {
+		$persistent_appearance = get_option( $appearance_transient );
+		if ( $persistent_appearance ) {
+			return $persistent_appearance;
+		}
+
+		return get_transient( $appearance_transient );
+	}
+
+	/**
 	 * Return the currency format based on the symbol position.
 	 * Similar to get_woocommerce_price_format but with an input.
 	 *
@@ -1389,17 +1404,17 @@ class WC_Payments_Utils {
 
 		// If an invalid location is sent, we fallback to trying $themes[ 'checkout' ][ 'block' ].
 		if ( ! isset( $themes[ $location ] ) ) {
-			$active_theme = get_transient( $themes['checkout']['blocks'] );
+			$active_theme = self::get_appearance_value( $themes['checkout']['blocks'] );
 		} elseif ( ! isset( $themes[ $location ][ $context ] ) ) {
 			// If the location is valid but the context is invalid, we fallback to trying $themes[ $location ][ 'block' ].
-			$active_theme = get_transient( $themes[ $location ]['blocks'] );
+			$active_theme = self::get_appearance_value( $themes[ $location ]['blocks'] );
 		} else {
-			$active_theme = get_transient( $themes[ $location ][ $context ] );
+			$active_theme = self::get_appearance_value( $themes[ $location ][ $context ] );
 		}
 
 		// If $active_theme is still false here, that means that $themes[ $location ][ $context ] is not set, so we try $themes[ $location ][ 'classic' ].
 		if ( ! $active_theme ) {
-			$active_theme = get_transient( $themes[ $location ][ 'blocks' === $context ? 'classic' : 'blocks' ] );
+			$active_theme = self::get_appearance_value( $themes[ $location ][ 'blocks' === $context ? 'classic' : 'blocks' ] );
 		}
 
 		// If $active_theme is still false here, nothing at the location is set so we'll try all locations.
@@ -1411,7 +1426,7 @@ class WC_Payments_Utils {
 				}
 
 				foreach ( $contexts as $context => $transient ) {
-					$active_theme = get_transient( $transient );
+					$active_theme = self::get_appearance_value( $transient );
 					if ( $active_theme ) {
 						break 2; // This will break both loops.
 					}
