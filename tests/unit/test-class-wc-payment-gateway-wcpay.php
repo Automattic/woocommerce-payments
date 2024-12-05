@@ -3969,6 +3969,50 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->card_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
 	}
 
+
+	public function test_get_recommended_payment_method() {
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_recommended_payment_methods' )
+			->with( 'US' );
+		$this->card_gateway->get_recommended_payment_methods( 'US' );
+	}
+
+
+	public function get_recommended_payment_method_no_country_code_provider() {
+		return [
+			'provider connected'     => [ true, 'test' ],
+			'provider not connected' => [ false, 'US' ],
+		];
+	}
+
+	/**
+	 * @dataProvider get_recommended_payment_method_no_country_code_provider
+	 */
+	public function test_get_recommended_payment_method_no_country_code_provided( $is_provider_connected, $country_code ) {
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'is_provider_connected' )
+			->willReturn( $is_provider_connected );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_account_country' )
+			->willReturn( 'test' );
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_recommended_payment_methods' )
+			->with( $country_code );
+
+		$this->card_gateway->get_recommended_payment_methods( '' );
+	}
+
 	/**
 	 * Sets up the expectation for a certain factor for the new payment
 	 * process to be either set or unset.
