@@ -255,7 +255,7 @@ const WooPaySettings = ( { section } ) => {
 					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
 							{ __(
-								'Policies and custom text',
+								'Checkout policies',
 								'woocommerce-payments'
 							) }
 						</h4>
