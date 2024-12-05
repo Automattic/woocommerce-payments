@@ -8,6 +8,7 @@
 namespace WCPay\Internal;
 
 use WCPay\Internal\Logger;
+use WCPay\Logger as LoggerWrapper;
 
 /**
  * Logger Context class.
@@ -101,7 +102,7 @@ class LoggerContext {
 		$entries = [ $context['message'] ];
 
 		if ( $this->context_updated ) {
-			$entries[]             = Logger::format_object( 'CONTEXT', $this->context );
+			$entries[]             = LoggerWrapper::format_object( 'CONTEXT', $this->context );
 			$this->context_updated = false;
 		}
 
