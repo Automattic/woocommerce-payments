@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Resolved issue with terminal payments in the payment intent failed webhook processing.
