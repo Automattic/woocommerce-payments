@@ -73,7 +73,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @var Database_Cache|MockObject
 	 */
-	private $mock_db_cache;
+	private $mock_cache;
 
 	/**
 	 * WC_Payments_Localization_Service instance.
@@ -117,15 +117,19 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
+
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
 			->getMock();
 
 		$this->mock_wcpay_account                = $this->createMock( WC_Payments_Account::class );
-		$this->mock_db_cache                     = $this->createMock( Database_Cache::class );
 		$this->mock_session_service              = $this->createMock( WC_Payments_Session_Service::class );
 		$order_service                           = new WC_Payments_Order_Service( $this->mock_api_client );
-		$customer_service                        = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache, $this->mock_session_service, $order_service );
+		$customer_service                        = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_cache, $this->mock_session_service, $order_service );
 		$token_service                           = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$compatibility_service                   = new Compatibility_Service( $this->mock_api_client );
 		$action_scheduler_service                = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service, $compatibility_service );
@@ -205,6 +209,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
+		// Restore the cache service in the main class.
+		WC_Payments::set_database_cache( $this->_cache );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
@@ -743,6 +749,32 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
 		$this->assertSame( $this->domestic_currency, $response->get_data()['account_domestic_currency'] );
+	}
+
+	public function test_get_settings_is_woopay_enabled_returns_true(): void {
+		$current_platform_checkout = $this->gateway->get_option( 'platform_checkout' );
+
+		$this->gateway->update_option( 'platform_checkout', 'yes' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_woopay_enabled', $response->get_data() );
+		$this->assertTrue( $response->get_data()['is_woopay_enabled'] );
+		$this->gateway->update_option( 'platform_checkout', $current_platform_checkout );
+	}
+
+	public function test_get_settings_is_woopay_enabled_returns_false_if_it_is_not_eligible(): void {
+		$current_platform_checkout = $this->gateway->get_option( 'platform_checkout' );
+
+		$this->gateway->update_option( 'platform_checkout', 'yes' );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_woopay_enabled', $response->get_data() );
+		$this->assertFalse( $response->get_data()['is_woopay_enabled'] );
+		$this->gateway->update_option( 'platform_checkout', $current_platform_checkout );
 	}
 
 	/**

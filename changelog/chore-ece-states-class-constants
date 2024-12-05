@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: chore: rename Payment_Request_Button_States to Express_Checkout_Element_States to reflect its usage
-
-

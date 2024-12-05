@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Validate required billing fields using data from objects instead of checking the labels.
