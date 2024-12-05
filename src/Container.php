@@ -70,8 +70,8 @@ class Container implements ContainerInterface {
 	 * @param WooContainer    $woo_container    Delegate container for WooCommerce (Optional).
 	 */
 	public function __construct(
-		LegacyContainer $legacy_container = null,
-		WooContainer $woo_container = null
+		?LegacyContainer $legacy_container = null,
+		?WooContainer $woo_container = null
 	) {
 		$this->container = new ExtendedContainer();
 

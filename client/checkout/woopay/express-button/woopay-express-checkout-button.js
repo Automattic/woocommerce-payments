@@ -19,6 +19,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import {
 	appendRedirectionParams,
 	deleteSkipWooPayCookie,
+	isSupportedThemeEntrypoint,
 } from 'wcpay/checkout/woopay/utils';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
@@ -221,6 +222,11 @@ export const WoopayExpressCheckoutButton = ( {
 			setIsLoading( true );
 
 			const appearanceType = getAppearanceType();
+			const appearance =
+				isSupportedThemeEntrypoint( appearanceType ) &&
+				getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+					? getAppearance( appearanceType, true )
+					: null;
 
 			if ( isProductPage ) {
 				const productData = getProductDataRef.current();
@@ -242,11 +248,7 @@ export const WoopayExpressCheckoutButton = ( {
 					}
 					WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
 						_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-						appearance: getConfig(
-							'isWooPayGlobalThemeSupportEnabled'
-						)
-							? getAppearance( appearanceType, true )
-							: null,
+						appearance: appearance,
 					} )
 						.then( async ( response ) => {
 							if (
@@ -290,9 +292,7 @@ export const WoopayExpressCheckoutButton = ( {
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
-					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-						? getAppearance( appearanceType, true )
-						: null,
+					appearance: appearance,
 				} )
 					.then( async ( response ) => {
 						if ( response?.blog_id && response?.data?.session ) {
