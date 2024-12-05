@@ -976,7 +976,7 @@ class WooPay_Session {
 			return;
 		}
 
-		$checkout_terms_block_index = array_search(
+		$inner_block_index = array_search(
 			$inner_block_name,
 			array_column(
 				$current_block['innerBlocks'],
@@ -985,10 +985,10 @@ class WooPay_Session {
 			true
 		);
 
-		if ( ! isset( $current_block['innerBlocks'][ $checkout_terms_block_index ] ) ) {
+		if ( ! isset( $current_block['innerBlocks'][ $inner_block_index ] ) ) {
 			return;
 		}
 
-		return $current_block['innerBlocks'][ $checkout_terms_block_index ];
+		return $current_block['innerBlocks'][ $inner_block_index ];
 	}
 }
