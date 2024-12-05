@@ -70,7 +70,7 @@ interface SummaryItemProps {
 	label: string;
 	value: string | JSX.Element;
 	valueClass?: string | false;
-	detail?: string;
+	detail?: string | JSX.Element;
 }
 
 /**
@@ -142,7 +142,12 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 				)
 			}
 			value={ <DepositStatusIndicator deposit={ deposit } /> }
-			detail={ deposit.bankAccount }
+			detail={
+				<>
+					{ deposit.bankAccount } <br />
+					Bank reference key: { deposit.bank_reference_key }
+				</>
+			}
 		/>
 	);
 
