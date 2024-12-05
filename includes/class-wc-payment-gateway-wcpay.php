@@ -4130,7 +4130,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			if ( in_array( $elements_location, [ 'blocks_checkout', 'shortcode_checkout' ], true ) ) {
+			if ( 'persistent' !== $storage_type && in_array( $elements_location, [ 'blocks_checkout', 'shortcode_checkout' ], true ) ) {
 				$is_blocks_checkout = 'blocks_checkout' === $elements_location;
 				/**
 				 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
@@ -4149,24 +4149,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 *
 			 * @since 7.4.0
 			 */
-			$appearance = apply_filters( 'wcpay_elements_appearance', $appearance, $elements_location );
+			if ( 'persistent' !== $storage_type ) {
+				$appearance = apply_filters( 'wcpay_elements_appearance', $appearance, $elements_location );
+			}
 
-			$appearance_transient       = [
-				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
-				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT,
-				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
-				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
-				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
-				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT,
-			][ $elements_location ];
-			$appearance_theme_transient = [
-				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
-				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT,
-				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
-				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
-				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
-				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
-			][ $elements_location ];
+			$transients                 = $this->get_appearance_transients( $elements_location );
+			$appearance_transient       = $transients[0];
+			$appearance_theme_transient = $transients[1];
 
 			if ( null !== $appearance ) {
 				if ( 'persistent' === $storage_type ) {
@@ -4215,22 +4204,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$appearance_transient       = [
-				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
-				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT,
-				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
-				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
-				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
-				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT,
-			][ $elements_location ];
-			$appearance_theme_transient = [
-				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
-				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT,
-				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
-				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
-				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
-				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
-			][ $elements_location ];
+			$transients                 = $this->get_appearance_transients( $elements_location );
+			$appearance_transient       = $transients[0];
+			$appearance_theme_transient = $transients[1];
 
 			delete_option( $appearance_transient );
 			delete_option( $appearance_theme_transient );
@@ -4249,6 +4225,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				WC_Payments_Utils::get_filtered_error_status_code( $e )
 			);
 		}
+	}
+
+	/**
+	 * Get the correct appearance transients for the given location.
+	 *
+	 * @param string $elements_location The location of the payment element.
+	 * @return string|null[]
+	 */
+	private function get_appearance_transients( $elements_location ) {
+		$appearance_transient       = [
+			'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
+			'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT,
+			'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
+			'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
+			'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
+			'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT,
+		][ $elements_location ];
+		$appearance_theme_transient = [
+			'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
+			'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT,
+			'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
+			'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
+			'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
+			'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
+		][ $elements_location ];
+
+		return [ $appearance_transient, $appearance_theme_transient ];
 	}
 
 	/**
