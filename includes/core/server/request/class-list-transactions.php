@@ -82,6 +82,7 @@ class List_Transactions extends Paginated {
 			'date_between'             => $date_between_filter,
 			'type_is'                  => $request->get_param( 'type_is' ),
 			'type_is_not'              => $request->get_param( 'type_is_not' ),
+			'type_is_in'               => (array) $request->get_param( 'type_is_in' ),
 			'source_device_is'         => $request->get_param( 'source_device_is' ),
 			'source_device_is_not'     => $request->get_param( 'source_device_is_not' ),
 			'channel_is'               => $request->get_param( 'channel_is' ),

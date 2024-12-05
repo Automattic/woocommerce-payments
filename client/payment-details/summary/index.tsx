@@ -123,7 +123,8 @@ const composePaymentSummaryItems = ( {
 					{ isTapToPay( metadata?.reader_model )
 						? getTapToPayChannel( metadata?.platform )
 						: getChargeChannel(
-								charge.payment_method_details?.type
+								charge.payment_method_details?.type,
+								metadata
 						  ) }
 				</span>
 			),

@@ -32,7 +32,7 @@ export interface Transaction {
 	transaction_id: string;
 	date: string;
 	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
-	channel: 'in_person' | 'online';
+	channel: 'in_person' | 'in_person_pos' | 'online';
 	// A field to identify the payment's source.
 	// Usually last 4 digits for card payments, bank name for bank transfers...
 	source_identifier: string;
@@ -146,6 +146,7 @@ export const useTransactions = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		type_is_in: typeIsIn,
 		source_device_is: sourceDeviceIs,
 		source_device_is_not: sourceDeviceIsNot,
 		channel_is: channelIs,
@@ -189,6 +190,7 @@ export const useTransactions = (
 					),
 				typeIs,
 				typeIsNot,
+				typeIsIn,
 				sourceDeviceIs,
 				sourceDeviceIsNot,
 				storeCurrencyIs,
@@ -222,6 +224,7 @@ export const useTransactions = (
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			JSON.stringify( typeIsIn ),
 			sourceDeviceIs,
 			sourceDeviceIsNot,
 			storeCurrencyIs,
@@ -247,6 +250,7 @@ export const useTransactionsSummary = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		type_is_in: typeIsIn,
 		source_device_is: sourceDeviceIs,
 		source_device_is_not: sourceDeviceIsNot,
 		store_currency_is: storeCurrencyIs,
@@ -276,6 +280,7 @@ export const useTransactionsSummary = (
 				dateBetween,
 				typeIs,
 				typeIsNot,
+				typeIsIn,
 				sourceDeviceIs,
 				sourceDeviceIsNot,
 				storeCurrencyIs,
@@ -304,6 +309,7 @@ export const useTransactionsSummary = (
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			JSON.stringify( typeIsIn ),
 			sourceDeviceIs,
 			sourceDeviceIsNot,
 			storeCurrencyIs,
