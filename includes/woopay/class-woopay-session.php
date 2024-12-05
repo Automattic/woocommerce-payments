@@ -898,9 +898,10 @@ class WooPay_Session {
 	 */
 	private static function get_option_fields_status() {
 		// Shortcode checkout options.
-		$company   = get_option( 'woocommerce_checkout_company_field', 'optional' );
-		$address_2 = get_option( 'woocommerce_checkout_address_2_field', 'optional' );
-		$phone     = get_option( 'woocommerce_checkout_phone_field', 'required' );
+		$company        = get_option( 'woocommerce_checkout_company_field', 'optional' );
+		$address_2      = get_option( 'woocommerce_checkout_address_2_field', 'optional' );
+		$phone          = get_option( 'woocommerce_checkout_phone_field', 'required' );
+		$terms_checkbox = ! empty( get_option( 'woocommerce_terms_page_id', null ) );
 
 		// Blocks checkout options. To get the blocks checkout options, we need
 		// to parse the checkout page content because the options are stored
@@ -910,9 +911,10 @@ class WooPay_Session {
 
 		if ( empty( $checkout_page ) ) {
 			return [
-				'company'   => $company,
-				'address_2' => $address_2,
-				'phone'     => $phone,
+				'company'        => $company,
+				'address_2'      => $address_2,
+				'phone'          => $phone,
+				'terms_checkbox' => $terms_checkbox,
 			];
 		}
 
@@ -947,12 +949,46 @@ class WooPay_Session {
 			if ( isset( $checkout_block_attrs['showPhoneField'] ) && false === $checkout_block_attrs['showPhoneField'] ) {
 				$phone = 'hidden';
 			}
+
+			$fields_block   = self::get_inner_block( $checkout_page_blocks[ $checkout_block_index ], 'woocommerce/checkout-fields-block' );
+			$terms_block    = self::get_inner_block( $fields_block, 'woocommerce/checkout-terms-block' );
+			$terms_checkbox = isset( $terms_block['attrs']['checkbox'] ) && $terms_block['attrs']['checkbox'];
 		}
 
 		return [
-			'company'   => $company,
-			'address_2' => $address_2,
-			'phone'     => $phone,
+			'company'        => $company,
+			'address_2'      => $address_2,
+			'phone'          => $phone,
+			'terms_checkbox' => $terms_checkbox,
 		];
+	}
+
+	/**
+	 * Searches for an inner block with the given name.
+	 *
+	 * @param array  $current_block A block that contains child blocks.
+	 * @param string $inner_block_name The name of a child block.
+	 * @return array|null
+	 */
+	private static function get_inner_block( $current_block, $inner_block_name ) {
+
+		if ( ! isset( $current_block['innerBlocks'] ) ) {
+			return;
+		}
+
+		$inner_block_index = array_search(
+			$inner_block_name,
+			array_column(
+				$current_block['innerBlocks'],
+				'blockName'
+			),
+			true
+		);
+
+		if ( ! isset( $current_block['innerBlocks'][ $inner_block_index ] ) ) {
+			return;
+		}
+
+		return $current_block['innerBlocks'][ $inner_block_index ];
 	}
 }
