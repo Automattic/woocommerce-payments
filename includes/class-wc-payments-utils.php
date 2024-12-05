@@ -1032,9 +1032,9 @@ class WC_Payments_Utils {
 	 * Gets the appearance value from the transient or the persistent option.
 	 *
 	 * @param string $appearance_transient The transient where the appearance is stored.
-	 * @return array|null The appearance value or null if it's not set.
+	 * @return array|string|false The appearance value or false if it's not set.
 	 */
-	public static function get_appearance_value( $appearance_transient ) {
+	public static function get_appearance_value( string $appearance_transient ) {
 		$persistent_appearance = get_option( $appearance_transient );
 		if ( $persistent_appearance ) {
 			return $persistent_appearance;
@@ -1396,7 +1396,7 @@ class WC_Payments_Utils {
 	 *
 	 * @param string $location The theme location.
 	 * @param string $context The theme location to fall back to if both transients are set.
-	 * @return string
+	 * @return string|null
 	 */
 	public static function get_active_upe_theme_transient_for_location( string $location = 'checkout', string $context = 'blocks' ) {
 		$themes       = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
@@ -1435,7 +1435,7 @@ class WC_Payments_Utils {
 		}
 
 		// If $active_theme is still false, we don't have any theme set in the transients, so we fallback to 'stripe'.
-		if ( $active_theme ) {
+		if ( $active_theme && is_string( $active_theme ) ) {
 			return $active_theme;
 		}
 

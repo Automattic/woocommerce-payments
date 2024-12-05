@@ -4231,7 +4231,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Get the correct appearance transients for the given location.
 	 *
 	 * @param string $elements_location The location of the payment element.
-	 * @return string|null[]
+	 * @return (string|null)[]
 	 */
 	private function get_appearance_transients( $elements_location ) {
 		$appearance_transient       = [
