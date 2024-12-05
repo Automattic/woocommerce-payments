@@ -171,5 +171,28 @@ export const onCompletePaymentHandler = () => {
 };
 
 export const onCancelHandler = () => {
-	unblockUI();
+	const context = getExpressCheckoutData( 'button_context' );
+	const isBlocks = getExpressCheckoutData( 'has_block' );
+
+	switch ( context ) {
+		case 'cart':
+			if ( isBlocks ) {
+				alert( 'Cart block context' );
+			} else {
+				alert( 'Cart shortcode context' );
+			}
+			location.reload( true );
+			break;
+		case 'checkout':
+			if ( isBlocks ) {
+				alert( 'Checkout block context' );
+			} else {
+				alert( 'Checkout shortcode context' );
+			}
+			location.reload( true );
+			break;
+		default:
+			alert( 'Default context' );
+			unblockUI();
+	}
 };
