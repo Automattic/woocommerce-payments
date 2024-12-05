@@ -76,11 +76,7 @@ class Compatibility_Service {
 	public function update_compatibility_data_hook() {
 		$compatibility_data = array_merge(
 			$this->get_compatibility_data(),
-			[
-				'sift_session_id' => $this->session_service->get_sift_session_id(),
-				'ip_address'      => \WC_Geolocation::get_ip_address(),
-				'browser'         => self::get_browser_info(),
-			],
+			$this->get_client_data(),
 		);
 
 		$this->payments_api_client->update_compatibility_data( $compatibility_data );
@@ -134,6 +130,19 @@ class Compatibility_Service {
 			'blog_theme'             => get_stylesheet(),
 			'active_plugins'         => $active_plugins,
 			'post_types_count'       => $post_types_count,
+		];
+	}
+
+	/**
+	 * Gets the client data.
+	 *
+	 * @return array
+	 */
+	private function get_client_data(): array {
+		return [
+			'sift_session_id' => $this->session_service->get_sift_session_id(),
+			'ip_address'      => \WC_Geolocation::get_ip_address(),
+			'browser'         => self::get_browser_info(),
 		];
 	}
 
