@@ -124,7 +124,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		// Use a callback to suppresses the output buffering being printed to the CLI.
 		$this->setOutputCallback(
 			function ( $output ) {
-				preg_match_all( '/.*<fieldset.*id="wc-woocommerce_payments-upe-form".*<\/fieldset>.*/s', $output );
+				preg_match_all( '/.*<fieldset.*class="wc-payment-form".*<\/fieldset>.*/s', $output );
 			}
 		);
 

@@ -133,7 +133,7 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
-	public function get_title( string $account_country = null, $payment_details = false ) {
+	public function get_title( ?string $account_country = null, $payment_details = false ) {
 		return $this->title;
 	}
 
@@ -283,7 +283,7 @@ abstract class UPE_Payment_Method {
 	 *
 	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
-	public function get_icon( string $account_country = null ) {
+	public function get_icon( ?string $account_country = null ) {
 		return isset( $this->icon_url ) ? $this->icon_url : '';
 	}
 
@@ -293,7 +293,7 @@ abstract class UPE_Payment_Method {
 	 * @param string|null $account_country Optional account country.
 	 * @return string
 	 */
-	public function get_dark_icon( string $account_country = null ) {
+	public function get_dark_icon( ?string $account_country = null ) {
 		return isset( $this->dark_icon_url ) ? $this->dark_icon_url : $this->get_icon( $account_country );
 	}
 
@@ -305,7 +305,7 @@ abstract class UPE_Payment_Method {
 	 * @param string  $account_country Optional account country.
 	 * @return string
 	 */
-	public function get_payment_method_icon_for_location( string $location = 'checkout', bool $is_blocks = true, string $account_country = null ) {
+	public function get_payment_method_icon_for_location( string $location = 'checkout', bool $is_blocks = true, ?string $account_country = null ) {
 		$appearance_theme = WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $is_blocks ? 'blocks' : 'classic' );
 
 		if ( 'night' === $appearance_theme ) {

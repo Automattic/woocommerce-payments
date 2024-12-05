@@ -1,4 +1,4 @@
-/* global jQuery, wc_address_i18n_params */
+/* global jQuery */
 
 /**
  * Internal dependencies
@@ -12,6 +12,7 @@ import {
 	hasPaymentMethodCountryRestrictions,
 	isUsingSavedPaymentMethod,
 	togglePaymentMethodForCountry,
+	isBillingInformationMissing,
 } from '../utils/upe';
 import {
 	processPayment,
@@ -30,20 +31,10 @@ import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
-import { SHORTCODE_BILLING_ADDRESS_FIELDS } from 'wcpay/checkout/constants';
 import '../utils/copy-test-number';
+import { SHORTCODE_BILLING_ADDRESS_FIELDS } from '../constants';
 
-function getParsedLocale() {
-	try {
-		return JSON.parse(
-			wc_address_i18n_params.locale.replace( /&quot;/g, '"' )
-		);
-	} catch ( e ) {
-		return null;
-	}
-}
 jQuery( function ( $ ) {
-	const locale = getParsedLocale();
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	const publishableKey = getUPEConfig( 'publishableKey' );
 
@@ -85,7 +76,7 @@ jQuery( function ( $ ) {
 	} );
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
-		if ( isBillingInformationMissing() ) {
+		if ( isBillingInformationMissing( this ) ) {
 			return;
 		}
 
@@ -93,11 +84,10 @@ jQuery( function ( $ ) {
 	} );
 
 	$checkoutForm.on( 'click', '#place_order', function () {
-		const isWCPay = document.getElementById(
-			'payment_method_woocommerce_payments'
-		)?.checked;
+		// Use the existing utility function to check if any WCPay payment method is selected
+		const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
 
-		if ( ! isWCPay ) {
+		if ( ! selectedPaymentMethod ) {
 			return;
 		}
 
@@ -231,11 +221,11 @@ jQuery( function ( $ ) {
 	}
 
 	async function maybeMountStripePaymentElement( elementsLocation ) {
-		if (
-			$( '.wcpay-upe-element' ).length &&
-			! $( '.wcpay-upe-element' ).children().length
-		) {
-			for ( const upeElement of $( '.wcpay-upe-element' ).toArray() ) {
+		const $upeForms = $( '.wcpay-upe-form' );
+		const $upeElements = $upeForms.find( '.wcpay-upe-element' );
+
+		if ( $upeElements.length && ! $upeElements.children().length ) {
+			for ( const upeElement of $upeElements.toArray() ) {
 				await mountStripePaymentElement(
 					api,
 					upeElement,
@@ -251,71 +241,17 @@ jQuery( function ( $ ) {
 		if ( hasPaymentMethodCountryRestrictions( upeElement ) ) {
 			togglePaymentMethodForCountry( upeElement );
 
-			// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
-			$( '#billing_country' ).on( 'change', function () {
-				togglePaymentMethodForCountry( upeElement );
-			} );
+			const billingInput = upeElement
+				?.closest( 'form.checkout' )
+				?.querySelector(
+					`[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]`
+				);
+			if ( billingInput ) {
+				// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
+				$( billingInput ).on( 'change', function () {
+					togglePaymentMethodForCountry( upeElement );
+				} );
+			}
 		}
-	}
-
-	function isBillingInformationMissing() {
-		const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
-
-		// first name and last name are kinda special - we just need one of them to be at checkout
-		const name = `${
-			document.querySelector(
-				`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name }`
-			)?.value || ''
-		} ${
-			document.querySelector(
-				`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }`
-			)?.value || ''
-		}`.trim();
-		if (
-			! name &&
-			( enabledBillingFields[
-				SHORTCODE_BILLING_ADDRESS_FIELDS.first_name
-			] ||
-				enabledBillingFields[
-					SHORTCODE_BILLING_ADDRESS_FIELDS.last_name
-				] )
-		) {
-			return true;
-		}
-
-		const billingFieldsToValidate = [
-			'billing_email',
-			SHORTCODE_BILLING_ADDRESS_FIELDS.country,
-			SHORTCODE_BILLING_ADDRESS_FIELDS.address_1,
-			SHORTCODE_BILLING_ADDRESS_FIELDS.city,
-			SHORTCODE_BILLING_ADDRESS_FIELDS.postcode,
-		].filter( ( field ) => enabledBillingFields[ field ] );
-
-		const country = billingFieldsToValidate.includes(
-			SHORTCODE_BILLING_ADDRESS_FIELDS.country
-		)
-			? document.querySelector(
-					`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }`
-			  )?.value
-			: null;
-
-		// We need to just find one field with missing information. If even only one is missing, just return early.
-		return Boolean(
-			billingFieldsToValidate.find( ( fieldName ) => {
-				const $field = document.querySelector( `#${ fieldName }` );
-				let isRequired = enabledBillingFields[ fieldName ]?.required;
-
-				if ( country && locale && fieldName !== 'billing_email' ) {
-					const key = fieldName.replace( 'billing_', '' );
-					isRequired =
-						locale[ country ][ key ]?.required ??
-						locale.default[ key ]?.required;
-				}
-
-				const hasValue = $field?.value;
-
-				return isRequired && ! hasValue;
-			} )
-		);
 	}
 } );
