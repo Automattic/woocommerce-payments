@@ -14,6 +14,7 @@ use WCPay\Core\Mode;
 use WCPay\Internal\LoggerContext;
 use WCPay\Internal\Logger;
 use WC_Log_Levels;
+use WCPay\Logger_Context;
 
 /**
  * Internal Logger Context tests.
@@ -36,17 +37,16 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 	/**
 	 * Test that the logger context is initialized correctly.
 	 *
+	 * @dataProvider provider_logger_context_applied
 	 * @return void
 	 */
-	public function test_logger_context_applied() {
-		$this->sut->init();
+	public function test_logger_context_applied( $setup_callback ) {
+		$setup_callback( $this->sut );
 
 		$entry_time = '2021-01-01 00:00:00 UTC';
 		$timestamp  = strtotime( $entry_time );
 		$message    = "Test log entry...\non two lines";
 		$level      = WC_Log_Levels::INFO;
-
-		$this->sut->set_value( 'foo', 'bar' );
 
 		$filtered_entry = apply_filters(
 			'woocommerce_format_log_entry',
@@ -67,6 +67,28 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 			$entry_number = (int) ltrim( $matches[1], '0' );
 			$this->assertTrue( $entry_number > 0, 'Entry number is a positive integer' );
 		}
+	}
+
+	/**
+	 * Data provider for test_logger_context_applied.
+	 *
+	 * @return array
+	 */
+	public function provider_logger_context_applied() {
+		return [
+			[
+				function ( $instance ) {
+						$instance->init();
+						$instance->set_value( 'foo', 'bar' );
+				},
+			],
+			[
+				function ( $instance ) {
+					Logger_Context::init();
+					Logger_Context::set_value( 'foo', 'bar' );
+				},
+			],
+		];
 	}
 
 	/**
