@@ -902,6 +902,7 @@ class WooPay_Session {
 		$address_2      = get_option( 'woocommerce_checkout_address_2_field', 'optional' );
 		$phone          = get_option( 'woocommerce_checkout_phone_field', 'required' );
 		$terms_checkbox = ! empty( get_option( 'woocommerce_terms_page_id', null ) );
+		$terms_text     = get_option( 'woocommerce_checkout_privacy_policy_text' );
 
 		// Blocks checkout options. To get the blocks checkout options, we need
 		// to parse the checkout page content because the options are stored
@@ -915,6 +916,7 @@ class WooPay_Session {
 				'address_2'      => $address_2,
 				'phone'          => $phone,
 				'terms_checkbox' => $terms_checkbox,
+				'terms_text'     => $terms_text,
 			];
 		}
 
@@ -953,6 +955,7 @@ class WooPay_Session {
 			$fields_block   = self::get_inner_block( $checkout_page_blocks[ $checkout_block_index ], 'woocommerce/checkout-fields-block' );
 			$terms_block    = self::get_inner_block( $fields_block, 'woocommerce/checkout-terms-block' );
 			$terms_checkbox = isset( $terms_block['attrs']['checkbox'] ) && $terms_block['attrs']['checkbox'];
+			$terms_text     = $terms_block['attrs']['text'] ?? null;
 		}
 
 		return [
@@ -960,6 +963,7 @@ class WooPay_Session {
 			'address_2'      => $address_2,
 			'phone'          => $phone,
 			'terms_checkbox' => $terms_checkbox,
+			'terms_text'     => $terms_text,
 		];
 	}
 
