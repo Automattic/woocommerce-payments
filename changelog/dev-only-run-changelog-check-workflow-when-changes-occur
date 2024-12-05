@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Skip running e2e GH checks when changelog changes occur
+
+
