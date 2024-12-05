@@ -82,6 +82,9 @@ export function UpeAppearanceEditor( {
 			if ( ! ( field.property in appearance.rules[ rule ] ) ) {
 				return null;
 			}
+			if ( field.excludeFrom && field.excludeFrom.includes( rule ) ) {
+				return null;
+			}
 			const onChange = ( value ) => {
 				const transformedValue = field.transformValue( value );
 				const newRuleValue = {
@@ -279,7 +282,8 @@ export function UpeAppearanceEditor( {
 								}
 							/>
 							<small>
-								Requires Saving and a Page Reload to take effect
+								Requires Saving and Reloading the page to take
+								effect
 							</small>
 						</fieldset>
 					) }
@@ -298,7 +302,7 @@ export function UpeAppearanceEditor( {
 					</Button>
 
 					<Button
-						className="alt"
+						className="button alt"
 						disabled={ loading }
 						onClick={ saveAppearance }
 					>

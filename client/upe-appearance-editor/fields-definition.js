@@ -66,6 +66,7 @@ const fieldsDefinition = [
 		...pxFieldDefaults,
 		label: 'Line Height',
 		property: 'lineHeight',
+		excludeFrom: [ '.Label', '.Text' ],
 	},
 	{
 		...borderStyleFieldDefaults,
