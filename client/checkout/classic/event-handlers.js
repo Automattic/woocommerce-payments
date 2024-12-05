@@ -106,7 +106,8 @@ jQuery( function ( $ ) {
 	document.addEventListener( 'change', function ( event ) {
 		if (
 			event.target &&
-			event.target.id === 'wc-woocommerce_payments-new-payment-method'
+			event.target.id ===
+				'wc-woocommerce_payments_card-new-payment-method'
 		) {
 			renderTerms( event );
 		}
