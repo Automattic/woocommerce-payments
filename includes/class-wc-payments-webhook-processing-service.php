@@ -535,6 +535,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$reason       = $this->read_webhook_property( $event_object, 'reason' );
 		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
 		$evidence     = $this->read_webhook_property( $event_object, 'evidence_details' );
+		$status       = $this->read_webhook_property( $event_object, 'status' );
 		$due_by       = $this->read_webhook_property( $evidence, 'due_by' );
 
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -558,7 +559,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by );
+		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );

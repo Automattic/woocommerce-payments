@@ -24,7 +24,6 @@ import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
 import {
 	DepositMinimumBalanceNotice,
-	DepositTransitDaysNotice,
 	NegativeBalanceDepositsPausedNotice,
 	NewAccountWaitingPeriodNotice,
 	NoFundsAvailableForDepositNotice,
@@ -149,11 +148,6 @@ const DepositsOverview: React.FC = () => {
 					<SuspendedDepositNotice />
 				) : (
 					<>
-						{ isDepositsUnrestricted &&
-							! isDepositAwaitingPendingFunds &&
-							! hasErroredExternalAccount && (
-								<DepositTransitDaysNotice />
-							) }
 						{ ! hasCompletedWaitingPeriod && (
 							<NewAccountWaitingPeriodNotice />
 						) }

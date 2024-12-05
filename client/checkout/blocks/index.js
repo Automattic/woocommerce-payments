@@ -64,7 +64,6 @@ const upeMethods = {
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
 const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
@@ -116,7 +115,6 @@ Object.entries( enabledPaymentMethodsConfig )
 					iconLight={ upeConfig.icon }
 					iconDark={ upeConfig.darkIcon }
 					upeName={ upeName }
-					upeAppearanceTheme={ upeAppearanceTheme }
 				/>
 			),
 			ariaLabel: 'WooPayments',

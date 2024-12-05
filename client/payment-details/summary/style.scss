@@ -11,12 +11,28 @@
 .payment-details-summary {
 	display: flex;
 	flex: 1;
-	@include breakpoint( '<660px' ) {
+	@media screen and ( max-width: $break-medium ) {
 		flex-direction: column;
 	}
 
 	.payment-details-summary__section {
 		flex-grow: 1;
+	}
+
+	.payment-details-summary__amount-wrapper {
+		display: flex;
+		align-items: center;
+	}
+
+	@media screen and ( max-width: $break-small ) {
+		.payment-details-summary__amount-wrapper {
+			flex-direction: column;
+			align-items: flex-start;
+
+			.payment-details-summary__status {
+				order: -1;
+			}
+		}
 	}
 
 	.payment-details-summary__amount {
@@ -25,7 +41,7 @@
 		padding: 0;
 		margin: 0;
 		display: flex;
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
 		align-items: center;
 
 		.payment-details-summary__amount-currency {
@@ -93,7 +109,7 @@
 		justify-content: initial;
 		flex-direction: column;
 		flex-wrap: nowrap;
-		@include breakpoint( '>660px' ) {
+		@media screen and ( min-width: $break-medium ) {
 			justify-content: flex-start;
 			align-items: flex-end;
 		}
