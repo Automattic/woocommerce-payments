@@ -431,7 +431,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return array The filtered array.
 	 */
-	public static function array_filter_recursive( array $array, callable $callback = null ): array {
+	public static function array_filter_recursive( array $array, ?callable $callback = null ): array {
 		foreach ( $array as $key => &$value ) { // Mind the use of a reference.
 			if ( \is_array( $value ) ) {
 				$value = self::array_filter_recursive( $value, $callback );

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Ensure ECE button load events are triggered for multiple buttons on the same page.

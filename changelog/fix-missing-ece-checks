@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: missing ece is_product_page checks

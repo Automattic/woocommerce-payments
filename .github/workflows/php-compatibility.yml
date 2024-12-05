@@ -1,8 +1,7 @@
 name: PHP Compatibility
 
 on:
-  #pull_request # Workflow disabled temporarily until PHP Compatibility fixes are in place
-  workflow_dispatch
+  pull_request
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -1016,12 +1016,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->payment_methods['card'],
 					[ $this->payment_methods ],
-					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
 					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->onlyMethods(
@@ -1124,12 +1124,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->payment_methods['card'],
 					[ $this->payment_methods ],
-					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
 					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->onlyMethods(
@@ -3559,12 +3559,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$this->mock_payment_method,
 			[ $this->mock_payment_method ],
-			$this->mock_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
 			$this->mock_fraud_service,
 			$this->mock_duplicates_detection_service,
+			$this->mock_rate_limiter,
 		];
 
 		foreach ( $constructor_replacement as $key => $value ) {
@@ -4093,12 +4093,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				$this->mock_action_scheduler_service,
 				$payment_method,
 				$this->payment_methods,
-				$this->mock_rate_limiter,
 				$this->order_service,
 				$this->mock_dpps,
 				$this->mock_localization_service,
 				$this->mock_fraud_service,
-				$this->mock_duplicates_detection_service
+				$this->mock_duplicates_detection_service,
+				$this->mock_rate_limiter
 			);
 		}
 

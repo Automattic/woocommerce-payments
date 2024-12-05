@@ -26,5 +26,8 @@
 
 		<!-- Debug functions are rarely used in our extensions, and are simply there for logging. -->
 		<exclude name="PHPCompatibility.FunctionUse.ArgumentFunctionsReportCurrentValue.NeedsInspection" />
+
+		<!-- Disable rule that forces to define by default new HTML entities flags introduced in PHP 8.1 to keep code compatible with earlier versions -->
+		<exclude name="PHPCompatibility.ParameterValues.NewHTMLEntitiesFlagsDefault" />
 	</rule>
 </ruleset>
