@@ -2,11 +2,12 @@ name: Check changelog
 
 on:
   pull_request:
+    types: [opened, synchronize]
     branches:
       - develop
       - 'release/**'
-    paths-ignore:
-      - '.github/**'
+    paths:
+      - 'changelog/**'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
