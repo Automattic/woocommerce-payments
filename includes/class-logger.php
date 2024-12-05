@@ -129,9 +129,10 @@ class Logger {
 	 * @return string
 	 */
 	public static function format_object( $label, $object ) {
-		$encoded = wp_json_encode( $object, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
-		if ( false === $encoded ) {
-			return sprintf( 'Error encoding object "%s": %s', $label, json_last_error_msg() );
+		try {
+			$encoded = wp_json_encode( $object, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR );
+		} catch ( \JsonException $e ) {
+			return sprintf( 'Error encoding object "%s": %s', $label, $e->getMessage() );
 		}
 		return sprintf( '%s: %s', $label, $encoded );
 	}

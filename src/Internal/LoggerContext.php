@@ -101,10 +101,7 @@ class LoggerContext {
 		$entries = [ $context['message'] ];
 
 		if ( $this->context_updated ) {
-			$encoded = wp_json_encode( $this->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
-			if ( false !== $encoded ) {
-				$entries[] = sprintf( 'CONTEXT: %s', $encoded );
-			}
+			$entries[]             = Logger::format_object( 'CONTEXT', $this->context );
 			$this->context_updated = false;
 		}
 
