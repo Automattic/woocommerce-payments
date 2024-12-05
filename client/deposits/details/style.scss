@@ -52,6 +52,10 @@
 		margin: 0;
 		list-style-type: none;
 
+		@include breakpoint( '<660px' ) {
+			flex-direction: column;
+		}
+
 		.woocommerce-summary__item {
 			border-bottom: 0;
 			background-color: inherit;
@@ -67,6 +71,13 @@
 			text-align: right;
 			font-size: 36px;
 			line-height: 82px;
+
+			@include breakpoint( '<660px' ) {
+				padding: 24px;
+				line-height: 36px;
+				text-align: left;
+				border-top: 1px solid $studio-gray-5;
+			}
 		}
 	}
 
