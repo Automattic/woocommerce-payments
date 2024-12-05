@@ -285,12 +285,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						$this->mock_action_scheduler_service,
 						$mock_payment_method,
 						$this->mock_payment_methods,
-						$this->mock_rate_limiter,
 						$this->order_service,
 						$this->mock_dpps,
 						$this->mock_localization_service,
 						$this->mock_fraud_service,
 						$this->mock_duplicates_detection_service,
+						$this->mock_rate_limiter,
 					]
 				)
 				->setMethods(
@@ -1065,12 +1065,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods[ Payment_Method::CARD ],
 					$this->mock_payment_methods,
-					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
 					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods( [ 'get_payment_methods_from_gateway_id' ] )
@@ -1111,12 +1111,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods[ Payment_Method::CARD ],
 					$this->mock_payment_methods,
-					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
 					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods( [ 'get_payment_methods_from_gateway_id' ] )
@@ -1156,12 +1156,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods[ Payment_Method::CARD ],
 					$this->mock_payment_methods,
-					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
 					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
@@ -1210,12 +1210,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods[ Payment_Method::CARD ],
 					$this->mock_payment_methods,
-					$this->mock_rate_limiter,
 					$this->order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
 					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->onlyMethods(

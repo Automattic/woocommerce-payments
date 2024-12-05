@@ -99,6 +99,7 @@ export const getFilters = (
 				'filter',
 				'type_is',
 				'type_is_not',
+				'type_is_in',
 				'date_before',
 				'date_after',
 				'date_between',

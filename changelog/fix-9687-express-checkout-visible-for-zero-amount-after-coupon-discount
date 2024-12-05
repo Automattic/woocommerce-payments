@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent express checkout from being used if cart total becomes zero after coupon usage.

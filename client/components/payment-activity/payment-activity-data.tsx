@@ -17,7 +17,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import type { PaymentActivityData } from 'wcpay/data/payment-activity/types';
 import './style.scss';
 
-const searchTermsForViewReportLink = {
+const typeFiltersForViewReportLink = {
 	totalPaymentVolume: [
 		'charge',
 		'payment',
@@ -43,11 +43,11 @@ const searchTermsForViewReportLink = {
 	dispute: [ 'dispute', 'dispute_reversal' ],
 };
 
-const getSearchParams = ( searchTerms: string[] ) => {
-	return searchTerms.reduce(
+const getTypeFilters = ( types: string[] ) => {
+	return types.reduce(
 		( acc, term, index ) => ( {
 			...acc,
-			[ `search[${ index }]` ]: term,
+			[ `type_is_in[${ index }]` ]: term,
 		} ),
 		{}
 	);
@@ -122,8 +122,8 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 					'date_between[1]': moment( paymentActivityData?.date_end )
 						.add( siteTimeZone )
 						.format( 'YYYY-MM-DD' ),
-					...getSearchParams(
-						searchTermsForViewReportLink.totalPaymentVolume
+					...getTypeFilters(
+						typeFiltersForViewReportLink.totalPaymentVolume
 					),
 				} ) }
 				tracksSource="total_payment_volume"
@@ -169,8 +169,8 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						)
 							.add( siteTimeZone )
 							.format( 'YYYY-MM-DD' ),
-						...getSearchParams(
-							searchTermsForViewReportLink.charge
+						...getTypeFilters(
+							typeFiltersForViewReportLink.charge
 						),
 					} ) }
 					tracksSource="charges"
@@ -196,8 +196,8 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						)
 							.add( siteTimeZone )
 							.format( 'YYYY-MM-DD' ),
-						...getSearchParams(
-							searchTermsForViewReportLink.refunds
+						...getTypeFilters(
+							typeFiltersForViewReportLink.refunds
 						),
 					} ) }
 					tracksSource="refunds"
@@ -250,8 +250,8 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 						)
 							.add( siteTimeZone )
 							.format( 'YYYY-MM-DD' ),
-						...getSearchParams(
-							searchTermsForViewReportLink.dispute
+						...getTypeFilters(
+							typeFiltersForViewReportLink.dispute
 						),
 					} ) }
 					tracksSource="disputes"

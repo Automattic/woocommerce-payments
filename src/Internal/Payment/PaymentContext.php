@@ -151,7 +151,7 @@ class PaymentContext {
 	 *
 	 * @param string $cvc_confirmation The confirmation.
 	 */
-	public function set_cvc_confirmation( string $cvc_confirmation = null ) {
+	public function set_cvc_confirmation( ?string $cvc_confirmation = null ) {
 		$this->set( 'cvc_confirmation', $cvc_confirmation );
 	}
 

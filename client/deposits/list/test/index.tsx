@@ -53,6 +53,7 @@ const mockDeposits = [
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		bank_reference_key: 'mock_reference_key',
 	} as CachedDeposit,
 	{
 		id: 'po_mock2',
@@ -62,6 +63,7 @@ const mockDeposits = [
 		status: 'pending',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		bank_reference_key: 'mock_reference_key',
 	} as CachedDeposit,
 	{
 		id: 'po_mock3',
@@ -71,6 +73,7 @@ const mockDeposits = [
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		bank_reference_key: 'mock_reference_key',
 	} as CachedDeposit,
 ];
 
@@ -287,6 +290,7 @@ describe( 'Deposits list', () => {
 				'Amount',
 				'Status',
 				'"Bank account"',
+				'"Bank reference key"',
 			];
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
@@ -332,6 +336,9 @@ describe( 'Deposits list', () => {
 			expect( csvFirstDeposit[ 5 ] ).toBe(
 				`"${ displayFirstDeposit[ 4 ] }"`
 			); // bank account
+			expect( csvFirstDeposit[ 6 ] ).toBe(
+				`${ displayFirstDeposit[ 5 ] }`
+			); // bank reference key
 		} );
 
 		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 1000.', async () => {
