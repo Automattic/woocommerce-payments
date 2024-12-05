@@ -132,8 +132,8 @@ export const getUpeSettings = ( paymentMethodType ) => {
 
 function getGatewayIdBy( paymentMethodType ) {
 	const gatewayPrefix = 'woocommerce_payments';
-	// Only append underscore and payment method type for non-card payments
-	return paymentMethodType === 'card'
+	// Only append underscore and payment method type for non-main gateways.
+	return paymentMethodType === 'main'
 		? gatewayPrefix
 		: `${ gatewayPrefix }_${ paymentMethodType }`;
 }
