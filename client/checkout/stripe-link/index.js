@@ -5,7 +5,7 @@ import { dispatchChangeEventFor } from '../utils/upe';
 
 export const switchToNewPaymentTokenElement = () => {
 	const newPaymentTokenElement = document.getElementById(
-		'wc-woocommerce_payments-payment-token-new'
+		'wc-woocommerce_payments_card-payment-token-new'
 	);
 	if ( newPaymentTokenElement && ! newPaymentTokenElement.checked ) {
 		newPaymentTokenElement.checked = true;
