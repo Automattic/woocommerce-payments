@@ -19,6 +19,9 @@ import {
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
 
+// Used to control if we need to refresh the cart/checkout information when ECE is dismissed.
+let wasShippingInfoUpdated = false;
+
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
 		const response = await api.expressCheckoutECECalculateShippingOptions(
@@ -26,6 +29,7 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 		);
 
 		if ( response.result === 'success' ) {
+			wasShippingInfoUpdated = true;
 			elements.update( {
 				amount: response.total.amount,
 			} );
@@ -48,6 +52,7 @@ export const shippingRateChangeHandler = async ( api, event, elements ) => {
 		);
 
 		if ( response.result === 'success' ) {
+			wasShippingInfoUpdated = true;
 			elements.update( { amount: response.total.amount } );
 			event.resolve( {
 				lineItems: normalizeLineItems( response.displayItems ),
@@ -171,28 +176,32 @@ export const onCompletePaymentHandler = () => {
 };
 
 export const onCancelHandler = () => {
-	const context = getExpressCheckoutData( 'button_context' );
-	const isBlocks = getExpressCheckoutData( 'has_block' );
+	if ( wasShippingInfoUpdated ) {
+		const context = getExpressCheckoutData( 'button_context' );
+		const isBlocks = getExpressCheckoutData( 'has_block' );
 
-	switch ( context ) {
-		case 'cart':
-			if ( isBlocks ) {
-				alert( 'Cart block context' );
-			} else {
-				alert( 'Cart shortcode context' );
-			}
-			location.reload( true );
-			break;
-		case 'checkout':
-			if ( isBlocks ) {
-				alert( 'Checkout block context' );
-			} else {
-				alert( 'Checkout shortcode context' );
-			}
-			location.reload( true );
-			break;
-		default:
-			alert( 'Default context' );
-			unblockUI();
+		switch ( context ) {
+			case 'cart':
+				if ( isBlocks ) {
+					alert( 'Cart block context' );
+				} else {
+					alert( 'Cart shortcode context' );
+				}
+				location.reload( true );
+				break;
+			case 'checkout':
+				if ( isBlocks ) {
+					alert( 'Checkout block context' );
+				} else {
+					alert( 'Checkout shortcode context' );
+				}
+				location.reload( true );
+				break;
+			default:
+				alert( 'Default context' );
+		}
 	}
+
+	wasShippingInfoUpdated = false;
+	unblockUI();
 };
