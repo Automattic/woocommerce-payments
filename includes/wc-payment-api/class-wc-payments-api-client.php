@@ -2107,20 +2107,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		Logger_Context::set_value( 'DOING_CRON', defined( 'DOING_CRON' ) && DOING_CRON );
 		Logger_Context::set_value( 'WP_CLI', defined( 'WP_CLI' ) && WP_CLI );
 
+		$headers = apply_filters( 'wcpay_api_request_headers', $headers );
 		Logger::log( "REQUEST $method $redacted_url" );
-		Logger::log(
-			'HEADERS: '
-			. var_export( $headers, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-		);
+		Logger::log( Logger::format_object( 'HEADERS', $headers ) );
 
 		if ( null !== $body ) {
-			Logger::log(
-				'BODY: '
-				. var_export( $redacted_params, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			);
+			Logger::log( Logger::format_object( 'BODY', $redacted_params ) );
 		}
 
-		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
 		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
 		$retries        = 0;
 		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
@@ -2192,10 +2186,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$response_body = $response;
 		}
 
-		Logger::log(
-			'RESPONSE: '
-			. var_export( WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-		);
+		Logger::log( Logger::format_object( 'RESPONSE', WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ) ) );
 
 		return $response_body;
 	}

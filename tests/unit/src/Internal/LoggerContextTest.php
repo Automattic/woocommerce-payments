@@ -88,6 +88,22 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 					Logger_Context::set_value( 'foo', 'bar' );
 				},
 			],
+			[
+				function ( $instance ) {
+						$instance->init();
+						$instance->set_value( 'foo', 'bar' );
+						// Set a value to be removed.
+						$instance->set_value( 'baz', 'qux' );
+						$instance->set_value( 'baz', null );
+				},
+			],
+			[
+				function ( $instance ) {
+						$instance->init();
+						$instance->init();
+						$instance->set_value( 'foo', 'bar' );
+				},
+			],
 		];
 	}
 
@@ -114,6 +130,18 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 				'level'     => $level,
 				'message'   => $message,
 				'context'   => [],
+			]
+		);
+
+		$this->assertSame( $message, $filtered_entry, 'Filtered entry is the same as the original message' );
+
+		$filtered_entry = apply_filters(
+			'woocommerce_format_log_entry',
+			$message,
+			[
+				'timestamp' => $timestamp,
+				'level'     => $level,
+				'message'   => $message,
 			]
 		);
 

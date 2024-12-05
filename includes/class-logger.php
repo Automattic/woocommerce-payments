@@ -120,4 +120,19 @@ class Logger {
 	public static function debug( $message ) {
 		self::log( $message, 'debug' );
 	}
+
+	/**
+	 * Formats an object for logging.
+	 *
+	 * @param string $label  Label for the object.
+	 * @param mixed  $object Object to format.
+	 * @return string
+	 */
+	public static function format_object( $label, $object ) {
+		$encoded = wp_json_encode( $object, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
+		if ( false === $encoded ) {
+			return sprintf( 'Error encoding object "%s": %s', $label, json_last_error_msg() );
+		}
+		return sprintf( '%s: %s', $label, $encoded );
+	}
 }
