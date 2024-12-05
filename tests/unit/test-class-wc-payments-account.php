@@ -3175,20 +3175,31 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_recommended_payment_methods_unsupported_country() {
-		$this->assertSame( [], $this->wcpay_account->get_recommended_payment_methods( 'unsupported_country' ) );
+		$this->assertSame( [], $this->wcpay_account->get_recommended_payment_methods( 'XZ' ) );
 	}
-
 
 	public function get_recommended_payment_methods_provider() {
 		return [
 			'No PMs suggested'                  => [ 'US', [], [] ],
-			'Invalid PMs array'                 => [ 'US', [ 'test' => 'test' ], [] ],
+			'Invalid PMs array'                 => [
+				'US',
+				[
+					'type'    => 'available',
+					'enabled' => false,
+				],
+				[],
+			],
 			'Enabled flag and priority not set' => [
 				'US',
 				[
 					[
 						'id'    => 1,
 						'title' => 'test PM',
+						'type'  => 'available',
+					],
+					[
+						'id'    => 2,
+						'title' => 'test PM 2',
 						'type'  => 'available',
 					],
 				],
@@ -3199,6 +3210,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 						'type'     => 'available',
 						'enabled'  => false,
 						'priority' => 0,
+					],
+					[
+						'id'       => 2,
+						'title'    => 'test PM 2',
+						'type'     => 'available',
+						'enabled'  => false,
+						'priority' => 1,
 					],
 				],
 			],
@@ -3229,7 +3247,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider get_recommended_payment_methods_provider
 	 */
-	public function test_get_recommended_payment_methods_xxx( $country_code, $recommended_pms, $expected ) {
+	public function test_get_recommended_payment_methods( $country_code, $recommended_pms, $expected ) {
 
 		$this->mock_empty_cache();
 		$this->mock_onboarding_service

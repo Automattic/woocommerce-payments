@@ -3969,7 +3969,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->card_gateway->is_proper_intent_used_with_order( WC_Helper_Order::create_order(), 'wrong_intent_id' ) );
 	}
 
-
 	public function test_get_recommended_payment_method() {
 		$this->mock_wcpay_account
 			->expects( $this->once() )
@@ -3977,7 +3976,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( 'US' );
 		$this->card_gateway->get_recommended_payment_methods( 'US' );
 	}
-
 
 	public function get_recommended_payment_method_no_country_code_provider() {
 		return [
@@ -4003,14 +4001,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account
 			->expects( $this->any() )
 			->method( 'get_account_country' )
-			->willReturn( 'test' );
+			->willReturn( $country_code );
 
 		$this->mock_wcpay_account
 			->expects( $this->once() )
 			->method( 'get_recommended_payment_methods' )
 			->with( $country_code );
 
-		$this->card_gateway->get_recommended_payment_methods( '' );
+		$this->assertSame( [], $this->card_gateway->get_recommended_payment_methods( '' ) );
 	}
 
 	/**
