@@ -37,6 +37,14 @@
 			font-size: 20px;
 			line-height: 28px;
 		}
+
+		.wcpay-summary__item-detail {
+			color: $dark-gray-500;
+
+			@include breakpoint( '<480px' ) {
+				word-wrap: break-word;
+			}
+		}
 	}
 
 	.wcpay-deposit-fee {
