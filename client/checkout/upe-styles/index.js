@@ -158,6 +158,7 @@ export const appearanceSelectors = {
 		containerSelectors: [ '.woocommerce-checkout-review-order-table' ],
 		headerSelectors: [ '.site-header' ],
 		footerSelectors: [ '.site-footer' ],
+		footerLink: [ '.site-footer a' ],
 	},
 
 	/**
@@ -518,6 +519,10 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	);
 	const headerRules = getFieldStyles( selectors.headerSelectors, '.Header' );
 	const footerRules = getFieldStyles( selectors.footerSelectors, '.Footer' );
+	const footerLinkRules = getFieldStyles(
+		selectors.footerLink,
+		'.Footer--link'
+	);
 	const globalRules = {
 		colorBackground: backgroundColor,
 		colorText: paragraphRules.color,
@@ -565,6 +570,7 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 			'.Heading': headingRules,
 			'.Header': headerRules,
 			'.Footer': footerRules,
+			'.Footer-link': footerLinkRules,
 			'.Button': buttonRules,
 			'.Link': linkRules,
 			'.Container': containerRules,
