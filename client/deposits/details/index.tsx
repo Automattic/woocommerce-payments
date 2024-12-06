@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
@@ -130,34 +130,76 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
 	}
 
-	const depositDateItem = (
-		<SummaryItem
-			key="depositDate"
-			label={
-				`${ depositDateLabel }: ` +
-				dateI18n(
-					'M j, Y',
-					moment.utc( deposit.date ).toISOString(),
-					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-				)
+	const DepositDateItem = () => {
+		useEffect( () => {
+			const copyButton = document.querySelector(
+				'.woopayments-copy-bank-reference-key'
+			);
+
+			if ( copyButton ) {
+				copyButton.addEventListener( 'click', () => {
+					const bankReferenceKey = document.querySelector(
+						'.woopayments-payout-bank-reference-key'
+					)?.textContent;
+
+					if ( bankReferenceKey ) {
+						navigator.clipboard.writeText( bankReferenceKey );
+
+						copyButton.classList.add( 'state--copied' );
+						setTimeout( () => {
+							copyButton.classList.remove( 'state--copied' );
+						}, 2000 );
+					}
+				} );
 			}
-			value={ <DepositStatusIndicator deposit={ deposit } /> }
-			detail={
-				<>
-					{ deposit.bankAccount }
-					<br />
-					Bank reference key: { deposit.bank_reference_key ?? 'N/A' }
-				</>
-			}
-		/>
-	);
+		}, [] );
+
+		return (
+			<SummaryItem
+				key="depositDate"
+				label={
+					`${ depositDateLabel }: ` +
+					dateI18n(
+						'M j, Y',
+						moment.utc( deposit.date ).toISOString(),
+						true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+					)
+				}
+				value={ <DepositStatusIndicator deposit={ deposit } /> }
+				detail={
+					<>
+						{ deposit.bankAccount }
+						<br />
+						Bank reference key:{ ' ' }
+						<span className="woopayments-payout-bank-reference-key">
+							{ deposit.bank_reference_key ?? 'N/A' }
+						</span>
+						<button
+							type="button"
+							className="woopayments-copy-bank-reference-key"
+							aria-label={ __(
+								'Copy bank reference key to clipboard',
+								'woocommerce-payments'
+							) }
+							title={ __(
+								'Copy to clipboard',
+								'woocommerce-payments'
+							) }
+						>
+							<i></i>
+						</button>
+					</>
+				}
+			/>
+		);
+	};
 
 	return (
 		<div className="wcpay-deposit-overview">
 			{ deposit.automatic ? (
 				<Card className="wcpay-deposit-automatic">
 					<ul>
-						{ depositDateItem }
+						{ DepositDateItem() }
 						<li className="wcpay-deposit-amount">
 							{ formatExplicitCurrency(
 								deposit.amount,
@@ -178,7 +220,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					}
 				>
 					{ () => [
-						depositDateItem,
+						DepositDateItem(),
 						<SummaryItem
 							key="depositAmount"
 							label={
