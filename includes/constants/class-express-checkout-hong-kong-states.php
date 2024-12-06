@@ -29,6 +29,7 @@ class Express_Checkout_Hong_Kong_States {
 	// Source: https://www.rvd.gov.hk/doc/tc/hkpr13/06.pdf.
 	const STATES = [
 		'hong kong',
+		'hong kong island',
 		'港島',
 
 		'central and western',
