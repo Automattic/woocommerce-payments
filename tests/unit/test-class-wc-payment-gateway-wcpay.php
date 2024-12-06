@@ -3988,6 +3988,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider get_recommended_payment_method_no_country_code_provider
 	 */
 	public function test_get_recommended_payment_method_no_country_code_provided( $is_provider_connected, $country_code ) {
+		// Set base country fallback to US.
+		add_filter(
+			'woocommerce_countries_base_country',
+			function () {
+				return 'US';
+			}
+		);
+
 		$this->mock_wcpay_account
 			->expects( $this->once() )
 			->method( 'is_provider_connected' )
