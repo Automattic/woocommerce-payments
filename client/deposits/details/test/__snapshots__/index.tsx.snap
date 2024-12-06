@@ -45,6 +45,9 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
                 class="wcpay-summary__item-detail"
               >
                 MOCK BANK •••• 1234 (USD)
+                <br />
+                Bank reference key: 
+                N/A
               </div>
             </div>
           </li>
@@ -117,6 +120,9 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
                 class="wcpay-summary__item-detail"
               >
                 MOCK BANK •••• 1234 (USD)
+                <br />
+                Bank reference key: 
+                N/A
               </div>
             </div>
           </li>
@@ -195,6 +201,9 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
               class="wcpay-summary__item-detail"
             >
               MOCK BANK •••• 1234 (USD)
+              <br />
+              Bank reference key: 
+              N/A
             </div>
           </div>
         </li>
