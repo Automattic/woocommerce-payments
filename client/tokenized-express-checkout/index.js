@@ -32,6 +32,7 @@ import {
 	getCartApiHandler,
 } from './event-handlers';
 import ExpressCheckoutOrderApi from './order-api';
+import ExpressCheckoutCartApi from './cart-api';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import expressCheckoutButtonUi from './button-ui';
 import {
@@ -39,6 +40,28 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
+
+let cachedCartData = null;
+const noop = () => null;
+const fetchNewCartData = async () => {
+	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
+		return await getCartApiHandler().getCart();
+	}
+
+	// creating a new cart and clearing it afterward,
+	// to avoid scenarios where the stock for a product with limited (or low) availability is added to the cart,
+	// preventing other customers from purchasing.
+	const temporaryCart = new ExpressCheckoutCartApi();
+	temporaryCart.useSeparateCart();
+
+	const cartData = await temporaryCart.addProductToCart();
+
+	// no need to wait for the request to end, it can be done asynchronously.
+	// using `.finally( noop )` to avoid annoying IDE warnings.
+	temporaryCart.emptyCart().finally( noop );
+
+	return cartData;
+};
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -139,7 +162,7 @@ jQuery( ( $ ) => {
 		startExpressCheckoutElement: async ( options ) => {
 			const stripe = await api.getStripe();
 			const elements = stripe.elements( {
-				mode: options.mode ?? 'payment',
+				mode: 'payment',
 				amount: options.total,
 				currency: options.currency,
 				paymentMethodCreation: 'manual',
@@ -282,12 +305,12 @@ jQuery( ( $ ) => {
 					try {
 						expressCheckoutButtonUi.blockButton();
 
-						const newCartData = await getCartApiHandler().getCart();
+						cachedCartData = await fetchNewCartData();
 						// checking if items needed shipping, before assigning new cart data.
 						const didItemsNeedShipping = options.requestShipping;
 
 						const displayItems = transformCartDataForDisplayItems(
-							newCartData
+							cachedCartData
 						);
 						/**
 						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
@@ -296,7 +319,8 @@ jQuery( ( $ ) => {
 						 */
 						if (
 							! wcpayECE.paymentAborted &&
-							didItemsNeedShipping === newCartData.needs_shipping
+							didItemsNeedShipping ===
+								cachedCartData.needs_shipping
 						) {
 							elements.update( {
 								total: {
@@ -305,38 +329,24 @@ jQuery( ( $ ) => {
 									),
 									amount: transformPrice(
 										parseInt(
-											newCartData.totals.total_price,
+											cachedCartData.totals.total_price,
 											10
 										) -
 											parseInt(
-												newCartData.totals
+												cachedCartData.totals
 													.total_refund || 0,
 												10
 											),
-										newCartData.totals
+										cachedCartData.totals
 									),
 								},
 								displayItems: displayItems,
 							} );
 						} else {
-							wcpayExpressCheckoutParams.product.needs_shipping =
-								newCartData.needs_shipping;
-							wcpayExpressCheckoutParams.product.displayItems = displayItems;
-							wcpayExpressCheckoutParams.product.total = {
-								...wcpayExpressCheckoutParams.product.total,
-								amount: transformPrice(
-									parseInt(
-										newCartData.totals.total_price,
-										10
-									) -
-										parseInt(
-											newCartData.totals.total_refund ||
-												0,
-											10
-										),
-									newCartData.totals
-								),
-							};
+							// the cachedCartData from the Store API will be used from now on,
+							// instead of the `product` attributes.
+							wcpayExpressCheckoutParams.product = null;
+
 							await wcpayECE.init();
 						}
 
@@ -352,6 +362,21 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: async () => {
+			// on product pages, we should be able to have `getExpressCheckoutData( 'product' )` from the backend,
+			// which saves us some AJAX calls.
+			if ( ! getExpressCheckoutData( 'product' ) && ! cachedCartData ) {
+				try {
+					cachedCartData = await fetchNewCartData();
+				} catch ( e ) {
+					// if something fails here, we can likely fall back on `getExpressCheckoutData( 'product' )`.
+				}
+			}
+
+			// once (and if) cart data has been fetched, we can safely clear product data from the backend.
+			if ( cachedCartData ) {
+				wcpayExpressCheckoutParams.product = undefined;
+			}
+
 			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
 				// on product pages, we need to interact with an anonymous cart to check out the product,
 				// so that we don't affect the products in the main cart.
@@ -359,7 +384,6 @@ jQuery( ( $ ) => {
 				getCartApiHandler().useSeparateCart();
 
 				await wcpayECE.startExpressCheckoutElement( {
-					mode: 'payment',
 					total: getExpressCheckoutData( 'product' )?.total.amount,
 					currency: getExpressCheckoutData( 'product' )?.currency,
 					requestShipping:
@@ -373,32 +397,37 @@ jQuery( ( $ ) => {
 				} );
 			} else {
 				// If this is the cart page, or checkout page, or pay-for-order page, we need to request the cart details.
-				const cartData = await getCartApiHandler().getCart();
-				const total = transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
-				);
+				// but if the data is not available, we can't render the button.
+				const total = cachedCartData
+					? transformPrice(
+							parseInt( cachedCartData.totals.total_price, 10 ) -
+								parseInt(
+									cachedCartData.totals.total_refund || 0,
+									10
+								),
+							cachedCartData.totals
+					  )
+					: 0;
 				if ( total === 0 ) {
 					expressCheckoutButtonUi.hideContainer();
 					expressCheckoutButtonUi.getButtonSeparator().hide();
 				} else {
 					await wcpayECE.startExpressCheckoutElement( {
-						mode: 'payment',
 						total,
-						currency: cartData.totals.currency_code.toLowerCase(),
+						currency: cachedCartData.totals.currency_code.toLowerCase(),
 						// pay-for-order should never display the shipping selection.
 						requestShipping:
 							getExpressCheckoutData( 'button_context' ) !==
-								'pay_for_order' && cartData.needs_shipping,
+								'pay_for_order' &&
+							cachedCartData.needs_shipping,
 						shippingRates: transformCartDataForShippingRates(
-							cartData
+							cachedCartData
 						),
 						requestPhone:
 							getExpressCheckoutData( 'checkout' )
 								?.needs_payer_phone ?? false,
 						displayItems: transformCartDataForDisplayItems(
-							cartData
+							cachedCartData
 						),
 					} );
 				}
