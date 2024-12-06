@@ -166,57 +166,6 @@ jQuery( ( $ ) => {
 		},
 
 		/**
-		 * Adds the item to the cart and return cart details.
-		 *
-		 * @return {Promise} Promise for the request to the server.
-		 */
-		addToCart: () => {
-			let productId = $( '.single_add_to_cart_button' ).val();
-
-			// Check if product is a variable product.
-			if ( $( '.single_variation_wrap' ).length ) {
-				productId = $( '.single_variation_wrap' )
-					.find( 'input[name="product_id"]' )
-					.val();
-			}
-
-			if ( $( '.wc-bookings-booking-form' ).length ) {
-				productId = $( '.wc-booking-product-id' ).val();
-			}
-
-			const data = {
-				product_id: productId,
-				qty: $( quantityInputSelector ).val(),
-				attributes: $( '.variations_form' ).length
-					? wcpayECE.getAttributes().data
-					: [],
-			};
-
-			// Add extension data to the POST body
-			const formData = $( 'form.cart' ).serializeArray();
-			$.each( formData, ( i, field ) => {
-				if ( /^(addon-|wc_)/.test( field.name ) ) {
-					if ( /\[\]$/.test( field.name ) ) {
-						const fieldName = field.name.substring(
-							0,
-							field.name.length - 2
-						);
-						if ( data[ fieldName ] ) {
-							data[ fieldName ].push( field.value );
-						} else {
-							data[ fieldName ] = [ field.value ];
-						}
-					} else {
-						data[ field.name ] = field.value;
-					}
-				}
-			} );
-
-			// TODO ~FR: replace with cartApi
-			return api.expressCheckoutECEAddToCart( data );
-		},
-
-		/**
 		 * Starts the Express Checkout Element
 		 *
 		 * @param {Object} options ECE options.
@@ -291,8 +240,7 @@ jQuery( ( $ ) => {
 					}
 
 					// Add products to the cart if everything is right.
-					// TODO ~FR: use cartApi
-					wcpayECE.addToCart();
+					getCartApiHandler().addProductToCart();
 				}
 
 				const clickOptions = {
