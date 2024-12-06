@@ -344,12 +344,24 @@ jQuery( ( $ ) => {
 								displayItems: displayItems,
 							} );
 						} else {
-							// TODO ~FR: update
-							//  `wcpayExpressCheckoutParams.product.total`,
-							//  with values from the server response
 							wcpayExpressCheckoutParams.product.needs_shipping =
 								newCartData.needs_shipping;
 							wcpayExpressCheckoutParams.product.displayItems = displayItems;
+							wcpayExpressCheckoutParams.product.total = {
+								...wcpayExpressCheckoutParams.product.total,
+								amount: transformPrice(
+									parseInt(
+										newCartData.totals.total_price,
+										10
+									) -
+										parseInt(
+											newCartData.totals.total_refund ||
+												0,
+											10
+										),
+									newCartData.totals
+								),
+							};
 							await wcpayECE.init();
 						}
 
