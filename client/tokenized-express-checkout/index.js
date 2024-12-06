@@ -72,13 +72,15 @@ const getServerSideExpressCheckoutProductData = () => {
 		name: label,
 		amount,
 	} ) );
-	const shippingRates = [
-		{
-			id: 'pending',
-			displayName: __( 'Pending', 'woocommerce-payments' ),
-			amount: 0,
-		},
-	];
+	const shippingRates = requestShipping
+		? [
+				{
+					id: 'pending',
+					displayName: __( 'Pending', 'woocommerce-payments' ),
+					amount: 0,
+				},
+		  ]
+		: undefined;
 
 	return {
 		total: getExpressCheckoutData( 'product' )?.total.amount,
