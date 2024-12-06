@@ -40,6 +40,7 @@ export const formatQueryFilters = ( query ) => ( {
 	],
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
+	type_is_in: query.typeIsIn,
 	source_device_is: query.sourceDeviceIs,
 	source_device_is_not: query.sourceDeviceIsNot,
 	channel_is: query.channelIs,

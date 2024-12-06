@@ -1,11 +1,16 @@
+/* global wc_address_i18n_params */
+
 /**
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getPaymentMethodsConstants } from '../constants';
+import {
+	getPaymentMethodsConstants,
+	SHORTCODE_BILLING_ADDRESS_FIELDS,
+} from '../constants';
 
 /**
- * Generates terms parameter for UPE, with value set for reusable payment methods
+ * Generates terms for reusable payment methods
  *
  * @param {Object} paymentMethodsConfig Object mapping payment method strings to their settings.
  * @param {string} value The terms value for each available payment method.
@@ -25,42 +30,38 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 };
 
 /**
- * Finds selected payment gateway and returns matching Stripe payment method for gateway.
+ * Returns Stripe payment method (e.g. card, bancontact ) for selected payment gateway.
  *
- * @return {string} Stripe payment method type
+ * @return {string} Payment method name
  */
 export const getSelectedUPEGatewayPaymentMethod = () => {
-	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-	const gatewayCardId = getUPEConfig( 'gatewayId' );
-	let selectedGatewayId = null;
-
-	// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
-	const radio = document.querySelector(
-		'li.wc_payment_method input.input-radio:checked, li.woocommerce-PaymentMethod input.input-radio:checked'
+	const selectedGateway = document.querySelector(
+		'input[name="payment_method"][value*="woocommerce_payments"]:checked'
 	);
-	if ( radio !== null ) {
-		selectedGatewayId = radio.id;
+
+	if ( ! selectedGateway ) {
+		return null;
 	}
 
-	if ( selectedGatewayId === 'payment_method_woocommerce_payments' ) {
-		selectedGatewayId = 'payment_method_woocommerce_payments_card';
-	}
+	// 'woocommerce_payments_affirm' => 'affirm'
+	// 'woocommerce_payments_p24' -> 'p24'
+	// 'woocommerce_payments' -> ''
+	const paymentMethodType = selectedGateway.value
+		// non-card elements are prefixed with `woocommerce_payments_*`
+		.replace( 'woocommerce_payments_', '' )
+		// the card element is just called `woocommerce_payments` - we need to account for variation in the name
+		.replace( 'woocommerce_payments', '' );
 
-	let selectedPaymentMethod = null;
-
-	for ( const paymentMethodType in paymentMethodsConfig ) {
-		if (
-			`payment_method_${ gatewayCardId }_${ paymentMethodType }` ===
-			selectedGatewayId
-		) {
-			selectedPaymentMethod = paymentMethodType;
-			break;
-		}
-	}
-
-	return selectedPaymentMethod;
+	// if the string is empty, it's the card element
+	return paymentMethodType || 'card';
 };
 
+/**
+ * Determines which billing fields should be hidden in the Stripe payment element.
+ *
+ * @param {Object} enabledBillingFields Object containing all the billing fields for the WooCommerce checkout.
+ * @return {Object} Object mapping billing field names to their hidden status.
+ */
 export const getHiddenBillingFields = ( enabledBillingFields ) => {
 	return {
 		name:
@@ -83,9 +84,18 @@ export const getHiddenBillingFields = ( enabledBillingFields ) => {
 	};
 };
 
-export const getUpeSettings = () => {
+/**
+ * Generates payment method specific settings object for the Stripe Payment Elements.
+ * Includes terms visibility, billing fields configuration, and default customer values.
+ *
+ * @param {string} paymentMethodType The type of payment method being configured (e.g. card, bancontact)
+ * @return {Object} Settings object for Payment Elements
+ */
+export const getUpeSettings = ( paymentMethodType ) => {
 	const upeSettings = {};
-	const showTerms = shouldIncludeTerms() ? 'always' : 'never';
+	const showTerms = shouldIncludeTerms( paymentMethodType )
+		? 'always'
+		: 'never';
 
 	upeSettings.terms = getTerms(
 		getUPEConfig( 'paymentMethodsConfig' ),
@@ -120,22 +130,31 @@ export const getUpeSettings = () => {
 	return upeSettings;
 };
 
-function shouldIncludeTerms() {
+function getGatewayIdBy( paymentMethodType ) {
+	const gatewayPrefix = 'woocommerce_payments';
+	// Only append underscore and payment method type for non-card payments
+	return paymentMethodType === 'card'
+		? gatewayPrefix
+		: `${ gatewayPrefix }_${ paymentMethodType }`;
+}
+
+function shouldIncludeTerms( paymentMethodType ) {
 	if ( getUPEConfig( 'cartContainsSubscription' ) ) {
 		return true;
 	}
 
-	const savePaymentMethodCheckbox = document.getElementById(
-		'wc-woocommerce_payments-new-payment-method'
+	const paymentsForm = document.querySelector(
+		`.wcpay-upe-form[data-payment-method-type="${ paymentMethodType }"]`
 	);
-	if (
-		savePaymentMethodCheckbox !== null &&
-		savePaymentMethodCheckbox.checked
-	) {
-		return true;
+	if ( ! paymentsForm ) {
+		return false;
 	}
 
-	return false;
+	const savePaymentMethodCheckbox = paymentsForm.querySelector(
+		`#wc-${ getGatewayIdBy( paymentMethodType ) }-new-payment-method`
+	);
+
+	return savePaymentMethodCheckbox?.checked || false;
 }
 
 export const generateCheckoutEventNames = () => {
@@ -183,17 +202,24 @@ export const appendFraudPreventionTokenInputToForm = ( $form ) => {
  * @return {boolean} Boolean indicating whether a saved payment method is being used.
  */
 export function isUsingSavedPaymentMethod( paymentMethodType ) {
-	const prefix = '#wc-woocommerce_payments';
-	const suffix = '-payment-token-new';
-	const savedPaymentSelector =
-		paymentMethodType === 'card' || paymentMethodType === 'link'
-			? prefix + suffix
-			: prefix + '_' + paymentMethodType + suffix;
-
-	return (
-		document.querySelector( savedPaymentSelector ) !== null &&
-		! document.querySelector( savedPaymentSelector ).checked
+	const paymentsForm = document.querySelector(
+		`.wcpay-upe-form[data-payment-method-type="${ paymentMethodType }"]`
 	);
+	if ( ! paymentsForm ) {
+		return false;
+	}
+
+	const newPaymentTokenInputId = `wc-${ getGatewayIdBy(
+		paymentMethodType
+	) }-payment-token-new`;
+	const newPaymentTokenInput = paymentsForm.querySelector(
+		`input#${ newPaymentTokenInputId }`
+	);
+	if ( ! newPaymentTokenInput ) {
+		return false;
+	}
+
+	return ! newPaymentTokenInput.checked;
 }
 
 export function dispatchChangeEventFor( element ) {
@@ -279,12 +305,16 @@ export const getPaymentMethodTypes = ( paymentMethodType ) => {
 };
 
 /**
- * Returns the value of the email input on the blocks checkout page.
+ * Returns the email value from store API.
  *
- * @return {string} The value of email input.
+ * @return {string} The email value.
  */
 export const getBlocksEmailValue = () => {
-	return document.getElementById( 'email' ).value;
+	// .wcpay-payment-element container is rendered only when new payment method is selected
+	return document
+		.querySelector( '.wcpay-payment-element' )
+		?.closest( 'form' )
+		?.querySelector( '#email' )?.value;
 };
 
 /**
@@ -293,16 +323,20 @@ export const getBlocksEmailValue = () => {
  * @param {Object} linkAutofill Stripe Link Autofill instance.
  */
 export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
-	const emailInput = document.getElementById( 'email' );
+	const upeContainer = document.querySelector( '.wcpay-payment-element' );
+	if ( ! upeContainer ) return;
+
+	const emailInput = upeContainer
+		.closest( 'form' )
+		?.querySelector( '#email' );
+	if ( ! emailInput ) return;
 
 	const stripeLinkButton = document.createElement( 'button' );
 	stripeLinkButton.setAttribute( 'class', 'wcpay-stripelink-modal-trigger' );
 	stripeLinkButton.style.display = emailInput.value ? 'inline-block' : 'none';
 	stripeLinkButton.addEventListener( 'click', ( event ) => {
 		event.preventDefault();
-		linkAutofill.launch( {
-			email: document.getElementById( 'email' ).value,
-		} );
+		linkAutofill.launch( { email: emailInput.value } );
 	} );
 
 	emailInput.parentNode.appendChild( stripeLinkButton );
@@ -331,26 +365,98 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const supportedCountries =
 		paymentMethodsConfig[ paymentMethodType ].countries;
 	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
+	// Simplified approach - find the form ancestor and then search within it
+	let billingInput = upeElement
+		?.closest( 'form.checkout, form#add_payment_method' )
+		?.querySelector( '[name="billing_country"]' );
+
+	// If not found, fallback to the search in the whole document
+	if ( ! billingInput ) {
+		billingInput = document.querySelector( '#billing_country' );
+	}
 
 	/* global wcpayCustomerData */
 	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
 	const billingCountry =
-		document.getElementById( 'billing_country' )?.value ||
-		wcpayCustomerData?.billing_country ||
-		'';
+		billingInput?.value || wcpayCustomerData?.billing_country || '';
 
-	const upeContainer = document.querySelector(
-		'.payment_method_woocommerce_payments_' + paymentMethodType
-	);
+	const upeContainer = upeElement?.closest( '.wc_payment_method' );
 	if ( supportedCountries.includes( billingCountry ) ) {
 		upeContainer.style.removeProperty( 'display' );
 	} else {
 		upeContainer.style.display = 'none';
-		// if the toggled off payment method was selected, we need to fall back to credit card
 		if ( paymentMethodType === selectedPaymentMethod ) {
-			document
-				.querySelector( '#payment_method_woocommerce_payments' )
-				.click();
+			const cardPaymentForm = document.querySelector(
+				'input[name="payment_method"][value="woocommerce_payments"]'
+			);
+
+			cardPaymentForm?.click();
 		}
 	}
+};
+
+function getParsedLocale() {
+	try {
+		return JSON.parse(
+			wc_address_i18n_params.locale.replace( /&quot;/g, '"' )
+		);
+	} catch ( e ) {
+		return null;
+	}
+}
+
+export const isBillingInformationMissing = ( form ) => {
+	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
+
+	// first name and last name are kinda special - we just need one of them to be at checkout
+	const name = `${
+		form.querySelector(
+			`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name }`
+		)?.value || ''
+	} ${
+		form.querySelector( `#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }` )
+			?.value || ''
+	}`.trim();
+	if (
+		! name &&
+		( enabledBillingFields[ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name ] ||
+			enabledBillingFields[ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name ] )
+	) {
+		return true;
+	}
+
+	const billingFieldsToValidate = [
+		'billing_email',
+		SHORTCODE_BILLING_ADDRESS_FIELDS.country,
+		SHORTCODE_BILLING_ADDRESS_FIELDS.address_1,
+		SHORTCODE_BILLING_ADDRESS_FIELDS.city,
+		SHORTCODE_BILLING_ADDRESS_FIELDS.postcode,
+	].filter( ( field ) => enabledBillingFields[ field ] );
+
+	const country = billingFieldsToValidate.includes(
+		SHORTCODE_BILLING_ADDRESS_FIELDS.country
+	)
+		? form.querySelector( `#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }` )
+				?.value
+		: null;
+
+	// We need to just find one field with missing information. If even only one is missing, just return early.
+	return Boolean(
+		billingFieldsToValidate.find( ( fieldName ) => {
+			const field = form.querySelector( `#${ fieldName }` );
+			let isRequired = enabledBillingFields[ fieldName ]?.required;
+			const locale = getParsedLocale();
+
+			if ( country && locale && fieldName !== 'billing_email' ) {
+				const key = fieldName.replace( 'billing_', '' );
+				isRequired =
+					locale[ country ][ key ]?.required ??
+					locale.default[ key ]?.required;
+			}
+
+			const hasValue = field?.value;
+
+			return isRequired && ! hasValue;
+		} )
+	);
 };

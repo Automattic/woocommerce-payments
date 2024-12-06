@@ -1702,7 +1702,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	public function register_terminal_reader( string $location, string $registration_code, string $label = null, array $metadata = null ) {
+	public function register_terminal_reader( string $location, string $registration_code, ?string $label = null, ?array $metadata = null ) {
 		$request = [
 			'location'          => $location,
 			'registration_code' => $registration_code,

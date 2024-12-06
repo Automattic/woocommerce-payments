@@ -30,16 +30,25 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
               <div
                 class="payment-details-summary__section"
               >
-                <p
-                  class="payment-details-summary__amount"
+                <div
+                  class="payment-details-summary__amount-wrapper"
                 >
-                  <span
-                    aria-busy="true"
-                    class="is-loadable-placeholder"
+                  <p
+                    class="payment-details-summary__amount"
                   >
-                    Amount placeholder
+                    <span
+                      aria-busy="true"
+                      class="is-loadable-placeholder"
+                    >
+                      Amount placeholder
+                    </span>
+                  </p>
+                  <span
+                    class="chip chip-success payment-details-summary__status"
+                  >
+                    Paid
                   </span>
-                </p>
+                </div>
                 <div
                   class="payment-details-summary__breakdown"
                 >
@@ -493,21 +502,25 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               <div
                 class="payment-details-summary__section"
               >
-                <p
-                  class="payment-details-summary__amount"
+                <div
+                  class="payment-details-summary__amount-wrapper"
                 >
-                  $1,500.00
-                  <span
-                    class="payment-details-summary__amount-currency"
+                  <p
+                    class="payment-details-summary__amount"
                   >
-                    usd
-                  </span>
+                    $1,500.00
+                    <span
+                      class="payment-details-summary__amount-currency"
+                    >
+                      usd
+                    </span>
+                  </p>
                   <span
-                    class="chip chip-success"
+                    class="chip chip-success payment-details-summary__status"
                   >
                     Paid
                   </span>
-                </p>
+                </div>
                 <div
                   class="payment-details-summary__breakdown"
                 >

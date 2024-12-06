@@ -188,7 +188,7 @@ class MultiCurrency {
 	 * @param MultiCurrencyCacheInterface        $cache                Cache instance.
 	 * @param Utils|null                         $utils                Optional Utils instance.
 	 */
-	public function __construct( MultiCurrencySettingsInterface $settings_service, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, Utils $utils = null ) {
+	public function __construct( MultiCurrencySettingsInterface $settings_service, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, ?Utils $utils = null ) {
 		$this->settings_service     = $settings_service;
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
