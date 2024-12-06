@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { addFilter } from '@wordpress/hooks';
+import { addFilter, doAction } from '@wordpress/hooks';
 
 jQuery( ( $ ) => {
 	$( 'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]' ).on(
