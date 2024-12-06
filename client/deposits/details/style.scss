@@ -45,7 +45,11 @@
 				word-wrap: break-word;
 			}
 
-			.woopayments-copy-bank-reference-key {
+			.woopayments-payout-bank-reference-key {
+				font-family: monospace;
+			}
+
+			.woopayments-copy-button-bank-reference-key {
 				line-height: 1.2em;
 				display: inline-flex;
 				background: transparent;

@@ -178,7 +178,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 								</span>
 								<button
 									type="button"
-									className="woopayments-copy-bank-reference-key"
+									className="woopayments-copy-button-bank-reference-key"
 									aria-label={ __(
 										'Copy bank reference key to clipboard',
 										'woocommerce-payments'
