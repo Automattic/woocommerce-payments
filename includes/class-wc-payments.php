@@ -1880,9 +1880,9 @@ class WC_Payments {
 		$cart_contains_subscription = false;
 		$are_subscriptions_enabled  = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
 		if ( $are_subscriptions_enabled ) {
-				global $product;
-				$is_subscription            = $product && WC_Subscriptions_Product::is_subscription( $product );
-				$cart_contains_subscription = is_cart() && WC_Subscriptions_Cart::cart_contains_subscription();
+			global $product;
+			$is_subscription            = $product && WC_Subscriptions_Product::is_subscription( $product );
+			$cart_contains_subscription = is_cart() && WC_Subscriptions_Cart::cart_contains_subscription();
 		}
 
 		if ( ! $is_subscription && ! $cart_contains_subscription ) {
