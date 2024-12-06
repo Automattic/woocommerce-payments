@@ -9,7 +9,7 @@ import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
 import './compatibility/wc-order-attribution';
-import './compatibility/wc-product-variations';
+import './compatibility/wc-product-page';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
@@ -35,7 +35,7 @@ import {
 	transformCartDataForDisplayItems,
 	transformCartDataForShippingRates,
 	transformPrice,
-} from 'wcpay/tokenized-express-checkout/transformers/wc-to-stripe';
+} from './transformers/wc-to-stripe';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -397,21 +397,6 @@ jQuery( ( $ ) => {
 		},
 
 		attachProductPageEventListeners: ( elements ) => {
-			// WooCommerce Deposits support.
-			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
-			// Needs to be defined before the `woocommerce_variation_has_changed` event handler is set.
-			$(
-				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-			)
-				.off( 'change' )
-				.on( 'change', () => {
-					$( 'form' )
-						.has(
-							'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-						)
-						.trigger( 'woocommerce_variation_has_changed' );
-				} );
-
 			$( document.body )
 				.off( 'woocommerce_variation_has_changed' )
 				.on( 'woocommerce_variation_has_changed', () => {

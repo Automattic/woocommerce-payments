@@ -1,31 +1,56 @@
 /* global jQuery */
+/**
+ * Internal dependencies
+ */
+import expressCheckoutButtonUi from '../button-ui';
 
 /**
  * External dependencies
  */
 import { addFilter, applyFilters } from '@wordpress/hooks';
-import paymentRequestButtonUi from '../button-ui';
+import { debounce } from 'lodash';
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {
 		try {
-			paymentRequestButtonUi.blockButton();
+			expressCheckoutButtonUi.blockButton();
 
 			await applyFilters(
-				'wcpay.payment-request.update-button-data',
+				'wcpay.express-checkout.update-button-data',
 				Promise.resolve()
 			);
 
-			paymentRequestButtonUi.unblockButton();
+			expressCheckoutButtonUi.unblockButton();
 		} catch ( e ) {
-			paymentRequestButtonUi.hide();
+			expressCheckoutButtonUi.hide();
 		}
 	} );
 } );
 
+// Block the payment request button as soon as an "input" event is fired, to avoid sync issues
+// when the customer clicks on the button before the debounced event is processed.
+jQuery( ( $ ) => {
+	const $quantityInput = $( '.quantity' );
+	const handleQuantityChange = () => {
+		expressCheckoutButtonUi.blockButton();
+	};
+	$quantityInput.on( 'input', '.qty', handleQuantityChange );
+	$quantityInput.on(
+		'input',
+		'.qty',
+		debounce( async () => {
+			await applyFilters(
+				'wcpay.express-checkout.update-button-data',
+				Promise.resolve()
+			);
+			expressCheckoutButtonUi.unblockButton();
+		}, 250 )
+	);
+} );
+
 addFilter(
-	'wcpay.payment-request.cart-add-item',
-	'automattic/wcpay/payment-request',
+	'wcpay.express-checkout.cart-add-item',
+	'automattic/wcpay/express-checkout',
 	( productData ) => {
 		const $variationInformation = jQuery( '.single_variation_wrap' );
 		if ( ! $variationInformation.length ) {
@@ -42,8 +67,8 @@ addFilter(
 	}
 );
 addFilter(
-	'wcpay.payment-request.cart-add-item',
-	'automattic/wcpay/payment-request',
+	'wcpay.express-checkout.cart-add-item',
+	'automattic/wcpay/express-checkout',
 	( productData ) => {
 		const $variationsForm = jQuery( '.variations_form' );
 		if ( ! $variationsForm.length ) {
