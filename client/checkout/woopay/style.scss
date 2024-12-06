@@ -148,7 +148,6 @@
 		align-content: center;
 		justify-content: center;
 		transform: scale( 0.7 );
-		line-height: 24px;
 	}
 
 	&:not( :disabled ):hover {
@@ -169,10 +168,7 @@
 
 	svg {
 		fill: $studio-woocommerce-purple-60;
-		position: relative;
-		min-width: 100px;
-		transform-origin: left;
-		transform: scale( 1.3 );
+		width: 136px;
 	}
 
 	&[data-type='buy'],
