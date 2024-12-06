@@ -145,12 +145,8 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 			detail={
 				<>
 					{ deposit.bankAccount }
-					{ deposit.bank_reference_key && (
-						<>
-							<br />
-							Bank reference key: { deposit.bank_reference_key }
-						</>
-					) }
+					<br />
+					Bank reference key: { deposit.bank_reference_key ?? 'N/A' }
 				</>
 			}
 		/>
