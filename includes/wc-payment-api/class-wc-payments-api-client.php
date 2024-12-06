@@ -2107,14 +2107,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		Logger_Context::set_value( 'DOING_CRON', defined( 'DOING_CRON' ) && DOING_CRON );
 		Logger_Context::set_value( 'WP_CLI', defined( 'WP_CLI' ) && WP_CLI );
 
-		$headers = apply_filters( 'wcpay_api_request_headers', $headers );
-		Logger::log( "REQUEST $method $redacted_url" );
-		Logger::log( Logger::format_object( 'HEADERS', $headers ) );
-
-		if ( null !== $body ) {
-			Logger::log( Logger::format_object( 'BODY', $redacted_params ) );
-		}
-
+		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
 		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
 		$retries        = 0;
 		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
@@ -2126,19 +2119,21 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			// The header intention is to give us insights into request latency between store and backend.
 			$headers['X-Request-Initiated'] = microtime( true );
 
+			$request_args = [
+				'url'             => $url,
+				'method'          => $method,
+				'headers'         => $headers,
+				'timeout'         => self::API_TIMEOUT_SECONDS,
+				'connect_timeout' => self::API_TIMEOUT_SECONDS,
+			];
+
+			Logger::log( Logger::format_object( 'REQUEST_ARGS', $request_args ) );
+			if ( null !== $body ) {
+				Logger::log( Logger::format_object( 'BODY', $redacted_params ) );
+			}
+
 			try {
-				$response = $this->http_client->remote_request(
-					[
-						'url'             => $url,
-						'method'          => $method,
-						'headers'         => $headers,
-						'timeout'         => self::API_TIMEOUT_SECONDS,
-						'connect_timeout' => self::API_TIMEOUT_SECONDS,
-					],
-					$body,
-					$is_site_specific,
-					$use_user_token
-				);
+				$response = $this->http_client->remote_request( $request_args, $body, $is_site_specific, $use_user_token );
 
 				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
 				$response_code = wp_remote_retrieve_response_code( $response );

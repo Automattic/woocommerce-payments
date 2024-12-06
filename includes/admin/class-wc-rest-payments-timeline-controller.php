@@ -42,7 +42,6 @@ class WC_REST_Payments_Timeline_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_timeline( $request ) {
 		$intention_id = $request->get_param( 'intention_id' );
-		Logger_Context::set_value( 'intention_id', $intention_id );
 		return $this->forward_request( 'get_timeline', [ $intention_id ] );
 	}
 }
