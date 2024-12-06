@@ -171,23 +171,29 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 						{ deposit.bankAccount }
 						<br />
 						Bank reference key:{ ' ' }
-						<span className="woopayments-payout-bank-reference-key">
-							{ deposit.bank_reference_key ?? 'N/A' }
-						</span>
-						<button
-							type="button"
-							className="woopayments-copy-bank-reference-key"
-							aria-label={ __(
-								'Copy bank reference key to clipboard',
-								'woocommerce-payments'
-							) }
-							title={ __(
-								'Copy to clipboard',
-								'woocommerce-payments'
-							) }
-						>
-							<i></i>
-						</button>
+						{ deposit.bank_reference_key ? (
+							<>
+								<span className="woopayments-payout-bank-reference-key">
+									{ deposit.bank_reference_key }
+								</span>
+								<button
+									type="button"
+									className="woopayments-copy-bank-reference-key"
+									aria-label={ __(
+										'Copy bank reference key to clipboard',
+										'woocommerce-payments'
+									) }
+									title={ __(
+										'Copy to clipboard',
+										'woocommerce-payments'
+									) }
+								>
+									<i></i>
+								</button>
+							</>
+						) : (
+							'N/A'
+						) }
 					</>
 				}
 			/>
