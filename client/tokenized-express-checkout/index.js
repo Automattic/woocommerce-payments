@@ -307,14 +307,13 @@ jQuery( ( $ ) => {
 					try {
 						expressCheckoutButtonUi.blockButton();
 
-						const newCartData = await _self.getCartData();
+						const newCartData = await getCartApiHandler().getCart();
 						// checking if items needed shipping, before assigning new cart data.
-						const didItemsNeedShipping =
-							_self.initialProductData?.needs_shipping ||
-							_self.cachedCartData?.needs_shipping;
+						const didItemsNeedShipping = options.requestShipping;
 
-						_self.cachedCartData = newCartData;
-
+						const displayItems = transformCartDataForDisplayItems(
+							newCartData
+						);
 						/**
 						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
 						 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
@@ -342,12 +341,16 @@ jQuery( ( $ ) => {
 										newCartData.totals
 									),
 								},
-								displayItems: transformCartDataForDisplayItems(
-									newCartData
-								),
+								displayItems: displayItems,
 							} );
 						} else {
-							await _self.init();
+							// TODO ~FR: update
+							//  `wcpayExpressCheckoutParams.product.total`,
+							//  with values from the server response
+							wcpayExpressCheckoutParams.product.needs_shipping =
+								newCartData.needs_shipping;
+							wcpayExpressCheckoutParams.product.displayItems = displayItems;
+							await wcpayECE.init();
 						}
 
 						expressCheckoutButtonUi.unblockButton();
@@ -356,15 +359,6 @@ jQuery( ( $ ) => {
 					}
 				}
 			);
-		},
-
-		reInitExpressCheckoutElement: ( response ) => {
-			wcpayExpressCheckoutParams.product.needs_shipping =
-				response.needs_shipping;
-			wcpayExpressCheckoutParams.product.total = response.total;
-			wcpayExpressCheckoutParams.product.displayItems =
-				response.displayItems;
-			wcpayECE.init();
 		},
 
 		/**
