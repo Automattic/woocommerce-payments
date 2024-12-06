@@ -3983,12 +3983,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_recommended_payment_method_no_country_code_provided( $is_provider_connected, $country_code ) {
 		// Set base country fallback to US.
-		add_filter(
-			'woocommerce_countries_base_country',
-			function () {
-				return 'US';
-			}
-		);
+		$filter_callback = function () {
+			return 'US';
+		};
+		add_filter( 'woocommerce_countries_base_country', $filter_callback );
 
 		$this->mock_wcpay_account
 			->expects( $this->once() )
@@ -4011,6 +4009,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->with( $country_code );
 
 		$this->assertSame( [], $this->card_gateway->get_recommended_payment_methods( '' ) );
+
+		// Clean up.
+		remove_filter( 'woocommerce_countries_base_country', $filter_callback );
 	}
 
 	/**
