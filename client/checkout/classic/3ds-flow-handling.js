@@ -3,11 +3,12 @@
  */
 import { getConfig } from 'wcpay/utils/checkout';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
+import { getCardGatewayId } from 'wcpay/utils/gateway-config';
 
 export const shouldSavePaymentPaymentMethod = () => {
 	return (
 		document.querySelector(
-			'#wc-woocommerce_payments_card-new-payment-method'
+			`#wc-${ getCardGatewayId() }-new-payment-method`
 		)?.checked ?? false
 	);
 };
