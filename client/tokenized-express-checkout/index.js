@@ -63,6 +63,34 @@ const fetchNewCartData = async () => {
 	return cartData;
 };
 
+const getServerSideExpressCheckoutProductData = () => {
+	const requestShipping =
+		getExpressCheckoutData( 'product' )?.needs_shipping ?? false;
+	const displayItems = (
+		getExpressCheckoutData( 'product' )?.displayItems ?? []
+	).map( ( { label, amount } ) => ( {
+		name: label,
+		amount,
+	} ) );
+	const shippingRates = [
+		{
+			id: 'pending',
+			displayName: __( 'Pending', 'woocommerce-payments' ),
+			amount: 0,
+		},
+	];
+
+	return {
+		total: getExpressCheckoutData( 'product' )?.total.amount,
+		currency: getExpressCheckoutData( 'product' )?.currency,
+		requestShipping,
+		shippingRates,
+		requestPhone:
+			getExpressCheckoutData( 'checkout' )?.needs_payer_phone ?? false,
+		displayItems,
+	};
+};
+
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if (
@@ -233,6 +261,11 @@ jQuery( ( $ ) => {
 				}
 
 				const clickOptions = {
+					// `options.displayItems`, `options.requestShipping`, `options.requestPhone`, `options.shippingRates`,
+					// are all coming from prior of the initialization.
+					// The "real" values will be updated once the button loads.
+					// They are preemptively initialized because the `event.resolve({})`
+					// needs to be called within 1 second of the `click` event.
 					lineItems: options.displayItems,
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,
@@ -309,9 +342,6 @@ jQuery( ( $ ) => {
 						// checking if items needed shipping, before assigning new cart data.
 						const didItemsNeedShipping = options.requestShipping;
 
-						const displayItems = transformCartDataForDisplayItems(
-							cachedCartData
-						);
 						/**
 						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
 						 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
@@ -340,7 +370,9 @@ jQuery( ( $ ) => {
 										cachedCartData.totals
 									),
 								},
-								displayItems: displayItems,
+								displayItems: transformCartDataForDisplayItems(
+									cachedCartData
+								),
 							} );
 						} else {
 							// the cachedCartData from the Store API will be used from now on,
@@ -382,32 +414,16 @@ jQuery( ( $ ) => {
 				// so that we don't affect the products in the main cart.
 				// On cart, checkout, place order pages we instead use the cart itself.
 				getCartApiHandler().useSeparateCart();
+			}
 
-				await wcpayECE.startExpressCheckoutElement( {
-					total: getExpressCheckoutData( 'product' )?.total.amount,
-					currency: getExpressCheckoutData( 'product' )?.currency,
-					requestShipping:
-						getExpressCheckoutData( 'product' )?.needs_shipping ??
-						false,
-					requestPhone:
-						getExpressCheckoutData( 'checkout' )
-							?.needs_payer_phone ?? false,
-					displayItems: getExpressCheckoutData( 'product' )
-						.displayItems,
-				} );
-			} else {
+			if ( cachedCartData ) {
 				// If this is the cart page, or checkout page, or pay-for-order page, we need to request the cart details.
 				// but if the data is not available, we can't render the button.
-				const total = cachedCartData
-					? transformPrice(
-							parseInt( cachedCartData.totals.total_price, 10 ) -
-								parseInt(
-									cachedCartData.totals.total_refund || 0,
-									10
-								),
-							cachedCartData.totals
-					  )
-					: 0;
+				const total = transformPrice(
+					parseInt( cachedCartData.totals.total_price, 10 ) -
+						parseInt( cachedCartData.totals.total_refund || 0, 10 ),
+					cachedCartData.totals
+				);
 				if ( total === 0 ) {
 					expressCheckoutButtonUi.hideContainer();
 					expressCheckoutButtonUi.getButtonSeparator().hide();
@@ -431,6 +447,16 @@ jQuery( ( $ ) => {
 						),
 					} );
 				}
+			} else if (
+				getExpressCheckoutData( 'button_context' ) === 'product' &&
+				getExpressCheckoutData( 'product' )
+			) {
+				await wcpayECE.startExpressCheckoutElement(
+					getServerSideExpressCheckoutProductData()
+				);
+			} else {
+				expressCheckoutButtonUi.hideContainer();
+				expressCheckoutButtonUi.getButtonSeparator().hide();
 			}
 
 			// After initializing a new express checkout button, we need to reset the paymentAborted flag.
