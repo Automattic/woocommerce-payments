@@ -1239,21 +1239,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
 	}
 
-	public function test_get_payment_methods_without_request_context_or_token() {
-		$payment_information = new Payment_Information( 'pm_mock' );
-
-		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
-
-		$gateway = WC_Payments::get_gateway();
-		WC_Payments::set_gateway( $this->card_gateway );
-
-		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
-
-		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
-
-		WC_Payments::set_gateway( $gateway );
-	}
-
 	public function test_get_payment_methods_from_gateway_id_upe() {
 		WC_Helper_Order::create_order();
 
@@ -2542,7 +2527,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->add_payment_token( $token );
 		$order->save();
 
-		$pi = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi = new Payment_Information( 'pm_test', $order, null, $token, null, null, null, '', 'card' );
 
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 		$request->expects( $this->once() )
@@ -3086,7 +3071,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->will( $this->returnValue( $customer ) );
 
-		$_POST = [ 'wcpay-payment-method' => $pm = 'pm_mock' ];
+		$_POST = [
+			'wcpay-payment-method' => $pm = 'pm_mock',
+			'payment_method'       => 'woocommerce_payments',
+		];
 
 		$this->get_fraud_prevention_service_mock()
 			->expects( $this->once() )
@@ -3922,7 +3910,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_returns_correct_redirect() {
 		$order = WC_Helper_Order::create_order();
-		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+		$_POST = [
+			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => 'woocommerce_payments',
+		];
 
 		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
 			->expects( $this->once() )
@@ -3945,7 +3936,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
 		$order                         = WC_Helper_Order::create_order();
 		$_POST['payment_request_type'] = 'google_pay';
-		$_POST                         = [ 'wcpay-payment-method' => 'pm_mock' ];
+		$_POST                         = [
+			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => 'woocommerce_payments',
+		];
 
 		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
 			->expects( $this->once() )
