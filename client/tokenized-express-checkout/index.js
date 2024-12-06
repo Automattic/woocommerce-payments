@@ -1,5 +1,6 @@
 /* global jQuery, wcpayExpressCheckoutParams */
 import { __ } from '@wordpress/i18n';
+import { addAction, removeAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -347,56 +348,63 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			removeFilter(
+			removeAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout'
 			);
-			addFilter(
+			addAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
-				async ( previousPromise ) => {
-					// Wait for previous filters
-					await previousPromise;
+				async () => {
+					try {
+						expressCheckoutButtonUi.blockButton();
 
-					const newCartData = await _self.getCartData();
-					// checking if items needed shipping, before assigning new cart data.
-					const didItemsNeedShipping =
-						_self.initialProductData?.needs_shipping ||
-						_self.cachedCartData?.needs_shipping;
+						const newCartData = await _self.getCartData();
+						// checking if items needed shipping, before assigning new cart data.
+						const didItemsNeedShipping =
+							_self.initialProductData?.needs_shipping ||
+							_self.cachedCartData?.needs_shipping;
 
-					_self.cachedCartData = newCartData;
+						_self.cachedCartData = newCartData;
 
-					/**
-					 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
-					 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
-					 * consistent, we can simply update the payment request button with the new total and display items.
-					 */
-					if (
-						! _self.isPaymentAborted &&
-						didItemsNeedShipping === newCartData.needs_shipping
-					) {
-						elements.update( {
-							total: {
-								label: getExpressCheckoutData( 'total_label' ),
-								amount: transformPrice(
-									parseInt(
-										newCartData.totals.total_price,
-										10
-									) -
+						/**
+						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
+						 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
+						 * consistent, we can simply update the payment request button with the new total and display items.
+						 */
+						if (
+							! _self.isPaymentAborted &&
+							didItemsNeedShipping === newCartData.needs_shipping
+						) {
+							elements.update( {
+								total: {
+									label: getExpressCheckoutData(
+										'total_label'
+									),
+									amount: transformPrice(
 										parseInt(
-											newCartData.totals.total_refund ||
-												0,
+											newCartData.totals.total_price,
 											10
-										),
-									newCartData.totals
+										) -
+											parseInt(
+												newCartData.totals
+													.total_refund || 0,
+												10
+											),
+										newCartData.totals
+									),
+								},
+								displayItems: transformCartDataForDisplayItems(
+									newCartData
 								),
-							},
-							displayItems: transformCartDataForDisplayItems(
-								newCartData
-							),
-						} );
-					} else {
-						await _self.init();
+							} );
+						} else {
+							await _self.init();
+						}
+
+						expressCheckoutButtonUi.unblockButton();
+					} catch ( e ) {
+						expressCheckoutButtonUi.hide();
 					}
 				}
 			);

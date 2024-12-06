@@ -8,22 +8,11 @@ import debounce from '../debounce';
 /**
  * External dependencies
  */
-import { addFilter, applyFilters } from '@wordpress/hooks';
+import { addFilter, doAction } from '@wordpress/hooks';
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {
-		try {
-			expressCheckoutButtonUi.blockButton();
-
-			await applyFilters(
-				'wcpay.express-checkout.update-button-data',
-				Promise.resolve()
-			);
-
-			expressCheckoutButtonUi.unblockButton();
-		} catch ( e ) {
-			expressCheckoutButtonUi.hide();
-		}
+		doAction( 'wcpay.express-checkout.update-button-data' );
 	} );
 } );
 
@@ -39,11 +28,7 @@ jQuery( ( $ ) => {
 		'input',
 		'.qty',
 		debounce( 250, async () => {
-			await applyFilters(
-				'wcpay.express-checkout.update-button-data',
-				Promise.resolve()
-			);
-			expressCheckoutButtonUi.unblockButton();
+			doAction( 'wcpay.express-checkout.update-button-data' );
 		} )
 	);
 } );
