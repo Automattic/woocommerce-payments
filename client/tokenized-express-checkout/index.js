@@ -373,7 +373,7 @@ jQuery( ( $ ) => {
 						 * consistent, we can simply update the payment request button with the new total and display items.
 						 */
 						if (
-							! _self.isPaymentAborted &&
+							! wcpayECE.paymentAborted &&
 							didItemsNeedShipping === newCartData.needs_shipping
 						) {
 							elements.update( {
@@ -417,14 +417,6 @@ jQuery( ( $ ) => {
 			wcpayExpressCheckoutParams.product.displayItems =
 				response.displayItems;
 			wcpayECE.init();
-		},
-
-		productHasDepositOption() {
-			return Boolean(
-				$( 'form' ).has(
-					'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-				).length
-			);
 		},
 
 		/**
