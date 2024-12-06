@@ -151,6 +151,35 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Retrieve and cache the account recommended payment methods list.
+	 *
+	 * @param string $country_code The account's business location country code. Provide a 2-letter ISO country code.
+	 * @param string $locale       Optional. The locale to use to i18n the data.
+	 *
+	 * @return ?array The recommended payment methods list.
+	 *                NULL on retrieval or validation error.
+	 */
+	public function get_recommended_payment_methods( string $country_code, string $locale = '' ): ?array {
+		$cache_key = Database_Cache::RECOMMENDED_PAYMENT_METHODS . '__' . $country_code;
+		if ( ! empty( $locale ) ) {
+			$cache_key .= '__' . $locale;
+		}
+
+		return \WC_Payments::get_database_cache()->get_or_add(
+			$cache_key,
+			function () use ( $country_code, $locale ) {
+				try {
+					return $this->payments_api_client->get_recommended_payment_methods( $country_code, $locale );
+				} catch ( API_Exception $e ) {
+					// Return NULL to signal retrieval error.
+					return null;
+				}
+			},
+			'is_array'
+		);
+	}
+
+	/**
 	 * Retrieve the embedded KYC session and handle initial account creation (if necessary).
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
