@@ -891,7 +891,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		if ( $this->is_main_gateway() && $this->is_using_separate_gateways() ) {
+		if ( $this->is_main_gateway() && self::is_using_separate_gateways() ) {
 			return $this->is_enabled();
 		}
 
@@ -2590,7 +2590,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function set_defaults( $field ) {
 		$field = parent::set_defaults( $field );
 
-		if ( $this->is_using_separate_gateways() && $this->is_card_gateway() && 'enabled' === ( $field['key'] ?? '' ) ) {
+		if ( self::is_using_separate_gateways() && $this->is_card_gateway() && 'enabled' === ( $field['key'] ?? '' ) ) {
 			$field['default'] = 'yes';
 		}
 

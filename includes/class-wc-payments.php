@@ -746,6 +746,7 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_gateway_config_scripts' ] );
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_gateway_config_scripts' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$main_gateway, self::$order_service );
 
