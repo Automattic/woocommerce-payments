@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WC_Payment_Gateway_WCPay;
 use WC_Payments;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
@@ -76,7 +77,7 @@ class Duplicates_Detection_Service {
 	 */
 	private function search_for_cc() {
 		$keywords         = [ 'credit_card', 'creditcard', 'cc', 'card' ];
-		$special_keywords = [ 'woocommerce_payments_card', 'stripe' ];
+		$special_keywords = [ WC_Payment_Gateway_WCPay::get_card_gateway_id(), 'stripe' ];
 
 		foreach ( $this->get_enabled_gateways() as $gateway ) {
 			if ( $this->gateway_contains_keyword( $gateway->id, $keywords ) || in_array( $gateway->id, $special_keywords, true ) ) {

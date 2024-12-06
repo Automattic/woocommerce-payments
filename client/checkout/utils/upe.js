@@ -8,6 +8,7 @@ import {
 	getPaymentMethodsConstants,
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
 } from '../constants';
+import { getMainPaymentMethodId } from 'wcpay/utils/gateway-config';
 
 /**
  * Generates terms for reusable payment methods
@@ -133,7 +134,7 @@ export const getUpeSettings = ( paymentMethodType ) => {
 function getGatewayIdBy( paymentMethodType ) {
 	const gatewayPrefix = 'woocommerce_payments';
 	// Only append underscore and payment method type for non-main gateways.
-	return paymentMethodType === 'main'
+	return paymentMethodType === getMainPaymentMethodId()
 		? gatewayPrefix
 		: `${ gatewayPrefix }_${ paymentMethodType }`;
 }

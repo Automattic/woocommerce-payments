@@ -18,12 +18,6 @@ use WCPay\Constants\Payment_Method;
  * Seen in checkout page and my account->add payment method page.
  */
 class WC_Payments_Token_Service {
-	const REUSABLE_GATEWAYS_BY_PAYMENT_METHOD = [
-		Payment_Method::CARD => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::CARD,
-		Payment_Method::SEPA => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
-		Payment_Method::LINK => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-	];
-
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -58,6 +52,19 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
+	 * Returns an array mapping payment method types to their corresponding gateway IDs.
+	 *
+	 * @return array Array of payment methods mapped to gateway IDs.
+	 */
+	public static function get_reusable_gateways_by_payment_method() {
+		return [
+			Payment_Method::CARD => WC_Payment_Gateway_WCPay::get_card_gateway_id(),
+			Payment_Method::SEPA => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
+			Payment_Method::LINK => WC_Payment_Gateway_WCPay::get_card_gateway_id(),
+		];
+	}
+
+	/**
 	 * Creates and add a token to an user, based on the payment_method object
 	 *
 	 * @param   array   $payment_method                                          Payment method to be added.
@@ -77,13 +84,13 @@ class WC_Payments_Token_Service {
 				break;
 			case Payment_Method::LINK:
 				$token      = new WC_Payment_Token_WCPay_Link();
-				$gateway_id = 'woocommerce_payments_card';
+				$gateway_id = WC_Payment_Gateway_WCPay::get_card_gateway_id();
 				$token->set_gateway_id( $gateway_id );
 				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
 				break;
 			case Payment_Method::CARD_PRESENT:
 				$token = new WC_Payment_Token_CC();
-				$token->set_gateway_id( 'woocommerce_payments_card' );
+				$token->set_gateway_id( WC_Payment_Gateway_WCPay::get_card_gateway_id() );
 				$token->set_expiry_month( $payment_method[ Payment_Method::CARD_PRESENT ]['exp_month'] );
 				$token->set_expiry_year( $payment_method[ Payment_Method::CARD_PRESENT ]['exp_year'] );
 				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD_PRESENT ]['brand'] ) );
@@ -91,7 +98,7 @@ class WC_Payments_Token_Service {
 				break;
 			default:
 				$token = new WC_Payment_Token_CC();
-				$token->set_gateway_id( 'woocommerce_payments_card' );
+				$token->set_gateway_id( WC_Payment_Gateway_WCPay::get_card_gateway_id() );
 				$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
 				$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
 				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['display_brand'] ?? $payment_method[ Payment_Method::CARD ]['networks']['preferred'] ?? $payment_method[ Payment_Method::CARD ]['brand'] ) );
@@ -125,7 +132,7 @@ class WC_Payments_Token_Service {
 	 * @return bool                       True, if payment method type matches gateway, false if otherwise.
 	 */
 	public function is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id ) {
-		return self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method_type ] === $gateway_id;
+		return self::get_reusable_gateways_by_payment_method()[ $payment_method_type ] === $gateway_id;
 	}
 
 	/**
@@ -138,7 +145,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
 
-		if ( ( ! empty( $gateway_id ) && ! in_array( $gateway_id, self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) || ! is_user_logged_in() ) {
+		if ( ( ! empty( $gateway_id ) && ! in_array( $gateway_id, self::get_reusable_gateways_by_payment_method(), true ) ) || ! is_user_logged_in() ) {
 			return $tokens;
 		}
 
@@ -158,7 +165,7 @@ class WC_Payments_Token_Service {
 			$stored_tokens = [];
 
 			foreach ( $tokens as $token ) {
-				if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
+				if ( in_array( $token->get_gateway_id(), self::get_reusable_gateways_by_payment_method(), true ) ) {
 					$stored_tokens[ $token->get_token() ] = $token;
 				}
 			}
@@ -250,7 +257,7 @@ class WC_Payments_Token_Service {
 	private function get_gateway_specific_retrievable_payment_types( $gateway_id ) {
 		$types = [];
 
-		foreach ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD as $payment_method => $gateway ) {
+		foreach ( self::get_reusable_gateways_by_payment_method() as $payment_method => $gateway ) {
 			if ( $gateway !== $gateway_id ) {
 				continue;
 			}
@@ -287,7 +294,7 @@ class WC_Payments_Token_Service {
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
 
 		// If it's not reusable payment method, we don't need to perform any additional checks.
-		if ( ! in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
+		if ( ! in_array( $token->get_gateway_id(), self::get_reusable_gateways_by_payment_method(), true ) ) {
 			return;
 		}
 		// First check if it's live mode.
@@ -319,7 +326,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function woocommerce_payment_token_set_default( $token_id, $token ) {
 
-		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
+		if ( in_array( $token->get_gateway_id(), self::get_reusable_gateways_by_payment_method(), true ) ) {
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
 			if ( $customer_id ) {
 				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );

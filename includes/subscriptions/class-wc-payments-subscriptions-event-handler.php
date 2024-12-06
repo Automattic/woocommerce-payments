@@ -150,7 +150,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			if ( is_wp_error( $order ) ) {
 				throw new Invalid_Webhook_Data_Exception( __( 'Unable to generate renewal order for subscription on the "invoice.paid" event.', 'woocommerce-payments' ) );
 			} else {
-				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::CARD );
+				$order->set_payment_method( WC_Payment_Gateway_WCPay::get_card_gateway_id() );
 				$this->invoice_service->set_order_invoice_id( $order, $wcpay_invoice_id );
 			}
 		}

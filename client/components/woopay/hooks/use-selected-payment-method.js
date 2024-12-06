@@ -4,17 +4,20 @@
 import { useEffect, useState } from 'react';
 import { useSelect } from '@wordpress/data';
 import { PAYMENT_STORE_KEY } from '@woocommerce/block-data'; // eslint-disable-line import/no-unresolved
+import { PAYMENT_METHOD_NAME_CARD } from 'wcpay/checkout/constants';
 
 const getWCPayRadioButtonStatus = () => {
-	return document.querySelector( '#payment_method_woocommerce_payments' )
-		?.checked;
+	return document.querySelector(
+		`#payment_method_${ PAYMENT_METHOD_NAME_CARD }`
+	)?.checked;
 };
 
 const getNewPaymentTokenRadioButtonStatus = () =>
-	document.querySelector( '#wc-woocommerce_payments_card-payment-token-new' )
-		?.checked ||
+	document.querySelector(
+		`#wc-${ PAYMENT_METHOD_NAME_CARD }-payment-token-new`
+	)?.checked ||
 	! document.querySelector(
-		'[type=radio][name="wc-woocommerce_payments_card-payment-token"]'
+		`[type=radio][name="wc-${ PAYMENT_METHOD_NAME_CARD }-payment-token"]`
 	);
 
 const getPaymentMethods = () => {
@@ -27,7 +30,7 @@ const getPaymentTokens = ( isBlocksCheckout ) => {
 				'[type=radio][name="radio-control-wc-payment-method-saved-tokens"]'
 		  )
 		: document.querySelectorAll(
-				'[type=radio][name="wc-woocommerce_payments-payment-token"]'
+				`[type=radio][name="wc-${ PAYMENT_METHOD_NAME_CARD }-payment-token"]`
 		  );
 };
 
@@ -38,7 +41,7 @@ const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 		const store = select( PAYMENT_STORE_KEY );
 		return {
 			isWCPayChosenOnBlocksCheckout:
-				store.getActivePaymentMethod() === 'woocommerce_payments',
+				store.getActivePaymentMethod() === PAYMENT_METHOD_NAME_CARD,
 		};
 	} );
 

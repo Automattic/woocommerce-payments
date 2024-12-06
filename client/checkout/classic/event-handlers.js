@@ -32,7 +32,11 @@ import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
-import { SHORTCODE_BILLING_ADDRESS_FIELDS } from '../constants';
+import {
+	PAYMENT_METHOD_NAME_CARD,
+	SHORTCODE_BILLING_ADDRESS_FIELDS,
+} from '../constants';
+import { getMainPaymentMethodId } from 'wcpay/utils/gateway-config';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -125,7 +129,7 @@ jQuery( function ( $ ) {
 		if (
 			$addPaymentMethodForm
 				.find( "input:checked[name='payment_method']" )
-				.val() !== 'woocommerce_payments_card'
+				.val() !== PAYMENT_METHOD_NAME_CARD
 		) {
 			return;
 		}
@@ -227,7 +231,10 @@ jQuery( function ( $ ) {
 
 		if ( $upeElements.length && ! $upeElements.children().length ) {
 			for ( const upeElement of $upeElements.toArray() ) {
-				if ( upeElement.dataset.paymentMethodType === 'main' ) {
+				if (
+					upeElement.dataset.paymentMethodType ===
+					getMainPaymentMethodId()
+				) {
 					continue;
 				}
 				await mountStripePaymentElement(

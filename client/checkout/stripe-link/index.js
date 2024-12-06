@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import { PAYMENT_METHOD_NAME_CARD } from '../constants';
 import { dispatchChangeEventFor } from '../utils/upe';
 
 export const switchToNewPaymentTokenElement = () => {
@@ -12,7 +13,7 @@ export const switchToNewPaymentTokenElement = () => {
 		?.click();
 
 	const newPaymentTokenElement = document.getElementById(
-		'wc-woocommerce_payments_card-payment-token-new'
+		`wc-${ PAYMENT_METHOD_NAME_CARD }-payment-token-new`
 	);
 	if ( newPaymentTokenElement && ! newPaymentTokenElement.checked ) {
 		newPaymentTokenElement.checked = true;

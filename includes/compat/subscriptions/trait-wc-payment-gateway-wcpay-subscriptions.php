@@ -161,19 +161,19 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	/**
 	 * Initializes this trait's WP hooks.
 	 *
-	 * The hooks are not initialized more than once or if the ID of the attached gateway is not 'woocommerce_payments'.
+	 * The hooks are not initialized more than once or if the ID of the attached gateway is not `WC_Payment_Gateway_WCPay::get_card_gateway_id()`.
 	 *
 	 * @return void
 	 */
 	public function maybe_init_subscriptions_hooks() {
 		/**
 		 * The following callbacks are only attached once to avoid duplication.
-		 * The callbacks are also only intended to be attached for the WCPay core payment gateway ($this->id = 'woocommerce_payments_card').
+		 * The callbacks are also only intended to be attached for the WCPay card payment gateway ($this->id = WC_Payment_Gateway_WCPay::get_card_gateway_id()).
 		 *
 		 * If new payment method IDs (eg 'sepa_debit') are added to this condition in the future, care should be taken to ensure duplication,
 		 * including double renewal charging, isn't introduced.
 		 */
-		if ( self::$has_attached_integration_hooks || 'woocommerce_payments_card' !== $this->id || ! $this->is_subscriptions_enabled() ) {
+		if ( self::$has_attached_integration_hooks || WC_Payment_Gateway_WCPay::get_card_gateway_id() !== $this->id || ! $this->is_subscriptions_enabled() ) {
 			return;
 		}
 
@@ -434,7 +434,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_action(
 			sprintf(
 				'woocommerce_subscription_payment_meta_input_%s_%s_%s',
-				'woocommerce_payments_card',
+				WC_Payment_Gateway_WCPay::get_card_gateway_id(),
 				self::$payment_method_meta_table,
 				self::$payment_method_meta_key
 			),
@@ -621,7 +621,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 */
 	public function get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $subscription ) {
 		// make sure payment method is wcpay's.
-		if ( 'woocommerce_payments_card' !== $old_payment_method ) {
+		if ( WC_Payment_Gateway_WCPay::get_card_gateway_id() !== $old_payment_method ) {
 			return $old_payment_method_title;
 		}
 
@@ -672,7 +672,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 */
 	public function get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $subscription ) {
 		// make sure payment method is wcpay's.
-		if ( 'woocommerce_payments_card' !== $new_payment_method ) {
+		if ( WC_Payment_Gateway_WCPay::get_card_gateway_id() !== $new_payment_method ) {
 			return $new_payment_method_title;
 		}
 

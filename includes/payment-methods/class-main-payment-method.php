@@ -8,13 +8,14 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Main Payment Method class.
  */
 class Main_Payment_Method extends UPE_Payment_Method {
 
-	const PAYMENT_METHOD_STRIPE_ID = 'main';
+	const PAYMENT_METHOD_STRIPE_ID = Payment_Method::MAIN;
 
 	/**
 	 * Constructor for card payment method

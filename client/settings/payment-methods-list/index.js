@@ -23,6 +23,10 @@ import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import CapabilityRequestNotice from './capability-request';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/interface/functions';
+import {
+	getMainPaymentMethodId,
+	isUsingSeparateGateways,
+} from 'wcpay/utils/gateway-config';
 
 const PaymentMethodsList = ( { methodIds } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -31,6 +35,10 @@ const PaymentMethodsList = ( { methodIds } ) => {
 
 	const availableMethods = methodIds.map(
 		( methodId ) => methodsConfiguration[ methodId ]
+	);
+
+	const isCreditCardEnabled = enabledMethodIds.includes(
+		PAYMENT_METHOD_IDS.CARD
 	);
 
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
@@ -138,8 +146,12 @@ const PaymentMethodsList = ( { methodIds } ) => {
 										getStatusAndRequirements( id ).status
 								}
 								// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
-								required={ false }
-								locked={ false }
+								required={ getMainPaymentMethodId() === id }
+								locked={
+									PAYMENT_METHOD_IDS.CARD === id &&
+									! isUsingSeparateGateways() &&
+									isCreditCardEnabled
+								}
 								Icon={ Icon }
 								status={ getStatusAndRequirements( id ).status }
 								isSetupRequired={ isSetupRequired }

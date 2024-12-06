@@ -63,11 +63,11 @@ export const fillCardDetails = async (
 ) => {
 	if (
 		await page.$(
-			'#payment .payment_method_woocommerce_payments_card .wcpay-upe-element'
+			`#payment .payment_method_${ config.gateways.cardGatewayId } .wcpay-upe-element`
 		)
 	) {
 		const frameHandle = await page.waitForSelector(
-			'#payment .payment_method_woocommerce_payments_card .wcpay-upe-element iframe'
+			`#payment .payment_method_${ config.gateways.cardGatewayId } .wcpay-upe-element iframe`
 		);
 
 		const stripeFrame = await frameHandle.contentFrame();
@@ -195,7 +195,7 @@ export const setupCheckout = async (
 	await isUIUnblocked( page );
 	await page
 		.locator(
-			'.wc_payment_method.payment_method_woocommerce_payments_card'
+			`.wc_payment_method.payment_method_${ config.gateways.cardGatewayId }`
 		)
 		.click();
 };

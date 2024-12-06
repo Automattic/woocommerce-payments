@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @psalm-immutable
  */
 class Payment_Method extends Base_Constant {
+	const MAIN            = 'main';
 	const BANCONTACT      = 'bancontact';
 	const BASC            = 'bacs_debit';
 	const BECS            = 'au_becs_debit';

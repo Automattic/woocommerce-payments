@@ -323,7 +323,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'refunds',
 		];
 
-		if ( 'main' !== $this->stripe_id ) {
+		if ( self::get_main_payment_method_id() !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooPayments ($this->title)";
 		}
@@ -535,6 +535,70 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the main WooPayments gateway ID.
+	 *
+	 * @return string The main gateway ID.
+	 */
+	public static function get_main_gateway_id() {
+		return self::GATEWAY_ID;
+	}
+
+	/**
+	 * Returns the card gateway ID.
+	 *
+	 * @return string The card gateway ID.
+	 */
+	public static function get_card_gateway_id() {
+		return self::GATEWAY_ID . '_' . Payment_Method::CARD;
+	}
+
+	/**
+	 * Returns the main WooPayments payment method ID.
+	 *
+	 * @return string The main payment method ID.
+	 */
+	public static function get_main_payment_method_id() {
+		return Payment_Method::MAIN;
+	}
+
+	/**
+	 * Returns whether we are using separate gateways for the card and main gateway.
+	 *
+	 * @return bool True if using separate gateways, false otherwise.
+	 */
+	public static function is_using_separate_gateways() {
+		return self::get_main_gateway_id() !== self::get_card_gateway_id();
+	}
+
+	/**
+	 * Returns the card payment method ID.
+	 *
+	 * @return string The card payment method ID.
+	 */
+	public static function get_card_payment_method_id() {
+		return Payment_Method::CARD;
+	}
+
+	/**
+	 * Returns whether this instance is the main WooPayments gateway.
+	 *
+	 * @return bool True if this is the main gateway, false otherwise.
+	 */
+	public function is_main_gateway() {
+		return self::get_main_gateway_id() === $this->id;
+	}
+
+	/**
+	 * Returns whether this instance is the card payment gateway.
+	 *
+	 * @return bool True if this is the card gateway, false otherwise.
+	 */
+	public function is_card_gateway() {
+		return self::get_card_gateway_id() === $this->id;
+	}
+
+
+	/**
 	 * Initializes this class's WP hooks.
 	 *
 	 * @return void
@@ -542,7 +606,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function init_hooks() {
 		add_action( 'init', [ $this, 'maybe_update_properties_with_country' ] );
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
-		if ( self::GATEWAY_ID === $this->id ) {
+		if ( $this->is_main_gateway() ) {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
@@ -827,8 +891,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		if ( self::GATEWAY_ID === $this->id ) {
-			return WC_Payments::get_gateway()->is_enabled();
+		if ( $this->is_main_gateway() && $this->is_using_separate_gateways() ) {
+			return $this->is_enabled();
 		}
 
 		if ( ! WC_Payments::get_gateway()->is_enabled() ) {
@@ -2200,7 +2264,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$payment_method_title = $payment_method->get_title( $this->get_account_country(), $payment_method_details );
 
-		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID . '_' . Payment_Method::CARD : self::GATEWAY_ID . '_' . $payment_method_type;
+		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::get_card_gateway_id() : self::GATEWAY_ID . '_' . $payment_method_type;
 
 		$order->set_payment_method( $payment_gateway );
 		$order->set_payment_method_title( $payment_method_title );
@@ -2526,7 +2590,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function set_defaults( $field ) {
 		$field = parent::set_defaults( $field );
 
-		if ( 'card' === $this->stripe_id && 'enabled' === ( $field['key'] ?? '' ) ) {
+		if ( $this->is_using_separate_gateways() && $this->is_card_gateway() && 'enabled' === ( $field['key'] ?? '' ) ) {
 			$field['default'] = 'yes';
 		}
 

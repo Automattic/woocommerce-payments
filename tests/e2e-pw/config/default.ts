@@ -270,6 +270,9 @@ export const config = {
 			shippingmethod: 'Free shipping',
 		},
 	},
+	gateways: {
+		cardGatewayId: 'woocommerce_payments_card',
+	},
 };
 
 export type CustomerAddress = typeof config.addresses.customer.billing;

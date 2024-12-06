@@ -585,14 +585,14 @@ class WC_Payments {
 			$split_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service, self::$failed_transaction_rate_limiter );
 
 			// Card gateway hooks are registered once below.
-			if ( Main_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $payment_method->get_id() ) {
+			if ( WC_Payment_Gateway_WCPay::get_main_payment_method_id() !== $payment_method->get_id() ) {
 				$split_gateway->init_hooks();
 			}
 
 			self::$payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 		}
 
-		self::$main_gateway         = self::get_payment_gateway_by_id( Main_Payment_Method::PAYMENT_METHOD_STRIPE_ID );
+		self::$main_gateway         = self::get_payment_gateway_by_id( WC_Payment_Gateway_WCPay::get_main_payment_method_id() );
 		self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 
 		self::$main_gateway->init_hooks();
@@ -745,6 +745,7 @@ class WC_Payments {
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_gateway_config_scripts' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$main_gateway, self::$order_service );
 
@@ -831,7 +832,7 @@ class WC_Payments {
 		$all_gateways     = [];
 		$reusable_methods = [];
 		foreach ( $payment_methods as $payment_method_id ) {
-			if ( 'main' === $payment_method_id || 'link' === $payment_method_id ) {
+			if ( WC_Payment_Gateway_WCPay::get_main_payment_method_id() === $payment_method_id || 'link' === $payment_method_id ) {
 				continue;
 			}
 			$gateway        = self::get_payment_gateway_by_id( $payment_method_id );
@@ -877,11 +878,13 @@ class WC_Payments {
 	public static function set_gateway_top_of_list( $ordering ) {
 		$ordering = (array) $ordering;
 
-		// Main Gateway won't be visible so it should never be the default.
-		$ordering[ self::get_gateway()->id ] = 9999;
+		if ( WC_Payment_Gateway_WCPay::is_using_separate_gateways() ) {
+			// Main Gateway won't be visible so it should never be the default.
+			$ordering[ self::get_gateway()->id ] = 9999;
+		}
 
-		$card_gateway = self::get_payment_gateway_by_id( 'card' );
-		if ( $card_gateway && $card_gateway->is_enabled() ) {
+		$card_gateway = self::get_payment_gateway_by_id( WC_Payment_Gateway_WCPay::get_card_payment_method_id() );
+		if ( ! WC_Payment_Gateway_WCPay::is_using_separate_gateways() || ( $card_gateway && $card_gateway->is_enabled() ) ) {
 			$id = $card_gateway->id;
 			// Only tweak the ordering if the list hasn't been reordered with WooPayments in it already.
 			if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
@@ -1998,6 +2001,28 @@ class WC_Payments {
 			'wcpayAssets',
 			[
 				'url' => plugins_url( '/dist/', WCPAY_PLUGIN_FILE ),
+			]
+		);
+	}
+
+	/**
+	 * Inject an inline script with WCPay assets properties.
+	 * window.wcpayAssets.url – Dist URL, required to properly load chunks on sites with JS concatenation enabled.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_gateway_config_scripts() {
+		wp_register_script( 'WCPAY_GATEWAY_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_enqueue_script( 'WCPAY_GATEWAY_CONFIG' );
+		wp_localize_script(
+			'WCPAY_GATEWAY_CONFIG',
+			'wcpayGatewayConfig',
+			[
+				'mainGatewayId'           => WC_Payment_Gateway_WCPay::get_main_gateway_id(),
+				'mainPaymentMethodId'     => WC_Payment_Gateway_WCPay::get_main_payment_method_id(),
+				'cardGatewayId'           => WC_Payment_Gateway_WCPay::get_card_gateway_id(),
+				'cardPaymentMethodId'     => WC_Payment_Gateway_WCPay::get_card_payment_method_id(),
+				'isUsingSeparateGateways' => WC_Payment_Gateway_WCPay::is_using_separate_gateways(),
 			]
 		);
 	}
