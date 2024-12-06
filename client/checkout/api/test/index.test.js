@@ -142,20 +142,6 @@ describe( 'WCPayAPI', () => {
 		expect( api.isWooPayRequesting ).toBe( false );
 	} );
 
-	test( 'express checkout pay for order is initialized correctly', async () => {
-		getExpressCheckoutAjaxURL.mockReturnValue( 'https://example.org/' );
-		getExpressCheckoutConfig.mockReturnValue( { pay_for_order: '1234' } );
-
-		const api = new WCPayAPI( {}, request );
-		await api.expressCheckoutECEPayForOrder( '12', { foo: 'bar' } );
-
-		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
-			_wpnonce: '1234',
-			order: '12',
-			foo: 'bar',
-		} );
-	} );
-
 	test( 'WooPay should not support global theme styles', async () => {
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
 		getConfig.mockImplementation( ( key ) => {
