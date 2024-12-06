@@ -3174,6 +3174,91 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, $this->wcpay_account->get_tracking_info() );
 	}
 
+	public function test_get_recommended_payment_methods_unsupported_country() {
+		$this->assertSame( [], $this->wcpay_account->get_recommended_payment_methods( 'XZ' ) );
+	}
+
+	public function get_recommended_payment_methods_provider() {
+		return [
+			'No PMs suggested'                  => [ 'US', [], [] ],
+			'Invalid PMs array'                 => [
+				'US',
+				[
+					'type'    => 'available',
+					'enabled' => false,
+				],
+				[],
+			],
+			'Enabled flag and priority not set' => [
+				'US',
+				[
+					[
+						'id'    => 1,
+						'title' => 'test PM',
+						'type'  => 'available',
+					],
+					[
+						'id'    => 2,
+						'title' => 'test PM 2',
+						'type'  => 'available',
+					],
+				],
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => false,
+						'priority' => 0,
+					],
+					[
+						'id'       => 2,
+						'title'    => 'test PM 2',
+						'type'     => 'available',
+						'enabled'  => false,
+						'priority' => 1,
+					],
+				],
+			],
+			'Enabled flag and priority set'     => [
+				'US',
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => true,
+						'priority' => 1,
+					],
+				],
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => true,
+						'priority' => 1,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider get_recommended_payment_methods_provider
+	 */
+	public function test_get_recommended_payment_methods( $country_code, $recommended_pms, $expected ) {
+
+		$this->mock_empty_cache();
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'get_recommended_payment_methods' )
+			->with( $country_code )
+			->willReturn( $recommended_pms );
+
+		$this->assertSame( $expected, $this->wcpay_account->get_recommended_payment_methods( $country_code ) );
+	}
+
 	/**
 	 * Sets up the mocked cache to simulate that its empty and call the generator.
 	 */
