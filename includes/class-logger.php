@@ -134,6 +134,6 @@ class Logger {
 		} catch ( \JsonException $e ) {
 			return sprintf( 'Error encoding object "%s": %s', $label, $e->getMessage() );
 		}
-		return sprintf( '%s: %s', $label, $encoded );
+		return sprintf( '%s (JSON): %s', $label, $encoded );
 	}
 }

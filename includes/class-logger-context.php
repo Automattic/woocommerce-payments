@@ -16,15 +16,6 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  */
 class Logger_Context {
 	/**
-	 * Initialises the logger context.
-	 *
-	 * @return void
-	 */
-	public static function init() {
-		wcpay_get_container()->get( InternalLoggerContext::class )->init();
-	}
-
-	/**
 	 * Sets a context value.
 	 *
 	 * @param string                     $key   The key to set.
