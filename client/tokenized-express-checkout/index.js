@@ -1,4 +1,7 @@
 /* global jQuery, wcpayExpressCheckoutParams */
+/**
+ * External dependencies
+ */
 import { __ } from '@wordpress/i18n';
 import { addAction, removeAction } from '@wordpress/hooks';
 
@@ -37,11 +40,6 @@ import {
 	transformPrice,
 } from './transformers/wc-to-stripe';
 
-/**
- * External dependencies
- */
-import { addFilter, removeFilter } from '@wordpress/hooks';
-
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
 	if (
@@ -52,7 +50,6 @@ jQuery( ( $ ) => {
 	}
 
 	const publishableKey = getExpressCheckoutData( 'stripe' ).publishableKey;
-	const quantityInputSelector = '.quantity .qty[type=number]';
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -89,42 +86,11 @@ jQuery( ( $ ) => {
 	} );
 
 	let wcPayECEError = '';
-	const defaultErrorMessage = __(
-		'There was an error getting the product information.',
-		'woocommerce-payments'
-	);
 
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
 	const wcpayECE = {
-		getAttributes: function () {
-			const select = $( '.variations_form' ).find( '.variations select' );
-			const data = {};
-			let count = 0;
-			let chosen = 0;
-
-			select.each( function () {
-				const attributeName =
-					$( this ).data( 'attribute_name' ) ||
-					$( this ).attr( 'name' );
-				const value = $( this ).val() || '';
-
-				if ( value.length > 0 ) {
-					chosen++;
-				}
-
-				count++;
-				data[ attributeName ] = value;
-			} );
-
-			return {
-				count: count,
-				chosenCount: chosen,
-				data: data,
-			};
-		},
-
 		/**
 		 * Abort the payment and display error messages.
 		 *
@@ -279,6 +245,15 @@ jQuery( ( $ ) => {
 
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.paymentAborted = true;
+
+				if (
+					getExpressCheckoutData( 'button_context' ) === 'product'
+				) {
+					// clearing the cart to avoid issues with products with low or limited availability
+					// being held hostage by customers cancelling the ECE.
+					getCartApiHandler().emptyCart();
+				}
+
 				onCancelHandler();
 			} );
 
@@ -378,7 +353,7 @@ jQuery( ( $ ) => {
 		 */
 		init: async () => {
 			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				// on product pages, we need to interact with an anonymous cart to checkout the product,
+				// on product pages, we need to interact with an anonymous cart to check out the product,
 				// so that we don't affect the products in the main cart.
 				// On cart, checkout, place order pages we instead use the cart itself.
 				getCartApiHandler().useSeparateCart();
