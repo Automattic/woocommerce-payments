@@ -2127,7 +2127,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'connect_timeout' => self::API_TIMEOUT_SECONDS,
 			];
 
-			Logger::log( Logger::format_object( 'REQUEST_ARGS', $request_args ) );
+			Logger::log( Logger::format_object( 'REQUEST_ARGS', array_merge( $request_args, [ 'url' => $redacted_url ] ) ) );
 			if ( null !== $body ) {
 				Logger::log( Logger::format_object( 'BODY', $redacted_params ) );
 			}

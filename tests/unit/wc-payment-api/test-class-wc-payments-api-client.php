@@ -12,6 +12,7 @@ use WCPay\Internal\Logger;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * WC_Payments_API_Client unit tests.
@@ -28,14 +29,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock HTTP client.
 	 *
-	 * @var WC_Payments_Http|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Http&MockObject
 	 */
 	private $mock_http_client;
 
 	/**
 	 * Mock DB wrapper.
 	 *
-	 * @var WC_Payments_DB|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_DB&MockObject
 	 */
 	private $mock_db_wrapper;
 
@@ -736,7 +737,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider redacting_params_data
 	 * @throws Exception - In the event of test failure.
 	 */
-	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
+	public function test_redacting_params( $request_arguments, $logger_num_calls ) {
 		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
 			->setMethods( [ 'log' ] )
 			->getMock();
@@ -748,7 +749,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$mock_logger
 			->expects( $this->exactly( $logger_num_calls ) )
 			->method( 'log' )
-			->withConsecutive( ...$logger_expected_arguments );
+			->with(
+				$this->anything(),
+				$this->callback(
+					function ( $message ) {
+						return false === strpos( $message, 'some-secret' );
+					}
+				)
+			);
 
 		$this->mock_http_client
 			->expects( $this->once() )
@@ -791,31 +799,15 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		return [
 			'delete' => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
-				3,
-				[
-					$this->anything(),
-					$this->callback( $string_should_not_include_secret ),
-				],
+				2,
 			],
 			'get'    => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'GET' ],
-				3,
-				[
-					$this->anything(),
-					$this->callback( $string_should_not_include_secret ),
-				],
+				2,
 			],
 			'post'   => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
-				4,
-				[
-					$this->anything(),
-					$this->callback( $string_should_not_include_secret ),
-				],
-				[
-					$this->anything(),
-					$this->callback( $string_should_not_include_secret ),
-				],
+				3,
 			],
 		];
 	}
