@@ -166,7 +166,7 @@ const ConnectAccountPage: React.FC = () => {
 		}
 	};
 
-	const checkAccountStatus = () => {
+	const checkAccountStatus = ( extraQueryArgs = {} ) => {
 		// Fetch account status from the cache.
 		apiFetch( {
 			path: `/wc/v3/payments/accounts`,
@@ -188,18 +188,22 @@ const ConnectAccountPage: React.FC = () => {
 				loaderProgressRef.current > 95
 			) {
 				setTestDriveLoaderProgress( 100 );
-
-				// Redirect to the Connect URL and let it figure it out where to point the merchant.
-				window.location.href = addQueryArgs( connectUrl, {
+				const queryArgs = {
 					test_drive: 'true',
 					'wcpay-sandbox-success': 'true',
 					source: determineTrackingSource(),
 					from: 'WCPAY_CONNECT',
 					redirect_to_settings_page:
 						urlParams.get( 'redirect_to_settings_page' ) || '',
+				};
+
+				// Redirect to the Connect URL and let it figure it out where to point the merchant.
+				window.location.href = addQueryArgs( connectUrl, {
+					...queryArgs,
+					...extraQueryArgs,
 				} );
 			} else {
-				setTimeout( checkAccountStatus, 2000 );
+				setTimeout( () => checkAccountStatus( extraQueryArgs ), 2000 );
 			}
 		} );
 	};
@@ -264,7 +268,9 @@ const ConnectAccountPage: React.FC = () => {
 					// The account has been successfully onboarded.
 					if ( !! connectionSuccess ) {
 						// Start checking the account status in a loop.
-						checkAccountStatus();
+						checkAccountStatus( {
+							'wcpay-connection-success': '1',
+						} );
 					} else {
 						// Redirect to the response URL, but attach our test drive flags.
 						// This URL is generally a Connect page URL.
