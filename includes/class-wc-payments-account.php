@@ -2004,6 +2004,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$collect_payout_requirements
 		);
 
+		// Store the 'woopay_enabled_by_default' flag in a transient to be used later.
+		set_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ), DAY_IN_SECONDS );
+
 		// If an account already exists for this site and/or there is no need for KYC verifications, we're done.
 		// Our platform will respond with a `false` URL in this case.
 		if ( isset( $onboarding_data['url'] ) && false === $onboarding_data['url'] ) {
@@ -2027,9 +2030,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			);
 		}
 
-		// We have an account that needs to be verified (has a URL to redirect the merchant to).
-		// Store the relevant onboarding data.
-		set_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ), DAY_IN_SECONDS );
 		// Save the onboarding state for a day.
 		// This is used to verify the state when finalizing the onboarding and connecting the account.
 		// On finalizing the onboarding, the transient gets deleted.
