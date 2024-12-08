@@ -20,6 +20,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
 	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
 	const FRAUD_SERVICES_KEY          = 'wcpay_fraud_services_data';
+	const RECOMMENDED_PAYMENT_METHODS = 'wcpay_recommended_payment_methods';
 
 	/**
 	 * Refresh during AJAX calls is avoided, but white-listing

@@ -79,10 +79,10 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 				define( 'WCPAY_ECE_CHECKOUT', true );
 			}
 
+			$this->express_checkout_button_helper->normalize_state();
+
 			// In case the state is required, but is missing, add a more descriptive error notice.
 			$this->express_checkout_button_helper->validate_state();
-
-			$this->express_checkout_button_helper->normalize_state();
 
 			WC()->checkout()->process_checkout();
 		} catch ( Exception $e ) {
