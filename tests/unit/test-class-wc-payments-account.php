@@ -907,7 +907,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->maybe_handle_onboarding();
 	}
 
-	public function test_ensure_woopay_enabled_by_default_value_set_in_sandbox_mode() {
+	public function test_ensure_woopay_enabled_by_default_value_set_in_sandbox_mode_kyc() {
 		// Arrange.
 		// We need to be in the WP admin dashboard.
 		$this->set_is_admin( true );
