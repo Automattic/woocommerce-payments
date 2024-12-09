@@ -50,7 +50,7 @@ else
 fi
 
 # Find the WordPress container section and get its port
-PORT=$(docker ps | grep transact_gateway_wordpress | sed -En "s/.*0:([0-9]+).*/\1/p")
+PORT=$(docker ps | grep woocommerce_payments_wordpress | sed -En "s/.*0:([0-9]+).*/\1/p")
 
 # Use default if extraction failed
 if [ -z "$PORT" ]; then
