@@ -40,10 +40,7 @@
 
 		.wcpay-summary__item-detail {
 			color: $dark-gray-500;
-
-			@include breakpoint( '<480px' ) {
-				word-wrap: break-word;
-			}
+			word-wrap: break-word;
 
 			.woopayments-payout-bank-reference-key {
 				font-family: monospace;
@@ -126,7 +123,6 @@
 			line-height: 82px;
 
 			@include breakpoint( '<660px' ) {
-				padding: 24px;
 				line-height: 36px;
 				text-align: left;
 				border-top: 1px solid $studio-gray-5;
