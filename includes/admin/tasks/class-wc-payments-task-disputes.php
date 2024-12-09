@@ -50,6 +50,13 @@ class WC_Payments_Task_Disputes extends Task {
 	private $disputes_due_within_1d;
 
 	/**
+	 * Disputes needing a response.
+	 *
+	 * @var array|null
+	 */
+	private $disputes_needing_response;
+
+	/**
 	 * WC_Payments_Task_Disputes constructor.
 	 */
 	public function __construct() {
@@ -322,9 +329,8 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return array|null Array of disputes awaiting a response. Null on failure.
 	 */
 	private function get_disputes_needing_response() {
-		return $this->database_cache->get_or_add(
-			Database_Cache::ACTIVE_DISPUTES_KEY,
-			function () {
+
+		$get_disputes_callback = function () {
 				$response = $this->api_client->get_disputes(
 					[
 						'pagesize' => 50,
@@ -332,23 +338,30 @@ class WC_Payments_Task_Disputes extends Task {
 					]
 				);
 
-				$active_disputes = $response['data'] ?? [];
+			$active_disputes = $response['data'] ?? [];
 
-				// sort by due_by date ascending.
-				usort(
-					$active_disputes,
-					function ( $a, $b ) {
-						$a_due_by = new \DateTime( $a['due_by'] );
-						$b_due_by = new \DateTime( $b['due_by'] );
+			// sort by due_by date ascending.
+			usort(
+				$active_disputes,
+				function ( $a, $b ) {
+					$a_due_by = new \DateTime( $a['due_by'] );
+					$b_due_by = new \DateTime( $b['due_by'] );
 
-						return $a_due_by <=> $b_due_by;
-					}
-				);
+					return $a_due_by <=> $b_due_by;
+				}
+			);
 
-				return $active_disputes;
-			},
-			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
-			'is_array'
-		);
+			return $active_disputes;
+		};
+
+		if ( ! $this->disputes_needing_response ) {
+
+			$this->disputes_needing_response = $this->database_cache->get_or_add(
+				Database_Cache::ACTIVE_DISPUTES_KEY,
+				$get_disputes_callback,
+				'is_array'
+			);
+		}
+		return $this->disputes_needing_response;
 	}
 }
