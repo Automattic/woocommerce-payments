@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-feat: add `wcpay_checkout_use_plain_method_label` filter to allow themes or merchants to force the "plain" WooPayments label on shortcode checkout.

@@ -222,12 +222,12 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 			$mock_action_scheduler_service,
 			$mock_payment_method,
 			[ 'card' => $mock_payment_method ],
-			$mock_rate_limiter,
 			$mock_order_service,
 			$mock_dpps,
 			$this->createMock( WC_Payments_Localization_Service::class ),
 			$this->createMock( WC_Payments_Fraud_Service::class ),
-			$this->createMock( Duplicates_Detection_Service::class )
+			$this->createMock( Duplicates_Detection_Service::class ),
+			$mock_rate_limiter
 		);
 	}
 

@@ -161,12 +161,12 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$mock_payment_method,
 					[ 'card' => $mock_payment_method ],
-					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->createMock( WC_Payments_Localization_Service::class ),
 					$this->createMock( WC_Payments_Fraud_Service::class ),
 					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
