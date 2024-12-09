@@ -50,9 +50,7 @@ else
 fi
 
 # Find the WordPress container section and get its port
-CLIENT_WORDPRESS_CONTAINER_SECTION=$(grep -A 20 "container_name: woocommerce_payments_wordpress" ${PWD}/docker-compose.yml)
-PORTS_LINE=$(echo "${CLIENT_WORDPRESS_CONTAINER_SECTION}" | grep "ports:" -A 1 | grep "\-")
-PORT=$(echo "${PORTS_LINE}" | grep -o '"[0-9]\+:' | cut -d'"' -f2 | cut -d: -f1)
+PORT=$(docker ps | grep transact_gateway_wordpress | sed -En "s/.*0:([0-9]+).*/\1/p")
 
 # Use default if extraction failed
 if [ -z "$PORT" ]; then
