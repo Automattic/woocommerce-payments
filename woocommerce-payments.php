@@ -81,7 +81,7 @@ function wcpay_jetpack_init() {
 	$connection_version = Automattic\Jetpack\Connection\Package_Version::PACKAGE_VERSION;
 
 	$custom_content = version_compare( $connection_version, '6.1.0', '>' ) ?
-		'wcpay_get_jetpack_idc_custom_content':
+		'wcpay_get_jetpack_idc_custom_content' :
 		wcpay_get_jetpack_idc_custom_content();
 
 	$jetpack_config = new Automattic\Jetpack\Config();
