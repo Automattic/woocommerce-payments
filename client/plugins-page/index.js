@@ -77,12 +77,12 @@ const PluginsPage = () => {
 	useEffect( () => {
 		// If the survey is dismissed skip event listeners.
 		if ( isModalDismissed() ) {
-			return null;
+			return;
 		}
 
 		// Abort if the deactivation link is not present.
 		if ( deactivationLink === null ) {
-			return null;
+			return;
 		}
 
 		// Handle click event.
