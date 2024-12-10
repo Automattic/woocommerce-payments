@@ -63,14 +63,14 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 
 	return (
 		<Modal
-			title={ '' }
+			title={ __(
+				"You're ready to accept payments!",
+				'woocommerce-payments'
+			) }
 			className="wcpay-progressive-onboarding-eligibility-modal"
 			onRequestClose={ handleDismiss }
 		>
 			<ConfettiAnimation />
-			<h1 className="wcpay-progressive-onboarding-eligibility-modal__heading">
-				{ __( 'You’re ready to sell.', 'woocommerce-payments' ) }
-			</h1>
 			<h2 className="wcpay-progressive-onboarding-eligibility-modal__subheading">
 				{ __(
 					'Start selling now and fast track the setup process, or continue the process to set up payouts with WooPayments.',
