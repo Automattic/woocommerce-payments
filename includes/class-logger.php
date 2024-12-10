@@ -36,7 +36,7 @@ class Logger {
 	 *     'debug': Debug-level messages.
 	 */
 	public static function log( $message, $level = 'info' ) {
-		wcpay_get_container()->get( InternalLogger::class )->log( $message );
+		wcpay_get_container()->get( InternalLogger::class )->log( $message, $level );
 	}
 
 	/**
