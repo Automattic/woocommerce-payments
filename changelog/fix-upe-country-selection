@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed UPE country detection in Checkout for non-logged in users
