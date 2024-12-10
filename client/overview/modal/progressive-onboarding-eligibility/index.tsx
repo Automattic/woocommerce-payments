@@ -104,7 +104,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 							) }
 						</h3>
 						{ __(
-							'You have a $5,000 balance limit or 30 days from your first transaction to verify and set up payouts in your account.',
+							'You have 30 days from your first transaction or until you reach $5,000 in sales to verify your information and set up payouts.',
 							'woocommerce-payments'
 						) }
 					</div>
