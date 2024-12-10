@@ -127,7 +127,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 			</div>
 			<div className="wcpay-progressive-onboarding-eligibility-modal__footer">
 				<Button variant="secondary" onClick={ handleSetup }>
-					{ __( 'Set up deposits', 'woocommerce-payments' ) }
+					{ __( 'Set up payouts', 'woocommerce-payments' ) }
 				</Button>
 				<Button variant="primary" onClick={ handlePaymentsOnly }>
 					{ __( 'Start selling', 'woocommerce-payments' ) }
