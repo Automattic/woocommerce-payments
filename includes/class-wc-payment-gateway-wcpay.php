@@ -1571,7 +1571,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$payment_methods = $this->get_payment_method_types( $payment_information );
 			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 			// for a string that will only contain latin alphanumeric characters and underscores.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1602,6 +1601,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( empty( $intent ) ) {
+				$payment_methods = $this->get_payment_method_types( $payment_information );
+
 				$request = Create_And_Confirm_Intention::create();
 				$request->set_amount( $converted_amount );
 				$request->set_currency_code( $currency );
@@ -2126,9 +2127,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order           = $payment_information->get_order();
 			$order_id        = $order instanceof WC_Order ? $order->get_id() : null;
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
-		} else {
-			// Final fallback case, if all else fails.
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 		}
 
 		return $payment_methods;
@@ -4569,10 +4567,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Get the recommended payment methods list.
+	 *
+	 * @param string $country_code Optional. The business location country code. Provide a 2-letter ISO country code.
+	 *                             If not provided, the account country will be used if the account is connected.
+	 *                             Otherwise, the store's base country will be used.
+	 *
+	 * @return array List of recommended payment methods for the given country.
+	 *               Empty array if there are no recommendations available.
+	 *               Each item in the array should be an associative array with at least the following entries:
+	 *               - @string id: The payment method ID.
+	 *               - @string title: The payment method title/name.
+	 *               - @bool enabled: Whether the payment method is enabled.
+	 *               - @int order/priority: The order/priority of the payment method.
+	 */
+	public function get_recommended_payment_methods( string $country_code = '' ): array {
+		if ( empty( $country_code ) ) {
+			// If the account is connected, use the account country.
+			if ( $this->account->is_provider_connected() ) {
+				$country_code = $this->get_account_country();
+			} else {
+				// If the account is not connected, use the store's base country.
+				$country_code = WC()->countries->get_base_country();
+			}
+		}
+
+		return $this->account->get_recommended_payment_methods( $country_code );
+	}
+
+	/**
 	 * Determine whether redirection is needed for the non-card UPE payment method.
 	 *
 	 * @param array $payment_methods The list of payment methods used for the order processing, usually consists of one method only.
-	 * @return boolean True if the arrray consist of only one payment method which is not a card. False otherwise.
+	 * @return boolean True if the array consist of only one payment method which is not a card. False otherwise.
 	 */
 	private function upe_needs_redirection( $payment_methods ) {
 		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
