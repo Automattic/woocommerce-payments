@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Button, Modal } from '@wordpress/components';
-import { Icon, store, widget, tool } from '@wordpress/icons';
+import { Icon, store, currencyDollar } from '@wordpress/icons';
 import { useDispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -95,46 +95,39 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 			</h2>
 			<div className="wcpay-progressive-onboarding-eligibility-modal__benefits">
 				<div>
-					<Icon icon={ store } size={ 32 } />
-					<h3 className="wcpay-progressive-onboarding-eligibility-modal__benefits__subtitle">
+					<Icon icon={ store } width={ 24 } height={ 24 } />
+					<div>
+						<h3 className="wcpay-progressive-onboarding-eligibility-modal__benefits__subtitle">
+							{ __(
+								'Start selling instantly',
+								'woocommerce-payments'
+							) }
+						</h3>
 						{ __(
-							'Start selling instantly',
+							'You have a $5,000 balance limit or 30 days from your first transaction to verify and set up payouts in your account.',
 							'woocommerce-payments'
 						) }
-					</h3>
-					{ sprintf(
-						/* translators: %s: WooPayments */
-						__(
-							'%s enables you to start processing credit card payments right away.',
+					</div>
+				</div>
+				<div>
+					<Icon icon={ currencyDollar } width={ 24 } height={ 24 } />
+					<div>
+						<h3 className="wcpay-progressive-onboarding-eligibility-modal__benefits__subtitle">
+							{ __(
+								'Start receiving payouts',
+								'woocommerce-payments'
+							) }
+						</h3>
+						{ __(
+							'Provide some additional details about your business so you can continue accepting payments and begin receiving payouts without restrictions.',
 							'woocommerce-payments'
-						),
-						'WooPayments'
-					) }
-				</div>
-				<div>
-					<Icon icon={ widget } size={ 32 } />
-					<h3 className="wcpay-progressive-onboarding-eligibility-modal__benefits__subtitle">
-						{ __( 'Quick and easy setup', 'woocommerce-payments' ) }
-					</h3>
-					{ __(
-						'The setup process is super simple and ensures your store is ready to accept card payments.',
-						'woocommerce-payments'
-					) }
-				</div>
-				<div>
-					<Icon icon={ tool } size={ 32 } />
-					<h3 className="wcpay-progressive-onboarding-eligibility-modal__benefits__subtitle">
-						{ __( 'Flexible process', 'woocommerce-payments' ) }
-					</h3>
-					{ __(
-						'You have a $5,000 balance limit or 30 days from your first transaction to verify and set up payouts in your account.',
-						'woocommerce-payments'
-					) }
+						) }
+					</div>
 				</div>
 			</div>
 			<div className="wcpay-progressive-onboarding-eligibility-modal__footer">
 				<Button variant="secondary" onClick={ handleSetup }>
-					{ __( 'Start receiving payouts', 'woocommerce-payments' ) }
+					{ __( 'Set up deposits', 'woocommerce-payments' ) }
 				</Button>
 				<Button variant="primary" onClick={ handlePaymentsOnly }>
 					{ __( 'Start selling', 'woocommerce-payments' ) }
