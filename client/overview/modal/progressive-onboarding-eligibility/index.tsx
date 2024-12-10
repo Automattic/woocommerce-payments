@@ -7,6 +7,7 @@ import { addQueryArgs } from '@wordpress/url';
 import { Button, Modal } from '@wordpress/components';
 import { Icon, store, widget, tool } from '@wordpress/icons';
 import { useDispatch } from '@wordpress/data';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
@@ -72,10 +73,25 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 		>
 			<ConfettiAnimation />
 			<h2 className="wcpay-progressive-onboarding-eligibility-modal__subheading">
-				{ __(
-					'Start selling now and fast track the setup process, or continue the process to set up payouts with WooPayments.',
-					'woocommerce-payments'
-				) }
+				{ interpolateComponents( {
+					mixedString: sprintf(
+						__(
+							'Great news — your %s account has been activated. You can now start accepting payments on your store, subject to {{restrictionsLink}}certain restrictions{{/restrictionsLink}}.',
+							'woocommerce-payments'
+						),
+						'WooPayments'
+					),
+					components: {
+						restrictionsLink: (
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a
+								rel="external noopener noreferrer"
+								target="_blank"
+								href="https://woocommerce.com/document/woopayments/startup-guide/gradual-signup/"
+							/>
+						),
+					},
+				} ) }
 			</h2>
 			<div className="wcpay-progressive-onboarding-eligibility-modal__benefits">
 				<div>
