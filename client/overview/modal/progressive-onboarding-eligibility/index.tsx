@@ -59,15 +59,6 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 		setModalVisible( false );
 	};
 
-	// Workaround to remove Modal header from the modal until `hideHeader` prop can be used.
-	useEffect( () => {
-		document
-			.querySelector(
-				'.wcpay-progressive-onboarding-eligibility-modal .components-modal__header-heading-container'
-			)
-			?.remove();
-	}, [] );
-
 	if ( ! modalVisible || modalDismissed ) return null;
 
 	return (
