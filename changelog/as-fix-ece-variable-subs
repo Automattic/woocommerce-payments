@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Refine verification for disabling ECE on subscriptions that require shipping.
