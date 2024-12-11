@@ -252,6 +252,7 @@ jQuery( ( $ ) => {
 				'expressCheckout',
 				getExpressCheckoutButtonStyleSettings()
 			);
+			window.eceButton = eceButton;
 
 			expressCheckoutButtonUi.renderButton( eceButton );
 
@@ -441,6 +442,17 @@ jQuery( ( $ ) => {
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
+							// We won't support this type of subscription yet.
+							if (
+								getExpressCheckoutData( 'product' )
+									.product_type === 'variable-subscription' &&
+								response.needs_shipping &&
+								response.has_free_trial
+							) {
+								window.eceButton.destroy();
+								return;
+							}
+
 							const isDeposits = wcpayECE.productHasDepositOption();
 							/**
 							 * If the customer aborted the express checkout,
@@ -453,8 +465,11 @@ jQuery( ( $ ) => {
 								! wcpayECE.paymentAborted &&
 								getExpressCheckoutData( 'product' )
 									.needs_shipping === response.needs_shipping;
-
-							if ( ! isDeposits && needsShipping ) {
+							if (
+								! isDeposits &&
+								needsShipping &&
+								! window.eceButton._destroyed
+							) {
 								elements.update( {
 									amount: response.total.amount,
 								} );
