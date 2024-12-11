@@ -28,6 +28,7 @@ const mockAppearance = {
 		'.Input': {},
 		'.Input--invalid': {},
 		'.Label': {},
+		'.Label--resting': {},
 		'.Tab': {},
 		'.Tab--selected': {},
 		'.Tab:hover': {},

@@ -560,7 +560,7 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		fontSizeBase: paragraphRules.fontSize,
 	};
 
-	if ( selectors.pmmeRelativeTextSizeSelector ) {
+	if ( selectors.pmmeRelativeTextSizeSelector && globalRules.fontSizeBase ) {
 		globalRules.fontSizeBase = ensureFontSizeSmallerThan(
 			selectors.pmmeRelativeTextSizeSelector,
 			paragraphRules.fontSize,
