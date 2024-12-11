@@ -149,13 +149,14 @@ class WC_Payments_Order_Service {
 	/**
 	 * Parse the payment intent data and add any necessary notes to the order and update the order status accordingly.
 	 *
-	 * @param WC_Order                           $order   The order to update.
-	 * @param WC_Payments_API_Abstract_Intention $intent  Setup or payment intent to pull the data from.
+	 * @param WC_Order                           $order        The order to update.
+	 * @param WC_Payments_API_Abstract_Intention $intent       Setup or payment intent to pull the data from.
+	 * @param bool                               $force_update Force update the order status that avoids early if checks.
 	 */
-	public function update_order_status_from_intent( $order, $intent ) {
+	public function update_order_status_from_intent( $order, $intent, $force_update = false ) {
 		$intent_data = $this->get_intent_data( $intent );
 
-		if ( ! isset( $intent_data['intent_id'] ) || ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) {
+		if ( ! $force_update && ( ! isset( $intent_data['intent_id'] ) || ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) ) {
 			return;
 		}
 
