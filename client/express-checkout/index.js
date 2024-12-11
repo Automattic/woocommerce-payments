@@ -252,7 +252,6 @@ jQuery( ( $ ) => {
 				'expressCheckout',
 				getExpressCheckoutButtonStyleSettings()
 			);
-			window.eceButton = eceButton;
 
 			expressCheckoutButtonUi.renderButton( eceButton );
 
@@ -368,7 +367,7 @@ jQuery( ( $ ) => {
 			} );
 
 			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				wcpayECE.attachProductPageEventListeners( elements );
+				wcpayECE.attachProductPageEventListeners( elements, eceButton );
 			}
 		},
 
@@ -419,7 +418,7 @@ jQuery( ( $ ) => {
 			return api.expressCheckoutECEGetSelectedProductData( data );
 		},
 
-		attachProductPageEventListeners: ( elements ) => {
+		attachProductPageEventListeners: ( elements, eceButton ) => {
 			// WooCommerce Deposits support.
 			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
 			// Needs to be defined before the `woocommerce_variation_has_changed` event handler is set.
@@ -449,7 +448,7 @@ jQuery( ( $ ) => {
 								response.needs_shipping &&
 								response.has_free_trial
 							) {
-								window.eceButton.destroy();
+								eceButton.destroy();
 								return;
 							}
 
@@ -468,7 +467,7 @@ jQuery( ( $ ) => {
 							if (
 								! isDeposits &&
 								needsShipping &&
-								! ( window.eceButton._destroyed ?? false )
+								! ( eceButton._destroyed ?? false )
 							) {
 								elements.update( {
 									amount: response.total.amount,
