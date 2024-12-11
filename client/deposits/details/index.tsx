@@ -102,6 +102,75 @@ const SummaryItem: React.FC< SummaryItemProps > = ( {
 	</li>
 );
 
+interface DepositDateItemProps {
+	deposit: CachedDeposit;
+}
+
+const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
+	let depositDateLabel = __( 'Payout date', 'woocommerce-payments' );
+	if ( ! deposit.automatic ) {
+		depositDateLabel = __( 'Instant payout date', 'woocommerce-payments' );
+	}
+	if ( deposit.type === 'withdrawal' ) {
+		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
+	}
+
+	return (
+		<SummaryItem
+			key="depositDate"
+			label={
+				`${ depositDateLabel }: ` +
+				dateI18n(
+					'M j, Y',
+					moment.utc( deposit.date ).toISOString(),
+					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+				)
+			}
+			value={ <DepositStatusIndicator deposit={ deposit } /> }
+			detail={
+				<>
+					{ deposit.bankAccount }
+					<br />
+					Bank reference key:{ ' ' }
+					{ deposit.bank_reference_key ? (
+						<>
+							<span className="woopayments-payout-bank-reference-key">
+								{ deposit.bank_reference_key }
+							</span>
+							<button
+								type="button"
+								className="woopayments-copy-button-bank-reference-key"
+								aria-label={ __(
+									'Copy bank reference key to clipboard',
+									'woocommerce-payments'
+								) }
+								title={ __(
+									'Copy to clipboard',
+									'woocommerce-payments'
+								) }
+								onClick={ () => {
+									const bankReferenceKey = document.querySelector(
+										'.woopayments-payout-bank-reference-key'
+									)?.textContent;
+
+									if ( bankReferenceKey ) {
+										navigator.clipboard.writeText(
+											bankReferenceKey
+										);
+									}
+								} }
+							>
+								<i></i>
+							</button>
+						</>
+					) : (
+						'N/A'
+					) }
+				</>
+			}
+		/>
+	);
+};
 interface DepositOverviewProps {
 	deposit: CachedDeposit | undefined;
 }
@@ -122,90 +191,12 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 
 	const isWithdrawal = deposit.type === 'withdrawal';
 
-	let depositDateLabel = __( 'Payout date', 'woocommerce-payments' );
-	if ( ! deposit.automatic ) {
-		depositDateLabel = __( 'Instant payout date', 'woocommerce-payments' );
-	}
-	if ( isWithdrawal ) {
-		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
-	}
-
-	const DepositDateItem = () => {
-		useEffect( () => {
-			const copyButton = document.querySelector(
-				'.woopayments-copy-bank-reference-key'
-			);
-
-			if ( copyButton ) {
-				copyButton.addEventListener( 'click', () => {
-					const bankReferenceKey = document.querySelector(
-						'.woopayments-payout-bank-reference-key'
-					)?.textContent;
-
-					if ( bankReferenceKey ) {
-						navigator.clipboard.writeText( bankReferenceKey );
-
-						copyButton.classList.add( 'state--copied' );
-						setTimeout( () => {
-							copyButton.classList.remove( 'state--copied' );
-						}, 2000 );
-					}
-				} );
-			}
-		}, [] );
-
-		return (
-			<SummaryItem
-				key="depositDate"
-				label={
-					`${ depositDateLabel }: ` +
-					dateI18n(
-						'M j, Y',
-						moment.utc( deposit.date ).toISOString(),
-						true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-					)
-				}
-				value={ <DepositStatusIndicator deposit={ deposit } /> }
-				detail={
-					<>
-						{ deposit.bankAccount }
-						<br />
-						Bank reference key:{ ' ' }
-						{ deposit.bank_reference_key ? (
-							<>
-								<span className="woopayments-payout-bank-reference-key">
-									{ deposit.bank_reference_key }
-								</span>
-								<button
-									type="button"
-									className="woopayments-copy-button-bank-reference-key"
-									aria-label={ __(
-										'Copy bank reference key to clipboard',
-										'woocommerce-payments'
-									) }
-									title={ __(
-										'Copy to clipboard',
-										'woocommerce-payments'
-									) }
-								>
-									<i></i>
-								</button>
-							</>
-						) : (
-							'N/A'
-						) }
-					</>
-				}
-			/>
-		);
-	};
-
 	return (
 		<div className="wcpay-deposit-overview">
 			{ deposit.automatic ? (
 				<Card className="wcpay-deposit-automatic">
 					<ul>
-						{ DepositDateItem() }
+						<DepositDateItem deposit={ deposit } />
 						<li className="wcpay-deposit-amount">
 							{ formatExplicitCurrency(
 								deposit.amount,
@@ -215,7 +206,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					</ul>
 				</Card>
 			) : (
-				<SummaryList
+				<SummaryList // For instant deposits only
 					label={
 						isWithdrawal
 							? __(
@@ -226,7 +217,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					}
 				>
 					{ () => [
-						DepositDateItem(),
+						<DepositDateItem key="dateItem" deposit={ deposit } />,
 						<SummaryItem
 							key="depositAmount"
 							label={
