@@ -441,7 +441,8 @@ jQuery( ( $ ) => {
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
-							// We won't support this type of subscription yet.
+							// We do not support variable subscriptions with variations
+							// that require shipping and include a free trial.
 							if (
 								getExpressCheckoutData( 'product' )
 									.product_type === 'variable-subscription' &&
