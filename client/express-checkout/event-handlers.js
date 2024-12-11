@@ -19,20 +19,73 @@ import {
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
 
-// Used to control if we need to refresh the cart/checkout information when ECE is dismissed.
-let wasShippingInfoUpdated = false;
+const updateBlocksShippingUI = ( eventAddress ) => {
+	console.log( 'TODO: implement update_checkout' );
+};
+
+const updateShortcodeShippingUI = ( eventAddress ) => {
+	const context = getExpressCheckoutData( 'button_context' );
+	// const mapFields = {
+	// 	shipping_city: 'city',
+	// 	shipping_state: 'state',
+	// 	shipping_postcode: 'postcode',
+	// 	country: 'country',
+	// };
+	const address = normalizeShippingAddress( eventAddress );
+
+	if ( context === 'cart' ) {
+		Object.keys( address ).forEach( ( key ) => {
+			if (
+				address[ key ] &&
+				document.querySelector(
+					`form.woocommerce-shipping-calculator [name="calc_shipping_${ key }"]`
+				)
+			) {
+				document.querySelector(
+					`form.woocommerce-shipping-calculator [name="calc_shipping_${ key }"]`
+				).value = address[ key ];
+			} else {
+				console.error(
+					`form.woocommerce-shipping-calculator [name="calc_shipping_${ key }"]`
+				);
+				console.error( address[ key ] );
+			}
+		} );
+	}
+};
+
+const onShippingRatesCalculated = ( eventAddress, response ) => {
+	console.log( eventAddress, response );
+
+	const context = getExpressCheckoutData( 'button_context' );
+	const isBlocks = getExpressCheckoutData( 'has_block' );
+
+	console.log( context, isBlocks );
+
+	if ( ! [ 'cart', 'checkout' ].includes( context ) ) return;
+
+	if ( isBlocks ) {
+		updateBlocksShippingUI( eventAddress );
+	} else {
+		console.log( 'onShippingRatesCalculated shortcode: ', eventAddress );
+		updateShortcodeShippingUI( eventAddress );
+	}
+};
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
+	console.log( event );
 	try {
 		const response = await api.expressCheckoutECECalculateShippingOptions(
 			normalizeShippingAddress( event.address )
 		);
 
 		if ( response.result === 'success' ) {
-			wasShippingInfoUpdated = true;
 			elements.update( {
 				amount: response.total.amount,
 			} );
+
+			onShippingRatesCalculated( event.address, response );
+
 			event.resolve( {
 				shippingRates: response.shipping_options,
 				lineItems: normalizeLineItems( response.displayItems ),
@@ -41,6 +94,7 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 			event.reject();
 		}
 	} catch ( e ) {
+		console.error( e );
 		event.reject();
 	}
 };
@@ -52,7 +106,6 @@ export const shippingRateChangeHandler = async ( api, event, elements ) => {
 		);
 
 		if ( response.result === 'success' ) {
-			wasShippingInfoUpdated = true;
 			elements.update( { amount: response.total.amount } );
 			event.resolve( {
 				lineItems: normalizeLineItems( response.displayItems ),
@@ -176,14 +229,21 @@ export const onCompletePaymentHandler = () => {
 };
 
 export const onCancelHandler = () => {
-	const context = getExpressCheckoutData( 'button_context' );
-	if (
-		wasShippingInfoUpdated &&
-		[ 'cart', 'checkout' ].includes( context )
-	) {
-		location.reload( true );
-	}
+	//
+	// if (
+	// 	wasShippingInfoUpdated &&
+	// 	[ 'cart', 'checkout' ].includes( context )
+	// ) {
+	// 	jQuery('body').trigger('update_checkout');
+	// 	alert();
+	// 	// location.reload( true );
+	// }
 
-	wasShippingInfoUpdated = false;
+	// wasShippingInfoUpdated = false;
+	document
+		.querySelector(
+			'form.woocommerce-shipping-calculator [name="calc_shipping"]'
+		)
+		?.click();
 	unblockUI();
 };
