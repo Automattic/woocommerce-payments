@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
@@ -115,6 +115,8 @@ const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
 	}
 
+	const [ isCopied, setIsCopied ] = useState( false );
+
 	return (
 		<SummaryItem
 			key="depositDate"
@@ -131,17 +133,19 @@ const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 				<>
 					{ deposit.bankAccount }
 					<br />
-					Bank reference key:{ ' ' }
+					Bank reference ID:{ ' ' }
 					{ deposit.bank_reference_key ? (
 						<>
-							<span className="woopayments-payout-bank-reference-key">
+							<span className="woopayments-payout-bank-reference-id">
 								{ deposit.bank_reference_key }
 							</span>
 							<button
 								type="button"
-								className="woopayments-copy-button-bank-reference-key"
+								className={ `woopayments-payout-bank-reference-id-copy-button ${
+									isCopied ? 'state--copied' : ''
+								}` }
 								aria-label={ __(
-									'Copy bank reference key to clipboard',
+									'Copy bank reference ID to clipboard',
 									'woocommerce-payments'
 								) }
 								title={ __(
@@ -149,14 +153,21 @@ const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 									'woocommerce-payments'
 								) }
 								onClick={ () => {
-									const bankReferenceKey = document.querySelector(
-										'.woopayments-payout-bank-reference-key'
+									const bankReferenceId = document.querySelector(
+										'.woopayments-payout-bank-reference-id'
 									)?.textContent;
 
-									if ( bankReferenceKey ) {
+									if ( bankReferenceId ) {
 										navigator.clipboard.writeText(
-											bankReferenceKey
+											bankReferenceId
 										);
+									}
+
+									if ( ! isCopied ) {
+										setIsCopied( true );
+										setTimeout( () => {
+											setIsCopied( false );
+										}, 2000 );
 									}
 								} }
 							>
