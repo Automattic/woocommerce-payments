@@ -46,7 +46,7 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
               >
                 MOCK BANK •••• 1234 (USD)
                 <br />
-                Bank reference key:
+                Bank reference ID:
                  
                 N/A
               </div>
@@ -122,7 +122,7 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
               >
                 MOCK BANK •••• 1234 (USD)
                 <br />
-                Bank reference key:
+                Bank reference ID:
                  
                 N/A
               </div>
@@ -204,7 +204,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             >
               MOCK BANK •••• 1234 (USD)
               <br />
-              Bank reference key:
+              Bank reference ID:
                
               N/A
             </div>
