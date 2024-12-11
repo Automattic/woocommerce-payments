@@ -468,7 +468,7 @@ jQuery( ( $ ) => {
 							if (
 								! isDeposits &&
 								needsShipping &&
-								! window.eceButton._destroyed
+								! ( window.eceButton._destroyed ?? false )
 							) {
 								elements.update( {
 									amount: response.total.amount,
