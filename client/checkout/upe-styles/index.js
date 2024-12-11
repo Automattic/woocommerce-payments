@@ -12,6 +12,8 @@ import {
 	handleAppearanceForFloatingLabel,
 } from './utils.js';
 
+const PMME_RELATIVE_TEXT_SIZE = 0.85;
+
 export const appearanceSelectors = {
 	default: {
 		hiddenContainer: '#wcpay-hidden-div',
@@ -42,6 +44,7 @@ export const appearanceSelectors = {
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '#place_order' ],
 		linkSelectors: [ 'a' ],
+		pmmeRelativeTextSizeSelector: '.wc_payment_method > label',
 	},
 	blocksCheckout: {
 		appendTarget: '#contact-fields',
@@ -70,6 +73,8 @@ export const appearanceSelectors = {
 		containerSelectors: [
 			'.wp-block-woocommerce-checkout-order-summary-block',
 		],
+		pmmeRelativeTextSizeSelector:
+			'.wc-block-components-radio-control__label-group',
 	},
 	bnplProductPage: {
 		appendTarget: '.product .cart .quantity',
@@ -465,6 +470,35 @@ export const getFontRulesFromPage = () => {
 	return fontRules;
 };
 
+/**
+ * Ensure the font size of the element is smaller than the font size of target element.
+ *
+ * @param {string} selector Selector of the element to be checked.
+ * @param {string} fontSize Pre-computed font size.
+ * @param {number} percentage Percentage (0-1) to be used relative to the font size of the target element.
+ *
+ * @return {string} Font size of the element.
+ */
+function ensureFontSizeSmallerThan( selector, fontSize, percentage ) {
+	const fontSizeNumber = parseFloat( fontSize );
+
+	// If the element is not found, return the font size number multiplied by the percentage.
+	const elem = document.querySelector( selector );
+	if ( ! elem ) {
+		return `${ fontSizeNumber * percentage }px`;
+	}
+
+	const styles = window.getComputedStyle( elem );
+	const targetFontSize = styles.getPropertyValue( 'font-size' );
+	const targetFontSizeNumber = parseFloat( targetFontSize ) * percentage;
+
+	if ( fontSizeNumber > targetFontSizeNumber ) {
+		return `${ targetFontSizeNumber }px`;
+	}
+
+	return `${ fontSizeNumber }px`;
+}
+
 export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	const selectors = appearanceSelectors.getSelectors( elementsLocation );
 
@@ -518,8 +552,17 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		colorBackground: backgroundColor,
 		colorText: paragraphRules.color,
 		fontFamily: paragraphRules.fontFamily,
+		// fontSizeBase: transformFontSize( paragraphRules.fontSize, 0.9 ),
 		fontSizeBase: paragraphRules.fontSize,
 	};
+
+	if ( selectors.pmmeRelativeTextSizeSelector ) {
+		globalRules.fontSizeBase = ensureFontSizeSmallerThan(
+			selectors.pmmeRelativeTextSizeSelector,
+			paragraphRules.fontSize,
+			PMME_RELATIVE_TEXT_SIZE // The font size of the payment method messaging should be 85% or less of the target font size.
+		);
+	}
 
 	const isFloatingLabel = elementsLocation === 'blocks_checkout';
 
