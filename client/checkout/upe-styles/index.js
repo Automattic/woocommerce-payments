@@ -516,6 +516,10 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		'.Label'
 	);
 
+	const labelRestingRules = {
+		fontSize: labelRules.fontSize,
+	};
+
 	const paragraphRules = getFieldStyles(
 		selectors.upeThemeTextSelector,
 		'.Text'
@@ -576,6 +580,7 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 				'.Input': inputRules,
 				'.Input--invalid': inputInvalidRules,
 				'.Label': labelRules,
+				'.Label--resting': labelRestingRules,
 				'.Block': blockRules,
 				'.Tab': tabRules,
 				'.Tab:hover': tabHoverRules,
