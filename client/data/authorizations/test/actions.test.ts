@@ -380,5 +380,85 @@ describe( 'Authorizations actions', () => {
 				)
 			);
 		} );
+
+		describe( 'error handling', () => {
+			it( 'should create error notice with API error message', () => {
+				const generator = submitCancelAuthorization( 'pi_123', 123 );
+
+				// Mock the start of the cancel process
+				expect( generator.next().value ).toEqual(
+					controls.dispatch(
+						STORE_NAME,
+						'startResolution',
+						'getAuthorization',
+						[ 'pi_123' ]
+					)
+				);
+
+				expect( generator.next().value ).toEqual(
+					controls.dispatch(
+						STORE_NAME,
+						'setIsRequestingAuthorization',
+						true
+					)
+				);
+
+				// Mock API error response
+				const apiError = {
+					code: 'wcpay_payment_uncapturable',
+					message: 'The payment cannot be canceled at this time.',
+					data: { status: 400 },
+				};
+
+				// Simulate API error
+				expect( generator.throw( apiError ).value ).toEqual(
+					controls.dispatch(
+						'core/notices',
+						'createErrorNotice',
+						'There has been an error canceling the payment for order #123. The payment cannot be canceled at this time.'
+					)
+				);
+
+				// Verify cleanup in finally block
+				expect( generator.next().value ).toEqual(
+					controls.dispatch(
+						STORE_NAME,
+						'finishResolution',
+						'getAuthorization',
+						[ 'pi_123' ]
+					)
+				);
+
+				expect( generator.next().value ).toEqual(
+					controls.dispatch(
+						STORE_NAME,
+						'setIsRequestingAuthorization',
+						false
+					)
+				);
+			} );
+
+			it( 'should create error notice with fallback message when API error has no message', () => {
+				const generator = submitCancelAuthorization( 'pi_123', 123 );
+
+				// Skip initial dispatch calls
+				generator.next();
+				generator.next();
+
+				// Mock API error without message
+				const apiError = {
+					code: 'unknown_error',
+					data: { status: 500 },
+				};
+
+				expect( generator.throw( apiError ).value ).toEqual(
+					controls.dispatch(
+						'core/notices',
+						'createErrorNotice',
+						'There has been an error canceling the payment for order #123. Please try again later.'
+					)
+				);
+			} );
+		} );
 	} );
 } );

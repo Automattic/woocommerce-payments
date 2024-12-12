@@ -293,17 +293,31 @@ export function* submitCancelAuthorization(
 			)
 		);
 	} catch ( error ) {
+		const baseErrorMessage = sprintf(
+			// translators: %s Order id
+			__(
+				'There has been an error canceling the payment for order #%s.',
+				'woocommerce-payments'
+			),
+			orderId
+		);
+
+		const apiError = error as {
+			code?: string;
+			message?: string;
+			data?: {
+				status?: number;
+			};
+		};
+
+		const errorDetails =
+			apiError.message ||
+			__( 'Please try again later.', 'woocommerce-payments' );
+
 		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
-			sprintf(
-				// translators: %s Order id
-				__(
-					'There has been an error canceling the payment for order #%s. Please try again later.',
-					'woocommerce-payments'
-				),
-				orderId
-			)
+			`${ baseErrorMessage } ${ errorDetails }`
 		);
 	} finally {
 		yield controls.dispatch(
