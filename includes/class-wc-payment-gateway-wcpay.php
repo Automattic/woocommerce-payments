@@ -328,6 +328,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Define setting fields.
+		add_action( 'after_setup_theme', function() {
 		$this->form_fields = [
 			'enabled'                            => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
@@ -496,6 +497,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			],
 			'platform_checkout_custom_message'   => [ 'default' => __( 'By placing this order, you agree to our [terms] and understand our [privacy_policy].', 'woocommerce-payments' ) ],
 		];
+		});
 
 		// Capabilities have different keys than the payment method ID's,
 		// so instead of appending '_payments' to the end of the ID, it'll be better
@@ -4468,6 +4470,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_method_description() {
+		return 'Some description';
+
 		$description = sprintf(
 			/* translators: %1$s: WooPayments */
 			__(
