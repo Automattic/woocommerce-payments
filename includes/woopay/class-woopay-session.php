@@ -902,7 +902,7 @@ class WooPay_Session {
 		$address_2      = get_option( 'woocommerce_checkout_address_2_field', 'optional' );
 		$phone          = get_option( 'woocommerce_checkout_phone_field', 'required' );
 		$terms_checkbox = ! empty( get_option( 'woocommerce_terms_page_id', null ) );
-		$terms_text     = get_option( 'woocommerce_checkout_privacy_policy_text' );
+		$terms_text     = wp_kses_post( wc_replace_policy_page_link_placeholders( wc_get_terms_and_conditions_checkbox_text() ) );
 
 		// Blocks checkout options. To get the blocks checkout options, we need
 		// to parse the checkout page content because the options are stored
