@@ -2004,12 +2004,19 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$collect_payout_requirements
 		);
 
-		// Store the 'woopay_enabled_by_default' flag in a transient to be used later.
-		set_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ), DAY_IN_SECONDS );
+		$should_enable_woopay   = filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN );
+		$is_test_mode           = in_array( $setup_mode, [ 'test', 'test_drive' ], true );
+		$account_already_exists = isset( $onboarding_data['url'] ) && false === $onboarding_data['url'];
+
+		// Only store the 'woopay_enabled_by_default' flag in a transient, to be enabled later, if
+		// it should be enabled and the account doesn't already exist, or we are in test mode.
+		if ( $should_enable_woopay && ( ! $account_already_exists || $is_test_mode ) ) {
+			set_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, $should_enable_woopay, DAY_IN_SECONDS );
+		}
 
 		// If an account already exists for this site and/or there is no need for KYC verifications, we're done.
 		// Our platform will respond with a `false` URL in this case.
-		if ( isset( $onboarding_data['url'] ) && false === $onboarding_data['url'] ) {
+		if ( $account_already_exists ) {
 			// Set the gateway options.
 			$gateway = WC_Payments::get_gateway();
 			$gateway->update_option( 'enabled', 'yes' );
