@@ -138,8 +138,6 @@ jQuery( ( $ ) => {
 		$separator: jQuery( '#wcpay-express-checkout-button-separator' ),
 	} );
 
-	let wcPayECEError = '';
-
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
@@ -246,11 +244,6 @@ jQuery( ( $ ) => {
 								)
 							);
 						}
-						return;
-					}
-
-					if ( wcPayECEError ) {
-						window.alert( wcPayECEError );
 						return;
 					}
 
