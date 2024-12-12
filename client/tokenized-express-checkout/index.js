@@ -208,10 +208,6 @@ jQuery( ( $ ) => {
 			expressCheckoutButtonUi.renderButton( eceButton );
 
 			eceButton.on( 'loaderror', () => {
-				wcPayECEError = __(
-					'The cart is incompatible with express checkout.',
-					'woocommerce-payments'
-				);
 				if ( ! document.getElementById( 'wcpay-woopay-button' ) ) {
 					expressCheckoutButtonUi.getButtonSeparator().hide();
 				}
