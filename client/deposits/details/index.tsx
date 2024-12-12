@@ -153,13 +153,9 @@ const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 									'woocommerce-payments'
 								) }
 								onClick={ () => {
-									const bankReferenceId = document.querySelector(
-										'.woopayments-payout-bank-reference-id'
-									)?.textContent;
-
-									if ( bankReferenceId ) {
+									if ( deposit.bank_reference_key ) {
 										navigator.clipboard.writeText(
-											bankReferenceId
+											deposit.bank_reference_key
 										);
 									}
 
