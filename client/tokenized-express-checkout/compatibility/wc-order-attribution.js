@@ -6,8 +6,8 @@
 import { addFilter } from '@wordpress/hooks';
 
 addFilter(
-	'wcpay.payment-request.cart-place-order-extension-data',
-	'automattic/wcpay/payment-request',
+	'wcpay.express-checkout.cart-place-order-extension-data',
+	'automattic/wcpay/express-checkout',
 	( extensionData ) => {
 		const orderAttributionValues = jQuery(
 			'#wcpay-express-checkout__order-attribution-inputs input'
