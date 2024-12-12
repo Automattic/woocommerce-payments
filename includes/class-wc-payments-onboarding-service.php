@@ -226,8 +226,9 @@ class WC_Payments_Onboarding_Service {
 		// Set the embedded KYC in progress flag.
 		$this->set_embedded_kyc_in_progress();
 
+		// When the new account is created, if we have test drive settings, save them to the new account.
 		if ( get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
-			Wc_payments::get_account_service()->save_test_drive_settings_to_new_account();
+			$this->save_test_drive_settings_to_new_account();
 		}
 
 		// Remember if we should enable WooPay by default.
@@ -905,5 +906,23 @@ class WC_Payments_Onboarding_Service {
 
 		// Default to an unknown source.
 		return self::SOURCE_UNKNOWN;
+	}
+
+	/**
+	 * If there are settings collected from the test drive account, save them to the new account.
+	 *
+	 * @return void
+	 */
+	public function save_test_drive_settings_to_new_account() {
+		if ( get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
+			return;
+		}
+
+		WC_Payments::get_account_service()->refresh_account_data();
+		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/settings' );
+		$request->set_body_params( get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+		$response = rest_do_request( $request );
+		rest_get_server()->response_to_data( $response, false );
+		delete_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 	}
 }

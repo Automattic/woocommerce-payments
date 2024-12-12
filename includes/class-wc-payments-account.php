@@ -1344,8 +1344,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 					try {
 						$account = $this->get_cached_account_data();
+						// If we're in test mode and dealing with a test-drive account,
+						// we need to collect the test drive settings before we delete the test-drive account,
+						// and apply those settings to the live account.
 						if ( ! empty( $account['is_test_drive'] ) && true === $account['is_test_drive'] ) {
 							$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
+
+							// Store the test drive settings for the live account in a transient,
+							// We don't passing the data around, as the merchant might cancel and start
+							// the onboarding from scratch. In this case, we won't have the test drive
+							// account anymore to collect the settings.
 							set_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
 						}
 
@@ -2033,8 +2041,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			);
 		}
 
+		// When the new account is created, if we have test drive settings, save them to the new account.
 		if ( get_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
-			$this->save_test_drive_settings_to_new_account();
+			$this->onboarding_service->save_test_drive_settings_to_new_account();
 		}
 
 		// We have an account that needs to be verified (has a URL to redirect the merchant to).
@@ -2592,26 +2601,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * TBD
+	 * Extract the test drive settings from the account data that we want to store for the live account.
+	 * ATM we only store the enabled payment methods.
 	 *
-	 * @return array
+	 * @return array The test drive settings for the live account.
 	 */
-	private function get_test_drive_settings_for_live_account() {
+	private function get_test_drive_settings_for_live_account(): array {
 		$gateway = WC_Payments::get_gateway();
 		return [ 'enabled_payment_method_ids' => $gateway->get_upe_enabled_payment_method_ids() ];
-	}
-
-	/**
-	 * TBD
-	 *
-	 * @return void
-	 */
-	public function save_test_drive_settings_to_new_account() {
-		$this->refresh_account_data();
-		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/settings' );
-		$request->set_body_params( get_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
-		$response = rest_do_request( $request );
-		rest_get_server()->response_to_data( $response, false );
-		delete_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 	}
 }
