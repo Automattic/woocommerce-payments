@@ -140,6 +140,10 @@ const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 							</span>
 							<CopyButton
 								textToCopy={ deposit.bank_reference_key }
+								label={ __(
+									'Copy bank reference ID to clipboard',
+									'woocommerce-payments'
+								) }
 							/>
 						</>
 					) : (

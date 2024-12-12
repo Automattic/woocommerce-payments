@@ -10,9 +10,12 @@ import classNames from 'classnames';
  */
 import './style.scss';
 
-const CopyButton: React.FC< {
+interface CopyButtonProps {
 	textToCopy: string;
-} > = ( { textToCopy } ) => {
+	label: string;
+}
+
+const CopyButton: React.FC< CopyButtonProps > = ( { textToCopy, label } ) => {
 	// useRef() is used to store the timer reference for the setTimeout() function.
 	const timerRef = useRef< NodeJS.Timeout | null >( null );
 
@@ -41,10 +44,7 @@ const CopyButton: React.FC< {
 			className={ classNames( 'woopayments-copy-button', {
 				'state--copied': copied,
 			} ) }
-			aria-label={ __(
-				'Copy bank reference ID to clipboard',
-				'woocommerce-payments'
-			) }
+			aria-label={ label }
 			title={ __( 'Copy to clipboard', 'woocommerce-payments' ) }
 			onClick={ copyToClipboard }
 		>
