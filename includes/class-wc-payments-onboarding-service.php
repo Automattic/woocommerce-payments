@@ -227,9 +227,7 @@ class WC_Payments_Onboarding_Service {
 		$this->set_embedded_kyc_in_progress();
 
 		// When the new account is created, if we have test drive settings, save them to the new account.
-		if ( get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
-			$this->save_test_drive_settings_to_new_account();
-		}
+		$this->maybe_save_test_drive_settings_to_new_account();
 
 		// Remember if we should enable WooPay by default.
 		set_transient(
@@ -913,7 +911,7 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return void
 	 */
-	public function save_test_drive_settings_to_new_account() {
+	public function maybe_save_test_drive_settings_to_new_account() {
 		if ( ! get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
 			return;
 		}

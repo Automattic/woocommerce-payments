@@ -2042,9 +2042,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		// When the new account is created, if we have test drive settings, save them to the new account.
-		if ( get_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
-			$this->onboarding_service->save_test_drive_settings_to_new_account();
-		}
+		$this->onboarding_service->maybe_save_test_drive_settings_to_new_account();
 
 		// We have an account that needs to be verified (has a URL to redirect the merchant to).
 		// Store the relevant onboarding data.
