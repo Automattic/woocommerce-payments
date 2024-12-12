@@ -99,4 +99,4 @@ tests/e2e-pw/tests/e2e-pw/.auth/*
 docs/rest-api/build/*
 
 # Jurassic Tube files
-/bin/jurassictube/
+bin/jurassictube/
