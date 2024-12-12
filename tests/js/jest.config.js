@@ -45,8 +45,6 @@ module.exports = {
 		'<rootDir>/.*/build-module/',
 		'<rootDir>/docker/',
 		'<rootDir>/tests/e2e',
-		// We'll delete the directory and its contents as part of https://github.com/Automattic/woocommerce-payments/issues/9722 .
-		'<rootDir>/client/tokenized-payment-request',
 	],
 	transform: {
 		...tsjPreset.transform,
