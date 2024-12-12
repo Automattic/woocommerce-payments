@@ -326,7 +326,7 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.getByText( 'You’re ready to sell.' )
+			screen.getByText( "You're ready to accept payments!" )
 		).toBeInTheDocument();
 	} );
 
