@@ -914,7 +914,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public function save_test_drive_settings_to_new_account() {
-		if ( get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
+		if ( ! get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
 			return;
 		}
 
