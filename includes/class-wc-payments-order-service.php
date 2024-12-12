@@ -149,14 +149,13 @@ class WC_Payments_Order_Service {
 	/**
 	 * Parse the payment intent data and add any necessary notes to the order and update the order status accordingly.
 	 *
-	 * @param WC_Order                           $order        The order to update.
-	 * @param WC_Payments_API_Abstract_Intention $intent       Setup or payment intent to pull the data from.
-	 * @param bool                               $force_update Force update the order status that avoids early if checks.
+	 * @param WC_Order                           $order   The order to update.
+	 * @param WC_Payments_API_Abstract_Intention $intent  Setup or payment intent to pull the data from.
 	 */
-	public function update_order_status_from_intent( $order, $intent, $force_update = false ) {
+	public function update_order_status_from_intent( $order, $intent ) {
 		$intent_data = $this->get_intent_data( $intent );
 
-		if ( ! $force_update && ( ! isset( $intent_data['intent_id'] ) || ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) ) {
+		if ( ! isset( $intent_data['intent_id'] ) || ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) {
 			return;
 		}
 
@@ -188,6 +187,21 @@ class WC_Payments_Order_Service {
 				break;
 		}
 
+		$this->complete_order_processing( $order );
+	}
+
+	/**
+	 * Handles the order state when a payment is captured successfully.
+	 * Unlike `update_order_status_from_intent`, this method does not check the current order status or skip processing
+	 * if the order is already in the "processing" state. This ensures the order status is updated correctly upon a
+	 * successful capture, preventing issues where the capture is not reflected in the order details or transaction screens
+	 * due to the order status being in the processing state.
+	 *
+	 * @param WC_Order                           $order   The order to update.
+	 * @param WC_Payments_API_Abstract_Intention $intent  The intent object containing payment or setup data.
+	 */
+	public function process_captured_payment( $order, $intent ) {
+		$this->mark_payment_capture_completed( $order, $intent );
 		$this->complete_order_processing( $order );
 	}
 
