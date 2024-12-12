@@ -16,6 +16,7 @@ import {
 	updateAuthorization,
 } from '../actions';
 import authorizationsFixture from './authorizations.fixture.json';
+import { STORE_NAME } from 'wcpay/data/constants';
 
 describe( 'Authorizations actions', () => {
 	describe( 'submitCaptureAuthorization', () => {
@@ -156,6 +157,87 @@ describe( 'Authorizations actions', () => {
 					'There has been an error capturing the payment for order #42. Please try again later.'
 				)
 			);
+		} );
+
+		describe( 'error handling', () => {
+			it( 'should create error notice with API error message', () => {
+				const generator = submitCaptureAuthorization( 'pi_123', 123 );
+
+				// Mock the start of the capture process
+				expect( generator.next().value ).toEqual(
+					controls.dispatch(
+						STORE_NAME,
+						'startResolution',
+						'getAuthorization',
+						[ 'pi_123' ]
+					)
+				);
+
+				expect( generator.next().value ).toEqual(
+					controls.dispatch(
+						STORE_NAME,
+						'setIsRequestingAuthorization',
+						true
+					)
+				);
+
+				// Mock API error response
+				const apiError = {
+					code: 'wcpay_refunded_order_uncapturable',
+					message:
+						'Payment cannot be captured for partially or fully refunded orders.',
+					data: { status: 400 },
+				};
+
+				// Simulate API error
+				expect( generator.throw( apiError ).value ).toEqual(
+					controls.dispatch(
+						'core/notices',
+						'createErrorNotice',
+						'There has been an error capturing the payment for order #123. Payment cannot be captured for partially or fully refunded orders.'
+					)
+				);
+
+				// Verify cleanup in finally block
+				expect( generator.next().value ).toEqual(
+					controls.dispatch(
+						STORE_NAME,
+						'finishResolution',
+						'getAuthorization',
+						[ 'pi_123' ]
+					)
+				);
+
+				expect( generator.next().value ).toEqual(
+					controls.dispatch(
+						STORE_NAME,
+						'setIsRequestingAuthorization',
+						false
+					)
+				);
+			} );
+
+			it( 'should create error notice with fallback message when API error has no message', () => {
+				const generator = submitCaptureAuthorization( 'pi_123', 123 );
+
+				// Skip initial dispatch calls
+				generator.next();
+				generator.next();
+
+				// Mock API error without message
+				const apiError = {
+					code: 'unknown_error',
+					data: { status: 500 },
+				};
+
+				expect( generator.throw( apiError ).value ).toEqual(
+					controls.dispatch(
+						'core/notices',
+						'createErrorNotice',
+						'There has been an error capturing the payment for order #123. Please try again later.'
+					)
+				);
+			} );
 		} );
 	} );
 

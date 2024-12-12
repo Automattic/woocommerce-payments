@@ -165,17 +165,31 @@ export function* submitCaptureAuthorization(
 			)
 		);
 	} catch ( error ) {
+		const baseErrorMessage = sprintf(
+			// translators: %s Order id
+			__(
+				'There has been an error capturing the payment for order #%s.',
+				'woocommerce-payments'
+			),
+			orderId
+		);
+
+		const apiError = error as {
+			code?: string;
+			message?: string;
+			data?: {
+				status?: number;
+			};
+		};
+
+		const errorDetails =
+			apiError.message ||
+			__( 'Please try again later.', 'woocommerce-payments' );
+
 		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
-			sprintf(
-				// translators: %s Order id
-				__(
-					'There has been an error capturing the payment for order #%s. Please try again later.',
-					'woocommerce-payments'
-				),
-				orderId
-			)
+			`${ baseErrorMessage } ${ errorDetails }`
 		);
 	} finally {
 		yield controls.dispatch(
@@ -184,6 +198,7 @@ export function* submitCaptureAuthorization(
 			'getAuthorization',
 			[ paymentIntentId ]
 		);
+
 		yield controls.dispatch(
 			STORE_NAME,
 			'setIsRequestingAuthorization',
