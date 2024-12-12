@@ -27,7 +27,6 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->title                        = 'Afterpay';
 		$this->is_reusable                  = false;
 		$this->is_bnpl                      = true;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay-logo.svg', WCPAY_PLUGIN_FILE );
@@ -48,10 +47,10 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
 		if ( 'GB' === $account_country ) {
-			return 'Clearpay';
+			return __( 'Clearpay', 'woocommerce-payments' );
 		}
 
-		return 'Afterpay';
+		return __( 'Afterpay', 'woocommerce-payments' );
 	}
 
 	/**
