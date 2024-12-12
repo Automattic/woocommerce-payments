@@ -106,8 +106,8 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	},
 	{
 		key: 'order',
-		label: __( 'Order #', 'woocommerce-payments' ),
-		screenReaderLabel: __( 'Order #', 'woocommerce-payments' ),
+		label: __( 'Order Id', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Order Id', 'woocommerce-payments' ),
 		required: true,
 	},
 	{

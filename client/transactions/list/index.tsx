@@ -236,8 +236,8 @@ const getColumns = (
 		},
 		{
 			key: 'order',
-			label: __( 'Order #', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Order number', 'woocommerce-payments' ),
+			label: __( 'Order Id', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Order Id', 'woocommerce-payments' ),
 			required: true,
 		},
 		includeSubscription && {
