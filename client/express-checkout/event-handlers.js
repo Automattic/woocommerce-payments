@@ -25,12 +25,6 @@ const updateBlocksShippingUI = ( eventAddress ) => {
 
 const updateShortcodeShippingUI = ( eventAddress ) => {
 	const context = getExpressCheckoutData( 'button_context' );
-	// const mapFields = {
-	// 	shipping_city: 'city',
-	// 	shipping_state: 'state',
-	// 	shipping_postcode: 'postcode',
-	// 	country: 'country',
-	// };
 	const address = normalizeShippingAddress( eventAddress );
 
 	if ( context === 'cart' ) {
@@ -240,6 +234,9 @@ export const onCancelHandler = () => {
 	// }
 
 	// wasShippingInfoUpdated = false;
+
+	// TODO: refine logic to click on this button. It's only available in the shortcode cart.
+	// Information is already updated in the backend when Payment sheet is opened so no reason to bother to only trigger after changes.
 	document
 		.querySelector(
 			'form.woocommerce-shipping-calculator [name="calc_shipping"]'
