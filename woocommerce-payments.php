@@ -254,8 +254,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 		}
 
 		require_once $wcs_core_path . 'includes/class-wc-subscriptions-core-plugin.php';
-		// There are a ton of issues with subs core.
-		// new WC_Subscriptions_Core_Plugin();
+		new WC_Subscriptions_Core_Plugin();
 	}
 }
 add_action( 'plugins_loaded', 'wcpay_init_subscriptions_core', 0 );

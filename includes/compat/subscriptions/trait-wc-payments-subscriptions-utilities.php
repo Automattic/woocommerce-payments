@@ -22,8 +22,6 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool Whether subscriptions is enabled or not.
 	 */
 	public function is_subscriptions_enabled() {
-		// Without subs core, this leads to issues.
-		return false;
 		if ( $this->is_subscriptions_plugin_active() ) {
 			return version_compare( $this->get_subscriptions_plugin_version(), '2.2.0', '>=' );
 		}
