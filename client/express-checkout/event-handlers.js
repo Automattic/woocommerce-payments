@@ -13,6 +13,7 @@ import {
 	normalizeShippingAddress,
 	normalizeLineItems,
 	getExpressCheckoutData,
+	updateBlocksShippingUI,
 	updateShortcodeShippingUI,
 } from './utils';
 import {
@@ -22,27 +23,8 @@ import {
 
 let lastSelectedAddress = null;
 
-const updateBlocksShippingUI = ( eventAddress ) => {
-	console.log( 'TODO: implement update_checkout' );
-};
-
-const onShippingRatesCalculated = ( eventAddress, response ) => {
+const onShippingRatesCalculated = ( eventAddress ) => {
 	lastSelectedAddress = eventAddress;
-	console.log( eventAddress, response );
-
-	const context = getExpressCheckoutData( 'button_context' );
-	const isBlocks = getExpressCheckoutData( 'has_block' );
-
-	console.log( context, isBlocks );
-
-	if ( ! [ 'cart', 'checkout' ].includes( context ) ) return;
-
-	if ( isBlocks ) {
-		updateBlocksShippingUI( eventAddress );
-	} else {
-		console.log( 'onShippingRatesCalculated shortcode: ', eventAddress );
-		// updateShortcodeShippingUI( eventAddress );
-	}
 };
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
@@ -211,9 +193,8 @@ export const onCancelHandler = () => {
 		return;
 
 	if ( isBlocks ) {
-		// updateBlocksShippingUI( eventAddress );
+		updateBlocksShippingUI( lastSelectedAddress );
 	} else {
-		console.log( 'onShippingRatesCalculated shortcode: ', lastSelectedAddress );
 		updateShortcodeShippingUI( lastSelectedAddress );
 	}
 

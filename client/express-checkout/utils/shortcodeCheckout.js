@@ -8,6 +8,13 @@
  */
 import { normalizeShippingAddress, getExpressCheckoutData } from './';
 
+export const updateBlocksShippingUI = ( eventAddress ) => {
+	console.log( 'updateBlocksShippingUI' );
+	const address = normalizeShippingAddress( eventAddress );
+
+	wp.data.dispatch( 'wc/store/cart' ).setShippingAddress( address );
+};
+
 export const updateShortcodeShippingUI = ( eventAddress ) => {
 	const context = getExpressCheckoutData( 'button_context' );
 	const address = normalizeShippingAddress( eventAddress );
