@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
@@ -30,6 +30,7 @@ import classNames from 'classnames';
 import type { CachedDeposit } from 'types/deposits';
 import { useDeposit } from 'data';
 import TransactionsList from 'transactions/list';
+import CopyButton from 'components/copy-button';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice } from 'components/test-mode-notice';
@@ -115,8 +116,6 @@ const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 		depositDateLabel = __( 'Withdrawal date', 'woocommerce-payments' );
 	}
 
-	const [ isCopied, setIsCopied ] = useState( false );
-
 	return (
 		<SummaryItem
 			key="depositDate"
@@ -139,36 +138,9 @@ const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 							<span className="woopayments-payout-bank-reference-id">
 								{ deposit.bank_reference_key }
 							</span>
-							<button
-								type="button"
-								className={ `woopayments-payout-bank-reference-id-copy-button ${
-									isCopied ? 'state--copied' : ''
-								}` }
-								aria-label={ __(
-									'Copy bank reference ID to clipboard',
-									'woocommerce-payments'
-								) }
-								title={ __(
-									'Copy to clipboard',
-									'woocommerce-payments'
-								) }
-								onClick={ () => {
-									if ( deposit.bank_reference_key ) {
-										navigator.clipboard.writeText(
-											deposit.bank_reference_key
-										);
-									}
-
-									if ( ! isCopied ) {
-										setIsCopied( true );
-										setTimeout( () => {
-											setIsCopied( false );
-										}, 2000 );
-									}
-								} }
-							>
-								<i></i>
-							</button>
+							<CopyButton
+								textToCopy={ deposit.bank_reference_key }
+							/>
 						</>
 					) : (
 						'N/A'
