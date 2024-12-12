@@ -9,7 +9,7 @@ export interface DepositsTableHeader extends TableCardColumn {
 		| 'amount'
 		| 'status'
 		| 'bankAccount'
-		| 'bankReferenceKey';
+		| 'bankReferenceId';
 	cellClassName?: string;
 }
 
