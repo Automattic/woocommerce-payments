@@ -2358,8 +2358,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				$error_message
 			);
 
+			$merchant_message = null;
+			if ( 'card_declined' === $error_code && isset( $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] ) ) {
+				$merchant_message = $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'];
+			}
+
 			Logger::error( "$error_message ($error_code)" );
-			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code );
+			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code, $merchant_message );
 		}
 	}
 

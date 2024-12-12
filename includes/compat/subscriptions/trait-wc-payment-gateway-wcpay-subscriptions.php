@@ -342,12 +342,15 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$renewal_order->update_status( 'failed' );
 
 			if ( ! empty( $payment_information ) ) {
+				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
+				$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the failed payment amount, %2: error message  */
 						__(
 							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-							'woocommerce-payments'
+							'woocommerce-payments' // @todo
 						),
 						[
 							'strong' => '<strong>',
@@ -358,7 +361,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
 						$renewal_order
 					),
-					esc_html( rtrim( $e->getMessage(), '.' ) )
+					$error_details
 				);
 				$renewal_order->add_order_note( $note );
 			}
