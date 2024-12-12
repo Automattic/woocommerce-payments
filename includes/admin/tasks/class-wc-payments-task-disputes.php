@@ -54,7 +54,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 *
 	 * @var array|null
 	 */
-	private $disputes_needing_response;
+	private $disputes_needing_response = null;
 
 	/**
 	 * WC_Payments_Task_Disputes constructor.
@@ -64,7 +64,6 @@ class WC_Payments_Task_Disputes extends Task {
 		$this->api_client     = \WC_Payments::get_payments_api_client();
 		$this->database_cache = \WC_Payments::get_database_cache();
 		parent::__construct();
-		$this->init();
 	}
 
 	/**
@@ -282,6 +281,10 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return bool
 	 */
 	public function can_view() {
+		if ( null === $this->disputes_needing_response ) {
+			// init() is called on can_view as this is the first method called in the task lifecycle by WC.
+			$this->init();
+		}
 		return count( (array) $this->disputes_due_within_7d ) > 0;
 	}
 
@@ -329,8 +332,13 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return array|null Array of disputes awaiting a response. Null on failure.
 	 */
 	private function get_disputes_needing_response() {
+		if ( null !== $this->disputes_needing_response ) {
+			return $this->disputes_needing_response;
+		}
 
-		$get_disputes_callback = function () {
+		$this->disputes_needing_response = $this->database_cache->get_or_add(
+			Database_Cache::ACTIVE_DISPUTES_KEY,
+			function () {
 				$response = $this->api_client->get_disputes(
 					[
 						'pagesize' => 50,
@@ -338,30 +346,24 @@ class WC_Payments_Task_Disputes extends Task {
 					]
 				);
 
-			$active_disputes = $response['data'] ?? [];
+				$active_disputes = $response['data'] ?? [];
 
-			// sort by due_by date ascending.
-			usort(
-				$active_disputes,
-				function ( $a, $b ) {
-					$a_due_by = new \DateTime( $a['due_by'] );
-					$b_due_by = new \DateTime( $b['due_by'] );
+				// sort by due_by date ascending.
+				usort(
+					$active_disputes,
+					function ( $a, $b ) {
+						$a_due_by = new \DateTime( $a['due_by'] );
+						$b_due_by = new \DateTime( $b['due_by'] );
 
-					return $a_due_by <=> $b_due_by;
-				}
-			);
+						return $a_due_by <=> $b_due_by;
+					}
+				);
 
-			return $active_disputes;
-		};
+				return $active_disputes;
+			},
+			'is_array'
+		) ?? []; // If the API before the cache is set, this fn will return null. So default to empty array, this will re-try on next request.
 
-		if ( ! $this->disputes_needing_response ) {
-
-			$this->disputes_needing_response = $this->database_cache->get_or_add(
-				Database_Cache::ACTIVE_DISPUTES_KEY,
-				$get_disputes_callback,
-				'is_array'
-			);
-		}
 		return $this->disputes_needing_response;
 	}
 }

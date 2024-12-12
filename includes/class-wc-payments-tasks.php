@@ -21,8 +21,6 @@ class WC_Payments_Tasks {
 	 * WC_Payments_Admin_Tasks constructor.
 	 */
 	public static function init() {
-		include_once WCPAY_ABSPATH . 'includes/admin/tasks/class-wc-payments-task-disputes.php';
-
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
@@ -34,6 +32,8 @@ class WC_Payments_Tasks {
 	 * Adds a task to the WC 'Things to do next' task list the if disputes awaiting response.
 	 */
 	public static function add_task_disputes_need_response() {
+		include_once WCPAY_ABSPATH . 'includes/admin/tasks/class-wc-payments-task-disputes.php';
+
 		$account_service = WC_Payments::get_account_service();
 		if ( ! $account_service || ! $account_service->is_stripe_account_valid() || $account_service->is_account_under_review() || $account_service->is_account_rejected() ) {
 			return;
