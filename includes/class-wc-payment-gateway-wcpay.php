@@ -309,11 +309,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->fraud_service                               = $fraud_service;
 		$this->duplicate_payment_methods_detection_service = $duplicate_payment_methods_detection_service;
 
-		$this->id                 = static::GATEWAY_ID;
-		$this->icon               = $this->get_theme_icon();
-		$this->has_fields         = true;
-		$this->method_title       = 'WooPayments';
-		$this->method_description = $this->get_method_description();
+		$this->id           = static::GATEWAY_ID;
+		$this->icon         = $this->get_theme_icon();
+		$this->has_fields   = true;
+		$this->method_title = 'WooPayments';
 
 		$this->title       = $payment_method->get_title();
 		$this->description = '';
@@ -4476,8 +4475,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_method_description() {
-		return 'Some description';
-
 		$description = sprintf(
 			/* translators: %1$s: WooPayments */
 			__(
