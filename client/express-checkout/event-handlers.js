@@ -13,42 +13,21 @@ import {
 	normalizeShippingAddress,
 	normalizeLineItems,
 	getExpressCheckoutData,
+	updateShortcodeShippingUI,
 } from './utils';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
 
+let lastSelectedAddress = null;
+
 const updateBlocksShippingUI = ( eventAddress ) => {
 	console.log( 'TODO: implement update_checkout' );
 };
 
-const updateShortcodeShippingUI = ( eventAddress ) => {
-	const context = getExpressCheckoutData( 'button_context' );
-	const address = normalizeShippingAddress( eventAddress );
-
-	if ( context === 'cart' ) {
-		Object.keys( address ).forEach( ( key ) => {
-			if (
-				address[ key ] &&
-				document.querySelector(
-					`form.woocommerce-shipping-calculator [name="calc_shipping_${ key }"]`
-				)
-			) {
-				document.querySelector(
-					`form.woocommerce-shipping-calculator [name="calc_shipping_${ key }"]`
-				).value = address[ key ];
-			} else {
-				console.error(
-					`form.woocommerce-shipping-calculator [name="calc_shipping_${ key }"]`
-				);
-				console.error( address[ key ] );
-			}
-		} );
-	}
-};
-
 const onShippingRatesCalculated = ( eventAddress, response ) => {
+	lastSelectedAddress = eventAddress;
 	console.log( eventAddress, response );
 
 	const context = getExpressCheckoutData( 'button_context' );
@@ -62,7 +41,7 @@ const onShippingRatesCalculated = ( eventAddress, response ) => {
 		updateBlocksShippingUI( eventAddress );
 	} else {
 		console.log( 'onShippingRatesCalculated shortcode: ', eventAddress );
-		updateShortcodeShippingUI( eventAddress );
+		// updateShortcodeShippingUI( eventAddress );
 	}
 };
 
@@ -223,24 +202,20 @@ export const onCompletePaymentHandler = () => {
 };
 
 export const onCancelHandler = () => {
-	//
-	// if (
-	// 	wasShippingInfoUpdated &&
-	// 	[ 'cart', 'checkout' ].includes( context )
-	// ) {
-	// 	jQuery('body').trigger('update_checkout');
-	// 	alert();
-	// 	// location.reload( true );
-	// }
+	const context = getExpressCheckoutData( 'button_context' );
+	const isBlocks = getExpressCheckoutData( 'has_block' );
 
-	// wasShippingInfoUpdated = false;
+	console.log( context, isBlocks );
 
-	// TODO: refine logic to click on this button. It's only available in the shortcode cart.
-	// Information is already updated in the backend when Payment sheet is opened so no reason to bother to only trigger after changes.
-	document
-		.querySelector(
-			'form.woocommerce-shipping-calculator [name="calc_shipping"]'
-		)
-		?.click();
+	if ( ! [ 'cart', 'checkout' ].includes( context ) || ! lastSelectedAddress )
+		return;
+
+	if ( isBlocks ) {
+		// updateBlocksShippingUI( eventAddress );
+	} else {
+		console.log( 'onShippingRatesCalculated shortcode: ', lastSelectedAddress );
+		updateShortcodeShippingUI( lastSelectedAddress );
+	}
+
 	unblockUI();
 };
