@@ -21,6 +21,11 @@ export const updateShortcodeShippingUI = ( eventAddress ) => {
 			);
 			if ( address[ key ] && field ) {
 				field.value = address[ key ];
+				if ( [ 'country', 'state' ].includes( key ) ) {
+					jQuery( field ).trigger( 'change' ).trigger( 'close' );
+				} else {
+					field.dispatchEvent( new Event( 'change' ) );
+				}
 			} else {
 				console.error(
 					`form.woocommerce-shipping-calculator [name="calc_shipping_${ key }"]`
