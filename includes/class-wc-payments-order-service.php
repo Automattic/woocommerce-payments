@@ -202,7 +202,7 @@ class WC_Payments_Order_Service {
 	 */
 	public function process_captured_payment( $order, $intent ) {
 		$this->mark_payment_capture_completed( $order, $intent );
-		$this->complete_order_processing( $order );
+		$this->complete_order_processing( $order, $intent->get_status() );
 	}
 
 	/**
