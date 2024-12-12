@@ -16,6 +16,7 @@ import { recordEvent } from 'wcpay/tracks';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import ErrorBoundary from 'wcpay/components/error-boundary';
 import SetupLivePaymentsModal from './modal';
+import './style.scss';
 
 interface Props {
 	from: string;
@@ -41,18 +42,23 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 
 	return (
 		<>
-			<BannerNotice status="warning" isDismissible={ false }>
+			<BannerNotice
+				status="warning"
+				className="sandbox-mode-notice"
+				isDismissible={ false }
+			>
 				{ interpolateComponents( {
 					mixedString: sprintf(
 						/* translators: %1$s: WooPayments */
 						__(
 							// eslint-disable-next-line max-len
-							'{{strong}}%1$s is in sandbox mode.{{/strong}} To accept real transactions, {{switchToLiveLink}}set up a live %1$s account.{{/switchToLiveLink}} {{learnMoreIcon/}}',
+							"{{div}}{{strong}}You're using a test account.{{/strong}} To accept payments from shoppers, {{switchToLiveLink}}activate your %1$s account.{{/switchToLiveLink}}{{/div}}{{learnMoreIcon/}}",
 							'woocommerce-payments'
 						),
 						'WooPayments'
 					),
 					components: {
+						div: <div />,
 						strong: <strong />,
 						learnMoreIcon: (
 							<ClickTooltip
