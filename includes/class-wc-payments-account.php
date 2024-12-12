@@ -30,6 +30,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
 	const WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT                   = 'woopay_enabled_by_default';
+	const WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT           = 'test_drive_account_settings_for_live_account';
 	const EMBEDDED_KYC_IN_PROGRESS_OPTION                       = 'wcpay_onboarding_embedded_kyc_in_progress';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
@@ -1342,6 +1343,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				// in the "everything OK" scenario).
 				if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 					try {
+						$account = $this->get_cached_account_data();
+						if ( ! empty( $account['is_test_drive'] ) && true === $account['is_test_drive'] ) {
+							$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
+							set_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
+						}
+
 						// Delete the currently connected Stripe account.
 						$this->payments_api_client->delete_account( true );
 					} catch ( API_Exception $e ) {
@@ -1426,7 +1433,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			if ( ! $collect_payout_requirements
 				&& $this->has_working_jetpack_connection()
 				&& $this->is_stripe_account_valid() ) {
-
 				$params = [
 					'source'                   => $onboarding_source,
 					// Carry over some parameters as they may be used by our frontend logic.
@@ -2027,6 +2033,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			);
 		}
 
+		if ( get_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
+			$this->save_test_drive_settings_to_new_account();
+		}
+
 		// We have an account that needs to be verified (has a URL to redirect the merchant to).
 		// Store the relevant onboarding data.
 		set_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ), DAY_IN_SECONDS );
@@ -2149,13 +2159,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// If we get this parameter, but we have a valid state, it means the merchant left KYC early and didn't finish it.
 			// While we do have an account, it is not yet valid. We need to redirect them back to the connect page.
 			$params['wcpay-connection-error'] = '1';
-
 			$this->redirect_service->redirect_to_connect_page( '', WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
 			return;
 		}
 
 		$params['wcpay-connection-success'] = '1';
-
 		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
 	}
 
@@ -2581,5 +2589,29 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function get_lifetime_total_payment_volume(): int {
 		$account = $this->get_cached_account_data();
 		return (int) ! empty( $account ) && isset( $account['lifetime_total_payment_volume'] ) ? $account['lifetime_total_payment_volume'] : 0;
+	}
+
+	/**
+	 * TBD
+	 *
+	 * @return array
+	 */
+	private function get_test_drive_settings_for_live_account() {
+		$gateway = WC_Payments::get_gateway();
+		return [ 'enabled_payment_method_ids' => $gateway->get_upe_enabled_payment_method_ids() ];
+	}
+
+	/**
+	 * TBD
+	 *
+	 * @return void
+	 */
+	public function save_test_drive_settings_to_new_account() {
+		$this->refresh_account_data();
+		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/settings' );
+		$request->set_body_params( get_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
+		$response = rest_do_request( $request );
+		rest_get_server()->response_to_data( $response, false );
+		delete_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 	}
 }
