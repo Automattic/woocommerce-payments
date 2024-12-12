@@ -304,7 +304,7 @@ describe( 'Disputes list', () => {
 				'Status',
 				'Reason',
 				'Source',
-				'"Order #"',
+				'"Order Id"',
 				'Customer',
 				'Email',
 				'Country',

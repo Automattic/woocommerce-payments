@@ -631,7 +631,7 @@ describe( 'Transactions list', () => {
 				'Amount',
 				'Fees',
 				'Net',
-				'"Order #"',
+				'"Order Id"',
 				'"Payment Method"',
 				'Customer',
 				'Email',

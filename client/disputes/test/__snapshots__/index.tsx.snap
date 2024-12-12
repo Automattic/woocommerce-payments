@@ -252,12 +252,12 @@ exports[`Disputes list renders correctly 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Order #
+                      Order Id
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Order #
+                      Order Id
                     </span>
                   </th>
                   <th
