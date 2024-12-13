@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Migrate active capabilities from test-drive account when switching to live account.
