@@ -197,6 +197,7 @@ const ConnectAccountPage: React.FC = () => {
 					from: 'WCPAY_CONNECT',
 					redirect_to_settings_page:
 						urlParams.get( 'redirect_to_settings_page' ) || '',
+					capabilities: urlParams.get( 'capabilities' ) || '',
 				} );
 			} else {
 				setTimeout( checkAccountStatus, 2000 );
