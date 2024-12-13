@@ -1318,6 +1318,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				}
 
 				$this->cleanup_on_account_reset();
+				delete_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 
 				// When we reset the account and want to go back to the settings page - redirect immediately!
 				if ( $redirect_to_settings_page ) {
@@ -1343,20 +1344,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				// in the "everything OK" scenario).
 				if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 					try {
-						$account = $this->get_cached_account_data();
 						// If we're in test mode and dealing with a test-drive account,
 						// we need to collect the test drive settings before we delete the test-drive account,
 						// and apply those settings to the live account.
-						if ( ! empty( $account['is_test_drive'] ) && true === $account['is_test_drive'] ) {
-							$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
-
-							// Store the test drive settings for the live account in a transient,
-							// We don't passing the data around, as the merchant might cancel and start
-							// the onboarding from scratch. In this case, we won't have the test drive
-							// account anymore to collect the settings.
-							set_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
-						}
-
+						$this->save_test_drive_settings();
 						// Delete the currently connected Stripe account.
 						$this->payments_api_client->delete_account( true );
 					} catch ( API_Exception $e ) {
@@ -2610,5 +2601,26 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		return [ 'capabilities' => $capabilities ];
+	}
+
+	/**
+	 * If we're in test mode and dealing with a test-drive account,
+	 * we need to collect the test drive settings before we delete the test-drive account,
+	 * and apply those settings to the live account.
+	 *
+	 * @return void
+	 */
+	private function save_test_drive_settings(): void {
+		$account = $this->get_cached_account_data();
+
+		if ( ! empty( $account['is_test_drive'] ) && true === $account['is_test_drive'] ) {
+			$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
+
+			// Store the test drive settings for the live account in a transient,
+			// We don't passing the data around, as the merchant might cancel and start
+			// the onboarding from scratch. In this case, we won't have the test drive
+			// account anymore to collect the settings.
+			set_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
+		}
 	}
 }
