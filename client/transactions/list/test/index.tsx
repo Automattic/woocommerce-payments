@@ -621,7 +621,7 @@ describe( 'Transactions list', () => {
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const expected = [
-				'"Transaction Id"',
+				'"Transaction ID"',
 				'"Date / Time (UTC)"',
 				'Type',
 				'Channel',
