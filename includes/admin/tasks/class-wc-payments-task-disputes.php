@@ -89,6 +89,9 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_title() {
+		if ( null === $this->disputes_needing_response ) {
+			$this->init();
+		}
 		if ( count( (array) $this->disputes_due_within_7d ) === 1 ) {
 			$dispute          = $this->disputes_due_within_7d[0];
 			$amount           = WC_Payments_Utils::interpret_stripe_amount( $dispute['amount'], $dispute['currency'] );

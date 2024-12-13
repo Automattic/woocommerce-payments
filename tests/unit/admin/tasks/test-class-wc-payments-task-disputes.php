@@ -22,6 +22,7 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
+		WC_Payments_Tasks::add_task_disputes_need_response(); // ensure the task is included and initialized.
 	}
 
 	public function tear_down() {
