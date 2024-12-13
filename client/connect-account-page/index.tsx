@@ -197,7 +197,6 @@ const ConnectAccountPage: React.FC = () => {
 					from: 'WCPAY_CONNECT',
 					redirect_to_settings_page:
 						urlParams.get( 'redirect_to_settings_page' ) || '',
-					capabilities: urlParams.get( 'capabilities' ) || '',
 				} );
 			} else {
 				setTimeout( checkAccountStatus, 2000 );
@@ -212,6 +211,7 @@ const ConnectAccountPage: React.FC = () => {
 
 		const customizedConnectUrl = addQueryArgs( connectUrl, {
 			test_drive: 'true',
+			capabilities: urlParams.get( 'capabilities' ) || '',
 		} );
 
 		const updateProgress = setInterval( updateLoaderProgress, 2500, 40, 5 );

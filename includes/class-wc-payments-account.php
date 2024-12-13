@@ -1252,7 +1252,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$auto_start_test_drive_onboarding = $create_test_drive_account &&
 												! empty( $_GET['auto_start_test_drive_onboarding'] ) &&
 												'true' === $_GET['auto_start_test_drive_onboarding'];
-			$capabilities                     = ! empty( $_GET['capabilities'] ) ? wc_clean( wp_unslash( $_GET['capabilities'] ) ) : [];
+			$capabilities_string              = ! empty( $_GET['capabilities'] ) ? wc_clean( wp_unslash( $_GET['capabilities'] ) ) : '';
 			// We will onboard in test mode if the test_mode GET param is set, if we are creating a test drive account,
 			// or if we are in dev mode.
 			$should_onboard_in_test_mode = ( isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ||
@@ -1507,7 +1507,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 							'test_mode'                   => $should_onboard_in_test_mode ? 'true' : false,
 							'test_drive'                  => $create_test_drive_account ? 'true' : false,
 							'auto_start_test_drive_onboarding' => $auto_start_test_drive_onboarding ? 'true' : false,
-							'capabilties'                 => $capabilities,
+							'capabilities'                => rawurlencode( $capabilities_string ),
 							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							'source'                      => $onboarding_source,
 							'redirect_to_settings_page'   => $redirect_to_settings_page ? 'true' : false,
@@ -1578,7 +1578,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 								'promo'        => ! empty( $incentive_id ) ? $incentive_id : false,
 								'test_drive'   => 'true',
 								'auto_start_test_drive_onboarding' => 'true', // This is critical.
-								'capabilities' => $capabilities,
+								'capabilities' => rawurlencode( $capabilities_string ),
 								'test_mode'    => $should_onboard_in_test_mode ? 'true' : false,
 								'source'       => $onboarding_source,
 								'redirect_to_settings_page' => $redirect_to_settings_page ? 'true' : false,
@@ -1985,7 +1985,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
-		$capabilities         = isset( $_GET['capabilities'] ) ? wc_clean( wp_unslash( $_GET['capabilities'] ) ) : [];
+		$capabilities         = isset( $_GET['capabilities'] ) ? json_decode( wc_clean( wp_unslash( $_GET['capabilities'] ) ), true ) : [];
 		if ( 'test_drive' === $setup_mode ) {
 			// If we get to the overview page, we want to show the success message.
 			$return_url = add_query_arg( 'wcpay-sandbox-success', 'true', $return_url );
