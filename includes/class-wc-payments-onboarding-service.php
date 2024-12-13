@@ -390,7 +390,7 @@ class WC_Payments_Onboarding_Service {
 
 		if ( ! empty( $capabilities ) ) {
 			foreach ( $capabilities as $capability => $value ) {
-				if ( 'card_payments' === $capability ) {
+				if ( 'card' === $capability ) {
 					$account_data['capabilities']['transfers'] = [ 'requested' => 'true' ];
 				}
 				if ( $value ) {
