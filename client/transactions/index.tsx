@@ -23,6 +23,7 @@ import {
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import BlockedList from './blocked';
+import DateFormatNotice from 'components/date-format-notice';
 
 declare const window: any;
 
@@ -107,6 +108,7 @@ export const TransactionsPage: React.FC = () => {
 	return (
 		<Page className="wcpay-transactions-page">
 			<TestModeNotice currentPage="transactions" />
+			<DateFormatNotice />
 			<TabPanel
 				activeClass="active-tab"
 				onSelect={ onTabSelected }

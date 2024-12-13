@@ -69,7 +69,6 @@ import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import DateFormatNotice from 'wcpay/components/date-format-notice';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -835,7 +834,6 @@ export const TransactionsList = (
 					customerCurrencies={ customerCurrencies }
 				/>
 			) }
-			<DateFormatNotice />
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
 				title={ title }
