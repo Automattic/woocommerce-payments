@@ -149,16 +149,23 @@ export const onConfirmHandler = async (
 			completePayment( redirectUrl );
 		}
 	} catch ( e ) {
+		// API errors are not parsed, so we need to do it ourselves.
+		if ( e.json ) {
+			e = e.json();
+		}
+
 		return abortPayment(
 			event,
-			getErrorMessageFromNotice( e.message ) ||
-				e.payment_result?.payment_details.find(
-					( detail ) => detail.key === 'errorMessage'
-				)?.value ||
-				__(
-					'There was a problem processing the order.',
-					'woocommerce-payments'
-				)
+			getErrorMessageFromNotice(
+				e.message ||
+					e.payment_result?.payment_details.find(
+						( detail ) => detail.key === 'errorMessage'
+					)?.value ||
+					__(
+						'There was a problem processing the order.',
+						'woocommerce-payments'
+					)
+			)
 		);
 	}
 };
