@@ -914,14 +914,14 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function maybe_add_test_drive_settings_to_new_account_request( array $args ): array {
 		if (
-			get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) &&
-			is_array( get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) )
+			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) &&
+			is_array( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) )
 		) {
 			$args['account_data'] = array_merge(
 				$args['account_data'],
-				get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT )
+				get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT )
 			);
-			delete_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+			delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 		}
 
 		return $args;

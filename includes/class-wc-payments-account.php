@@ -30,7 +30,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
 	const WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT                   = 'woopay_enabled_by_default';
-	const WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT           = 'test_drive_account_settings_for_live_account';
+	const ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT       = 'test_drive_account_settings_for_live_account';
 	const EMBEDDED_KYC_IN_PROGRESS_OPTION                       = 'wcpay_onboarding_embedded_kyc_in_progress';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
@@ -1318,7 +1318,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				}
 
 				$this->cleanup_on_account_reset();
-				delete_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+				delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 
 				// When we reset the account and want to go back to the settings page - redirect immediately!
 				if ( $redirect_to_settings_page ) {
@@ -2620,7 +2620,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// We don't passing the data around, as the merchant might cancel and start
 			// the onboarding from scratch. In this case, we won't have the test drive
 			// account anymore to collect the settings.
-			set_transient( self::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
+			set_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
 		}
 	}
 }
