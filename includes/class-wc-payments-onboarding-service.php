@@ -386,8 +386,18 @@ class WC_Payments_Onboarding_Service {
 			'country'       => WC()->countries->get_base_country() ?? null,
 			'url'           => ! $home_is_localhost && wp_http_validate_url( $home_url ) ? $home_url : $fallback_url,
 			'business_name' => get_bloginfo( 'name' ),
-			'capabilities'  => $capabilities,
 		];
+
+		if ( ! empty( $capabilities ) ) {
+			foreach ( $capabilities as $capability => $value ) {
+				if ( 'card_payments' === $capability ) {
+					$account_data['capabilities']['transfers'] = [ 'requested' => 'true' ];
+				}
+				if ( $value ) {
+					$account_data['capabilities'][ $capability . '_payments' ] = [ 'requested' => 'true' ];
+				}
+			}
+		}
 
 		if ( ! empty( $self_assessment_data ) ) {
 			$business_type = $self_assessment_data['business_type'] ?? null;
