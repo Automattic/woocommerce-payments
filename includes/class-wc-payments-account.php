@@ -1252,7 +1252,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$auto_start_test_drive_onboarding = $create_test_drive_account &&
 												! empty( $_GET['auto_start_test_drive_onboarding'] ) &&
 												'true' === $_GET['auto_start_test_drive_onboarding'];
-			$capabilities                     = wc_clean( wp_unslash( $_GET['capabilities'] ) );
+			$capabilities                     = ! empty( $_GET['capabilities'] ) ? wc_clean( wp_unslash( $_GET['capabilities'] ) ) : [];
 			// We will onboard in test mode if the test_mode GET param is set, if we are creating a test drive account,
 			// or if we are in dev mode.
 			$should_onboard_in_test_mode = ( isset( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ||
