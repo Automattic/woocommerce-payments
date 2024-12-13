@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Show express checkout for products w/o shipping but where tax is included into price.
