@@ -9,7 +9,7 @@ import { act, render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import CopyButton from '..';
+import { CopyButton } from '..';
 
 describe( 'CopyButton', () => {
 	it( 'renders the button correctly', () => {

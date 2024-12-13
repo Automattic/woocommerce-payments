@@ -15,7 +15,10 @@ interface CopyButtonProps {
 	label: string;
 }
 
-const CopyButton: React.FC< CopyButtonProps > = ( { textToCopy, label } ) => {
+export const CopyButton: React.FC< CopyButtonProps > = ( {
+	textToCopy,
+	label,
+} ) => {
 	// useRef() is used to store the timer reference for the setTimeout() function.
 	const timerRef = useRef< NodeJS.Timeout | null >( null );
 
@@ -52,5 +55,3 @@ const CopyButton: React.FC< CopyButtonProps > = ( { textToCopy, label } ) => {
 		</button>
 	);
 };
-
-export default CopyButton;

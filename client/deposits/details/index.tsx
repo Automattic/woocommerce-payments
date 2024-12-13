@@ -30,7 +30,7 @@ import classNames from 'classnames';
 import type { CachedDeposit } from 'types/deposits';
 import { useDeposit } from 'data';
 import TransactionsList from 'transactions/list';
-import CopyButton from 'components/copy-button';
+import { CopyButton } from 'components/copy-button';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice } from 'components/test-mode-notice';
