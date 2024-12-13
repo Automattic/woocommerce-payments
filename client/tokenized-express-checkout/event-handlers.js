@@ -118,7 +118,7 @@ export const onConfirmHandler = async (
 				paymentMethod.id
 			),
 			extensions: applyFilters(
-				'wcpay.payment-request.cart-place-order-extension-data',
+				'wcpay.express-checkout.cart-place-order-extension-data',
 				{}
 			),
 		} );

@@ -290,7 +290,7 @@ describe( 'Deposits list', () => {
 				'Amount',
 				'Status',
 				'"Bank account"',
-				'"Bank reference key"',
+				'"Bank reference ID"',
 			];
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
