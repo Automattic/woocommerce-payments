@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix Jetpack onboarding URL query from "woocommerce-payments" to "woocommerce-core-profiler"

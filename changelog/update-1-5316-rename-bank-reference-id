@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Change 'Bank reference key' label to 'Bank reference ID' in Payouts list column for consistency.
