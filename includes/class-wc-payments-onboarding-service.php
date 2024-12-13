@@ -109,6 +109,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function init_hooks() {
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
+		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'maybe_add_test_drive_settings_to_new_account_request' ] );
 	}
 
 	/**
@@ -225,9 +226,6 @@ class WC_Payments_Onboarding_Service {
 
 		// Set the embedded KYC in progress flag.
 		$this->set_embedded_kyc_in_progress();
-
-		// When the new account is created, if we have test drive settings, save them to the new account.
-		$this->maybe_save_test_drive_settings_to_new_account();
 
 		// Remember if we should enable WooPay by default.
 		set_transient(
@@ -907,20 +905,25 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * If there are settings collected from the test drive account, save them to the new account.
+	 * If settings are collected from the test-drive account,
+	 * include them in the existing arguments when creating the new account.
 	 *
-	 * @return void
+	 * @param array $args The request args to create new account.
+	 *
+	 * @return array The request args, possible updated with the test drive account settings, used to create new account.
 	 */
-	public function maybe_save_test_drive_settings_to_new_account() {
-		if ( ! get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) ) {
-			return;
+	public function maybe_add_test_drive_settings_to_new_account_request( array $args ): array {
+		if (
+			get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) &&
+			is_array( get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) )
+		) {
+			$args['account_data'] = array_merge(
+				$args['account_data'],
+				get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT )
+			);
+			delete_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 		}
 
-		WC_Payments::get_account_service()->refresh_account_data();
-		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/settings' );
-		$request->set_body_params( get_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) );
-		$response = rest_do_request( $request );
-		rest_get_server()->response_to_data( $response, false );
-		delete_transient( WC_Payments_Account::WOOPAY_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+		return $args;
 	}
 }

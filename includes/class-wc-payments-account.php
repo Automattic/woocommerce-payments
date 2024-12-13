@@ -2041,9 +2041,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			);
 		}
 
-		// When the new account is created, if we have test drive settings, save them to the new account.
-		$this->onboarding_service->maybe_save_test_drive_settings_to_new_account();
-
 		// We have an account that needs to be verified (has a URL to redirect the merchant to).
 		// Store the relevant onboarding data.
 		set_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ), DAY_IN_SECONDS );
@@ -2606,6 +2603,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 */
 	private function get_test_drive_settings_for_live_account(): array {
 		$gateway = WC_Payments::get_gateway();
-		return [ 'enabled_payment_method_ids' => $gateway->get_upe_enabled_payment_method_ids() ];
+
+		$capabilities = [];
+		foreach ( $gateway->get_upe_enabled_payment_method_ids() as $payment_method_id ) {
+			$capabilities[ $payment_method_id . '_payments' ] = [ 'requested' => 'true' ];
+		}
+
+		return [ 'capabilities' => $capabilities ];
 	}
 }
