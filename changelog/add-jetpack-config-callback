@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Added conditional use of Jetpack Config callback to avoid i18n notices.
