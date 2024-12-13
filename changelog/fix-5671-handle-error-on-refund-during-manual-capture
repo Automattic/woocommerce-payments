@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed an issue where order metadata was not updated when capturing an order in the processing state.

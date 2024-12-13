@@ -1382,4 +1382,33 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
+
+	public function test_process_captured_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$this->order_service->set_intent_id_for_order( $order, $intent->get_id() );
+		$order->set_status( Order_Status::PROCESSING ); // Let's simulate that order is set to processing, so order status should not interfere with the process.
+		$order->save();
+
+		$this->order_service->process_captured_payment( $order, $intent );
+
+		$this->assertEquals( $intent->get_status(), $this->order_service->get_intention_status_for_order( $order ) );
+
+		$this->assertTrue( $order->has_status( wc_get_is_paid_statuses() ) );
+
+		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertStringContainsString( 'successfully captured</strong> using WooPayments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $order->get_id() ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->update_order_status_from_intent( $order, $intent );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertEquals( count( $notes ), count( $notes_2 ) );
+	}
 }
