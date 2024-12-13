@@ -3373,7 +3373,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( Intent_Status::SUCCEEDED === $status ) {
-			$this->order_service->update_order_status_from_intent( $order, $intent );
+			$this->order_service->process_captured_payment( $order, $intent );
 		} elseif ( $is_authorization_expired ) {
 			$this->order_service->mark_payment_capture_expired( $order, $intent_id, Intent_Status::CANCELED, $charge_id );
 		} else {
