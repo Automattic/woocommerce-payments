@@ -55,7 +55,7 @@ import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
-
+import DateFormatNotice from 'wcpay/components/date-format-notice';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
@@ -550,6 +550,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
+			<DateFormatNotice />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard

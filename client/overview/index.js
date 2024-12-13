@@ -33,6 +33,7 @@ import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { PayoutsRenameNotice } from 'wcpay/deposits/rename-notice';
+import DateFormatNotice from 'wcpay/components/date-format-notice';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -152,6 +153,7 @@ const OverviewPage = () => {
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
 			<JetpackIdcNotice />
+			<DateFormatNotice />
 			{ showLoanOfferError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(

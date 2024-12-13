@@ -23,6 +23,7 @@ import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import { recordEvent } from 'wcpay/tracks';
+import DateFormatNotice from 'wcpay/components/date-format-notice';
 
 const useNextDepositNoticeState = () => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
@@ -149,6 +150,7 @@ const DepositsPage: React.FC = () => {
 
 	return (
 		<Page>
+			<DateFormatNotice />
 			<TestModeNotice currentPage="deposits" />
 			<PayoutsRenameNotice />
 			<NextDepositNotice />

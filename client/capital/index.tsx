@@ -25,6 +25,7 @@ import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import DateFormatNotice from 'wcpay/components/date-format-notice';
 
 const columns = [
 	{
@@ -209,6 +210,7 @@ const CapitalPage = (): JSX.Element => {
 
 	return (
 		<Page>
+			<DateFormatNotice />
 			<TestModeNotice currentPage="loans" />
 
 			{ wcpaySettings.accountLoans.has_active_loan && (

@@ -107,8 +107,8 @@ export const TransactionsPage: React.FC = () => {
 
 	return (
 		<Page className="wcpay-transactions-page">
-			<TestModeNotice currentPage="transactions" />
 			<DateFormatNotice />
+			<TestModeNotice currentPage="transactions" />
 			<TabPanel
 				activeClass="active-tab"
 				onSelect={ onTabSelected }
