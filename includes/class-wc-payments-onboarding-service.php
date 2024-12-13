@@ -109,6 +109,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function init_hooks() {
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
+		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'maybe_add_test_drive_settings_to_new_account_request' ] );
 	}
 
 	/**
@@ -901,5 +902,28 @@ class WC_Payments_Onboarding_Service {
 
 		// Default to an unknown source.
 		return self::SOURCE_UNKNOWN;
+	}
+
+	/**
+	 * If settings are collected from the test-drive account,
+	 * include them in the existing arguments when creating the new account.
+	 *
+	 * @param array $args The request args to create new account.
+	 *
+	 * @return array The request args, possible updated with the test drive account settings, used to create new account.
+	 */
+	public function maybe_add_test_drive_settings_to_new_account_request( array $args ): array {
+		if (
+			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) &&
+			is_array( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) )
+		) {
+			$args['account_data'] = array_merge(
+				$args['account_data'],
+				get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT )
+			);
+			delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+		}
+
+		return $args;
 	}
 }
