@@ -1,6 +1,6 @@
 @import '../style';
 
-#payment .payment_method_woocommerce_payments_card .testmode-info {
+#payment .payment_method_#{$card_gateway_id} .testmode-info {
 	margin-bottom: 0.5em;
 }
 
@@ -31,7 +31,7 @@
 }
 
 #payment .payment_methods {
-	li.payment_method_woocommerce_payments {
+	li.payment_method_#{$main_gateway_id} {
 		display: none;
 	}
 

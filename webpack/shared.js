@@ -86,7 +86,9 @@ module.exports = {
 								'@import "_colors"; ' +
 								'@import "_breakpoints"; ' +
 								'@import "_mixins"; ' +
-								'@import "_variables"; ',
+								'@import "_variables"; ' +
+								'$card_gateway_id: "woocommerce_payments_card";' +
+								'$main_gateway_id: "woocommerce_payments";',
 						},
 					},
 				],
