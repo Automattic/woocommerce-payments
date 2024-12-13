@@ -366,10 +366,11 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @param string $setup_mode Setup mode.
 	 * @param array  $self_assessment_data Self assessment data.
+	 * @param array  $capabilities Payment Methods capabilities.
 	 *
 	 * @return array Account data.
 	 */
-	public function get_account_data( string $setup_mode, array $self_assessment_data ): array {
+	public function get_account_data( string $setup_mode, array $self_assessment_data, array $capabilities = [] ): array {
 		$home_url = get_home_url();
 		// If the site is running on localhost, use a bogus URL. This is to avoid Stripe's errors.
 		// wp_http_validate_url does not check that, unfortunately.
@@ -384,6 +385,7 @@ class WC_Payments_Onboarding_Service {
 			'country'       => WC()->countries->get_base_country() ?? null,
 			'url'           => ! $home_is_localhost && wp_http_validate_url( $home_url ) ? $home_url : $fallback_url,
 			'business_name' => get_bloginfo( 'name' ),
+			'capabilities'  => $capabilities,
 		];
 
 		if ( ! empty( $self_assessment_data ) ) {
