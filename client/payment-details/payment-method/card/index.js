@@ -79,6 +79,22 @@ const formatPaymentMethodDetails = ( charge ) => {
 };
 
 /**
+ * Returns the label for the postal code check.
+ *
+ * @return {string} The label for the postal code check.
+ */
+const getPostalCodeCheckLabel = () => {
+	switch ( wcpaySettings.connect.country ) {
+		case 'US':
+			return 'ZIP check';
+		case 'UK':
+			return 'Postcode check';
+		default:
+			return __( 'Postal code check', 'woocommerce-payments' );
+	}
+};
+
+/**
  * Placeholders to display while loading.
  */
 const paymentMethodPlaceholders = {
@@ -205,7 +221,7 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 
 				<Detail
 					isLoading={ isLoading }
-					label={ __( 'Zip check', 'woocommerce-payments' ) }
+					label={ getPostalCodeCheckLabel() }
 				>
 					<Check checked={ postalCodeCheck } />
 				</Detail>
