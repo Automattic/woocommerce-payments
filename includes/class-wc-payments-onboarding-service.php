@@ -390,6 +390,10 @@ class WC_Payments_Onboarding_Service {
 
 		if ( ! empty( $capabilities ) ) {
 			foreach ( $capabilities as $capability => $value ) {
+				// Skip processing for the 'apple_google' capability.
+				if ( 'apple_google' === $capability ) {
+					continue;
+				}
 				if ( 'card' === $capability ) {
 					$account_data['capabilities']['transfers'] = [ 'requested' => 'true' ];
 				}
