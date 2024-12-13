@@ -1985,7 +1985,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
-		$capabilities         = ! empty( $_GET['capabilities'] ) ? json_decode( wc_clean( wp_unslash( $_GET['capabilities'] ) ), true ) : [];
+		$capabilities         = ! empty( $_GET['capabilities'] ) ? json_decode( wc_clean( wp_unslash( $_GET['capabilities'] ) ), true ) ?? [] : [];
 		if ( 'test_drive' === $setup_mode ) {
 			// If we get to the overview page, we want to show the success message.
 			$return_url = add_query_arg( 'wcpay-sandbox-success', 'true', $return_url );
