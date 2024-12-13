@@ -11,7 +11,14 @@ import classNames from 'classnames';
 import './style.scss';
 
 interface CopyButtonProps {
+	/**
+	 * The text to copy to the clipboard.
+	 */
 	textToCopy: string;
+
+	/**
+	 * The label for the button. Also used as the aria-label.
+	 */
 	label: string;
 }
 
