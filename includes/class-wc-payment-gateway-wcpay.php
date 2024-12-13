@@ -309,13 +309,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->fraud_service                               = $fraud_service;
 		$this->duplicate_payment_methods_detection_service = $duplicate_payment_methods_detection_service;
 
-		$this->id                 = static::GATEWAY_ID;
-		$this->icon               = $this->get_theme_icon();
-		$this->has_fields         = true;
-		$this->method_title       = 'WooPayments';
-		$this->method_description = $this->get_method_description();
+		$this->id           = static::GATEWAY_ID;
+		$this->icon         = $this->get_theme_icon();
+		$this->has_fields   = true;
+		$this->method_title = 'WooPayments';
 
-		$this->title       = $payment_method->get_title();
 		$this->description = '';
 		$this->supports    = [
 			'products',
@@ -327,7 +325,57 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->method_title = "WooPayments ($this->title)";
 		}
 
-		// Define setting fields.
+		// Capabilities have different keys than the payment method ID's,
+		// so instead of appending '_payments' to the end of the ID, it'll be better
+		// to have a map for it instead, just in case the pattern changes.
+		$this->payment_method_capability_key_map = [
+			'sofort'            => 'sofort_payments',
+			'giropay'           => 'giropay_payments',
+			'bancontact'        => 'bancontact_payments',
+			'eps'               => 'eps_payments',
+			'ideal'             => 'ideal_payments',
+			'p24'               => 'p24_payments',
+			'card'              => 'card_payments',
+			'sepa_debit'        => 'sepa_debit_payments',
+			'au_becs_debit'     => 'au_becs_debit_payments',
+			'link'              => 'link_payments',
+			'affirm'            => 'affirm_payments',
+			'afterpay_clearpay' => 'afterpay_clearpay_payments',
+			'klarna'            => 'klarna_payments',
+			'jcb'               => 'jcb_payments',
+		];
+
+		// WooPay utilities.
+		$this->woopay_util = new WooPay_Utilities();
+
+		// Load the settings.
+		$this->init_settings();
+
+		// Check if subscriptions are enabled and add support for them.
+		$this->maybe_init_subscriptions();
+
+		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
+		if ( $this->is_saved_cards_enabled() ) {
+			array_push( $this->supports, 'tokenization', 'add_payment_method' );
+		}
+	}
+
+	/**
+	 * Return the gateway's title.
+	 *
+	 * @return string
+	 */
+	public function get_title() {
+		$this->title = $this->payment_method->get_title();
+		return parent::get_title();
+	}
+
+	/**
+	 * Get the form fields after they are initialized.
+	 *
+	 * @return array of options
+	 */
+	public function get_form_fields() {
 		$this->form_fields = [
 			'enabled'                            => [
 				'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
@@ -497,39 +545,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'platform_checkout_custom_message'   => [ 'default' => __( 'By placing this order, you agree to our [terms] and understand our [privacy_policy].', 'woocommerce-payments' ) ],
 		];
 
-		// Capabilities have different keys than the payment method ID's,
-		// so instead of appending '_payments' to the end of the ID, it'll be better
-		// to have a map for it instead, just in case the pattern changes.
-		$this->payment_method_capability_key_map = [
-			'sofort'            => 'sofort_payments',
-			'giropay'           => 'giropay_payments',
-			'bancontact'        => 'bancontact_payments',
-			'eps'               => 'eps_payments',
-			'ideal'             => 'ideal_payments',
-			'p24'               => 'p24_payments',
-			'card'              => 'card_payments',
-			'sepa_debit'        => 'sepa_debit_payments',
-			'au_becs_debit'     => 'au_becs_debit_payments',
-			'link'              => 'link_payments',
-			'affirm'            => 'affirm_payments',
-			'afterpay_clearpay' => 'afterpay_clearpay_payments',
-			'klarna'            => 'klarna_payments',
-			'jcb'               => 'jcb_payments',
-		];
-
-		// WooPay utilities.
-		$this->woopay_util = new WooPay_Utilities();
-
-		// Load the settings.
-		$this->init_settings();
-
-		// Check if subscriptions are enabled and add support for them.
-		$this->maybe_init_subscriptions();
-
-		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
-		if ( $this->is_saved_cards_enabled() ) {
-			array_push( $this->supports, 'tokenization', 'add_payment_method' );
-		}
+		return parent::get_form_fields();
 	}
 
 	/**
