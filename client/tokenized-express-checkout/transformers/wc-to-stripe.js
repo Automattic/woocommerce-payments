@@ -40,7 +40,7 @@ export const transformPrice = ( price, priceObject ) => {
 export const transformCartDataForDisplayItems = ( cartData ) => {
 	const displayItems = cartData.items.map( ( item ) => ( {
 		amount: transformPrice(
-			parseInt( item.totals.line_subtotal || item.prices.price, 10 ),
+			parseInt( item.totals?.line_subtotal || item.prices.price, 10 ),
 			item.totals || item.prices
 		),
 		name: [
