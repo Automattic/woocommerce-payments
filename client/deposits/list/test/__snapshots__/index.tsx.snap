@@ -321,12 +321,12 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Bank reference key
+                      Bank reference ID
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Bank reference key
+                      Bank reference ID
                     </span>
                   </th>
                 </tr>
@@ -1009,12 +1009,12 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Bank reference key
+                      Bank reference ID
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Bank reference key
+                      Bank reference ID
                     </span>
                   </th>
                 </tr>

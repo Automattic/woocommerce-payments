@@ -151,7 +151,7 @@ const getColumns = (
 	[
 		{
 			key: 'transaction_id',
-			label: __( 'Transaction Id', 'woocommerce-payments' ),
+			label: __( 'Transaction ID', 'woocommerce-payments' ),
 			visible: false,
 			isLeftAligned: true,
 		},
