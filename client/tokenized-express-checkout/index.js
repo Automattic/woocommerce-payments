@@ -1,6 +1,9 @@
 /* global jQuery, wcpayExpressCheckoutParams */
+/**
+ * External dependencies
+ */
 import { __ } from '@wordpress/i18n';
-import { debounce } from 'lodash';
+import { addAction, removeAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -9,7 +12,7 @@ import WCPayAPI from '../checkout/api';
 import '../checkout/express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
 import './compatibility/wc-order-attribution';
-import './compatibility/wc-product-variations';
+import './compatibility/wc-product-page';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
@@ -29,13 +32,66 @@ import {
 	getCartApiHandler,
 } from './event-handlers';
 import ExpressCheckoutOrderApi from './order-api';
+import ExpressCheckoutCartApi from './cart-api';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import expressCheckoutButtonUi from './button-ui';
 import {
 	transformCartDataForDisplayItems,
 	transformCartDataForShippingRates,
 	transformPrice,
-} from 'wcpay/tokenized-express-checkout/transformers/wc-to-stripe';
+} from './transformers/wc-to-stripe';
+
+let cachedCartData = null;
+const noop = () => null;
+const fetchNewCartData = async () => {
+	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
+		return await getCartApiHandler().getCart();
+	}
+
+	// creating a new cart and clearing it afterward,
+	// to avoid scenarios where the stock for a product with limited (or low) availability is added to the cart,
+	// preventing other customers from purchasing.
+	const temporaryCart = new ExpressCheckoutCartApi();
+	temporaryCart.useSeparateCart();
+
+	const cartData = await temporaryCart.addProductToCart();
+
+	// no need to wait for the request to end, it can be done asynchronously.
+	// using `.finally( noop )` to avoid annoying IDE warnings.
+	temporaryCart.emptyCart().finally( noop );
+
+	return cartData;
+};
+
+const getServerSideExpressCheckoutProductData = () => {
+	const requestShipping =
+		getExpressCheckoutData( 'product' )?.needs_shipping ?? false;
+	const displayItems = (
+		getExpressCheckoutData( 'product' )?.displayItems ?? []
+	).map( ( { label, amount } ) => ( {
+		name: label,
+		amount,
+	} ) );
+	const shippingRates = requestShipping
+		? [
+				{
+					id: 'pending',
+					displayName: __( 'Pending', 'woocommerce-payments' ),
+					amount: 0,
+				},
+		  ]
+		: undefined;
+
+	return {
+		total: getExpressCheckoutData( 'product' )?.total.amount,
+		currency: getExpressCheckoutData( 'product' )?.currency,
+		requestShipping,
+		shippingRates,
+		requestPhone:
+			getExpressCheckoutData( 'checkout' )?.needs_payer_phone ?? false,
+		displayItems,
+	};
+};
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -47,7 +103,6 @@ jQuery( ( $ ) => {
 	}
 
 	const publishableKey = getExpressCheckoutData( 'stripe' ).publishableKey;
-	const quantityInputSelector = '.quantity .qty[type=number]';
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -83,43 +138,10 @@ jQuery( ( $ ) => {
 		$separator: jQuery( '#wcpay-express-checkout-button-separator' ),
 	} );
 
-	let wcPayECEError = '';
-	const defaultErrorMessage = __(
-		'There was an error getting the product information.',
-		'woocommerce-payments'
-	);
-
 	/**
 	 * Object to handle Stripe payment forms.
 	 */
 	const wcpayECE = {
-		getAttributes: function () {
-			const select = $( '.variations_form' ).find( '.variations select' );
-			const data = {};
-			let count = 0;
-			let chosen = 0;
-
-			select.each( function () {
-				const attributeName =
-					$( this ).data( 'attribute_name' ) ||
-					$( this ).attr( 'name' );
-				const value = $( this ).val() || '';
-
-				if ( value.length > 0 ) {
-					chosen++;
-				}
-
-				count++;
-				data[ attributeName ] = value;
-			} );
-
-			return {
-				count: count,
-				chosenCount: chosen,
-				data: data,
-			};
-		},
-
 		/**
 		 * Abort the payment and display error messages.
 		 *
@@ -161,57 +183,6 @@ jQuery( ( $ ) => {
 		},
 
 		/**
-		 * Adds the item to the cart and return cart details.
-		 *
-		 * @return {Promise} Promise for the request to the server.
-		 */
-		addToCart: () => {
-			let productId = $( '.single_add_to_cart_button' ).val();
-
-			// Check if product is a variable product.
-			if ( $( '.single_variation_wrap' ).length ) {
-				productId = $( '.single_variation_wrap' )
-					.find( 'input[name="product_id"]' )
-					.val();
-			}
-
-			if ( $( '.wc-bookings-booking-form' ).length ) {
-				productId = $( '.wc-booking-product-id' ).val();
-			}
-
-			const data = {
-				product_id: productId,
-				qty: $( quantityInputSelector ).val(),
-				attributes: $( '.variations_form' ).length
-					? wcpayECE.getAttributes().data
-					: [],
-			};
-
-			// Add extension data to the POST body
-			const formData = $( 'form.cart' ).serializeArray();
-			$.each( formData, ( i, field ) => {
-				if ( /^(addon-|wc_)/.test( field.name ) ) {
-					if ( /\[\]$/.test( field.name ) ) {
-						const fieldName = field.name.substring(
-							0,
-							field.name.length - 2
-						);
-						if ( data[ fieldName ] ) {
-							data[ fieldName ].push( field.value );
-						} else {
-							data[ fieldName ] = [ field.value ];
-						}
-					} else {
-						data[ field.name ] = field.value;
-					}
-				}
-			} );
-
-			// TODO ~FR: replace with cartApi
-			return api.expressCheckoutECEAddToCart( data );
-		},
-
-		/**
 		 * Starts the Express Checkout Element
 		 *
 		 * @param {Object} options ECE options.
@@ -219,7 +190,7 @@ jQuery( ( $ ) => {
 		startExpressCheckoutElement: async ( options ) => {
 			const stripe = await api.getStripe();
 			const elements = stripe.elements( {
-				mode: options.mode ?? 'payment',
+				mode: 'payment',
 				amount: options.total,
 				currency: options.currency,
 				paymentMethodCreation: 'manual',
@@ -276,17 +247,16 @@ jQuery( ( $ ) => {
 						return;
 					}
 
-					if ( wcPayECEError ) {
-						window.alert( wcPayECEError );
-						return;
-					}
-
 					// Add products to the cart if everything is right.
-					// TODO ~FR: use cartApi
-					wcpayECE.addToCart();
+					getCartApiHandler().addProductToCart();
 				}
 
 				const clickOptions = {
+					// `options.displayItems`, `options.requestShipping`, `options.requestPhone`, `options.shippingRates`,
+					// are all coming from prior of the initialization.
+					// The "real" values will be updated once the button loads.
+					// They are preemptively initialized because the `event.resolve({})`
+					// needs to be called within 1 second of the `click` event.
 					lineItems: options.displayItems,
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,
@@ -322,6 +292,15 @@ jQuery( ( $ ) => {
 
 			eceButton.on( 'cancel', async () => {
 				wcpayECE.paymentAborted = true;
+
+				if (
+					getExpressCheckoutData( 'button_context' ) === 'product'
+				) {
+					// clearing the cart to avoid issues with products with low or limited availability
+					// being held hostage by customers cancelling the ECE.
+					getCartApiHandler().emptyCart();
+				}
+
 				onCancelHandler();
 			} );
 
@@ -339,224 +318,136 @@ jQuery( ( $ ) => {
 				}
 			} );
 
-			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				wcpayECE.attachProductPageEventListeners( elements );
-			}
-		},
-
-		getSelectedProductData: () => {
-			let productId = $( '.single_add_to_cart_button' ).val();
-
-			// Check if product is a variable product.
-			if ( $( '.single_variation_wrap' ).length ) {
-				productId = $( '.single_variation_wrap' )
-					.find( 'input[name="product_id"]' )
-					.val();
-			}
-
-			if ( $( '.wc-bookings-booking-form' ).length ) {
-				productId = $( '.wc-booking-product-id' ).val();
-			}
-
-			const addons =
-				$( '#product-addons-total' ).data( 'price_data' ) || [];
-			const addonValue = addons.reduce(
-				( sum, addon ) => sum + addon.cost,
-				0
+			removeAction(
+				'wcpay.express-checkout.update-button-data',
+				'automattic/wcpay/express-checkout'
 			);
-
-			// WC Deposits Support.
-			const depositObject = {};
-			if ( $( 'input[name=wc_deposit_option]' ).length ) {
-				depositObject.wc_deposit_option = $(
-					'input[name=wc_deposit_option]:checked'
-				).val();
-			}
-			if ( $( 'input[name=wc_deposit_payment_plan]' ).length ) {
-				depositObject.wc_deposit_payment_plan = $(
-					'input[name=wc_deposit_payment_plan]:checked'
-				).val();
-			}
-
-			const data = {
-				product_id: productId,
-				qty: $( quantityInputSelector ).val(),
-				attributes: $( '.variations_form' ).length
-					? wcpayECE.getAttributes().data
-					: [],
-				addon_value: addonValue,
-				...depositObject,
-			};
-
-			// TODO ~FR: replace with cartApi
-			return api.expressCheckoutECEGetSelectedProductData( data );
-		},
-
-		attachProductPageEventListeners: ( elements ) => {
-			// WooCommerce Deposits support.
-			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
-			// Needs to be defined before the `woocommerce_variation_has_changed` event handler is set.
-			$(
-				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-			)
-				.off( 'change' )
-				.on( 'change', () => {
-					$( 'form' )
-						.has(
-							'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-						)
-						.trigger( 'woocommerce_variation_has_changed' );
-				} );
-
-			$( document.body )
-				.off( 'woocommerce_variation_has_changed' )
-				.on( 'woocommerce_variation_has_changed', () => {
-					expressCheckoutButtonUi.blockButton();
-
-					$.when( wcpayECE.getSelectedProductData() )
-						.then( ( response ) => {
-							// TODO ~FR: this seems new
-							const isDeposits = wcpayECE.productHasDepositOption();
-							/**
-							 * If the customer aborted the express checkout,
-							 * we need to re init the express checkout button to ensure the shipping
-							 * options are refetched. If the customer didn't abort the express checkout,
-							 * and the product's shipping status is consistent,
-							 * we can simply update the express checkout button with the new total and display items.
-							 */
-							const needsShipping =
-								! wcpayECE.paymentAborted &&
-								getExpressCheckoutData( 'product' )
-									.needs_shipping === response.needs_shipping;
-
-							if ( ! isDeposits && needsShipping ) {
-								elements.update( {
-									amount: response.total.amount,
-								} );
-							} else {
-								wcpayECE.reInitExpressCheckoutElement(
-									response
-								);
-							}
-						} )
-						.catch( () => {
-							expressCheckoutButtonUi.hideContainer();
-							expressCheckoutButtonUi.getButtonSeparator().hide();
-						} )
-						.always( () => {
-							expressCheckoutButtonUi.unblockButton();
-						} );
-				} );
-
-			$( '.quantity' )
-				.off( 'input', '.qty' )
-				.on(
-					'input',
-					'.qty',
-					debounce( () => {
+			addAction(
+				'wcpay.express-checkout.update-button-data',
+				'automattic/wcpay/express-checkout',
+				async () => {
+					try {
 						expressCheckoutButtonUi.blockButton();
-						wcPayECEError = '';
 
-						$.when( wcpayECE.getSelectedProductData() )
-							.then(
-								( response ) => {
-									// In case the server returns an unexpected response
-									if ( typeof response !== 'object' ) {
-										wcPayECEError = defaultErrorMessage;
-									}
+						cachedCartData = await fetchNewCartData();
+						// checking if items needed shipping, before assigning new cart data.
+						const didItemsNeedShipping = options.requestShipping;
 
-									if (
-										! wcpayECE.paymentAborted &&
-										getExpressCheckoutData( 'product' )
-											.needs_shipping ===
-											response.needs_shipping
-									) {
-										elements.update( {
-											amount: response.total.amount,
-										} );
-									} else {
-										wcpayECE.reInitExpressCheckoutElement(
-											response
-										);
-									}
+						/**
+						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
+						 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
+						 * consistent, we can simply update the payment request button with the new total and display items.
+						 */
+						if (
+							! wcpayECE.paymentAborted &&
+							didItemsNeedShipping ===
+								cachedCartData.needs_shipping
+						) {
+							elements.update( {
+								total: {
+									label: getExpressCheckoutData(
+										'total_label'
+									),
+									amount: transformPrice(
+										parseInt(
+											cachedCartData.totals.total_price,
+											10
+										) -
+											parseInt(
+												cachedCartData.totals
+													.total_refund || 0,
+												10
+											),
+										cachedCartData.totals
+									),
 								},
-								( response ) => {
-									wcPayECEError =
-										response.responseJSON?.error ??
-										defaultErrorMessage;
-								}
-							)
-							.always( function () {
-								expressCheckoutButtonUi.unblockButton();
+								displayItems: transformCartDataForDisplayItems(
+									cachedCartData
+								),
 							} );
-					}, 250 )
-				);
-		},
+						} else {
+							// the cachedCartData from the Store API will be used from now on,
+							// instead of the `product` attributes.
+							wcpayExpressCheckoutParams.product = null;
 
-		reInitExpressCheckoutElement: ( response ) => {
-			wcpayExpressCheckoutParams.product.needs_shipping =
-				response.needs_shipping;
-			wcpayExpressCheckoutParams.product.total = response.total;
-			wcpayExpressCheckoutParams.product.displayItems =
-				response.displayItems;
-			wcpayECE.init();
-		},
+							await wcpayECE.init();
+						}
 
-		productHasDepositOption() {
-			return !! $( 'form' ).has(
-				'input[name=wc_deposit_option],input[name=wc_deposit_payment_plan]'
-			).length;
+						expressCheckoutButtonUi.unblockButton();
+					} catch ( e ) {
+						expressCheckoutButtonUi.hide();
+					}
+				}
+			);
 		},
 
 		/**
 		 * Initialize event handlers and UI state
 		 */
 		init: async () => {
+			// on product pages, we should be able to have `getExpressCheckoutData( 'product' )` from the backend,
+			// which saves us some AJAX calls.
+			if ( ! getExpressCheckoutData( 'product' ) && ! cachedCartData ) {
+				try {
+					cachedCartData = await fetchNewCartData();
+				} catch ( e ) {
+					// if something fails here, we can likely fall back on `getExpressCheckoutData( 'product' )`.
+				}
+			}
+
+			// once (and if) cart data has been fetched, we can safely clear product data from the backend.
+			if ( cachedCartData ) {
+				wcpayExpressCheckoutParams.product = undefined;
+			}
+
 			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				await wcpayECE.startExpressCheckoutElement( {
-					mode: 'payment',
-					total: getExpressCheckoutData( 'product' )?.total.amount,
-					currency: getExpressCheckoutData( 'product' )?.currency,
-					requestShipping:
-						getExpressCheckoutData( 'product' )?.needs_shipping ??
-						false,
-					requestPhone:
-						getExpressCheckoutData( 'checkout' )
-							?.needs_payer_phone ?? false,
-					displayItems: getExpressCheckoutData( 'product' )
-						.displayItems,
-				} );
-			} else {
+				// on product pages, we need to interact with an anonymous cart to check out the product,
+				// so that we don't affect the products in the main cart.
+				// On cart, checkout, place order pages we instead use the cart itself.
+				getCartApiHandler().useSeparateCart();
+			}
+
+			if ( cachedCartData ) {
 				// If this is the cart page, or checkout page, or pay-for-order page, we need to request the cart details.
-				const cartData = await getCartApiHandler().getCart();
+				// but if the data is not available, we can't render the button.
 				const total = transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
+					parseInt( cachedCartData.totals.total_price, 10 ) -
+						parseInt( cachedCartData.totals.total_refund || 0, 10 ),
+					cachedCartData.totals
 				);
 				if ( total === 0 ) {
 					expressCheckoutButtonUi.hideContainer();
 					expressCheckoutButtonUi.getButtonSeparator().hide();
 				} else {
 					await wcpayECE.startExpressCheckoutElement( {
-						mode: 'payment',
 						total,
-						currency: cartData.totals.currency_code.toLowerCase(),
+						currency: cachedCartData.totals.currency_code.toLowerCase(),
 						// pay-for-order should never display the shipping selection.
 						requestShipping:
 							getExpressCheckoutData( 'button_context' ) !==
-								'pay_for_order' && cartData.needs_shipping,
+								'pay_for_order' &&
+							cachedCartData.needs_shipping,
 						shippingRates: transformCartDataForShippingRates(
-							cartData
+							cachedCartData
 						),
 						requestPhone:
 							getExpressCheckoutData( 'checkout' )
 								?.needs_payer_phone ?? false,
 						displayItems: transformCartDataForDisplayItems(
-							cartData
+							cachedCartData
 						),
 					} );
 				}
+			} else if (
+				getExpressCheckoutData( 'button_context' ) === 'product' &&
+				getExpressCheckoutData( 'product' )
+			) {
+				await wcpayECE.startExpressCheckoutElement(
+					getServerSideExpressCheckoutProductData()
+				);
+			} else {
+				expressCheckoutButtonUi.hideContainer();
+				expressCheckoutButtonUi.getButtonSeparator().hide();
 			}
 
 			// After initializing a new express checkout button, we need to reset the paymentAborted flag.

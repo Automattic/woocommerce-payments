@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Skip mysqlcheck SSL Requirement during E2E environment setup
