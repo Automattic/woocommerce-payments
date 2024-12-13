@@ -144,49 +144,6 @@ class WC_Payments_Admin {
 		$this->incentives_service  = $incentives_service;
 		$this->fraud_service       = $fraud_service;
 		$this->database_cache      = $database_cache;
-
-		$this->admin_child_pages = [
-			'wc-payments-overview'     => [
-				'id'       => 'wc-payments-overview',
-				'title'    => __( 'Overview', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/overview',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 10,
-				],
-			],
-			'wc-payments-deposits'     => [
-				'id'       => 'wc-payments-deposits',
-				'title'    => __( 'Payouts', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/payouts',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 20,
-				],
-			],
-			'wc-payments-transactions' => [
-				'id'       => 'wc-payments-transactions',
-				'title'    => __( 'Transactions', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/transactions',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 30,
-				],
-			],
-			'wc-payments-disputes'     => [
-				'id'       => 'wc-payments-disputes',
-				'title'    => __( 'Disputes', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/disputes',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 40,
-				],
-			],
-		];
 	}
 
 	/**
@@ -314,6 +271,49 @@ class WC_Payments_Admin {
 			return;
 		}
 		global $submenu;
+
+		$this->admin_child_pages = [
+			'wc-payments-overview'     => [
+				'id'       => 'wc-payments-overview',
+				'title'    => __( 'Overview', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/overview',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 10,
+				],
+			],
+			'wc-payments-deposits'     => [
+				'id'       => 'wc-payments-deposits',
+				'title'    => __( 'Payouts', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/payouts',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 20,
+				],
+			],
+			'wc-payments-transactions' => [
+				'id'       => 'wc-payments-transactions',
+				'title'    => __( 'Transactions', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/transactions',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 30,
+				],
+			],
+			'wc-payments-disputes'     => [
+				'id'       => 'wc-payments-disputes',
+				'title'    => __( 'Disputes', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/disputes',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 40,
+				],
+			],
+		];
 
 		try {
 			// Render full payments menu with sub-items only if:
