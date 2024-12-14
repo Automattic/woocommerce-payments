@@ -437,13 +437,13 @@ jQuery( ( $ ) => {
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
-							// We do not support variable subscriptions with variations
-							// that require shipping and include a free trial.
+							// Disable ECE for shipping variable subscriptions with free trial and **no** sign up fee.
+							// Applies to Case 11 from matrix:
+							// https://github.com/Automattic/woocommerce-payments/issues/9771#issuecomment-2518829514
 							if (
-								getExpressCheckoutData( 'product' )
-									.product_type === 'variable-subscription' &&
 								response.needs_shipping &&
-								response.has_free_trial
+								response.has_free_trial &&
+								! response.has_sign_up_fee
 							) {
 								eceButton.destroy();
 								return;

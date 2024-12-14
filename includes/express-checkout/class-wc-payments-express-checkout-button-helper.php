@@ -742,7 +742,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
 		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
-		$data['product_type']   = $product->get_type();
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
@@ -765,12 +764,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		if ( is_null( $product ) || ! is_object( $product ) ) {
 			$is_supported = false;
 		} else {
-			// Simple subscription that needs shipping with free trials is not supported.
-			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
+			// Applies to case 3 from matrix: https://github.com/Automattic/woocommerce-payments/issues/9771#issuecomment-2518829514.
+			// Note: This does not check variable subscriptions, as that will be handled on the frontend.
+			$is_free_trial_simple_subs_no_sign_up_fee = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 && WC_Subscriptions_Product::get_sign_up_fee( $product ) === 0;
 
 			if (
 			! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| $is_free_trial_simple_subs
+			|| $is_free_trial_simple_subs_no_sign_up_fee
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
