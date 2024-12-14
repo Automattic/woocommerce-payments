@@ -56,6 +56,12 @@
 		color: $wp-green-70;
 	}
 
+	.woopayments-payout-details-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+	}
+
 	.wcpay-deposit-automatic ul {
 		display: flex;
 		margin: 0;

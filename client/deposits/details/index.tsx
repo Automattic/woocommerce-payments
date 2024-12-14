@@ -256,6 +256,25 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					] }
 				</SummaryList>
 			) }
+			<Card>
+				<CardHeader>
+					<Text size={ 16 } weight={ 600 }>
+						{ isWithdrawal
+							? __( 'Withdrawal details', 'woocommerce-payments' )
+							: __( 'Payout details', 'woocommerce-payments' ) }
+					</Text>
+				</CardHeader>
+				<CardBody>
+					<div className="woopayments-payout-details-header">
+						<div>BANK ACCOUNT</div>
+						<div>{ deposit.bankAccount }</div>
+						<div>BANK REFERENCE</div>
+						<div>
+							{ deposit.bank_reference_key ?? 'Not available' }
+						</div>
+					</div>
+				</CardBody>
+			</Card>
 		</div>
 	);
 };
