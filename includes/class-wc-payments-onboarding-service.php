@@ -181,6 +181,67 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Get the onboarding capabilities from the request.
+	 *
+	 * The capabilities are expected to be passed as an array of capabilities keyed by the capability ID and
+	 * with boolean values. If the value is true, the capability is requested when the account is created.
+	 *
+	 * @return array The standardized capabilities that were passed in the request.
+	 *               Empty array if no capabilities were passed or none were valid.
+	 */
+	public function get_capabilities_from_request(): array {
+		$capabilities = [];
+
+		if ( empty( $_REQUEST['capabilities'] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return $capabilities;
+		}
+
+		// Try to extract the capabilities.
+		// They might be already decoded or not, so we need to handle both cases.
+		// We expect them to be an array.
+		$capabilities = wc_clean( wp_unslash( $_REQUEST['capabilities'] ) ); // phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( ! is_array( $capabilities ) ) {
+			$capabilities = json_decode( $capabilities, true ) ?? [];
+		}
+
+		if ( empty( $capabilities ) ) {
+			return [];
+		}
+
+		// Sanitize and validate.
+		$capabilities = array_combine(
+			array_map(
+				function ( $key ) {
+					// Keep numeric keys as integers so we can remove them later.
+					if ( is_numeric( $key ) ) {
+						return intval( $key );
+					}
+
+					return sanitize_text_field( $key );
+				},
+				array_keys( $capabilities )
+			),
+			array_map(
+				function ( $value ) {
+					return filter_var( $value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+				},
+				$capabilities
+			)
+		);
+
+		// Filter out any invalid entries.
+		$capabilities = array_filter(
+			$capabilities,
+			function ( $value, $key ) {
+				return is_string( $key ) && is_bool( $value );
+			},
+			ARRAY_FILTER_USE_BOTH
+		);
+
+		return $capabilities;
+	}
+
+	/**
 	 * Retrieve the embedded KYC session and handle initial account creation (if necessary).
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
@@ -365,9 +426,11 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Get account data for onboarding from self assessment data.
 	 *
-	 * @param string $setup_mode Setup mode.
+	 * @param string $setup_mode           Setup mode.
 	 * @param array  $self_assessment_data Self assessment data.
-	 * @param array  $capabilities Payment Methods capabilities.
+	 * @param array  $capabilities         Optional. List keyed by capabilities IDs (payment methods) with boolean values.
+	 *                                     If the value is true, the capability is requested when the account is created.
+	 *                                     If the value is false, the capability is not requested when the account is created.
 	 *
 	 * @return array Account data.
 	 */
@@ -388,18 +451,30 @@ class WC_Payments_Onboarding_Service {
 			'business_name' => get_bloginfo( 'name' ),
 		];
 
-		if ( ! empty( $capabilities ) ) {
-			foreach ( $capabilities as $capability => $value ) {
-				// Skip processing for the 'apple_google' capability.
-				if ( 'apple_google' === $capability || 'woopay' === $capability ) {
-					continue;
-				}
-				if ( 'card' === $capability ) {
-					$account_data['capabilities']['transfers'] = [ 'requested' => 'true' ];
-				}
-				if ( $value ) {
-					$account_data['capabilities'][ $capability . '_payments' ] = [ 'requested' => 'true' ];
-				}
+		foreach ( $capabilities as $capability => $should_request ) {
+			// Remove the `_payments` suffix from the capability, if present.
+			if ( strpos( $capability, '_payments' ) === strlen( $capability ) - 9 ) {
+				$capability = str_replace( '_payments', '', $capability );
+			}
+
+			// Skip the special 'apple_google' because it is not a payment method.
+			// Skip the 'woopay' because it is automatically handled by the API.
+			if ( 'apple_google' === $capability || 'woopay' === $capability ) {
+				continue;
+			}
+
+			if ( 'card' === $capability ) {
+				// Card is always requested.
+				$account_data['capabilities']['card_payments'] = [ 'requested' => 'true' ];
+				// When requesting card, we also need to request transfers.
+				// The platform should handle this automatically, but it is best to be thorough.
+				$account_data['capabilities']['transfers'] = [ 'requested' => 'true' ];
+				continue;
+			}
+
+			// We only request, not unrequest capabilities.
+			if ( $should_request ) {
+				$account_data['capabilities'][ $capability . '_payments' ] = [ 'requested' => 'true' ];
 			}
 		}
 
@@ -452,6 +527,7 @@ class WC_Payments_Onboarding_Service {
 				]
 			);
 		}
+
 		return $account_data;
 	}
 
