@@ -363,7 +363,7 @@ jQuery( ( $ ) => {
 			} );
 
 			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				wcpayECE.attachProductPageEventListeners( elements );
+				wcpayECE.attachProductPageEventListeners( elements, eceButton );
 			}
 		},
 
@@ -414,7 +414,7 @@ jQuery( ( $ ) => {
 			return api.expressCheckoutECEGetSelectedProductData( data );
 		},
 
-		attachProductPageEventListeners: ( elements ) => {
+		attachProductPageEventListeners: ( elements, eceButton ) => {
 			// WooCommerce Deposits support.
 			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
 			// Needs to be defined before the `woocommerce_variation_has_changed` event handler is set.
@@ -437,6 +437,18 @@ jQuery( ( $ ) => {
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
+							// We do not support variable subscriptions with variations
+							// that require shipping and include a free trial.
+							if (
+								getExpressCheckoutData( 'product' )
+									.product_type === 'variable-subscription' &&
+								response.needs_shipping &&
+								response.has_free_trial
+							) {
+								eceButton.destroy();
+								return;
+							}
+
 							const isDeposits = wcpayECE.productHasDepositOption();
 							/**
 							 * If the customer aborted the express checkout,
@@ -449,8 +461,11 @@ jQuery( ( $ ) => {
 								! wcpayECE.paymentAborted &&
 								getExpressCheckoutData( 'product' )
 									.needs_shipping === response.needs_shipping;
-
-							if ( ! isDeposits && needsShipping ) {
+							if (
+								! isDeposits &&
+								needsShipping &&
+								! ( eceButton._destroyed ?? false )
+							) {
 								elements.update( {
 									amount: response.total.amount,
 								} );

@@ -66,6 +66,7 @@ export interface WCPayExpressCheckoutParams {
 	product: {
 		needs_shipping: boolean;
 		currency: string;
+		product_type: string;
 		shippingOptions: {
 			id: string;
 			label: string;
