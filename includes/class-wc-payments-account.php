@@ -1509,7 +1509,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 							// These are starting capabilities for the account.
 							// They are collected by the payment method step of the
 							// WC Payments settings page native onboarding experience.
-							'capabilities'                => wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ),
+							'capabilities'                => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
 							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							'source'                      => $onboarding_source,
 							'redirect_to_settings_page'   => $redirect_to_settings_page ? 'true' : false,
@@ -1543,7 +1543,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					// This is because there is no interim step between the user clicking the connect link and the onboarding wizard.
 					! empty( $from ) ? $from : $next_step_from,
 					[
-						'source' => $onboarding_source,
+						'source'       => $onboarding_source,
+						'capabilities' => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
 					]
 				);
 				return;
@@ -1583,7 +1584,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 								// These are starting capabilities for the account.
 								// They are collected by the payment method step of the
 								// WC Payments settings page native onboarding experience.
-								'capabilities' => wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ),
+								'capabilities' => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
 								'test_mode'    => $should_onboard_in_test_mode ? 'true' : false,
 								'source'       => $onboarding_source,
 								'redirect_to_settings_page' => $redirect_to_settings_page ? 'true' : false,
