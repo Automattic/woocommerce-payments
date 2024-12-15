@@ -268,15 +268,19 @@ class WC_Payments_Onboarding_Service {
 			'site_locale'   => get_locale(),
 		];
 		$user_data      = $this->get_onboarding_user_data();
-		$account_data   = $this->get_account_data( $setup_mode, $self_assessment_data );
+		$account_data   = $this->get_account_data(
+			$setup_mode,
+			$self_assessment_data,
+			$this->get_capabilities_from_request()
+		);
 		$actioned_notes = self::get_actioned_notes();
 
 		try {
 			$account_session = $this->payments_api_client->initialize_onboarding_embedded_kyc(
 				'live' === $setup_mode,
 				$site_data,
-				array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-				array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
 				$progressive
 			);
