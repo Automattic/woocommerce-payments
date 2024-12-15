@@ -3,29 +3,32 @@
 # Exit if any command fails.
 set -e
 
-echo "Checking if ${PWD}/docker/bin/jt directory exists..."
+# Define Jurassic Tube directory using bin directory
+JT_DIR="${PWD}/bin/jurassictube"
 
-if [ -d "${PWD}/docker/bin/jt" ]; then
-    echo "${PWD}/docker/bin/jt already exists."
+echo "Checking if ${JT_DIR} directory exists..."
+
+if [ -d "${JT_DIR}" ]; then
+    echo "${JT_DIR} already exists."
 else
-    echo "Creating ${PWD}/docker/bin/jt directory..."
-    mkdir -p "${PWD}/docker/bin/jt"
+    echo "Creating ${JT_DIR} directory..."
+    mkdir -p "${JT_DIR}"
 fi
 
-echo "Downloading the latest version of the installer script..."
+echo "Checking if the installer is present and downloading it if not..."
 echo 
 
 # Download the installer (if it's not already present):
-if [ ! -f "${PWD}/docker/bin/jt/installer.sh" ]; then
-    # Download the installer script:
-    curl "https://jurassic.tube/get-installer.php?env=wcpay" -o ${PWD}/docker/bin/jt/installer.sh && chmod +x ${PWD}/docker/bin/jt/installer.sh
+if [ ! -f "${JT_DIR}/installer.sh" ]; then
+    echo "Downloading the standalone installer..."
+    curl "https://jurassic.tube/installer-standalone.sh" -o "${JT_DIR}/installer.sh" && chmod +x "${JT_DIR}/installer.sh"
 fi
 
 echo "Running the installation script..."
 echo 
 
 # Run the installer script
-source $PWD/docker/bin/jt/installer.sh
+"${JT_DIR}/installer.sh"
 
 echo
 read -p "Go to https://jurassic.tube/ in a browser, paste your public key which was printed above into the box, and click 'Add Public Key'. Press enter to continue"
@@ -40,8 +43,24 @@ echo
 read -p "Please enter your Automattic/WordPress.com username: " username
 echo 
 
-${PWD}/docker/bin/jt/config.sh username ${username}
-${PWD}/docker/bin/jt/config.sh subdomain ${subdomain}
+if [ ! -f "${JT_DIR}/config.env" ]; then
+    touch "${JT_DIR}/config.env"
+else
+    > "${JT_DIR}/config.env"
+fi
+
+# Find the WordPress container section and get its port
+PORT=$(docker ps | grep woocommerce_payments_wordpress | sed -En "s/.*0:([0-9]+).*/\1/p")
+
+# Use default if extraction failed
+if [ -z "$PORT" ]; then
+    PORT=8082  # Default fallback
+    echo "Could not extract WordPress container port, using default: ${PORT}"
+fi
+
+echo "username=${username}" >> "${JT_DIR}/config.env"
+echo "subdomain=${subdomain}" >> "${JT_DIR}/config.env"
+echo "localhost=localhost:${PORT}" >> "${JT_DIR}/config.env"
 
 echo "Setup complete!"
 echo "Use the command: npm run tube:start from the root directory of your WC Payments project to start running Jurassic Tube."

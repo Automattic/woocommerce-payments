@@ -25,10 +25,21 @@ class Link_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->title       = __( 'Link', 'woocommerce-payments' );
 		$this->is_reusable = true;
 		$this->currencies  = [ Currency_Code::UNITED_STATES_DOLLAR ];
 		$this->icon_url    = plugins_url( 'assets/images/payment-methods/link.svg', WCPAY_PLUGIN_FILE );
+	}
+
+	/**
+	 * Returns payment method title
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 * @param array|false $payment_details Optional payment details from charge object.
+	 *
+	 * @return string
+	 */
+	public function get_title( ?string $account_country = null, $payment_details = false ) {
+		return __( 'Link', 'woocommerce-payments' );
 	}
 
 	/**
