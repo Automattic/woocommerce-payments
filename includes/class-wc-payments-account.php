@@ -1538,14 +1538,19 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				&& WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD !== $from
 				&& ! $this->is_stripe_connected() ) {
 
+				$additional_params = [
+					'source' => $onboarding_source,
+				];
+
+				if ( $this->onboarding_service->get_capabilities_from_request() ) {
+					$additional_params['capabilities'] = rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) );
+				}
+
 				$this->redirect_service->redirect_to_onboarding_wizard(
 					// When we redirect to the onboarding wizard, we carry over the `from`, if we have it.
 					// This is because there is no interim step between the user clicking the connect link and the onboarding wizard.
 					! empty( $from ) ? $from : $next_step_from,
-					[
-						'source'       => $onboarding_source,
-						'capabilities' => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
-					]
+					$additional_params
 				);
 				return;
 			}
