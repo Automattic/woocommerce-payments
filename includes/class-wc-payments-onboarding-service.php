@@ -199,7 +199,8 @@ class WC_Payments_Onboarding_Service {
 		// Try to extract the capabilities.
 		// They might be already decoded or not, so we need to handle both cases.
 		// We expect them to be an array.
-		$capabilities = wc_clean( wp_unslash( $_REQUEST['capabilities'] ) ); // phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$capabilities = wp_unslash( $_REQUEST['capabilities'] );
 		if ( ! is_array( $capabilities ) ) {
 			$capabilities = json_decode( $capabilities, true ) ?? [];
 		}
