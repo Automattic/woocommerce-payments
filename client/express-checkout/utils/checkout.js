@@ -6,7 +6,7 @@
 /**
  * Internal dependencies
  */
-import { normalizeShippingAddress, getExpressCheckoutData } from './';
+import { normalizeShippingAddress, getExpressCheckoutData } from '.';
 
 const updateShortcodeField = ( formSelector, fieldName, value ) => {
 	const field = document.querySelector(

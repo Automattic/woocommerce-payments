@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 export * from './normalize';
-export * from './shortcodeCheckout';
+export * from './checkout';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 interface MyWindow extends Window {
