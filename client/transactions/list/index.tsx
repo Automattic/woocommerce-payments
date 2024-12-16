@@ -55,7 +55,7 @@ import {
 	formatExplicitCurrency,
 	formatExportAmount,
 } from 'multi-currency/interface/functions';
-import { getChargeChannel } from 'utils/charge';
+import { getTransactionChannel } from 'utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
@@ -151,7 +151,7 @@ const getColumns = (
 	[
 		{
 			key: 'transaction_id',
-			label: __( 'Transaction Id', 'woocommerce-payments' ),
+			label: __( 'Transaction ID', 'woocommerce-payments' ),
 			visible: false,
 			isLeftAligned: true,
 		},
@@ -473,10 +473,10 @@ export const TransactionsList = (
 				),
 			},
 			channel: {
-				value: getChargeChannel( txn.channel ),
+				value: getTransactionChannel( txn.channel ),
 				display: clickable(
 					<Fragment>
-						{ getChargeChannel( txn.channel ) }
+						{ getTransactionChannel( txn.channel ) }
 						{ txn.source_device && getSourceDeviceIcon( txn ) }
 					</Fragment>
 				),

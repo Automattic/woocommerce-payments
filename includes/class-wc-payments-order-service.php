@@ -191,6 +191,21 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Handles the order state when a payment is captured successfully.
+	 * Unlike `update_order_status_from_intent`, this method does not check the current order status or skip processing
+	 * if the order is already in the "processing" state. This ensures the order status is updated correctly upon a
+	 * successful capture, preventing issues where the capture is not reflected in the order details or transaction screens
+	 * due to the order status being in the processing state.
+	 *
+	 * @param WC_Order                           $order   The order to update.
+	 * @param WC_Payments_API_Abstract_Intention $intent  The intent object containing payment or setup data.
+	 */
+	public function process_captured_payment( $order, $intent ) {
+		$this->mark_payment_capture_completed( $order, $intent );
+		$this->complete_order_processing( $order, $intent->get_status() );
+	}
+
+	/**
 	 * Updates an order to failed status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -314,15 +329,17 @@ class WC_Payments_Order_Service {
 	 * @param string   $amount     The disputed amount – formatted currency value.
 	 * @param string   $reason     The reason for the dispute – human-readable text.
 	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
+	 * @param string   $status     The status of the dispute.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by ) {
+	public function mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status = '' ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
-		$note = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by );
+		$is_inquiry = strpos( $status, 'warning_' ) === 0;
+		$note       = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -346,7 +363,8 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->generate_dispute_closed_note( $charge_id, $status );
+		$is_inquiry = strpos( $status, 'warning_' ) === 0;
+		$note       = $this->generate_dispute_closed_note( $charge_id, $status, $is_inquiry );
 
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
@@ -1643,14 +1661,31 @@ class WC_Payments_Order_Service {
 	 * @param string $amount     The disputed amount – formatted currency value.
 	 * @param string $reason     The reason for the dispute – human-readable text.
 	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
+	 * @param bool   $is_inquiry  Whether the dispute is an inquiry or not.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by ) {
+	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry = false ) {
 		$dispute_url = $this->compose_dispute_url( $charge_id );
 
 		// Get merchant-friendly dispute reason description.
 		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
+
+		if ( $is_inquiry ) {
+			return sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to the inquiry */
+					__( 'A payment inquiry has been raised for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%4$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$amount,
+				$reason,
+				$due_by,
+				$dispute_url
+			);
+		}
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -1672,15 +1707,31 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param string $charge_id The ID of the disputed charge associated with this order.
 	 * @param string $status    The status of the dispute.
+	 * @param bool   $is_inquiry Whether the dispute is an inquiry or not.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_closed_note( $charge_id, $status ) {
+	private function generate_dispute_closed_note( $charge_id, $status, $is_inquiry = false ) {
 		$dispute_url = $this->compose_dispute_url( $charge_id );
+
+		if ( $is_inquiry ) {
+			return sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the dispute status */
+					__( 'Payment inquiry has been closed with status %1$s. See <a>payment status</a> for more details.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$status,
+				$dispute_url
+			);
+		}
+
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the dispute status */
-				__( 'Payment dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
+				__( 'Dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
 				[
 					'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
 				]

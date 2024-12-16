@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Ensure more robust selectors scoping to improve theme compatibility.

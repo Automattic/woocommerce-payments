@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+chore: renamed PRB references in GooglePay/ApplePay implementation docs and logs files to ECE.

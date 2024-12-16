@@ -513,7 +513,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_border_radius'   => $this->wcpay_gateway->get_option( 'payment_request_button_border_radius', WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX ),
 				'is_saved_cards_enabled'                 => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'               => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
-				'is_woopay_enabled'                      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'is_woopay_enabled'                      => WC_Payments_Features::is_woopay_eligible() && 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'show_woopay_incompatibility_notice'     => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'                  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                      => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
@@ -1042,7 +1042,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_REST_Response|null The response object, if this is a REST request.
 	 */
-	public function schedule_stripe_billing_migration( WP_REST_Request $request = null ) {
+	public function schedule_stripe_billing_migration( ?WP_REST_Request $request = null ) {
 
 		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
 			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
@@ -1065,7 +1065,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_REST_Response|WP_Error The response object, if this is a REST request.
 	 */
-	public function request_capability( WP_REST_Request $request = null ) {
+	public function request_capability( ?WP_REST_Request $request = null ) {
 		$request_result          = null;
 		$id                      = $request->get_param( 'id' );
 		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();

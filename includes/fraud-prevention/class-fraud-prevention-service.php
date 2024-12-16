@@ -118,7 +118,7 @@ class Fraud_Prevention_Service {
 	 *
 	 * @param Fraud_Prevention_Service|null $instance Instance of self.
 	 */
-	public static function set_instance( self $instance = null ) {
+	public static function set_instance( ?self $instance = null ) {
 		self::$instance = $instance;
 	}
 
@@ -164,7 +164,7 @@ class Fraud_Prevention_Service {
 	 * @param string|null $token Token sent in request.
 	 * @return bool
 	 */
-	public function verify_token( string $token = null ): bool {
+	public function verify_token( ?string $token = null ): bool {
 		$session_token = $this->session->get( self::TOKEN_NAME );
 
 		// Check if the tokens are both strings.

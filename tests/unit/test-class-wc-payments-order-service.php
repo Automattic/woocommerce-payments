@@ -867,6 +867,44 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 2, $notes_2 );
 	}
 
+
+	/**
+	 * Tests if the payment was updated to show inquiry created.
+	 */
+	public function test_mark_payment_dispute_created_for_inquiry() {
+		// Arrange: Set the charge_id and reason, and the order status.
+		$charge_id      = 'ch_123';
+		$amount         = '$123.45';
+		$reason         = 'product_not_received';
+		$deadline       = 'June 7, 2023';
+		$order_status   = Order_Status::ON_HOLD;
+		$dispute_status = 'warning_needs_response';
+
+		// Act: Attempt to mark payment dispute created.
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, $dispute_status );
+
+		// Assert: Check that the order status was updated to on-hold status.
+		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
+
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		// Assert: Check that dispute order note was added with relevant info and link to dispute detail.
+		$this->assertStringNotContainsString( 'Payment has been disputed', $notes[0]->content );
+		$this->assertStringContainsString( 'inquiry', $notes[0]->content );
+		$this->assertStringContainsString( $amount, $notes[0]->content );
+		$this->assertStringContainsString( 'Product not received', $notes[0]->content );
+		$this->assertStringContainsString( $deadline, $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">Response due by', $notes[0]->content );
+
+		// Assert: Check that order status change note was added.
+		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_payment_dispute_created( $this->order, $charge_id, $amount, $reason, $deadline, $dispute_status );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes_2 );
+	}
+
 	/**
 	 * Tests to make sure mark_payment_dispute_created exits if the order is invalid.
 	 */
@@ -909,7 +947,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to Completed', $notes[1]->content );
-		$this->assertStringContainsString( 'Payment dispute has been closed with status won', $notes[0]->content );
+		$this->assertStringContainsString( 'Dispute has been closed with status won', $notes[0]->content );
 		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
@@ -937,13 +975,42 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'On hold to Refunded', $notes[1]->content );
-		$this->assertStringContainsString( 'Payment dispute has been closed with status lost', $notes[0]->content );
+		$this->assertStringContainsString( 'Dispute has been closed with status lost', $notes[0]->content );
 		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
 
 		// Assert: Check for created refund, and the amount is correct.
 		$refunds = $this->order->get_refunds();
 		$this->assertCount( 1, $refunds );
 		$this->assertEquals( '-' . $this->order->get_total(), $refunds[0]->get_total() );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 3, $notes_2 );
+	}
+
+
+	/**
+	 * Tests if the order note was added to show inquiry closed.
+	 */
+	public function test_mark_payment_dispute_closed_with_status_warning_closed() {
+		// Arrange: Set the charge_id, dispute status, the order status, and update the order status.
+		$charge_id    = 'ch_123';
+		$status       = 'warning_closed';
+		$order_status = Order_Status::COMPLETED;
+		$this->order->update_status( Order_Status::ON_HOLD ); // When a dispute is created, the order status is changed to On Hold.
+
+		// Act: Attempt to mark payment dispute created.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
+
+		// Assert: Check that the order status was left in on-hold status.
+		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringNotContainsString( 'Dispute has been closed with status won', $notes[0]->content );
+		$this->assertStringContainsString( 'inquiry', $notes[0]->content );
+		$this->assertStringContainsString( '%2Fpayments%2Ftransactions%2Fdetails&id=ch_123" target="_blank" rel="noopener noreferrer">payment status', $notes[0]->content );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
 		$this->order_service->mark_payment_dispute_closed( $this->order, $charge_id, $status );
@@ -1314,5 +1381,34 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $refund_balance_transaction_id, $order->get_refunds()[0]->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ) );
 
 		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	public function test_process_captured_payment() {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] );
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::REQUIRES_CAPTURE );
+		$this->order_service->set_intent_id_for_order( $order, $intent->get_id() );
+		$order->set_status( Order_Status::PROCESSING ); // Let's simulate that order is set to processing, so order status should not interfere with the process.
+		$order->save();
+
+		$this->order_service->process_captured_payment( $order, $intent );
+
+		$this->assertEquals( $intent->get_status(), $this->order_service->get_intention_status_for_order( $order ) );
+
+		$this->assertTrue( $order->has_status( wc_get_is_paid_statuses() ) );
+
+		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertStringContainsString( 'successfully captured</strong> using WooPayments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $order->get_id() ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->update_order_status_from_intent( $order, $intent );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertEquals( count( $notes ), count( $notes_2 ) );
 	}
 }
