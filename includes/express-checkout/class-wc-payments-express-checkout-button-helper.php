@@ -742,6 +742,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
 		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+		$data['product_type']   = $product->get_type();
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
@@ -767,13 +768,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			// Simple subscription that needs shipping with free trials is not supported.
 			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
 
-			// Disable ECE for all variable subscriptions with free trials, as they are not currently supported. For now, ECE will be disabled for all such cases, and a solution will be addressed in a separate PR.
-			$is_free_trial_variable_sub = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'variable-subscription' && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
-
 			if (
 			! in_array( $product->get_type(), $this->supported_product_types(), true )
 			|| $is_free_trial_simple_subs
-			|| $is_free_trial_variable_sub
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
