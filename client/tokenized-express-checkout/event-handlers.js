@@ -228,6 +228,11 @@ export const onCancelHandler = () => {
 	const context = getExpressCheckoutData( 'button_context' );
 	const isBlocks = getExpressCheckoutData( 'has_block' );
 
+	/*
+	 * CA and GB addresses are redacted and are causing errors until WooCommerce is able to
+	 * handle redacted addresses.
+	 * https://developers.google.com/pay/api/web/reference/response-objects#IntermediateAddress
+	 */
 	if (
 		! [ 'cart', 'checkout' ].includes( context ) ||
 		! lastSelectedAddress ||
