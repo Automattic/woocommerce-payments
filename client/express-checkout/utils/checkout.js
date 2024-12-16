@@ -12,11 +12,10 @@ const updateShortcodeField = ( formSelector, fieldName, value ) => {
 	const field = document.querySelector(
 		`${ formSelector } [name="${ fieldName }"]`
 	);
-	if ( ! field ) {
-		return;
+	if ( field ) {
+		field.value = value;
+		jQuery( field ).trigger( 'change' ).trigger( 'close' );
 	}
-	field.value = value;
-	jQuery( field ).trigger( 'change' ).trigger( 'close' );
 };
 
 export const updateBlocksShippingUI = ( eventAddress ) => {
