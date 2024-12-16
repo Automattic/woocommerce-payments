@@ -103,14 +103,6 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
             </div>
             <div>
               Not available
-              <button
-                aria-label="Copy bank reference ID to clipboard"
-                class="woopayments-copy-button"
-                title="Copy to clipboard"
-                type="button"
-              >
-                <i />
-              </button>
             </div>
           </div>
         </div>
@@ -235,14 +227,6 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
             </div>
             <div>
               Not available
-              <button
-                aria-label="Copy bank reference ID to clipboard"
-                class="woopayments-copy-button"
-                title="Copy to clipboard"
-                type="button"
-              >
-                <i />
-              </button>
             </div>
           </div>
         </div>
@@ -421,14 +405,6 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             </div>
             <div>
               Not available
-              <button
-                aria-label="Copy bank reference ID to clipboard"
-                class="woopayments-copy-button"
-                title="Copy to clipboard"
-                type="button"
-              >
-                <i />
-              </button>
             </div>
           </div>
         </div>

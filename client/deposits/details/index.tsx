@@ -243,18 +243,39 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 				</CardHeader>
 				<CardBody>
 					<div className="woopayments-payout-details-header">
-						<div>BANK ACCOUNT</div>
-						<div>{ deposit.bankAccount }</div>
-						<div>BANK REFERENCE</div>
+						<h2>
+							{ __( 'Bank account', 'woocommerce-payments' ) }
+						</h2>
+						<div className="woopayments-payout-details-header__value">
+							{ deposit.bankAccount }
+						</div>
+						<h2>
+							{ __(
+								'Bank reference ID',
+								'woocommerce-payments'
+							) }
+						</h2>
 						<div>
-							{ deposit.bank_reference_key ?? 'Not available' }
-							<CopyButton
-								textToCopy={ deposit.bank_reference_key ?? '' }
-								label={ __(
-									'Copy bank reference ID to clipboard',
-									'woocommerce-payments'
-								) }
-							/>
+							{ deposit.bank_reference_key ? (
+								<>
+									<span className="woopayments-payout-details-header__bank-reference-id">
+										{ deposit.bank_reference_key }
+									</span>
+									<CopyButton
+										textToCopy={
+											deposit.bank_reference_key
+										}
+										label={ __(
+											'Copy bank reference ID to clipboard',
+											'woocommerce-payments'
+										) }
+									/>
+								</>
+							) : (
+								<div className="woopayments-payout-details-header__value">
+									Not available
+								</div>
+							) }
 						</div>
 					</div>
 				</CardBody>

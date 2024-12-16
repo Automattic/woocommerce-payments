@@ -60,6 +60,23 @@
 		display: flex;
 		align-items: flex-start;
 		justify-content: space-between;
+
+		&__bank-reference-id {
+			font-family: monospace;
+			color: $wp-gray-50;
+		}
+
+		&__value {
+			color: $wp-gray-50;
+		}
+
+		h2 {
+			font-size: 0.6875rem;
+			font-weight: 500;
+			color: $wp-gray-90;
+			text-transform: uppercase;
+			margin: unset;
+		}
 	}
 
 	.wcpay-deposit-automatic ul {
