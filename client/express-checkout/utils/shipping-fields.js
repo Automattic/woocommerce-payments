@@ -8,6 +8,13 @@
  */
 import { normalizeShippingAddress, getExpressCheckoutData } from '.';
 
+/*
+ * Updates a field in a form with a new value.
+ *
+ * @param {String} formSelector - The selector for the form containing the field.
+ * @param {Object} fieldName - The name of the field to update.
+ * @param {Object} value - The new value for the field.
+ */
 const updateShortcodeField = ( formSelector, fieldName, value ) => {
 	const field = document.querySelector(
 		`${ formSelector } [name="${ fieldName }"]`
