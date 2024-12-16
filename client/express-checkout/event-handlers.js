@@ -28,7 +28,6 @@ const onShippingRatesCalculated = ( eventAddress ) => {
 };
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
-	console.log( event );
 	try {
 		const response = await api.expressCheckoutECECalculateShippingOptions(
 			normalizeShippingAddress( event.address )
@@ -49,7 +48,6 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 			event.reject();
 		}
 	} catch ( e ) {
-		console.error( e );
 		event.reject();
 	}
 };
@@ -186,8 +184,6 @@ export const onCompletePaymentHandler = () => {
 export const onCancelHandler = () => {
 	const context = getExpressCheckoutData( 'button_context' );
 	const isBlocks = getExpressCheckoutData( 'has_block' );
-
-	console.log( context, isBlocks );
 
 	if ( ! [ 'cart', 'checkout' ].includes( context ) || ! lastSelectedAddress )
 		return;

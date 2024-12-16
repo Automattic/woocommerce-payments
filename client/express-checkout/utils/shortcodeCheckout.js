@@ -9,7 +9,6 @@
 import { normalizeShippingAddress, getExpressCheckoutData } from './';
 
 export const updateBlocksShippingUI = ( eventAddress ) => {
-	console.log( 'updateBlocksShippingUI' );
 	const address = normalizeShippingAddress( eventAddress );
 
 	wp.data.dispatch( 'wc/store/cart' ).setShippingAddress( address );
@@ -33,11 +32,6 @@ export const updateShortcodeShippingUI = ( eventAddress ) => {
 				} else {
 					field.dispatchEvent( new Event( 'change' ) );
 				}
-			} else {
-				console.error(
-					`form.woocommerce-shipping-calculator [name="calc_shipping_${ key }"]`
-				);
-				console.error( address[ key ] );
 			}
 		} );
 		document
@@ -59,11 +53,6 @@ export const updateShortcodeShippingUI = ( eventAddress ) => {
 				} else {
 					field.dispatchEvent( new Event( 'change' ) );
 				}
-			} else {
-				console.error(
-					`form.woocommerce-checkout [name="billing_${ key }"]`
-				);
-				console.error( address[ key ] );
 			}
 		} );
 	}
