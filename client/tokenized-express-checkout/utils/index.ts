@@ -27,7 +27,9 @@ export const getExpressCheckoutData = <
  * @param notice Error notice.
  * @return Error messages.
  */
-export const getErrorMessageFromNotice = ( notice: string ) => {
+export const getErrorMessageFromNotice = ( notice: string | undefined ) => {
+	if ( ! notice ) return '';
+
 	const div = document.createElement( 'div' );
 	div.innerHTML = notice.trim();
 	return div.firstChild ? div.firstChild.textContent : '';
