@@ -8,7 +8,12 @@ import { applyFilters } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { getErrorMessageFromNotice, getExpressCheckoutData } from './utils';
+import {
+	getErrorMessageFromNotice,
+	getExpressCheckoutData,
+	updateBlocksShippingUI,
+	updateShortcodeShippingUI,
+} from './utils';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
@@ -24,6 +29,7 @@ import {
 	transformPrice,
 } from './transformers/wc-to-stripe';
 
+let lastSelectedAddress = null;
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
@@ -56,6 +62,9 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 				cartData.totals
 			),
 		} );
+
+		lastSelectedAddress = event.address;
+
 		event.resolve( {
 			shippingRates: transformCartDataForShippingRates( cartData ),
 			lineItems: transformCartDataForDisplayItems( cartData ),
@@ -216,5 +225,18 @@ export const onCompletePaymentHandler = () => {
 };
 
 export const onCancelHandler = () => {
+	const context = getExpressCheckoutData( 'button_context' );
+	const isBlocks = getExpressCheckoutData( 'has_block' );
+
+	if ( ! [ 'cart', 'checkout' ].includes( context ) || ! lastSelectedAddress )
+		return;
+
+	if ( isBlocks ) {
+		updateBlocksShippingUI( lastSelectedAddress );
+	} else {
+		updateShortcodeShippingUI( lastSelectedAddress );
+	}
+
+	lastSelectedAddress = null;
 	unblockUI();
 };
