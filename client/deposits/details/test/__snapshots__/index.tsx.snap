@@ -92,17 +92,23 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
           <div
             class="woopayments-payout-details-header"
           >
-            <div>
-              BANK ACCOUNT
-            </div>
-            <div>
+            <h2>
+              Bank account
+            </h2>
+            <div
+              class="woopayments-payout-details-header__value"
+            >
               MOCK BANK •••• 1234 (USD)
             </div>
+            <h2>
+              Bank reference ID
+            </h2>
             <div>
-              BANK REFERENCE
-            </div>
-            <div>
-              Not available
+              <div
+                class="woopayments-payout-details-header__value"
+              >
+                Not available
+              </div>
             </div>
           </div>
         </div>
@@ -216,17 +222,23 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
           <div
             class="woopayments-payout-details-header"
           >
-            <div>
-              BANK ACCOUNT
-            </div>
-            <div>
+            <h2>
+              Bank account
+            </h2>
+            <div
+              class="woopayments-payout-details-header__value"
+            >
               MOCK BANK •••• 1234 (USD)
             </div>
+            <h2>
+              Bank reference ID
+            </h2>
             <div>
-              BANK REFERENCE
-            </div>
-            <div>
-              Not available
+              <div
+                class="woopayments-payout-details-header__value"
+              >
+                Not available
+              </div>
             </div>
           </div>
         </div>
@@ -394,17 +406,23 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
           <div
             class="woopayments-payout-details-header"
           >
-            <div>
-              BANK ACCOUNT
-            </div>
-            <div>
+            <h2>
+              Bank account
+            </h2>
+            <div
+              class="woopayments-payout-details-header__value"
+            >
               MOCK BANK •••• 1234 (USD)
             </div>
+            <h2>
+              Bank reference ID
+            </h2>
             <div>
-              BANK REFERENCE
-            </div>
-            <div>
-              Not available
+              <div
+                class="woopayments-payout-details-header__value"
+              >
+                Not available
+              </div>
             </div>
           </div>
         </div>
