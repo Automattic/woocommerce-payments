@@ -190,5 +190,6 @@ export const onCancelHandler = () => {
 		updateShortcodeShippingUI( lastSelectedAddress );
 	}
 
+	lastSelectedAddress = null;
 	unblockUI();
 };
