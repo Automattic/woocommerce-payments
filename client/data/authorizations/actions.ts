@@ -19,6 +19,51 @@ import {
 import { STORE_NAME } from '../constants';
 import { ApiError } from 'wcpay/types/errors';
 
+const getErrorMessage = ( apiError: {
+	code?: string;
+	message?: string;
+} ): string => {
+	// Map specific error codes to user-friendly messages
+	const errorMessages: Record< string, string > = {
+		wcpay_missing_order: __(
+			'The order could not be found.',
+			'woocommerce-payments'
+		),
+		wcpay_refunded_order_uncapturable: __(
+			'Payment cannot be processed for partially or fully refunded orders.',
+			'woocommerce-payments'
+		),
+		wcpay_intent_order_mismatch: __(
+			'The payment cannot be processed due to a mismatch with order details.',
+			'woocommerce-payments'
+		),
+		wcpay_payment_uncapturable: __(
+			'This payment cannot be processed in its current state.',
+			'woocommerce-payments'
+		),
+		wcpay_capture_error: __(
+			'The payment capture failed to complete.',
+			'woocommerce-payments'
+		),
+		wcpay_cancel_error: __(
+			'The payment cancellation failed to complete.',
+			'woocommerce-payments'
+		),
+		wcpay_server_error: __(
+			'An unexpected error occurred. Please try again later.',
+			'woocommerce-payments'
+		),
+	};
+
+	return (
+		errorMessages[ apiError.code ?? '' ] ??
+		__(
+			'Unable to process the payment. Please try again later.',
+			'woocommerce-payments'
+		)
+	);
+};
+
 export function updateAuthorizations(
 	query: Query,
 	data: Authorization[]
@@ -182,9 +227,7 @@ export function* submitCaptureAuthorization(
 			};
 		};
 
-		const errorDetails =
-			apiError.message ||
-			__( 'Please try again later.', 'woocommerce-payments' );
+		const errorDetails = getErrorMessage( apiError );
 
 		yield controls.dispatch(
 			'core/notices',
@@ -310,9 +353,7 @@ export function* submitCancelAuthorization(
 			};
 		};
 
-		const errorDetails =
-			apiError.message ||
-			__( 'Please try again later.', 'woocommerce-payments' );
+		const errorDetails = getErrorMessage( apiError );
 
 		yield controls.dispatch(
 			'core/notices',
