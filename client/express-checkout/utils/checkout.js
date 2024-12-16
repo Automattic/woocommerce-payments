@@ -18,12 +18,22 @@ const updateShortcodeField = ( formSelector, fieldName, value ) => {
 	}
 };
 
+/**
+ * Updates the WooCommerce Blocks shipping UI to reflect a new shipping address.
+ *
+ * @param {Object} eventAddress - The shipping address returned by the payment event.
+ */
 export const updateBlocksShippingUI = ( eventAddress ) => {
 	wp?.data
 		?.dispatch( 'wc/store/cart' )
 		?.setShippingAddress( normalizeShippingAddress( eventAddress ) );
 };
 
+/**
+ * Updates the WooCommerce shortcode cart/checkout shipping UI to reflect a new shipping address.
+ *
+ * @param {Object} eventAddress - The shipping address returned by the payment event.
+ */
 export const updateShortcodeShippingUI = ( eventAddress ) => {
 	const context = getExpressCheckoutData( 'button_context' );
 	const address = normalizeShippingAddress( eventAddress );
