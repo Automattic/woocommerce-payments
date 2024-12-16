@@ -8,6 +8,7 @@ import { useStripe, useElements } from '@stripe/react-stripe-js';
  * Internal dependencies
  */
 import {
+	displayLoginConfirmation,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	normalizeLineItems,
@@ -52,6 +53,12 @@ export const useExpressCheckout = ( {
 
 	const onButtonClick = useCallback(
 		( event ) => {
+			// If login is required for checkout, display redirect confirmation dialog.
+			if ( getExpressCheckoutData( 'login_confirmation' ) ) {
+				displayLoginConfirmation( event.expressPaymentType );
+				return;
+			}
+
 			const options = {
 				lineItems: normalizeLineItems( billing?.cartTotalItems ),
 				emailRequired: true,

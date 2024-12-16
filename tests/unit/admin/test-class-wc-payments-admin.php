@@ -203,6 +203,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_maybe_redirect_from_payments_admin_child_pages( $expected_times_redirect_called, $has_working_jetpack_connection, $is_stripe_account_valid, $get_params ) {
 		$this->mock_current_user_is_admin();
+		$this->payments_admin->add_payments_menu();
+
 		$_GET = $get_params;
 
 		$this->mock_account

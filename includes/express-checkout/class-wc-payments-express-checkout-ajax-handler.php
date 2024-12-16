@@ -333,6 +333,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			$data['needs_shipping'] = wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping();
 			$data['currency']       = strtolower( get_woocommerce_currency() );
 			$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+			$data['has_free_trial'] = class_exists( 'WC_Subscriptions_Product' ) ? WC_Subscriptions_Product::get_trial_length( $product ) > 0 : false;
 
 			wp_send_json( $data );
 		} catch ( Exception $e ) {
