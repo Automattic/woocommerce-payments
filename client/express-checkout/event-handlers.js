@@ -181,13 +181,16 @@ export const onCancelHandler = () => {
 	const context = getExpressCheckoutData( 'button_context' );
 	const isBlocks = getExpressCheckoutData( 'has_block' );
 
-	if ( ! [ 'cart', 'checkout' ].includes( context ) || ! lastSelectedAddress )
-		return;
-
-	if ( isBlocks ) {
-		updateBlocksShippingUI( lastSelectedAddress );
-	} else {
-		updateShortcodeShippingUI( lastSelectedAddress );
+	if (
+		[ 'cart', 'checkout' ].includes( context ) &&
+		lastSelectedAddress &&
+		! [ 'CA', 'GB' ].includes( lastSelectedAddress.country )
+	) {
+		if ( isBlocks ) {
+			updateBlocksShippingUI( lastSelectedAddress );
+		} else {
+			updateShortcodeShippingUI( lastSelectedAddress );
+		}
 	}
 
 	lastSelectedAddress = null;
