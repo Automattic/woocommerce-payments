@@ -340,6 +340,10 @@
 		&[data-theme='light-outline'] {
 			background: #f0f0f0;
 		}
+
+		& > div {
+			margin: 4px;
+		}
 	}
 
 	&__border-radius {
