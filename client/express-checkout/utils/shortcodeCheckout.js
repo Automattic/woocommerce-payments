@@ -8,6 +8,17 @@
  */
 import { normalizeShippingAddress, getExpressCheckoutData } from './';
 
+const updateShortcodeField = ( formSelector, fieldName, value ) => {
+	const field = document.querySelector(
+		`${ formSelector } [name="${ fieldName }"]`
+	);
+	if ( ! field ) {
+		return;
+	}
+	field.value = value;
+	jQuery( field ).trigger( 'change' ).trigger( 'close' );
+};
+
 export const updateBlocksShippingUI = ( eventAddress ) => {
 	wp?.data
 		?.dispatch( 'wc/store/cart' )
@@ -22,16 +33,12 @@ export const updateShortcodeShippingUI = ( eventAddress ) => {
 
 	if ( context === 'cart' ) {
 		keys.forEach( ( key ) => {
-			const field = document.querySelector(
-				`form.woocommerce-shipping-calculator [name="calc_shipping_${ key }"]`
-			);
-			if ( address[ key ] && field ) {
-				field.value = address[ key ];
-				if ( [ 'country', 'state' ].includes( key ) ) {
-					jQuery( field ).trigger( 'change' ).trigger( 'close' );
-				} else {
-					field.dispatchEvent( new Event( 'change' ) );
-				}
+			if ( address[ key ] ) {
+				updateShortcodeField(
+					'form.woocommerce-shipping-calculator',
+					`calc_shipping_${ key }`,
+					address[ key ]
+				);
 			}
 		} );
 		document
@@ -41,17 +48,12 @@ export const updateShortcodeShippingUI = ( eventAddress ) => {
 			?.click();
 	} else if ( context === 'checkout' ) {
 		keys.forEach( ( key ) => {
-			const field = document.querySelector(
-				`form.woocommerce-checkout [name="billing_${ key }"]`
-			);
-			if ( address[ key ] && field ) {
-				field.value = address[ key ];
-
-				if ( [ 'country', 'state' ].includes( key ) ) {
-					jQuery( field ).trigger( 'change' ).trigger( 'close' );
-				} else {
-					field.dispatchEvent( new Event( 'change' ) );
-				}
+			if ( address[ key ] ) {
+				updateShortcodeField(
+					'form.woocommerce-checkout',
+					`billing_${ key }`,
+					address[ key ]
+				);
 			}
 		} );
 	}
