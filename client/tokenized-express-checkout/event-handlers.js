@@ -234,18 +234,15 @@ export const onCancelHandler = () => {
 	 * https://developers.google.com/pay/api/web/reference/response-objects#IntermediateAddress
 	 */
 	if (
-		! [ 'cart', 'checkout' ].includes( context ) ||
-		! lastSelectedAddress ||
-		[ 'CA', 'GB' ].includes( lastSelectedAddress.country )
+		[ 'cart', 'checkout' ].includes( context ) &&
+		lastSelectedAddress &&
+		! [ 'CA', 'GB' ].includes( lastSelectedAddress.country )
 	) {
-		unblockUI();
-		return;
-	}
-
-	if ( isBlocks ) {
-		updateBlocksShippingUI( lastSelectedAddress );
-	} else {
-		updateShortcodeShippingUI( lastSelectedAddress );
+		if ( isBlocks ) {
+			updateBlocksShippingUI( lastSelectedAddress );
+		} else {
+			updateShortcodeShippingUI( lastSelectedAddress );
+		}
 	}
 
 	lastSelectedAddress = null;
