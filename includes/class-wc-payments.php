@@ -1622,10 +1622,6 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function maybe_init_woopay_direct_checkout() {
-		if ( ! self::$woopay_util->should_enable_woopay_on_cart_or_checkout() ) {
-			return;
-		}
-
 		if ( ! WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
 			return;
 		}

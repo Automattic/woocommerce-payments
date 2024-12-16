@@ -6,6 +6,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\WooPay\WooPay_Utilities;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -68,6 +70,12 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 */
 	public function scripts() {
 		if ( ! $this->should_enqueue_scripts() ) {
+			return;
+		}
+
+		$woopay_util = new WooPay_Utilities();
+
+		if ( ! $woopay_util->should_enable_woopay_on_cart_or_checkout() ) {
 			return;
 		}
 
