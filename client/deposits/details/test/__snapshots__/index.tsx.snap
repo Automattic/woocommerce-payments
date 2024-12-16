@@ -41,15 +41,6 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
                   </div>
                 </div>
               </div>
-              <div
-                class="wcpay-summary__item-detail"
-              >
-                MOCK BANK •••• 1234 (USD)
-                <br />
-                Bank reference ID:
-                 
-                N/A
-              </div>
             </div>
           </li>
           <li
@@ -58,6 +49,71 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
             $20.00
           </li>
         </ul>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <span
+            class="components-truncate components-text css-1sg6qaf-View-Text-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Text"
+          >
+            Payout details
+          </span>
+        </div>
+        <div
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div
+            class="woopayments-payout-details-header"
+          >
+            <div>
+              BANK ACCOUNT
+            </div>
+            <div>
+              MOCK BANK •••• 1234 (USD)
+            </div>
+            <div>
+              BANK REFERENCE
+            </div>
+            <div>
+              Not available
+              <button
+                aria-label="Copy bank reference ID to clipboard"
+                class="woopayments-copy-button"
+                title="Copy to clipboard"
+                type="button"
+              >
+                <i />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div
         aria-hidden="true"
@@ -117,15 +173,6 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
                   </div>
                 </div>
               </div>
-              <div
-                class="wcpay-summary__item-detail"
-              >
-                MOCK BANK •••• 1234 (USD)
-                <br />
-                Bank reference ID:
-                 
-                N/A
-              </div>
             </div>
           </li>
           <li
@@ -134,6 +181,71 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
             -$20.00
           </li>
         </ul>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <span
+            class="components-truncate components-text css-1sg6qaf-View-Text-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Text"
+          >
+            Withdrawal details
+          </span>
+        </div>
+        <div
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div
+            class="woopayments-payout-details-header"
+          >
+            <div>
+              BANK ACCOUNT
+            </div>
+            <div>
+              MOCK BANK •••• 1234 (USD)
+            </div>
+            <div>
+              BANK REFERENCE
+            </div>
+            <div>
+              Not available
+              <button
+                aria-label="Copy bank reference ID to clipboard"
+                class="woopayments-copy-button"
+                title="Copy to clipboard"
+                type="button"
+              >
+                <i />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <div
         aria-hidden="true"
@@ -198,15 +310,6 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
                   Completed (paid)
                 </div>
               </div>
-            </div>
-            <div
-              class="wcpay-summary__item-detail"
-            >
-              MOCK BANK •••• 1234 (USD)
-              <br />
-              Bank reference ID:
-               
-              N/A
             </div>
           </div>
         </li>
@@ -277,6 +380,71 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
           </div>
         </li>
       </ul>
+    </div>
+    <div
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="css-mgwsf4-View-Content em57xhy0"
+      >
+        <div
+          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <span
+            class="components-truncate components-text css-1sg6qaf-View-Text-sx-Base em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Text"
+          >
+            Payout details
+          </span>
+        </div>
+        <div
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div
+            class="woopayments-payout-details-header"
+          >
+            <div>
+              BANK ACCOUNT
+            </div>
+            <div>
+              MOCK BANK •••• 1234 (USD)
+            </div>
+            <div>
+              BANK REFERENCE
+            </div>
+            <div>
+              Not available
+              <button
+                aria-label="Copy bank reference ID to clipboard"
+                class="woopayments-copy-button"
+                title="Copy to clipboard"
+                type="button"
+              >
+                <i />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
     </div>
   </div>
 </div>

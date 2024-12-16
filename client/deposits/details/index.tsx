@@ -128,29 +128,6 @@ const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 				)
 			}
 			value={ <DepositStatusIndicator deposit={ deposit } /> }
-			detail={
-				<>
-					{ deposit.bankAccount }
-					<br />
-					Bank reference ID:{ ' ' }
-					{ deposit.bank_reference_key ? (
-						<>
-							<span className="woopayments-payout-bank-reference-id">
-								{ deposit.bank_reference_key }
-							</span>
-							<CopyButton
-								textToCopy={ deposit.bank_reference_key }
-								label={ __(
-									'Copy bank reference ID to clipboard',
-									'woocommerce-payments'
-								) }
-							/>
-						</>
-					) : (
-						'N/A'
-					) }
-				</>
-			}
 		/>
 	);
 };
@@ -271,6 +248,13 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 						<div>BANK REFERENCE</div>
 						<div>
 							{ deposit.bank_reference_key ?? 'Not available' }
+							<CopyButton
+								textToCopy={ deposit.bank_reference_key ?? '' }
+								label={ __(
+									'Copy bank reference ID to clipboard',
+									'woocommerce-payments'
+								) }
+							/>
 						</div>
 					</div>
 				</CardBody>
