@@ -9,9 +9,9 @@
 import { normalizeShippingAddress, getExpressCheckoutData } from './';
 
 export const updateBlocksShippingUI = ( eventAddress ) => {
-	const address = normalizeShippingAddress( eventAddress );
-
-	wp.data.dispatch( 'wc/store/cart' ).setShippingAddress( address );
+	wp?.data
+		?.dispatch( 'wc/store/cart' )
+		?.setShippingAddress( normalizeShippingAddress( eventAddress ) );
 };
 
 export const updateShortcodeShippingUI = ( eventAddress ) => {
@@ -40,7 +40,6 @@ export const updateShortcodeShippingUI = ( eventAddress ) => {
 			)
 			?.click();
 	} else if ( context === 'checkout' ) {
-		// TODO: because of select2, we will need to just update the fields when the operation is cancelled...
 		keys.forEach( ( key ) => {
 			const field = document.querySelector(
 				`form.woocommerce-checkout [name="billing_${ key }"]`
