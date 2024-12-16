@@ -94,6 +94,46 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.7.0-test-2 - unreleased =
+* Add - Clickwrap terms and conditions support on WooPay
+* Add - Implement gateway method to retrieve recommended payment method.
+* Add - Migrate active capabilities from test-drive account when switching to live account.
+* Fix - Added conditional use of Jetpack Config callback to avoid i18n notices.
+* Fix - Browser error no longer shows after dispute evidence submission
+* Fix - Ceil product prices after applying currency conversion, but before charm pricing and price rounding from settings is applied.
+* Fix - Consider WooPay eligibility when retrieving WooPay enable state in the settings.
+* Fix - Enable ECE for Virtual Variable Subscriptions with Free Trials.
+* Fix - Ensure ECE login confirmation dialog is shown on Blocks.
+* Fix - Ensure WooPay 'enabled by default' value is correctly set in sandbox mode.
+* Fix - Errors were incorrectly marked as info in logs.
+* Fix - fix: undefined $cart_contains_subscription
+* Fix - Fixed Affirm using black logo on dark themes
+* Fix - Fixed an issue where order metadata was not updated when capturing an order in the processing state.
+* Fix - Fixed UPE country detection in Checkout for non-logged in users
+* Fix - Fix inconsistent alignment of the download button across transactions, payouts, and disputes reporting views for a more cohesive user interface.
+* Fix - Fix Jetpack onboarding URL query from "woocommerce-payments" to "woocommerce-core-profiler"
+* Fix - Fix styling of transaction details page in mobile view.
+* Fix - Normalize HK addresses for ECE
+* Fix - Order notes for inquiries have clearer content.
+* Fix - Remove translations during initialization, preventing unnecessary warnings.
+* Fix - Restrict Stripe Link to credit card payment method and improve cleanup.
+* Fix - Skip mysqlcheck SSL Requirement during E2E environment setup
+* Fix - Support 'type_is_in' filter for Transactions list report, to allow easy filtering by multiple types.
+* Update - Add support for showing `In-Person (POS)` as the transaction channel for mobile POS transactions in wp-admin Payments, enhancing visibility in both transaction lists and details.
+* Update - Adjust the go-live modal to match the latest design.
+* Update - Change 'Bank reference key' label to 'Bank reference ID' in Payouts list column for consistency.
+* Update - chore: renamed PRB references in GooglePay/ApplePay implementation docs and logs files to ECE.
+* Update - Ensure more robust selectors scoping to improve theme compatibility.
+* Update - Make test instructions copy icon use the same color as the text next to it
+* Update - Remove payout timing notice and update the help tooltil on Payments Overview page.
+* Update - Update confirmation modal after onbarding
+* Update - Update Jetpack onboarding flow
+* Update - WooPay theming copy in the settings page
+* Dev - Add support for utilizing NOX capabilities as URL parameters during account creation.
+* Dev - Fixing issue with parsing QIT authentication.Fixing issue with parsing QIT authentication.
+* Dev - Refine verification for disabling ECE on subscriptions that require shipping.
+* Dev - Update the tunelling setup.
+
 = 8.6.0 - 2024-12-04 =
 * Add - Add Bank reference key column in Payout reports. This will help reconcile WooPayments Payouts with bank statements.
 * Add - Display credit card brand icons on order received page.
