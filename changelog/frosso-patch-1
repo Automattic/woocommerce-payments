@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: undefined $cart_contains_subscription
