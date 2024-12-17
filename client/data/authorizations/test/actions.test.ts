@@ -238,6 +238,32 @@ describe( 'Authorizations actions', () => {
 					)
 				);
 			} );
+
+			it( 'should show default error notice for unknown error code', () => {
+				const generator = submitCaptureAuthorization(
+					'pi_unknown',
+					999
+				);
+
+				// Start the generator to the point where it would throw an error
+				generator.next();
+				generator.next();
+
+				// Mock an API error with an unknown error code
+				const apiError = {
+					code: 'unknown_error_code',
+					data: { status: 500 },
+				};
+
+				// Expect the default error message to be dispatched
+				expect( generator.throw( apiError ).value ).toEqual(
+					controls.dispatch(
+						'core/notices',
+						'createErrorNotice',
+						'There has been an error capturing the payment for order #999. Unable to process the payment. Please try again later.'
+					)
+				);
+			} );
 		} );
 	} );
 
