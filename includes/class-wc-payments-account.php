@@ -1497,7 +1497,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// If there is a working one, we can proceed with the Stripe account handling.
 			try {
 				$this->maybe_init_jetpack_connection(
-				// Carry over all the important GET params, so we have them after the Jetpack connection setup.
+					// Carry over all the important GET params, so we have them after the Jetpack connection setup.
 					add_query_arg(
 						[
 							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
@@ -1506,6 +1506,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 							'test_mode'                   => $should_onboard_in_test_mode ? 'true' : false,
 							'test_drive'                  => $create_test_drive_account ? 'true' : false,
 							'auto_start_test_drive_onboarding' => $auto_start_test_drive_onboarding ? 'true' : false,
+							// These are starting capabilities for the account.
+							// They are collected by the payment method step of the
+							// WC Payments settings page native onboarding experience.
+							'capabilities'                => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
 							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							'source'                      => $onboarding_source,
 							'redirect_to_settings_page'   => $redirect_to_settings_page ? 'true' : false,
@@ -1534,13 +1538,19 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				&& WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD !== $from
 				&& ! $this->is_stripe_connected() ) {
 
+				$additional_params = [
+					'source' => $onboarding_source,
+				];
+
+				if ( $this->onboarding_service->get_capabilities_from_request() ) {
+					$additional_params['capabilities'] = rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) );
+				}
+
 				$this->redirect_service->redirect_to_onboarding_wizard(
 					// When we redirect to the onboarding wizard, we carry over the `from`, if we have it.
 					// This is because there is no interim step between the user clicking the connect link and the onboarding wizard.
 					! empty( $from ) ? $from : $next_step_from,
-					[
-						'source' => $onboarding_source,
-					]
+					$additional_params
 				);
 				return;
 			}
@@ -1573,11 +1583,15 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 							null,
 							$from, // Carry over `from` since we are doing a short-circuit.
 							[
-								'promo'      => ! empty( $incentive_id ) ? $incentive_id : false,
-								'test_drive' => 'true',
+								'promo'        => ! empty( $incentive_id ) ? $incentive_id : false,
+								'test_drive'   => 'true',
 								'auto_start_test_drive_onboarding' => 'true', // This is critical.
-								'test_mode'  => $should_onboard_in_test_mode ? 'true' : false,
-								'source'     => $onboarding_source,
+								// These are starting capabilities for the account.
+								// They are collected by the payment method step of the
+								// WC Payments settings page native onboarding experience.
+								'capabilities' => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
+								'test_mode'    => $should_onboard_in_test_mode ? 'true' : false,
+								'source'       => $onboarding_source,
 								'redirect_to_settings_page' => $redirect_to_settings_page ? 'true' : false,
 							]
 						);
@@ -1982,6 +1996,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
+
 		if ( 'test_drive' === $setup_mode ) {
 			// If we get to the overview page, we want to show the success message.
 			$return_url = add_query_arg( 'wcpay-sandbox-success', 'true', $return_url );
@@ -1996,7 +2011,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		];
 
 		$user_data    = $this->onboarding_service->get_onboarding_user_data();
-		$account_data = $this->onboarding_service->get_account_data( $setup_mode, $self_assessment_data );
+		$account_data = $this->onboarding_service->get_account_data(
+			$setup_mode,
+			$self_assessment_data,
+			// These are starting capabilities for the account.
+			// They are collected by the payment method step of the
+			// WC Payments settings page native onboarding experience.
+			$this->onboarding_service->get_capabilities_from_request()
+		);
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			'live' === $setup_mode,
@@ -2594,7 +2616,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Extract the test drive settings from the account data that we want to store for the live account.
+	 * Extract the useful test drive settings from the account data.
+	 *
+	 * We will use this data to migrate the test drive settings when onboarding the live account.
 	 * ATM we only store the enabled payment methods.
 	 *
 	 * @return array The test drive settings for the live account.

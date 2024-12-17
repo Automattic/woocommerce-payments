@@ -65,9 +65,11 @@ export const createAccountSession = async (
 	data: OnboardingFields,
 	isPoEligible: boolean
 ): Promise< AccountKycSession > => {
+	const urlParams = new URLSearchParams( window.location.search );
 	return await apiFetch< AccountKycSession >( {
 		path: addQueryArgs( `${ NAMESPACE }/onboarding/kyc/session`, {
 			self_assessment: fromDotNotation( data ),
+			capabilities: urlParams.get( 'capabilities' ) || '',
 			progressive: isPoEligible,
 		} ),
 		method: 'GET',

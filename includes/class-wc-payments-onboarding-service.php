@@ -181,6 +181,69 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Get the onboarding capabilities from the request.
+	 *
+	 * The capabilities are expected to be passed as an array of capabilities keyed by the capability ID and
+	 * with boolean values. If the value is true, the capability is requested when the account is created.
+	 *
+	 * @return array The standardized capabilities that were passed in the request.
+	 *               Empty array if no capabilities were passed or none were valid.
+	 */
+	public function get_capabilities_from_request(): array {
+		$capabilities = [];
+
+		if ( empty( $_REQUEST['capabilities'] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return $capabilities;
+		}
+
+		// Try to extract the capabilities.
+		// They might be already decoded or not, so we need to handle both cases.
+		// We expect them to be an array.
+		// We disable the warning because we have our own sanitization and validation.
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$capabilities = wp_unslash( $_REQUEST['capabilities'] );
+		if ( ! is_array( $capabilities ) ) {
+			$capabilities = json_decode( $capabilities, true ) ?? [];
+		}
+
+		if ( empty( $capabilities ) ) {
+			return [];
+		}
+
+		// Sanitize and validate.
+		$capabilities = array_combine(
+			array_map(
+				function ( $key ) {
+					// Keep numeric keys as integers so we can remove them later.
+					if ( is_numeric( $key ) ) {
+						return intval( $key );
+					}
+
+					return sanitize_text_field( $key );
+				},
+				array_keys( $capabilities )
+			),
+			array_map(
+				function ( $value ) {
+					return filter_var( $value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+				},
+				$capabilities
+			)
+		);
+
+		// Filter out any invalid entries.
+		$capabilities = array_filter(
+			$capabilities,
+			function ( $value, $key ) {
+				return is_string( $key ) && is_bool( $value );
+			},
+			ARRAY_FILTER_USE_BOTH
+		);
+
+		return $capabilities;
+	}
+
+	/**
 	 * Retrieve the embedded KYC session and handle initial account creation (if necessary).
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
@@ -207,15 +270,19 @@ class WC_Payments_Onboarding_Service {
 			'site_locale'   => get_locale(),
 		];
 		$user_data      = $this->get_onboarding_user_data();
-		$account_data   = $this->get_account_data( $setup_mode, $self_assessment_data );
+		$account_data   = $this->get_account_data(
+			$setup_mode,
+			$self_assessment_data,
+			$this->get_capabilities_from_request()
+		);
 		$actioned_notes = self::get_actioned_notes();
 
 		try {
 			$account_session = $this->payments_api_client->initialize_onboarding_embedded_kyc(
 				'live' === $setup_mode,
 				$site_data,
-				array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-				array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
 				$progressive
 			);
@@ -365,12 +432,15 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Get account data for onboarding from self assessment data.
 	 *
-	 * @param string $setup_mode Setup mode.
+	 * @param string $setup_mode           Setup mode.
 	 * @param array  $self_assessment_data Self assessment data.
+	 * @param array  $capabilities         Optional. List keyed by capabilities IDs (payment methods) with boolean values.
+	 *                                     If the value is true, the capability is requested when the account is created.
+	 *                                     If the value is false, the capability is not requested when the account is created.
 	 *
 	 * @return array Account data.
 	 */
-	public function get_account_data( string $setup_mode, array $self_assessment_data ): array {
+	public function get_account_data( string $setup_mode, array $self_assessment_data, array $capabilities = [] ): array {
 		$home_url = get_home_url();
 		// If the site is running on localhost, use a bogus URL. This is to avoid Stripe's errors.
 		// wp_http_validate_url does not check that, unfortunately.
@@ -386,6 +456,33 @@ class WC_Payments_Onboarding_Service {
 			'url'           => ! $home_is_localhost && wp_http_validate_url( $home_url ) ? $home_url : $fallback_url,
 			'business_name' => get_bloginfo( 'name' ),
 		];
+
+		foreach ( $capabilities as $capability => $should_request ) {
+			// Remove the `_payments` suffix from the capability, if present.
+			if ( strpos( $capability, '_payments' ) === strlen( $capability ) - 9 ) {
+				$capability = str_replace( '_payments', '', $capability );
+			}
+
+			// Skip the special 'apple_google' because it is not a payment method.
+			// Skip the 'woopay' because it is automatically handled by the API.
+			if ( 'apple_google' === $capability || 'woopay' === $capability ) {
+				continue;
+			}
+
+			if ( 'card' === $capability ) {
+				// Card is always requested.
+				$account_data['capabilities']['card_payments'] = [ 'requested' => 'true' ];
+				// When requesting card, we also need to request transfers.
+				// The platform should handle this automatically, but it is best to be thorough.
+				$account_data['capabilities']['transfers'] = [ 'requested' => 'true' ];
+				continue;
+			}
+
+			// We only request, not unrequest capabilities.
+			if ( $should_request ) {
+				$account_data['capabilities'][ $capability . '_payments' ] = [ 'requested' => 'true' ];
+			}
+		}
 
 		if ( ! empty( $self_assessment_data ) ) {
 			$business_type = $self_assessment_data['business_type'] ?? null;
@@ -436,6 +533,7 @@ class WC_Payments_Onboarding_Service {
 				]
 			);
 		}
+
 		return $account_data;
 	}
 

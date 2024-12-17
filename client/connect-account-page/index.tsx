@@ -215,6 +215,7 @@ const ConnectAccountPage: React.FC = () => {
 
 		const customizedConnectUrl = addQueryArgs( connectUrl, {
 			test_drive: 'true',
+			capabilities: urlParams.get( 'capabilities' ) || '',
 		} );
 
 		const updateProgress = setInterval( updateLoaderProgress, 2500, 40, 5 );

@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix payment method filtering when billing country changes in Blocks checkout.
