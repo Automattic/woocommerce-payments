@@ -36,7 +36,9 @@ const updateShortcodeField = ( formSelector, fieldName, value ) => {
 	if ( field.tagName === 'SELECT' && /country|state/.test( fieldName ) ) {
 		const options = Array.from( field.options );
 		const match = options.find(
-			( opt ) => opt.value === value || opt.textContent.trim() === value
+			( opt ) =>
+				opt.value === value ||
+				opt.textContent.trim().toLowerCase() === value.toLowerCase()
 		);
 
 		if ( match ) {
