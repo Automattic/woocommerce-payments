@@ -444,71 +444,11 @@ export const DisputesList = (): JSX.Element => {
 
 	const onDownload = async () => {
 		setIsDownloading( true );
-		const title = __( 'Disputes', 'woocommerce-payments' );
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
-		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
+		if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
+			setCSVExportModalOpen( true );
 		} else {
-			const csvColumns = [
-				{
-					...headers[ 0 ],
-					label: __( 'Dispute Id', 'woocommerce-payments' ),
-				},
-				...headers.slice( 1, -1 ), // Remove details (position 0)  and action (last position) column headers.
-			];
-
-			const csvRows = rows.map( ( row ) => {
-				return [
-					...row.slice( 0, 3 ), // Amount, Currency, Status.
-					{
-						// Reason.
-						...row[ 3 ],
-						value:
-							disputeStatusMapping[ row[ 3 ].value ?? '' ]
-								.message,
-					},
-					{
-						// Source.
-						...row[ 4 ],
-						value: formatStringValue(
-							( row[ 4 ].value ?? '' ).toString()
-						),
-					},
-					...row.slice( 5, 10 ), // Order #, Customer, Email, Country.
-					{
-						// Disputed On.
-						...row[ 10 ],
-						value: dateI18n(
-							'Y-m-d',
-							moment( row[ 10 ].value ).toISOString()
-						),
-					},
-					{
-						// Respond by.
-						...row[ 11 ],
-						value: dateI18n(
-							'Y-m-d / g:iA',
-							moment( row[ 11 ].value ).toISOString()
-						),
-					},
-				];
-			} );
-
-			downloadCSVFile(
-				generateCSVFileName( title, getQuery() ),
-				generateCSVDataFromTable( csvColumns, csvRows )
-			);
-
-			recordEvent( 'wcpay_disputes_download', {
-				exported_disputes: csvRows.length,
-				total_disputes: disputesSummary.count,
-				download_type: 'browser',
-			} );
+			endpointExport( '' );
 		}
 
 		setIsDownloading( false );

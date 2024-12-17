@@ -711,35 +711,10 @@ export const TransactionsList = (
 	const onDownload = async () => {
 		setIsDownloading( true );
 
-		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { page, path, ...params } = getQuery();
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
-
-		recordEvent( 'wcpay_transactions_download_csv_click', {
-			location: props.depositId ? 'deposit_details' : 'transactions',
-			download_type: downloadType,
-			exported_transactions: rows.length,
-			total_transactions: transactionsSummary.count,
-		} );
-
-		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
+		if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
+			setCSVExportModalOpen( true );
 		} else {
-			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
-				if ( column.labelInCsv ) {
-					return { ...column, label: column.labelInCsv };
-				}
-				return column;
-			} );
-			downloadCSVFile(
-				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( columnsToDisplayInCsv, rows )
-			);
+			endpointExport( '' );
 		}
 
 		setIsDownloading( false );

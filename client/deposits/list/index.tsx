@@ -312,48 +312,11 @@ export const DepositsList = (): JSX.Element => {
 
 	const onDownload = async () => {
 		setIsDownloading( true );
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
-		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
+		if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
+			setCSVExportModalOpen( true );
 		} else {
-			const params = getQuery();
-
-			const csvColumns = [
-				{
-					...columns[ 0 ],
-					label: __( 'Payout Id', 'woocommerce-payments' ),
-				},
-				...columns.slice( 1 ),
-			];
-
-			const csvRows = rows.map( ( row ) => [
-				row[ 0 ],
-				{
-					...row[ 1 ],
-					value: dateI18n(
-						'Y-m-d',
-						moment.utc( row[ 1 ].value ).toISOString(),
-						true
-					),
-				},
-				...row.slice( 2 ),
-			] );
-
-			downloadCSVFile(
-				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( csvColumns, csvRows )
-			);
-
-			recordEvent( 'wcpay_deposits_download', {
-				exported_deposits: rows.length,
-				total_deposits: depositsSummary.count,
-				download_type: 'browser',
-			} );
+			endpointExport( '' );
 		}
 
 		setIsDownloading( false );
