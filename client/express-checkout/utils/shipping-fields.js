@@ -33,9 +33,24 @@ const updateShortcodeField = ( formSelector, fieldName, value ) => {
 	const field = document.querySelector(
 		`${ formSelector } [name="${ fieldName }"]`
 	);
-	if ( field ) {
+
+	if ( ! field ) return;
+
+	// Check if the field is a dropdown (country/state).
+	if ( field.tagName === 'SELECT' && /country|state/.test( fieldName ) ) {
+		const options = Array.from( field.options );
+		const match = options.find(
+			( opt ) => opt.value === value || opt.textContent.trim() === value
+		);
+
+		if ( match ) {
+			field.value = match.value;
+			jQuery( field ).trigger( 'change' ).trigger( 'close' );
+		}
+	} else {
+		// Default behavior for text inputs.
 		field.value = value;
-		jQuery( field ).trigger( 'change' ).trigger( 'close' );
+		jQuery( field ).trigger( 'change' );
 	}
 };
 
