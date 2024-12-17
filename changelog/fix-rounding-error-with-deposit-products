@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Ceil product prices after applying currency conversion, but before charm pricing and price rounding from settings is applied.
