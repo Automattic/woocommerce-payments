@@ -12,6 +12,7 @@ import {
 	isUsingSavedPaymentMethod,
 	dispatchChangeEventFor,
 	togglePaymentMethodForCountry,
+	isBillingInformationMissing,
 } from '../upe';
 
 import { getPaymentMethodsConstants } from '../../constants';
@@ -22,11 +23,134 @@ jest.mock( 'wcpay/utils/checkout' );
 
 jest.mock( '../../constants', () => {
 	return {
+		...jest.requireActual( '../../constants' ),
 		getPaymentMethodsConstants: jest.fn(),
 	};
 } );
 
+function buildForm( fields ) {
+	const form = document.createElement( 'form' );
+	fields.forEach( ( field ) => {
+		const input = document.createElement( 'input' );
+		input.id = field.id;
+		input.value = field.value;
+		form.appendChild( input );
+	} );
+	return form;
+}
+
 describe( 'UPE checkout utils', () => {
+	describe( 'isBillingInformationMissing', () => {
+		beforeAll( () => {
+			window.wc_address_i18n_params = {
+				locale: {
+					US: {},
+					HK: {
+						postcode: { required: false },
+					},
+					default: {
+						address_1: { required: true },
+						postcode: { required: true },
+					},
+				},
+			};
+		} );
+
+		beforeEach( () => {
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'enabledBillingFields' ) {
+					return {
+						billing_first_name: {
+							required: true,
+						},
+						billing_last_name: {
+							required: true,
+						},
+						billing_company: {
+							required: false,
+						},
+						billing_country: {
+							required: true,
+						},
+						billing_address_1: {
+							required: true,
+						},
+						billing_address_2: {
+							required: false,
+						},
+						billing_city: {
+							required: true,
+						},
+						billing_state: {
+							required: true,
+						},
+						billing_postcode: {
+							required: true,
+						},
+						billing_phone: {
+							required: true,
+						},
+						billing_email: {
+							required: true,
+						},
+					};
+				}
+			} );
+		} );
+
+		it( 'should return false when the billing information is not missing', () => {
+			const form = buildForm( [
+				{ id: 'billing_first_name', value: 'Test' },
+				{ id: 'billing_last_name', value: 'User' },
+				{ id: 'billing_email', value: 'test@example.com' },
+				{ id: 'billing_country', value: 'US' },
+				{ id: 'billing_address_1', value: '123 Main St' },
+				{ id: 'billing_city', value: 'Anytown' },
+				{ id: 'billing_postcode', value: '12345' },
+			] );
+			expect( isBillingInformationMissing( form ) ).toBe( false );
+		} );
+
+		it( 'should return true when the billing information is missing', () => {
+			const form = buildForm( [
+				{ id: 'billing_first_name', value: 'Test' },
+				{ id: 'billing_last_name', value: 'User' },
+				{ id: 'billing_email', value: 'test@example.com' },
+				{ id: 'billing_country', value: 'US' },
+				{ id: 'billing_address_1', value: '123 Main St' },
+				{ id: 'billing_city', value: 'Anytown' },
+				{ id: 'billing_postcode', value: '' },
+			] );
+			expect( isBillingInformationMissing( form ) ).toBe( true );
+		} );
+
+		it( 'should use the defaults when there is no specific locale data for a country', () => {
+			const form = buildForm( [
+				{ id: 'billing_first_name', value: 'Test' },
+				{ id: 'billing_last_name', value: 'User' },
+				{ id: 'billing_email', value: 'test@example.com' },
+				{ id: 'billing_country', value: 'MX' },
+				{ id: 'billing_address_1', value: '123 Main St' },
+				{ id: 'billing_city', value: 'Anytown' },
+				{ id: 'billing_postcode', value: '' },
+			] );
+			expect( isBillingInformationMissing( form ) ).toBe( true );
+		} );
+
+		it( 'should return false when the locale data for a country has no required fields', () => {
+			const form = buildForm( [
+				{ id: 'billing_first_name', value: 'Test' },
+				{ id: 'billing_last_name', value: 'User' },
+				{ id: 'billing_email', value: 'test@example.com' },
+				{ id: 'billing_country', value: 'HK' },
+				{ id: 'billing_address_1', value: '123 Main St' },
+				{ id: 'billing_city', value: 'Anytown' },
+				{ id: 'billing_postcode', value: '' },
+			] );
+			expect( isBillingInformationMissing( form ) ).toBe( true );
+		} );
+	} );
+
 	describe( 'getSelectedUPEGatewayPaymentMethod', () => {
 		let container;
 
@@ -54,7 +178,7 @@ describe( 'UPE checkout utils', () => {
 		} );
 
 		test( 'Selected UPE Payment Method is card', () => {
-			container.innerHTML = `<input 
+			container.innerHTML = `<input
 				id="payment_method_woocommerce_payments"
 				value="woocommerce_payments"
 				name="payment_method"
@@ -67,12 +191,12 @@ describe( 'UPE checkout utils', () => {
 
 		test( 'Selected UPE Payment Method is bancontact', () => {
 			container.innerHTML = `
-				<input 
-					id="payment_method_woocommerce_payments_bancontact" 
-					value="woocommerce_payments_bancontact" 
-					name="payment_method" 
-					type="radio" 
-					class="input-radio" 
+				<input
+					id="payment_method_woocommerce_payments_bancontact"
+					value="woocommerce_payments_bancontact"
+					name="payment_method"
+					type="radio"
+					class="input-radio"
 					checked
 				></input>
 			`;
