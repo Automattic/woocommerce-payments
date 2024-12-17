@@ -8,7 +8,6 @@
 namespace WCPay\MultiCurrency\Compatibility;
 
 use WCPay\MultiCurrency\MultiCurrency;
-use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce FedEx Plugin.
@@ -41,7 +40,6 @@ class WooCommerceFedEx extends BaseCompatibility {
 		}
 
 		$calls = [
-			'WC_Shipping_Fedex->set_settings',
 			'WC_Shipping_Fedex->per_item_shipping',
 			'WC_Shipping_Fedex->box_shipping',
 			'WC_Shipping_Fedex->get_fedex_api_request',
