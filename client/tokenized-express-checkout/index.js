@@ -326,6 +326,21 @@ jQuery( ( $ ) => {
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
 				async () => {
+					// if the product cannot be added to cart (because of missing variation selection, etc),
+					// don't try to add it to the cart to get new data - the call will likely fail.
+					if (
+						getExpressCheckoutData( 'button_context' ) === 'product'
+					) {
+						const addToCartButton = $(
+							'.single_add_to_cart_button'
+						);
+
+						// First check if product can be added to cart.
+						if ( addToCartButton.is( '.disabled' ) ) {
+							return;
+						}
+					}
+
 					try {
 						expressCheckoutButtonUi.blockButton();
 
@@ -374,8 +389,9 @@ jQuery( ( $ ) => {
 						}
 
 						expressCheckoutButtonUi.unblockButton();
+						expressCheckoutButtonUi.showContainer();
 					} catch ( e ) {
-						expressCheckoutButtonUi.hide();
+						expressCheckoutButtonUi.hideContainer();
 					}
 				}
 			);
