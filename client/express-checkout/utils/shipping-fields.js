@@ -15,7 +15,7 @@ import { normalizeShippingAddress, getExpressCheckoutData } from '.';
  * @return {boolean} True if the postcode is redacted for the country, false otherwise.
  */
 const isPostcodeRedactedForCountry = ( country ) => {
-	return country.length === 2 && [ 'CA', 'GB' ].includes( country );
+	return [ 'CA', 'GB' ].includes( country );
 };
 
 /*
