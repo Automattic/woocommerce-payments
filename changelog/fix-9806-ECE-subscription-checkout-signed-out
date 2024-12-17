@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure ECE login confirmation dialog is shown on Blocks.
