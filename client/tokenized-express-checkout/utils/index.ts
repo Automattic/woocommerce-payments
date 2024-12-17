@@ -3,6 +3,7 @@
  */
 import { WCPayExpressCheckoutParams } from 'wcpay/express-checkout/utils';
 export * from './normalize';
+export * from './shipping-fields';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 export const getExpressCheckoutData = <
@@ -27,7 +28,9 @@ export const getExpressCheckoutData = <
  * @param notice Error notice.
  * @return Error messages.
  */
-export const getErrorMessageFromNotice = ( notice: string ) => {
+export const getErrorMessageFromNotice = ( notice: string | undefined ) => {
+	if ( ! notice ) return '';
+
 	const div = document.createElement( 'div' );
 	div.innerHTML = notice.trim();
 	return div.firstChild ? div.firstChild.textContent : '';
