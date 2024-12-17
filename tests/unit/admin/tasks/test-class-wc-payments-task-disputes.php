@@ -8,6 +8,7 @@
 use WCPay\Constants\Country_Code;
 use WooCommerce\Payments\Tasks\WC_Payments_Task_Disputes;
 
+require_once WCPAY_ABSPATH . 'includes/admin/tasks/class-wc-payments-task-disputes.php';
 /**
  * WC_Payments_Task_Disputes unit tests.
  */
@@ -22,7 +23,6 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
-		WC_Payments_Tasks::add_task_disputes_need_response(); // ensure the task is included and initialized.
 	}
 
 	public function tear_down() {

@@ -21,6 +21,8 @@ class WC_Payments_Tasks {
 	 * WC_Payments_Admin_Tasks constructor.
 	 */
 	public static function init() {
+		// As WooCommerce Onboarding tasks need to hook into 'init' and requires an API call.
+		// We only add this task for users who can manage_woocommerce / view the task.
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
@@ -33,6 +35,7 @@ class WC_Payments_Tasks {
 	 */
 	public static function add_task_disputes_need_response() {
 		$account_service = WC_Payments::get_account_service();
+		// The task is not required if the account is not connected, under review, or rejected.
 		if ( ! $account_service || ! $account_service->is_stripe_account_valid() || $account_service->is_account_under_review() || $account_service->is_account_rejected() ) {
 			return;
 		}
