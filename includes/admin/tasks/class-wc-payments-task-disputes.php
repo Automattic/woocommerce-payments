@@ -50,7 +50,7 @@ class WC_Payments_Task_Disputes extends Task {
 	private $disputes_due_within_1d;
 
 	/**
-	 * Disputes needing a response.
+	 * A memory cache of all disputes needing response.
 	 *
 	 * @var array|null
 	 */
@@ -69,7 +69,7 @@ class WC_Payments_Task_Disputes extends Task {
 	/**
 	 * Initialize the task.
 	 */
-	private function init() {
+	private function fetch_relevant_disputes() {
 		$this->disputes_due_within_7d = $this->get_disputes_needing_response_within_days( 7 );
 		$this->disputes_due_within_1d = $this->get_disputes_needing_response_within_days( 1 );
 	}
@@ -90,7 +90,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 */
 	public function get_title() {
 		if ( null === $this->disputes_needing_response ) {
-			$this->init();
+			$this->fetch_relevant_disputes();
 		}
 		if ( count( (array) $this->disputes_due_within_7d ) === 1 ) {
 			$dispute          = $this->disputes_due_within_7d[0];
@@ -285,8 +285,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 */
 	public function can_view() {
 		if ( null === $this->disputes_needing_response ) {
-			// init() is called on can_view as this is the first method called in the task lifecycle by WC.
-			$this->init();
+			$this->fetch_relevant_disputes();
 		}
 		return count( (array) $this->disputes_due_within_7d ) > 0;
 	}
@@ -342,12 +341,17 @@ class WC_Payments_Task_Disputes extends Task {
 		$this->disputes_needing_response = $this->database_cache->get_or_add(
 			Database_Cache::ACTIVE_DISPUTES_KEY,
 			function () {
-				$response = $this->api_client->get_disputes(
-					[
-						'pagesize' => 50,
-						'search'   => [ 'warning_needs_response', 'needs_response' ],
-					]
-				);
+				try {
+					$response = $this->api_client->get_disputes(
+						[
+							'pagesize' => 50,
+							'search'   => [ 'warning_needs_response', 'needs_response' ],
+						]
+					);
+				} catch ( \Exception $e ) {
+					// Ensure an array is always returned, even if the API call fails.
+					return [];
+				}
 
 				$active_disputes = $response['data'] ?? [];
 
@@ -365,7 +369,7 @@ class WC_Payments_Task_Disputes extends Task {
 				return $active_disputes;
 			},
 			'is_array'
-		) ?? []; // If the API before the cache is set, this fn will return null. So default to empty array, this will re-try on next request.
+		);
 
 		return $this->disputes_needing_response;
 	}
