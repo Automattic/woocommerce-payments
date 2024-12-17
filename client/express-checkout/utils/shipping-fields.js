@@ -1,9 +1,5 @@
 /* global jQuery */
 /**
- * External dependencies
- */
-
-/**
  * Internal dependencies
  */
 import { normalizeShippingAddress, getExpressCheckoutData } from '.';
