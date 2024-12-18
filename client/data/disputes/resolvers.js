@@ -42,17 +42,9 @@ const formatQueryFilters = ( query ) => ( {
 } );
 
 export function getDisputesCSV( query ) {
-	const queryWithSearch = {
-		...query,
-		search:
-			query.filter === 'awaiting_response'
-				? disputeAwaitingResponseStatuses
-				: query.search,
-	};
-
 	const path = addQueryArgs(
 		`${ NAMESPACE }/disputes/download`,
-		formatQueryFilters( queryWithSearch )
+		formatQueryFilters( query )
 	);
 	return path;
 }
