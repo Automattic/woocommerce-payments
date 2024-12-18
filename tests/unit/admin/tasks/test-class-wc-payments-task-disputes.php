@@ -8,6 +8,7 @@
 use WCPay\Constants\Country_Code;
 use WooCommerce\Payments\Tasks\WC_Payments_Task_Disputes;
 
+require_once WCPAY_ABSPATH . 'includes/admin/tasks/class-wc-payments-task-disputes.php';
 /**
  * WC_Payments_Task_Disputes unit tests.
  */
