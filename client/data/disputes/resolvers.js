@@ -20,6 +20,7 @@ import {
 	updateDisputesSummary,
 	updateErrorForDispute,
 } from './actions';
+import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
 const formatQueryFilters = ( query ) => ( {
 	user_email: query.userEmail,
@@ -38,11 +39,18 @@ const formatQueryFilters = ( query ) => ( {
 } );
 
 export function getDisputesCSV( query ) {
+	const queryWithSearch = {
+		...query,
+		search:
+			query.filter === 'awaiting_response'
+				? disputeAwaitingResponseStatuses
+				: query.search,
+	};
+
 	const path = addQueryArgs(
 		`${ NAMESPACE }/disputes/download`,
-		formatQueryFilters( query )
+		formatQueryFilters( queryWithSearch )
 	);
-
 	return path;
 }
 
