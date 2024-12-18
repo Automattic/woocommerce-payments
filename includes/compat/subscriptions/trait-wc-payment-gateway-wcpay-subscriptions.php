@@ -343,14 +343,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			if ( ! empty( $payment_information ) ) {
 				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
-				$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+				if ( null !== $e->get_merchant_message() ) {
+					$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+				}
 
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the failed payment amount, %2: error message  */
 						__(
 							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
-							'woocommerce-payments' // @todo
+							'woocommerce-payments'
 						),
 						[
 							'strong' => '<strong>',

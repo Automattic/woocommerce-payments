@@ -1270,7 +1270,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 
 				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
-				$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+				if ( null !== $e->get_merchant_message() ) {
+					$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+				}
 
 				if ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() ) {
 					// If the payment failed with a 'card_error' API exception, initialize the fraud meta box
