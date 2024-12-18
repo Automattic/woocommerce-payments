@@ -46,58 +46,90 @@
 }
 
 // Payment methods with PMME styles.
-li.wc_payment_method:has(  label .stripe-pmme-container ) {
+li.wc_payment_method:has( label .stripe-pmme-container ) {
 	display: grid;
 	grid-template-columns: max-content 1fr;
+	grid-template-areas: 'li-input li-label'; // List Item grid.
 	align-items: baseline;
 
 	.input-radio {
-		grid-row: 1;
-		grid-column: 1;
-		//background-color: green !important;
+		grid-area: li-input;
 	}
 
 	> label {
-		display: grid !important;
-		grid-template-columns: auto 1fr;
+		grid-area: li-label;
 
-		grid-column: 2;
-		grid-row: 1;
-		//background-color: blue !important;
+		display: grid !important;
+		grid-template-columns: max-content 1fr;
+		grid-template-areas: 'label-spacer label-inner'; // Label grid.
 
 		> span.spacer {
-			//background-color: yellow !important;
+			grid-area: label-spacer;
 		}
 
 		> .woopayments-inner-label {
+			grid-area: label-inner;
 			display: grid;
 			grid-template-columns: 1fr max-content;
+			grid-template-areas:
+				'inner-text inner-logo'
+				'inner-pmme inner-logo'; // Inner label grid.
 			align-items: center;
 
 			> img {
-				grid-column: 2;
-				grid-row: 1 / span 2;
+				grid-area: inner-logo;
 				justify-self: right;
-				//background-color: red !important;
 			}
 
 			> .stripe-pmme-container {
 				width: 100%;
-				grid-column: 1;
-				grid-row-start: 2;
+				grid-area: inner-pmme;
 				pointer-events: none;
-				//background-color: fuchsia !important;
 			}
 		}
 	}
 }
 
 // Hide the PMMe container when the payment method is checked.
-li.wc_payment_method:has( .input-radio:checked + label .stripe-pmme-container ) {
+li.wc_payment_method:has( .input-radio:checked
+		+ label
+		.stripe-pmme-container ) {
 	.input-radio:checked {
 		+ label {
 			.stripe-pmme-container {
 				display: none;
+			}
+		}
+	}
+}
+
+// Storefront compatibility.
+.theme-storefront {
+	#payment {
+		.payment_methods {
+			> li.wc_payment_method {
+				// Storefront does not render the input radio button.
+				grid-template-areas: 'li-label'; // List Item grid for Storefront.
+				grid-template-columns: 1fr;
+
+				> input + label {
+					// Storefront uses a label::before for the radio button so we need to adjust the grid.
+					grid-template-areas: 'label-before label-spacer label-inner'; // Label grid for Storefront.
+					grid-template-columns: max-content max-content 1fr;
+				}
+
+				> input + label {
+					&::before {
+						grid-area: label-before;
+					}
+				}
+			}
+
+			// This makes sure labels that don't have the pmme container are displayed correctly.
+			li[class*='payment_method_woocommerce_payments'] {
+				> input + label {
+					display: block;
+				}
 			}
 		}
 	}
