@@ -181,12 +181,7 @@ jQuery( function ( $ ) {
 						'span.woopayments-inner-label'
 					);
 					if ( ! targetLabelInnerSpan ) {
-						let targetLabelInner = targetLabel.innerHTML;
-						// Keep the leading whitespace in the label.
-						// targetLabelInner = targetLabelInner.replace(
-						// 	/^\s+/,
-						// 	'&nbsp;'
-						// );
+						const targetLabelInner = targetLabel.innerHTML;
 						targetLabel.innerHTML = '';
 						targetLabelInnerSpan = document.createElement( 'span' );
 						targetLabelInnerSpan.classList.add(
