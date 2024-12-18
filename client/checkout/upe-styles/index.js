@@ -495,6 +495,10 @@ function ensureFontSizeSmallerThan(
 ) {
 	const fontSizeNumber = parseFloat( fontSize );
 
+	if ( isNaN( fontSizeNumber ) ) {
+		return fontSize;
+	}
+
 	// If the element is not found, return the font size number multiplied by the percentage.
 	const elem = document.querySelector( selector );
 	if ( ! elem ) {
@@ -504,6 +508,10 @@ function ensureFontSizeSmallerThan(
 	const styles = window.getComputedStyle( elem );
 	const targetFontSize = styles.getPropertyValue( 'font-size' );
 	const targetFontSizeNumber = parseFloat( targetFontSize ) * percentage;
+
+	if ( isNaN( targetFontSizeNumber ) ) {
+		return fontSize;
+	}
 
 	if ( fontSizeNumber > targetFontSizeNumber ) {
 		return `${ targetFontSizeNumber }px`;
