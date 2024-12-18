@@ -389,7 +389,6 @@ jQuery( ( $ ) => {
 						}
 
 						expressCheckoutButtonUi.unblockButton();
-						expressCheckoutButtonUi.showContainer();
 					} catch ( e ) {
 						expressCheckoutButtonUi.hideContainer();
 					}
