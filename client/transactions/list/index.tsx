@@ -21,11 +21,6 @@ import {
 	getQuery,
 	updateQueryString,
 } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -62,7 +57,6 @@ import autocompleter from 'transactions/autocompleter';
 import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
-import { recordEvent } from 'tracks';
 import DownloadButton from 'components/download-button';
 import CSVExportModal from 'components/csv-export-modal';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
