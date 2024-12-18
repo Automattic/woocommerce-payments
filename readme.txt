@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.3
-Stable tag: 8.6.0
+Stable tag: 8.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -93,6 +93,11 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 8.6.1 - 2024-12-17 =
+* Fix - Checkout: Fix error when wc_address_i18n_params does not have data for a given country
+* Fix - Skip mysqlcheck SSL Requirement during E2E environment setup
+
 
 = 8.6.0 - 2024-12-04 =
 * Add - Add Bank reference key column in Payout reports. This will help reconcile WooPayments Payouts with bank statements.

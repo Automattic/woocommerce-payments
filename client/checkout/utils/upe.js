@@ -449,8 +449,8 @@ export const isBillingInformationMissing = ( form ) => {
 			if ( country && locale && fieldName !== 'billing_email' ) {
 				const key = fieldName.replace( 'billing_', '' );
 				isRequired =
-					locale[ country ][ key ]?.required ??
-					locale.default[ key ]?.required;
+					locale[ country ]?.[ key ]?.required ??
+					locale.default?.[ key ]?.required;
 			}
 
 			const hasValue = field?.value;
