@@ -3,6 +3,7 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -12,18 +13,20 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 import './style.scss';
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const STORAGE_KEY = 'woopayments_date_format_notice_dismissed';
+const optionName = 'wcpay_date_format_notice_dismissed';
 
 const DateFormatNotice: React.FC = () => {
-	const [ isBannerVisible, setIsBannerVisible ] = useState( () => {
-		// Initialize state from localStorage
-		return localStorage.getItem( STORAGE_KEY ) !== 'true';
-	} );
+	const { updateOptions } = useDispatch( 'wc/admin/options' );
+	const [ isBannerVisible, setIsBannerVisible ] = useState(
+		! wcpaySettings.isDateFormatNoticeDismissed
+	);
 
 	const handleDismiss = () => {
 		setIsBannerVisible( false );
-		localStorage.setItem( STORAGE_KEY, 'true' );
+		wcpaySettings.isDateFormatNoticeDismissed = true;
+		updateOptions( {
+			[ optionName ]: true,
+		} );
 	};
 
 	const handleSettingsClick = () => {

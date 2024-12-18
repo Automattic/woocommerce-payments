@@ -123,6 +123,7 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
+		isDateFormatNoticeDismissed: boolean;
 		reporting: {
 			exportModalDismissed?: boolean;
 		};
