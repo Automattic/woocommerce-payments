@@ -273,7 +273,10 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 								</>
 							) : (
 								<div className="woopayments-payout-details-header__value">
-									Not available
+									{ __(
+										'Not available',
+										'woocommerce-payments'
+									) }
 								</div>
 							) }
 						</div>
