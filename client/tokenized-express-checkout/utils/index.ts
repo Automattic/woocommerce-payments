@@ -3,6 +3,7 @@
  */
 import { WCPayExpressCheckoutParams } from 'wcpay/express-checkout/utils';
 export * from './normalize';
+export * from './shipping-fields';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 export const getExpressCheckoutData = <
