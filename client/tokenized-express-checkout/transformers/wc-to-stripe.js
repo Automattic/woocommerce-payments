@@ -40,8 +40,8 @@ export const transformPrice = ( price, priceObject ) => {
 export const transformCartDataForDisplayItems = ( cartData ) => {
 	const displayItems = cartData.items.map( ( item ) => ( {
 		amount: transformPrice(
-			parseInt( item.prices.price, 10 ),
-			item.prices
+			parseInt( item.totals?.line_subtotal || item.prices.price, 10 ),
+			item.totals || item.prices
 		),
 		name: [
 			item.name,
@@ -96,7 +96,7 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
  * @return {{id: string, label: string, amount: integer, deliveryEstimate: string}} `shippingRates` for Stripe.
  */
 export const transformCartDataForShippingRates = ( cartData ) =>
-	cartData.shipping_rates?.[ 0 ].shipping_rates
+	cartData.shipping_rates?.[ 0 ]?.shipping_rates
 		.sort( ( rateA, rateB ) => {
 			if ( rateA.selected === rateB.selected ) {
 				return 0; // Keep relative order if both have the same value for 'selected'
