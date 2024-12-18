@@ -279,66 +279,18 @@ describe( 'Deposits list', () => {
 			} );
 		} );
 
-		test( 'should render expected columns in CSV when the download button is clicked', () => {
+		test( 'should fetch the server side export', async () => {
 			const { getByRole } = render( <DepositsList /> );
+
 			getByRole( 'button', { name: 'Download' } ).click();
-
-			const expected = [
-				'"Payout Id"',
-				'Date',
-				'Type',
-				'Amount',
-				'Status',
-				'"Bank account"',
-				'"Bank reference ID"',
-			];
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
-			expect( csvHeaderRow ).toEqual( expected );
-		} );
-
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <DepositsList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows = getAllByRole( 'row' );
-
-			expect( csvRows.length ).toEqual( displayRows.length );
-
-			const csvFirstDeposit = csvRows[ 1 ].split( ',' );
-			const displayFirstDeposit = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td ) => td.textContent );
-
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 1 because the first field in CSV is deposit id,
-			//    which is missing in display.
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-			expect( formatDate( csvFirstDeposit[ 1 ], 'M j, Y' ) ).toBe(
-				displayFirstDeposit[ 0 ]
-			); // date
-			expect( csvFirstDeposit[ 2 ] ).toBe( displayFirstDeposit[ 1 ] ); // type
-			expect(
-				getUnformattedAmount( displayFirstDeposit[ 2 ] ).indexOf(
-					csvFirstDeposit[ 3 ]
-				)
-			).not.toBe( -1 ); // amount
-			expect( csvFirstDeposit[ 4 ] ).toBe(
-				`"${ displayFirstDeposit[ 3 ] }"`
-			); // status
-			expect( csvFirstDeposit[ 5 ] ).toBe(
-				`"${ displayFirstDeposit[ 4 ] }"`
-			); // bank account
-			expect( csvFirstDeposit[ 6 ] ).toBe(
-				`${ displayFirstDeposit[ 5 ] }`
-			); // bank reference key
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path:
+						'/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en',
+				} );
+			} );
 		} );
 
 		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 1000.', async () => {
