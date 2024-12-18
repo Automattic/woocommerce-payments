@@ -11,11 +11,6 @@ import moment from 'moment';
 import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
 import classNames from 'classnames';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
@@ -43,7 +38,6 @@ import {
 } from 'multi-currency/interface/functions';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
-import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import {

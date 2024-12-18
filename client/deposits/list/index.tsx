@@ -11,11 +11,6 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
 import { parseInt } from 'lodash';
@@ -220,8 +215,6 @@ export const DepositsList = (): JSX.Element => {
 	const storeCurrencies =
 		depositsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
-
-	const title = __( 'Payouts', 'woocommerce-payments' );
 
 	const downloadable = !! rows.length;
 

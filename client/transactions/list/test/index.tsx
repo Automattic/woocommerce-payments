@@ -7,12 +7,8 @@ import * as React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
-import { dateI18n } from '@wordpress/date';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { getUserTimeZone } from 'wcpay/utils/test-utils';
-import moment from 'moment';
-import os from 'os';
 
 /**
  * Internal dependencies
@@ -57,10 +53,6 @@ jest.mock( 'data/index', () => ( {
 	useTransactionsSummary: jest.fn(),
 	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
-
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
 
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
@@ -198,18 +190,6 @@ const getMockTransactions: () => Transaction[] = () => [
 		loan_id: undefined,
 	},
 ];
-
-function getUnformattedAmount( formattedAmount: string ) {
-	const amount = formattedAmount.replace( /[^0-9,.' ]/g, '' ).trim();
-	return amount.replace( ',', '.' ); // Euro fix
-}
-
-function formatDate( date: string ) {
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( date ).local().toISOString()
-	);
-}
 
 describe( 'Transactions list', () => {
 	beforeEach( () => {
