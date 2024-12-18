@@ -5,10 +5,7 @@
  */
 import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-
-import os from 'os';
 
 /**
  * Internal dependencies
@@ -19,7 +16,6 @@ import {
 	useDepositsSummary,
 	useReportingExportLanguage,
 } from 'wcpay/data';
-import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import {
 	CachedDeposit,
 	CachedDeposits,
@@ -115,10 +111,6 @@ const mockUseDeposits = useDeposits as jest.MockedFunction<
 
 const mockUseDepositsSummary = useDepositsSummary as jest.MockedFunction<
 	typeof useDepositsSummary
->;
-
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
 >;
 
 const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<

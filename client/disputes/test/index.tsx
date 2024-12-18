@@ -3,9 +3,7 @@
  * External dependencies
  */
 import { render, waitFor } from '@testing-library/react';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-import os from 'os';
 
 /**
  * Internal dependencies
@@ -17,7 +15,6 @@ import {
 	useReportingExportLanguage,
 	useSettings,
 } from 'data/index';
-import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
 import {
 	CachedDispute,
@@ -58,10 +55,6 @@ jest.mock( 'data/index', () => ( {
 	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 	useSettings: jest.fn(),
 } ) );
-
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
 
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
