@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Refresh the cart and checkout pages when ECE is dismissed and the shipping options were modified in the payment sheet.
