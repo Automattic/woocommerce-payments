@@ -33,5 +33,19 @@
 	&.state--copied i {
 		mask-image: url( 'assets/images/icons/check-green.svg?asset' );
 		background-color: $studio-green-50;
+		animation: copy-indicator 2s forwards;
+	}
+
+	@keyframes copy-indicator {
+		0% {
+			opacity: 1;
+		}
+		95% {
+			opacity: 1;
+		}
+		// a quick fade-out from 1%→0% at the end
+		100% {
+			opacity: 0;
+		}
 	}
 }

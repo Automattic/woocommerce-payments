@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import classNames from 'classnames';
 
@@ -26,26 +26,11 @@ export const CopyButton: React.FC< CopyButtonProps > = ( {
 	textToCopy,
 	label,
 } ) => {
-	// useRef() is used to store the timer reference for the setTimeout() function.
-	const timerRef = useRef< NodeJS.Timeout | null >( null );
-
-	// useEffect() is used to clear the timer reference when the component is unmounted.
-	useEffect( () => {
-		return () => {
-			if ( timerRef.current ) {
-				clearTimeout( timerRef.current );
-			}
-		};
-	}, [] );
-
 	const [ copied, setCopied ] = useState( false );
 
 	const copyToClipboard = () => {
 		navigator.clipboard.writeText( textToCopy );
 		setCopied( true );
-		timerRef.current = setTimeout( () => {
-			setCopied( false );
-		}, 2000 );
 	};
 
 	return (
@@ -57,6 +42,7 @@ export const CopyButton: React.FC< CopyButtonProps > = ( {
 			aria-label={ label }
 			title={ __( 'Copy to clipboard', 'woocommerce-payments' ) }
 			onClick={ copyToClipboard }
+			onAnimationEnd={ () => setCopied( false ) }
 		>
 			<i></i>
 		</button>
