@@ -55,7 +55,6 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 	// If the calls are found, it should return true.
 	public function test_should_return_store_currency_returns_true_if_calls_found() {
 		$calls = [
-			'WC_Shipping_Fedex->set_settings',
 			'WC_Shipping_Fedex->per_item_shipping',
 			'WC_Shipping_Fedex->box_shipping',
 			'WC_Shipping_Fedex->get_fedex_api_request',
@@ -73,7 +72,6 @@ class WCPay_Multi_Currency_WooCommerceFedEx_Tests extends WCPAY_UnitTestCase {
 	// If the calls are found, it should return true.
 	public function test_should_return_store_currency_returns_false_if_no_calls_found() {
 		$calls = [
-			'WC_Shipping_Fedex->set_settings',
 			'WC_Shipping_Fedex->per_item_shipping',
 			'WC_Shipping_Fedex->box_shipping',
 			'WC_Shipping_Fedex->get_fedex_api_request',
