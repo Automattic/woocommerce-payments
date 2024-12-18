@@ -18,6 +18,7 @@
 	position: relative;
 }
 
+// Stripe Link button styles.
 .wcpay-checkout-email-field button.wcpay-stripelink-modal-trigger {
 	display: none;
 	position: absolute;
@@ -30,66 +31,73 @@
 	border: none;
 }
 
+// Logo styles.
 #payment .payment_methods {
-	li[class*='payment_method_woocommerce_payments'] label img {
-		float: right;
-		border: 0;
-		padding: 0;
-		height: 24px !important;
-		max-height: 24px !important;
+	li[class*='payment_method_woocommerce_payments'] label {
+		display: inline;
+		img {
+			float: right;
+			border: 0;
+			padding: 0;
+			height: 24px !important;
+			max-height: 24px !important;
+		}
 	}
 }
 
-li.wc_payment_method:has( .input-radio:not( :checked )
-		+ label
-		.stripe-pmme-container ) {
+// Payment methods with PMME styles.
+li.wc_payment_method:has(  label .stripe-pmme-container ) {
 	display: grid;
-	grid-template-columns: min-content 1fr;
-	grid-template-rows: auto auto;
+	grid-template-columns: max-content 1fr;
 	align-items: baseline;
 
 	.input-radio {
 		grid-row: 1;
 		grid-column: 1;
+		//background-color: green !important;
 	}
 
-	label {
+	> label {
+		display: grid !important;
+		grid-template-columns: auto 1fr;
+
 		grid-column: 2;
 		grid-row: 1;
-	}
+		//background-color: blue !important;
 
-	img {
-		grid-row: 1 / span 2;
-		align-self: center;
-	}
+		> span.spacer {
+			//background-color: yellow !important;
+		}
 
-	.stripe-pmme-container {
-		width: 100%;
-		grid-column: 1;
-		grid-row-start: 2;
-		pointer-events: none;
-	}
+		> .woopayments-inner-label {
+			display: grid;
+			grid-template-columns: 1fr max-content;
+			align-items: center;
 
-	.payment_box {
-		flex: 0 0 100%;
-		grid-row: 2;
-		grid-column: 1 / span 2;
+			> img {
+				grid-column: 2;
+				grid-row: 1 / span 2;
+				justify-self: right;
+				//background-color: red !important;
+			}
+
+			> .stripe-pmme-container {
+				width: 100%;
+				grid-column: 1;
+				grid-row-start: 2;
+				pointer-events: none;
+				//background-color: fuchsia !important;
+			}
+		}
 	}
 }
 
-li.wc_payment_method:has( .input-radio:checked
-		+ label
-		.stripe-pmme-container ) {
-	display: block;
-
+// Hide the PMMe container when the payment method is checked.
+li.wc_payment_method:has( .input-radio:checked + label .stripe-pmme-container ) {
 	.input-radio:checked {
 		+ label {
 			.stripe-pmme-container {
 				display: none;
-			}
-
-			img {
-				grid-column: 2;
 			}
 		}
 	}

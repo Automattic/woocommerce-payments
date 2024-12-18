@@ -176,13 +176,44 @@ jQuery( function ( $ ) {
 				}
 
 				if ( targetLabel ) {
+					// wrapInner target label in a span.woopayments-inner-label if it's not already
+					let targetLabelInnerSpan = targetLabel.querySelector(
+						'span.woopayments-inner-label'
+					);
+					if ( ! targetLabelInnerSpan ) {
+						let targetLabelInner = targetLabel.innerHTML;
+						// Keep the leading whitespace in the label.
+						// targetLabelInner = targetLabelInner.replace(
+						// 	/^\s+/,
+						// 	'&nbsp;'
+						// );
+						targetLabel.innerHTML = '';
+						targetLabelInnerSpan = document.createElement( 'span' );
+						targetLabelInnerSpan.classList.add(
+							'woopayments-inner-label'
+						);
+						targetLabelInnerSpan.innerHTML = targetLabelInner;
+						targetLabel.appendChild( targetLabelInnerSpan );
+					}
+
+					let spacer = targetLabel.querySelector( 'span.spacer' );
+					if ( ! spacer ) {
+						spacer = document.createElement( 'span' );
+						spacer.classList.add( 'spacer' );
+						spacer.innerHTML = '&nbsp;';
+						targetLabel.insertBefore(
+							spacer,
+							targetLabelInnerSpan
+						);
+					}
+
 					let container = document.getElementById( containerID );
 					if ( ! container ) {
 						container = document.createElement( 'span' );
 						container.id = containerID;
 						container.dataset.paymentMethodType = method;
 						container.classList.add( 'stripe-pmme-container' );
-						targetLabel.appendChild( container );
+						targetLabelInnerSpan.appendChild( container );
 					}
 
 					const currentCountry =
