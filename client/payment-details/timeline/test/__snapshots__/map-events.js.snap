@@ -265,7 +265,7 @@ exports[`mapTimelineEvents formats card_declined events 1`] = `
   {
     "body": [],
     "date": 2020-04-01T03:35:13.000Z,
-    "headline": "A payment of $77.00 USD failed.",
+    "headline": "A payment of $77.00 USD failed: The card was declined by the bank.",
     "icon": <CrossIcon
       className="is-error"
     />,
