@@ -98,11 +98,6 @@ export const useDisputes = ( {
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
 
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
-
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
 					? '1'
@@ -119,7 +114,7 @@ export const useDisputes = ( {
 					dateBetween.sort( ( a, b ) =>
 						moment( a ).diff( moment( b ) )
 					),
-				search,
+				filter,
 				statusIs,
 				statusIsNot,
 				orderBy: orderBy || 'created',
@@ -158,15 +153,11 @@ export const useDisputesSummary = ( {
 	filter,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
+	search,
 }: Query ): DisputesSummary =>
 	useSelect(
 		( select ) => {
 			const { getDisputesSummary, isResolving } = select( STORE_NAME );
-
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
@@ -180,7 +171,7 @@ export const useDisputesSummary = ( {
 				dateBefore,
 				dateAfter,
 				dateBetween,
-				search,
+				filter,
 				statusIs,
 				statusIsNot,
 			};
