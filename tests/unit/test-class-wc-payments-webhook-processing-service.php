@@ -1240,6 +1240,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'charge'           => 'test_charge_id',
 			'reason'           => 'test_reason',
 			'amount'           => 9900,
+			'status'           => 'test_status',
 			'evidence_details' => [
 				'due_by' => 'test_due_by',
 			],
@@ -1289,7 +1290,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'add_order_note' )
 			->with(
 				$this->matchesRegularExpression(
-					'/Payment dispute has been closed with status test_status/'
+					'/Dispute has been closed with status test_status/'
 				)
 			);
 
@@ -1732,5 +1733,60 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'Test mode is not processed.'     => [ false, $this->never() ],
 			'No mode proceeds'                => [ null, $this->once() ],
 		];
+	}
+
+	public function test_process_throws_exception_when_order_not_found_for_successful_intent_id() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['data']['object'] = [
+			'id'       => 'unresolvable_intent_id',
+			'currency' => 'usd',
+			'metadata' => [],
+			'charges'  => [
+				'data' => [],
+			],
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'unresolvable_intent_id' )
+			->willReturn( null );
+
+		$this->mock_order
+			->expects( $this->never() )
+			->method( 'save' );
+
+		$this->expectException( WCPay\Exceptions\Invalid_Payment_Method_Exception::class );
+		$this->expectExceptionMessage( 'Could not find order via intent ID: unresolvable_intent_id' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_process_throws_exception_when_refund_found_for_successful_intent_id() {
+		$mock_refund                        = $this->createMock( WC_Order_Refund::class );
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['data']['object'] = [
+			'id'       => 'intent_id',
+			'currency' => 'usd',
+			'metadata' => [],
+			'charges'  => [
+				'data' => [],
+			],
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'intent_id' )
+			->willReturn( $mock_refund );
+
+		$mock_refund
+			->expects( $this->never() )
+			->method( 'save' );
+
+		$this->expectException( WCPay\Exceptions\Invalid_Payment_Method_Exception::class );
+		$this->expectExceptionMessage( 'Could not find order via intent ID: intent_id' );
+
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 }

@@ -250,3 +250,31 @@ export const disablePaymentMethods = async (
 
 	await saveWooPaymentsSettings( page );
 };
+
+export const isWooPayEnabled = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'woopay-toggle';
+	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
+
+	return isEnabled;
+};
+
+export const activateWooPay = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'woopay-toggle';
+	const wasInitiallyEnabled = await isWooPayEnabled( page );
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).check();
+		await saveWooPaymentsSettings( page );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const deactivateWooPay = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+	await page.getByTestId( 'woopay-toggle' ).uncheck();
+	await saveWooPaymentsSettings( page );
+};

@@ -128,6 +128,7 @@ declare module '@woocommerce/navigation' {
 		date_between?: string[];
 		type_is?: unknown;
 		type_is_not?: unknown;
+		type_is_in?: unknown;
 		source_device_is?: unknown;
 		source_device_is_not?: unknown;
 		channel_is?: string;

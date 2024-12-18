@@ -27,11 +27,12 @@ import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
 import LogoImg from 'assets/images/woopayments.svg?asset';
+import SetupImg from 'assets/images/illustrations/setup.svg?asset';
 import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
-import WooPaymentsLogo from 'assets/images/logo.svg?asset';
+import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
@@ -52,18 +53,19 @@ const TestDriveLoader: React.FunctionComponent< {
 	progress: number;
 } > = ( { progress } ) => (
 	<Loader className="connect-account-page__preloader">
-		<img src={ WooPaymentsLogo } alt="" />
+		<img className="logo" src={ WooLogo } alt="" />
 		<Loader.Layout>
+			<Loader.Illustration>
+				<img src={ SetupImg } alt="setup" />
+			</Loader.Illustration>
+
 			<Loader.Title>
-				{ __(
-					'Creating your sandbox account',
-					'woocommerce-payments'
-				) }
+				{ __( 'Finishing payments setup', 'woocommerce-payments' ) }
 			</Loader.Title>
 			<Loader.ProgressBar progress={ progress ?? 0 } />
 			<Loader.Sequence interval={ 0 }>
 				{ __(
-					'In just a few moments, you will be ready to test payments on your store.'
+					"In just a few moments, you'll be ready to test payments on your store."
 				) }
 			</Loader.Sequence>
 		</Loader.Layout>
@@ -164,7 +166,7 @@ const ConnectAccountPage: React.FC = () => {
 		}
 	};
 
-	const checkAccountStatus = () => {
+	const checkAccountStatus = ( extraQueryArgs = {} ) => {
 		// Fetch account status from the cache.
 		apiFetch( {
 			path: `/wc/v3/payments/accounts`,
@@ -186,16 +188,22 @@ const ConnectAccountPage: React.FC = () => {
 				loaderProgressRef.current > 95
 			) {
 				setTestDriveLoaderProgress( 100 );
-
-				// Redirect to the Connect URL and let it figure it out where to point the merchant.
-				window.location.href = addQueryArgs( connectUrl, {
+				const queryArgs = {
 					test_drive: 'true',
 					'wcpay-sandbox-success': 'true',
 					source: determineTrackingSource(),
 					from: 'WCPAY_CONNECT',
+					redirect_to_settings_page:
+						urlParams.get( 'redirect_to_settings_page' ) || '',
+				};
+
+				// Redirect to the Connect URL and let it figure it out where to point the merchant.
+				window.location.href = addQueryArgs( connectUrl, {
+					...queryArgs,
+					...extraQueryArgs,
 				} );
 			} else {
-				setTimeout( checkAccountStatus, 2000 );
+				setTimeout( () => checkAccountStatus( extraQueryArgs ), 2000 );
 			}
 		} );
 	};
@@ -207,6 +215,7 @@ const ConnectAccountPage: React.FC = () => {
 
 		const customizedConnectUrl = addQueryArgs( connectUrl, {
 			test_drive: 'true',
+			capabilities: urlParams.get( 'capabilities' ) || '',
 		} );
 
 		const updateProgress = setInterval( updateLoaderProgress, 2500, 40, 5 );
@@ -260,7 +269,9 @@ const ConnectAccountPage: React.FC = () => {
 					// The account has been successfully onboarded.
 					if ( !! connectionSuccess ) {
 						// Start checking the account status in a loop.
-						checkAccountStatus();
+						checkAccountStatus( {
+							'wcpay-connection-success': '1',
+						} );
 					} else {
 						// Redirect to the response URL, but attach our test drive flags.
 						// This URL is generally a Connect page URL.

@@ -188,7 +188,7 @@ class MultiCurrency {
 	 * @param MultiCurrencyCacheInterface        $cache                Cache instance.
 	 * @param Utils|null                         $utils                Optional Utils instance.
 	 */
-	public function __construct( MultiCurrencySettingsInterface $settings_service, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, Utils $utils = null ) {
+	public function __construct( MultiCurrencySettingsInterface $settings_service, MultiCurrencyApiClientInterface $payments_api_client, MultiCurrencyAccountInterface $payments_account, MultiCurrencyLocalizationInterface $localization_service, MultiCurrencyCacheInterface $cache, ?Utils $utils = null ) {
 		$this->settings_service     = $settings_service;
 		$this->payments_api_client  = $payments_api_client;
 		$this->payments_account     = $payments_account;
@@ -832,7 +832,12 @@ class MultiCurrency {
 			return (float) $price;
 		}
 
+		// We must ceil the converted price here so that we don't introduce rounding errors when
+		// summing up costs. Consider, e.g. a converted price of 10.003 for a 2-decimal currency.
+		// A single product would cost 10.00, but 2 of them would cost 20.01, _unless_ we round
+		// the individual parts correctly.
 		$converted_price = ( (float) $price ) * $currency->get_rate();
+		$converted_price = $this->ceil_price_for_currency( $converted_price, $currency );
 
 		if ( 'tax' === $type || 'coupon' === $type || 'exchange_rate' === $type ) {
 			return $converted_price;
@@ -1354,6 +1359,39 @@ class MultiCurrency {
 			return $price;
 		}
 		return ceil( $price / $rounding ) * $rounding;
+	}
+
+	/**
+	 * Ceils the price to the precision dictated by the number of decimals in the provided currency.
+	 *
+	 * For example: US$10.0091 -> US$10.01, JPY 1001.01 -> JPY 1002.
+	 *
+	 * @param float    $price     The price to be ceiled.
+	 * @param Currency $currency  The currency used to figure out the ceil precision.
+	 *
+	 * @return float  The ceiled price.
+	 */
+	protected function ceil_price_for_currency( float $price, Currency $currency ): float {
+		// phpcs:disable Squiz.PHP.CommentedOutCode.Found, example comments look like code.
+
+		// Example to explain the math:
+		// $price            = 10.003.
+		// expected rounding = 10.01.
+
+		// $num_decimals = 2.
+		// $factor.      = 10^2 = 100.
+		$num_decimals = absint(
+			$this->localization_service->get_currency_format(
+				$currency->get_code()
+			)['num_decimals']
+		);
+		$factor       = 10 ** $num_decimals; // 10^{$num_decimals}.
+
+		// ceil( 10.003 * $factor ) = ceil( 1_000.3 ) = 1_001.
+		// 1_001 / 100 = 10.01.
+		return ceil( $price * $factor ) / $factor; // = 10.01.
+
+		// phpcs:enable Squiz.PHP.CommentedOutCode.Found
 	}
 
 	/**

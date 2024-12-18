@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Add support for showing `In-Person (POS)` as the transaction channel for mobile POS transactions in wp-admin Payments, enhancing visibility in both transaction lists and details.

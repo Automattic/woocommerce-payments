@@ -97,6 +97,11 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 		screenReaderLabel: __( 'Bank account', 'woocommerce-payments' ),
 		isLeftAligned: true,
 	},
+	{
+		key: 'bankReferenceId',
+		label: __( 'Bank reference ID', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Bank reference ID', 'woocommerce-payments' ),
+	},
 ];
 
 export const DepositsList = (): JSX.Element => {
@@ -164,6 +169,10 @@ export const DepositsList = (): JSX.Element => {
 			bankAccount: {
 				value: deposit.bankAccount,
 				display: clickable( deposit.bankAccount ),
+			},
+			bankReferenceId: {
+				value: deposit.bank_reference_key,
+				display: clickable( deposit.bank_reference_key ?? 'N/A' ),
 			},
 		};
 

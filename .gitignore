@@ -97,3 +97,6 @@ tests/e2e-pw/playwright/.cache/
 tests/e2e-pw/tests/e2e-pw/.auth/*
 # Slate docs
 docs/rest-api/build/*
+
+# Jurassic Tube files
+bin/jurassictube/

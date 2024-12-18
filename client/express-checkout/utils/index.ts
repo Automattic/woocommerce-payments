@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 export * from './normalize';
+export * from './shipping-fields';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 interface MyWindow extends Window {
@@ -37,6 +38,7 @@ export interface WCPayExpressCheckoutParams {
 		currency_code: string;
 		needs_payer_phone: boolean;
 		needs_shipping: boolean;
+		currency_decimals: number;
 	};
 
 	/**
@@ -44,20 +46,6 @@ export interface WCPayExpressCheckoutParams {
 	 */
 	has_block: boolean;
 
-	/**
-	 * True if we're on the checkout page.
-	 */
-	is_checkout_page: boolean;
-
-	/**
-	 * True if we're on a product page.
-	 */
-	is_product_page: boolean;
-
-	/**
-	 * True if we're on the pay for order page.
-	 */
-	is_pay_for_order_page: boolean;
 	nonce: {
 		add_to_cart: string;
 		checkout: string;
@@ -68,6 +56,9 @@ export interface WCPayExpressCheckoutParams {
 		platform_tracker: string;
 		shipping: string;
 		update_shipping: string;
+		tokenized_cart_nonce: string;
+		tokenized_cart_session_nonce: string;
+		store_api_nonce: string;
 	};
 
 	/**
@@ -76,6 +67,7 @@ export interface WCPayExpressCheckoutParams {
 	product: {
 		needs_shipping: boolean;
 		currency: string;
+		product_type: string;
 		shippingOptions: {
 			id: string;
 			label: string;
@@ -111,7 +103,9 @@ export const getExpressCheckoutData = <
 ) => {
 	if ( typeof window.wcpayExpressCheckoutParams !== 'undefined' ) {
 		return window.wcpayExpressCheckoutParams[ key ] ?? null;
-	} else if ( typeof window.wc?.wcSettings !== 'undefined' ) {
+	}
+
+	if ( typeof window.wc?.wcSettings !== 'undefined' ) {
 		return window.wc.wcSettings.getSetting( 'ece_data' )?.[ key ] ?? null;
 	}
 

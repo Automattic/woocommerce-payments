@@ -25,7 +25,6 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->title       = __( 'Credit card / debit card', 'woocommerce-payments' );
 		$this->is_reusable = true;
 		$this->currencies  = [];// All currencies are supported.
 		$this->icon_url    = plugins_url( 'assets/images/payment-methods/generic-card.svg', WCPAY_PLUGIN_FILE );
@@ -38,9 +37,9 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	 * @param array|false $payment_details Payment details.
 	 * @return string
 	 */
-	public function get_title( string $account_country = null, $payment_details = false ) {
+	public function get_title( ?string $account_country = null, $payment_details = false ) {
 		if ( ! $payment_details ) {
-			return $this->title;
+			return __( 'Credit card / debit card', 'woocommerce-payments' );
 		}
 
 		$details       = $payment_details[ $this->stripe_id ];

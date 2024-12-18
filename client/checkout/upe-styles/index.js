@@ -23,6 +23,7 @@ export const appearanceSelectors = {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
 		upeThemeInputSelector: '#billing_first_name',
 		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
+		upeThemeTextSelector: '.woocommerce-checkout .form-row',
 		rowElement: 'p',
 		validClasses: [ 'form-row' ],
 		invalidClasses: [
@@ -46,6 +47,7 @@ export const appearanceSelectors = {
 		appendTarget: '#contact-fields',
 		upeThemeInputSelector: '.wc-block-components-text-input #email',
 		upeThemeLabelSelector: '.wc-block-components-text-input label',
+		upeThemeTextSelector: '.wc-block-components-text-input',
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
@@ -73,6 +75,7 @@ export const appearanceSelectors = {
 		appendTarget: '.product .cart .quantity',
 		upeThemeInputSelector: '.product .cart .quantity .qty',
 		upeThemeLabelSelector: '.product .cart .quantity label',
+		upeThemeTextSelector: '.product .cart .quantity',
 		rowElement: 'div',
 		validClasses: [ 'input-text' ],
 		invalidClasses: [ 'input-text', 'has-error' ],
@@ -91,6 +94,7 @@ export const appearanceSelectors = {
 		appendTarget: '.cart .quantity',
 		upeThemeInputSelector: '.cart .quantity .qty',
 		upeThemeLabelSelector: '.cart .quantity label',
+		upeThemeTextSelector: '.cart .quantity',
 		rowElement: 'div',
 		validClasses: [ 'input-text' ],
 		invalidClasses: [ 'input-text', 'has-error' ],
@@ -111,6 +115,7 @@ export const appearanceSelectors = {
 		upeThemeInputSelector:
 			'.wc-block-cart .wc-block-components-quantity-selector .wc-block-components-quantity-selector__input',
 		upeThemeLabelSelector: '.wc-block-components-text-input',
+		upeThemeTextSelector: '.wc-block-components-text-input',
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
@@ -133,6 +138,7 @@ export const appearanceSelectors = {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
 		upeThemeInputSelector: '#billing_first_name',
 		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
+		upeThemeTextSelector: '.woocommerce-checkout .form-row',
 		rowElement: 'p',
 		validClasses: [ 'form-row' ],
 		invalidClasses: [
@@ -150,6 +156,9 @@ export const appearanceSelectors = {
 		buttonSelectors: [ '#place_order' ],
 		linkSelectors: [ 'a' ],
 		containerSelectors: [ '.woocommerce-checkout-review-order-table' ],
+		headerSelectors: [ '.site-header' ],
+		footerSelectors: [ '.site-footer' ],
+		footerLink: [ '.site-footer a' ],
 	},
 
 	/**
@@ -476,6 +485,11 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		'.Label'
 	);
 
+	const paragraphRules = getFieldStyles(
+		selectors.upeThemeTextSelector,
+		'.Text'
+	);
+
 	const tabRules = getFieldStyles( selectors.upeThemeInputSelector, '.Tab' );
 	const selectedTabRules = getFieldStyles(
 		selectors.hiddenInput,
@@ -503,11 +517,17 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		selectors.containerSelectors,
 		'.Container'
 	);
+	const headerRules = getFieldStyles( selectors.headerSelectors, '.Header' );
+	const footerRules = getFieldStyles( selectors.footerSelectors, '.Footer' );
+	const footerLinkRules = getFieldStyles(
+		selectors.footerLink,
+		'.Footer--link'
+	);
 	const globalRules = {
 		colorBackground: backgroundColor,
-		colorText: labelRules.color,
-		fontFamily: labelRules.fontFamily,
-		fontSizeBase: labelRules.fontSize,
+		colorText: paragraphRules.color,
+		fontFamily: paragraphRules.fontFamily,
+		fontSizeBase: paragraphRules.fontSize,
 	};
 
 	const isFloatingLabel = elementsLocation === 'blocks_checkout';
@@ -528,8 +548,8 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 				'.Tab--selected': selectedTabRules,
 				'.TabIcon:hover': tabIconHoverRules,
 				'.TabIcon--selected': selectedTabIconRules,
-				'.Text': labelRules,
-				'.Text--redirect': labelRules,
+				'.Text': paragraphRules,
+				'.Text--redirect': paragraphRules,
 			} )
 		),
 	};
@@ -548,6 +568,9 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		appearance.rules = {
 			...appearance.rules,
 			'.Heading': headingRules,
+			'.Header': headerRules,
+			'.Footer': footerRules,
+			'.Footer-link': footerLinkRules,
 			'.Button': buttonRules,
 			'.Link': linkRules,
 			'.Container': containerRules,
