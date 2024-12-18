@@ -17,7 +17,6 @@ import type {
 } from 'wcpay/types/disputes';
 import type { ApiError } from 'wcpay/types/errors';
 import { STORE_NAME } from '../constants';
-import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
 /**
  * Returns the dispute object, error object, and loading state.
