@@ -152,7 +152,6 @@ export const useDisputesSummary = ( {
 	filter,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
-	search,
 }: Query ): DisputesSummary =>
 	useSelect(
 		( select ) => {
