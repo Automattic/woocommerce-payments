@@ -933,7 +933,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        A payment of $77.00 failed.
+                        A payment of $77.00 failed: The card was declined by the bank.
                       </span>
                     </div>
                     <span
