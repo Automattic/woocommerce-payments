@@ -279,7 +279,7 @@ describe( 'Deposits list', () => {
 			} );
 		} );
 
-		test( 'should fetch the server side export', async () => {
+		test( 'should fetch export when the download button is clicked', async () => {
 			const { getByRole } = render( <DepositsList /> );
 
 			getByRole( 'button', { name: 'Download' } ).click();

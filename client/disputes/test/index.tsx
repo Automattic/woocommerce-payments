@@ -43,6 +43,7 @@ jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		onLoad: jest.fn(),
+		onHistoryChange: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
@@ -165,6 +166,8 @@ const mockDisputes = [
 
 describe( 'Disputes list', () => {
 	beforeEach( () => {
+		jest.clearAllMocks();
+
 		// mock Date.now that moment library uses to get current date for testing purposes
 		Date.now = jest.fn( () =>
 			new Date( '2019-11-07T12:33:37.000Z' ).getTime()
@@ -293,79 +296,19 @@ describe( 'Disputes list', () => {
 			} );
 		} );
 
-		test( 'should render expected columns in CSV when the download button is clicked ', () => {
+		test( 'should fetch export when the download button is clicked', async () => {
 			const { getByRole } = render( <DisputesList /> );
+
 			getByRole( 'button', { name: 'Download' } ).click();
 
-			const expected = [
-				'"Dispute Id"',
-				'Amount',
-				'Currency',
-				'Status',
-				'Reason',
-				'Source',
-				'"Order #"',
-				'Customer',
-				'Email',
-				'Country',
-				'"Disputed on"',
-				'"Respond by"',
-			];
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
-			expect( csvHeaderRow ).toEqual( expected );
-		} );
-
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <DisputesList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows = getAllByRole( 'row' );
-
-			expect( csvRows.length ).toEqual( displayRows.length );
-
-			const csvFirstDispute = csvRows[ 1 ].split( ',' );
-			const displayFirstDispute = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td ) => td.textContent );
-
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 2 because:
-			// 		- the first field in CSV is dispute id, which is missing in display.
-			// 		- the third field in CSV is currency, which is missing in display (it's displayed in "amount" column).
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-			expect(
-				getUnformattedAmount( displayFirstDispute[ 0 ] ).indexOf(
-					csvFirstDispute[ 1 ]
-				)
-			).not.toBe( -1 ); // amount
-
-			expect( csvFirstDispute[ 2 ] ).toBe( 'usd' );
-
-			expect( csvFirstDispute[ 3 ] ).toBe(
-				`"${ displayFirstDispute[ 1 ] }"`
-			); //status
-
-			expect( csvFirstDispute[ 4 ] ).toBe(
-				`"${ displayFirstDispute[ 2 ] }"`
-			); // reason
-
-			expect( csvFirstDispute[ 6 ] ).toBe( displayFirstDispute[ 4 ] ); // order
-
-			expect( csvFirstDispute[ 7 ] ).toBe(
-				`"${ displayFirstDispute[ 5 ] }"`
-			); // customer
-
-			expect( formatDate( csvFirstDispute[ 11 ], 'Y-m-d / g:iA' ) ).toBe(
-				formatDate( displayFirstDispute[ 6 ], 'Y-m-d / g:iA' )
-			); // date respond by
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path:
+						'/wc/v3/payments/disputes/download?user_email=mock%40example.com&locale=en',
+				} );
+			} );
 		} );
 	} );
 } );
