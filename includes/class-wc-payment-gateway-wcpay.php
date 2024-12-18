@@ -1270,7 +1270,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 
 				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
-				if ( null !== $e->get_merchant_message() ) {
+				if ( $e instanceof API_Exception && null !== $e->get_merchant_message() ) {
 					$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
 				}
 

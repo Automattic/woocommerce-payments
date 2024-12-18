@@ -32,7 +32,7 @@ class Cannot_Combine_Currencies_Exception extends API_Exception {
 	public function __construct( $message, $currency, $http_code, $code = 0, $previous = null ) {
 		$this->currency = $currency;
 
-		parent::__construct( $message, 'cannot_combine_currencies', $http_code, null, null, $code, $previous );
+		parent::__construct( $message, 'cannot_combine_currencies', $http_code, null, null, null, $code, $previous );
 	}
 
 	/**
