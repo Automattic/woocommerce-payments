@@ -12,7 +12,7 @@ import {
 	handleAppearanceForFloatingLabel,
 } from './utils.js';
 
-const PMME_RELATIVE_TEXT_SIZE = 0.85;
+const PMME_RELATIVE_TEXT_SIZE = 0.875;
 
 export const appearanceSelectors = {
 	default: {
@@ -25,7 +25,10 @@ export const appearanceSelectors = {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
 		upeThemeInputSelector: '#billing_first_name',
 		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
-		upeThemeTextSelector: '.woocommerce-checkout .form-row',
+		upeThemeTextSelectors: [
+			'#payment .payment_methods li .payment_box fieldset',
+			'.woocommerce-checkout .form-row',
+		],
 		rowElement: 'p',
 		validClasses: [ 'form-row' ],
 		invalidClasses: [
@@ -50,7 +53,10 @@ export const appearanceSelectors = {
 		appendTarget: '#contact-fields',
 		upeThemeInputSelector: '.wc-block-components-text-input #email',
 		upeThemeLabelSelector: '.wc-block-components-text-input label',
-		upeThemeTextSelector: '.wc-block-components-text-input',
+		upeThemeTextSelectors: [
+			'.wc-block-components-checkout-step__description',
+			'.wc-block-components-text-input',
+		],
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
@@ -80,7 +86,7 @@ export const appearanceSelectors = {
 		appendTarget: '.product .cart .quantity',
 		upeThemeInputSelector: '.product .cart .quantity .qty',
 		upeThemeLabelSelector: '.product .cart .quantity label',
-		upeThemeTextSelector: '.product .cart .quantity',
+		upeThemeTextSelectors: [ '.product .cart .quantity' ],
 		rowElement: 'div',
 		validClasses: [ 'input-text' ],
 		invalidClasses: [ 'input-text', 'has-error' ],
@@ -99,7 +105,7 @@ export const appearanceSelectors = {
 		appendTarget: '.cart .quantity',
 		upeThemeInputSelector: '.cart .quantity .qty',
 		upeThemeLabelSelector: '.cart .quantity label',
-		upeThemeTextSelector: '.cart .quantity',
+		upeThemeTextSelectors: [ '.cart .quantity' ],
 		rowElement: 'div',
 		validClasses: [ 'input-text' ],
 		invalidClasses: [ 'input-text', 'has-error' ],
@@ -120,7 +126,7 @@ export const appearanceSelectors = {
 		upeThemeInputSelector:
 			'.wc-block-cart .wc-block-components-quantity-selector .wc-block-components-quantity-selector__input',
 		upeThemeLabelSelector: '.wc-block-components-text-input',
-		upeThemeTextSelector: '.wc-block-components-text-input',
+		upeThemeTextSelectors: [ '.wc-block-components-text-input' ],
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
@@ -143,7 +149,7 @@ export const appearanceSelectors = {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
 		upeThemeInputSelector: '#billing_first_name',
 		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
-		upeThemeTextSelector: '.woocommerce-checkout .form-row',
+		upeThemeTextSelectors: [ '.woocommerce-checkout .form-row' ],
 		rowElement: 'p',
 		validClasses: [ 'form-row' ],
 		invalidClasses: [
@@ -482,7 +488,11 @@ export const getFontRulesFromPage = () => {
  *
  * @return {string} Font size of the element.
  */
-function ensureFontSizeSmallerThan( selector, fontSize, percentage ) {
+function ensureFontSizeSmallerThan(
+	selector,
+	fontSize,
+	percentage = PMME_RELATIVE_TEXT_SIZE
+) {
 	const fontSizeNumber = parseFloat( fontSize );
 
 	// If the element is not found, return the font size number multiplied by the percentage.
@@ -524,7 +534,7 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	};
 
 	const paragraphRules = getFieldStyles(
-		selectors.upeThemeTextSelector,
+		selectors.upeThemeTextSelectors,
 		'.Text'
 	);
 
@@ -565,15 +575,13 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		colorBackground: backgroundColor,
 		colorText: paragraphRules.color,
 		fontFamily: paragraphRules.fontFamily,
-		// fontSizeBase: transformFontSize( paragraphRules.fontSize, 0.9 ),
 		fontSizeBase: paragraphRules.fontSize,
 	};
 
 	if ( selectors.pmmeRelativeTextSizeSelector && globalRules.fontSizeBase ) {
 		globalRules.fontSizeBase = ensureFontSizeSmallerThan(
 			selectors.pmmeRelativeTextSizeSelector,
-			paragraphRules.fontSize,
-			PMME_RELATIVE_TEXT_SIZE // The font size of the payment method messaging should be 85% or less of the target font size.
+			paragraphRules.fontSize
 		);
 	}
 
