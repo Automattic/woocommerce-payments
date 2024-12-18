@@ -40,8 +40,8 @@ export const transformPrice = ( price, priceObject ) => {
 export const transformCartDataForDisplayItems = ( cartData ) => {
 	const displayItems = cartData.items.map( ( item ) => ( {
 		amount: transformPrice(
-			parseInt( item.prices.price, 10 ),
-			item.prices
+			parseInt( item.totals?.line_subtotal || item.prices.price, 10 ),
+			item.totals || item.prices
 		),
 		name: [
 			item.name,
