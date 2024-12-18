@@ -85,20 +85,12 @@ body.wcpay-onboarding__body {
 			}
 
 			&__content {
-				max-width: 620px;
+				max-width: 615px;
 				width: 100%;
-
-				&:has( > form:only-child ) {
-					padding: 0 $gap-larger;
-				}
 
 				@media screen and ( max-width: $break-mobile ) {
 					width: 100%;
 					padding: 0 $gap;
-
-					&:has( > form:only-child ) {
-						padding: 0 $gap;
-					}
 				}
 			}
 
