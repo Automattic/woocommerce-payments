@@ -114,7 +114,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// but only for the specific case of subscriptions with a free trial and a signup fee.
 		$items_total_calculated = 0;
 		foreach ( WC()->cart->get_cart() as $cart_item ) {
-			// deberiamos preguntar si tiene sign up fee? porque el fix es para el caso 4 que tiene sign up fee.
 			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::get_sign_up_fee( $cart_item['product_id'] ) > 0 && WC_Subscriptions_Product::get_sign_up_fee( $cart_item['product_id'] ) > 0 ) {
 				$items_total_calculated += wc_get_product( $cart_item['product_id'] )->get_price();
 			}
