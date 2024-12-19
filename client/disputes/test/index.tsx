@@ -87,9 +87,6 @@ declare const global: {
 				precision: number;
 			};
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
-		};
 		locale: {
 			code: string;
 		};
@@ -185,9 +182,6 @@ describe( 'Disputes list', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
-			},
-			reporting: {
-				exportModalDismissed: true,
 			},
 			locale: {
 				code: 'en',

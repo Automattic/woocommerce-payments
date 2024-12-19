@@ -80,9 +80,6 @@ declare const global: {
 		connect: {
 			country: string;
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
-		};
 		locale: {
 			code: string;
 		};
@@ -141,9 +138,6 @@ describe( 'Deposits list', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
-			},
-			reporting: {
-				exportModalDismissed: true,
 			},
 			locale: {
 				code: 'en',

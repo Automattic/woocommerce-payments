@@ -88,9 +88,6 @@ declare const global: {
 				precision: number;
 			};
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
-		};
 		locale: {
 			code: string;
 		};
@@ -231,9 +228,6 @@ describe( 'Transactions list', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
-			},
-			reporting: {
-				exportModalDismissed: true,
 			},
 			locale: {
 				code: 'en',

@@ -123,9 +123,6 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
-		reporting: {
-			exportModalDismissed?: boolean;
-		};
 		locale: {
 			code: string;
 			english_name: string;
