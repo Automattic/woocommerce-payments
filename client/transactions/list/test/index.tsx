@@ -100,6 +100,9 @@ declare const global: {
 		reporting?: {
 			exportModalDismissed: boolean;
 		};
+		locale: {
+			code: string;
+		};
 	};
 };
 
@@ -243,6 +246,7 @@ describe( 'Transactions list', () => {
 			reporting: {
 				exportModalDismissed: true,
 			},
+			locale: { code: 'en' },
 		};
 	} );
 

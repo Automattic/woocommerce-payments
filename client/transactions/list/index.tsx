@@ -39,12 +39,7 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { depositStatusLabels } from 'deposits/strings';
-import {
-	formatStringValue,
-	isExportModalDismissed,
-	isDefaultSiteLanguage,
-	applyThousandSeparator,
-} from 'wcpay/utils';
+import { formatStringValue, applyThousandSeparator } from 'wcpay/utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
@@ -59,7 +54,6 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
 import DownloadButton from 'components/download-button';
-import CSVExportModal from 'components/csv-export-modal';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
@@ -310,8 +304,6 @@ export const TransactionsList = (
 		transactionsSummary,
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
-
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
 
 	const columnsToDisplay = useMemo(
 		() =>
@@ -714,11 +706,7 @@ export const TransactionsList = (
 		} );
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport();
-			}
+			endpointExport();
 		} else {
 			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
 				if ( column.labelInCsv ) {
@@ -802,16 +790,6 @@ export const TransactionsList = (
 		}
 	}
 
-	const closeModal = () => {
-		setCSVExportModalOpen( false );
-	};
-
-	const exportTransactions = () => {
-		endpointExport();
-
-		closeModal();
-	};
-
 	const showFilters = ! props.depositId;
 	const storeCurrencies =
 		transactionsSummary.store_currencies ||
@@ -862,17 +840,6 @@ export const TransactionsList = (
 					),
 				] }
 			/>
-
-			{ ! isDefaultSiteLanguage() &&
-				! isExportModalDismissed() &&
-				isCSVExportModalOpen && (
-					<CSVExportModal
-						onClose={ closeModal }
-						onSubmit={ exportTransactions }
-						totalItems={ totalRows }
-						exportType={ 'transactions' }
-					/>
-				) }
 		</Page>
 	);
 };
