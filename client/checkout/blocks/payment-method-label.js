@@ -5,6 +5,11 @@ import {
 	Elements,
 	PaymentMethodMessagingElement,
 } from '@stripe/react-stripe-js';
+import { PaymentMethodsLogos } from './payment-methods-logos';
+import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
+import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
+import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
+import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
 import { normalizeCurrencyToMinorUnit } from '../utils';
 import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -12,6 +17,32 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { useEffect, useState } from '@wordpress/element';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
+
+const paymentMethods = [
+	{
+		name: 'visa',
+		component: Visa,
+	},
+	{
+		name: 'mastercard',
+		component: Mastercard,
+	},
+	{
+		name: 'amex',
+		component: Amex,
+	},
+	{
+		name: 'discover',
+		component: Discover,
+	},
+	// TODO: Missing Diners Club
+	// TODO: What other card payment methods should be here?
+];
+const breakpointConfigs = [
+	{ breakpoint: 550, maxElements: 2 },
+	{ breakpoint: 833, maxElements: 4 },
+	{ breakpoint: 960, maxElements: 2 },
+];
 
 const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 const PaymentMethodMessageWrapper = ( {
@@ -47,16 +78,12 @@ const PaymentMethodMessageWrapper = ( {
 	);
 };
 
-export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
+export default ( { api, title, countries, upeName } ) => {
 	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
 	const isTestMode = getUPEConfig( 'testMode' );
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
 	);
-	const [ upeAppearanceTheme, setUpeAppearanceTheme ] = useState(
-		getUPEConfig( 'wcBlocksUPEAppearanceTheme' )
-	);
-
 	// Stripe expects the amount to be sent as the minor unit of 2 digits.
 	const amount = parseInt(
 		normalizeCurrencyToMinorUnit(
@@ -81,7 +108,6 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 				'blocks_checkout'
 			);
 			setAppearance( upeAppearance );
-			setUpeAppearanceTheme( upeAppearance.theme );
 		}
 
 		if ( ! appearance ) {
@@ -104,12 +130,10 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 						{ __( 'Test Mode', 'woocommerce-payments' ) }
 					</span>
 				) }
-				<img
-					className="payment-methods--logos"
-					src={
-						upeAppearanceTheme === 'night' ? iconDark : iconLight
-					}
-					alt={ title }
+				<PaymentMethodsLogos
+					maxElements={ 4 }
+					paymentMethods={ paymentMethods }
+					breakpointConfigs={ breakpointConfigs }
 				/>
 			</div>
 			<PaymentMethodMessageWrapper
