@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Load checkout scripts when they are not previously loaded on checkout page.

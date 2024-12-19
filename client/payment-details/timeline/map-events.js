@@ -30,7 +30,7 @@ import {
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
-import { fraudOutcomeRulesetMapping } from './mappings';
+import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
 
 /**
  * Creates a timeline item about a payment status change
@@ -772,6 +772,10 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 			];
 		case 'failed':
+			const paymentFailureMessage =
+				paymentFailureMapping[ event.reason ] ||
+				paymentFailureMapping.default;
+
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -779,11 +783,14 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 				getMainTimelineItem(
 					event,
-					stringWithAmount(
-						/* translators: %s is a monetary amount */
-						__( 'A payment of %s failed.', 'woocommerce-payments' ),
-						event.amount,
-						true
+					sprintf(
+						/* translators: %1$s is the payment amount, %2$s is the failure reason message */
+						__(
+							'A payment of %1$s failed: %2$s.',
+							'woocommerce-payments'
+						),
+						formatExplicitCurrency( event.amount, event.currency ),
+						paymentFailureMessage
 					),
 					<CrossIcon className="is-error" />
 				),

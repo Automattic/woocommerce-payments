@@ -321,8 +321,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		if ( 'card' !== $this->stripe_id ) {
-			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
-			$this->method_title = "WooPayments ($this->title)";
+			$this->id = self::GATEWAY_ID . '_' . $this->stripe_id;
 		}
 
 		// Capabilities have different keys than the payment method ID's,
@@ -366,7 +365,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_title() {
-		$this->title = $this->payment_method->get_title();
+		$this->title        = $this->payment_method->get_title();
+		$this->method_title = "WooPayments ($this->title)";
 		return parent::get_title();
 	}
 
