@@ -11,12 +11,7 @@ import os from 'os';
  * Internal dependencies
  */
 import DisputesList from '..';
-import {
-	useDisputes,
-	useDisputesSummary,
-	useReportingExportLanguage,
-	useSettings,
-} from 'data/index';
+import { useDisputes, useDisputesSummary, useSettings } from 'data/index';
 import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
 import {
@@ -54,7 +49,6 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 	useSettings: jest.fn(),
 } ) );
 
@@ -74,10 +68,6 @@ const mockUseDisputesSummary = useDisputesSummary as jest.MockedFunction<
 
 const mockUseSettings = useSettings as jest.MockedFunction<
 	typeof useSettings
->;
-
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
 >;
 
 declare const global: {
@@ -172,8 +162,6 @@ describe( 'Disputes list', () => {
 		Date.now = jest.fn( () =>
 			new Date( '2019-11-07T12:33:37.000Z' ).getTime()
 		);
-
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
 
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
