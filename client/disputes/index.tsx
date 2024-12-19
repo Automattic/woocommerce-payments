@@ -382,22 +382,22 @@ export const DisputesList = (): JSX.Element => {
 			window.confirm( confirmMessage )
 		) {
 			try {
-				const { exported_disputes: exportedDisputes } = await apiFetch(
-					{
-						path: getDisputesCSV( {
-							userEmail,
-							locale,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							filter,
-							statusIs,
-							statusIsNot,
-						} ),
-						method: 'POST',
-					}
-				);
+				const {
+					exported_disputes: exportedDisputes,
+				}: { exported_disputes: number } = await apiFetch( {
+					path: getDisputesCSV( {
+						userEmail,
+						locale,
+						dateAfter,
+						dateBefore,
+						dateBetween,
+						match,
+						filter,
+						statusIs,
+						statusIsNot,
+					} ),
+					method: 'POST',
+				} );
 
 				createNotice(
 					'success',
