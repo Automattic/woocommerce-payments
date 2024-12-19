@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
@@ -343,7 +344,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			if ( ! empty( $payment_information ) ) {
 				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
-				if ( null !== $e->get_merchant_message() ) {
+				if ( $e instanceof API_Merchant_Exception ) {
 					$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
 				}
 
