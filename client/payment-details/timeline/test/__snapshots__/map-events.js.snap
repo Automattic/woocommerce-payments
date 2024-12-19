@@ -12,7 +12,7 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events with fe
     "body": [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $20.97 USD was added to your 
+      $20.97 USD was added to your
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
@@ -50,7 +50,7 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events without
     "body": [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $20.97 USD was added to your 
+      $20.97 USD was added to your
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
@@ -120,7 +120,7 @@ exports[`mapTimelineEvents Multi-Currency events formats dispute_won events 1`] 
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
-      $44.99 USD was added to your 
+      $44.99 USD was added to your
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2d3"
       >
@@ -372,7 +372,7 @@ exports[`mapTimelineEvents single currency events formats captured events with f
     "body": [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $59.50 USD was added to your 
+      $59.50 USD was added to your
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
@@ -389,7 +389,7 @@ exports[`mapTimelineEvents single currency events formats captured events with f
       <ul
         className="fee-breakdown-list"
       >
-         
+
         <li>
           Base fee: 1.4% + £0.20
         </li>
@@ -397,7 +397,7 @@ exports[`mapTimelineEvents single currency events formats captured events with f
           International card fee: 1.5%
         </li>
         <li>
-          Foreign exchange fee: 2%
+          Currency conversion fee: 2%
         </li>
         <li>
           Discount
@@ -412,7 +412,7 @@ exports[`mapTimelineEvents single currency events formats captured events with f
             </li>
           </ul>
         </li>
-         
+
       </ul>,
       "Net payout: $59.50 USD",
     ],
@@ -437,7 +437,7 @@ exports[`mapTimelineEvents single currency events formats captured events with j
     "body": [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $59.50 USD was added to your 
+      $59.50 USD was added to your
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
@@ -475,7 +475,7 @@ exports[`mapTimelineEvents single currency events formats captured events withou
     "body": [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $59.50 USD was added to your 
+      $59.50 USD was added to your
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
@@ -564,7 +564,7 @@ exports[`mapTimelineEvents single currency events formats dispute_won events 1`]
     ],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": <React.Fragment>
-      $115.00 USD was added to your 
+      $115.00 USD was added to your
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2d3"
       >
@@ -590,7 +590,7 @@ exports[`mapTimelineEvents single currency events formats financing paydown even
   {
     "body": [
       <React.Fragment>
-        Loan repayment: 
+        Loan repayment:
         <Link
           href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=flxln_1KOKzdR4ByxURRrFX9A65q40"
         >
@@ -673,7 +673,7 @@ exports[`mapTimelineEvents single currency events in person payments - tap to pa
     "body": [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $19.19 USD was added to your 
+      $19.19 USD was added to your
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
@@ -690,14 +690,14 @@ exports[`mapTimelineEvents single currency events in person payments - tap to pa
       <ul
         className="fee-breakdown-list"
       >
-         
+
         <li>
           Base fee: 2.6% + $0.10
         </li>
         <li>
           Tap to pay transaction fee: 0% + $0.10
         </li>
-         
+
       </ul>,
       "Net payout: $19.19 USD",
     ],
@@ -722,7 +722,7 @@ exports[`mapTimelineEvents single currency events should not render fee breakup 
     "body": [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": <React.Fragment>
-      $59.50 USD was added to your 
+      $59.50 USD was added to your
       <Link
         href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
       >
