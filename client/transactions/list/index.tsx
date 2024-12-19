@@ -31,11 +31,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import {
-	useTransactions,
-	useTransactionsSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useTransactions, useTransactionsSummary } from 'data/index';
 import { Transaction } from 'data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
@@ -46,7 +42,6 @@ import { depositStatusLabels } from 'deposits/strings';
 import {
 	formatStringValue,
 	isExportModalDismissed,
-	getExportLanguage,
 	isDefaultSiteLanguage,
 	applyThousandSeparator,
 } from 'wcpay/utils';
@@ -69,7 +64,6 @@ import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -318,10 +312,6 @@ export const TransactionsList = (
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
 	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
-
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const columnsToDisplay = useMemo(
 		() =>
@@ -601,13 +591,13 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
+	const endpointExport = async () => {
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		const locale = getExportLanguage( language, exportLanguage );
+		const locale = wcpaySettings.locale.code;
 		const {
 			date_after: dateAfter,
 			date_before: dateBefore,
@@ -727,7 +717,7 @@ export const TransactionsList = (
 			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
 				setCSVExportModalOpen( true );
 			} else {
-				endpointExport( '' );
+				endpointExport();
 			}
 		} else {
 			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
@@ -816,8 +806,8 @@ export const TransactionsList = (
 		setCSVExportModalOpen( false );
 	};
 
-	const exportTransactions = ( language: string ) => {
-		endpointExport( language );
+	const exportTransactions = () => {
+		endpointExport();
 
 		closeModal();
 	};
