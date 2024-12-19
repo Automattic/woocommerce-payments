@@ -88,7 +88,9 @@ declare const global: {
 		reporting?: {
 			exportModalDismissed: boolean;
 		};
-		locale: { code: string };
+		locale: {
+			code: string;
+		};
 	};
 };
 
@@ -154,7 +156,9 @@ describe( 'Deposits list', () => {
 			reporting: {
 				exportModalDismissed: true,
 			},
-			locale: { code: 'en' },
+			locale: {
+				code: 'en',
+			},
 		};
 	} );
 

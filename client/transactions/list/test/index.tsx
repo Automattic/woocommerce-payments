@@ -246,7 +246,9 @@ describe( 'Transactions list', () => {
 			reporting: {
 				exportModalDismissed: true,
 			},
-			locale: { code: 'en' },
+			locale: {
+				code: 'en',
+			},
 		};
 	} );
 
