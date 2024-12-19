@@ -171,8 +171,12 @@ export const formatMethodFeesTooltip = (
 			) }
 			{ hasFees( accountFees.fx ) ? (
 				<div>
+					<div>Currency conversion fee</div>
 					<div>
-						{ __( 'Foreign exchange fee', 'woocommerce-payments' ) }
+						{ __(
+							'Currency conversion fee',
+							'woocommerce-payments'
+						) }
 					</div>
 					<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
 				</div>
@@ -304,7 +308,7 @@ export const formatAccountFeesDescription = (
 			currentBaseFeeDescription = sprintf(
 				// eslint-disable-next-line max-len
 				/* translators: %1 Base fee (that don't apply to this account at this moment), %2: Current fee (e.g: "2.9% + $.30 per transaction") */
-				__( '%1$s %2$s', 'woocommerce-payments' ),
+				__( '<s>%1$s</s> %2$s', 'woocommerce-payments' ),
 				feeDescription,
 				currentBaseFeeDescription
 			);
