@@ -4,7 +4,8 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 
 /**
  * Internal dependencies
@@ -24,15 +25,15 @@ describe( 'CopyButton', () => {
 	} );
 
 	describe( 'when the button is clicked', () => {
-		beforeAll( () => {
+		beforeEach( () => {
 			jest.useFakeTimers();
 		} );
 
-		afterAll( () => {
+		afterEach( () => {
 			jest.useRealTimers();
 		} );
 
-		it( 'copies the text to the clipboard and shows copied state', () => {
+		it( 'copies the text to the clipboard and shows copied state', async () => {
 			render(
 				<CopyButton
 					textToCopy="test_bank_reference_id"
@@ -44,15 +45,19 @@ describe( 'CopyButton', () => {
 				name: /Copy bank reference ID to clipboard/i,
 			} );
 
+			if ( ! button ) {
+				throw new Error( 'Button not found' );
+			}
+
 			//Mock the clipboard API
 			Object.assign( navigator, {
 				clipboard: {
-					writeText: jest.fn(),
+					writeText: jest.fn().mockResolvedValueOnce( undefined ),
 				},
 			} );
 
-			act( () => {
-				button?.click();
+			await act( async () => {
+				fireEvent.click( button );
 			} );
 
 			expect( navigator.clipboard.writeText ).toHaveBeenCalledWith(
