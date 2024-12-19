@@ -415,7 +415,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return true;
 		}
 
-		// Non-shipping product and billing is calculated based on shopper billing address. Excludes Pay for Order page.
+		// Non-shipping product and tax is calculated based on shopper billing address. Excludes Pay for Order page.
 		if (
 			// If the product doesn't needs shipping.
 			(
