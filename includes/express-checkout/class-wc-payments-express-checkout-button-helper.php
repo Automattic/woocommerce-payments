@@ -109,7 +109,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// but only for the specific case of subscriptions with a free trial and a signup fee.
 		$items_total_adjust = 0;
 		foreach ( WC()->cart->get_cart() as $cart_item ) {
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::get_sign_up_fee( $cart_item['product_id'] ) > 0 && WC_Subscriptions_Product::get_sign_up_fee( $cart_item['product_id'] ) > 0 ) {
+			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::get_trial_length( $cart_item['product_id'] ) > 0 && WC_Subscriptions_Product::get_sign_up_fee( $cart_item['product_id'] ) > 0 ) {
 				$items_total_adjust += wc_get_product( $cart_item['product_id'] )->get_price();
 			}
 		}
