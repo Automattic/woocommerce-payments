@@ -554,6 +554,8 @@ class WC_Payments {
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
 		self::$compatibility_service->init_hooks();
+		self::$customer_service->init_hooks();
+		self::$token_service->init_hooks();
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
