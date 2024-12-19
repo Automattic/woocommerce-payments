@@ -426,7 +426,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				( ( $this->is_cart() || $this->is_checkout() ) && ! WC()->cart->needs_shipping() )
 			)
 
-			// ...and billing is calculated based on billing address.
+			// ...and tax is calculated based on billing address.
 			&& wc_tax_enabled()
 			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
 			&& 'yes' !== get_option( 'woocommerce_prices_include_tax' )
