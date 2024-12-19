@@ -25,7 +25,6 @@ import { parseInt } from 'lodash';
  */
 import type { DepositsTableHeader } from 'wcpay/types/deposits';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
-import { useReportingExportLanguage } from 'data/index';
 import { displayType, depositStatusLabels } from '../strings';
 import {
 	formatExplicitCurrency,
@@ -39,13 +38,8 @@ import DownloadButton from 'components/download-button';
 import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
 import { applyThousandSeparator } from '../../utils/index.js';
 import DepositStatusChip from 'components/deposit-status-chip';
-import {
-	isExportModalDismissed,
-	getExportLanguage,
-	isDefaultSiteLanguage,
-} from 'utils';
+import { isExportModalDismissed, isDefaultSiteLanguage } from 'utils';
 import CSVExportModal from 'components/csv-export-modal';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
 
@@ -105,10 +99,6 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 ];
 
 export const DepositsList = (): JSX.Element => {
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
-
 	const [ isDownloading, setIsDownloading ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { deposits, isLoading } = useDeposits( getQuery() );
@@ -225,12 +215,12 @@ export const DepositsList = (): JSX.Element => {
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
+	const endpointExport = async () => {
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
-		const locale = getExportLanguage( language, exportLanguage );
+		const locale = wcpaySettings.locale.code;
 
 		const {
 			date_before: dateBefore,
@@ -318,7 +308,7 @@ export const DepositsList = (): JSX.Element => {
 			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
 				setCSVExportModalOpen( true );
 			} else {
-				endpointExport( '' );
+				endpointExport();
 			}
 		} else {
 			const params = getQuery();
@@ -363,8 +353,8 @@ export const DepositsList = (): JSX.Element => {
 		setCSVExportModalOpen( false );
 	};
 
-	const exportDeposits = ( language: string ) => {
-		endpointExport( language );
+	const exportDeposits = () => {
+		endpointExport();
 
 		closeModal();
 	};
