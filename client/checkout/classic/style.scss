@@ -103,8 +103,11 @@ li.wc_payment_method:has( .input-radio:checked
 	}
 }
 
-// Storefront compatibility.
-.theme-storefront {
+// Pseudo-element radio button compatibility.
+// Unfortunately, there is no direct way to detect the existence of pseudo-elements like ::before using CSS selectors,
+// so we use the theme class to add the necessary styles.
+.theme-storefront,
+.theme-twentytwentythree {
 	#payment {
 		.payment_methods {
 			> li.wc_payment_method {
