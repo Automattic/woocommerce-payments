@@ -2049,6 +2049,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$gateway->update_option( 'enabled', 'yes' );
 			$gateway->update_option( 'test_mode', empty( $onboarding_data['is_live'] ) ? 'yes' : 'no' );
 
+			$capabilities = $this->onboarding_service->get_capabilities_from_request();
+
+			// Activate enabled Payment Methods IDs.
+			if ( ! empty( $capabilities ) ) {
+				$this->update_enabled_payment_methods_ids( $gateway );
+			}
+
 			// Store a state after completing KYC for tracks. This is stored temporarily in option because
 			// user might not have agreed to TOS yet.
 			update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => true ] );
@@ -2567,6 +2574,57 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			},
 			'is_array', // We expect an array back from the cache.
 			$force_refresh
+		);
+	}
+
+	/**
+	 * Updates the enabled payment methods for a gateway.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway Payment gateway instance.
+	 * @param array                    $capabilities Provided capabilities.
+	 */
+	private function update_enabled_payment_methods_ids( $gateway, $capabilities = [] ): void {
+		$enabled_gateways = $gateway->get_upe_enabled_payment_method_ids();
+
+		$enabled_payment_methods = array_unique(
+			array_merge(
+				$enabled_gateways,
+				$this->exclude_placeholder_payment_methods( $capabilities )
+			)
+		);
+
+		$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+
+		foreach ( $enabled_payment_methods as $payment_method_id ) {
+			$payment_gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			if ( $payment_gateway ) {
+				$payment_gateway->enable();
+				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+			}
+		}
+
+		// If WooPay is enabled, update the gateway option.
+		if ( isset( $capabilities['woopay'] ) && $capabilities['woopay'] ) {
+			$gateway->update_is_woopay_enabled( true );
+		}
+	}
+
+	/**
+	 * Excludes placeholder payment methods and removes duplicates.
+	 *
+	 * @param array $payment_methods Array of payment methods to process.
+	 * @return array Filtered array of unique payment methods.
+	 */
+	private function exclude_placeholder_payment_methods( array $payment_methods ): array {
+		$excluded_methods = [ 'woopay', 'apple_google' ];
+
+		return array_filter(
+			array_unique(
+				array_keys( array_filter( $payment_methods ) )
+			),
+			function ( $payment_method ) use ( $excluded_methods ) {
+				return ! in_array( $payment_method, $excluded_methods, true );
+			}
 		);
 	}
 
