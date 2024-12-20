@@ -613,7 +613,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
                 <h4
                   class="payment-method-detail__label"
                 >
-                  Zip check
+                  Postal code check
                 </h4>
                 <p
                   class="payment-method-detail__value"

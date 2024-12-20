@@ -485,7 +485,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
                     aria-busy="true"
                     class="is-loadable-placeholder is-block"
                   >
-                    Zip check
+                    Postal code check
                   </span>
                 </h4>
                 <p
@@ -1144,7 +1144,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                 <h4
                   class="payment-method-detail__label"
                 >
-                  Zip check
+                  Postal code check
                 </h4>
                 <p
                   class="payment-method-detail__value"
