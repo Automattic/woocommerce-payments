@@ -2053,7 +2053,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			// Activate enabled Payment Methods IDs.
 			if ( ! empty( $capabilities ) ) {
-				$this->update_enabled_payment_methods_ids( $gateway );
+				$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
 			}
 
 			// Store a state after completing KYC for tracks. This is stored temporarily in option because
@@ -2111,6 +2111,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway->update_option( 'enabled', 'yes' );
 		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
 
+		$capabilities = $this->onboarding_service->get_capabilities_from_request();
+
+		// Activate enabled Payment Methods IDs.
+		if ( ! empty( $capabilities ) ) {
+			$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
+		}
+
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
@@ -2167,6 +2174,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway = WC_Payments::get_gateway();
 		$gateway->update_option( 'enabled', 'yes' );
 		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
+
+		$capabilities = $this->onboarding_service->get_capabilities_from_request();
+
+		// Activate enabled Payment Methods IDs.
+		if ( ! empty( $capabilities ) ) {
+			$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
+		}
 
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
@@ -2606,6 +2620,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// If WooPay is enabled, update the gateway option.
 		if ( isset( $capabilities['woopay'] ) && $capabilities['woopay'] ) {
 			$gateway->update_is_woopay_enabled( true );
+		}
+
+		// If Apple Pay and Google Pay are disabled update the gateway option,
+		// otherwise they are enabled by default.
+		if ( isset( $capabilities['apple_google'] ) && ! $capabilities['apple_google'] ) {
+			$gateway->update_option( 'payment_request', 'no' );
 		}
 	}
 
