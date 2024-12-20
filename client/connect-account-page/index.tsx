@@ -183,8 +183,8 @@ const ConnectAccountPage: React.FC = () => {
 			method: 'GET',
 		} ).then( ( account ) => {
 			// Simulate the update of the loader progress bar by 4% per check.
-			// Limit to a maximum of 15 checks or 30 seconds.
-			updateLoaderProgress( 100, 4 );
+			// Limit to a maximum of 10 checks (6% progress per each request starting from 40% = max 10 checks).
+			updateLoaderProgress( 100, 6 );
 
 			// If the account status is not a pending one, the progress percentage is above 95,
 			// or we've exceeded the timeout, consider our work done and redirect the merchant.
@@ -270,6 +270,7 @@ const ConnectAccountPage: React.FC = () => {
 					}
 
 					clearInterval( updateProgress );
+					// Update the progress bar to 40% since we've finished the initial account setup.
 					setTestDriveLoaderProgress( 40 );
 
 					// Check the url for the `wcpay-connection-success` parameter, indicating a successful connection.
