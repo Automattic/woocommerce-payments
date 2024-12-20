@@ -53,6 +53,15 @@ jest.mock( 'data/index', () => ( {
 	useTransactionsSummary: jest.fn(),
 } ) );
 
+// Mock dateI18n
+jest.mock( '@wordpress/date', () => ( {
+	dateI18n: jest.fn( ( format, date ) => {
+		return jest
+			.requireActual( '@wordpress/date' )
+			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
+	} ),
+} ) );
+
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
@@ -233,6 +242,8 @@ describe( 'Transactions list', () => {
 				code: 'en',
 			},
 		};
+		window.wcpaySettings.dateFormat = 'M j, Y';
+		window.wcpaySettings.timeFormat = 'g:iA';
 	} );
 
 	test( 'renders correctly when filtered by payout', () => {

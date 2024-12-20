@@ -15,6 +15,8 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		dateFormat: string;
+		timeFormat: string;
 	};
 };
 const mockWcPaySettings = {
@@ -23,6 +25,8 @@ const mockWcPaySettings = {
 	connect: {
 		country: 'US',
 	},
+	dateFormat: 'M j, Y',
+	timeFormat: 'g:iA',
 };
 
 describe( 'Review fraud outcome transactions columns', () => {

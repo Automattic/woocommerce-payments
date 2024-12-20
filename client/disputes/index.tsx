@@ -5,7 +5,6 @@
  */
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
-import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { Button } from '@wordpress/components';
@@ -45,8 +44,9 @@ import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
-
+import DateFormatNotice from 'wcpay/components/date-format-notice';
 import './style.scss';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -190,10 +190,9 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 			</span>
 		);
 	}
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( dispute.due_by ).local().toISOString()
-	);
+	return formatDateTimeFromString( dispute.due_by, {
+		includeTime: true,
+	} );
 };
 
 export const DisputesList = (): JSX.Element => {
@@ -284,10 +283,9 @@ export const DisputesList = (): JSX.Element => {
 			created: {
 				value: dispute.created,
 				display: clickable(
-					dateI18n(
-						'M j, Y',
-						moment( dispute.created ).toISOString()
-					)
+					formatDateTimeFromString( dispute.created, {
+						includeTime: true,
+					} )
 				),
 			},
 			dueBy: {
@@ -464,17 +462,18 @@ export const DisputesList = (): JSX.Element => {
 					{
 						// Disputed On.
 						...row[ 10 ],
-						value: dateI18n(
-							'Y-m-d',
-							moment( row[ 10 ].value ).toISOString()
+						value: formatDateTimeFromString(
+							row[ 10 ].value as string
 						),
 					},
 					{
 						// Respond by.
 						...row[ 11 ],
-						value: dateI18n(
-							'Y-m-d / g:iA',
-							moment( row[ 11 ].value ).toISOString()
+						value: formatDateTimeFromString(
+							row[ 11 ].value as string,
+							{
+								includeTime: true,
+							}
 						),
 					},
 				];
@@ -522,6 +521,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
+			<DateFormatNotice />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard

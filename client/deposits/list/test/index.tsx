@@ -15,7 +15,7 @@ import os from 'os';
  */
 import { DepositsList } from '../';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
-import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
+import { getUnformattedAmount } from 'wcpay/utils/test-utils';
 import {
 	CachedDeposit,
 	CachedDeposits,
@@ -83,6 +83,7 @@ declare const global: {
 		locale: {
 			code: string;
 		};
+		dateFormat: string;
 	};
 };
 
@@ -142,6 +143,7 @@ describe( 'Deposits list', () => {
 			locale: {
 				code: 'en',
 			},
+			dateFormat: 'M j Y',
 		};
 	} );
 
@@ -310,7 +312,7 @@ describe( 'Deposits list', () => {
 			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
 			//    trailing zeros as in the display amount.
 			//
-			expect( formatDate( csvFirstDeposit[ 1 ], 'M j, Y' ) ).toBe(
+			expect( csvFirstDeposit[ 1 ].replace( /^"|"$/g, '' ) ).toBe(
 				displayFirstDeposit[ 0 ]
 			); // date
 			expect( csvFirstDeposit[ 2 ] ).toBe( displayFirstDeposit[ 1 ] ); // type

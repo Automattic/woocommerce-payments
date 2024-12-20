@@ -57,7 +57,7 @@
 		"feeBreakdown": {
 			"base": "Base fee: 3.6%",
 			"additional-international": "International card fee: 2%",
-			"additional-fx": "Foreign exchange fee: 2%"
+			"additional-fx": "Currency conversion fee: 2%"
 		},
 		"netString": "Net payout: ¥4,507 JPY"
 	}

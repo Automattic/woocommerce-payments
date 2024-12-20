@@ -123,6 +123,7 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
+		isDateFormatNoticeDismissed: boolean;
 		locale: {
 			code: string;
 			english_name: string;
@@ -134,6 +135,8 @@ declare global {
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
 		defaultExpressCheckoutBorderRadius: string;
+		dateFormat: string;
+		timeFormat: string;
 	};
 
 	const wc: {
