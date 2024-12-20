@@ -2049,6 +2049,21 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$gateway->update_option( 'enabled', 'yes' );
 			$gateway->update_option( 'test_mode', empty( $onboarding_data['is_live'] ) ? 'yes' : 'no' );
 
+			/**
+			 * ==================
+			 * Enforces the update of payment methods to 'enabled' based on the capabilities
+			 * provided during the NOX onboarding process. Merchants have the option to
+			 * preselect their desired payment methods as part of this flow.
+			 *
+			 * The capabilities are provided in the following format:
+			 *
+			 * [
+			 *   'card' => true,
+			 *   'affirm' => true,
+			 *   ...
+			 * ]
+			 * ==================
+			 */
 			$capabilities = $this->onboarding_service->get_capabilities_from_request();
 
 			// Activate enabled Payment Methods IDs.
@@ -2111,12 +2126,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway->update_option( 'enabled', 'yes' );
 		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
 
-		$capabilities = $this->onboarding_service->get_capabilities_from_request();
-		// Activate enabled Payment Methods IDs.
-		if ( ! empty( $capabilities ) ) {
-			$this->onboarding_service->update_enabled_payment_methods_ids( $gateway, $capabilities );
-		}
-
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
@@ -2174,6 +2183,21 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway->update_option( 'enabled', 'yes' );
 		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
 
+		/**
+		 * ==================
+		 * Enforces the update of payment methods to 'enabled' based on the capabilities
+		 * provided during the NOX onboarding process. Merchants have the option to
+		 * preselect their desired payment methods as part of this flow.
+		 *
+		 * The capabilities are provided in the following format:
+		 *
+		 * [
+		 *   'card' => true,
+		 *   'affirm' => true,
+		 *   ...
+		 * ]
+		 * ==================
+		 */
 		$capabilities = $this->onboarding_service->get_capabilities_from_request();
 		// Activate enabled Payment Methods IDs.
 		if ( ! empty( $capabilities ) ) {
