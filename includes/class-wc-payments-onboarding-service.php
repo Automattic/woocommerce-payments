@@ -1077,6 +1077,7 @@ class WC_Payments_Onboarding_Service {
 	 * WooPay and Apple Pay & Google Pay are considered placeholder payment methods and are excluded.
 	 *
 	 * @param array $payment_methods Array of payment methods to process.
+	 *
 	 * @return array Filtered array of unique payment methods.
 	 */
 	private function exclude_placeholder_payment_methods( array $payment_methods ): array {
