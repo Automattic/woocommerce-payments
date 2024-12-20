@@ -1070,6 +1070,10 @@ class WC_Payments_Onboarding_Service {
 		// Update the gateway option.
 		$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
 
+		/**
+		 * Keeps the list of enabled payment method IDs synchronized between the default
+		 * `woocommerce_woocommerce_payments_settings` and duplicates in individual gateway settings.
+		 */
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			$payment_gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
 			if ( $payment_gateway ) {
