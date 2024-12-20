@@ -154,7 +154,8 @@ export const getFilters = (
 
 /*eslint-disable max-len*/
 export const getAdvancedFilters = (
-	customerCurrencyOptions?: TransactionsFilterEntryType[]
+	customerCurrencyOptions?: TransactionsFilterEntryType[],
+	transactionSourceOptions?: TransactionsFilterEntryType[]
 ): any => {
 	// TODO: Remove this and all the checks once we drop support of WooCommerce 7.7 and below.
 	const wooCommerceVersionString = getSetting( 'wcVersion' );
@@ -312,10 +313,7 @@ export const getAdvancedFilters = (
 				],
 				input: {
 					component: 'SelectControl',
-					options: [
-						{ label: 'card label', value: 'card' },
-						{ label: 'giropay label', value: 'giropay' },
-					], // @todo change to real options.
+					options: transactionSourceOptions,
 				},
 			},
 			type: {

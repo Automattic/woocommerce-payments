@@ -833,6 +833,7 @@ export const TransactionsList = (
 		transactionsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 	const customerCurrencies = transactionsSummary.customer_currencies || [];
+	const transactionSources = transactionsSummary.sources || [];
 
 	return (
 		<Page>
@@ -840,6 +841,7 @@ export const TransactionsList = (
 				<TransactionsFilters
 					storeCurrencies={ storeCurrencies }
 					customerCurrencies={ customerCurrencies }
+					transactionSources={ transactionSources }
 				/>
 			) }
 			<TableCard

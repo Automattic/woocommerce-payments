@@ -87,6 +87,7 @@ interface TransactionsSummary {
 		currency?: string;
 		store_currencies?: string[];
 		customer_currencies?: string[];
+		sources?: Transaction[ 'source' ][];
 	};
 	isLoading: boolean;
 }
