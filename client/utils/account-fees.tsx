@@ -171,7 +171,6 @@ export const formatMethodFeesTooltip = (
 			) }
 			{ hasFees( accountFees.fx ) ? (
 				<div>
-					<div>Currency conversion fee</div>
 					<div>
 						{ __(
 							'Currency conversion fee',
