@@ -95,6 +95,16 @@ const ConnectAccountPage: React.FC = () => {
 	const loaderProgressRef = useRef( testDriveLoaderProgress );
 	loaderProgressRef.current = testDriveLoaderProgress;
 
+	// Use a timer to track the elapsed time for the test drive mode setup.
+	let testDriveSetupStartTime: number;
+	// The test drive setup will be forced finished after 40 seconds
+	// (10 seconds for the initial calls plus 30 for checking the account status in a loop).
+	const testDriveSetupMaxDuration = 40;
+
+	// Helper function to calculate the elapsed time in seconds.
+	const elapsed = ( time: number ) =>
+		Math.round( ( Date.now() - time ) / 1000 );
+
 	const {
 		connectUrl,
 		connect: { availableCountries, country },
@@ -176,16 +186,17 @@ const ConnectAccountPage: React.FC = () => {
 			// Limit to a maximum of 15 checks or 30 seconds.
 			updateLoaderProgress( 100, 4 );
 
-			// If the account status is not a pending one or progress percentage is above 95,
-			// consider our work done and redirect the merchant.
-			// Otherwise, schedule another check after 2 seconds.
+			// If the account status is not a pending one, the progress percentage is above 95,
+			// or we've exceeded the timeout, consider our work done and redirect the merchant.
+			// Otherwise, schedule another check after a 2.5 seconds wait.
 			if (
 				( account &&
 					( account as AccountData ).status &&
 					! ( account as AccountData ).status.includes(
 						'pending'
 					) ) ||
-				loaderProgressRef.current > 95
+				loaderProgressRef.current > 95 ||
+				elapsed( testDriveSetupStartTime ) > testDriveSetupMaxDuration
 			) {
 				setTestDriveLoaderProgress( 100 );
 				const queryArgs = {
@@ -203,12 +214,15 @@ const ConnectAccountPage: React.FC = () => {
 					...extraQueryArgs,
 				} );
 			} else {
-				setTimeout( () => checkAccountStatus( extraQueryArgs ), 2000 );
+				setTimeout( () => checkAccountStatus( extraQueryArgs ), 2500 );
 			}
 		} );
 	};
 
 	const handleSetupTestDriveMode = async () => {
+		// Record the start time of the test drive setup.
+		testDriveSetupStartTime = Date.now();
+		// Initialize the progress bar.
 		setTestDriveLoaderProgress( 5 );
 		setTestDriveModeSubmitted( true );
 		trackConnectAccountClicked( true );
