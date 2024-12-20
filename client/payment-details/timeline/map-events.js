@@ -5,9 +5,7 @@
  */
 import { flatMap } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
 import { addQueryArgs } from '@wordpress/url';
-import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 import SyncIcon from 'gridicons/dist/sync';
@@ -31,6 +29,7 @@ import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
 import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 /**
  * Creates a timeline item about a payment status change
@@ -84,10 +83,7 @@ const getDepositTimelineItem = (
 						'woocommerce-payments'
 				  ),
 			formattedAmount,
-			dateI18n(
-				'M j, Y',
-				moment( event.deposit.arrival_date * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( event.deposit.arrival_date )
 		);
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
@@ -143,10 +139,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 				'woocommerce-payments'
 			),
 			formattedAmount,
-			dateI18n(
-				'M j, Y',
-				moment( event.deposit.arrival_date * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( event.deposit.arrival_date )
 		);
 
 		const depositUrl = getAdminUrl( {

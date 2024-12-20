@@ -7,8 +7,6 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
@@ -20,6 +18,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import DisputeDueByDate from './dispute-due-by-date';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 interface Props {
 	dispute: Dispute;
@@ -35,14 +34,8 @@ export const DisputeSteps: React.FC< Props > = ( {
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
-		const chargeDate = dateI18n(
-			'Y-m-d',
-			moment( chargeCreated * 1000 ).toISOString()
-		);
-		const disputeDate = dateI18n(
-			'Y-m-d',
-			moment( dispute.created * 1000 ).toISOString()
-		);
+		const chargeDate = formatDateTimeFromTimestamp( chargeCreated );
+		const disputeDate = formatDateTimeFromTimestamp( dispute.created );
 		const emailSubject = sprintf(
 			// Translators: %1$s is the store name, %2$s is the charge date.
 			__(
@@ -175,14 +168,12 @@ export const InquirySteps: React.FC< Props > = ( {
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
-		const chargeDate = dateI18n(
-			'Y-m-d',
-			moment( chargeCreated * 1000 ).toISOString()
-		);
-		const disputeDate = dateI18n(
-			'Y-m-d',
-			moment( dispute.created * 1000 ).toISOString()
-		);
+		const chargeDate = formatDateTimeFromTimestamp( chargeCreated, {
+			includeTime: true,
+		} );
+		const disputeDate = formatDateTimeFromTimestamp( dispute.created, {
+			includeTime: true,
+		} );
 		const emailSubject = sprintf(
 			// Translators: %1$s is the store name, %2$s is the charge date.
 			__(
