@@ -2052,16 +2052,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			/**
 			 * ==================
 			 * Enforces the update of payment methods to 'enabled' based on the capabilities
-			 * provided during the NOX onboarding process. Merchants have the option to
-			 * preselect their desired payment methods as part of this flow.
+			 * provided during the NOX onboarding process.
 			 *
-			 * The capabilities are provided in the following format:
-			 *
-			 * [
-			 *   'card' => true,
-			 *   'affirm' => true,
-			 *   ...
-			 * ]
+			 * @see WC_Payments_Onboarding_Service::update_enabled_payment_methods_ids
 			 * ==================
 			 */
 			$capabilities = $this->onboarding_service->get_capabilities_from_request();
@@ -2186,16 +2179,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		/**
 		 * ==================
 		 * Enforces the update of payment methods to 'enabled' based on the capabilities
-		 * provided during the NOX onboarding process. Merchants have the option to
-		 * preselect their desired payment methods as part of this flow.
+		 * provided during the NOX onboarding process.
 		 *
-		 * The capabilities are provided in the following format:
-		 *
-		 * [
-		 *   'card' => true,
-		 *   'affirm' => true,
-		 *   ...
-		 * ]
+		 * @see WC_Payments_Onboarding_Service::update_enabled_payment_methods_ids
 		 * ==================
 		 */
 		$capabilities = $this->onboarding_service->get_capabilities_from_request();

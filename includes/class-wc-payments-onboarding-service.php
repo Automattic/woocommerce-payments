@@ -277,8 +277,17 @@ class WC_Payments_Onboarding_Service {
 		);
 		$actioned_notes = self::get_actioned_notes();
 
+		/**
+		 * ==================
+		 * Enforces the update of payment methods to 'enabled' based on the capabilities
+		 * provided during the NOX onboarding process.
+		 *
+		 * @see self::update_enabled_payment_methods_ids
+		 * ==================
+		 */
 		$capabilities = $this->get_capabilities_from_request();
 		$gateway      = WC_Payments::get_gateway();
+
 		// Activate enabled Payment Methods IDs.
 		if ( ! empty( $capabilities ) ) {
 			$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
@@ -1033,7 +1042,17 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Updates the enabled payment methods for a gateway.
+	 * Update payment methods to 'enabled' based on the capabilities
+	 * provided during the NOX onboarding process. Merchants can preselect their preferred
+	 * payment methods as part of this flow.
+	 *
+	 * The capabilities are provided in the following format:
+	 *
+	 * [
+	 *   'card' => true,
+	 *   'affirm' => true,
+	 *   ...
+	 * ]
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway Payment gateway instance.
 	 * @param array                    $capabilities Provided capabilities.
@@ -1060,13 +1079,13 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		// If WooPay is enabled, update the gateway option.
-		if ( isset( $capabilities['woopay'] ) && $capabilities['woopay'] ) {
+		if ( ! empty( $capabilities['woopay'] ) ) {
 			$gateway->update_is_woopay_enabled( true );
 		}
 
 		// If Apple Pay and Google Pay are disabled update the gateway option,
 		// otherwise they are enabled by default.
-		if ( isset( $capabilities['apple_google'] ) && ! $capabilities['apple_google'] ) {
+		if ( empty( $capabilities['apple_google'] ) ) {
 			$gateway->update_option( 'payment_request', 'no' );
 		}
 	}
