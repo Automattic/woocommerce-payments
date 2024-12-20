@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add type assertion for disputes CSV export response to ensure type safety and fix TypeScript error
