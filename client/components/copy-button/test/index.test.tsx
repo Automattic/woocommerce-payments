@@ -25,14 +25,6 @@ describe( 'CopyButton', () => {
 	} );
 
 	describe( 'when the button is clicked', () => {
-		beforeEach( () => {
-			jest.useFakeTimers();
-		} );
-
-		afterEach( () => {
-			jest.useRealTimers();
-		} );
-
 		it( 'copies the text to the clipboard and shows copied state', async () => {
 			render(
 				<CopyButton
@@ -66,7 +58,7 @@ describe( 'CopyButton', () => {
 			expect( button ).toHaveClass( 'state--copied' );
 
 			act( () => {
-				jest.advanceTimersByTime( 2000 );
+				fireEvent.animationEnd( button );
 			} );
 
 			expect( button ).not.toHaveClass( 'state--copied' );
