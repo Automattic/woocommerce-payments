@@ -101,7 +101,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 		}
 
-		// This is a temporary fix that should be removed later when we fix the amounts in the item list.
 		// The reason for this fix is that amount ECE uses on the product page is calculated using the subscription price + the signup fee.
 		// However, in this case, it is calculated based solely on the cart total.
 		// For subscriptions with a free trial and a signup fee, the cart does not account for the total item value, only the signup fee.
