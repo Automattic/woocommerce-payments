@@ -1048,6 +1048,7 @@ class WC_Payments_Onboarding_Service {
 			)
 		);
 
+		// Update the gateway option.
 		$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
@@ -1073,10 +1074,13 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Excludes placeholder payment methods and removes duplicates.
 	 *
+	 * WooPay and Apple Pay & Google Pay are considered placeholder payment methods and are excluded.
+	 *
 	 * @param array $payment_methods Array of payment methods to process.
 	 * @return array Filtered array of unique payment methods.
 	 */
 	private function exclude_placeholder_payment_methods( array $payment_methods ): array {
+		// Placeholder payment methods.
 		$excluded_methods = [ 'woopay', 'apple_google' ];
 
 		return array_filter(
