@@ -214,6 +214,9 @@ const ConnectAccountPage: React.FC = () => {
 					...extraQueryArgs,
 				} );
 			} else {
+				// Schedule another check after 2.5 seconds.
+				// 2.5 seconds plus 0.5 seconds for the fetch request is 3 seconds.
+				// With a maximum of 10 checks, we will wait for 30 seconds before ending the process normally.
 				setTimeout( () => checkAccountStatus( extraQueryArgs ), 2500 );
 			}
 		} );
