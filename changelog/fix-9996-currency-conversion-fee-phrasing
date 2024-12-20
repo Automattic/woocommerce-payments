@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Use "currency conversion fee" instead "foreign exchange fee" in payment timeline and various other places.
