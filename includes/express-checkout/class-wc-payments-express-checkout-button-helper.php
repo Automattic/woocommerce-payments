@@ -412,7 +412,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
 		if ( $this->is_pay_for_order_page() ) {
-			return true;
+			return $this->is_pay_for_order_supported();
 		}
 
 		// Non-shipping product and tax is calculated based on shopper billing address. Excludes Pay for Order page.
@@ -747,6 +747,38 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data['product_type']   = $product->get_type();
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
+	}
+
+	/**
+	 * The Store API doesn't allow checkout without the billing email address present on the order data.
+	 * https://github.com/woocommerce/woocommerce/issues/48540
+	 *
+	 * @return bool
+	 */
+	private function is_pay_for_order_supported() {
+		if ( ! WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
+			return true;
+		}
+
+		$order_id = absint( get_query_var( 'order-pay' ) );
+		if ( 0 === $order_id ) {
+			return false;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return false;
+		}
+
+		// we don't need to check its validity or value, we just need to ensure a billing email is present.
+		$billing_email = $order->get_billing_email();
+		if ( ! empty( $billing_email ) ) {
+			return true;
+		}
+
+		Logger::log( 'Billing email not present ( Express Checkout Element button disabled )' );
+
+		return false;
 	}
 
 	/**
