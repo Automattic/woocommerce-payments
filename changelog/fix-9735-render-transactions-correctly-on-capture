@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure captured transactions appear in the Transactions tab without requiring a page refresh.
