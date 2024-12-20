@@ -270,6 +270,54 @@ export const getAdvancedFilters = (
 					options: customerCurrencyOptions,
 				},
 			},
+			source: {
+				labels: {
+					add: __( 'Payment method', 'woocommerce-payments' ),
+					remove: __(
+						'Remove payment method filter',
+						'woocommerce-payments'
+					),
+					rule: __(
+						'Select a payment method filter match',
+						'woocommerce-payments'
+					),
+					title: __(
+						'<title>Payment method</title> <rule /> <filter />',
+						'woocommerce-payments'
+					),
+					filter: __(
+						'Select a payment method',
+						'woocommerce-payments'
+					),
+				},
+				rules: [
+					{
+						value: 'is',
+						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen payment method. */
+						label: _x(
+							'Is',
+							'payment method',
+							'woocommerce-payments'
+						),
+					},
+					{
+						value: 'is_not',
+						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen payment method. */
+						label: _x(
+							'Is not',
+							'payment method',
+							'woocommerce-payments'
+						),
+					},
+				],
+				input: {
+					component: 'SelectControl',
+					options: [
+						{ label: 'card label', value: 'card' },
+						{ label: 'giropay label', value: 'giropay' },
+					], // @todo change to real options.
+				},
+			},
 			type: {
 				labels: {
 					add: __( 'Type', 'woocommerce-payments' ),

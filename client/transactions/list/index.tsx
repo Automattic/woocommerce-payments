@@ -626,6 +626,8 @@ export const TransactionsList = (
 			risk_level_is_not: riskLevelIsNot,
 			customer_currency_is: customerCurrencyIs,
 			customer_currency_is_not: customerCurrencyIsNot,
+			source_is: sourceIs,
+			source_is_not: sourceIsNot,
 		} = params;
 		const depositId = props.depositId;
 
@@ -633,6 +635,8 @@ export const TransactionsList = (
 			!! dateAfter ||
 			!! dateBefore ||
 			!! dateBetween ||
+			!! sourceIs ||
+			!! sourceIsNot ||
 			!! search ||
 			!! typeIs ||
 			!! typeIsNot ||
@@ -675,6 +679,8 @@ export const TransactionsList = (
 						sourceDeviceIsNot,
 						customerCurrencyIs,
 						customerCurrencyIsNot,
+						sourceIs,
+						sourceIsNot,
 						channelIs,
 						channelIsNot,
 						customerCountryIs,
