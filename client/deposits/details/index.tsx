@@ -243,42 +243,46 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 				</CardHeader>
 				<CardBody>
 					<div className="woopayments-payout-details-header">
-						<h2>
-							{ __( 'Bank account', 'woocommerce-payments' ) }
-						</h2>
-						<div className="woopayments-payout-details-header__value">
-							{ deposit.bankAccount }
+						<div className="woopayments-payout-details-header__item">
+							<h2>
+								{ __( 'Bank account', 'woocommerce-payments' ) }
+							</h2>
+							<div className="woopayments-payout-details-header__value">
+								{ deposit.bankAccount }
+							</div>
 						</div>
-						<h2>
-							{ __(
-								'Bank reference ID',
-								'woocommerce-payments'
-							) }
-						</h2>
-						<div>
-							{ deposit.bank_reference_key ? (
-								<>
-									<span className="woopayments-payout-details-header__bank-reference-id">
-										{ deposit.bank_reference_key }
-									</span>
-									<CopyButton
-										textToCopy={
-											deposit.bank_reference_key
-										}
-										label={ __(
-											'Copy bank reference ID to clipboard',
+						<div className="woopayments-payout-details-header__item">
+							<h2>
+								{ __(
+									'Bank reference ID',
+									'woocommerce-payments'
+								) }
+							</h2>
+							<div className="woopayments-payout-details-header__value">
+								{ deposit.bank_reference_key ? (
+									<>
+										<span className="woopayments-payout-details-header__bank-reference-id">
+											{ deposit.bank_reference_key }
+										</span>
+										<CopyButton
+											textToCopy={
+												deposit.bank_reference_key
+											}
+											label={ __(
+												'Copy bank reference ID to clipboard',
+												'woocommerce-payments'
+											) }
+										/>
+									</>
+								) : (
+									<div className="woopayments-payout-details-header__value">
+										{ __(
+											'Not available',
 											'woocommerce-payments'
 										) }
-									/>
-								</>
-							) : (
-								<div className="woopayments-payout-details-header__value">
-									{ __(
-										'Not available',
-										'woocommerce-payments'
-									) }
-								</div>
-							) }
+									</div>
+								) }
+							</div>
 						</div>
 					</div>
 				</CardBody>
