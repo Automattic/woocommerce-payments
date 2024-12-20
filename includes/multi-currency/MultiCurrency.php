@@ -1343,6 +1343,10 @@ class MultiCurrency {
 		// If rounding is configured to be `0.00` we still need to round to the nearest lowest
 		// currency denomination.
 		// Otherwise we ceil the price to the configured rounding option.
+		// NOTE: We don't round if currency rounding is > 0.00 because in those cases we want to
+		// ceil the amount. For example: if $price = 1.251 and currency rounding = 0.25 we
+		// want that amount ceiled to 1.50. If we round( 1.251 ) to 1.25 before ceiling the
+		// price to the nearest 0.25 amount the final amount will be 1.25, which is incorrect.
 		if ( 0.00 === $rounding ) {
 			$num_decimals = absint(
 				$this->localization_service->get_currency_format(
