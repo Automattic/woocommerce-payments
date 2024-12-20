@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Checkout: Fix error when wc_address_i18n_params does not have data for a given country

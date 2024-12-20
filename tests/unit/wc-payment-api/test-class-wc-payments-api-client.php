@@ -7,7 +7,9 @@
 
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Intent_Status;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Internal\Logger;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -1193,6 +1195,24 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$result = $this->payments_api_client->get_tracking_info();
 
 		$this->assertEquals( $expect, $result );
+	}
+
+	public function test_throws_api_merchant_exception() {
+		$mock_response                  = [];
+		$mock_response['error']['code'] = 'card_declined';
+		$mock_response['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] = 'Bank declined';
+		$this->set_http_mock_response(
+			401,
+			$mock_response
+		);
+
+		try {
+			// This is a dummy call to trigger the response so that our test can validate the exception.
+			$this->payments_api_client->create_subscription();
+		} catch ( API_Merchant_Exception $e ) {
+			$this->assertSame( 'card_declined', $e->get_error_code() );
+			$this->assertSame( 'Bank declined', $e->get_merchant_message() );
+		}
 	}
 
 	/**

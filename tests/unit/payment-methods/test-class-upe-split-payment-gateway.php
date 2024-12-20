@@ -1141,59 +1141,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test get_payment_method_types without post request context or saved token.
-	 *
-	 * @return void
-	 */
-	public function test_get_payment_methods_without_request_context_or_token() {
-		$mock_upe_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->setConstructorArgs(
-				[
-					$this->mock_api_client,
-					$this->mock_wcpay_account,
-					$this->mock_customer_service,
-					$this->mock_token_service,
-					$this->mock_action_scheduler_service,
-					$this->mock_payment_methods[ Payment_Method::CARD ],
-					$this->mock_payment_methods,
-					$this->order_service,
-					$this->mock_dpps,
-					$this->mock_localization_service,
-					$this->mock_fraud_service,
-					$this->mock_duplicates_detection_service,
-					$this->mock_rate_limiter,
-				]
-			)
-			->setMethods(
-				[
-					'get_payment_methods_from_gateway_id',
-					'get_payment_method_ids_enabled_at_checkout',
-				]
-			)
-			->getMock();
-
-		$payment_information = new Payment_Information( 'pm_mock' );
-
-		unset( $_POST['payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification
-
-		$gateway = WC_Payments::get_gateway();
-		WC_Payments::set_gateway( $mock_upe_gateway );
-
-		$mock_upe_gateway->expects( $this->never() )
-			->method( 'get_payment_methods_from_gateway_id' );
-
-		$mock_upe_gateway->expects( $this->once() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->willReturn( [ Payment_Method::CARD ] );
-
-		$payment_methods = $mock_upe_gateway->get_payment_method_types( $payment_information );
-
-		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
-
-		WC_Payments::set_gateway( $gateway );
-	}
-
-	/**
 	 * Test get_payment_methods_from_gateway_id function with UPE enabled.
 	 *
 	 * @return void

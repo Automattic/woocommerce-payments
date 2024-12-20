@@ -103,6 +103,7 @@ class WC_Payments_Checkout {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
+		add_action( 'woocommerce_after_checkout_form', [ $this, 'maybe_load_checkout_scripts' ] );
 	}
 
 	/**
@@ -151,11 +152,18 @@ class WC_Payments_Checkout {
 			! has_block( 'woocommerce/checkout' ) &&
 			! wp_script_is( 'wcpay-upe-checkout', 'enqueued' )
 		) {
-			WC_Payments::get_gateway()->tokenization_script();
-			$script_handle = 'wcpay-upe-checkout';
-			$js_object     = 'wcpay_upe_config';
-			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-			wp_enqueue_script( $script_handle );
+			$this->load_checkout_scripts();
+		}
+	}
+
+	/**
+	 * Sometimes the filters can remove the payment gateway from the checkout page which results in the payment fields not being displayed.
+	 * This could prevent loading of the payment fields (checkout) scripts.
+	 * This function ensures that these scripts are loaded.
+	 */
+	public function maybe_load_checkout_scripts() {
+		if ( is_checkout() && ! wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) ) {
+			$this->load_checkout_scripts();
 		}
 	}
 
@@ -416,7 +424,7 @@ class WC_Payments_Checkout {
 			}
 
 			?>
-			<div class="wcpay-upe-form" 
+			<div class="wcpay-upe-form"
 				data-payment-method-type="<?php echo esc_attr( $this->gateway->get_stripe_id() ); ?>"
 				>
 				<?php
@@ -496,5 +504,16 @@ class WC_Payments_Checkout {
 		if ( null !== $payment_method_id ) {
 			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
+	}
+
+	/**
+	 * Load the checkout scripts.
+	 */
+	private function load_checkout_scripts() {
+		WC_Payments::get_gateway()->tokenization_script();
+		$script_handle = 'wcpay-upe-checkout';
+		$js_object     = 'wcpay_upe_config';
+		wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
+		wp_enqueue_script( $script_handle );
 	}
 }

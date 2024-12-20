@@ -79,10 +79,10 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 				define( 'WCPAY_ECE_CHECKOUT', true );
 			}
 
+			$this->express_checkout_button_helper->normalize_state();
+
 			// In case the state is required, but is missing, add a more descriptive error notice.
 			$this->express_checkout_button_helper->validate_state();
-
-			$this->express_checkout_button_helper->normalize_state();
 
 			WC()->checkout()->process_checkout();
 		} catch ( Exception $e ) {
@@ -333,6 +333,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			$data['needs_shipping'] = wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping();
 			$data['currency']       = strtolower( get_woocommerce_currency() );
 			$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+			$data['has_free_trial'] = class_exists( 'WC_Subscriptions_Product' ) ? WC_Subscriptions_Product::get_trial_length( $product ) > 0 : false;
 
 			wp_send_json( $data );
 		} catch ( Exception $e ) {

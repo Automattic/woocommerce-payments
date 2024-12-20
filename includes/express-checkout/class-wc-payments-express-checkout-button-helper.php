@@ -415,7 +415,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return true;
 		}
 
-		// Non-shipping product and billing is calculated based on shopper billing addres. Excludes Pay for Order page.
+		// Non-shipping product and tax is calculated based on shopper billing address. Excludes Pay for Order page.
 		if (
 			// If the product doesn't needs shipping.
 			(
@@ -426,8 +426,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				( ( $this->is_cart() || $this->is_checkout() ) && ! WC()->cart->needs_shipping() )
 			)
 
-			// ...and billing is calculated based on billing address.
-			&& wc_tax_enabled() && 'billing' === get_option( 'woocommerce_tax_based_on' )
+			// ...and tax is calculated based on billing address.
+			&& wc_tax_enabled()
+			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
+			&& 'yes' !== get_option( 'woocommerce_prices_include_tax' )
 		) {
 			return false;
 		}
@@ -742,6 +744,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
 		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+		$data['product_type']   = $product->get_type();
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
@@ -760,22 +763,29 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 *
 		 * @psalm-suppress UndefinedClass
 		 */
-		if ( is_null( $product )
-			|| ! is_object( $product )
-			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) // Trial subscriptions with shipping are not supported.
+
+		if ( is_null( $product ) || ! is_object( $product ) ) {
+			$is_supported = false;
+		} else {
+			// Simple subscription that needs shipping with free trials is not supported.
+			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
+
+			if (
+			! in_array( $product->get_type(), $this->supported_product_types(), true )
+			|| $is_free_trial_simple_subs
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
-		) {
-			$is_supported = false;
-		} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
-			// File upload addon not supported.
-			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
-			foreach ( $product_addons as $addon ) {
-				if ( 'file_upload' === $addon['type'] ) {
-					$is_supported = false;
-					break;
+			) {
+				$is_supported = false;
+			} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
+				// File upload addon not supported.
+				$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
+				foreach ( $product_addons as $addon ) {
+					if ( 'file_upload' === $addon['type'] ) {
+						$is_supported = false;
+						break;
+					}
 				}
 			}
 		}
@@ -946,6 +956,46 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$billing_state    = ! empty( $_POST['billing_state'] ) ? wc_clean( wp_unslash( $_POST['billing_state'] ) ) : '';
 		$shipping_state   = ! empty( $_POST['shipping_state'] ) ? wc_clean( wp_unslash( $_POST['shipping_state'] ) ) : '';
 
+		// Due to a bug in Apple Pay, the "Region" part of a Hong Kong address is delivered in
+		// `shipping_postcode`, so we need some special case handling for that. According to
+		// our sources at Apple Pay people will sometimes use the district or even sub-district
+		// for this value. As such we check against all regions, districts, and sub-districts
+		// with both English and Mandarin spelling.
+		//
+		// @reykjalin: The check here is quite elaborate in an attempt to make sure this doesn't break once
+		// Apple Pay fixes the bug that causes address values to be in the wrong place. Because of that the
+		// algorithm becomes:
+		// 1. Use the supplied state if it's valid (in case Apple Pay bug is fixed)
+		// 2. Use the value supplied in the postcode if it's a valid HK region (equivalent to a WC state).
+		// 3. Fall back to the value supplied in the state. This will likely cause a validation error, in
+		// which case a merchant can reach out to us so we can either: 1) add whatever the customer used
+		// as a state to our list of valid states; or 2) let them know the customer must spell the state
+		// in some way that matches our list of valid states.
+		//
+		// @reykjalin: This HK specific sanitazation *should be removed* once Apple Pay fix
+		// the address bug. More info on that in pc4etw-bY-p2.
+		if ( 'HK' === $billing_country ) {
+			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
+
+			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $billing_state ) ) ) {
+				$billing_postcode = ! empty( $_POST['billing_postcode'] ) ? wc_clean( wp_unslash( $_POST['billing_postcode'] ) ) : '';
+				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $billing_postcode ) ) ) {
+					$billing_state = $billing_postcode;
+				}
+			}
+		}
+		if ( 'HK' === $shipping_country ) {
+			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
+
+			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $shipping_state ) ) ) {
+				$shipping_postcode = ! empty( $_POST['shipping_postcode'] ) ? wc_clean( wp_unslash( $_POST['shipping_postcode'] ) ) : '';
+				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $shipping_postcode ) ) ) {
+					$shipping_state = $shipping_postcode;
+				}
+			}
+		}
+
+		// Finally we normalize the state value we want to process.
 		if ( $billing_state && $billing_country ) {
 			$_POST['billing_state'] = $this->get_normalized_state( $billing_state, $billing_country );
 		}
