@@ -29,13 +29,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	private $mock_wcpay_account;
 
 	/**
-	 * Express Checkout Helper instance.
-	 *
-	 * @var WC_Payments_Express_Checkout_Button_Helper
-	 */
-	private $express_checkout_helper;
-
-	/**
 	 * Test shipping zone.
 	 *
 	 * @var WC_Shipping_Zone
@@ -61,21 +54,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 *
 	 * @var WC_Payments_Express_Checkout_Button_Helper
 	 */
-	private $mock_express_checkout_helper;
-
-	/**
-	 * Express Checkout Ajax Handler instance.
-	 *
-	 * @var WC_Payments_Express_Checkout_Ajax_Handler
-	 */
-	private $mock_express_checkout_ajax_handler;
-
-	/**
-	 * Express Checkout ECE Button Handler instance.
-	 *
-	 * @var WC_Payments_Express_Checkout_Button_Handler
-	 */
-	private $mock_express_checkout_ece_button_handler;
+	private $system_under_test;
 
 	/**
 	 * Test product to add to the cart
@@ -92,23 +71,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
-		$this->mock_express_checkout_helper       = new WC_Payments_Express_Checkout_Button_Helper( $this->mock_wcpay_gateway, $this->mock_wcpay_account );
-		$this->mock_express_checkout_ajax_handler = $this->getMockBuilder( WC_Payments_Express_Checkout_Ajax_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_express_checkout_helper,
-				]
-			)
-			->getMock();
-
-		$this->mock_ece_button_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_gateway,
-					$this->mock_wcpay_account,
-				]
-			)
-			->getMock();
+		$this->system_under_test = new WC_Payments_Express_Checkout_Button_Helper( $this->mock_wcpay_gateway, $this->mock_wcpay_account );
 
 		WC_Helper_Shipping::delete_simple_flat_rate();
 		$zone = new WC_Shipping_Zone();
@@ -128,7 +91,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		WC()->session->init();
 		WC()->cart->add_to_cart( $this->simple_product->get_id(), 1 );
-		$this->mock_express_checkout_helper->update_shipping_method( [ self::get_shipping_option_rate_id( $this->flat_rate_id ) ] );
+		$this->system_under_test->update_shipping_method( [ self::get_shipping_option_rate_id( $this->flat_rate_id ) ] );
 		WC()->cart->calculate_totals();
 	}
 
@@ -195,34 +158,34 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 				'height' => '48',
 				'radius' => '',
 			],
-			$this->mock_express_checkout_helper->get_common_button_settings()
+			$this->system_under_test->get_common_button_settings()
 		);
 	}
 
 	public function test_cart_prices_include_tax_with_tax_disabled() {
 		add_filter( 'wc_tax_enabled', '__return_false' );
-		$this->assertTrue( $this->mock_express_checkout_helper->cart_prices_include_tax() );
+		$this->assertTrue( $this->system_under_test->cart_prices_include_tax() );
 	}
 
 	public function test_cart_prices_include_tax_with_tax_enabled_and_display_incl() {
 		add_filter( 'wc_tax_enabled', '__return_true' ); // reset in tear_down.
 		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] ); // reset in tear_down.
 
-		$this->assertTrue( $this->mock_express_checkout_helper->cart_prices_include_tax() );
+		$this->assertTrue( $this->system_under_test->cart_prices_include_tax() );
 	}
 
 	public function test_cart_prices_include_tax_with_tax_enabled_and_display_excl() {
 		add_filter( 'wc_tax_enabled', '__return_true' ); // reset in tear_down.
 		add_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_excl' ] ); // reset in tear_down.
 
-		$this->assertFalse( $this->mock_express_checkout_helper->cart_prices_include_tax() );
+		$this->assertFalse( $this->system_under_test->cart_prices_include_tax() );
 	}
 
 	public function test_get_total_label() {
 		$this->mock_wcpay_account->method( 'get_statement_descriptor' )
 			->willReturn( 'Google Pay' );
 
-		$result = $this->mock_express_checkout_helper->get_total_label();
+		$result = $this->system_under_test->get_total_label();
 
 		$this->assertEquals( 'Google Pay (via WooCommerce)', $result );
 	}
@@ -238,49 +201,54 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			}
 		);
 
-		$result = $this->mock_express_checkout_helper->get_total_label();
+		$result = $this->system_under_test->get_total_label();
 
 		$this->assertEquals( 'Google Pay (via WooPayments)', $result );
 
 		remove_all_filters( 'wcpay_payment_request_total_label_suffix' );
 	}
 
-	public function test_filter_cart_needs_shipping_address_returns_false() {
-		sleep( 1 );
-		$this->zone->delete_shipping_method( $this->flat_rate_id );
-		$this->zone->delete_shipping_method( $this->local_pickup_id );
-
-		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
-
-		$this->mock_ece_button_helper
-			->method( 'is_product' )
+	public function test_should_show_express_checkout_button_for_non_shipping_but_price_includes_tax() {
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
 			->willReturn( true );
 
-		$this->mock_express_checkout_ece_button_handler = new WC_Payments_Express_Checkout_Button_Handler(
-			$this->mock_wcpay_account,
-			$this->mock_wcpay_gateway,
-			$this->mock_ece_button_helper,
-			$this->mock_express_checkout_ajax_handler
-		);
+		WC_Payments::mode()->dev();
 
-		$this->assertFalse( $this->mock_express_checkout_ece_button_handler->filter_cart_needs_shipping_address( true ) );
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+		add_filter( 'wc_shipping_enabled', '__return_false' );
+		add_filter( 'wc_tax_enabled', '__return_true' );
+
+		update_option( 'woocommerce_tax_based_on', 'billing' );
+		update_option( 'woocommerce_prices_include_tax', 'yes' );
+
+		$this->assertTrue( $this->system_under_test->should_show_express_checkout_button() );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+		remove_filter( 'wc_tax_enabled', '__return_true' );
+		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
 	}
 
-	public function test_filter_cart_needs_shipping_address_returns_true() {
-		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 
-		$this->mock_ece_button_helper
-			->method( 'is_product' )
+	public function test_should_not_show_express_checkout_button_for_non_shipping_but_price_does_not_include_tax() {
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
 			->willReturn( true );
 
-		$this->mock_express_checkout_ece_button_handler = new WC_Payments_Express_Checkout_Button_Handler(
-			$this->mock_wcpay_account,
-			$this->mock_wcpay_gateway,
-			$this->mock_ece_button_helper,
-			$this->mock_express_checkout_ajax_handler
-		);
+		WC_Payments::mode()->dev();
 
-		$this->assertTrue( $this->mock_express_checkout_ece_button_handler->filter_cart_needs_shipping_address( true ) );
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+		add_filter( 'wc_shipping_enabled', '__return_false' );
+		add_filter( 'wc_tax_enabled', '__return_true' );
+
+		update_option( 'woocommerce_tax_based_on', 'billing' );
+		update_option( 'woocommerce_prices_include_tax', 'no' );
+
+		$this->assertFalse( $this->system_under_test->should_show_express_checkout_button() );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+		remove_filter( 'wc_tax_enabled', '__return_true' );
+		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
 	}
 
 	/**

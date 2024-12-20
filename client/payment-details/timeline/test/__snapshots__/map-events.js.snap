@@ -397,7 +397,7 @@ exports[`mapTimelineEvents single currency events formats captured events with f
           International card fee: 1.5%
         </li>
         <li>
-          Foreign exchange fee: 2%
+          Currency conversion fee: 2%
         </li>
         <li>
           Discount

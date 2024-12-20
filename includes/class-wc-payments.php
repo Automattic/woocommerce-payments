@@ -354,6 +354,7 @@ class WC_Payments {
 
 		include_once __DIR__ . '/exceptions/class-base-exception.php';
 		include_once __DIR__ . '/exceptions/class-api-exception.php';
+		include_once __DIR__ . '/exceptions/class-api-merchant-exception.php';
 		include_once __DIR__ . '/exceptions/class-connection-exception.php';
 		include_once __DIR__ . '/core/class-mode.php';
 
