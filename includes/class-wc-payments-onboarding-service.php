@@ -277,6 +277,13 @@ class WC_Payments_Onboarding_Service {
 		);
 		$actioned_notes = self::get_actioned_notes();
 
+		$capabilities = $this->get_capabilities_from_request();
+		$gateway      = WC_Payments::get_gateway();
+		// Activate enabled Payment Methods IDs.
+		if ( ! empty( $capabilities ) ) {
+			$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
+		}
+
 		try {
 			$account_session = $this->payments_api_client->initialize_onboarding_embedded_kyc(
 				'live' === $setup_mode,
@@ -1023,5 +1030,62 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Updates the enabled payment methods for a gateway.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway Payment gateway instance.
+	 * @param array                    $capabilities Provided capabilities.
+	 */
+	public function update_enabled_payment_methods_ids( $gateway, $capabilities = [] ): void {
+		$enabled_gateways = $gateway->get_upe_enabled_payment_method_ids();
+
+		$enabled_payment_methods = array_unique(
+			array_merge(
+				$enabled_gateways,
+				$this->exclude_placeholder_payment_methods( $capabilities )
+			)
+		);
+
+		$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+
+		foreach ( $enabled_payment_methods as $payment_method_id ) {
+			$payment_gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			if ( $payment_gateway ) {
+				$payment_gateway->enable();
+				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+			}
+		}
+
+		// If WooPay is enabled, update the gateway option.
+		if ( isset( $capabilities['woopay'] ) && $capabilities['woopay'] ) {
+			$gateway->update_is_woopay_enabled( true );
+		}
+
+		// If Apple Pay and Google Pay are disabled update the gateway option,
+		// otherwise they are enabled by default.
+		if ( isset( $capabilities['apple_google'] ) && ! $capabilities['apple_google'] ) {
+			$gateway->update_option( 'payment_request', 'no' );
+		}
+	}
+
+	/**
+	 * Excludes placeholder payment methods and removes duplicates.
+	 *
+	 * @param array $payment_methods Array of payment methods to process.
+	 * @return array Filtered array of unique payment methods.
+	 */
+	private function exclude_placeholder_payment_methods( array $payment_methods ): array {
+		$excluded_methods = [ 'woopay', 'apple_google' ];
+
+		return array_filter(
+			array_unique(
+				array_keys( array_filter( $payment_methods ) )
+			),
+			function ( $payment_method ) use ( $excluded_methods ) {
+				return ! in_array( $payment_method, $excluded_methods, true );
+			}
+		);
 	}
 }
