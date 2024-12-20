@@ -370,6 +370,7 @@ export const DisputesList = (): JSX.Element => {
 			date_after: dateAfter,
 			date_between: dateBetween,
 			match,
+			filter,
 			status_is: statusIs,
 			status_is_not: statusIsNot,
 		} = getQuery();
@@ -405,6 +406,7 @@ export const DisputesList = (): JSX.Element => {
 							dateBefore,
 							dateBetween,
 							match,
+							filter,
 							statusIs,
 							statusIsNot,
 						} ),

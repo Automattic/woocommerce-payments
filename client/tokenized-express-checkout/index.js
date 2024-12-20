@@ -13,6 +13,7 @@ import '../checkout/express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
 import './compatibility/wc-order-attribution';
 import './compatibility/wc-product-page';
+import './compatibility/wc-product-bundles';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
