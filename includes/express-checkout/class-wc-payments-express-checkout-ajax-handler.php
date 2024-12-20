@@ -49,9 +49,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			woocommerce_store_api_register_update_callback(
 				[
 					'namespace' => 'woopayments/express-checkout/refresh-ui',
-					'callback'  => function ( $data ) {
-						// do nothing, this callback is needed just to refresh the UI.
-					},
+					// do nothing, this callback is needed just to refresh the UI.
+					'callback'  => '__return_null',
 				]
 			);
 		}
