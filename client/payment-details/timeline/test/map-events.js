@@ -47,6 +47,7 @@ describe( 'mapTimelineEvents', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
 		};
 	} );
 
