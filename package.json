@@ -115,7 +115,7 @@
     "@typescript-eslint/parser": "4.15.2",
     "@woocommerce/api": "0.2.0",
     "@woocommerce/components": "12.3.0",
-    "@woocommerce/csv-export": "1.9.0",
+    "@woocommerce/csv-export": "1.10.0",
     "@woocommerce/currency": "4.3.0",
     "@woocommerce/date": "4.2.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
@@ -215,7 +215,7 @@
   "overrides": {
     "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils#update/babel-deps",
     "@woocommerce/components": {
-      "@woocommerce/csv-export": "1.9.0",
+      "@woocommerce/csv-export": "1.10.0",
       "@woocommerce/currency": "4.3.0"
     },
     "@wordpress/scripts": {
