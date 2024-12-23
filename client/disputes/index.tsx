@@ -382,7 +382,10 @@ export const DisputesList = (): JSX.Element => {
 			try {
 				const {
 					exported_disputes: exportedDisputes,
-				}: { exported_disputes: number } = await apiFetch( {
+				} = await apiFetch< {
+					/** The total number of disputes that will be exported in the CSV. */
+					exported_disputes: number;
+				} >( {
 					path: getDisputesCSV( {
 						userEmail,
 						locale,
