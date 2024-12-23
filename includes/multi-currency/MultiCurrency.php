@@ -1327,6 +1327,20 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Adjusts the given amount for the currently selected currency.
+	 *
+	 * Applies charm pricing if specified, and adjusts the amount according to
+	 * the selected currency's conversion rate.
+	 *
+	 * @param  float $amount              The original amount to adjust.
+	 * @param  bool  $apply_charm_pricing Optional. Whether to apply charm pricing to the adjusted amount. Default true.
+	 * @return float                       The amount adjusted for the selected currency.
+	 */
+	public function adjust_amount_for_selected_currency( $amount, $apply_charm_pricing = true ) {
+		return $this->get_adjusted_price( $amount, $apply_charm_pricing, $this->get_selected_currency() );
+	}
+
+	/**
 	 * Gets the price after adjusting it with the rounding and charm settings.
 	 *
 	 * @param float    $price               The price to be adjusted.
