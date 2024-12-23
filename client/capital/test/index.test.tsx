@@ -25,6 +25,7 @@ declare const global: {
 		accountLoans: {
 			has_active_loan: boolean;
 		};
+		dateFormat: string;
 	};
 };
 
@@ -37,6 +38,7 @@ describe( 'CapitalPage', () => {
 			},
 			accountLoans: { has_active_loan: true },
 			testMode: true,
+			dateFormat: 'M j, Y',
 		};
 	} );
 

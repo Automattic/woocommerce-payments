@@ -304,7 +304,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
              this charge within the next
              
             <abbr
-              title="Sep 15, 2023 / 12:33PM"
+              title="Sep 15, 2023 / 12:33pm"
             >
               <b>
                 7 days
@@ -660,7 +660,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
              this charge within the next
              
             <abbr
-              title="Sep 15, 2023 / 12:33PM"
+              title="Sep 15, 2023 / 12:33pm"
             >
               <b>
                 7 days

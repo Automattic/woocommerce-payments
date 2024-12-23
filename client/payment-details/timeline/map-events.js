@@ -5,9 +5,7 @@
  */
 import { flatMap } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
 import { addQueryArgs } from '@wordpress/url';
-import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 import SyncIcon from 'gridicons/dist/sync';
@@ -30,7 +28,8 @@ import {
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
-import { fraudOutcomeRulesetMapping } from './mappings';
+import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 /**
  * Creates a timeline item about a payment status change
@@ -84,10 +83,7 @@ const getDepositTimelineItem = (
 						'woocommerce-payments'
 				  ),
 			formattedAmount,
-			dateI18n(
-				'M j, Y',
-				moment( event.deposit.arrival_date * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( event.deposit.arrival_date )
 		);
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
@@ -143,10 +139,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 				'woocommerce-payments'
 			),
 			formattedAmount,
-			dateI18n(
-				'M j, Y',
-				moment( event.deposit.arrival_date * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( event.deposit.arrival_date )
 		);
 
 		const depositUrl = getAdminUrl( {
@@ -410,12 +403,12 @@ export const feeBreakdown = ( event ) => {
 			fixedRate !== 0
 				? __(
 						/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
-						'Foreign exchange fee: %1$s%% + %2$s',
+						'Currency conversion fee: %1$s%% + %2$s',
 						'woocommerce-payments'
 				  )
 				: __(
 						/* translators: %1$s% is the fee percentage */
-						'Foreign exchange fee: %1$s%%',
+						'Currency conversion fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
 		'additional-wcpay-subscription':
@@ -772,6 +765,10 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 			];
 		case 'failed':
+			const paymentFailureMessage =
+				paymentFailureMapping[ event.reason ] ||
+				paymentFailureMapping.default;
+
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -779,11 +776,14 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 				getMainTimelineItem(
 					event,
-					stringWithAmount(
-						/* translators: %s is a monetary amount */
-						__( 'A payment of %s failed.', 'woocommerce-payments' ),
-						event.amount,
-						true
+					sprintf(
+						/* translators: %1$s is the payment amount, %2$s is the failure reason message */
+						__(
+							'A payment of %1$s failed: %2$s.',
+							'woocommerce-payments'
+						),
+						formatExplicitCurrency( event.amount, event.currency ),
+						paymentFailureMessage
 					),
 					<CrossIcon className="is-error" />
 				),

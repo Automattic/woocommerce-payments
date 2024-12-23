@@ -1,5 +1,9 @@
 *** WooPayments Changelog ***
 
+= 8.6.1 - 2024-12-17 =
+* Fix - Checkout: Fix error when wc_address_i18n_params does not have data for a given country
+* Fix - Skip mysqlcheck SSL Requirement during E2E environment setup
+
 = 8.6.0 - 2024-12-04 =
 * Add - Add Bank reference key column in Payout reports. This will help reconcile WooPayments Payouts with bank statements.
 * Add - Display credit card brand icons on order received page.

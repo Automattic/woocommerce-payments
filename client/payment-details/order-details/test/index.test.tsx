@@ -24,6 +24,8 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		dateFormat: string;
+		timeFormat: string;
 	};
 };
 
@@ -141,6 +143,8 @@ describe( 'Order details page', () => {
 			featureFlags: { paymentTimeline: true },
 			zeroDecimalCurrencies: [],
 			connect: { country: 'US' },
+			timeFormat: 'g:ia',
+			dateFormat: 'M j, Y',
 		};
 
 		const selectMock = jest.fn( ( storeName ) =>
