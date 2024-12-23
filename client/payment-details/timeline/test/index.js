@@ -34,6 +34,7 @@ describe( 'PaymentDetailsTimeline', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
 		};
 	} );
 

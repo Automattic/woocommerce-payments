@@ -4,9 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import {
 	Card,
 	CardBody,
@@ -42,6 +40,8 @@ import {
 import { depositStatusLabels } from '../strings';
 import './style.scss';
 import { PayoutsRenameNotice } from '../rename-notice';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import DateFormatNotice from 'wcpay/components/date-format-notice';
 
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
@@ -121,11 +121,7 @@ const DepositDateItem: React.FC< DepositDateItemProps > = ( { deposit } ) => {
 			key="depositDate"
 			label={
 				`${ depositDateLabel }: ` +
-				dateI18n(
-					'M j, Y',
-					moment.utc( deposit.date ).toISOString(),
-					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-				)
+				formatDateTimeFromString( deposit.date )
 			}
 			value={ <DepositStatusIndicator deposit={ deposit } /> }
 		/>
@@ -307,6 +303,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 	return (
 		<Page>
 			<PayoutsRenameNotice />
+			<DateFormatNotice />
 			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 			<ErrorBoundary>
 				{ isLoading ? (
