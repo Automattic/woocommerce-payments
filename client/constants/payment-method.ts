@@ -12,6 +12,7 @@ enum PAYMENT_METHOD_IDS {
 	CARD_PRESENT = 'card_present',
 	EPS = 'eps',
 	KLARNA = 'klarna',
+	MULTIBANCO = 'multibanco',
 	GIROPAY = 'giropay',
 	IDEAL = 'ideal',
 	LINK = 'link',

@@ -233,6 +233,21 @@ const PaymentMethodInformationObject: Record<
 		allows_pay_later: true,
 		accepts_only_domestic_payment: true,
 	},
+	multibanco: {
+		// TODO: Update.
+		id: 'multibanco',
+		label: __( 'Multibanco', 'woocommerce-payments' ),
+		description: __(
+			'Allow customers to pay over time or pay now with Klarna.',
+			'woocommerce-payments'
+		),
+		icon: KlarnaIcon,
+		currencies: [ 'EUR' ],
+		stripe_key: 'multibanco_payments',
+		allows_manual_capture: false,
+		allows_pay_later: true,
+		accepts_only_domestic_payment: false,
+	},
 };
 
 export default PaymentMethodInformationObject;

@@ -20,6 +20,7 @@ import EpsDetails from './eps';
 import GiropayDetails from './giropay';
 import IdealDetails from './ideal';
 import KlarnaDetails from './klarna';
+import MultibancoDetails from './multibanco';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
@@ -35,6 +36,7 @@ const detailsComponentMap = {
 	giropay: GiropayDetails,
 	ideal: IdealDetails,
 	klarna: KlarnaDetails,
+	multibanco: MultibancoDetails,
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
