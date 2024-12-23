@@ -6,9 +6,7 @@
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
 import { useMemo } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import {
@@ -48,6 +46,7 @@ import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
@@ -140,11 +139,7 @@ export const DepositsList = (): JSX.Element => {
 				href={ getDetailsURL( deposit.id, 'payouts' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
-				{ dateI18n(
-					'M j, Y',
-					moment.utc( deposit.date ).toISOString(),
-					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-				) }
+				{ formatDateTimeFromString( deposit.date ) }
 			</Link>
 		);
 
@@ -335,11 +330,7 @@ export const DepositsList = (): JSX.Element => {
 				row[ 0 ],
 				{
 					...row[ 1 ],
-					value: dateI18n(
-						'Y-m-d',
-						moment.utc( row[ 1 ].value ).toISOString(),
-						true
-					),
+					value: formatDateTimeFromString( row[ 1 ].value as string ),
 				},
 				...row.slice( 2 ),
 			] );

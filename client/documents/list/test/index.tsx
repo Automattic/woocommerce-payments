@@ -36,6 +36,7 @@ declare const global: {
 		accountStatus: {
 			hasSubmittedVatData: boolean;
 		};
+		dateFormat: string;
 	};
 };
 
@@ -60,6 +61,11 @@ describe( 'Documents list', () => {
 	let container: Element;
 	let rerender: ( ui: React.ReactElement ) => void;
 	beforeEach( () => {
+		global.wcpaySettings = {
+			accountStatus: { hasSubmittedVatData: true },
+			dateFormat: 'M j, Y',
+		};
+
 		mockUseDocuments.mockReturnValue( {
 			documents: getMockDocuments(),
 			isLoading: false,
@@ -200,6 +206,7 @@ describe( 'Document download button', () => {
 			beforeEach( () => {
 				global.wcpaySettings = {
 					accountStatus: { hasSubmittedVatData: true },
+					dateFormat: 'M j, Y',
 				};
 
 				render( <DocumentsList /> );
@@ -223,6 +230,7 @@ describe( 'Document download button', () => {
 			beforeEach( () => {
 				global.wcpaySettings = {
 					accountStatus: { hasSubmittedVatData: false },
+					dateFormat: 'M j, Y',
 				};
 
 				render( <DocumentsList /> );
@@ -293,6 +301,7 @@ describe( 'Direct document download', () => {
 
 		global.wcpaySettings = {
 			accountStatus: { hasSubmittedVatData: true },
+			dateFormat: 'M j, Y',
 		};
 	} );
 

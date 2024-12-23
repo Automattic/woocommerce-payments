@@ -67,6 +67,8 @@ declare const global: {
 				precision: number;
 			};
 		};
+		dateFormat: string;
+		timeFormat: string;
 	};
 };
 
@@ -126,6 +128,8 @@ describe( 'Authorizations list', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
+			timeFormat: 'g:iA',
 		};
 	} );
 

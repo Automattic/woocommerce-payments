@@ -58,6 +58,18 @@
 }
 
 .woopay-settings {
+	&__badge {
+		background-color: $studio-gray-5;
+		padding: 0 8px;
+		border-radius: 2px;
+		font-size: 12px;
+		line-height: 20px;
+		margin-left: 4px;
+	}
+	&__global-theme-label {
+		display: inline-flex;
+		align-items: center;
+	}
 	&__custom-message-wrapper {
 		position: relative;
 
