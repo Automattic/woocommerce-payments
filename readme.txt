@@ -94,7 +94,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 8.7.0 - 2024-12-25 =
+= 8.7.0-test-3 - unreleased =
 * Add - Add seller_message to failed order notes
 * Add - Add WooPay Klaviyo newsletter integration.
 * Add - Clickwrap terms and conditions support on WooPay
