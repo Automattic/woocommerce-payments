@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Use translatable strings on the fee breakdown tooltip of the payment settings screen.

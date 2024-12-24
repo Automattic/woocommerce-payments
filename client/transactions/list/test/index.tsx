@@ -54,6 +54,15 @@ jest.mock( 'data/index', () => ( {
 	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
+// Mock dateI18n
+jest.mock( '@wordpress/date', () => ( {
+	dateI18n: jest.fn( ( format, date ) => {
+		return jest
+			.requireActual( '@wordpress/date' )
+			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
+	} ),
+} ) );
+
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
 const mockUseTransactions = useTransactions as jest.MockedFunction<
@@ -224,6 +233,8 @@ describe( 'Transactions list', () => {
 				exportModalDismissed: true,
 			},
 		};
+		window.wcpaySettings.dateFormat = 'M j, Y';
+		window.wcpaySettings.timeFormat = 'g:iA';
 	} );
 
 	test( 'renders correctly when filtered by payout', () => {

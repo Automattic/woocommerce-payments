@@ -84,6 +84,7 @@ declare const global: {
 		reporting?: {
 			exportModalDismissed: boolean;
 		};
+		dateFormat: string;
 	};
 };
 
@@ -145,6 +146,7 @@ describe( 'Deposits list', () => {
 			reporting: {
 				exportModalDismissed: true,
 			},
+			dateFormat: 'M j Y',
 		};
 	} );
 

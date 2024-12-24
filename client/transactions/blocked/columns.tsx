@@ -2,9 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
-import moment from 'moment';
 import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
 
 /**
@@ -15,6 +13,7 @@ import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';
 import { getDetailsURL } from '../../components/details-link';
 import ClickableCell from '../../components/clickable-cell';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'status';
@@ -70,10 +69,9 @@ export const getBlockedListRowContent = (
 		data.payment_intent.id || data.order_id.toString(),
 		'transactions'
 	);
-	const formattedCreatedDate = dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( data.created ).local().toISOString()
-	);
+	const formattedCreatedDate = formatDateTimeFromString( data.created, {
+		includeTime: true,
+	} );
 
 	const clickable = ( children: JSX.Element | string ) => (
 		<ClickableCell href={ detailsURL }>{ children }</ClickableCell>

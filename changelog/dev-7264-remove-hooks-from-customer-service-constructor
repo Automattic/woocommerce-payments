@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Remove hooks from customer and token services to dedicated methods

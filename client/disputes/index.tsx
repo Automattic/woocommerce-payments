@@ -5,7 +5,6 @@
  */
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
-import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { Button } from '@wordpress/components';
@@ -50,8 +49,9 @@ import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
-
+import DateFormatNotice from 'wcpay/components/date-format-notice';
 import './style.scss';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -195,10 +195,9 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 			</span>
 		);
 	}
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( dispute.due_by ).local().toISOString()
-	);
+	return formatDateTimeFromString( dispute.due_by, {
+		includeTime: true,
+	} );
 };
 
 export const DisputesList = (): JSX.Element => {
@@ -295,10 +294,9 @@ export const DisputesList = (): JSX.Element => {
 			created: {
 				value: dispute.created,
 				display: clickable(
-					dateI18n(
-						'M j, Y',
-						moment( dispute.created ).toISOString()
-					)
+					formatDateTimeFromString( dispute.created, {
+						includeTime: true,
+					} )
 				),
 			},
 			dueBy: {
@@ -366,6 +364,7 @@ export const DisputesList = (): JSX.Element => {
 			date_after: dateAfter,
 			date_between: dateBetween,
 			match,
+			filter,
 			status_is: statusIs,
 			status_is_not: statusIsNot,
 		} = getQuery();
@@ -392,21 +391,25 @@ export const DisputesList = (): JSX.Element => {
 			window.confirm( confirmMessage )
 		) {
 			try {
-				const { exported_disputes: exportedDisputes } = await apiFetch(
-					{
-						path: getDisputesCSV( {
-							userEmail,
-							locale,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							statusIs,
-							statusIsNot,
-						} ),
-						method: 'POST',
-					}
-				);
+				const {
+					exported_disputes: exportedDisputes,
+				} = await apiFetch< {
+					/** The total number of disputes that will be exported in the CSV. */
+					exported_disputes: number;
+				} >( {
+					path: getDisputesCSV( {
+						userEmail,
+						locale,
+						dateAfter,
+						dateBefore,
+						dateBetween,
+						match,
+						filter,
+						statusIs,
+						statusIsNot,
+					} ),
+					method: 'POST',
+				} );
 
 				createNotice(
 					'success',
@@ -485,6 +488,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
+			<DateFormatNotice />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard

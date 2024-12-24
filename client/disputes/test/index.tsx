@@ -94,6 +94,8 @@ declare const global: {
 		reporting?: {
 			exportModalDismissed: boolean;
 		};
+		dateFormat?: string;
+		timeFormat?: string;
 	};
 };
 
@@ -194,6 +196,8 @@ describe( 'Disputes list', () => {
 			reporting: {
 				exportModalDismissed: true,
 			},
+			dateFormat: 'Y-m-d',
+			timeFormat: 'g:iA',
 		};
 	} );
 

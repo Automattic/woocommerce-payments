@@ -6,9 +6,7 @@
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
 import { useMemo } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
@@ -43,6 +41,7 @@ import CSVExportModal from 'components/csv-export-modal';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
@@ -135,11 +134,7 @@ export const DepositsList = (): JSX.Element => {
 				href={ getDetailsURL( deposit.id, 'payouts' ) }
 				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
-				{ dateI18n(
-					'M j, Y',
-					moment.utc( deposit.date ).toISOString(),
-					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-				) }
+				{ formatDateTimeFromString( deposit.date ) }
 			</Link>
 		);
 
@@ -258,22 +253,25 @@ export const DepositsList = (): JSX.Element => {
 			window.confirm( confirmMessage )
 		) {
 			try {
-				const { exported_deposits: exportedDeposits } = await apiFetch(
-					{
-						path: getDepositsCSV( {
-							userEmail,
-							locale,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							statusIs,
-							statusIsNot,
-							storeCurrencyIs,
-						} ),
-						method: 'POST',
-					}
-				);
+				const {
+					exported_deposits: exportedDeposits,
+				} = await apiFetch< {
+					/** The total number of payouts that will be exported in the CSV */
+					exported_deposits: number;
+				} >( {
+					path: getDepositsCSV( {
+						userEmail,
+						locale,
+						dateAfter,
+						dateBefore,
+						dateBetween,
+						match,
+						statusIs,
+						statusIsNot,
+						storeCurrencyIs,
+					} ),
+					method: 'POST',
+				} );
 
 				createNotice(
 					'success',
