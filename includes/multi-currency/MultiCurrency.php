@@ -1335,6 +1335,10 @@ class MultiCurrency {
 	 * @return string The formatted amount.
 	 */
 	public function get_backend_formatted_wc_price( float $amount, array $args = [] ): string {
+		if ( ! self::has_additional_currencies_enabled() ) {
+			return wc_price( $amount, $args );
+		}
+
 		$has_filter = has_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ] );
 		if ( false !== $has_filter ) {
 			return wc_price( $amount, $args );
