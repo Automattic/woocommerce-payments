@@ -124,9 +124,6 @@ declare global {
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		isDateFormatNoticeDismissed: boolean;
-		reporting: {
-			exportModalDismissed?: boolean;
-		};
 		locale: {
 			code: string;
 			english_name: string;

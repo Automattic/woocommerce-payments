@@ -24,11 +24,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import {
-	useTransactions,
-	useTransactionsSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useTransactions, useTransactionsSummary } from 'data/index';
 import { Transaction } from 'data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
@@ -36,13 +32,7 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { depositStatusLabels } from 'deposits/strings';
-import {
-	formatStringValue,
-	isExportModalDismissed,
-	getExportLanguage,
-	isDefaultSiteLanguage,
-	applyThousandSeparator,
-} from 'wcpay/utils';
+import { formatStringValue, applyThousandSeparator } from 'wcpay/utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
@@ -56,12 +46,10 @@ import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import DownloadButton from 'components/download-button';
-import CSVExportModal from 'components/csv-export-modal';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface TransactionsListProps {
@@ -309,12 +297,6 @@ export const TransactionsList = (
 		transactionsSummary,
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
-
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
-
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const columnsToDisplay = useMemo(
 		() =>
@@ -593,13 +575,13 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
+	const endpointExport = async () => {
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		const locale = getExportLanguage( language, exportLanguage );
+		const locale = wcpaySettings.locale.code;
 		const {
 			date_after: dateAfter,
 			date_before: dateBefore,
@@ -702,13 +684,7 @@ export const TransactionsList = (
 
 	const onDownload = async () => {
 		setIsDownloading( true );
-
-		if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-			setCSVExportModalOpen( true );
-		} else {
-			endpointExport( '' );
-		}
-
+		endpointExport();
 		setIsDownloading( false );
 	};
 
@@ -779,16 +755,6 @@ export const TransactionsList = (
 		}
 	}
 
-	const closeModal = () => {
-		setCSVExportModalOpen( false );
-	};
-
-	const exportTransactions = ( language: string ) => {
-		endpointExport( language );
-
-		closeModal();
-	};
-
 	const showFilters = ! props.depositId;
 	const storeCurrencies =
 		transactionsSummary.store_currencies ||
@@ -839,17 +805,6 @@ export const TransactionsList = (
 					),
 				] }
 			/>
-
-			{ ! isDefaultSiteLanguage() &&
-				! isExportModalDismissed() &&
-				isCSVExportModalOpen && (
-					<CSVExportModal
-						onClose={ closeModal }
-						onSubmit={ exportTransactions }
-						totalItems={ totalRows }
-						exportType={ 'transactions' }
-					/>
-				) }
 		</Page>
 	);
 };

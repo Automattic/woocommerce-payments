@@ -974,9 +974,6 @@ class WC_Payments_Admin {
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
 			'isDateFormatNoticeDismissed'        => get_option( 'wcpay_date_format_notice_dismissed', false ),
-			'reporting'                          => [
-				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
-			],
 			'dismissedDuplicateNotices'          => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
 			'locale'                             => WC_Payments_Utils::get_language_data( get_locale() ),
 			'isOverviewSurveySubmitted'          => get_option( 'wcpay_survey_payment_overview_submitted', false ),

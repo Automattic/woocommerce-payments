@@ -11,11 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import {
-	useDeposits,
-	useDepositsSummary,
-	useReportingExportLanguage,
-} from 'wcpay/data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import {
 	CachedDeposit,
 	CachedDeposits,
@@ -26,7 +22,6 @@ import React from 'react';
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -81,8 +76,8 @@ declare const global: {
 		connect: {
 			country: string;
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
+		locale: {
+			code: string;
 		};
 		dateFormat: string;
 	};
@@ -114,18 +109,12 @@ const mockUseDepositsSummary = useDepositsSummary as jest.MockedFunction<
 	typeof useDepositsSummary
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
->;
-
 describe( 'Deposits list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
-
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
@@ -143,8 +132,8 @@ describe( 'Deposits list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
+			locale: {
+				code: 'en',
 			},
 			dateFormat: 'M j Y',
 		};

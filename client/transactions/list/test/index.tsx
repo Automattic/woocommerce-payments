@@ -14,11 +14,7 @@ import { getUserTimeZone } from 'wcpay/utils/test-utils';
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import {
-	useTransactions,
-	useTransactionsSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useTransactions, useTransactionsSummary } from 'data/index';
 import type { Transaction } from 'data/transactions/hooks';
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -51,7 +47,6 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
 // Mock dateI18n
@@ -71,10 +66,6 @@ const mockUseTransactions = useTransactions as jest.MockedFunction<
 
 const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
 	typeof useTransactionsSummary
->;
-
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
 >;
 
 declare const global: {
@@ -98,8 +89,8 @@ declare const global: {
 				precision: number;
 			};
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
+		locale: {
+			code: string;
 		};
 	};
 };
@@ -207,8 +198,6 @@ describe( 'Transactions list', () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
-
 		global.wcpaySettings = {
 			featureFlags: {
 				customSearch: true,
@@ -229,8 +218,8 @@ describe( 'Transactions list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
+			locale: {
+				code: 'en',
 			},
 		};
 		window.wcpaySettings.dateFormat = 'M j, Y';
