@@ -1930,9 +1930,6 @@ class WC_Payments_Order_Service {
 	private function get_order_amount( $order ) {
 		$multi_currency_instance = WC_Payments_Multi_Currency();
 		$order_price             = $order->get_total();
-		if ( ! $order_price ) {
-			return $order_price;
-		}
 
 		$formatted_price = $multi_currency_instance->get_backend_formatted_wc_price( $order_price, [ 'currency' => $order->get_currency() ] );
 		return WC_Payments_Explicit_Price_Formatter::get_explicit_price( $formatted_price, $order );

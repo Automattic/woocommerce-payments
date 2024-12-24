@@ -17,6 +17,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 use WCPay\MultiCurrency\Utils;
+use WC_Payments_Features;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -1335,7 +1336,8 @@ class MultiCurrency {
 	 * @return string The formatted amount.
 	 */
 	public function get_backend_formatted_wc_price( float $amount, array $args = [] ): string {
-		if ( ! self::has_additional_currencies_enabled() ) {
+		// Return early if MC isn't enabled or merchant has a single currency.
+		if ( ! self::has_additional_currencies_enabled() || ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
 			return wc_price( $amount, $args );
 		}
 
