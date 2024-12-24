@@ -1752,10 +1752,7 @@ class WC_Payments_Order_Service {
 	 * @return string HTML note.
 	 */
 	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order ): string {
-		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-			wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ),
-			$order
-		);
+		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price( WC_Payments_Multi_Currency()->get_backend_formatted_wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ), $order );
 
 		if ( empty( $refund_reason ) ) {
 			$note = sprintf(
@@ -1930,7 +1927,7 @@ class WC_Payments_Order_Service {
 	 * @return string The formatted order total.
 	 */
 	private function get_order_amount( $order ) {
-		return WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order );
+		return WC_Payments_Explicit_Price_Formatter::get_explicit_price( WC_Payments_Multi_Currency()->get_backend_formatted_wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order );
 	}
 
 	/**

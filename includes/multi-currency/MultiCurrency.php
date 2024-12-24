@@ -1327,6 +1327,27 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Returns the amount with the backend format.
+	 *
+	 * @param float $amount The amount to format.
+	 * @param array $args The arguments to pass to wc_price.
+	 *
+	 * @return string The formatted amount.
+	 */
+	public function get_backend_formatted_wc_price( float $amount, array $args = [] ): string {
+		$has_filter = has_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ] );
+		if ( false !== $has_filter ) {
+			return wc_price( $amount, $args );
+		}
+
+		add_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
+		$price = wc_price( $amount, $args );
+		remove_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
+
+		return $price;
+	}
+
+	/**
 	 * Gets the price after adjusting it with the rounding and charm settings.
 	 *
 	 * @param float    $price               The price to be adjusted.
