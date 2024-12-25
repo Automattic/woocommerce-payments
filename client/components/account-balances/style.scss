@@ -39,7 +39,6 @@
 
 .wcpay-account-balances__balances {
 	display: flex;
-	padding: 24px 24px 32px 24px !important;
 
 	& > * + * {
 		border-left: 1px solid $gray-200;
