@@ -3,9 +3,7 @@
 exports[`AccountBalances renders the correct tooltip text for the total balance 1`] = `
 <div>
   <div
-    class="components-flex wcpay-account-balances__balances css-1ng0jhd-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
-    data-wp-c16t="true"
-    data-wp-component="Flex"
+    class="wcpay-account-balances__balances"
   >
     <div
       class="wcpay-account-balances__balances__item"

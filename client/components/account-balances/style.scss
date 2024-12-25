@@ -1,7 +1,3 @@
-.wcpay-account-balances__balances > * + * {
-	border-left: 1px solid $gray-200;
-}
-
 .wcpay-account-balances__balances__item {
 	flex-direction: column;
 	align-items: flex-start;
@@ -23,6 +19,11 @@
 		margin: 0;
 		color: $gray-900;
 	}
+
+	@include breakpoint( '<660px' ) {
+		margin: 0 24px;
+		padding: 16px 0 24px 0;
+	}
 }
 
 .wcpay-account-balances__instant-deposit-notice .components-notice__content {
@@ -35,6 +36,12 @@
 }
 
 .wcpay-account-balances__balances {
+	display: flex;
+
+	& > * + * {
+		border-left: 1px solid $gray-200;
+	}
+
 	.wcpay-account-balances__balances__item__tooltip {
 		line-height: 20px;
 	}
@@ -56,6 +63,15 @@
 			white-space: nowrap;
 			color: $wp-blue-70;
 			margin-right: 0;
+		}
+	}
+
+	@include breakpoint( '<660px' ) {
+		flex-direction: column;
+
+		& > * + * {
+			border-left: none;
+			border-top: 1px solid $gray-200;
 		}
 	}
 }

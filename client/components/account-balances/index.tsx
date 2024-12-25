@@ -73,7 +73,7 @@ const AccountBalances: React.FC = () => {
 		};
 
 		return (
-			<Flex gap={ 0 } className="wcpay-account-balances__balances">
+			<div className="wcpay-account-balances__balances">
 				<BalanceBlock
 					id={ `wcpay-account-balances-${ loadingData.currencyCode }-total` }
 					title={ fundLabelStrings.total }
@@ -88,7 +88,7 @@ const AccountBalances: React.FC = () => {
 					currencyCode={ loadingData.currencyCode }
 					isLoading
 				/>
-			</Flex>
+			</div>
 		);
 	}
 
@@ -115,7 +115,7 @@ const AccountBalances: React.FC = () => {
 
 	return (
 		<>
-			<Flex gap={ 0 } className="wcpay-account-balances__balances">
+			<div className="wcpay-account-balances__balances">
 				<BalanceBlock
 					id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-total` }
 					title={ fundLabelStrings.total }
@@ -134,7 +134,7 @@ const AccountBalances: React.FC = () => {
 						/>
 					}
 				/>
-			</Flex>
+			</div>
 			{ selectedOverview.instantBalance &&
 				selectedOverview.instantBalance.amount > 0 && (
 					<Flex
