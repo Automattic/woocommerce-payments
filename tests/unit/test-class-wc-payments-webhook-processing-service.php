@@ -652,6 +652,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 2 ) )
 			->method( 'save' );
 
+			$this->mock_order
+				->method( 'get_total' )
+				->willReturn( 15.00 );
+
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
@@ -746,6 +750,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'save' );
+
+			$this->mock_order
+				->method( 'get_total' )
+				->willReturn( 15.00 );
 
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
@@ -939,6 +947,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			)
 			->willReturn( false );
 
+			$this->mock_order
+				->method( 'get_total' )
+				->willReturn( 15.00 );
+
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'payment_complete' );
@@ -1040,6 +1052,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				[ '_intention_status', $intent_status ]
 			);
 
+			$this->mock_order
+				->method( 'get_total' )
+				->willReturn( 15.00 );
+
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'save' );
@@ -1123,6 +1139,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->with( '_payment_method_id' )
 			->willReturn( 'pm_123123123123123' );
 
+			$this->mock_order
+				->method( 'get_total' )
+				->willReturn( 15.00 );
+
 		$this->mock_order
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
@@ -1189,6 +1209,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_meta' )
 			->with( '_payment_method_id' )
 			->willReturn( 'pm_123123123123123' );
+
+			$this->mock_order
+				->method( 'get_total' )
+				->willReturn( 15.00 );
 
 		$this->mock_order
 			->expects( $this->exactly( 3 ) )

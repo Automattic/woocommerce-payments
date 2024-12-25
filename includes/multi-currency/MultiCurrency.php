@@ -17,6 +17,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 use WCPay\MultiCurrency\Utils;
+use WC_Payments_Features;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -1324,6 +1325,32 @@ class MultiCurrency {
 	 */
 	public function is_initialized(): bool {
 		return static::$is_initialized;
+	}
+
+	/**
+	 * Returns the amount with the backend format.
+	 *
+	 * @param float $amount The amount to format.
+	 * @param array $args The arguments to pass to wc_price.
+	 *
+	 * @return string The formatted amount.
+	 */
+	public function get_backend_formatted_wc_price( float $amount, array $args = [] ): string {
+		// Return early if MC isn't enabled or merchant has a single currency.
+		if ( ! self::has_additional_currencies_enabled() || ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+			return wc_price( $amount, $args );
+		}
+
+		$has_filter = has_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ] );
+		if ( false !== $has_filter ) {
+			return wc_price( $amount, $args );
+		}
+
+		add_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
+		$price = wc_price( $amount, $args );
+		remove_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
+
+		return $price;
 	}
 
 	/**
