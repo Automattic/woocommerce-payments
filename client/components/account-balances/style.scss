@@ -39,6 +39,7 @@
 
 .wcpay-account-balances__balances {
 	display: flex;
+	margin-bottom: 0;
 
 	& > * + * {
 		border-left: 1px solid $gray-200;
@@ -76,4 +77,9 @@
 			border-top: 1px solid $gray-200;
 		}
 	}
+}
+
+.components-card.wcpay-account-balances {
+	margin-bottom: 0;
+	box-shadow: none;
 }

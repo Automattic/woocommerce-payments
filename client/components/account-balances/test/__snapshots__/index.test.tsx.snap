@@ -3,7 +3,7 @@
 exports[`AccountBalances renders the correct tooltip text for the total balance 1`] = `
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card wcpay-account-balances css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >

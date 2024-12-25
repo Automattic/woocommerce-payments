@@ -73,7 +73,7 @@ const AccountBalances: React.FC = () => {
 		};
 
 		return (
-			<Card>
+			<Card className="wcpay-account-balances">
 				<CardHeader>Balances</CardHeader>
 				<CardBody className="wcpay-account-balances__balances">
 					<BalanceBlock
@@ -118,7 +118,7 @@ const AccountBalances: React.FC = () => {
 
 	return (
 		<>
-			<Card>
+			<Card className="wcpay-account-balances">
 				<CardHeader>Balances</CardHeader>
 				<CardBody className="wcpay-account-balances__balances">
 					<BalanceBlock
