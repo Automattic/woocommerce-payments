@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Added a check for the gateway id before comparing it
-
-
