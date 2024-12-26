@@ -1108,7 +1108,7 @@ class MultiCurrency {
 		woocommerce_admin_meta_boxes.rounding_precision = <?php echo (int) $rounding_precision; ?>;
 		</script>
 			<?php
-		endif;
+			endif;
 	}
 
 	/**
@@ -1252,10 +1252,10 @@ class MultiCurrency {
 	public function is_multi_currency_settings_page(): bool {
 		global $current_screen, $current_tab;
 		return (
-			is_admin()
-			&& $current_tab && $current_screen
-			&& 'wcpay_multi_currency' === $current_tab
-			&& 'woocommerce_page_wc-settings' === $current_screen->base
+		is_admin()
+		&& $current_tab && $current_screen
+		&& 'wcpay_multi_currency' === $current_tab
+		&& 'woocommerce_page_wc-settings' === $current_screen->base
 		);
 	}
 
@@ -1277,7 +1277,7 @@ class MultiCurrency {
 		$query_union = [];
 
 		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
-					\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+				\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			foreach ( $currencies as $currency ) {
 				$query_union[] = $wpdb->prepare(
 					"SELECT %s AS currency_code, EXISTS(SELECT currency FROM {$wpdb->prefix}wc_orders WHERE currency=%s LIMIT 1) AS exists_in_orders",
@@ -1339,6 +1339,7 @@ class MultiCurrency {
 	 */
 	public function adjust_amount_for_selected_currency( $amount, $apply_charm_pricing = true ) {
 		return $this->get_adjusted_price( $amount, $apply_charm_pricing, $this->get_selected_currency() );
+	}
 
 	/**
 	 * Returns the amount with the backend format.
