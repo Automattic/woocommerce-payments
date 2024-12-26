@@ -17,7 +17,7 @@ import { Transaction } from 'wcpay/data';
 interface TransactionsFiltersProps {
 	storeCurrencies: string[];
 	customerCurrencies: string[];
-	transactionSources?: Transaction[ 'source' ][];
+	transactionSources: Transaction[ 'source' ][];
 }
 
 export const TransactionsFilters = ( {

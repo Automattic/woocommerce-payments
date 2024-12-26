@@ -55,7 +55,7 @@ export const formatQueryFilters = ( query ) => ( {
 	customer_currency_is: query.customerCurrencyIs,
 	customer_currency_is_not: query.customerCurrencyIsNot,
 	source_is: query.sourceIs,
-	source_is_not: query.sourceIsNot, // @todo check why?
+	source_is_not: query.sourceIsNot,
 	search: query.search,
 	user_timezone: getUserTimeZone(),
 	locale: query.locale,
