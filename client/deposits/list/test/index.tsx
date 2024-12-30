@@ -80,10 +80,12 @@ declare const global: {
 		connect: {
 			country: string;
 		};
-		locale: {
-			code: string;
-		};
 		dateFormat: string;
+	};
+	wcSettings: {
+		locale: {
+			userLocale: string;
+		};
 	};
 };
 
@@ -140,10 +142,13 @@ describe( 'Deposits list', () => {
 					precision: 2,
 				},
 			},
-			locale: {
-				code: 'en',
-			},
 			dateFormat: 'M j Y',
+		};
+
+		global.wcSettings = {
+			locale: {
+				userLocale: 'en',
+			},
 		};
 	} );
 

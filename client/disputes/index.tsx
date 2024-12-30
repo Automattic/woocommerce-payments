@@ -347,7 +347,7 @@ export const DisputesList = (): JSX.Element => {
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		const locale = wcpaySettings.locale.code;
+		const locale = wcSettings.locale.userLocale;
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,

@@ -186,6 +186,9 @@ declare global {
 		adminUrl: string;
 		countries: Record< string, string >;
 		homeUrl: string;
+		locale: {
+			userLocale: string;
+		};
 		siteTitle: string;
 	};
 
