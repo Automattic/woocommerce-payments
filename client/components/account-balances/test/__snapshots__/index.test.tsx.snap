@@ -15,7 +15,7 @@ exports[`AccountBalances renders the correct tooltip text for the total balance 
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
-        Balances
+        Balance
       </div>
       <div
         class="components-card__body components-card-body wcpay-account-balances__balances css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
