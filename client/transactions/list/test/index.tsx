@@ -89,8 +89,11 @@ declare const global: {
 				precision: number;
 			};
 		};
+	};
+
+	wcSettings: {
 		locale: {
-			code: string;
+			userLocale: string;
 		};
 	};
 };
@@ -218,8 +221,10 @@ describe( 'Transactions list', () => {
 					precision: 2,
 				},
 			},
+		};
+		global.wcSettings = {
 			locale: {
-				code: 'en',
+				userLocale: 'en',
 			},
 		};
 		window.wcpaySettings.dateFormat = 'M j, Y';

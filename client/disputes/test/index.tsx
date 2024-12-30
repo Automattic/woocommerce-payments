@@ -81,11 +81,14 @@ declare const global: {
 				precision: number;
 			};
 		};
-		locale: {
-			code: string;
-		};
 		dateFormat?: string;
 		timeFormat?: string;
+	};
+
+	wcSettings: {
+		locale: {
+			userLocale: string;
+		};
 	};
 };
 
@@ -181,11 +184,14 @@ describe( 'Disputes list', () => {
 					precision: 2,
 				},
 			},
-			locale: {
-				code: 'en',
-			},
 			dateFormat: 'Y-m-d',
 			timeFormat: 'g:iA',
+		};
+
+		global.wcSettings = {
+			locale: {
+				userLocale: 'en',
+			},
 		};
 	} );
 
