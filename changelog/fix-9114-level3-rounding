@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Add a rounding entry to Level 3 data for rare cases where rounding errors break calculations.
