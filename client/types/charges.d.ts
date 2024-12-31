@@ -40,6 +40,7 @@ export interface PaymentMethodDetails {
 		| 'giropay'
 		| 'ideal'
 		| 'klarna'
+		| 'wechat_pay'
 		| 'p24'
 		| 'sepa_debit'
 		| 'sofort';

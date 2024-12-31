@@ -76,6 +76,7 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 
 /**
  * Gateway class for WooPayments
@@ -353,6 +354,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'affirm'            => 'affirm_payments',
 			'afterpay_clearpay' => 'afterpay_clearpay_payments',
 			'klarna'            => 'klarna_payments',
+			'wechat_pay'        => 'wechat_pay_payments',
 			'jcb'               => 'jcb_payments',
 		];
 
@@ -3982,6 +3984,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
+		$statuses['wechat_pay_payments'] = [
+			'status'       => 'active',
+			'requirements' => [],
+		];
+
 		return 0 === count( $statuses ) ? [
 			'card_payments' => [
 				'status'       => 'active',
@@ -4121,6 +4128,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(
@@ -4131,7 +4139,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$methods_with_fees = array_keys( $this->account->get_fees() );
 
-		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
+		return array_merge(
+			array_values( array_intersect( $available_methods, $methods_with_fees ) ),
+			[ Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] // TODO: add fees in backend.
+		);
 	}
 
 	/**

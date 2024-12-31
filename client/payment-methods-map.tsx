@@ -22,6 +22,7 @@ import {
 	P24Icon,
 	SepaIcon,
 	SofortIcon,
+	WeChatPayIcon,
 } from 'wcpay/payment-methods-icons';
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
@@ -232,6 +233,20 @@ const PaymentMethodInformationObject: Record<
 		allows_manual_capture: false,
 		allows_pay_later: true,
 		accepts_only_domestic_payment: true,
+	},
+	wechat_pay: {
+		id: 'wechat_pay',
+		label: __( 'WeChat Pay', 'woocommerce-payments' ),
+		description: __(
+			'Allow customers to pay using WeChat Pay.',
+			'woocommerce-payments'
+		),
+		icon: WeChatPayIcon,
+		currencies: [ 'USD' /* ...TODO: Add other currencies */ ],
+		stripe_key: 'wechat_pay_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 };
 

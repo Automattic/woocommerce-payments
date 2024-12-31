@@ -37,6 +37,10 @@ import {
 const gatewayUPEComponents = {};
 let fingerprint = null;
 
+getUPEConfig( 'paymentMethodsConfig' ).wechat_pay = {
+	forceNetworkSavedCards: false,
+};
+
 for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
@@ -44,7 +48,6 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 		hasLoadError: false,
 	};
 }
-
 /**
  * Initializes the appearance of the payment element by retrieving the UPE configuration
  * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
@@ -274,6 +277,14 @@ async function createStripePaymentElement(
 		fonts: getFontRulesFromPage(),
 	};
 
+	if ( paymentMethodType === 'wechat_pay' ) {
+		options.paymentMethodOptions = {
+			wechatPay: {
+				client: 'web',
+			},
+		};
+	}
+
 	const stripe = await api.getStripeForUPE( paymentMethodType );
 
 	const elements = stripe.elements( options );
@@ -460,6 +471,9 @@ export async function mountStripePaymentElement(
 	document.body.dispatchEvent( event );
 
 	const paymentMethodType = domElement.dataset.paymentMethodType;
+	// if ( paymentMethodType === 'klarna' ) {
+	// 	paymentMethodType = 'wechat_pay';
+	// }
 	if ( ! gatewayUPEComponents[ paymentMethodType ] ) {
 		return;
 	}

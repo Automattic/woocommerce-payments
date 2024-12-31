@@ -54,6 +54,7 @@ export interface Transaction {
 		| 'ideal'
 		| 'jcb'
 		| 'klarna'
+		| 'wechat_pay'
 		| 'link'
 		| 'mastercard'
 		| 'multibanco'

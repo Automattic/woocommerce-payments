@@ -388,6 +388,8 @@ export const getTransactionsPaymentMethodName = (
 			return __( 'Afterpay transactions', 'woocommerce-payments' );
 		case 'klarna':
 			return __( 'Klarna transactions', 'woocommerce-payments' );
+		case 'wechat_pay':
+			return __( 'WeChat Pay transactions', 'woocommerce-payments' );
 		default:
 			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}

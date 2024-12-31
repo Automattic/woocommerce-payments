@@ -15,6 +15,7 @@ import ApplePay from 'assets/images/payment-method-icons/applepay.svg?asset';
 import AfterPay from 'assets/images/payment-method-icons/afterpay.svg?asset';
 import Affirm from 'assets/images/payment-method-icons/affirm.svg?asset';
 import Klarna from 'assets/images/payment-method-icons/klarna.svg?asset';
+import WeChatPay from 'assets/images/payment-method-icons/wechat_pay.svg?asset';
 import Jcb from 'assets/images/payment-method-icons/jcb.svg?asset';
 import GooglePay from 'assets/images/payment-method-icons/gpay.svg?asset';
 
@@ -60,6 +61,10 @@ const PaymentMethods = [
 	{
 		name: 'klarna',
 		component: Klarna,
+	},
+	{
+		name: 'wechat_pay',
+		component: WeChatPay,
 	},
 	{
 		name: 'jcb',
