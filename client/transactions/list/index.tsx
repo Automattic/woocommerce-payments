@@ -8,6 +8,7 @@ import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
+
 import {
 	TableCard,
 	Search,
@@ -94,6 +95,11 @@ interface Column extends TableCardColumn {
 	visible?: boolean;
 	cellClassName?: string;
 	labelInCsv?: string;
+}
+
+interface TransactionExportResponse {
+	download_url?: string;
+	exported_transactions: number;
 }
 
 const getPaymentSourceDetails = ( txn: Transaction ) => {
@@ -658,7 +664,7 @@ export const TransactionsList = (
 			window.confirm( confirmMessage )
 		) {
 			try {
-				await apiFetch( {
+				const response = await apiFetch< TransactionExportResponse >( {
 					path: getTransactionsCSV( {
 						userEmail,
 						locale,
@@ -684,16 +690,23 @@ export const TransactionsList = (
 					method: 'POST',
 				} );
 
-				createNotice(
-					'success',
-					sprintf(
-						__(
-							'Your export will be emailed to %s',
-							'woocommerce-payments'
-						),
-						userEmail
-					)
-				);
+				if ( response?.download_url ) {
+					const link = document.createElement( 'a' );
+					link.href = response.download_url;
+					link.click();
+				} else {
+					// Show email notification if no direct download URL
+					createNotice(
+						'success',
+						sprintf(
+							__(
+								'Your export will be emailed to %s',
+								'woocommerce-payments'
+							),
+							userEmail
+						)
+					);
+				}
 			} catch {
 				createNotice(
 					'error',
@@ -712,32 +725,18 @@ export const TransactionsList = (
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
 		recordEvent( 'wcpay_transactions_download_csv_click', {
 			location: props.depositId ? 'deposit_details' : 'transactions',
-			download_type: downloadType,
+			download_type: 'endpoint',
 			exported_transactions: rows.length,
 			total_transactions: transactionsSummary.count,
 		} );
 
-		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
+		if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
+			setCSVExportModalOpen( true );
 		} else {
-			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
-				if ( column.labelInCsv ) {
-					return { ...column, label: column.labelInCsv };
-				}
-				return column;
-			} );
-			downloadCSVFile(
-				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( columnsToDisplayInCsv, rows )
-			);
+			endpointExport( '' );
 		}
 
 		setIsDownloading( false );
