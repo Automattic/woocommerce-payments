@@ -53,7 +53,7 @@
     "feeString": "Fee (4.9% + $0.30): -$3.04",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
-      "additional-fx": "Foreign exchange fee: 1%",
+      "additional-fx": "Currency conversion fee: 1%",
       "additional-wcpay-subscription": "Subscription transaction fee: 1%"
     },
     "netString": "Net payout: $52.87 USD"

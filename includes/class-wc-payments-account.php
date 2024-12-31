@@ -30,6 +30,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
 	const WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT                   = 'woopay_enabled_by_default';
+	const ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT       = 'test_drive_account_settings_for_live_account';
 	const EMBEDDED_KYC_IN_PROGRESS_OPTION                       = 'wcpay_onboarding_embedded_kyc_in_progress';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
@@ -666,6 +667,69 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Get the account recommended payment methods to use during onboarding.
+	 *
+	 * @param string $country_code The account's business location country code. Provide a 2-letter ISO country code.
+	 *
+	 * @return array List of recommended payment methods for the given country.
+	 *               Empty array if there are no recommendations, we failed to retrieve recommendations,
+	 *               or the country is not supported by WooPayments.
+	 */
+	public function get_recommended_payment_methods( string $country_code ): array {
+		// Return early if the country is not supported.
+		if ( ! array_key_exists( $country_code, $this->get_supported_countries() ) ) {
+			return [];
+		}
+
+		// We use the locale for the current user (defaults to the site locale).
+		$recommended_pms = $this->onboarding_service->get_recommended_payment_methods( $country_code, get_user_locale() );
+		$recommended_pms = is_array( $recommended_pms ) ? array_values( $recommended_pms ) : [];
+
+		// Validate the recommended payment methods.
+		// Each must have an ID and a title.
+		$recommended_pms = array_filter(
+			$recommended_pms,
+			function ( $pm ) {
+				return isset( $pm['id'] ) && isset( $pm['title'] );
+			}
+		);
+
+		// Standardize/normalize.
+		// Determine if the payment method should be recommended as enabled.
+		$recommended_pms = array_map(
+			function ( $pm ) {
+				if ( ! isset( $pm['enabled'] ) ) {
+					// Default to enabled since this is a recommended list.
+					$pm['enabled'] = true;
+					// Look at the type, if available, to determine if it should be enabled.
+					if ( isset( $pm['type'] ) ) {
+						$pm['enabled'] = 'available' !== $pm['type'];
+					}
+				}
+
+				return $pm;
+			},
+			$recommended_pms
+		);
+		// Fill in the priority entries with a fallback to the index of the recommendation in the list.
+		$recommended_pms = array_map(
+			function ( $pm, $index ) {
+				if ( ! isset( $pm['priority'] ) ) {
+					$pm['priority'] = $index;
+				} else {
+					$pm['priority'] = intval( $pm['priority'] );
+				}
+
+				return $pm;
+			},
+			$recommended_pms,
+			array_keys( $recommended_pms )
+		);
+
+		return $recommended_pms;
+	}
+
+	/**
 	 * Gets the account live mode value.
 	 *
 	 * @return bool|null Account is_live value.
@@ -1254,6 +1318,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				}
 
 				$this->cleanup_on_account_reset();
+				delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 
 				// When we reset the account and want to go back to the settings page - redirect immediately!
 				if ( $redirect_to_settings_page ) {
@@ -1279,6 +1344,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				// in the "everything OK" scenario).
 				if ( WC_Payments_Onboarding_Service::is_test_mode_enabled() ) {
 					try {
+						// If we're in test mode and dealing with a test-drive account,
+						// we need to collect the test drive settings before we delete the test-drive account,
+						// and apply those settings to the live account.
+						$this->save_test_drive_settings();
 						// Delete the currently connected Stripe account.
 						$this->payments_api_client->delete_account( true );
 					} catch ( API_Exception $e ) {
@@ -1363,7 +1432,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			if ( ! $collect_payout_requirements
 				&& $this->has_working_jetpack_connection()
 				&& $this->is_stripe_account_valid() ) {
-
 				$params = [
 					'source'                   => $onboarding_source,
 					// Carry over some parameters as they may be used by our frontend logic.
@@ -1429,7 +1497,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// If there is a working one, we can proceed with the Stripe account handling.
 			try {
 				$this->maybe_init_jetpack_connection(
-				// Carry over all the important GET params, so we have them after the Jetpack connection setup.
+					// Carry over all the important GET params, so we have them after the Jetpack connection setup.
 					add_query_arg(
 						[
 							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
@@ -1438,6 +1506,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 							'test_mode'                   => $should_onboard_in_test_mode ? 'true' : false,
 							'test_drive'                  => $create_test_drive_account ? 'true' : false,
 							'auto_start_test_drive_onboarding' => $auto_start_test_drive_onboarding ? 'true' : false,
+							// These are starting capabilities for the account.
+							// They are collected by the payment method step of the
+							// WC Payments settings page native onboarding experience.
+							'capabilities'                => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
 							'from'                        => WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
 							'source'                      => $onboarding_source,
 							'redirect_to_settings_page'   => $redirect_to_settings_page ? 'true' : false,
@@ -1466,13 +1538,19 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				&& WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD !== $from
 				&& ! $this->is_stripe_connected() ) {
 
+				$additional_params = [
+					'source' => $onboarding_source,
+				];
+
+				if ( $this->onboarding_service->get_capabilities_from_request() ) {
+					$additional_params['capabilities'] = rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) );
+				}
+
 				$this->redirect_service->redirect_to_onboarding_wizard(
 					// When we redirect to the onboarding wizard, we carry over the `from`, if we have it.
 					// This is because there is no interim step between the user clicking the connect link and the onboarding wizard.
 					! empty( $from ) ? $from : $next_step_from,
-					[
-						'source' => $onboarding_source,
-					]
+					$additional_params
 				);
 				return;
 			}
@@ -1505,11 +1583,15 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 							null,
 							$from, // Carry over `from` since we are doing a short-circuit.
 							[
-								'promo'      => ! empty( $incentive_id ) ? $incentive_id : false,
-								'test_drive' => 'true',
+								'promo'        => ! empty( $incentive_id ) ? $incentive_id : false,
+								'test_drive'   => 'true',
 								'auto_start_test_drive_onboarding' => 'true', // This is critical.
-								'test_mode'  => $should_onboard_in_test_mode ? 'true' : false,
-								'source'     => $onboarding_source,
+								// These are starting capabilities for the account.
+								// They are collected by the payment method step of the
+								// WC Payments settings page native onboarding experience.
+								'capabilities' => rawurlencode( wp_json_encode( $this->onboarding_service->get_capabilities_from_request() ) ),
+								'test_mode'    => $should_onboard_in_test_mode ? 'true' : false,
+								'source'       => $onboarding_source,
 								'redirect_to_settings_page' => $redirect_to_settings_page ? 'true' : false,
 							]
 						);
@@ -1914,6 +1996,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		$self_assessment_data = isset( $_GET['self_assessment'] ) ? wc_clean( wp_unslash( $_GET['self_assessment'] ) ) : [];
+
 		if ( 'test_drive' === $setup_mode ) {
 			// If we get to the overview page, we want to show the success message.
 			$return_url = add_query_arg( 'wcpay-sandbox-success', 'true', $return_url );
@@ -1928,7 +2011,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		];
 
 		$user_data    = $this->onboarding_service->get_onboarding_user_data();
-		$account_data = $this->onboarding_service->get_account_data( $setup_mode, $self_assessment_data );
+		$account_data = $this->onboarding_service->get_account_data(
+			$setup_mode,
+			$self_assessment_data,
+			// These are starting capabilities for the account.
+			// They are collected by the payment method step of the
+			// WC Payments settings page native onboarding experience.
+			$this->onboarding_service->get_capabilities_from_request()
+		);
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			'live' === $setup_mode,
@@ -1941,13 +2031,38 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$collect_payout_requirements
 		);
 
+		$should_enable_woopay   = filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN );
+		$is_test_mode           = in_array( $setup_mode, [ 'test', 'test_drive' ], true );
+		$account_already_exists = isset( $onboarding_data['url'] ) && false === $onboarding_data['url'];
+
+		// Only store the 'woopay_enabled_by_default' flag in a transient, to be enabled later, if
+		// it should be enabled and the account doesn't already exist, or we are in test mode.
+		if ( $should_enable_woopay && ( ! $account_already_exists || $is_test_mode ) ) {
+			set_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, $should_enable_woopay, DAY_IN_SECONDS );
+		}
+
 		// If an account already exists for this site and/or there is no need for KYC verifications, we're done.
 		// Our platform will respond with a `false` URL in this case.
-		if ( isset( $onboarding_data['url'] ) && false === $onboarding_data['url'] ) {
+		if ( $account_already_exists ) {
 			// Set the gateway options.
 			$gateway = WC_Payments::get_gateway();
 			$gateway->update_option( 'enabled', 'yes' );
 			$gateway->update_option( 'test_mode', empty( $onboarding_data['is_live'] ) ? 'yes' : 'no' );
+
+			/**
+			 * ==================
+			 * Enforces the update of payment methods to 'enabled' based on the capabilities
+			 * provided during the NOX onboarding process.
+			 *
+			 * @see WC_Payments_Onboarding_Service::update_enabled_payment_methods_ids
+			 * ==================
+			 */
+			$capabilities = $this->onboarding_service->get_capabilities_from_request();
+
+			// Activate enabled Payment Methods IDs.
+			if ( ! empty( $capabilities ) ) {
+				$this->onboarding_service->update_enabled_payment_methods_ids( $gateway, $capabilities );
+			}
 
 			// Store a state after completing KYC for tracks. This is stored temporarily in option because
 			// user might not have agreed to TOS yet.
@@ -1964,9 +2079,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			);
 		}
 
-		// We have an account that needs to be verified (has a URL to redirect the merchant to).
-		// Store the relevant onboarding data.
-		set_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ), DAY_IN_SECONDS );
 		// Save the onboarding state for a day.
 		// This is used to verify the state when finalizing the onboarding and connecting the account.
 		// On finalizing the onboarding, the transient gets deleted.
@@ -2064,6 +2176,20 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway->update_option( 'enabled', 'yes' );
 		$gateway->update_option( 'test_mode', 'live' !== $mode ? 'yes' : 'no' );
 
+		/**
+		 * ==================
+		 * Enforces the update of payment methods to 'enabled' based on the capabilities
+		 * provided during the NOX onboarding process.
+		 *
+		 * @see WC_Payments_Onboarding_Service::update_enabled_payment_methods_ids
+		 * ==================
+		 */
+		$capabilities = $this->onboarding_service->get_capabilities_from_request();
+		// Activate enabled Payment Methods IDs.
+		if ( ! empty( $capabilities ) ) {
+			$this->onboarding_service->update_enabled_payment_methods_ids( $gateway, $capabilities );
+		}
+
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
@@ -2086,13 +2212,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// If we get this parameter, but we have a valid state, it means the merchant left KYC early and didn't finish it.
 			// While we do have an account, it is not yet valid. We need to redirect them back to the connect page.
 			$params['wcpay-connection-error'] = '1';
-
 			$this->redirect_service->redirect_to_connect_page( '', WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
 			return;
 		}
 
 		$params['wcpay-connection-success'] = '1';
-
 		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
 	}
 
@@ -2475,6 +2599,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		);
 	}
 
+
 	/**
 	 * Send a Tracks event.
 	 *
@@ -2518,5 +2643,45 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function get_lifetime_total_payment_volume(): int {
 		$account = $this->get_cached_account_data();
 		return (int) ! empty( $account ) && isset( $account['lifetime_total_payment_volume'] ) ? $account['lifetime_total_payment_volume'] : 0;
+	}
+
+	/**
+	 * Extract the useful test drive settings from the account data.
+	 *
+	 * We will use this data to migrate the test drive settings when onboarding the live account.
+	 * ATM we only store the enabled payment methods.
+	 *
+	 * @return array The test drive settings for the live account.
+	 */
+	private function get_test_drive_settings_for_live_account(): array {
+		$gateway = WC_Payments::get_gateway();
+
+		$capabilities = [];
+		foreach ( $gateway->get_upe_enabled_payment_method_ids() as $payment_method_id ) {
+			$capabilities[ $payment_method_id . '_payments' ] = [ 'requested' => 'true' ];
+		}
+
+		return [ 'capabilities' => $capabilities ];
+	}
+
+	/**
+	 * If we're in test mode and dealing with a test-drive account,
+	 * we need to collect the test drive settings before we delete the test-drive account,
+	 * and apply those settings to the live account.
+	 *
+	 * @return void
+	 */
+	private function save_test_drive_settings(): void {
+		$account = $this->get_cached_account_data();
+
+		if ( ! empty( $account['is_test_drive'] ) && true === $account['is_test_drive'] ) {
+			$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
+
+			// Store the test drive settings for the live account in a transient,
+			// We don't passing the data around, as the merchant might cancel and start
+			// the onboarding from scratch. In this case, we won't have the test drive
+			// account anymore to collect the settings.
+			set_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
+		}
 	}
 }

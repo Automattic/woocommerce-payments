@@ -375,10 +375,9 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 		billingInput = document.querySelector( '#billing_country' );
 	}
 
-	/* global wcpayCustomerData */
 	// in the case of "pay for order", there is no "billing country" input, so we need to rely on backend data.
 	const billingCountry =
-		billingInput?.value || wcpayCustomerData?.billing_country || '';
+		billingInput?.value || window?.wcpayCustomerData?.billing_country || '';
 
 	const upeContainer = upeElement?.closest( '.wc_payment_method' );
 	if ( supportedCountries.includes( billingCountry ) ) {
@@ -450,8 +449,8 @@ export const isBillingInformationMissing = ( form ) => {
 			if ( country && locale && fieldName !== 'billing_email' ) {
 				const key = fieldName.replace( 'billing_', '' );
 				isRequired =
-					locale[ country ][ key ]?.required ??
-					locale.default[ key ]?.required;
+					locale[ country ]?.[ key ]?.required ??
+					locale.default?.[ key ]?.required;
 			}
 
 			const hasValue = field?.value;

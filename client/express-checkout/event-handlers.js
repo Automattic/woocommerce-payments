@@ -13,11 +13,14 @@ import {
 	normalizeShippingAddress,
 	normalizeLineItems,
 	getExpressCheckoutData,
+	updateShippingAddressUI,
 } from './utils';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
+
+let lastSelectedAddress = null;
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 	try {
@@ -29,6 +32,9 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 			elements.update( {
 				amount: response.total.amount,
 			} );
+
+			lastSelectedAddress = event.address;
+
 			event.resolve( {
 				shippingRates: response.shipping_options,
 				lineItems: normalizeLineItems( response.displayItems ),
@@ -171,5 +177,9 @@ export const onCompletePaymentHandler = () => {
 };
 
 export const onCancelHandler = () => {
+	if ( lastSelectedAddress ) {
+		updateShippingAddressUI( lastSelectedAddress );
+	}
+	lastSelectedAddress = null;
 	unblockUI();
 };

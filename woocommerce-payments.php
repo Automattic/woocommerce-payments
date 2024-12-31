@@ -11,7 +11,7 @@
  * WC tested up to: 9.4.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 8.6.0
+ * Version: 8.7.0
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -78,6 +78,12 @@ function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
 		return;
 	}
+	$connection_version = Automattic\Jetpack\Connection\Package_Version::PACKAGE_VERSION;
+
+	$custom_content = version_compare( $connection_version, '6.1.0', '>' ) ?
+		'wcpay_get_jetpack_idc_custom_content' :
+		wcpay_get_jetpack_idc_custom_content();
+
 	$jetpack_config = new Automattic\Jetpack\Config();
 	$jetpack_config->ensure(
 		'connection',
@@ -90,7 +96,7 @@ function wcpay_jetpack_init() {
 		'identity_crisis',
 		[
 			'slug'          => 'woocommerce-payments',
-			'customContent' => wcpay_get_jetpack_idc_custom_content(),
+			'customContent' => $custom_content,
 			'logo'          => plugins_url( 'assets/images/logo.svg', WCPAY_PLUGIN_FILE ),
 			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
 			'priority'      => 5,

@@ -907,6 +907,76 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->maybe_handle_onboarding();
 	}
 
+	public function test_ensure_woopay_enabled_by_default_value_set_in_sandbox_mode_kyc() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Configure the request to be in sandbox mode.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		$_GET['progressive']   = 'true';
+		$_GET['test_mode']     = 'true';
+		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
+
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturn(
+				[
+					'url'                       => false,
+					'woopay_enabled_by_default' => true,
+				]
+			);
+
+		$original_value = get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		$this->assertFalse( $original_value );
+		$this->assertTrue( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_ensure_woopay_not_enabled_by_default_for_existing_live_accounts() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Configure the request to be in sandbox mode.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		$_GET['progressive']   = 'true';
+		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
+
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturn(
+				[
+					'url'                       => false,
+					'woopay_enabled_by_default' => true,
+				]
+			);
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
 	public function test_maybe_handle_onboarding_init_stripe_onboarding_existing_account() {
 		// Arrange.
 		// We need to be in the WP admin dashboard.
@@ -3172,6 +3242,91 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->willReturn( $expected );
 
 		$this->assertSame( $expected, $this->wcpay_account->get_tracking_info() );
+	}
+
+	public function test_get_recommended_payment_methods_unsupported_country() {
+		$this->assertSame( [], $this->wcpay_account->get_recommended_payment_methods( 'XZ' ) );
+	}
+
+	public function get_recommended_payment_methods_provider() {
+		return [
+			'No PMs suggested'                  => [ 'US', [], [] ],
+			'Invalid PMs array'                 => [
+				'US',
+				[
+					'type'    => 'available',
+					'enabled' => false,
+				],
+				[],
+			],
+			'Enabled flag and priority not set' => [
+				'US',
+				[
+					[
+						'id'    => 1,
+						'title' => 'test PM',
+						'type'  => 'available',
+					],
+					[
+						'id'    => 2,
+						'title' => 'test PM 2',
+						'type'  => 'available',
+					],
+				],
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => false,
+						'priority' => 0,
+					],
+					[
+						'id'       => 2,
+						'title'    => 'test PM 2',
+						'type'     => 'available',
+						'enabled'  => false,
+						'priority' => 1,
+					],
+				],
+			],
+			'Enabled flag and priority set'     => [
+				'US',
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => true,
+						'priority' => 1,
+					],
+				],
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => true,
+						'priority' => 1,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider get_recommended_payment_methods_provider
+	 */
+	public function test_get_recommended_payment_methods( $country_code, $recommended_pms, $expected ) {
+
+		$this->mock_empty_cache();
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'get_recommended_payment_methods' )
+			->with( $country_code )
+			->willReturn( $recommended_pms );
+
+		$this->assertSame( $expected, $this->wcpay_account->get_recommended_payment_methods( $country_code ) );
 	}
 
 	/**

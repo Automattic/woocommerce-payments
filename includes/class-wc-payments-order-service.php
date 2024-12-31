@@ -191,6 +191,21 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Handles the order state when a payment is captured successfully.
+	 * Unlike `update_order_status_from_intent`, this method does not check the current order status or skip processing
+	 * if the order is already in the "processing" state. This ensures the order status is updated correctly upon a
+	 * successful capture, preventing issues where the capture is not reflected in the order details or transaction screens
+	 * due to the order status being in the processing state.
+	 *
+	 * @param WC_Order                           $order   The order to update.
+	 * @param WC_Payments_API_Abstract_Intention $intent  The intent object containing payment or setup data.
+	 */
+	public function process_captured_payment( $order, $intent ) {
+		$this->mark_payment_capture_completed( $order, $intent );
+		$this->complete_order_processing( $order, $intent->get_status() );
+	}
+
+	/**
 	 * Updates an order to failed status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -1737,10 +1752,8 @@ class WC_Payments_Order_Service {
 	 * @return string HTML note.
 	 */
 	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order ): string {
-		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-			wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ),
-			$order
-		);
+		$multi_currency_instance = WC_Payments_Multi_Currency();
+		$formatted_price         = WC_Payments_Explicit_Price_Formatter::get_explicit_price( $multi_currency_instance->get_backend_formatted_wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ), $order );
 
 		if ( empty( $refund_reason ) ) {
 			$note = sprintf(
@@ -1915,7 +1928,11 @@ class WC_Payments_Order_Service {
 	 * @return string The formatted order total.
 	 */
 	private function get_order_amount( $order ) {
-		return WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order );
+		$multi_currency_instance = WC_Payments_Multi_Currency();
+		$order_price             = $order->get_total();
+
+		$formatted_price = $multi_currency_instance->get_backend_formatted_wc_price( $order_price, [ 'currency' => $order->get_currency() ] );
+		return WC_Payments_Explicit_Price_Formatter::get_explicit_price( $formatted_price, $order );
 	}
 
 	/**

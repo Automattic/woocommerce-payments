@@ -354,6 +354,7 @@ class WC_Payments {
 
 		include_once __DIR__ . '/exceptions/class-base-exception.php';
 		include_once __DIR__ . '/exceptions/class-api-exception.php';
+		include_once __DIR__ . '/exceptions/class-api-merchant-exception.php';
 		include_once __DIR__ . '/exceptions/class-connection-exception.php';
 		include_once __DIR__ . '/core/class-mode.php';
 
@@ -554,6 +555,8 @@ class WC_Payments {
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
 		self::$compatibility_service->init_hooks();
+		self::$customer_service->init_hooks();
+		self::$token_service->init_hooks();
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
@@ -1876,12 +1879,13 @@ class WC_Payments {
 	public static function load_stripe_bnpl_site_messaging() {
 		// The messaging element shall not be shown for subscription products.
 		// As we are not too deep into subscriptions API, we follow simplistic approach for now.
-		$is_subscription           = false;
-		$are_subscriptions_enabled = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
+		$is_subscription            = false;
+		$cart_contains_subscription = false;
+		$are_subscriptions_enabled  = class_exists( 'WC_Subscriptions' ) || class_exists( 'WC_Subscriptions_Core_Plugin' );
 		if ( $are_subscriptions_enabled ) {
-				global $product;
-				$is_subscription            = $product && WC_Subscriptions_Product::is_subscription( $product );
-				$cart_contains_subscription = is_cart() && WC_Subscriptions_Cart::cart_contains_subscription();
+			global $product;
+			$is_subscription            = $product && WC_Subscriptions_Product::is_subscription( $product );
+			$cart_contains_subscription = is_cart() && WC_Subscriptions_Cart::cart_contains_subscription();
 		}
 
 		if ( ! $is_subscription && ! $cart_contains_subscription ) {
@@ -1926,6 +1930,7 @@ class WC_Payments {
 				'wcpay_duplicate_payment_method_notices_dismissed',
 				'wcpay_exit_survey_dismissed',
 				'wcpay_instant_deposit_notice_dismissed',
+				'wcpay_date_format_notice_dismissed',
 			],
 			true
 		);

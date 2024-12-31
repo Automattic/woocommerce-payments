@@ -95,6 +95,16 @@ const ConnectAccountPage: React.FC = () => {
 	const loaderProgressRef = useRef( testDriveLoaderProgress );
 	loaderProgressRef.current = testDriveLoaderProgress;
 
+	// Use a timer to track the elapsed time for the test drive mode setup.
+	let testDriveSetupStartTime: number;
+	// The test drive setup will be forced finished after 40 seconds
+	// (10 seconds for the initial calls plus 30 for checking the account status in a loop).
+	const testDriveSetupMaxDuration = 40;
+
+	// Helper function to calculate the elapsed time in seconds.
+	const elapsed = ( time: number ) =>
+		Math.round( ( Date.now() - time ) / 1000 );
+
 	const {
 		connectUrl,
 		connect: { availableCountries, country },
@@ -166,51 +176,63 @@ const ConnectAccountPage: React.FC = () => {
 		}
 	};
 
-	const checkAccountStatus = () => {
+	const checkAccountStatus = ( extraQueryArgs = {} ) => {
 		// Fetch account status from the cache.
 		apiFetch( {
 			path: `/wc/v3/payments/accounts`,
 			method: 'GET',
 		} ).then( ( account ) => {
 			// Simulate the update of the loader progress bar by 4% per check.
-			// Limit to a maximum of 15 checks or 30 seconds.
-			updateLoaderProgress( 100, 4 );
+			// Limit to a maximum of 10 checks (6% progress per each request starting from 40% = max 10 checks).
+			updateLoaderProgress( 100, 6 );
 
-			// If the account status is not a pending one or progress percentage is above 95,
-			// consider our work done and redirect the merchant.
-			// Otherwise, schedule another check after 2 seconds.
+			// If the account status is not a pending one, the progress percentage is above 95,
+			// or we've exceeded the timeout, consider our work done and redirect the merchant.
+			// Otherwise, schedule another check after a 2.5 seconds wait.
 			if (
 				( account &&
 					( account as AccountData ).status &&
 					! ( account as AccountData ).status.includes(
 						'pending'
 					) ) ||
-				loaderProgressRef.current > 95
+				loaderProgressRef.current > 95 ||
+				elapsed( testDriveSetupStartTime ) > testDriveSetupMaxDuration
 			) {
 				setTestDriveLoaderProgress( 100 );
-
-				// Redirect to the Connect URL and let it figure it out where to point the merchant.
-				window.location.href = addQueryArgs( connectUrl, {
+				const queryArgs = {
 					test_drive: 'true',
 					'wcpay-sandbox-success': 'true',
 					source: determineTrackingSource(),
 					from: 'WCPAY_CONNECT',
 					redirect_to_settings_page:
 						urlParams.get( 'redirect_to_settings_page' ) || '',
+				};
+
+				// Redirect to the Connect URL and let it figure it out where to point the merchant.
+				window.location.href = addQueryArgs( connectUrl, {
+					...queryArgs,
+					...extraQueryArgs,
 				} );
 			} else {
-				setTimeout( checkAccountStatus, 2000 );
+				// Schedule another check after 2.5 seconds.
+				// 2.5 seconds plus 0.5 seconds for the fetch request is 3 seconds.
+				// With a maximum of 10 checks, we will wait for 30 seconds before ending the process normally.
+				setTimeout( () => checkAccountStatus( extraQueryArgs ), 2500 );
 			}
 		} );
 	};
 
 	const handleSetupTestDriveMode = async () => {
+		// Record the start time of the test drive setup.
+		testDriveSetupStartTime = Date.now();
+		// Initialize the progress bar.
 		setTestDriveLoaderProgress( 5 );
 		setTestDriveModeSubmitted( true );
 		trackConnectAccountClicked( true );
 
 		const customizedConnectUrl = addQueryArgs( connectUrl, {
 			test_drive: 'true',
+			capabilities: urlParams.get( 'capabilities' ) || '',
 		} );
 
 		const updateProgress = setInterval( updateLoaderProgress, 2500, 40, 5 );
@@ -251,6 +273,7 @@ const ConnectAccountPage: React.FC = () => {
 					}
 
 					clearInterval( updateProgress );
+					// Update the progress bar to 40% since we've finished the initial account setup.
 					setTestDriveLoaderProgress( 40 );
 
 					// Check the url for the `wcpay-connection-success` parameter, indicating a successful connection.
@@ -264,7 +287,9 @@ const ConnectAccountPage: React.FC = () => {
 					// The account has been successfully onboarded.
 					if ( !! connectionSuccess ) {
 						// Start checking the account status in a loop.
-						checkAccountStatus();
+						checkAccountStatus( {
+							'wcpay-connection-success': '1',
+						} );
 					} else {
 						// Redirect to the response URL, but attach our test drive flags.
 						// This URL is generally a Connect page URL.

@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 export * from './normalize';
+export * from './shipping-fields';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 interface MyWindow extends Window {
@@ -66,6 +67,7 @@ export interface WCPayExpressCheckoutParams {
 	product: {
 		needs_shipping: boolean;
 		currency: string;
+		product_type: string;
 		shippingOptions: {
 			id: string;
 			label: string;
