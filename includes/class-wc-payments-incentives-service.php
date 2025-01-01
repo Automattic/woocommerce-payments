@@ -275,6 +275,7 @@ class WC_Payments_Incentives_Service {
 					'payment_method' => 'woocommerce_payments',
 					'return'         => 'ids',
 					'limit'          => 1,
+					'orderby'        => 'none',
 				]
 			)
 		) ) {
@@ -319,6 +320,7 @@ class WC_Payments_Incentives_Service {
 						'date_created' => '>=' . strtotime( '-90 days' ),
 						'return'       => 'ids',
 						'limit'        => 1,
+						'orderby'      => 'none',
 					]
 				)
 			),
