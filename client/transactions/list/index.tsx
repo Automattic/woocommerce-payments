@@ -202,7 +202,7 @@ const getColumns = (
 			visible: false,
 		},
 		{
-			key: 'deposit_currency',
+			key: 'currency',
 			label: __( 'Payout Currency', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Payout Currency', 'woocommerce-payments' ),
 			isSortable: true,
@@ -537,7 +537,7 @@ export const TransactionsList = (
 				display: clickable( txn.customer_currency.toUpperCase() ),
 			},
 			customer_amount: formatCustomerAmount(),
-			deposit_currency: {
+			currency: {
 				value: txn.currency.toUpperCase(),
 				display: clickable( txn.currency.toUpperCase() ),
 			},
