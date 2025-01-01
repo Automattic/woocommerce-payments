@@ -37,10 +37,6 @@ import {
 const gatewayUPEComponents = {};
 let fingerprint = null;
 
-getUPEConfig( 'paymentMethodsConfig' ).wechat_pay = {
-	forceNetworkSavedCards: false,
-};
-
 for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
