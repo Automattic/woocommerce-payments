@@ -6,7 +6,6 @@
 import React, { Fragment, useState } from 'react';
 import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
-import { useMemo } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	TableCard,
@@ -69,6 +68,7 @@ import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -322,13 +322,11 @@ export const TransactionsList = (
 		exportLanguage,
 	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
-	const columnsToDisplay = useMemo(
-		() =>
-			getColumns(
-				! props.depositId,
-				wcpaySettings.isSubscriptionsActive
-			),
-		[ props.depositId ]
+	const { onColumnsChange, columnsToDisplay } = usePersistedColumnVisibility<
+		Column
+	>(
+		'wc_payments_transactions_hidden_columns',
+		getColumns( ! props.depositId, wcpaySettings.isSubscriptionsActive )
 	);
 
 	const totalRows = transactionsSummary.count || 0;
@@ -845,6 +843,7 @@ export const TransactionsList = (
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					<Search
 						allowFreeTextSearch={ true }

@@ -58,6 +58,7 @@ import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/i
 import DateFormatNotice from 'wcpay/components/date-format-notice';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -225,6 +226,10 @@ export const DisputesList = (): JSX.Element => {
 	] = useReportingExportLanguage() as ReportingExportLanguageHook;
 
 	const headers = getHeaders( getQuery().orderby );
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		DisputesTableHeader
+	>( 'wc_payments_disputes_hidden_columns', headers );
+
 	const totalRows = disputesSummary.count || 0;
 
 	const rows = disputes.map( ( dispute ) => {
@@ -569,6 +574,7 @@ export const DisputesList = (): JSX.Element => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					downloadable && (
 						<DownloadButton

@@ -47,6 +47,7 @@ import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/i
 
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
@@ -118,7 +119,11 @@ export const DepositsList = (): JSX.Element => {
 	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
 
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
-	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
+	const columns = getColumns( sortByDate );
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		DepositsTableHeader
+	>( 'wc_payments_payouts_hidden_columns', columns );
+
 	const totalRows = depositsSummary.count || 0;
 
 	const rows = deposits.map( ( deposit ) => {
@@ -171,7 +176,9 @@ export const DepositsList = (): JSX.Element => {
 			},
 		};
 
-		return columns.map( ( { key } ) => data[ key ] || { display: null } );
+		return columnsToDisplay.map(
+			( { key } ) => data[ key ] || { display: null }
+		);
 	} );
 
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
@@ -372,11 +379,12 @@ export const DepositsList = (): JSX.Element => {
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '' ) || 25 }
 				totalRows={ totalRows }
-				headers={ columns }
+				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					downloadable && (
 						<DownloadButton
