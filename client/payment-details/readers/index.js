@@ -23,7 +23,7 @@ import {
 	formatExplicitCurrency,
 	formatExportAmount,
 } from 'multi-currency/interface/functions';
-
+import DateFormatNotice from 'wcpay/components/date-format-notice';
 const PaymentCardReaderChargeDetails = ( props ) => {
 	const { readers, chargeError, isLoading } = useCardReaderStats(
 		props.chargeId,
@@ -34,6 +34,7 @@ const PaymentCardReaderChargeDetails = ( props ) => {
 	if ( ! isLoading && chargeError instanceof Error ) {
 		return (
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
+				<DateFormatNotice />
 				<TestModeNotice currentPage="payments" isDetailsView={ true } />
 				<Card>
 					<CardBody>

@@ -6,7 +6,6 @@
 import * as React from 'react';
 import { __, _n } from '@wordpress/i18n';
 import { TableCard } from '@woocommerce/components';
-import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies.
@@ -25,6 +24,8 @@ import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import DateFormatNotice from 'wcpay/components/date-format-notice';
 
 const columns = [
 	{
@@ -80,7 +81,7 @@ const getLoanStatusText = ( loan: CapitalLoan ) => {
 	return loan.fully_paid_at
 		? __( 'Paid off', 'woocommerce-payments' ) +
 				': ' +
-				dateI18n( 'M j, Y', loan.fully_paid_at )
+				formatDateTimeFromString( loan.fully_paid_at )
 		: __( 'Active', 'woocommerce-payments' );
 };
 
@@ -112,7 +113,9 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 		const data = {
 			paid_out_at: {
 				value: loan.paid_out_at,
-				display: clickable( dateI18n( 'M j, Y', loan.paid_out_at ) ),
+				display: clickable(
+					formatDateTimeFromString( loan.paid_out_at )
+				),
 			},
 			status: {
 				value: getLoanStatusText( loan ),
@@ -150,7 +153,7 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 				value: loan.first_paydown_at,
 				display: clickable(
 					loan.first_paydown_at
-						? dateI18n( 'M j, Y', loan.first_paydown_at )
+						? formatDateTimeFromString( loan.first_paydown_at )
 						: '-'
 				),
 			},
@@ -207,6 +210,7 @@ const CapitalPage = (): JSX.Element => {
 
 	return (
 		<Page>
+			<DateFormatNotice />
 			<TestModeNotice currentPage="loans" />
 
 			{ wcpaySettings.accountLoans.has_active_loan && (

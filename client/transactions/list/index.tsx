@@ -7,9 +7,7 @@ import React, { Fragment, useState } from 'react';
 import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import {
 	TableCard,
 	Search,
@@ -70,6 +68,7 @@ import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -203,7 +202,7 @@ const getColumns = (
 			visible: false,
 		},
 		{
-			key: 'deposit_currency',
+			key: 'currency',
 			label: __( 'Payout Currency', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Payout Currency', 'woocommerce-payments' ),
 			isSortable: true,
@@ -466,10 +465,9 @@ export const TransactionsList = (
 			date: {
 				value: txn.date,
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( txn.date ).local().toISOString()
-					)
+					formatDateTimeFromString( txn.date, {
+						includeTime: true,
+					} )
 				),
 			},
 			channel: {
@@ -539,7 +537,7 @@ export const TransactionsList = (
 				display: clickable( txn.customer_currency.toUpperCase() ),
 			},
 			customer_amount: formatCustomerAmount(),
-			deposit_currency: {
+			currency: {
 				value: txn.currency.toUpperCase(),
 				display: clickable( txn.currency.toUpperCase() ),
 			},
