@@ -367,12 +367,20 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Pre Orders products to be charged upon release are not supported.
-		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
+		if (
+			class_exists( 'WC_Pre_Orders_Product' ) &&
+			method_exists( 'WC_Pre_Orders_Product', 'product_is_charged_upon_release' ) &&
+			WC_Pre_Orders_Product::product_is_charged_upon_release( $product )
+		) {
 			$is_supported = false;
 		}
 
 		// WC Bookings require confirmation products are not supported.
-		if ( is_a( $product, 'WC_Product_Booking' ) && $product->get_requires_confirmation() ) {
+		if (
+			is_a( $product, 'WC_Product_Booking' ) &&
+			method_exists( $product, 'get_requires_confirmation' ) &&
+			$product->get_requires_confirmation()
+		) {
 			$is_supported = false;
 		}
 

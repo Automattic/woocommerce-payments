@@ -38,7 +38,6 @@ import {
 } from 'multi-currency/interface/functions';
 import { depositStatusLabels } from '../strings';
 import './style.scss';
-import { PayoutsRenameNotice } from '../rename-notice';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import DateFormatNotice from 'wcpay/components/date-format-notice';
 
@@ -243,7 +242,6 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 
 	return (
 		<Page>
-			<PayoutsRenameNotice />
 			<DateFormatNotice />
 			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 			<ErrorBoundary>
