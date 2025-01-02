@@ -89,7 +89,6 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
-		isPayoutsRenameNoticeDismissed: boolean;
 		progressiveOnboarding?: {
 			isEnabled: boolean;
 			isComplete: boolean;
