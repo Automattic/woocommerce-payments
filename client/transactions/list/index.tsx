@@ -587,7 +587,7 @@ export const TransactionsList = (
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		const locale = wcSettings.locale.userLocale.split( '_' )[ 0 ];
+		const locale = wcSettings.locale.userLocale;
 		const {
 			date_after: dateAfter,
 			date_before: dateBefore,
