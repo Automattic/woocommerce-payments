@@ -1,0 +1,85 @@
+/**
+ * External dependencies
+ */
+import { useMemo } from '@wordpress/element';
+import { useUserPreferences } from '@woocommerce/data';
+import type { TableCardColumn } from '@woocommerce/components';
+
+/**
+ * Type for user preferences returned from useUserPreferences hook.
+ *
+ * These preference keys are defined and managed in:
+ *
+ * @see WC_Payments::add_user_data_fields() in includes/class-wc-payments.php
+ *
+ * Note: This interface must stay in sync with the PHP implementation
+ */
+interface UserPreferences {
+	wc_payments_transactions_hidden_columns: string[] | '';
+	wc_payments_transactions_blocked_hidden_columns: string[] | '';
+	wc_payments_transactions_risk_review_hidden_columns: string[] | '';
+	wc_payments_transactions_uncaptured_hidden_columns: string[] | '';
+	wc_payments_payouts_hidden_columns: string[] | '';
+	wc_payments_disputes_hidden_columns: string[] | '';
+	wc_payments_documents_hidden_columns: string[] | '';
+	wc_payments_capital_hidden_columns: string[] | '';
+}
+
+interface Column extends TableCardColumn {
+	/** Whether the column is rendered with visibility enabled or disabled. */
+	visible?: boolean;
+}
+
+export const usePersistedColumnVisibility = < ColumnType extends Column >(
+	/** The key used to store the user's preference for hidden columns in wp_usermeta. Actualy `meta_key` value in DB will be prepended with `woocommerce_admin_`. */
+	columnPrefsKey: keyof UserPreferences,
+	/** The array of all columns to be passed to the `TableCard` component. */
+	allColumns: ColumnType[]
+) => {
+	const { updateUserPreferences, ...userPrefs } = useUserPreferences();
+
+	// If returned value is undefined or empty string, use default visibility value.
+	const userPrefHiddenColumns =
+		( ( userPrefs as unknown ) as UserPreferences )[ columnPrefsKey ] ?? '';
+
+	const onColumnsChange = ( shownColumns: string[] ) => {
+		const columns = allColumns.map( ( column ) => column.key );
+		const hiddenColumns = columns.filter(
+			( column ) => ! shownColumns.includes( column )
+		);
+		if ( columnPrefsKey ) {
+			const userDataFields = {
+				[ columnPrefsKey ]: hiddenColumns,
+			};
+			updateUserPreferences( userDataFields );
+		}
+	};
+
+	/**
+	 * Memoized array of columns to be displayed.
+	 *
+	 * This array is created by mapping over the `allColumns` array and applying the user's
+	 * preference for hidden columns to each column. If the user's preference is not found, the
+	 * default visibility value is used.
+	 */
+	const columnsToDisplay = useMemo( () => {
+		return allColumns.map( ( column ) => {
+			// If user preference of hidden columns is not set, use default visibility value.
+			return {
+				...column,
+				visible:
+					userPrefHiddenColumns === ''
+						? column.visible
+						: // If the user preference is set, don't show hidden columns.
+						  ! userPrefHiddenColumns.includes( column.key ),
+			};
+		} );
+	}, [ allColumns, userPrefHiddenColumns ] );
+
+	return {
+		/** A function to be passed to the `TableCard` component's `onColumnsChange` prop. */
+		onColumnsChange,
+		/** An array of columns to be passed to the `TableCard` component's `columns` prop. */
+		columnsToDisplay,
+	};
+};
