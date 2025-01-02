@@ -25,12 +25,9 @@ interface UserPreferences {
 	wc_payments_capital_hidden_columns: string[] | '';
 }
 
-interface Column extends TableCardColumn {
-	/** Whether the column is rendered with visibility enabled or disabled. */
-	visible?: boolean;
-}
-
-export const usePersistedColumnVisibility = < ColumnType extends Column >(
+export const usePersistedColumnVisibility = <
+	ColumnType extends TableCardColumn
+>(
 	/** The key used to store the user's preference for hidden columns in wp_usermeta. Actualy `meta_key` value in DB will be prepended with `woocommerce_admin_`. */
 	columnPrefsKey: keyof UserPreferences,
 	/** The array of all columns to be passed to the `TableCard` component. */

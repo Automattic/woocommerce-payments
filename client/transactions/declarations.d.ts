@@ -79,6 +79,7 @@ declare module '@woocommerce/components' {
 		defaultOrder?: 'desc' | 'asc';
 		isSortable?: boolean;
 		defaultSort?: boolean;
+		visible?: boolean;
 	}
 
 	interface TableCardBodyColumn {
