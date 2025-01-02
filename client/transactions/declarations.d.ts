@@ -97,6 +97,7 @@ declare module '@woocommerce/components' {
 		summary?: { label: string; value: string | number | boolean }[];
 		query?: Query;
 		onQueryChange?: unknown;
+		onColumnsChange?: ( showCols: Array< string >, key?: string ) => void;
 		actions?: React.ReactNode[];
 		showMenu?: boolean;
 	}
