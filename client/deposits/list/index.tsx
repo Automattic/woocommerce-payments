@@ -201,7 +201,7 @@ export const DepositsList = (): JSX.Element => {
 
 	const endpointExport = async () => {
 		const userEmail = wcpaySettings.currentUserEmail;
-		const locale = wcSettings.locale.userLocale;
+		const locale = wcSettings.locale.userLocale.split( '_' )[ 0 ];
 
 		const {
 			date_before: dateBefore,
