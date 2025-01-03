@@ -104,7 +104,7 @@ jQuery( ( $ ) => {
 		 *
 		 * @param {string}  message Error message to display.
 		 */
-		abortPayment: async ( message ) => {
+		abortPayment: ( message ) => {
 			onAbortPaymentHandler();
 
 			$( '.woocommerce-error' ).remove();
