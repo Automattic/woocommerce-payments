@@ -8,6 +8,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  * Internal dependencies
  */
 import { getExpressCheckoutData } from '../utils';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * GooglePay/ApplePay expect the prices to be formatted in cents.
@@ -34,14 +35,20 @@ export const transformPrice = ( price, priceObject ) => {
  * - https://docs.stripe.com/js/elements_object/express_checkout_element_shippingaddresschange_event
  * - https://docs.stripe.com/js/elements_object/express_checkout_element_shippingratechange_event
  *
- * @param {Object} cartData Store API Cart response object.
+ * @param {Object} rawCartData Store API Cart response object.
  * @return {{pending: boolean, name: string, amount: integer}} `displayItems` for Stripe.
  */
-export const transformCartDataForDisplayItems = ( cartData ) => {
+export const transformCartDataForDisplayItems = ( rawCartData ) => {
+	// allowing extensions to manipulate the individual items returned by the backend.
+	const cartData = applyFilters(
+		'wcpay.express-checkout.map-line-items',
+		rawCartData
+	);
+
 	const displayItems = cartData.items.map( ( item ) => ( {
 		amount: transformPrice(
-			parseInt( item.prices.price, 10 ),
-			item.prices
+			parseInt( item.totals?.line_subtotal || item.prices.price, 10 ),
+			item.totals || item.prices
 		),
 		name: [
 			item.name,
@@ -96,7 +103,7 @@ export const transformCartDataForDisplayItems = ( cartData ) => {
  * @return {{id: string, label: string, amount: integer, deliveryEstimate: string}} `shippingRates` for Stripe.
  */
 export const transformCartDataForShippingRates = ( cartData ) =>
-	cartData.shipping_rates?.[ 0 ].shipping_rates
+	cartData.shipping_rates?.[ 0 ]?.shipping_rates
 		.sort( ( rateA, rateB ) => {
 			if ( rateA.selected === rateB.selected ) {
 				return 0; // Keep relative order if both have the same value for 'selected'

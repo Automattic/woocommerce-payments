@@ -80,10 +80,10 @@ class Level3Service {
 		$order_items = array_values( $order->get_items( [ 'line_item', 'fee' ] ) );
 		$currency    = $order->get_currency();
 
-		$process_item  = function ( $item ) use ( $currency ) {
-			return $this->process_item( $item, $currency );
-		};
-		$items_to_send = array_map( $process_item, $order_items );
+		$items_to_send = [];
+		foreach ( $order_items as $item ) {
+			$items_to_send = array_merge( $items_to_send, $this->process_item( $item, $currency ) );
+		}
 
 		$level3_data = [
 			'merchant_reference' => (string) $order->get_id(), // An alphanumeric string of up to  characters in length. This unique value is assigned by the merchant to identify the order. Also known as an “Order ID”.
@@ -137,9 +137,9 @@ class Level3Service {
 	 *
 	 * @param WC_Order_Item_Product|WC_Order_Item_Fee $item     Item to process.
 	 * @param string                                  $currency Currency to use.
-	 * @return \stdClass
+	 * @return \stdClass[]
 	 */
-	private function process_item( WC_Order_Item $item, string $currency ): stdClass {
+	private function process_item( WC_Order_Item $item, string $currency ): array {
 		// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
 		if ( $item instanceof WC_Order_Item_Product ) {
 			$subtotal     = $item->get_subtotal();
@@ -164,7 +164,7 @@ class Level3Service {
 			$unit_cost       = 0;
 		}
 
-		return (object) [
+		$line_item  = (object) [
 			'product_code'        => (string) $product_code, // Up to 12 characters that uniquely identify the product.
 			'product_description' => $description, // Up to 26 characters long describing the product.
 			'unit_cost'           => $unit_cost, // Cost of the product, in cents, as a non-negative integer.
@@ -172,6 +172,29 @@ class Level3Service {
 			'tax_amount'          => $tax_amount, // The amount of tax this item had added to it, in cents, as a non-negative integer.
 			'discount_amount'     => $discount_amount, // The amount an item was discounted—if there was a sale,for example, as a non-negative integer.
 		];
+		$line_items = [ $line_item ];
+
+		/**
+		 * In edge cases, rounding after division might lead to a slight inconsistency.
+		 *
+		 * For example: 10/3 with 2 decimal places = 3.33, but 3.33*3 = 9.99.
+		 */
+		if ( $subtotal > 0 ) {
+			$prepared_subtotal = $this->prepare_amount( $subtotal, $currency );
+			$difference        = $prepared_subtotal - ( $unit_cost * $quantity );
+			if ( $difference > 0 ) {
+				$line_items[] = (object) [
+					'product_code'        => 'rounding-fix',
+					'product_description' => __( 'Rounding fix', 'woocommerce-payments' ),
+					'unit_cost'           => $difference,
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'discount_amount'     => 0,
+				];
+			}
+		}
+
+		return $line_items;
 	}
 
 	/**

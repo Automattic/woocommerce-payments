@@ -53,7 +53,7 @@
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-international": "International card fee: 1%",
-      "additional-fx": "Foreign exchange fee: 1%"
+      "additional-fx": "Currency conversion fee: 1%"
     },
     "netString": "Net payout: $95.47 USD"
   }

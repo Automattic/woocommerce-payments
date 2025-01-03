@@ -98,12 +98,13 @@ Object.entries( enabledPaymentMethodsConfig )
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
 			canMakePayment: ( cartData ) => {
 				const billingCountry = cartData.billingAddress.country;
+				const needsPayment = cartData.cart.cartNeedsPayment;
 				const isRestrictedInAnyCountry = !! upeConfig.countries.length;
 				const isAvailableInTheCountry =
 					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
 				// We used to check if stripe was loaded with `getStripeForUPE`, but we can't guarantee it will be loaded synchronously.
-				return isAvailableInTheCountry;
+				return needsPayment && isAvailableInTheCountry;
 			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
