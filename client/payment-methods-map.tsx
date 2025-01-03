@@ -22,6 +22,7 @@ import {
 	P24Icon,
 	SepaIcon,
 	SofortIcon,
+	GrabPayIcon,
 } from 'wcpay/payment-methods-icons';
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
@@ -232,6 +233,20 @@ const PaymentMethodInformationObject: Record<
 		allows_manual_capture: false,
 		allows_pay_later: true,
 		accepts_only_domestic_payment: true,
+	},
+	grabpay: {
+		id: 'grabpay',
+		label: __( 'GrabPay', 'woocommerce-payments' ),
+		description: __(
+			'Allow customers to pay using GrabPay.',
+			'woocommerce-payments'
+		),
+		icon: GrabPayIcon,
+		currencies: [ 'SGD' /* ...TODO: Add other currencies */ ],
+		stripe_key: 'grabpay_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 };
 
