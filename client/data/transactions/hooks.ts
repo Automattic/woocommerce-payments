@@ -54,6 +54,7 @@ export interface Transaction {
 		| 'ideal'
 		| 'jcb'
 		| 'klarna'
+		| 'grabpay'
 		| 'link'
 		| 'mastercard'
 		| 'multibanco'

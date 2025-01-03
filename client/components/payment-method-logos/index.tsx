@@ -16,6 +16,7 @@ import ApplePay from 'assets/images/payment-method-icons/applepay.svg?asset';
 import AfterPay from 'assets/images/payment-method-icons/afterpay.svg?asset';
 import Affirm from 'assets/images/payment-method-icons/affirm.svg?asset';
 import Klarna from 'assets/images/payment-method-icons/klarna.svg?asset';
+import GrabPay from 'assets/images/payment-method-icons/grabpay.svg?asset';
 import Jcb from 'assets/images/payment-method-icons/jcb.svg?asset';
 import GooglePay from 'assets/images/payment-method-icons/gpay.svg?asset';
 import Cartebancaire from 'assets/images/cards/cartes_bancaires.svg?asset';
@@ -109,6 +110,10 @@ const PaymentMethods = [
 	{
 		name: 'przelewy24',
 		component: Przelewy24,
+	},
+	{
+		name: 'grabpay',
+		component: GrabPay,
 	},
 ];
 
