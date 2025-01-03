@@ -94,6 +94,8 @@ class List_Transactions extends Paginated {
 			'store_currency_is'        => $request->get_param( 'store_currency_is' ),
 			'customer_currency_is'     => $request->get_param( 'customer_currency_is' ),
 			'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),
+			'source_is'                => $request->get_param( 'source_is' ),
+			'source_is_not'            => $request->get_param( 'source_is_not' ),
 			'loan_id_is'               => $request->get_param( 'loan_id_is' ),
 			'search'                   => (array) $request->get_param( 'search' ),
 			'deposit_id'               => $request->get_param( 'deposit_id' ),

@@ -47,7 +47,12 @@ class WC_Payments_Token_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Customer_Service $customer_service ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->customer_service    = $customer_service;
+	}
 
+	/**
+	 * Initializes hooks.
+	 */
+	public function init_hooks() {
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );

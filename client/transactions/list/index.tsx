@@ -7,9 +7,7 @@ import React, { Fragment, useState } from 'react';
 import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import {
 	TableCard,
 	Search,
@@ -70,6 +68,7 @@ import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -151,7 +150,7 @@ const getColumns = (
 	[
 		{
 			key: 'transaction_id',
-			label: __( 'Transaction Id', 'woocommerce-payments' ),
+			label: __( 'Transaction ID', 'woocommerce-payments' ),
 			visible: false,
 			isLeftAligned: true,
 		},
@@ -203,7 +202,7 @@ const getColumns = (
 			visible: false,
 		},
 		{
-			key: 'deposit_currency',
+			key: 'currency',
 			label: __( 'Payout Currency', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Payout Currency', 'woocommerce-payments' ),
 			isSortable: true,
@@ -466,10 +465,9 @@ export const TransactionsList = (
 			date: {
 				value: txn.date,
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( txn.date ).local().toISOString()
-					)
+					formatDateTimeFromString( txn.date, {
+						includeTime: true,
+					} )
 				),
 			},
 			channel: {
@@ -539,7 +537,7 @@ export const TransactionsList = (
 				display: clickable( txn.customer_currency.toUpperCase() ),
 			},
 			customer_amount: formatCustomerAmount(),
-			deposit_currency: {
+			currency: {
 				value: txn.currency.toUpperCase(),
 				display: clickable( txn.currency.toUpperCase() ),
 			},
@@ -626,6 +624,8 @@ export const TransactionsList = (
 			risk_level_is_not: riskLevelIsNot,
 			customer_currency_is: customerCurrencyIs,
 			customer_currency_is_not: customerCurrencyIsNot,
+			source_is: sourceIs,
+			source_is_not: sourceIsNot,
 		} = params;
 		const depositId = props.depositId;
 
@@ -633,6 +633,8 @@ export const TransactionsList = (
 			!! dateAfter ||
 			!! dateBefore ||
 			!! dateBetween ||
+			!! sourceIs ||
+			!! sourceIsNot ||
 			!! search ||
 			!! typeIs ||
 			!! typeIsNot ||
@@ -675,6 +677,8 @@ export const TransactionsList = (
 						sourceDeviceIsNot,
 						customerCurrencyIs,
 						customerCurrencyIsNot,
+						sourceIs,
+						sourceIsNot,
 						channelIs,
 						channelIsNot,
 						customerCountryIs,
@@ -827,6 +831,7 @@ export const TransactionsList = (
 		transactionsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 	const customerCurrencies = transactionsSummary.customer_currencies || [];
+	const transactionSources = transactionsSummary.sources || [];
 
 	return (
 		<Page>
@@ -834,6 +839,7 @@ export const TransactionsList = (
 				<TransactionsFilters
 					storeCurrencies={ storeCurrencies }
 					customerCurrencies={ customerCurrencies }
+					transactionSources={ transactionSources }
 				/>
 			) }
 			<TableCard

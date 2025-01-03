@@ -326,7 +326,7 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.getByText( 'You’re ready to sell.' )
+			screen.getByText( "You're ready to accept payments!" )
 		).toBeInTheDocument();
 	} );
 
@@ -351,25 +351,5 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect( query() ).not.toBeInTheDocument();
-	} );
-
-	it( 'shows payout rename notice if not yet dismissed', () => {
-		global.wcpaySettings.isPayoutsRenameNoticeDismissed = false;
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Deposits are now known as Payouts!' )
-		).toBeInTheDocument();
-	} );
-
-	it( 'does not display payout rename notice if already dismissed', () => {
-		global.wcpaySettings.isPayoutsRenameNoticeDismissed = true;
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Deposits are now known as Payouts!' )
-		).not.toBeInTheDocument();
 	} );
 } );

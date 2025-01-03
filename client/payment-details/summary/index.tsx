@@ -4,7 +4,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
 import {
 	Card,
 	CardBody,
@@ -64,6 +63,10 @@ import DisputeResolutionFooter from '../dispute-details/dispute-resolution-foote
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import CardNotice from 'wcpay/components/card-notice';
+import {
+	formatDateTimeFromString,
+	formatDateTimeFromTimestamp,
+} from 'wcpay/utils/date-time';
 
 declare const window: any;
 
@@ -110,10 +113,10 @@ const composePaymentSummaryItems = ( {
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
 			content: charge.created
-				? dateI18n(
-						'M j, Y, g:ia',
-						moment( charge.created * 1000 ).toISOString()
-				  )
+				? formatDateTimeFromTimestamp( charge.created, {
+						separator: ', ',
+						includeTime: true,
+				  } )
 				: '–',
 		},
 		{
@@ -714,12 +717,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								}
 							) }{ ' ' }
 							<abbr
-								title={ dateI18n(
-									'M j, Y / g:iA',
+								title={ formatDateTimeFromString(
+									// TODO: is this string?
 									moment
 										.utc( authorization.created )
-										.add( 7, 'days' ),
-									'UTC'
+										.add( 7, 'days' )
+										.toISOString(),
+									{ includeTime: true }
 								) }
 							>
 								<b>

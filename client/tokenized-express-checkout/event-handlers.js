@@ -8,7 +8,11 @@ import { applyFilters } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { getErrorMessageFromNotice, getExpressCheckoutData } from './utils';
+import {
+	getErrorMessageFromNotice,
+	getExpressCheckoutData,
+	updateShippingAddressUI,
+} from './utils';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
@@ -24,6 +28,7 @@ import {
 	transformPrice,
 } from './transformers/wc-to-stripe';
 
+let lastSelectedAddress = null;
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
@@ -56,6 +61,9 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 				cartData.totals
 			),
 		} );
+
+		lastSelectedAddress = event.address;
+
 		event.resolve( {
 			shippingRates: transformCartDataForShippingRates( cartData ),
 			lineItems: transformCartDataForDisplayItems( cartData ),
@@ -118,7 +126,7 @@ export const onConfirmHandler = async (
 				paymentMethod.id
 			),
 			extensions: applyFilters(
-				'wcpay.payment-request.cart-place-order-extension-data',
+				'wcpay.express-checkout.cart-place-order-extension-data',
 				{}
 			),
 		} );
@@ -149,16 +157,23 @@ export const onConfirmHandler = async (
 			completePayment( redirectUrl );
 		}
 	} catch ( e ) {
+		// API errors are not parsed, so we need to do it ourselves.
+		if ( e.json ) {
+			e = e.json();
+		}
+
 		return abortPayment(
 			event,
-			getErrorMessageFromNotice( e.message ) ||
-				e.payment_result?.payment_details.find(
-					( detail ) => detail.key === 'errorMessage'
-				)?.value ||
-				__(
-					'There was a problem processing the order.',
-					'woocommerce-payments'
-				)
+			getErrorMessageFromNotice(
+				e.message ||
+					e.payment_result?.payment_details.find(
+						( detail ) => detail.key === 'errorMessage'
+					)?.value ||
+					__(
+						'There was a problem processing the order.',
+						'woocommerce-payments'
+					)
+			)
 		);
 	}
 };
@@ -209,5 +224,9 @@ export const onCompletePaymentHandler = () => {
 };
 
 export const onCancelHandler = () => {
+	if ( lastSelectedAddress ) {
+		updateShippingAddressUI( lastSelectedAddress );
+	}
+	lastSelectedAddress = null;
 	unblockUI();
 };

@@ -17,13 +17,14 @@ import {
 	useReportingExportLanguage,
 	useSettings,
 } from 'data/index';
-import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
+import { getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
 import {
 	CachedDispute,
 	DisputeReason,
 	DisputeStatus,
 } from 'wcpay/types/disputes';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 jest.mock( '@woocommerce/csv-export', () => {
 	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
@@ -100,6 +101,8 @@ declare const global: {
 		reporting?: {
 			exportModalDismissed: boolean;
 		};
+		dateFormat?: string;
+		timeFormat?: string;
 	};
 };
 
@@ -198,6 +201,8 @@ describe( 'Disputes list', () => {
 			reporting: {
 				exportModalDismissed: true,
 			},
+			dateFormat: 'Y-m-d',
+			timeFormat: 'g:iA',
 		};
 	} );
 
@@ -363,8 +368,10 @@ describe( 'Disputes list', () => {
 				`"${ displayFirstDispute[ 5 ] }"`
 			); // customer
 
-			expect( formatDate( csvFirstDispute[ 11 ], 'Y-m-d / g:iA' ) ).toBe(
-				formatDate( displayFirstDispute[ 6 ], 'Y-m-d / g:iA' )
+			expect( csvFirstDispute[ 11 ].replace( /^"|"$/g, '' ) ).toBe(
+				formatDateTimeFromString( mockDisputes[ 0 ].due_by, {
+					includeTime: true,
+				} )
 			); // date respond by
 		} );
 	} );
