@@ -72,7 +72,47 @@ class FrontendPrices {
 
 			// Order hooks.
 			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 99, 2 );
+
+			// API Hooks.
+			add_filter( 'rest_post_dispatch', [ $this, 'maybe_modify_price_ranges_rest_response' ], 10, 3 );
 		}
+	}
+
+	/**
+	 * Modify the products/collection-data REST API response to include converted price ranges.
+	 *
+	 * @param \WP_REST_Response $response The original REST response.
+	 * @param \WP_REST_Server   $server   The REST server instance.
+	 * @param \WP_REST_Request  $request  The REST request instance.
+	 *
+	 * @return \WP_REST_Response The modified REST response.
+	 */
+	public function maybe_modify_price_ranges_rest_response( $response, $server, $request ) {
+		if ( '/wc/store/v1/products/collection-data' !== $request->get_route() ) {
+			return $response;
+		}
+
+		$data = $response->get_data();
+
+		if ( empty( $data['price_range'] ) || ! is_object( $data['price_range'] ) ) {
+			return $response;
+		}
+
+		$price_fields = [ 'min_price', 'max_price' ];
+
+		foreach ( $price_fields as $field ) {
+			if ( property_exists( $data['price_range'], $field ) && is_numeric( $data['price_range']->$field ) ) {
+				$converted_price = $this->multi_currency->get_price( $data['price_range']->$field, 'product' );
+
+				if ( is_numeric( $converted_price ) ) {
+					$data['price_range']->$field = (string) $converted_price;
+				}
+			}
+		}
+
+		$response->set_data( $data );
+
+		return $response;
 	}
 
 	/**
