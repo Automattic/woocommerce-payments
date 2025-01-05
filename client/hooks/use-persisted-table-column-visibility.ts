@@ -28,9 +28,19 @@ interface UserPreferences {
 export const usePersistedColumnVisibility = <
 	ColumnType extends TableCardColumn
 >(
-	/** The key used to store the user's preference for hidden columns in wp_usermeta. Actualy `meta_key` value in DB will be prepended with `woocommerce_admin_`. */
+	/**
+	 * The key used to store the user's preference for hidden columns in the `wp_usermeta` table.
+	 *
+	 * This value will be prepended with `woocommerce_admin_` and used as the `meta_key` in the DB.
+	 * */
 	columnPrefsKey: keyof UserPreferences,
-	/** The array of all columns to be passed to the `TableCard` component. */
+	/**
+	 * The array of all columns to be passed to the `TableCard` component.
+	 *
+	 * Visibility of each column will adhere to stored user preferences using the column's `visible` prop.
+	 *
+	 * If the user's preference is not found, the default visibility value provided in the column's `visible` prop is used.
+	 */
 	allColumns: ColumnType[]
 ) => {
 	const { updateUserPreferences, ...userPrefs } = useUserPreferences();
