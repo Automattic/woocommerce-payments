@@ -25,6 +25,12 @@ interface UserPreferences {
 	wc_payments_capital_hidden_columns: string[] | '';
 }
 
+/**
+ * Hook to manage column visibility for a TableCard component.
+ *
+ * This hook is used to manage the visibility of columns in a TableCard component.
+ * It uses the `@woocommerce/data` `useUserPreferences` hook to get the user's preferences and store them in the `wp_usermeta` table.
+ */
 export const usePersistedColumnVisibility = <
 	ColumnType extends TableCardColumn
 >(
@@ -42,13 +48,27 @@ export const usePersistedColumnVisibility = <
 	 * If the user's preference is not found, the default visibility value provided in the column's `visible` prop is used.
 	 */
 	allColumns: ColumnType[]
-) => {
+): {
+	/**
+	 * A function to be passed to the `TableCard` component's `onColumnsChange` prop.
+	 *
+	 * This function is used to update the user's preference for hidden columns on each column visibility change event.
+	 */
+	onColumnsChange: ( shownColumns: string[] ) => void;
+	/**
+	 * An array of columns to be passed to the `TableCard` component's `columns` prop, with visibility of columns adhering to stored user preferences.
+	 *
+	 * If the user's preference is not found, the default visibility value of each column is used.
+	 */
+	columnsToDisplay: ColumnType[];
+} => {
 	const { updateUserPreferences, ...userPrefs } = useUserPreferences();
 
 	// If returned value is undefined or empty string, use default visibility value.
 	const userPrefHiddenColumns =
 		( ( userPrefs as unknown ) as UserPreferences )[ columnPrefsKey ] ?? '';
 
+	// When the user changes the column visibility, update the user's preference for hidden columns.
 	const onColumnsChange = ( shownColumns: string[] ) => {
 		const columns = allColumns.map( ( column ) => column.key );
 		const hiddenColumns = columns.filter(
@@ -62,16 +82,9 @@ export const usePersistedColumnVisibility = <
 		}
 	};
 
-	/**
-	 * Memoized array of columns to be displayed.
-	 *
-	 * This array is created by mapping over the `allColumns` array and applying the user's
-	 * preference for hidden columns to each column. If the user's preference is not found, the
-	 * default visibility value is used.
-	 */
+	// When the user's preference for hidden columns is updated, update the columns to display.
 	const columnsToDisplay = useMemo( () => {
 		return allColumns.map( ( column ) => {
-			// If user preference of hidden columns is not set, use default visibility value.
 			return {
 				...column,
 				visible:
@@ -84,9 +97,8 @@ export const usePersistedColumnVisibility = <
 	}, [ allColumns, userPrefHiddenColumns ] );
 
 	return {
-		/** A function to be passed to the `TableCard` component's `onColumnsChange` prop. */
 		onColumnsChange,
-		/** An array of columns to be passed to the `TableCard` component's `columns` prop. */
+
 		columnsToDisplay,
 	};
 };
