@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useMemo } from '@wordpress/element';
+import { useMemo } from 'react';
 import { useUserPreferences } from '@woocommerce/data';
 import type { TableCardColumn } from '@woocommerce/components';
 
@@ -38,7 +38,7 @@ export const usePersistedColumnVisibility = <
 	 * The key used to store the user's preference for hidden columns in the `wp_usermeta` table.
 	 *
 	 * This value will be prepended with `woocommerce_admin_` and used as the `meta_key` in the DB.
-	 * */
+	 */
 	columnPrefsKey: keyof UserPreferences,
 	/**
 	 * The array of all columns to be passed to the `TableCard` component.
