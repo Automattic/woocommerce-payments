@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import { downloadCSVFile } from '@woocommerce/csv-export';
@@ -25,7 +26,6 @@ import {
 	CachedDeposits,
 	DepositsSummary,
 } from 'wcpay/types/deposits';
-import React from 'react';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
@@ -150,7 +150,7 @@ describe( 'Deposits list', () => {
 
 		mockUseUserPreferences.mockReturnValue( {
 			updateUserPreferences: jest.fn(),
-			wc_payments_deposits_hidden_columns: '',
+			wc_payments_payouts_hidden_columns: '',
 			isRequesting: false,
 		} as any );
 
