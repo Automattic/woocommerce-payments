@@ -89,7 +89,6 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
-		isPayoutsRenameNoticeDismissed: boolean;
 		progressiveOnboarding?: {
 			isEnabled: boolean;
 			isComplete: boolean;
@@ -123,6 +122,7 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
+		isDateFormatNoticeDismissed: boolean;
 		reporting: {
 			exportModalDismissed?: boolean;
 		};
@@ -137,6 +137,8 @@ declare global {
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
 		defaultExpressCheckoutBorderRadius: string;
+		dateFormat: string;
+		timeFormat: string;
 	};
 
 	const wc: {

@@ -205,7 +205,10 @@ const CardDetails = ( { charge = {}, isLoading } ) => {
 
 				<Detail
 					isLoading={ isLoading }
-					label={ __( 'Zip check', 'woocommerce-payments' ) }
+					label={
+						/* translators: Label for results of a postal code (ZIP code, in US) check performed by a credit card issuer. */
+						__( 'Postal code check', 'woocommerce-payments' )
+					}
 				>
 					<Check checked={ postalCodeCheck } />
 				</Detail>

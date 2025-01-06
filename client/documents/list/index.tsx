@@ -4,9 +4,7 @@
  * External dependencies
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { Button } from '@wordpress/components';
@@ -21,6 +19,7 @@ import DocumentsFilters from '../filters';
 import Page from '../../components/page';
 import { getDocumentUrl } from 'wcpay/utils';
 import VatFormModal from 'wcpay/vat/form-modal';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface Column extends TableCardColumn {
 	key: 'date' | 'type' | 'description' | 'download';
@@ -67,21 +66,13 @@ const getDocumentDescription = ( document: Document ) => {
 		case 'vat_invoice':
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
-					__( 'VAT invoice for %s to %s', 'woocommerce-payments' ),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_from ).toISOString(),
-						'utc'
-					),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_to ).toISOString(),
-						'utc'
-					)
+					__( 'Tax invoice for %s to %s', 'woocommerce-payments' ),
+					formatDateTimeFromString( document.period_from ),
+					formatDateTimeFromString( document.period_to )
 				);
 			}
 			return __(
-				'VAT invoice without proper period dates',
+				'Tax invoice without proper period dates',
 				'woocommerce-payments'
 			);
 
@@ -180,10 +171,7 @@ export const DocumentsList = (): JSX.Element => {
 		const data = {
 			date: {
 				value: document.date,
-				display: dateI18n(
-					'M j, Y',
-					moment.utc( document.date ).local().toISOString()
-				),
+				display: formatDateTimeFromString( document.date ),
 			},
 			type: {
 				value: documentType,

@@ -8,7 +8,11 @@ import { applyFilters } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { getErrorMessageFromNotice, getExpressCheckoutData } from './utils';
+import {
+	getErrorMessageFromNotice,
+	getExpressCheckoutData,
+	updateShippingAddressUI,
+} from './utils';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
@@ -24,6 +28,7 @@ import {
 	transformPrice,
 } from './transformers/wc-to-stripe';
 
+let lastSelectedAddress = null;
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
@@ -56,6 +61,9 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 				cartData.totals
 			),
 		} );
+
+		lastSelectedAddress = event.address;
+
 		event.resolve( {
 			shippingRates: transformCartDataForShippingRates( cartData ),
 			lineItems: transformCartDataForDisplayItems( cartData ),
@@ -97,7 +105,7 @@ export const onConfirmHandler = async (
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
-		return abortPayment( event, submitError.message );
+		return abortPayment( submitError.message );
 	}
 
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
@@ -105,7 +113,7 @@ export const onConfirmHandler = async (
 	} );
 
 	if ( error ) {
-		return abortPayment( event, error.message );
+		return abortPayment( error.message );
 	}
 
 	try {
@@ -125,7 +133,6 @@ export const onConfirmHandler = async (
 
 		if ( orderResponse.payment_result.payment_status !== 'success' ) {
 			return abortPayment(
-				event,
 				getErrorMessageFromNotice(
 					orderResponse.message ??
 						orderResponse.payment_result?.payment_details.find(
@@ -155,7 +162,6 @@ export const onConfirmHandler = async (
 		}
 
 		return abortPayment(
-			event,
 			getErrorMessageFromNotice(
 				e.message ||
 					e.payment_result?.payment_details.find(
@@ -216,5 +222,9 @@ export const onCompletePaymentHandler = () => {
 };
 
 export const onCancelHandler = () => {
+	if ( lastSelectedAddress ) {
+		updateShippingAddressUI( lastSelectedAddress );
+	}
+	lastSelectedAddress = null;
 	unblockUI();
 };
