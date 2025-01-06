@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Remove translations during initialization, preventing unnecessary warnings.

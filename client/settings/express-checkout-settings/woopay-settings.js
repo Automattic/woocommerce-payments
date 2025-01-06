@@ -226,10 +226,17 @@ const WooPaySettings = ( { section } ) => {
 									onChange={
 										updateIsWooPayGlobalThemeSupportEnabled
 									}
-									label={ __(
-										'Enable global theme support',
-										'woocommerce-payments'
-									) }
+									label={
+										<div className="woopay-settings__global-theme-label">
+											{ __(
+												'Enable global theme support',
+												'woocommerce-payments'
+											) }
+											<span className="woopay-settings__badge">
+												Beta
+											</span>
+										</div>
+									}
 									help={ interpolateComponents( {
 										mixedString: __(
 											'When enabled, WooPay checkout will be themed with your store’s brand colors and fonts. ' +

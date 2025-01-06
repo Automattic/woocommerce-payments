@@ -45,6 +45,7 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		dateFormat: string;
 	};
 	wcSettings: { countries: Record< string, string > };
 };
@@ -67,6 +68,7 @@ describe( 'Deposit overview', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
 		};
 	} );
 
