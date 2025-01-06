@@ -260,22 +260,25 @@ export const DepositsList = (): JSX.Element => {
 			window.confirm( confirmMessage )
 		) {
 			try {
-				const { exported_deposits: exportedDeposits } = await apiFetch(
-					{
-						path: getDepositsCSV( {
-							userEmail,
-							locale,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							statusIs,
-							statusIsNot,
-							storeCurrencyIs,
-						} ),
-						method: 'POST',
-					}
-				);
+				const {
+					exported_deposits: exportedDeposits,
+				} = await apiFetch< {
+					/** The total number of payouts that will be exported in the CSV */
+					exported_deposits: number;
+				} >( {
+					path: getDepositsCSV( {
+						userEmail,
+						locale,
+						dateAfter,
+						dateBefore,
+						dateBetween,
+						match,
+						statusIs,
+						statusIsNot,
+						storeCurrencyIs,
+					} ),
+					method: 'POST',
+				} );
 
 				createNotice(
 					'success',

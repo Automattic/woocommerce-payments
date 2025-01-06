@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Errors were incorrectly marked as info in logs.
