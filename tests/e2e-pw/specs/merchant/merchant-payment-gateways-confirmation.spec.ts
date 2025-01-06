@@ -8,13 +8,13 @@ import { test, expect, Page } from '@playwright/test';
  */
 import { useMerchant } from '../../utils/helpers';
 
-// Skipping the test for now as it is flaky on GH action runs. See #8875.
-test.skip( 'payment gateways disable confirmation', () => {
+test.describe( 'payment gateways disable confirmation', () => {
 	useMerchant();
 
 	const getToggle = ( page: Page ) =>
 		page.getByRole( 'link', {
-			name: '"WooPayments" payment method is currently',
+			name:
+				'"WooPayments (Credit card / debit card)" payment method is currently',
 		} );
 
 	const getModalHeading = ( page: Page ) =>
