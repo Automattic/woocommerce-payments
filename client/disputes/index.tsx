@@ -569,7 +569,7 @@ export const DisputesList = (): JSX.Element => {
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
-				headers={ headers }
+				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
 				query={ getQuery() }

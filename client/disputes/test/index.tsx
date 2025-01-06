@@ -248,6 +248,40 @@ describe( 'Disputes list', () => {
 		expect( list ).toMatchSnapshot();
 	} );
 
+	test( 'renders columns hidden as per user preferences', () => {
+		mockUseDisputes.mockReturnValue( {
+			isLoading: false,
+			disputes: mockDisputes,
+		} );
+
+		mockUseDisputesSummary.mockReturnValue( {
+			isLoading: false,
+			disputesSummary: {
+				count: 25,
+			},
+		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			wc_payments_disputes_hidden_columns: [ 'customerEmail' ],
+		} as any );
+
+		const { getByRole, queryByRole } = render( <DisputesList /> );
+
+		// Email column should not be visible, as it is hidden in user preferences.
+		expect(
+			queryByRole( 'columnheader', {
+				name: /Email/i,
+			} )
+		).not.toBeInTheDocument();
+
+		// Country column should be visible, as it is not hidden in user preferences.
+		expect(
+			getByRole( 'columnheader', {
+				name: /Country/i,
+			} )
+		).toBeInTheDocument();
+	} );
+
 	describe( 'Download button', () => {
 		test( 'renders when there are one or more disputes', () => {
 			mockUseDisputes.mockReturnValue( {
