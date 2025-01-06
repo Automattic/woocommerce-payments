@@ -7,6 +7,7 @@ import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 import os from 'os';
 import { useUserPreferences } from '@woocommerce/data';
+
 /**
  * Internal dependencies
  */
@@ -197,7 +198,7 @@ describe( 'Disputes list', () => {
 
 		mockUseUserPreferences.mockReturnValue( {
 			updateUserPreferences: jest.fn(),
-			wc_payments_transactions_hidden_columns: '',
+			wc_payments_disputes_hidden_columns: '',
 			isRequesting: false,
 		} as any );
 
