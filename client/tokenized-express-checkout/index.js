@@ -146,11 +146,9 @@ jQuery( ( $ ) => {
 		/**
 		 * Abort the payment and display error messages.
 		 *
-		 * @param {PaymentResponse} payment Payment response instance.
 		 * @param {string} message Error message to display.
 		 */
-		abortPayment: ( payment, message ) => {
-			payment.paymentFailed( { reason: 'fail' } );
+		abortPayment: ( message ) => {
 			onAbortPaymentHandler();
 
 			$( '.woocommerce-error' ).remove();
