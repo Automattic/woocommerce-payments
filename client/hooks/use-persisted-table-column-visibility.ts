@@ -84,21 +84,22 @@ export const usePersistedColumnVisibility = <
 
 	// When the user's preference for hidden columns is updated, update the columns to display.
 	const columnsToDisplay = useMemo( () => {
+		// If the user preference is not set (is empty string), return all columns with default visibility.
+		if ( ! Array.isArray( userPrefHiddenColumns ) ) {
+			return allColumns;
+		}
+
+		// If the user preference is set, hide the column.
 		return allColumns.map( ( column ) => {
 			return {
 				...column,
-				visible:
-					userPrefHiddenColumns === ''
-						? column.visible
-						: // If the user preference is set, don't show hidden columns.
-						  ! userPrefHiddenColumns.includes( column.key ),
+				visible: ! userPrefHiddenColumns.includes( column.key ),
 			};
 		} );
 	}, [ allColumns, userPrefHiddenColumns ] );
 
 	return {
 		onColumnsChange,
-
 		columnsToDisplay,
 	};
 };
