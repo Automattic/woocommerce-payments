@@ -3,6 +3,8 @@
  */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { useUserPreferences } from '@woocommerce/data';
+
 /**
  * Internal dependencies
  */
@@ -14,6 +16,19 @@ jest.mock( 'wcpay/data', () => ( {
 	useLoans: jest.fn(),
 	useActiveLoanSummary: jest.fn(),
 } ) );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
+
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
+>;
 
 declare const global: {
 	wcpaySettings: {
@@ -40,6 +55,12 @@ describe( 'CapitalPage', () => {
 			testMode: true,
 			dateFormat: 'M j, Y',
 		};
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_capital_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 	} );
 
 	it( 'renders the TableCard component with loan data', () => {
