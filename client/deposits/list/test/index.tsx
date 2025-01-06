@@ -7,8 +7,8 @@ import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-
 import os from 'os';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -43,6 +43,15 @@ jest.mock( '@woocommerce/csv-export', () => {
 } );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
 
 const mockDeposits = [
 	{
@@ -126,6 +135,10 @@ const mockUseReportingExportLanguage = useReportingExportLanguage as jest.Mocked
 	typeof useReportingExportLanguage
 >;
 
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
+>;
+
 describe( 'Deposits list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -134,6 +147,12 @@ describe( 'Deposits list', () => {
 		updateQueryString( {}, '/', {} );
 
 		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_deposits_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
