@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { WCPayExpressCheckoutParams } from 'wcpay/express-checkout/utils';
+import { WCPayExpressCheckoutParams } from 'wcpay/tokenized-express-checkout/utils';
 import { getErrorMessageFromNotice, getExpressCheckoutData } from '..';
 
 describe( 'Express checkout utils', () => {
