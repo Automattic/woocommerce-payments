@@ -6,7 +6,7 @@ import { render, waitFor } from '@testing-library/react';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 import os from 'os';
-
+import { useUserPreferences } from '@woocommerce/data';
 /**
  * Internal dependencies
  */
@@ -59,6 +59,15 @@ jest.mock( 'data/index', () => ( {
 	useSettings: jest.fn(),
 } ) );
 
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
+
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
@@ -79,6 +88,10 @@ const mockUseSettings = useSettings as jest.MockedFunction<
 
 const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
 	typeof useReportingExportLanguage
+>;
+
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -181,6 +194,12 @@ describe( 'Disputes list', () => {
 			saveSettings: ( a ) => a,
 			isDirty: false,
 		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_transactions_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
