@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useUserPreferences } from '@woocommerce/data';
+
 /**
  * Internal dependencies
  */
@@ -123,7 +124,7 @@ describe( 'Authorizations list', () => {
 
 		mockUseUserPreferences.mockReturnValue( {
 			updateUserPreferences: jest.fn(),
-			wc_payments_authorizations_hidden_columns: '',
+			wc_payments_transactions_uncaptured_hidden_columns: '',
 			isRequesting: false,
 		} as any );
 
