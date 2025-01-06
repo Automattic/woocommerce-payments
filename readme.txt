@@ -94,6 +94,23 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 8.8.0-test-2 - unreleased =
+* Add - Allow transactions filtered by Payment Method
+* Fix - Ensure consistent formatting of refund notes with MC.
+* Fix - Fix incompatibility with some bookings plugins.
+* Fix - Fix JS exception when ECE payment fails.
+* Fix - Fix transaction list sorting by payout currency
+* Fix - Improve the mobile rendering of the Balances box within Payment Overview
+* Fix - Update currency conversion method for booking products.
+* Fix - Upgrade `@woocommerce/csv-export` package to v1.10.0 – fixes unnecessary escaping of negative values in CSV exports that was preventing numerical analysis in spreadsheet applications
+* Fix - Zero dollar subscriptions with zero dollar renewals checkout error
+* Update - Bump stable tag for 8.7.0
+* Update - Clean Up Codebase and Remove Obsolete "wallets" Feature Flags and Implementations
+* Update - Remove the overlay that announces the rename from deposits to payouts.
+* Update - Replaced the term "VAT" with "Tax" in Documents Listing Page
+* Dev - Add type assertion for disputes CSV export response to ensure type safety and fix TypeScript error
+* Dev - Update phpunit-watcher dev package version
+
 = 8.7.0 - 2024-12-25 =
 * Add - Add seller_message to failed order notes
 * Add - Add WooPay Klaviyo newsletter integration.
