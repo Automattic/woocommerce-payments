@@ -347,8 +347,9 @@ jQuery( ( $ ) => {
 						// checking if items needed shipping, before assigning new cart data.
 						const didItemsNeedShipping = options.requestShipping;
 
-						// TODO: Support for this case will be added later.
-						// See https://github.com/Automattic/woocommerce-payments/issues/9983
+						// Disable ECE for shipping variable subscriptions with free trial and **no** sign up fee.
+						// Applies to Case 11 from matrix:
+						// https://github.com/Automattic/woocommerce-payments/issues/9983
 						if (
 							cachedCartData.needs_shipping &&
 							cachedCartData.items[ 0 ].extensions.subscriptions
