@@ -1356,7 +1356,7 @@ class MultiCurrency {
 
 			$price = round( $price, $num_decimals );
 		} else {
-			$price = $this->ceil_price( $price, (float) $currency->get_rounding() );
+			$price = $this->ceil_price( $price, $rounding );
 		}
 
 		if ( $apply_charm_pricing ) {
