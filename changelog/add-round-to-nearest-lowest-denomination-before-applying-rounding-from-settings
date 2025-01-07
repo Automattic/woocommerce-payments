@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+round to nearest lowest denominator instead of ceiling before applying currency rounding settings.

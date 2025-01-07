@@ -17,7 +17,7 @@ jest.mock( '@wordpress/a11y', () => ( {
 } ) );
 
 jest.mock(
-	'wcpay/express-checkout/blocks/components/express-checkout-preview',
+	'wcpay/tokenized-express-checkout/blocks/components/express-checkout-preview',
 	() => ( {
 		ExpressCheckoutPreviewComponent: () => (
 			<button type="submit">Stripe button mock</button>

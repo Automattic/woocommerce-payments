@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Checkout: Make sure the font size for PMME is smaller than the labels
