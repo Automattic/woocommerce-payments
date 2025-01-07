@@ -2,21 +2,15 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-
-const formatDate = ( format: string, date: number | string ) =>
-	dateI18n(
-		format,
-		moment.utc( date ).toISOString(),
-		true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-	);
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface DepositObject {
 	date: number | string;
 }
+
 export const getDepositDate = ( deposit?: DepositObject | null ): string =>
-	deposit ? formatDate( 'F j, Y', deposit?.date ) : '—';
+	deposit ? formatDateTimeFromString( deposit?.date as string ) : '—';
 
 interface GetDepositMonthlyAnchorLabelProps {
 	monthlyAnchor: number;

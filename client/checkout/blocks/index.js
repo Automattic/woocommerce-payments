@@ -19,10 +19,6 @@ import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import {
-	expressCheckoutElementApplePay,
-	expressCheckoutElementGooglePay,
-} from '../../express-checkout/blocks';
-import {
 	tokenizedExpressCheckoutElementApplePay,
 	tokenizedExpressCheckoutElementGooglePay,
 } from 'wcpay/tokenized-express-checkout/blocks';
@@ -98,12 +94,13 @@ Object.entries( enabledPaymentMethodsConfig )
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
 			canMakePayment: ( cartData ) => {
 				const billingCountry = cartData.billingAddress.country;
+				const needsPayment = cartData.cart.cartNeedsPayment;
 				const isRestrictedInAnyCountry = !! upeConfig.countries.length;
 				const isAvailableInTheCountry =
 					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
 				// We used to check if stripe was loaded with `getStripeForUPE`, but we can't guarantee it will be loaded synchronously.
-				return isAvailableInTheCountry;
+				return needsPayment && isAvailableInTheCountry;
 			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
@@ -160,17 +157,12 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 }
 
 if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
-	if ( getUPEConfig( 'isTokenizedCartEceEnabled' ) ) {
-		registerExpressPaymentMethod(
-			tokenizedExpressCheckoutElementApplePay( api )
-		);
-		registerExpressPaymentMethod(
-			tokenizedExpressCheckoutElementGooglePay( api )
-		);
-	} else {
-		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
-		registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
-	}
+	registerExpressPaymentMethod(
+		tokenizedExpressCheckoutElementApplePay( api )
+	);
+	registerExpressPaymentMethod(
+		tokenizedExpressCheckoutElementGooglePay( api )
+	);
 }
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );

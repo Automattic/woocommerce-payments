@@ -87,6 +87,7 @@ interface TransactionsSummary {
 		currency?: string;
 		store_currencies?: string[];
 		customer_currencies?: string[];
+		sources?: Transaction[ 'source' ][];
 	};
 	isLoading: boolean;
 }
@@ -158,6 +159,8 @@ export const useTransactions = (
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
+		source_is: sourceIs,
+		source_is_not: sourceIsNot,
 		loan_id_is: loanIdIs,
 		search,
 	}: Query,
@@ -196,6 +199,8 @@ export const useTransactions = (
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
+				sourceIs,
+				sourceIsNot,
 				channelIs,
 				channelIsNot,
 				customerCountryIs,
@@ -230,6 +235,8 @@ export const useTransactions = (
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
+			sourceIs,
+			sourceIsNot,
 			channelIs,
 			channelIsNot,
 			customerCountryIs,
@@ -256,6 +263,8 @@ export const useTransactionsSummary = (
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
+		source_is: sourceIs,
+		source_is_not: sourceIsNot,
 		channel_is: channelIs,
 		channel_is_not: channelIsNot,
 		customer_country_is: customerCountryIs,
@@ -286,6 +295,8 @@ export const useTransactionsSummary = (
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
+				sourceIs,
+				sourceIsNot,
 				channelIs,
 				channelIsNot,
 				customerCountryIs,
@@ -315,6 +326,8 @@ export const useTransactionsSummary = (
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
+			sourceIs,
+			sourceIsNot,
 			channelIs,
 			channelIsNot,
 			customerCountryIs,

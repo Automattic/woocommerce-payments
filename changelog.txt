@@ -1,5 +1,66 @@
 *** WooPayments Changelog ***
 
+= 8.7.0 - 2024-12-25 =
+* Add - Add seller_message to failed order notes
+* Add - Add WooPay Klaviyo newsletter integration.
+* Add - Clickwrap terms and conditions support on WooPay
+* Add - Implement gateway method to retrieve recommended payment method.
+* Add - Migrate active capabilities from test-drive account when switching to live account.
+* Add - Refresh the cart and checkout pages when ECE is dismissed and the shipping options were modified in the payment sheet.
+* Fix - Add a rounding entry to Level 3 data for rare cases where rounding errors break calculations.
+* Fix - Added conditional use of Jetpack Config callback to avoid i18n notices.
+* Fix - Browser error no longer shows after dispute evidence submission
+* Fix - Ceil product prices after applying currency conversion, but before charm pricing and price rounding from settings is applied.
+* Fix - Consider WooPay eligibility when retrieving WooPay enable state in the settings.
+* Fix - Enable ECE for Virtual Variable Subscriptions with Free Trials.
+* Fix - Ensure captured transactions appear in the Transactions tab without requiring a page refresh.
+* Fix - Ensure ECE login confirmation dialog is shown on Blocks.
+* Fix - Ensure WooPay 'enabled by default' value is correctly set in sandbox mode.
+* Fix - Errors were incorrectly marked as info in logs.
+* Fix - fix: undefined $cart_contains_subscription
+* Fix - Fix blank Payments > Overview page when WC onboarding is disabled.
+* Fix - Fixed Affirm using black logo on dark themes
+* Fix - Fixed an issue where order metadata was not updated when capturing an order in the processing state.
+* Fix - Fixed UPE country detection in Checkout for non-logged in users
+* Fix - Fix filtering in async Disputes CSV export
+* Fix - Fix inconsistent alignment of the download button across transactions, payouts, and disputes reporting views for a more cohesive user interface.
+* Fix - Fix Jetpack onboarding URL query from "woocommerce-payments" to "woocommerce-core-profiler"
+* Fix - Fix payment method filtering when billing country changes in Blocks checkout.
+* Fix - Fix styling of transaction details page in mobile view.
+* Fix - Hide transaction fee on admin view order screen when transaction is not captured.
+* Fix - Load checkout scripts when they are not previously loaded on checkout page.
+* Fix - Localize postal code check label based on country.
+* Fix - Normalize HK addresses for ECE
+* Fix - Order notes for inquiries have clearer content.
+* Fix - Performance improvements for Disputes Needing Response task shown in WooCommerce admin.
+* Fix - Remove translations during initialization, preventing unnecessary warnings.
+* Fix - Restrict Stripe Link to credit card payment method and improve cleanup.
+* Fix - Set payment method title once title is known.
+* Fix - Show express checkout for products w/o shipping but where tax is included into price.
+* Fix - Support 'type_is_in' filter for Transactions list report, to allow easy filtering by multiple types.
+* Fix - Use "currency conversion fee" instead "foreign exchange fee" in payment timeline and various other places.
+* Fix - Use translatable strings on the fee breakdown tooltip of the payment settings screen.
+* Update - Add failure reason to failed payments in the timeline.
+* Update - Add support for showing `In-Person (POS)` as the transaction channel for mobile POS transactions in wp-admin Payments, enhancing visibility in both transaction lists and details.
+* Update - Adjust the go-live modal to match the latest design.
+* Update - Apply User-Defined Date Formatting Settings to WP Admin React Components
+* Update - Change 'Bank reference key' label to 'Bank reference ID' in Payouts list column for consistency.
+* Update - chore: renamed PRB references in GooglePay/ApplePay implementation docs and logs files to ECE.
+* Update - Ensure more robust selectors scoping to improve theme compatibility.
+* Update - Make test instructions copy icon use the same color as the text next to it
+* Update - Remove payout timing notice and update the help tooltil on Payments Overview page.
+* Update - Update confirmation modal after onbarding
+* Update - Update Embedded Components and MOX to support custom width and paddings.
+* Update - Update error messages for payment authorization actions to provide more specific and user-friendly feedback.
+* Update - Update Jetpack onboarding flow
+* Update - WooPay theming copy in the settings page
+* Dev - Add support for utilizing NOX capabilities as URL parameters during account creation.
+* Dev - Enable Payment Methods preselected by NOX after onboarding accounts
+* Dev - Fixing issue with parsing QIT authentication.Fixing issue with parsing QIT authentication.
+* Dev - Refine verification for disabling ECE on subscriptions that require shipping.
+* Dev - Remove hooks from customer and token services to dedicated methods
+* Dev - Update the tunelling setup.
+
 = 8.6.1 - 2024-12-17 =
 * Fix - Checkout: Fix error when wc_address_i18n_params does not have data for a given country
 * Fix - Skip mysqlcheck SSL Requirement during E2E environment setup

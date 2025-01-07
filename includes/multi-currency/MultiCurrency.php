@@ -17,6 +17,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 use WCPay\MultiCurrency\Utils;
+use WC_Payments_Features;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -1109,7 +1110,7 @@ class MultiCurrency {
 		woocommerce_admin_meta_boxes.rounding_precision = <?php echo (int) $rounding_precision; ?>;
 		</script>
 			<?php
-		endif;
+			endif;
 	}
 
 	/**
@@ -1253,10 +1254,10 @@ class MultiCurrency {
 	public function is_multi_currency_settings_page(): bool {
 		global $current_screen, $current_tab;
 		return (
-			is_admin()
-			&& $current_tab && $current_screen
-			&& 'wcpay_multi_currency' === $current_tab
-			&& 'woocommerce_page_wc-settings' === $current_screen->base
+		is_admin()
+		&& $current_tab && $current_screen
+		&& 'wcpay_multi_currency' === $current_tab
+		&& 'woocommerce_page_wc-settings' === $current_screen->base
 		);
 	}
 
@@ -1278,7 +1279,7 @@ class MultiCurrency {
 		$query_union = [];
 
 		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
-					\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+				\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			foreach ( $currencies as $currency ) {
 				$query_union[] = $wpdb->prepare(
 					"SELECT %s AS currency_code, EXISTS(SELECT currency FROM {$wpdb->prefix}wc_orders WHERE currency=%s LIMIT 1) AS exists_in_orders",
@@ -1326,6 +1327,46 @@ class MultiCurrency {
 	 */
 	public function is_initialized(): bool {
 		return static::$is_initialized;
+	}
+
+	/**
+	 * Adjusts the given amount for the currently selected currency.
+	 *
+	 * Applies charm pricing if specified, and adjusts the amount according to
+	 * the selected currency's conversion rate.
+	 *
+	 * @param  float $amount              The original amount to adjust.
+	 * @param  bool  $apply_charm_pricing Optional. Whether to apply charm pricing to the adjusted amount. Default true.
+	 * @return float                       The amount adjusted for the selected currency.
+	 */
+	public function adjust_amount_for_selected_currency( $amount, $apply_charm_pricing = true ) {
+		return $this->get_adjusted_price( $amount, $apply_charm_pricing, $this->get_selected_currency() );
+	}
+
+	/**
+	 * Returns the amount with the backend format.
+	 *
+	 * @param float $amount The amount to format.
+	 * @param array $args The arguments to pass to wc_price.
+	 *
+	 * @return string The formatted amount.
+	 */
+	public function get_backend_formatted_wc_price( float $amount, array $args = [] ): string {
+		// Return early if MC isn't enabled or merchant has a single currency.
+		if ( ! self::has_additional_currencies_enabled() || ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+			return wc_price( $amount, $args );
+		}
+
+		$has_filter = has_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ] );
+		if ( false !== $has_filter ) {
+			return wc_price( $amount, $args );
+		}
+
+		add_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
+		$price = wc_price( $amount, $args );
+		remove_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
+
+		return $price;
 	}
 
 	/**

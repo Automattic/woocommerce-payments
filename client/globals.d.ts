@@ -3,7 +3,7 @@
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
-import { WCPayExpressCheckoutParams } from './express-checkout/utils';
+import { WCPayExpressCheckoutParams } from './tokenized-express-checkout/utils';
 
 declare global {
 	const wcpaySettings: {
@@ -89,7 +89,6 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
-		isPayoutsRenameNoticeDismissed: boolean;
 		progressiveOnboarding?: {
 			isEnabled: boolean;
 			isComplete: boolean;
@@ -123,6 +122,7 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
+		isDateFormatNoticeDismissed: boolean;
 		reporting: {
 			exportModalDismissed?: boolean;
 		};
@@ -137,6 +137,8 @@ declare global {
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
 		defaultExpressCheckoutBorderRadius: string;
+		dateFormat: string;
+		timeFormat: string;
 	};
 
 	const wc: {

@@ -104,6 +104,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_filter( 'wc_tax_enabled', '__return_false' );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_excl' ] );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
+		delete_option( '_wcpay_feature_tokenized_cart_ece' );
 
 		parent::tear_down();
 	}
@@ -208,6 +209,30 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_all_filters( 'wcpay_payment_request_total_label_suffix' );
 	}
 
+	public function test_should_show_express_checkout_button_for_tokenized_ece_with_billing_email() {
+		global $wp;
+		global $wp_query;
+
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+		WC_Payments::mode()->dev();
+		$_GET['pay_for_order'] = true;
+
+		// Total is 100 USD, which is above both payment methods (Affirm and AfterPay) minimums.
+		$order                = WC_Helper_Order::create_order( 1, 100 );
+		$order_id             = $order->get_id();
+		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
+		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
+
+		update_option( '_wcpay_feature_tokenized_cart_ece', '1' );
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		$this->assertTrue( $this->system_under_test->should_show_express_checkout_button() );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+	}
+
 	public function test_should_show_express_checkout_button_for_non_shipping_but_price_includes_tax() {
 		$this->mock_wcpay_account
 			->method( 'is_stripe_connected' )
@@ -228,7 +253,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_filter( 'wc_tax_enabled', '__return_true' );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
 	}
-
 
 	public function test_should_not_show_express_checkout_button_for_non_shipping_but_price_does_not_include_tax() {
 		$this->mock_wcpay_account
