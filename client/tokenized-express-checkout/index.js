@@ -347,6 +347,20 @@ jQuery( ( $ ) => {
 						// checking if items needed shipping, before assigning new cart data.
 						const didItemsNeedShipping = options.requestShipping;
 
+						// TODO: Support for this case will be added later.
+						// See https://github.com/Automattic/woocommerce-payments/issues/9983
+						if (
+							cachedCartData.needs_shipping &&
+							cachedCartData.items[ 0 ].extensions.subscriptions
+								.trial_length > 0 &&
+							! Number(
+								cachedCartData.items[ 0 ].extensions
+									.subscriptions.sign_up_fees
+							) > 0
+						) {
+							throw new Error( 'Not supported yet' );
+						}
+
 						/**
 						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
 						 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
