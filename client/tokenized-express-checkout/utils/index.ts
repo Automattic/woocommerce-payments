@@ -1,10 +1,91 @@
 /**
  * Internal dependencies
  */
-import { WCPayExpressCheckoutParams } from 'wcpay/express-checkout/utils';
 export * from './normalize';
 export * from './shipping-fields';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
+
+interface MyWindow extends Window {
+	wcpayExpressCheckoutParams: WCPayExpressCheckoutParams;
+}
+
+declare let window: MyWindow;
+
+/**
+ * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
+ */
+export interface WCPayExpressCheckoutParams {
+	ajax_url: string;
+
+	/**
+	 * Express Checkout Button style configuration.
+	 */
+	button: {
+		type: string;
+		theme: string;
+		height: string;
+		locale: string;
+		branded_type: string;
+		radius: number;
+	};
+
+	/**
+	 * Indicates in which context the button is being displayed.
+	 */
+	button_context: 'checkout' | 'cart' | 'product' | 'pay_for_order';
+	checkout: {
+		country_code: string;
+		currency_code: string;
+		needs_payer_phone: boolean;
+		needs_shipping: boolean;
+		currency_decimals: number;
+	};
+
+	/**
+	 * Indicaters whether the page has a Cart or Checkout Block on it.
+	 */
+	has_block: boolean;
+
+	nonce: {
+		platform_tracker: string;
+		tokenized_cart_nonce: string;
+		tokenized_cart_session_nonce: string;
+		store_api_nonce: string;
+	};
+
+	/**
+	 * Product specific options.
+	 */
+	product: {
+		needs_shipping: boolean;
+		currency: string;
+		product_type: string;
+		shippingOptions: {
+			id: string;
+			label: string;
+			detail: string;
+			amount: number;
+		};
+	};
+
+	/**
+	 * Settings for the user authentication dialog and redirection.
+	 */
+	login_confirmation: { message: string; redirect_url: string } | false;
+
+	stripe: {
+		accountId: string;
+		locale: string;
+		publishableKey: string;
+	};
+	total_label: string;
+}
+
+declare global {
+	interface Window {
+		wcpayExpressCheckoutParams?: WCPayExpressCheckoutParams;
+	}
+}
 
 export const getExpressCheckoutData = <
 	K extends keyof WCPayExpressCheckoutParams
