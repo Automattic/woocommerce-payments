@@ -89,10 +89,10 @@ export function* getTransactions( query ) {
 }
 
 export function getTransactionsCSV( query ) {
-	const path = addQueryArgs(
-		`${ NAMESPACE }/transactions/download`,
-		formatQueryFilters( query )
-	);
+	const path = addQueryArgs( `${ NAMESPACE }/transactions/download`, {
+		...formatQueryFilters( query ),
+		download_type: query.downloadType,
+	} );
 
 	return path;
 }

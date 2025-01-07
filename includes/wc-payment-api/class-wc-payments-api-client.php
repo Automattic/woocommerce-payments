@@ -432,12 +432,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @param string $user_email The email to search for.
 	 * @param string $deposit_id The deposit to filter on.
 	 * @param string $locale     Site locale.
+	 * @param string $download_type The type of download to perform.
 	 *
 	 * @return array Export summary
 	 *
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_transactions_export( $filters = [], $user_email = '', $deposit_id = null, $locale = null ) {
+	public function get_transactions_export( $filters = [], $user_email = '', $deposit_id = null, $locale = null, $download_type = null ) {
 		// Map Order # terms to the actual charge id to be used in the server.
 		if ( ! empty( $filters['search'] ) ) {
 			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
@@ -450,6 +451,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 		if ( ! empty( $locale ) ) {
 			$filters['locale'] = $locale;
+		}
+		if ( ! empty( $download_type ) ) {
+			$filters['download_type'] = $download_type;
 		}
 
 		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );

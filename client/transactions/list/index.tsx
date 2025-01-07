@@ -606,6 +606,7 @@ export const TransactionsList = (
 	const downloadable = !! rows.length;
 
 	const endpointExport = async ( language: string ) => {
+		const downloadType = totalRows > rows.length ? 'async' : 'sync';
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
@@ -692,6 +693,7 @@ export const TransactionsList = (
 						riskLevelIs,
 						riskLevelIsNot,
 						depositId,
+						downloadType,
 					} ),
 					method: 'POST',
 				} );
@@ -734,7 +736,6 @@ export const TransactionsList = (
 
 		recordEvent( 'wcpay_transactions_download_csv_click', {
 			location: props.depositId ? 'deposit_details' : 'transactions',
-			download_type: 'endpoint',
 			exported_transactions: rows.length,
 			total_transactions: transactionsSummary.count,
 		} );
