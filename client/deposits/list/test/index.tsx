@@ -81,10 +81,8 @@ declare const global: {
 			country: string;
 		};
 		dateFormat: string;
-	};
-	wcSettings: {
-		locale: {
-			userLocale: string;
+		userLocale: {
+			code: string;
 		};
 	};
 };
@@ -143,11 +141,8 @@ describe( 'Deposits list', () => {
 				},
 			},
 			dateFormat: 'M j Y',
-		};
-
-		global.wcSettings = {
-			locale: {
-				userLocale: 'en',
+			userLocale: {
+				code: 'en',
 			},
 		};
 	} );
