@@ -3355,6 +3355,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$status                   = null;
 		$error_message            = null;
 		$http_code                = null;
+		$error_code               = null;
 
 		try {
 			$intent_id           = $order->get_transaction_id();
@@ -3433,7 +3434,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'message'       => $error_message,
 			'http_code'     => $http_code,
 			'error_code'    => $error_code,
-			'extra_details' => $extra_details,
+			'extra_details' => $extra_details ?? [],
 		];
 	}
 
