@@ -26,7 +26,6 @@ import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import DateFormatNotice from 'wcpay/components/date-format-notice';
-import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 const columns = [
 	{
@@ -209,11 +208,6 @@ const getSummary = ( loans: CapitalLoan[] ) => {
 const CapitalPage = (): JSX.Element => {
 	const { loans, isLoading } = useLoans();
 
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility(
-		'wc_payments_capital_hidden_columns',
-		columns
-	);
-
 	return (
 		<Page>
 			<DateFormatNotice />
@@ -229,12 +223,11 @@ const CapitalPage = (): JSX.Element => {
 				title={ __( 'All loans', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				totalRows={ loans.length }
-				headers={ columnsToDisplay }
-				onColumnsChange={ onColumnsChange }
+				headers={ columns }
 				rows={ getRowsData( loans ) }
 				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
-				// TODO: Confirm if we need to show the menu to allow users to hide columns
+				// The Capital Loan table does not have column configuration enabled, see issue #10106.
 				showMenu={ false }
 			/>
 		</Page>

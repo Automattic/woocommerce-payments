@@ -940,7 +940,6 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
-				'wc_payments_capital_hidden_columns',
 			]
 		);
 	}
