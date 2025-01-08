@@ -37,4 +37,28 @@ test.describe( 'Failures with various cards', () => {
 
 		await waitForBanner( page, 'Error: Your card was declined.' );
 	} );
+
+	test( 'should throw an error that the card expiration date is in the past', async ( {
+		page,
+	} ) => {
+		await shopper.fillCardDetails(
+			page,
+			config.cards[ 'declined-expired' ]
+		);
+		await shopper.placeOrder( page );
+
+		await waitForBanner( page, 'Error: Your card has expired.' );
+	} );
+
+	test( 'should throw an error that the card CVV number is invalid', async ( {
+		page,
+	} ) => {
+		await shopper.fillCardDetails( page, config.cards[ 'declined-cvc' ] );
+		await shopper.placeOrder( page );
+
+		await waitForBanner(
+			page,
+			"Error: Your card's security code is incorrect."
+		);
+	} );
 } );
