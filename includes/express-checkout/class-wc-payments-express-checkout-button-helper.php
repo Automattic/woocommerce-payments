@@ -756,6 +756,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return bool
 	 */
 	private function is_pay_for_order_supported() {
+		if ( ! WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
+			return true;
+		}
+
 		$order_id = absint( get_query_var( 'order-pay' ) );
 		if ( 0 === $order_id ) {
 			return false;
