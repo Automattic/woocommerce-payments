@@ -154,7 +154,8 @@ export const getFilters = (
 
 /*eslint-disable max-len*/
 export const getAdvancedFilters = (
-	customerCurrencyOptions?: TransactionsFilterEntryType[]
+	customerCurrencyOptions?: TransactionsFilterEntryType[],
+	transactionSourceOptions?: TransactionsFilterEntryType[]
 ): any => {
 	// TODO: Remove this and all the checks once we drop support of WooCommerce 7.7 and below.
 	const wooCommerceVersionString = getSetting( 'wcVersion' );
@@ -268,6 +269,51 @@ export const getAdvancedFilters = (
 				input: {
 					component: 'SelectControl',
 					options: customerCurrencyOptions,
+				},
+			},
+			source: {
+				labels: {
+					add: __( 'Payment method', 'woocommerce-payments' ),
+					remove: __(
+						'Remove payment method filter',
+						'woocommerce-payments'
+					),
+					rule: __(
+						'Select a payment method filter match',
+						'woocommerce-payments'
+					),
+					title: __(
+						'<title>Payment method</title> <rule /> <filter />',
+						'woocommerce-payments'
+					),
+					filter: __(
+						'Select a payment method',
+						'woocommerce-payments'
+					),
+				},
+				rules: [
+					{
+						value: 'is',
+						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen payment method. */
+						label: _x(
+							'Is',
+							'payment method',
+							'woocommerce-payments'
+						),
+					},
+					{
+						value: 'is_not',
+						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen payment method. */
+						label: _x(
+							'Is not',
+							'payment method',
+							'woocommerce-payments'
+						),
+					},
+				],
+				input: {
+					component: 'SelectControl',
+					options: transactionSourceOptions,
 				},
 			},
 			type: {
