@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Update the Playwright Payment Gateways Confirmation spec and remove the Puppeteer Payment Gateways Confirmation spec.
