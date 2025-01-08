@@ -3377,6 +3377,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			try {
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
+				$error_code    = $e->get_error_code();
+				$extra_details = [];
+
+				if ( $e instanceof Amount_Too_Small_Exception ) {
+					$extra_details = [
+						'minimum_amount'          => $e->get_minimum_amount(),
+						'minimum_amount_currency' => $e->get_currency(),
+					];
+				}
 
 				$request = Get_Intention::create( $intent_id );
 				$request->set_hook_args( $order );
@@ -3392,6 +3401,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status        = null;
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
+				$error_code    = $e->get_error_code();
 			}
 		}
 
@@ -3418,10 +3428,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return [
-			'status'    => $status ?? 'failed',
-			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
-			'message'   => $error_message,
-			'http_code' => $http_code,
+			'status'        => $status ?? 'failed',
+			'id'            => ! empty( $intent ) ? $intent->get_id() : null,
+			'message'       => $error_message,
+			'http_code'     => $http_code,
+			'error_code'    => $error_code,
+			'extra_details' => $extra_details,
 		];
 	}
 
