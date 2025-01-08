@@ -83,11 +83,8 @@ declare const global: {
 		};
 		dateFormat?: string;
 		timeFormat?: string;
-	};
-
-	wcSettings: {
-		locale: {
-			userLocale: string;
+		userLocale: {
+			code: string;
 		};
 	};
 };
@@ -186,11 +183,8 @@ describe( 'Disputes list', () => {
 			},
 			dateFormat: 'Y-m-d',
 			timeFormat: 'g:iA',
-		};
-
-		global.wcSettings = {
-			locale: {
-				userLocale: 'en',
+			userLocale: {
+				code: 'en',
 			},
 		};
 	} );

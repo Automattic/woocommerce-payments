@@ -123,7 +123,7 @@ declare global {
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		isDateFormatNoticeDismissed: boolean;
-		locale: {
+		userLocale: {
 			code: string;
 			english_name: string;
 			native_name: string;
