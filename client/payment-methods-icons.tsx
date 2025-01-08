@@ -38,12 +38,12 @@ import './style.scss';
 const iconComponent = (
 	src: string,
 	alt: string,
-	outline = true
+	border = true
 ): ReactImgFuncComponent => ( { className, ...props } ) => (
 	<img
 		className={ classNames(
 			'payment-method__icon',
-			outline ? '' : 'no-outline',
+			border ? '' : 'no-border',
 			className
 		) }
 		src={ src }
