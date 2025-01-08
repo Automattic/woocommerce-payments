@@ -871,6 +871,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		if ( in_array( $product->get_type(), $subscription_types, true ) && class_exists( 'WC_Subscriptions_Product' ) ) {
 			// When there is no sign-up fee, `get_sign_up_fee` falls back to an int 0.
 			$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
+			// If the subscription includes a free trial, the base price should be considered as zero.
+			if ( WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+				$base_price = 0;
+			}
 		}
 
 		if ( ! is_numeric( $base_price ) || ! is_numeric( $sign_up_fee ) ) {
