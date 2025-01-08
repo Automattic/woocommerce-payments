@@ -78,7 +78,7 @@ const PaymentMethodMessageWrapper = ( {
 	);
 };
 
-export default ( { api, title, countries, upeName } ) => {
+export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
 	const isTestMode = getUPEConfig( 'testMode' );
 	const [ appearance, setAppearance ] = useState(
@@ -115,6 +115,7 @@ export default ( { api, title, countries, upeName } ) => {
 				'blocks_checkout'
 			);
 			setAppearance( upeAppearance );
+			setUpeAppearanceTheme( upeAppearance.theme );
 		}
 
 		if ( ! appearance ) {
@@ -137,11 +138,23 @@ export default ( { api, title, countries, upeName } ) => {
 						{ __( 'Test Mode', 'woocommerce-payments' ) }
 					</span>
 				) }
-				<PaymentMethodsLogos
-					maxElements={ 4 }
-					paymentMethods={ paymentMethods }
-					breakpointConfigs={ breakpointConfigs }
-				/>
+				{ upeName === 'card' ? (
+					<PaymentMethodsLogos
+						maxElements={ 4 }
+						paymentMethods={ paymentMethods }
+						breakpointConfigs={ breakpointConfigs }
+					/>
+				) : (
+					<img
+						className="payment-methods--logos"
+						src={
+							upeAppearanceTheme === 'night'
+								? iconDark
+								: iconLight
+						}
+						alt={ title }
+					/>
+				) }
 			</div>
 			<PaymentMethodMessageWrapper
 				upeName={ upeName }
