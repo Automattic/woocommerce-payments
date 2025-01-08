@@ -700,7 +700,8 @@ export const TransactionsList = (
 
 				if ( response?.download_url ) {
 					const link = document.createElement( 'a' );
-					link.href = response.download_url;
+					// Add force_download=true to the URL to force the download, which adds the appropriate `Content-Disposition: attachment` header when using production server.
+					link.href = response.download_url + '?force_download=true';
 					link.click();
 				} else {
 					// Show email notification if no direct download URL
