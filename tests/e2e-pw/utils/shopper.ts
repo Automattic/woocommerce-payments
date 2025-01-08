@@ -12,29 +12,38 @@ export const isUIUnblocked = async ( page: Page ) => {
 	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
 };
 
+const billingAddressFields = [
+	{ selector: '#billing_first_name', key: 'firstname', type: 'text' },
+	{ selector: '#billing_last_name', key: 'lastname', type: 'text' },
+	{ selector: '#billing_company', key: 'company', type: 'text' },
+	{ selector: '#billing_country', key: 'country', type: 'select' },
+	{ selector: '#billing_address_1', key: 'addressfirstline', type: 'text' },
+	{ selector: '#billing_address_2', key: 'addresssecondline', type: 'text' },
+	{ selector: '#billing_city', key: 'city', type: 'text' },
+	{ selector: '#billing_state', key: 'state', type: 'select' },
+	{ selector: '#billing_postcode', key: 'postcode', type: 'text' },
+	{ selector: '#billing_phone', key: 'phone', type: 'text' },
+	{ selector: '#billing_email', key: 'email', type: 'text' },
+];
+
 export const fillBillingAddress = async (
 	page: Page,
 	billingAddress: CustomerAddress
 ) => {
-	await page
-		.locator( '#billing_first_name' )
-		.fill( billingAddress.firstname );
-	await page.locator( '#billing_last_name' ).fill( billingAddress.lastname );
-	await page.locator( '#billing_company' ).fill( billingAddress.company );
-	await page
-		.locator( '#billing_country' )
-		.selectOption( billingAddress.country );
-	await page
-		.locator( '#billing_address_1' )
-		.fill( billingAddress.addressfirstline );
-	await page
-		.locator( '#billing_address_2' )
-		.fill( billingAddress.addresssecondline );
-	await page.locator( '#billing_city' ).fill( billingAddress.city );
-	await page.locator( '#billing_state' ).selectOption( billingAddress.state );
-	await page.locator( '#billing_postcode' ).fill( billingAddress.postcode );
-	await page.locator( '#billing_phone' ).fill( billingAddress.phone );
-	await page.locator( '#billing_email' ).fill( billingAddress.email );
+	for ( const field of billingAddressFields ) {
+		const element = page.locator( field.selector );
+		const value = billingAddress[ field.key ];
+
+		if ( ! ( await element.isVisible() ) ) {
+			continue;
+		}
+
+		if ( field.type === 'text' ) {
+			await element.fill( value );
+		} else if ( field.type === 'select' ) {
+			await element.selectOption( value );
+		}
+	}
 };
 
 // This is currently the source of some flaky tests since sometimes the form is not submitted
