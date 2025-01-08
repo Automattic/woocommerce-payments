@@ -224,13 +224,22 @@ class WC_Payments_Express_Checkout_Button_Handler {
 
 		$express_checkout_params = [
 			'ajax_url'           => admin_url( 'admin-ajax.php' ),
+			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'             => [
 				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
 				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],
 			'nonce'              => [
+				'get_cart_details'             => wp_create_nonce( 'wcpay-get-cart-details' ),
+				'shipping'                     => wp_create_nonce( 'wcpay-payment-request-shipping' ),
+				'update_shipping'              => wp_create_nonce( 'wcpay-update-shipping-method' ),
+				'checkout'                     => wp_create_nonce( 'woocommerce-process_checkout' ),
+				'add_to_cart'                  => wp_create_nonce( 'wcpay-add-to-cart' ),
+				'empty_cart'                   => wp_create_nonce( 'wcpay-empty-cart' ),
+				'get_selected_product_data'    => wp_create_nonce( 'wcpay-get-selected-product-data' ),
 				'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
+				'pay_for_order'                => wp_create_nonce( 'pay_for_order' ),
 				// needed to communicate via the Store API.
 				'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
 				'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
@@ -253,21 +262,39 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			'total_label'        => $this->express_checkout_helper->get_total_label(),
 		];
 
-		WC_Payments::register_script_with_dependencies(
-			'WCPAY_EXPRESS_CHECKOUT_ECE',
-			'dist/tokenized-express-checkout',
-			[
-				'jquery',
-				'stripe',
-			]
-		);
+		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
+			WC_Payments::register_script_with_dependencies(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				'dist/tokenized-express-checkout',
+				[
+					'jquery',
+					'stripe',
+				]
+			);
 
-		WC_Payments_Utils::enqueue_style(
-			'WCPAY_EXPRESS_CHECKOUT_ECE',
-			plugins_url( 'dist/tokenized-express-checkout.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/tokenized-express-checkout.css' )
-		);
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				plugins_url( 'dist/tokenized-express-checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/tokenized-express-checkout.css' )
+			);
+		} else {
+			WC_Payments::register_script_with_dependencies(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				'dist/express-checkout',
+				[
+					'jquery',
+					'stripe',
+				]
+			);
+
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/express-checkout.css' )
+			);
+		}
 
 		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $express_checkout_params );
 

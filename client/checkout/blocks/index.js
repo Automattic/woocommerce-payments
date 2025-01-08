@@ -19,6 +19,10 @@ import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import {
+	expressCheckoutElementApplePay,
+	expressCheckoutElementGooglePay,
+} from '../../express-checkout/blocks';
+import {
 	tokenizedExpressCheckoutElementApplePay,
 	tokenizedExpressCheckoutElementGooglePay,
 } from 'wcpay/tokenized-express-checkout/blocks';
@@ -157,12 +161,17 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 }
 
 if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
-	registerExpressPaymentMethod(
-		tokenizedExpressCheckoutElementApplePay( api )
-	);
-	registerExpressPaymentMethod(
-		tokenizedExpressCheckoutElementGooglePay( api )
-	);
+	if ( getUPEConfig( 'isTokenizedCartEceEnabled' ) ) {
+		registerExpressPaymentMethod(
+			tokenizedExpressCheckoutElementApplePay( api )
+		);
+		registerExpressPaymentMethod(
+			tokenizedExpressCheckoutElementGooglePay( api )
+		);
+	} else {
+		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
+		registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+	}
 }
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
