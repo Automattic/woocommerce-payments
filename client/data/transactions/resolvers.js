@@ -54,6 +54,8 @@ export const formatQueryFilters = ( query ) => ( {
 	deposit_id: query.depositId,
 	customer_currency_is: query.customerCurrencyIs,
 	customer_currency_is_not: query.customerCurrencyIsNot,
+	source_is: query.sourceIs,
+	source_is_not: query.sourceIsNot,
 	search: query.search,
 	user_timezone: getUserTimeZone(),
 	locale: query.locale,

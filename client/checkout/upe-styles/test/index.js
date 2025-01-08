@@ -158,6 +158,9 @@ describe( 'Getting styles for automated theming', () => {
 					fontSize: '12px',
 					padding: '10px',
 				},
+				'.Label--resting': {
+					fontSize: '12px',
+				},
 				'.Tab': {
 					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
