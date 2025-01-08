@@ -101,6 +101,9 @@ cli wp option set woocommerce_currency "USD"
 cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 
+echo "Deactivating Coming Soon mode in WooCommerce..."
+cli wp option set woocommerce_coming_soon "no"
+
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
 
