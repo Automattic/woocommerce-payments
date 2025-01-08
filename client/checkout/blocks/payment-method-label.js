@@ -10,8 +10,8 @@ import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
-import { useEffect, useState } from '@wordpress/element';
-import { getAppearance } from 'wcpay/checkout/upe-styles';
+import { useEffect, useMemo, useState } from '@wordpress/element';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 
 const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 const PaymentMethodMessageWrapper = ( {
@@ -56,6 +56,8 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 	const [ upeAppearanceTheme, setUpeAppearanceTheme ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearanceTheme' )
 	);
+
+	const fontRules = useMemo( () => getFontRulesFromPage(), [] );
 
 	// Stripe expects the amount to be sent as the minor unit of 2 digits.
 	const amount = parseInt(
@@ -123,6 +125,7 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 					stripe={ stripe }
 					options={ {
 						appearance: appearance,
+						fonts: fontRules,
 					} }
 				>
 					<PaymentMethodMessagingElement

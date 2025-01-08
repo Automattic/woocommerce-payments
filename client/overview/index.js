@@ -32,7 +32,6 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
-import { PayoutsRenameNotice } from 'wcpay/deposits/rename-notice';
 import DateFormatNotice from 'wcpay/components/date-format-notice';
 
 const OverviewPageError = () => {
@@ -197,7 +196,6 @@ const OverviewPage = () => {
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
-					<PayoutsRenameNotice />
 					<Welcome />
 
 					{ showTaskList && (

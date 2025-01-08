@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Zero dollar subscriptions with zero dollar renewals checkout error

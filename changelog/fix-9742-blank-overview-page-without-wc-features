@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix blank Payments > Overview page when WC onboarding is disabled.

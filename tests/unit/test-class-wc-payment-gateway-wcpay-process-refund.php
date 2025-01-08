@@ -278,7 +278,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $result );
 		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
-		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( WC_Payments_Multi_Currency()->get_backend_formatted_wc_price( 19.99, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
 		$this->assertStringContainsString( 're_123456789', $latest_wcpay_note->content );
 	}
 
@@ -349,7 +349,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $result );
 		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
-		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => strtoupper( $currency ) ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( WC_Payments_Multi_Currency()->get_backend_formatted_wc_price( 19.99, [ 'currency' => strtoupper( $currency ) ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_process_refund_with_reason_non_usd() {
@@ -419,7 +419,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
 		$this->assertStringContainsString( 'some reason', $latest_wcpay_note->content );
-		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => strtoupper( $currency ) ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( WC_Payments_Multi_Currency()->get_backend_formatted_wc_price( 19.99, [ 'currency' => strtoupper( $currency ) ] ), $latest_wcpay_note->content );
 		$this->assertTrue( $result );
 	}
 
@@ -511,7 +511,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $result );
 		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
-		$this->assertStringContainsString( wc_price( $amount, [ 'currency' => $currency ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( WC_Payments_Multi_Currency()->get_backend_formatted_wc_price( $amount, [ 'currency' => $currency ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_process_refund_interac_present_without_payment_method_id_meta() {
@@ -591,7 +591,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $result );
 		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
-		$this->assertStringContainsString( wc_price( $amount, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( WC_Payments_Multi_Currency()->get_backend_formatted_wc_price( $amount, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_process_refund_interac_present_without_app_refund() {
@@ -809,7 +809,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $result );
 		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
-		$this->assertStringContainsString( wc_price( $amount, [ 'currency' => strtoupper( $currency ) ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( WC_Payments_Multi_Currency()->get_backend_formatted_wc_price( $amount, [ 'currency' => strtoupper( $currency ) ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_process_refund_on_uncaptured_payment() {

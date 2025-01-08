@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Hide transaction fee on admin view order screen when transaction is not captured.

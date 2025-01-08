@@ -397,22 +397,25 @@ export const DisputesList = (): JSX.Element => {
 			window.confirm( confirmMessage )
 		) {
 			try {
-				const { exported_disputes: exportedDisputes } = await apiFetch(
-					{
-						path: getDisputesCSV( {
-							userEmail,
-							locale,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							filter,
-							statusIs,
-							statusIsNot,
-						} ),
-						method: 'POST',
-					}
-				);
+				const {
+					exported_disputes: exportedDisputes,
+				} = await apiFetch< {
+					/** The total number of disputes that will be exported in the CSV. */
+					exported_disputes: number;
+				} >( {
+					path: getDisputesCSV( {
+						userEmail,
+						locale,
+						dateAfter,
+						dateBefore,
+						dateBetween,
+						match,
+						filter,
+						statusIs,
+						statusIsNot,
+					} ),
+					method: 'POST',
+				} );
 
 				createNotice(
 					'success',
