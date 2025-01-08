@@ -11,7 +11,7 @@ import { config } from '../../config/default';
 import * as shopper from '../../utils/shopper';
 
 test.describe( 'Failures with various cards', () => {
-	const notice = 'div.wc-block-components-notice-banner';
+	const notice = 'div.woocommerce-NoticeGroup-checkout';
 
 	const waitForBanner = async ( page: Page, errorText: string ) => {
 		const banner = page.locator( notice );
