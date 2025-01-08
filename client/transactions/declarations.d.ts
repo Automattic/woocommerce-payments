@@ -139,6 +139,8 @@ declare module '@woocommerce/navigation' {
 		risk_level_is_not?: string;
 		customer_currency_is?: unknown;
 		customer_currency_is_not?: unknown;
+		source_is?: string;
+		source_is_not?: string;
 		store_currency_is?: string;
 		loan_id_is?: string;
 		search?: string[];

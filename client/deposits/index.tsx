@@ -17,7 +17,6 @@ import { __ } from '@wordpress/i18n';
 import { TestModeNotice } from 'components/test-mode-notice';
 import BannerNotice from 'components/banner-notice';
 import DepositSchedule from 'components/deposits-overview/deposit-schedule';
-import { PayoutsRenameNotice } from './rename-notice';
 import { useAllDepositsOverviews } from 'data';
 import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
@@ -152,7 +151,6 @@ const DepositsPage: React.FC = () => {
 		<Page>
 			<DateFormatNotice />
 			<TestModeNotice currentPage="deposits" />
-			<PayoutsRenameNotice />
 			<NextDepositNotice />
 			<DepositFailureNotice />
 			<DepositsList />

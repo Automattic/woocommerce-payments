@@ -247,6 +247,8 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'store_currency_is'        => $request->get_param( 'store_currency_is' ),
 				'customer_currency_is'     => $request->get_param( 'customer_currency_is' ),
 				'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),
+				'source_is'                => $request->get_param( 'source_is' ),
+				'source_is_not'            => $request->get_param( 'source_is_not' ),
 				'loan_id_is'               => $request->get_param( 'loan_id_is' ),
 				'search'                   => $request->get_param( 'search' ),
 			],
