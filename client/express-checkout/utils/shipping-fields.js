@@ -1,4 +1,4 @@
-/* global jQuery */
+/* global jQuery, wc */
 /**
  * Internal dependencies
  */
@@ -54,13 +54,12 @@ const updateShortcodeField = ( formSelector, fieldName, value ) => {
 
 /**
  * Updates the WooCommerce Blocks shipping UI to reflect a new shipping address.
- *
- * @param {Object} eventAddress - The shipping address returned by the payment event.
  */
-const updateBlocksShippingUI = ( eventAddress ) => {
-	wp?.data
-		?.dispatch( 'wc/store/cart' )
-		?.setShippingAddress( normalizeShippingAddress( eventAddress ) );
+const updateBlocksShippingUI = () => {
+	wc?.blocksCheckout?.extensionCartUpdate( {
+		namespace: 'woopayments/express-checkout/refresh-ui',
+		data: {},
+	} );
 };
 
 /**
@@ -118,13 +117,10 @@ export const updateShippingAddressUI = ( newAddress ) => {
 	const context = getExpressCheckoutData( 'button_context' );
 	const isBlocks = getExpressCheckoutData( 'has_block' );
 
-	if (
-		[ 'cart', 'checkout' ].includes( context ) &&
-		! isPostcodeRedactedForCountry( newAddress.country )
-	) {
+	if ( [ 'cart', 'checkout' ].includes( context ) ) {
 		if ( isBlocks ) {
-			updateBlocksShippingUI( newAddress );
-		} else {
+			updateBlocksShippingUI();
+		} else if ( ! isPostcodeRedactedForCountry( newAddress.country ) ) {
 			updateShortcodeShippingUI( newAddress );
 		}
 	}

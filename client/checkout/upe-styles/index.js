@@ -12,6 +12,8 @@ import {
 	handleAppearanceForFloatingLabel,
 } from './utils.js';
 
+const PMME_RELATIVE_TEXT_SIZE = 0.875;
+
 export const appearanceSelectors = {
 	default: {
 		hiddenContainer: '#wcpay-hidden-div',
@@ -23,7 +25,10 @@ export const appearanceSelectors = {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
 		upeThemeInputSelector: '#billing_first_name',
 		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
-		upeThemeTextSelector: '.woocommerce-checkout .form-row',
+		upeThemeTextSelectors: [
+			'#payment .payment_methods li .payment_box fieldset',
+			'.woocommerce-checkout .form-row',
+		],
 		rowElement: 'p',
 		validClasses: [ 'form-row' ],
 		invalidClasses: [
@@ -42,12 +47,16 @@ export const appearanceSelectors = {
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '#place_order' ],
 		linkSelectors: [ 'a' ],
+		pmmeRelativeTextSizeSelector: '.wc_payment_method > label',
 	},
 	blocksCheckout: {
 		appendTarget: '#contact-fields',
 		upeThemeInputSelector: '.wc-block-components-text-input #email',
 		upeThemeLabelSelector: '.wc-block-components-text-input label',
-		upeThemeTextSelector: '.wc-block-components-text-input',
+		upeThemeTextSelectors: [
+			'.wc-block-components-checkout-step__description',
+			'.wc-block-components-text-input',
+		],
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
@@ -70,12 +79,14 @@ export const appearanceSelectors = {
 		containerSelectors: [
 			'.wp-block-woocommerce-checkout-order-summary-block',
 		],
+		pmmeRelativeTextSizeSelector:
+			'.wc-block-components-radio-control__label-group',
 	},
 	bnplProductPage: {
 		appendTarget: '.product .cart .quantity',
 		upeThemeInputSelector: '.product .cart .quantity .qty',
 		upeThemeLabelSelector: '.product .cart .quantity label',
-		upeThemeTextSelector: '.product .cart .quantity',
+		upeThemeTextSelectors: [ '.product .cart .quantity' ],
 		rowElement: 'div',
 		validClasses: [ 'input-text' ],
 		invalidClasses: [ 'input-text', 'has-error' ],
@@ -94,7 +105,7 @@ export const appearanceSelectors = {
 		appendTarget: '.cart .quantity',
 		upeThemeInputSelector: '.cart .quantity .qty',
 		upeThemeLabelSelector: '.cart .quantity label',
-		upeThemeTextSelector: '.cart .quantity',
+		upeThemeTextSelectors: [ '.cart .quantity' ],
 		rowElement: 'div',
 		validClasses: [ 'input-text' ],
 		invalidClasses: [ 'input-text', 'has-error' ],
@@ -115,7 +126,7 @@ export const appearanceSelectors = {
 		upeThemeInputSelector:
 			'.wc-block-cart .wc-block-components-quantity-selector .wc-block-components-quantity-selector__input',
 		upeThemeLabelSelector: '.wc-block-components-text-input',
-		upeThemeTextSelector: '.wc-block-components-text-input',
+		upeThemeTextSelectors: [ '.wc-block-components-text-input' ],
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
@@ -138,7 +149,7 @@ export const appearanceSelectors = {
 		appendTarget: '.woocommerce-billing-fields__field-wrapper',
 		upeThemeInputSelector: '#billing_first_name',
 		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
-		upeThemeTextSelector: '.woocommerce-checkout .form-row',
+		upeThemeTextSelectors: [ '.woocommerce-checkout .form-row' ],
 		rowElement: 'p',
 		validClasses: [ 'form-row' ],
 		invalidClasses: [
@@ -468,6 +479,47 @@ export const getFontRulesFromPage = () => {
 	return fontRules;
 };
 
+/**
+ * Ensure the font size of the element is smaller than the font size of target element.
+ *
+ * @param {string} selector Selector of the element to be checked.
+ * @param {string} fontSize Pre-computed font size.
+ * @param {number} percentage Percentage (0-1) to be used relative to the font size of the target element.
+ *
+ * @return {string} Font size of the element.
+ */
+function ensureFontSizeSmallerThan(
+	selector,
+	fontSize,
+	percentage = PMME_RELATIVE_TEXT_SIZE
+) {
+	const fontSizeNumber = parseFloat( fontSize );
+
+	if ( isNaN( fontSizeNumber ) ) {
+		return fontSize;
+	}
+
+	// If the element is not found, return the font size number multiplied by the percentage.
+	const elem = document.querySelector( selector );
+	if ( ! elem ) {
+		return `${ fontSizeNumber * percentage }px`;
+	}
+
+	const styles = window.getComputedStyle( elem );
+	const targetFontSize = styles.getPropertyValue( 'font-size' );
+	const targetFontSizeNumber = parseFloat( targetFontSize ) * percentage;
+
+	if ( isNaN( targetFontSizeNumber ) ) {
+		return fontSize;
+	}
+
+	if ( fontSizeNumber > targetFontSizeNumber ) {
+		return `${ targetFontSizeNumber }px`;
+	}
+
+	return `${ fontSizeNumber }px`;
+}
+
 export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	const selectors = appearanceSelectors.getSelectors( elementsLocation );
 
@@ -485,8 +537,12 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		'.Label'
 	);
 
+	const labelRestingRules = {
+		fontSize: labelRules.fontSize,
+	};
+
 	const paragraphRules = getFieldStyles(
-		selectors.upeThemeTextSelector,
+		selectors.upeThemeTextSelectors,
 		'.Text'
 	);
 
@@ -530,6 +586,13 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		fontSizeBase: paragraphRules.fontSize,
 	};
 
+	if ( selectors.pmmeRelativeTextSizeSelector && globalRules.fontSizeBase ) {
+		globalRules.fontSizeBase = ensureFontSizeSmallerThan(
+			selectors.pmmeRelativeTextSizeSelector,
+			paragraphRules.fontSize
+		);
+	}
+
 	const isFloatingLabel = elementsLocation === 'blocks_checkout';
 
 	let appearance = {
@@ -542,6 +605,7 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 				'.Input': inputRules,
 				'.Input--invalid': inputInvalidRules,
 				'.Label': labelRules,
+				'.Label--resting': labelRestingRules,
 				'.Block': blockRules,
 				'.Tab': tabRules,
 				'.Tab:hover': tabHoverRules,
