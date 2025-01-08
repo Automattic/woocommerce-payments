@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Change Transactions sync download to use server export.
