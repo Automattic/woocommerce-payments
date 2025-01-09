@@ -61,11 +61,9 @@ test.describe( 'Shopper > Checkout > Failures with various cards', () => {
 		);
 
 		const stripeFrame = await frameHandle.contentFrame();
-		const cvcErrorText = await stripeFrame
-			.locator( 'p#Field-cvcError' )
-			.innerText();
+		const cvcErrorText = await stripeFrame.locator( 'p#Field-cvcError' );
 
-		expect( cvcErrorText ).toContain(
+		await expect( cvcErrorText ).toHaveText(
 			'Your card’s security code is incomplete.'
 		);
 	} );
@@ -131,11 +129,11 @@ test.describe( 'Shopper > Checkout > Failures with various cards', () => {
 		);
 
 		const stripeFrame = await frameHandle.contentFrame();
-		const numberErrorText = await stripeFrame
-			.locator( 'p#Field-numberError' )
-			.innerText();
+		const numberErrorText = await stripeFrame.locator(
+			'p#Field-numberError'
+		);
 
-		expect( numberErrorText ).toContain( 'Your card number is invalid.' );
+		expect( numberErrorText ).toHaveText( 'Your card number is invalid.' );
 	} );
 
 	test( 'should throw an error that the card was declined due to invalid 3DS card', async ( {
