@@ -18,13 +18,46 @@ import {
 } from 'wcpay/types/authorizations';
 import { STORE_NAME } from '../constants';
 import { ApiError } from 'wcpay/types/errors';
+import { formatCurrency } from 'multi-currency/utils/currency';
 
-const getErrorMessage = ( apiError: {
+interface WCPayError {
 	code?: string;
 	message?: string;
-} ): string => {
+	data?: {
+		status?: number;
+		extra_details?: {
+			minimum_amount?: number;
+			minimum_amount_currency?: string;
+		};
+	};
+}
+
+const getErrorMessage = ( apiError: WCPayError ): string => {
 	// Map specific error codes to user-friendly messages
-	const errorMessages: Record< string, string > = {
+	const getAmountTooSmallError = ( error: WCPayError ): string => {
+		const currency =
+			error.data?.extra_details?.minimum_amount_currency ?? 'USD';
+
+		const amount = formatCurrency(
+			error.data?.extra_details?.minimum_amount ?? 0,
+			currency
+		);
+
+		return sprintf(
+			/* translators: %1$s: minimum amount, %2$s: currency code */
+			__(
+				'The minimum amount to capture is %1$s %2$s.',
+				'woocommerce-payments'
+			),
+			amount,
+			currency.toUpperCase()
+		);
+	};
+
+	const errorMessages: Record<
+		string,
+		string | ( ( error: WCPayError ) => string )
+	> = {
 		wcpay_missing_order: __(
 			'The order could not be found.',
 			'woocommerce-payments'
@@ -53,10 +86,15 @@ const getErrorMessage = ( apiError: {
 			'An unexpected error occurred. Please try again later.',
 			'woocommerce-payments'
 		),
+		wcpay_capture_error_amount_too_small: getAmountTooSmallError,
 	};
 
+	const errorHandler = errorMessages[ apiError.code ?? '' ];
+	if ( typeof errorHandler === 'function' ) {
+		return errorHandler( apiError );
+	}
 	return (
-		errorMessages[ apiError.code ?? '' ] ??
+		errorHandler ??
 		__(
 			'Unable to process the payment. Please try again later.',
 			'woocommerce-payments'
@@ -231,6 +269,10 @@ export function* submitCaptureAuthorization(
 			message?: string;
 			data?: {
 				status?: number;
+				extra_details?: {
+					minimum_amount?: number;
+					minimum_amount_currency?: string;
+				};
 			};
 		};
 
