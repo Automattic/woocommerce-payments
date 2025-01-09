@@ -3382,10 +3382,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$extra_details = [];
 
 				if ( $e instanceof Amount_Too_Small_Exception ) {
-					$extra_details = [
+					$extra_details          = [
 						'minimum_amount'          => $e->get_minimum_amount(),
 						'minimum_amount_currency' => $e->get_currency(),
 					];
+					$minimum_amount_details = sprintf(
+						/* translators: %1$s: minimum amount, %2$s: currency */
+						__( 'The minimum amount to capture is %1$s %2$s.', 'woocommerce-payments' ),
+						WC_Payments_Utils::interpret_stripe_amount( $e->get_minimum_amount(), $e->get_currency() ),
+						strtoupper( $e->get_currency() )
+					);
+					$error_message = $error_message . ' ' . $minimum_amount_details;
 				}
 
 				$request = Get_Intention::create( $intent_id );
