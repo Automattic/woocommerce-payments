@@ -203,6 +203,17 @@ declare global {
 		countries: Record< string, string >;
 		homeUrl: string;
 		locale: {
+			/**
+			 * The locale of the current site, as set in WP Admin → Settings → General.
+			 *
+			 * @example 'en_AU' // English (Australia)
+			 */
+			siteLocale: string;
+			/**
+			 * The locale of the current user profile, as set in WP Admin → Users → Profile → Language.
+			 *
+			 * @example 'en_UK' // English (United Kingdom)
+			 */
 			userLocale: string;
 		};
 		siteTitle: string;
