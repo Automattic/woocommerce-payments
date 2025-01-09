@@ -46,8 +46,7 @@ test.describe( 'Shopper > Checkout > Failures with various cards', () => {
 		await waitForBanner( page, 'Error: Your card has expired.' );
 	} );
 
-	// WIP: This test is failing due to Playwright saying the element is not visible.
-	test.skip( 'should throw an error that the card CVV number is invalid', async ( {
+	test( 'should throw an error that the card CVV number is invalid', async ( {
 		page,
 	} ) => {
 		await shopper.fillCardDetails(
@@ -56,17 +55,19 @@ test.describe( 'Shopper > Checkout > Failures with various cards', () => {
 		);
 
 		await page.keyboard.press( 'Tab' );
-		await shopper.isUIUnblocked( page );
 
-		const stripeFrame = page.frameLocator(
-			'body>div>iframe[name^="__privateStripeFrame"]'
+		const frameHandle = await page.waitForSelector(
+			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
 		);
 
-		await expect(
-			stripeFrame.getByRole( 'paragraph', {
-				name: 'Your card’s security code is incomplete.',
-			} )
-		).toBeVisible();
+		const stripeFrame = await frameHandle.contentFrame();
+		const cvcErrorText = await stripeFrame
+			.locator( 'p#Field-cvcError' )
+			.innerText();
+
+		expect( cvcErrorText ).toContain(
+			'Your card’s security code is incomplete.'
+		);
 	} );
 
 	test( 'should throw an error that the card was declined due to insufficient funds', async ( {
@@ -117,8 +118,7 @@ test.describe( 'Shopper > Checkout > Failures with various cards', () => {
 		);
 	} );
 
-	// WIP: This test is failing due to Playwright saying the element is not visible.
-	test.skip( 'should throw an error that the card was declined due to incorrect card number', async ( {
+	test( 'should throw an error that the card was declined due to incorrect card number', async ( {
 		page,
 	} ) => {
 		await shopper.fillCardDetails(
@@ -126,15 +126,16 @@ test.describe( 'Shopper > Checkout > Failures with various cards', () => {
 			config.cards[ 'declined-incorrect' ]
 		);
 
-		const stripeFrame = page.frameLocator(
-			'body>div>iframe[name^="__privateStripeFrame"]'
+		const frameHandle = await page.waitForSelector(
+			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
 		);
 
-		await expect(
-			stripeFrame.getByRole( 'paragraph', {
-				name: 'Your card number is invalid.',
-			} )
-		).toBeVisible();
+		const stripeFrame = await frameHandle.contentFrame();
+		const numberErrorText = await stripeFrame
+			.locator( 'p#Field-numberError' )
+			.innerText();
+
+		expect( numberErrorText ).toContain( 'Your card number is invalid.' );
 	} );
 
 	test( 'should throw an error that the card was declined due to invalid 3DS card', async ( {
