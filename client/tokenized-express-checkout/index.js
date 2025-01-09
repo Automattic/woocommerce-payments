@@ -283,9 +283,9 @@ jQuery( ( $ ) => {
 				return shippingAddressChangeHandler( event, elements );
 			} );
 
-			eceButton.on( 'shippingratechange', async ( event ) => {
-				return shippingRateChangeHandler( event, elements );
-			} );
+			eceButton.on( 'shippingratechange', async ( event ) =>
+				shippingRateChangeHandler( event, elements )
+			);
 
 			eceButton.on( 'confirm', async ( event ) => {
 				return onConfirmHandler(
