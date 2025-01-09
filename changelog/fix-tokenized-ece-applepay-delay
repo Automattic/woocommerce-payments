@@ -1,5 +1,5 @@
 Significance: patch
 Type: fix
-Comment: fix: ensure the "add to cart" on tokenized ECE is completed before other calls are made.
+Comment: fix: ensure the "add to cart" ECE call is completed before other calls are made.
 
 
