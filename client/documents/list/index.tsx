@@ -66,13 +66,13 @@ const getDocumentDescription = ( document: Document ) => {
 		case 'vat_invoice':
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
-					__( 'VAT invoice for %s to %s', 'woocommerce-payments' ),
+					__( 'Tax invoice for %s to %s', 'woocommerce-payments' ),
 					formatDateTimeFromString( document.period_from ),
 					formatDateTimeFromString( document.period_to )
 				);
 			}
 			return __(
-				'VAT invoice without proper period dates',
+				'Tax invoice without proper period dates',
 				'woocommerce-payments'
 			);
 

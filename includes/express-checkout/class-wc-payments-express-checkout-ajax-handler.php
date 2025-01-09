@@ -45,6 +45,15 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		add_action( 'wc_ajax_wcpay_ece_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_ece_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
 		add_action( 'wc_ajax_wcpay_ece_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
+		if ( function_exists( 'woocommerce_store_api_register_update_callback' ) ) {
+			woocommerce_store_api_register_update_callback(
+				[
+					'namespace' => 'woopayments/express-checkout/refresh-ui',
+					// do nothing, this callback is needed just to refresh the UI.
+					'callback'  => '__return_null',
+				]
+			);
+		}
 
 		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
 			add_action(
