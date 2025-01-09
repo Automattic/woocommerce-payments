@@ -747,7 +747,7 @@ class MultiCurrency {
 			WC()->initialize_session();
 		}
 
-		if ( $this->get_stored_currency_code() !== $code ) {
+		if ( $this->get_stored_currency_code() !== $code && $persist_change ) {
 			$this->frontend_currencies->clear_url_price_params();
 		}
 
