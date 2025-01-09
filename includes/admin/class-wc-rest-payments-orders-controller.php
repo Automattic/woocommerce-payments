@@ -309,14 +309,19 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$result = $this->gateway->capture_charge( $order, true, $intent_metadata );
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
+				$error_code    = $result['error_code'] ?? null;
+				$extra_details = $result['extra_details'] ?? [];
 				return new WP_Error(
-					'wcpay_capture_error',
+					'amount_too_small' === $error_code ? 'wcpay_capture_error_amount_too_small' : 'wcpay_capture_error',
 					sprintf(
 					// translators: %s: the error message.
 						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
 						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
 					),
-					[ 'status' => $result['http_code'] ?? 502 ]
+					[
+						'status'        => $result['http_code'] ?? 502,
+						'extra_details' => $extra_details,
+					]
 				);
 			}
 
