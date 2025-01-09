@@ -91,7 +91,7 @@ class FrontendPrices {
 	 * @return array The modified query variables.
 	 */
 	public function maybe_modify_price_ranges_query_var( $query, $block, $page ) {
-		if ( empty( $query['isProductCollection'] ) || ! $query['isProductCollection'] ) {
+		if ( 'product' !== $query['post_type'] ) {
 			return $query;
 		}
 
