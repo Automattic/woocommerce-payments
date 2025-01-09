@@ -1,4 +1,4 @@
-Significance: minor
+Significance: patch
 Type: dev
 
 Add the Playwright Pay for Order spec and remove the equivalent Puppeteer spec.
