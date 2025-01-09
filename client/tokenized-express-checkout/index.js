@@ -284,7 +284,6 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'shippingratechange', async ( event ) => {
-				await addToCartPromise;
 				return shippingRateChangeHandler( event, elements );
 			} );
 
