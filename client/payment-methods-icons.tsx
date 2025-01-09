@@ -151,5 +151,6 @@ export const VisaIcon = iconComponent(
 );
 export const WooIcon = iconComponent(
 	WooAsset,
-	__( 'WooPay', 'woocommerce-payments' )
+	__( 'WooPay', 'woocommerce-payments' ),
+	false
 );
