@@ -1,8 +1,11 @@
 /**
  * Internal dependencies
  */
-import { WCPayExpressCheckoutParams } from 'wcpay/express-checkout/utils';
-import { getErrorMessageFromNotice, getExpressCheckoutData } from '..';
+import {
+	WCPayExpressCheckoutParams,
+	getErrorMessageFromNotice,
+	getExpressCheckoutData,
+} from '..';
 
 describe( 'Express checkout utils', () => {
 	test( 'getExpressCheckoutData returns null for missing option', () => {
