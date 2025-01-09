@@ -621,8 +621,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
 		// 0.708099 * 10 = 7.08099.
-		// ceil( 7.08099, 2 ) = 7.09.
-		$this->assertSame( 7.09, $this->multi_currency->get_price( '10.0', 'coupon' ) );
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'coupon' ) );
 	}
 
 	public function test_get_price_returns_converted_exchange_rate_without_adjustments() {
@@ -630,8 +630,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
 		// 0.708099 * 10 = 7.08099.
-		// ceil( 7.08099, 2 ) = 7.09.
-		$this->assertSame( 7.09, $this->multi_currency->get_price( '10.0', 'exchange_rate' ) );
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'exchange_rate' ) );
 	}
 
 	public function test_get_price_returns_converted_tax_price() {
@@ -639,8 +639,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
 		// 0.708099 * 10 = 7.08099.
-		// ceil( 7.08099, 2 ) = 7.09.
-		$this->assertSame( 7.09, $this->multi_currency->get_price( '10.0', 'tax' ) );
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'tax' ) );
 	}
 
 	/**
@@ -1017,7 +1017,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function get_price_provider() {
 		return [
-			[ '5.2499', '0.00', 5.25 ], // Even though the precision is 0.00 we make sure the amount is ceiled to the currency's number of digits.
+			[ '5.2401', '0.00', 5.24 ], // Even though the precision is 0.00 we make sure the amount is rounded to the currency's number of digits.
+			[ '5.2499', '0.00', 5.25 ], // Even though the precision is 0.00 we make sure the amount is rounded to the currency's number of digits.
 			[ '5.2499', '0.25', 5.25 ],
 			[ '5.2500', '0.25', 5.25 ],
 			[ '5.2501', '0.25', 5.50 ],
