@@ -124,8 +124,25 @@ declare global {
 		isInstantDepositNoticeDismissed: boolean;
 		isDateFormatNoticeDismissed: boolean;
 		userLocale: {
+			/**
+			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
+			 *
+			 * @example 'es' // Spanish
+			 *
+			 * @see WC_Payments_Utils::convert_locale_to_language_code
+			 */
 			code: string;
+			/**
+			 * The English name of the locale.
+			 *
+			 * @example 'Spanish'
+			 */
 			english_name: string;
+			/**
+			 * The native name of the locale.
+			 *
+			 * @example 'Español'
+			 */
 			native_name: string;
 		};
 		trackingInfo?: {
