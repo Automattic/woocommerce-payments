@@ -292,6 +292,10 @@ async function fillBillingDetails( customerBillingDetails ) {
 		'#billing_last_name',
 		customerBillingDetails.lastname
 	);
+	await expect( page ).toFill(
+		'#billing_company',
+		customerBillingDetails.company
+	);
 	await expect( page ).toSelect(
 		'#billing_country',
 		customerBillingDetails.country
