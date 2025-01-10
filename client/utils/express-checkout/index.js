@@ -36,6 +36,17 @@ export const getDefaultBorderRadius = () => {
 };
 
 /**
+ * Get WC AJAX endpoint URL for express checkout endpoints.
+ *
+ * @param {string} endpoint Endpoint.
+ * @return {string} URL with interpolated endpoint.
+ */
+export const getExpressCheckoutAjaxURL = ( endpoint ) =>
+	getExpressCheckoutConfig( 'wc_ajax_url' )
+		.toString()
+		.replace( '%%endpoint%%', 'wcpay_' + endpoint );
+
+/**
  * Construct WC AJAX endpoint URL.
  *
  * @param {string} ajaxURL AJAX URL.

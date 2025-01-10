@@ -3,7 +3,7 @@
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
-import { WCPayExpressCheckoutParams } from './tokenized-express-checkout/utils';
+import { WCPayExpressCheckoutParams } from './express-checkout/utils';
 
 declare global {
 	const wcpaySettings: {
