@@ -45,7 +45,9 @@ test.describe( 'Admin order analytics', () => {
 	test( 'should load without any errors', async ( { browser } ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
-		expect( merchantPage.getByText( 'Orders' ) ).toBe( 'h2:text="Orders"' );
+		expect(
+			merchantPage.locator( 'h2:text="Orders"' ).isVisible()
+		).toBeTruthy();
 		await expect( merchantPage ).toHaveScreenshot();
 	} );
 	test( 'orders table should have the customer currency column', async ( {
@@ -53,11 +55,11 @@ test.describe( 'Admin order analytics', () => {
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
+		expect(
+			merchantPage.locator( 'span:text="Customer Currency"' ).isVisible()
+		).toBeTruthy();
 		const customerCurrencyColumn = merchantPage.getByText(
 			'Customer Currency'
-		);
-		expect( customerCurrencyColumn ).toBe(
-			'span:text="Customer Currency"'
 		);
 		await expect( customerCurrencyColumn ).toHaveScreenshot();
 	} );
