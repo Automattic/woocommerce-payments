@@ -47,7 +47,6 @@ export const TransactionsPage: React.FC = () => {
 	const tabsComponentMap = {
 		'transactions-page': (
 			<>
-				<TestModeNotice currentPage="transactions" />
 				<TransactionsList />
 			</>
 		),
