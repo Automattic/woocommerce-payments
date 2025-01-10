@@ -8,20 +8,17 @@ import { test, expect, Page } from '@playwright/test';
  */
 import { useMerchant } from '../../utils/helpers';
 
-// Skipping the test for now as it is flaky on GH action runs. See #8875.
-test.skip( 'payment gateways disable confirmation', () => {
+test.describe( 'payment gateways disable confirmation', () => {
 	useMerchant();
 
 	const getToggle = ( page: Page ) =>
 		page.getByRole( 'link', {
-			name: '"WooPayments" payment method is currently',
+			name:
+				'"WooPayments (Credit card / debit card)" payment method is currently',
 		} );
 
 	const getModalHeading = ( page: Page ) =>
 		page.getByRole( 'heading', { name: 'Disable WooPayments' } );
-
-	const getSaveButton = ( page: Page ) =>
-		page.getByRole( 'button', { name: 'Save changes' } );
 
 	const getCancelButton = ( page: Page ) =>
 		page.getByRole( 'button', { name: 'Cancel' } );
@@ -59,7 +56,6 @@ test.skip( 'payment gateways disable confirmation', () => {
 		if ( ( await getToggle( page ).innerText() ) === 'No' ) {
 			await getToggle( page ).click();
 			await waitForToggleLoading( page );
-			await getSaveButton( page ).click();
 		}
 
 		await expect( getToggle( page ) ).toHaveText( 'Yes' );
@@ -73,7 +69,6 @@ test.skip( 'payment gateways disable confirmation', () => {
 
 		// After clicking "Cancel", the modal should close and WCPay should still be enabled, even after refresh
 		await expect( getModalHeading( page ) ).not.toBeVisible();
-		await getSaveButton( page ).click();
 		await expect( getToggle( page ) ).toHaveText( 'Yes' );
 	} );
 
@@ -88,12 +83,10 @@ test.skip( 'payment gateways disable confirmation', () => {
 
 		// and refreshing the page should show WCPay become disabled
 		await waitForToggleLoading( page );
-		await getSaveButton( page ).click();
 
 		// now we can re-enable it with no issues
 		await getToggle( page ).click();
 		await waitForToggleLoading( page );
-		await getSaveButton( page ).click();
 		await expect( getToggle( page ) ).toHaveText( 'Yes' );
 	} );
 
