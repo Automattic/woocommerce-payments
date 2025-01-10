@@ -252,18 +252,11 @@ export const disablePaymentMethods = async (
 };
 
 export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
-	const actionSchedulerHook = 'wc-admin_import_orders';
-
 	await navigation.goToActionScheduler( page, 'pending', orderId );
-	const importOrderRun = page.locator(
-		`//tr[contains(., "0 => ${ orderId }") and contains(., "${ actionSchedulerHook }")]//span[contains(@class, "run")]/a`
+	page.$eval(
+		'td:has-text("wc-admin_import_orders") a:has-text("Run")',
+		( el: HTMLLinkElement ) => el.click()
 	);
-
-	if ( 0 < ( await importOrderRun.count() ) ) {
-		// Run the Action Scheduler task to update the order stats
-		await importOrderRun.first().click();
-		await page.locator( 'div#message.updated > p > strong' ).innerText();
-	}
 };
 
 export const isWooPayEnabled = async ( page: Page ) => {

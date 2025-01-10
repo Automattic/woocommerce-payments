@@ -8,12 +8,15 @@ import { test, expect } from '@playwright/test';
  */
 import * as shopper from '../../utils/shopper';
 import { config } from '../../config/default';
-import { getMerchant, getShopper } from '../../utils/helpers';
+import { getMerchant, getShopper, useMerchant } from '../../utils/helpers';
 import { ensureOrderIsProcessed } from '../../utils/merchant';
 import { goToOrderAnalytics } from '../../utils/merchant-navigation';
 
 test.describe( 'Admin order analytics', () => {
 	let orderId: string;
+
+	// Use the merchant user for this test suite.
+	useMerchant();
 
 	test.beforeAll( async ( { browser } ) => {
 		const { shopperPage } = await getShopper( browser );
@@ -42,7 +45,7 @@ test.describe( 'Admin order analytics', () => {
 	test( 'should load without any errors', async ( { browser } ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
-		expect( merchantPage ).toHaveScreenshot();
+		await expect( merchantPage ).toHaveScreenshot();
 	} );
 	test( 'orders table should have the customer currency column', async ( {
 		browser,
@@ -52,6 +55,6 @@ test.describe( 'Admin order analytics', () => {
 		const customerCurrencyColumn = merchantPage.getByText(
 			'Customer Currency'
 		);
-		expect( customerCurrencyColumn ).toHaveScreenshot();
+		await expect( customerCurrencyColumn ).toHaveScreenshot();
 	} );
 } );

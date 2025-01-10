@@ -42,7 +42,7 @@ export const goToActionScheduler = async (
 
 export const goToOrderAnalytics = async ( page: Page ) => {
 	await page.goto(
-		'/wp-admin/admin.php?page=wc-admin&path=/analytics/orders',
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fanalytics%2Forders',
 		{ waitUntil: 'load' }
 	);
 	await dataHasLoaded( page );
