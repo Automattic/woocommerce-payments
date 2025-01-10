@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Converted E2E spec merchant-progressive-onboarding-spec from puppeteer to playwright.
