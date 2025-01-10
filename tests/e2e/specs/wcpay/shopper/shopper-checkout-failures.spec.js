@@ -12,8 +12,7 @@ import { shopperWCP } from '../../../utils';
 
 const { uiUnblocked } = require( '@woocommerce/e2e-utils' );
 const notice = 'div.wc-block-components-notice-banner';
-const oldNotice =
-	'div.woocommerce-NoticeGroup > div > ul.woocommerce-error > li';
+const oldNotice = 'div.woocommerce-NoticeGroup ul.woocommerce-error > li';
 
 const waitForBanner = async ( errorText ) => {
 	return shopperWCP.waitForErrorBanner( errorText, notice, oldNotice );
