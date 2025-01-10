@@ -2188,11 +2188,11 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'connect_timeout' => self::API_TIMEOUT_SECONDS,
 			];
 
-			$request_id = uniqid();
+			$log_request_id = uniqid();
 
 			Logger::log(
 				Logger::format_object(
-					'REQUEST_' . $request_id,
+					'REQUEST_' . $log_request_id,
 					array_merge(
 						$request_args,
 						[ 'url' => $redacted_url ],
@@ -2252,7 +2252,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		Logger::log(
 			Logger::format_object(
-				'RESPONSE_' . $request_id,
+				'RESPONSE_' . $log_request_id,
 				WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT )
 			)
 		);

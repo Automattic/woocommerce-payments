@@ -38,7 +38,7 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	private $mock_wc_logger;
 
 	/**
-	 * Holds the underlying WC_Logger
+	 * Holds the Mode class
 	 *
 	 * @var Mode|MockObject
 	 */
