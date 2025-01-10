@@ -809,7 +809,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			],
 			'post'   => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
-				3,
+				2,
 			],
 		];
 	}

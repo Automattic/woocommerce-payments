@@ -7,8 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Logger_Context;
-
 /**
  * REST controller for the timeline, which includes all events related to an intention.
  */
