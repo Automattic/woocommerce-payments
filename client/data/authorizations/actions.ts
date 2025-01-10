@@ -46,7 +46,7 @@ const getErrorMessage = ( apiError: WCPayError ): string => {
 		return sprintf(
 			/* translators: %1$s: minimum amount, %2$s: currency code */
 			__(
-				'The minimum amount to capture is %1$s %2$s.',
+				'The minimum amount that can be processed is %1$s %2$s.',
 				'woocommerce-payments'
 			),
 			amount,
