@@ -624,6 +624,8 @@ export const TransactionsList = (
 			risk_level_is_not: riskLevelIsNot,
 			customer_currency_is: customerCurrencyIs,
 			customer_currency_is_not: customerCurrencyIsNot,
+			source_is: sourceIs,
+			source_is_not: sourceIsNot,
 		} = params;
 		const depositId = props.depositId;
 
@@ -631,6 +633,8 @@ export const TransactionsList = (
 			!! dateAfter ||
 			!! dateBefore ||
 			!! dateBetween ||
+			!! sourceIs ||
+			!! sourceIsNot ||
 			!! search ||
 			!! typeIs ||
 			!! typeIsNot ||
@@ -673,6 +677,8 @@ export const TransactionsList = (
 						sourceDeviceIsNot,
 						customerCurrencyIs,
 						customerCurrencyIsNot,
+						sourceIs,
+						sourceIsNot,
 						channelIs,
 						channelIsNot,
 						customerCountryIs,
@@ -825,6 +831,7 @@ export const TransactionsList = (
 		transactionsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 	const customerCurrencies = transactionsSummary.customer_currencies || [];
+	const transactionSources = transactionsSummary.sources || [];
 
 	return (
 		<Page>
@@ -832,6 +839,7 @@ export const TransactionsList = (
 				<TransactionsFilters
 					storeCurrencies={ storeCurrencies }
 					customerCurrencies={ customerCurrencies }
+					transactionSources={ transactionSources }
 				/>
 			) }
 			<TableCard
