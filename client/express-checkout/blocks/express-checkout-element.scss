@@ -1,0 +1,23 @@
+// Cart Block
+.wc-block-components-express-payment--cart {
+	.wc-block-components-express-payment__event-buttons > li {
+		padding-bottom: 12px !important;
+
+		&:last-child {
+			padding-bottom: 0 !important;
+		}
+	}
+}
+
+// OR separator
+.wc-block-components-express-payment-continue-rule--cart {
+	margin: 24px 0 !important;
+	height: 20px;
+}
+
+.wc-block-components-express-payment
+	.wc-block-components-express-payment__event-buttons
+	> li {
+	margin-left: 1px !important;
+	width: 99% !important;
+}

@@ -187,6 +187,7 @@ jQuery( ( $ ) => {
 		 * @param {Object} options ECE options.
 		 */
 		startExpressCheckoutElement: async ( options ) => {
+			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
 			const elements = stripe.elements( {
 				mode: 'payment',
@@ -247,7 +248,14 @@ jQuery( ( $ ) => {
 					}
 
 					// Add products to the cart if everything is right.
-					getCartApiHandler().addProductToCart();
+					// we are storing the promise to ensure that the "add to cart" call is completed,
+					// before the `shippingaddresschange` is triggered when the dialog is opened.
+					// Otherwise, it might happen that the `shippingaddresschange` is triggered before the "add to cart" call is done,
+					// which can cause errors.
+					addToCartPromise = getCartApiHandler().addProductToCart();
+					addToCartPromise.finally( () => {
+						addToCartPromise = Promise.resolve();
+					} );
 				}
 
 				const clickOptions = {
@@ -270,9 +278,10 @@ jQuery( ( $ ) => {
 				event.resolve( clickOptions );
 			} );
 
-			eceButton.on( 'shippingaddresschange', async ( event ) =>
-				shippingAddressChangeHandler( event, elements )
-			);
+			eceButton.on( 'shippingaddresschange', async ( event ) => {
+				await addToCartPromise;
+				return shippingAddressChangeHandler( event, elements );
+			} );
 
 			eceButton.on( 'shippingratechange', async ( event ) =>
 				shippingRateChangeHandler( event, elements )

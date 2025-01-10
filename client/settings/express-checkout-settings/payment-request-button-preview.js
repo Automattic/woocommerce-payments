@@ -20,7 +20,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 } from '../../data';
-import { ExpressCheckoutPreviewComponent } from 'wcpay/tokenized-express-checkout/blocks/components/express-checkout-preview';
+import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/blocks/components/express-checkout-preview';
 
 const buttonSizeToPxMap = {
 	small: 40,
