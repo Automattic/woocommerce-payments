@@ -261,7 +261,7 @@ export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 
 	if ( 0 < ( await importOrderRun.count() ) ) {
 		// Run the Action Scheduler task to update the order stats
-		await importOrderRun[ 0 ].evaluate( ( link ) => link.click() );
+		await importOrderRun.first().click();
 		await page.locator( 'div#message.updated > p > strong' ).innerText();
 	}
 };

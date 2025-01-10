@@ -39,10 +39,6 @@ test.describe( 'Admin order analytics', () => {
 		await ensureOrderIsProcessed( merchantPage, orderId );
 	} );
 
-	test.afterAll( async ( { browser } ) => {
-		browser.close();
-	} );
-
 	test( 'should load without any errors', async ( { browser } ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
