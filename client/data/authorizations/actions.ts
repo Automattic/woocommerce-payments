@@ -35,11 +35,19 @@ interface WCPayError {
 const getErrorMessage = ( apiError: WCPayError ): string => {
 	// Map specific error codes to user-friendly messages
 	const getAmountTooSmallError = ( error: WCPayError ): string => {
-		const currency =
-			error.data?.extra_details?.minimum_amount_currency ?? 'USD';
+		if (
+			! error.data?.extra_details?.minimum_amount ||
+			! error.data?.extra_details?.minimum_amount_currency
+		) {
+			return __(
+				'The payment amount is too small to be processed.',
+				'woocommerce-payments'
+			);
+		}
 
+		const currency = error.data.extra_details.minimum_amount_currency;
 		const amount = formatCurrency(
-			error.data?.extra_details?.minimum_amount ?? 0,
+			error.data.extra_details.minimum_amount,
 			currency
 		);
 
