@@ -7,12 +7,8 @@ import * as React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
-import { dateI18n } from '@wordpress/date';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { getUserTimeZone } from 'wcpay/utils/test-utils';
-import moment from 'moment';
-import os from 'os';
 
 /**
  * Internal dependencies
@@ -24,15 +20,6 @@ import {
 	useReportingExportLanguage,
 } from 'data/index';
 import type { Transaction } from 'data/transactions/hooks';
-
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
-
-	return {
-		...actualModule,
-		downloadCSVFile: jest.fn(),
-	};
-} );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -66,10 +53,6 @@ jest.mock( '@wordpress/date', () => ( {
 			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
 	} ),
 } ) );
-
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
 
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
@@ -207,18 +190,6 @@ const getMockTransactions: () => Transaction[] = () => [
 		loan_id: undefined,
 	},
 ];
-
-function getUnformattedAmount( formattedAmount: string ) {
-	const amount = formattedAmount.replace( /[^0-9,.' ]/g, '' ).trim();
-	return amount.replace( ',', '.' ); // Euro fix
-}
-
-function formatDate( date: string ) {
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( date ).local().toISOString()
-	);
-}
 
 describe( 'Transactions list', () => {
 	beforeEach( () => {
@@ -615,115 +586,33 @@ describe( 'Transactions list', () => {
 
 			getByRole( 'button', { name: 'Download' } ).click();
 
+			// Check if the API request is made with the correct download type = 'async'.
 			await waitFor( () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
 					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock&user_timezone=${ encodeURIComponent(
 						getUserTimeZone()
-					) }&locale=en`,
+					) }&locale=en&download_type=async`,
 				} );
 			} );
 		} );
 
-		test( 'should render expected columns in CSV when the download button is clicked', () => {
+		test( 'should fetch export when number of transactions is less than 100', async () => {
 			const { getByRole } = render( <TransactionsList /> );
 
 			getByRole( 'button', { name: 'Download' } ).click();
 
-			const expected = [
-				'"Transaction ID"',
-				'"Date / Time (UTC)"',
-				'Type',
-				'Channel',
-				'"Paid Currency"',
-				'"Amount Paid"',
-				'"Payout Currency"',
-				'Amount',
-				'Fees',
-				'Net',
-				'"Order #"',
-				'"Payment Method"',
-				'Customer',
-				'Email',
-				'Country',
-				'"Risk level"',
-				'"Payout ID"',
-				'"Payout date"',
-				'"Payout status"',
-			];
-
-			// checking if columns in CSV are rendered correctly
-			expect(
-				mockDownloadCSVFile.mock.calls[ 0 ][ 1 ]
-					.split( '\n' )[ 0 ]
-					.split( ',' )
-			).toEqual( expected );
-		} );
-
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <TransactionsList /> );
-
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows: HTMLElement[] = getAllByRole( 'row' );
-
-			expect( csvRows.length ).toEqual( displayRows.length );
-
-			const csvFirstTransaction = csvRows[ 1 ].split( ',' );
-			const displayFirstTransaction: string[] = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td: HTMLElement ) => td.textContent || '' );
-
-			// Date/Time column is a th
-			// Extract is separately and prepend to csvFirstTransaction
-			const displayFirstRowHead: string[] = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'th' )
-			).map( ( th: HTMLElement ) => th.textContent || '' );
-			displayFirstTransaction.unshift( displayFirstRowHead[ 0 ] );
-
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 1 because the first field in CSV is transaction id,
-			//    which is missing in display.
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-			expect( displayFirstTransaction[ 0 ] ).toBe(
-				formatDate( csvFirstTransaction[ 1 ].replace( /['"]+/g, '' ) ) // strip extra quotes
-			); // date
-			expect( displayFirstTransaction[ 1 ] ).toBe(
-				csvFirstTransaction[ 2 ]
-			); // type
-			expect( displayFirstTransaction[ 2 ] ).toBe(
-				csvFirstTransaction[ 3 ]
-			); // channel
-			expect(
-				getUnformattedAmount( displayFirstTransaction[ 3 ] ).indexOf(
-					csvFirstTransaction[ 7 ]
-				)
-			).not.toBe( -1 ); // amount
-			expect(
-				-Number( getUnformattedAmount( displayFirstTransaction[ 4 ] ) )
-			).toEqual(
-				Number(
-					csvFirstTransaction[ 8 ].replace( /['"]+/g, '' ) // strip extra quotes
-				)
-			); // fees
-			expect(
-				getUnformattedAmount( displayFirstTransaction[ 5 ] ).indexOf(
-					csvFirstTransaction[ 9 ]
-				)
-			).not.toBe( -1 ); // net
-			expect( displayFirstTransaction[ 6 ] ).toBe(
-				csvFirstTransaction[ 10 ]
-			); // order number
-			expect( displayFirstTransaction[ 8 ] ).toBe(
-				csvFirstTransaction[ 12 ].replace( /['"]+/g, '' ) // strip extra quotes
-			); // customer
+			// Check if the API request is made with the correct download type = 'sync'.
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&user_timezone=${ encodeURIComponent(
+						getUserTimeZone()
+					) }&locale=en&download_type=sync`,
+				} );
+			} );
 		} );
 	} );
 } );
