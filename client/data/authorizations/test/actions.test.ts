@@ -286,7 +286,31 @@ describe( 'Authorizations actions', () => {
 					controls.dispatch(
 						'core/notices',
 						'createErrorNotice',
-						'There has been an error capturing the payment for order #123. The minimum amount to capture is $0.50 USD.'
+						'There has been an error capturing the payment for order #123. The minimum amount that can be processed is $0.50 USD.'
+					)
+				);
+			} );
+
+			it( 'should create error notice with amount too small when amount details are missing', () => {
+				const generator = submitCaptureAuthorization( 'pi_123', 123 );
+
+				// Skip initial dispatch calls
+				generator.next();
+				generator.next();
+
+				// Mock API error for amount too small
+				const apiError = {
+					code: 'wcpay_capture_error_amount_too_small',
+					data: {
+						status: 400,
+					},
+				};
+
+				expect( generator.throw( apiError ).value ).toEqual(
+					controls.dispatch(
+						'core/notices',
+						'createErrorNotice',
+						'There has been an error capturing the payment for order #123. The payment amount is too small to be processed.'
 					)
 				);
 			} );
