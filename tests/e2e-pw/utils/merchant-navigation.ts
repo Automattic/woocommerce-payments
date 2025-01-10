@@ -25,8 +25,8 @@ export const goToWooPaymentsSettings = async ( page: Page ) => {
 
 export const goToActionScheduler = async (
 	page: Page,
-	status: string,
-	search: string
+	status?: string,
+	search?: string
 ) => {
 	let pageUrl = '/wp-admin/tools.php?page=action-scheduler';
 	if ( status ) {
