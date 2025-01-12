@@ -36,6 +36,7 @@ function buildForm( fields ) {
 		input.value = field.value;
 		form.appendChild( input );
 	} );
+	document.body.appendChild( form );
 	return form;
 }
 
@@ -57,6 +58,11 @@ describe( 'UPE checkout utils', () => {
 		} );
 
 		beforeEach( () => {
+			const existingCheckoutForm = document.querySelector( 'form' );
+			if ( existingCheckoutForm ) {
+				existingCheckoutForm.remove();
+			}
+
 			getUPEConfig.mockImplementation( ( argument ) => {
 				if ( argument === 'enabledBillingFields' ) {
 					return {
@@ -99,7 +105,7 @@ describe( 'UPE checkout utils', () => {
 		} );
 
 		it( 'should return false when the billing information is not missing', () => {
-			const form = buildForm( [
+			buildForm( [
 				{ id: 'billing_first_name', value: 'Test' },
 				{ id: 'billing_last_name', value: 'User' },
 				{ id: 'billing_email', value: 'test@example.com' },
@@ -108,11 +114,11 @@ describe( 'UPE checkout utils', () => {
 				{ id: 'billing_city', value: 'Anytown' },
 				{ id: 'billing_postcode', value: '12345' },
 			] );
-			expect( isBillingInformationMissing( form ) ).toBe( false );
+			expect( isBillingInformationMissing() ).toBe( false );
 		} );
 
 		it( 'should return true when the billing information is missing', () => {
-			const form = buildForm( [
+			buildForm( [
 				{ id: 'billing_first_name', value: 'Test' },
 				{ id: 'billing_last_name', value: 'User' },
 				{ id: 'billing_email', value: 'test@example.com' },
@@ -121,11 +127,11 @@ describe( 'UPE checkout utils', () => {
 				{ id: 'billing_city', value: 'Anytown' },
 				{ id: 'billing_postcode', value: '' },
 			] );
-			expect( isBillingInformationMissing( form ) ).toBe( true );
+			expect( isBillingInformationMissing() ).toBe( true );
 		} );
 
 		it( 'should use the defaults when there is no specific locale data for a country', () => {
-			const form = buildForm( [
+			buildForm( [
 				{ id: 'billing_first_name', value: 'Test' },
 				{ id: 'billing_last_name', value: 'User' },
 				{ id: 'billing_email', value: 'test@example.com' },
@@ -134,11 +140,11 @@ describe( 'UPE checkout utils', () => {
 				{ id: 'billing_city', value: 'Anytown' },
 				{ id: 'billing_postcode', value: '' },
 			] );
-			expect( isBillingInformationMissing( form ) ).toBe( true );
+			expect( isBillingInformationMissing() ).toBe( true );
 		} );
 
 		it( 'should return false when the locale data for a country has no required fields', () => {
-			const form = buildForm( [
+			buildForm( [
 				{ id: 'billing_first_name', value: 'Test' },
 				{ id: 'billing_last_name', value: 'User' },
 				{ id: 'billing_email', value: 'test@example.com' },
@@ -147,7 +153,7 @@ describe( 'UPE checkout utils', () => {
 				{ id: 'billing_city', value: 'Anytown' },
 				{ id: 'billing_postcode', value: '' },
 			] );
-			expect( isBillingInformationMissing( form ) ).toBe( true );
+			expect( isBillingInformationMissing() ).toBe( true );
 		} );
 	} );
 
