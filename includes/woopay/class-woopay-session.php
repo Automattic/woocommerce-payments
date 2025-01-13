@@ -520,7 +520,7 @@ class WooPay_Session {
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => $store_logo,
-				'custom_message'                 => self::get_formatted_custom_message(),
+				'custom_message'                 => self::get_formatted_custom_terms(),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
 				'blog_checkout_url'              => ! $is_pay_for_order ? wc_get_checkout_url() : $order->get_checkout_payment_url(),
@@ -871,7 +871,7 @@ class WooPay_Session {
 	 *
 	 * @return string The custom message with the placeholders replaced.
 	 */
-	private static function get_formatted_custom_message() {
+	private static function get_formatted_custom_terms() {
 		$custom_message = WC_Payments::get_gateway()->get_option( 'platform_checkout_custom_message' );
 
 		$terms_value          = wc_terms_and_conditions_page_id() ?
@@ -898,10 +898,15 @@ class WooPay_Session {
 	 */
 	private static function get_option_fields_status() {
 		// Shortcode checkout options.
-		$company        = get_option( 'woocommerce_checkout_company_field', 'optional' );
-		$address_2      = get_option( 'woocommerce_checkout_address_2_field', 'optional' );
-		$phone          = get_option( 'woocommerce_checkout_phone_field', 'required' );
-		$terms_checkbox = ! empty( get_option( 'woocommerce_terms_page_id', null ) );
+		$company                              = get_option( 'woocommerce_checkout_company_field', 'optional' );
+		$address_2                            = get_option( 'woocommerce_checkout_address_2_field', 'optional' );
+		$phone                                = get_option( 'woocommerce_checkout_phone_field', 'required' );
+		$has_terms_and_condition_page         = ! empty( get_option( 'woocommerce_terms_page_id', null ) );
+		$terms_and_conditions                 = wp_kses_post( wc_replace_policy_page_link_placeholders( wc_get_terms_and_conditions_checkbox_text() ) );
+		$has_privacy_policy_page              = ! empty( get_option( 'wp_page_for_privacy_policy', null ) );
+		$custom_below_place_order_button_text = self::get_formatted_custom_terms();
+		$below_place_order_button_text        = $custom_below_place_order_button_text;
+		$show_terms_checkbox                  = false;
 
 		// Blocks checkout options. To get the blocks checkout options, we need
 		// to parse the checkout page content because the options are stored
@@ -909,12 +914,29 @@ class WooPay_Session {
 		$checkout_page_id = get_option( 'woocommerce_checkout_page_id' );
 		$checkout_page    = get_post( $checkout_page_id );
 
+		/*
+		 * Will show the terms checkbox if the terms page is set.
+		 * Will show the checkbox even when the text is loaded from the custom field or the policy page field.
+		 */
+		if ( $has_terms_and_condition_page && $terms_and_conditions ) {
+			$show_terms_checkbox = true;
+			if ( ! $below_place_order_button_text ) {
+				$below_place_order_button_text = $terms_and_conditions;
+			}
+		}
+
+		if ( ! $below_place_order_button_text && $has_privacy_policy_page ) {
+			$show_terms_checkbox           = false;
+			$below_place_order_button_text = wp_kses_post( wc_replace_policy_page_link_placeholders( wc_get_privacy_policy_text( 'checkout' ) ) );
+		}
+
 		if ( empty( $checkout_page ) ) {
 			return [
 				'company'        => $company,
 				'address_2'      => $address_2,
 				'phone'          => $phone,
-				'terms_checkbox' => $terms_checkbox,
+				'terms_checkbox' => $show_terms_checkbox,
+				'custom_terms'   => $below_place_order_button_text,
 			];
 		}
 
@@ -922,44 +944,48 @@ class WooPay_Session {
 		$checkout_block_index = array_search( 'woocommerce/checkout', array_column( $checkout_page_blocks, 'blockName' ), true );
 
 		// If we can find the index, it means the merchant checkout page is using blocks checkout.
-		if ( false !== $checkout_block_index && ! empty( $checkout_page_blocks[ $checkout_block_index ]['attrs'] ) ) {
-			$checkout_block_attrs = $checkout_page_blocks[ $checkout_block_index ]['attrs'];
+		if ( false !== $checkout_block_index ) {
+			$below_place_order_button_text = $custom_below_place_order_button_text;
+			$company                       = 'optional';
+			$address_2                     = 'optional';
+			$phone                         = 'optional';
 
-			$company   = 'optional';
-			$address_2 = 'optional';
-			$phone     = 'optional';
+			if ( ! empty( $checkout_page_blocks[ $checkout_block_index ]['attrs'] ) ) {
+				$checkout_block_attrs = $checkout_page_blocks[ $checkout_block_index ]['attrs'];
 
-			if ( ! empty( $checkout_block_attrs['requireCompanyField'] ) ) {
-				$company = 'required';
+				if ( ! empty( $checkout_block_attrs['requireCompanyField'] ) ) {
+					$company = 'required';
+				}
+
+				if ( ! empty( $checkout_block_attrs['requirePhoneField'] ) ) {
+					$phone = 'required';
+				}
+
+				// showCompanyField is undefined by default.
+				if ( empty( $checkout_block_attrs['showCompanyField'] ) ) {
+					$company = 'hidden';
+				}
+
+				if ( isset( $checkout_block_attrs['showApartmentField'] ) && false === $checkout_block_attrs['showApartmentField'] ) {
+					$address_2 = 'hidden';
+				}
+
+				if ( isset( $checkout_block_attrs['showPhoneField'] ) && false === $checkout_block_attrs['showPhoneField'] ) {
+					$phone = 'hidden';
+				}
 			}
 
-			if ( ! empty( $checkout_block_attrs['requirePhoneField'] ) ) {
-				$phone = 'required';
-			}
-
-			// showCompanyField is undefined by default.
-			if ( empty( $checkout_block_attrs['showCompanyField'] ) ) {
-				$company = 'hidden';
-			}
-
-			if ( isset( $checkout_block_attrs['showApartmentField'] ) && false === $checkout_block_attrs['showApartmentField'] ) {
-				$address_2 = 'hidden';
-			}
-
-			if ( isset( $checkout_block_attrs['showPhoneField'] ) && false === $checkout_block_attrs['showPhoneField'] ) {
-				$phone = 'hidden';
-			}
-
-			$fields_block   = self::get_inner_block( $checkout_page_blocks[ $checkout_block_index ], 'woocommerce/checkout-fields-block' );
-			$terms_block    = self::get_inner_block( $fields_block, 'woocommerce/checkout-terms-block' );
-			$terms_checkbox = isset( $terms_block['attrs']['checkbox'] ) && $terms_block['attrs']['checkbox'];
+			$fields_block        = self::get_inner_block( $checkout_page_blocks[ $checkout_block_index ], 'woocommerce/checkout-fields-block' );
+			$terms_block         = self::get_inner_block( $fields_block, 'woocommerce/checkout-terms-block' );
+			$show_terms_checkbox = isset( $terms_block['attrs']['checkbox'] ) && $terms_block['attrs']['checkbox'];
 		}
 
 		return [
 			'company'        => $company,
 			'address_2'      => $address_2,
 			'phone'          => $phone,
-			'terms_checkbox' => $terms_checkbox,
+			'terms_checkbox' => $show_terms_checkbox,
+			'custom_terms'   => $below_place_order_button_text,
 		];
 	}
 
