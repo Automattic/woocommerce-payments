@@ -57,17 +57,26 @@ class LoggerContext {
 	private $entry_number = 0;
 
 	/**
-	 * Initialises the logger context.
+	 * LoggerContext constructor.
+	 */
+	public function __construct() {
+		$this->request_id   = uniqid();
+		$this->entry_number = 0;
+	}
+
+	/**
+	 * Adds hooks to filter and enhance log entries.
 	 *
 	 * @return void
 	 */
-	public function init() {
-		$this->request_id   = uniqid();
-		$this->entry_number = 0;
+	public function init_hooks() {
+		if ( $this->hooks_set ) {
+			return;
+		}
 
-		$this->setup_hooks();
+		add_filter( 'woocommerce_format_log_entry', [ $this, 'filter_log_entry' ], 10, 2 );
+		$this->hooks_set = true;
 	}
-
 	/**
 	 * Sets a context value.
 	 *
@@ -132,20 +141,6 @@ class LoggerContext {
 				$entries
 			)
 		);
-	}
-
-	/**
-	 * Adds hooks to filter and enhance log entries.
-	 *
-	 * @return void
-	 */
-	private function setup_hooks() {
-		if ( $this->hooks_set ) {
-			return;
-		}
-
-		add_filter( 'woocommerce_format_log_entry', [ $this, 'filter_log_entry' ], 10, 2 );
-		$this->hooks_set = true;
 	}
 
 	/**
