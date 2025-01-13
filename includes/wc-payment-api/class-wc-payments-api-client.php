@@ -16,7 +16,6 @@ use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
-use WCPay\Logger_Context;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Constants\Currency_Code;
 use WCPay\Database_Cache;
@@ -2159,14 +2158,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				);
 			}
 		}
-
-		Logger_Context::set_value( 'WP_User', is_user_logged_in() ? wp_get_current_user()->user_login : 'Guest (non logged-in user)' );
-		Logger_Context::set_value( 'HTTP_REFERER', sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '--' ) ) );
-		Logger_Context::set_value( 'HTTP_USER_AGENT', sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '--' ) ) );
-		Logger_Context::set_value( 'REQUEST_URI', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) ) );
-		Logger_Context::set_value( 'DOING_AJAX', defined( 'DOING_AJAX' ) && DOING_AJAX );
-		Logger_Context::set_value( 'DOING_CRON', defined( 'DOING_CRON' ) && DOING_CRON );
-		Logger_Context::set_value( 'WP_CLI', defined( 'WP_CLI' ) && WP_CLI );
 
 		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
 		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;

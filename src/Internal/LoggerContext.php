@@ -36,6 +36,13 @@ class LoggerContext {
 	private $hooks_set = false;
 
 	/**
+	 * If context has been initialized.
+	 *
+	 * @var bool
+	 */
+	private $context_initialized = false;
+
+	/**
 	 * If context has been updated.
 	 *
 	 * @var bool
@@ -56,7 +63,6 @@ class LoggerContext {
 	 */
 	public function init() {
 		$this->request_id   = uniqid();
-		$this->context      = [];
 		$this->entry_number = 0;
 
 		$this->setup_hooks();
@@ -101,6 +107,9 @@ class LoggerContext {
 
 		$entries = [ $context['message'] ];
 
+		if ( ! $this->context_initialized ) {
+			$this->init_context();
+		}
 		if ( $this->context_updated ) {
 			$entries[]             = LoggerWrapper::format_object( 'CONTEXT', $this->context );
 			$this->context_updated = false;
@@ -137,5 +146,22 @@ class LoggerContext {
 
 		add_filter( 'woocommerce_format_log_entry', [ $this, 'filter_log_entry' ], 10, 2 );
 		$this->hooks_set = true;
+	}
+
+	/**
+	 * Initialises the context.
+	 *
+	 * @return void
+	 */
+	private function init_context() {
+		$this->set_value( 'WP_User', is_user_logged_in() ? wp_get_current_user()->user_login : 'Guest (non logged-in user)' );
+		$this->set_value( 'HTTP_REFERER', sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '--' ) ) );
+		$this->set_value( 'HTTP_USER_AGENT', sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '--' ) ) );
+		$this->set_value( 'REQUEST_URI', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) ) );
+		$this->set_value( 'DOING_AJAX', defined( 'DOING_AJAX' ) && DOING_AJAX );
+		$this->set_value( 'DOING_CRON', defined( 'DOING_CRON' ) && DOING_CRON );
+		$this->set_value( 'WP_CLI', defined( 'WP_CLI' ) && WP_CLI );
+
+		$this->context_initialized = true;
 	}
 }

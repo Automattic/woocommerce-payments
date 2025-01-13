@@ -59,7 +59,7 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->assertEquals( 5, count( explode( "\n", $filtered_entry ) ), 'Filtered entry contains 3 lines with the context and 2 with the original message' );
+		$this->assertEquals( 12, count( explode( "\n", $filtered_entry ) ), 'Filtered entry contains 3 lines with the context and 2 with the original message' );
 
 		foreach ( explode( "\n", $filtered_entry ) as $line ) {
 			$this->assertTrue( strpos( $line, '2021-01-01T00:00:00+00:00 INFO' ) === 0, 'Each line starts with the timestamp and log level' );
