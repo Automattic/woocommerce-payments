@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Removed unused get single transaction endpoint
