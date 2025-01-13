@@ -11,7 +11,7 @@ import { describeif, getAnonymousShopper } from '../../utils/helpers';
 import * as shopper from '../../utils/shopper';
 import * as navigation from '../../utils/shopper-navigation';
 import { products, shouldRunSubscriptionsTests } from '../../utils/constants';
-import { deleteCustomerByEmailAddress } from '../../utils/rest-api';
+import RestAPI from '../../utils/rest-api';
 
 describeif( shouldRunSubscriptionsTests )(
 	'Subscriptions > Renew a subscription in my account',
@@ -22,8 +22,11 @@ describeif( shouldRunSubscriptionsTests )(
 		let subscriptionId: string;
 		let page: Page;
 
-		test.beforeAll( async ( { browser } ) => {
-			await deleteCustomerByEmailAddress( customerBillingConfig.email );
+		test.beforeAll( async ( { browser }, { project } ) => {
+			const restApi = new RestAPI( project.use.baseURL );
+			await restApi.deleteCustomerByEmailAddress(
+				customerBillingConfig.email
+			);
 
 			const { shopperPage } = await getAnonymousShopper( browser );
 			page = shopperPage;
