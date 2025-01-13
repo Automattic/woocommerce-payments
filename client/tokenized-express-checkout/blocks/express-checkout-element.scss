@@ -21,3 +21,25 @@
 	margin-left: 1px !important;
 	width: 99% !important;
 }
+
+// Preview button
+@supports not ( -webkit-appearance: -apple-pay-button ) {
+	/* stylelint-disable-next-line selector-id-pattern */
+	#express-payment-method-woocommerce_payments_express_checkout_applePay:has( #express-checkout-button-preview-applePay ) {
+		display: none;
+	}
+}
+
+.express-checkout-button-preview {
+	width: 100%;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-origin: content-box;
+	background-size: contain;
+	padding: 11px 15%;
+	box-sizing: border-box;
+	box-shadow: none;
+	border: none;
+	outline: 1px solid #3c4043;
+	outline-offset: -1px;
+}

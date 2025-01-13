@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
 /**
  * Internal dependencies
@@ -11,6 +12,9 @@ import {
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
+import ExpressCheckoutButtonPreviewComponent from './express-checkout-button-preview';
+
+const FALLBACK_BUTTON_WAIT_TIME = 3000; // 3 seconds
 
 const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
 	const allDisabled = {
@@ -93,6 +97,8 @@ const ExpressCheckoutComponent = ( {
 		onClose,
 		setExpressPaymentError,
 	} );
+	const [ showFallbackButton, setShowFallbackButton ] = useState( false );
+	const onElementsReadyCalled = useRef( false );
 	const onClickHandler = ! isPreview ? onButtonClick : () => {};
 	const onShippingAddressChange = ( event ) =>
 		shippingAddressChangeHandler( event, elements );
@@ -101,6 +107,7 @@ const ExpressCheckoutComponent = ( {
 		shippingRateChangeHandler( event, elements );
 
 	const onElementsReady = ( event ) => {
+		onElementsReadyCalled.current = true;
 		const paymentMethodContainer = document.getElementById(
 			`express-payment-method-${ PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT }_${ expressPaymentMethod }`
 		);
@@ -118,29 +125,53 @@ const ExpressCheckoutComponent = ( {
 		onReady( event );
 	};
 
-	// The Cart & Checkout blocks provide unified styles across all buttons,
-	// which should override the extension specific settings.
-	const withBlockOverride = () => {
-		const override = {};
-		if ( typeof buttonAttributes !== 'undefined' ) {
-			override.buttonHeight = Number( buttonAttributes.height );
-		}
-		return {
-			...buttonOptions,
-			...override,
+	const checkoutElementOptions = useMemo( () => {
+		// The Cart & Checkout blocks provide unified styles across all buttons,
+		// which should override the extension specific settings.
+		const withBlockOverride = () => {
+			const override = {};
+			if ( typeof buttonAttributes !== 'undefined' ) {
+				override.buttonHeight = Number( buttonAttributes.height );
+			}
+			return {
+				...buttonOptions,
+				...override,
+			};
 		};
-	};
+		return {
+			...withBlockOverride(),
+			...adjustButtonHeights( withBlockOverride(), expressPaymentMethod ),
+			...getPaymentMethodsOverride( expressPaymentMethod ),
+		};
+	}, [ expressPaymentMethod, buttonAttributes, buttonOptions ] );
+
+	useEffect( () => {
+		if ( ! isPreview || onElementsReadyCalled.current ) {
+			return;
+		}
+
+		const handle = setTimeout( () => {
+			if ( ! onElementsReadyCalled.current ) {
+				setShowFallbackButton( true );
+			}
+		}, FALLBACK_BUTTON_WAIT_TIME );
+
+		return () => clearTimeout( handle );
+	}, [ isPreview, onElementsReadyCalled ] );
+
+	if ( showFallbackButton ) {
+		return (
+			<ExpressCheckoutButtonPreviewComponent
+				expressPaymentMethod={ expressPaymentMethod }
+				buttonAttributes={ buttonAttributes }
+				options={ checkoutElementOptions }
+			/>
+		);
+	}
 
 	return (
 		<ExpressCheckoutElement
-			options={ {
-				...withBlockOverride(),
-				...adjustButtonHeights(
-					withBlockOverride(),
-					expressPaymentMethod
-				),
-				...getPaymentMethodsOverride( expressPaymentMethod ),
-			} }
+			options={ checkoutElementOptions }
 			onClick={ onClickHandler }
 			onConfirm={ onConfirm }
 			onReady={ onElementsReady }
