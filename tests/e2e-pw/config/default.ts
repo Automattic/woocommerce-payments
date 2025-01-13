@@ -76,12 +76,12 @@ export const config = {
 		},
 		'subscriptions-customer': {
 			billing: {
-				first_name: 'I am',
-				last_name: 'Subscriptions Customer',
+				firstname: 'I am',
+				lastname: 'Subscriptions Customer',
 				company: 'Automattic',
 				country: 'United States (US)',
-				address_1: '60 29th Street #343',
-				address_2: 'billing',
+				addressfirstline: '60 29th Street #343',
+				addresssecondline: 'billing',
 				city: 'San Francisco',
 				state: 'CA',
 				postcode: '94110',
