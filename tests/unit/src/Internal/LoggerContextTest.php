@@ -78,19 +78,19 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 		return [
 			[
 				function ( $instance ) {
-						$instance->init();
+						$instance->init_hooks();
 						$instance->set_value( 'foo', 'bar' );
 				},
 			],
 			[
 				function ( $instance ) {
-					wcpay_get_container()->get( LoggerContext::class )->init();
+					wcpay_get_container()->get( LoggerContext::class )->init_hooks();
 					Logger_Context::set_value( 'foo', 'bar' );
 				},
 			],
 			[
 				function ( $instance ) {
-						$instance->init();
+						$instance->init_hooks();
 						$instance->set_value( 'foo', 'bar' );
 						// Set a value to be removed.
 						$instance->set_value( 'baz', 'qux' );
@@ -99,8 +99,8 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 			],
 			[
 				function ( $instance ) {
-						$instance->init();
-						$instance->init();
+						$instance->init_hooks();
+						$instance->init_hooks();
 						$instance->set_value( 'foo', 'bar' );
 				},
 			],
@@ -113,7 +113,7 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_logger_context_not_applied() {
-		$this->sut->init();
+		$this->sut->init_hooks();
 
 		$entry_time = '2021-01-01 00:00:00 UTC';
 		$timestamp  = strtotime( $entry_time );
