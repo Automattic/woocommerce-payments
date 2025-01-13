@@ -3384,7 +3384,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $e instanceof Amount_Too_Small_Exception ) {
 					$extra_details          = [
 						'minimum_amount'          => $e->get_minimum_amount(),
-						'minimum_amount_currency' => $e->get_currency(),
+						'minimum_amount_currency' => strtoupper( $e->get_currency() ),
 					];
 					$minimum_amount_details = sprintf(
 						/* translators: %1$s: minimum amount, %2$s: currency */
