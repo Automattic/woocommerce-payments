@@ -2043,10 +2043,11 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 		$response = $this->controller->capture_terminal_payment( $request );
 		$this->assertInstanceOf( 'WP_Error', $response );
-		$this->assertEquals( 'wcpay_capture_error_amount_too_small', $response->get_error_code() );
+		$this->assertSame( 'wcpay_capture_error', $response->get_error_code() );
 		$this->assertStringContainsString( 'Payment capture failed to complete', $response->get_error_message() );
-		$this->assertEquals( 400, $response->get_error_data()['status'] );
-		$this->assertEquals( 50, $response->get_error_data()['extra_details']['minimum_amount'] );
-		$this->assertEquals( 'USD', $response->get_error_data()['extra_details']['minimum_amount_currency'] );
+		$this->assertSame( 400, $response->get_error_data()['status'] );
+		$this->assertSame( 50, $response->get_error_data()['extra_details']['minimum_amount'] );
+		$this->assertSame( 'USD', $response->get_error_data()['extra_details']['minimum_amount_currency'] );
+		$this->assertSame( 'amount_too_small', $response->get_error_data()['error_type'] );
 	}
 }

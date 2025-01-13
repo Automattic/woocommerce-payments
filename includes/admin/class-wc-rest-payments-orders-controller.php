@@ -208,7 +208,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$error_code    = $result['error_code'] ?? null;
 				$extra_details = $result['extra_details'] ?? [];
 				return new WP_Error(
-					'amount_too_small' === $error_code ? 'wcpay_capture_error_amount_too_small' : 'wcpay_capture_error',
+					'wcpay_capture_error',
 					sprintf(
 					// translators: %s: the error message.
 						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
@@ -217,6 +217,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 					[
 						'status'        => $http_code,
 						'extra_details' => $extra_details,
+						'error_type'    => $error_code,
 					]
 				);
 			}
@@ -312,7 +313,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$error_code    = $result['error_code'] ?? null;
 				$extra_details = $result['extra_details'] ?? [];
 				return new WP_Error(
-					'amount_too_small' === $error_code ? 'wcpay_capture_error_amount_too_small' : 'wcpay_capture_error',
+					'wcpay_capture_error',
 					sprintf(
 					// translators: %s: the error message.
 						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
@@ -321,6 +322,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 					[
 						'status'        => $result['http_code'] ?? 502,
 						'extra_details' => $extra_details,
+						'error_type'    => $error_code,
 					]
 				);
 			}
