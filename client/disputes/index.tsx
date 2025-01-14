@@ -44,7 +44,6 @@ import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
-import DateFormatNotice from 'wcpay/components/date-format-notice';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
@@ -524,7 +523,6 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			<DateFormatNotice />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard

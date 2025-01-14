@@ -17,7 +17,7 @@ import PaymentDetailsPaymentMethod from '../payment-method';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
-import DateFormatNotice from 'wcpay/components/date-format-notice';
+
 interface PaymentDetailsProps {
 	id: string;
 	isLoading: boolean;
@@ -56,7 +56,6 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
-			<DateFormatNotice />
 			<TestModeNotice currentPage="payments" isDetailsView={ true } />
 			<ErrorBoundary>
 				<PaymentDetailsSummary
