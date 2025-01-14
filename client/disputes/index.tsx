@@ -23,11 +23,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 /**
  * Internal dependencies.
  */
-import {
-	useDisputes,
-	useDisputesSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useDisputes, useDisputesSummary } from 'data/index';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
@@ -45,16 +41,9 @@ import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
-import {
-	applyThousandSeparator,
-	isExportModalDismissed,
-	getExportLanguage,
-	isDefaultSiteLanguage,
-} from 'wcpay/utils';
+import { applyThousandSeparator } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
-import CSVExportModal from 'components/csv-export-modal';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 import DateFormatNotice from 'wcpay/components/date-format-notice';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
@@ -218,12 +207,6 @@ export const DisputesList = (): JSX.Element => {
 		getQuery()
 	);
 
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
-
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
-
 	const headers = getHeaders( getQuery().orderby );
 	const totalRows = disputesSummary.count || 0;
 
@@ -358,13 +341,13 @@ export const DisputesList = (): JSX.Element => {
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
+	const endpointExport = async () => {
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		const locale = getExportLanguage( language, exportLanguage );
+		const userLocale = wcpaySettings.userLocale.code;
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
@@ -405,7 +388,7 @@ export const DisputesList = (): JSX.Element => {
 				} >( {
 					path: getDisputesCSV( {
 						userEmail,
-						locale,
+						userLocale,
 						dateAfter,
 						dateBefore,
 						dateBetween,
@@ -451,11 +434,7 @@ export const DisputesList = (): JSX.Element => {
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
+			endpointExport();
 		} else {
 			const csvColumns = [
 				{
@@ -543,16 +522,6 @@ export const DisputesList = (): JSX.Element => {
 		disputesSummary.currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 
-	const closeModal = () => {
-		setCSVExportModalOpen( false );
-	};
-
-	const exportDisputes = ( language: string ) => {
-		endpointExport( language );
-
-		closeModal();
-	};
-
 	return (
 		<Page>
 			<DateFormatNotice />
@@ -579,16 +548,6 @@ export const DisputesList = (): JSX.Element => {
 					),
 				] }
 			/>
-			{ ! isDefaultSiteLanguage() &&
-				! isExportModalDismissed() &&
-				isCSVExportModalOpen && (
-					<CSVExportModal
-						onClose={ closeModal }
-						onSubmit={ exportDisputes }
-						totalItems={ totalRows }
-						exportType={ 'disputes' }
-					/>
-				) }
 		</Page>
 	);
 };
