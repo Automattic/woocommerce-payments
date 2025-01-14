@@ -69,7 +69,7 @@ use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
+use WCPay\Payment_Methods\Alipay_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
@@ -353,6 +353,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'affirm'            => 'affirm_payments',
 			'afterpay_clearpay' => 'afterpay_clearpay_payments',
 			'klarna'            => 'klarna_payments',
+			'alipay'            => 'alipay_payments',
 			'jcb'               => 'jcb_payments',
 		];
 
@@ -3982,6 +3983,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
+		$statuses['alipay_payments'] = [
+			'status'       => 'active',
+			'requirements' => [],
+		];
+
 		return 0 === count( $statuses ) ? [
 			'card_payments' => [
 				'status'       => 'active',
@@ -4121,6 +4127,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Alipay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(
@@ -4131,7 +4138,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$methods_with_fees = array_keys( $this->account->get_fees() );
 
-		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
+		return array_merge(
+			array_values( array_intersect( $available_methods, $methods_with_fees ) ),
+			[ Alipay_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] // TODO: add fees in backend.
+		);
 	}
 
 	/**

@@ -36,6 +36,8 @@ class Payment_Method extends Base_Constant {
 	const AFTERPAY        = 'afterpay_clearpay';
 	const KLARNA          = 'klarna';
 
+	const ALIPAY          = 'alipay';
+
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,
 		self::INTERAC_PRESENT,

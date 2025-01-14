@@ -46,6 +46,7 @@ const formatDetails = ( payment ) => {
 		case 'affirm':
 		case 'afterpay_clearpay':
 		case 'klarna':
+		case 'alipay':
 		default:
 			return <Fragment />;
 	}

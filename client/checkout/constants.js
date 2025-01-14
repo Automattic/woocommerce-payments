@@ -7,6 +7,7 @@ export const PAYMENT_METHOD_NAME_IDEAL = 'woocommerce_payments_ideal';
 export const PAYMENT_METHOD_NAME_P24 = 'woocommerce_payments_p24';
 export const PAYMENT_METHOD_NAME_SEPA = 'woocommerce_payments_sepa_debit';
 export const PAYMENT_METHOD_NAME_SOFORT = 'woocommerce_payments_sofort';
+export const PAYMENT_METHOD_NAME_ALIPAY = 'woocommerce_payments_alipay';
 export const PAYMENT_METHOD_NAME_AFFIRM = 'woocommerce_payments_affirm';
 export const PAYMENT_METHOD_NAME_AFTERPAY =
 	'woocommerce_payments_afterpay_clearpay';
@@ -32,6 +33,7 @@ export function getPaymentMethodsConstants() {
 		PAYMENT_METHOD_NAME_AFTERPAY,
 		PAYMENT_METHOD_NAME_CARD,
 		PAYMENT_METHOD_NAME_KLARNA,
+		PAYMENT_METHOD_NAME_ALIPAY,
 	];
 }
 

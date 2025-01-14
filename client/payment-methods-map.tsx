@@ -233,6 +233,33 @@ const PaymentMethodInformationObject: Record<
 		allows_pay_later: true,
 		accepts_only_domestic_payment: true,
 	},
+	alipay: {
+		id: 'alipay',
+		label: __( 'Alipay', 'woocommerce-payments' ),
+		description: __(
+			'Allow customers to pay over time or pay now with Alipay.',
+			'woocommerce-payments'
+		),
+		icon: CreditCardIcon,
+		// TODO: supported countries might be tricky: https://docs.stripe.com/payments/alipay#supported-currencies
+		currencies: [
+			'CNY',
+			'AUD',
+			'CAD',
+			'EUR',
+			'GBP',
+			'HKD',
+			'JPY',
+			'SGD',
+			'MYR',
+			'NZD',
+			'USD',
+		],
+		stripe_key: 'alipay_payments',
+		allows_manual_capture: false,
+		allows_pay_later: true,
+		accepts_only_domestic_payment: true,
+	},
 };
 
 export default PaymentMethodInformationObject;

@@ -1,4 +1,5 @@
 export const upeMethods = [
+	'alipay',
 	'au_becs_debit',
 	'bancontact',
 	'eps',

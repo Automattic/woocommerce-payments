@@ -38,6 +38,7 @@ const detailsComponentMap = {
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
+	alipay: CardDetails,
 };
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {

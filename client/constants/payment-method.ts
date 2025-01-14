@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 
 enum PAYMENT_METHOD_IDS {
+	ALIPAY = 'alipay',
 	AFFIRM = 'affirm',
 	AFTERPAY_CLEARPAY = 'afterpay_clearpay',
 	AU_BECS_DEBIT = 'au_becs_debit',

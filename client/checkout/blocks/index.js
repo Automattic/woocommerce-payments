@@ -40,6 +40,7 @@ import {
 	PAYMENT_METHOD_NAME_AFFIRM,
 	PAYMENT_METHOD_NAME_AFTERPAY,
 	PAYMENT_METHOD_NAME_KLARNA,
+	PAYMENT_METHOD_NAME_ALIPAY,
 } from '../constants.js';
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
@@ -60,6 +61,7 @@ const upeMethods = {
 	sofort: PAYMENT_METHOD_NAME_SOFORT,
 	affirm: PAYMENT_METHOD_NAME_AFFIRM,
 	afterpay_clearpay: PAYMENT_METHOD_NAME_AFTERPAY,
+	alipay: PAYMENT_METHOD_NAME_ALIPAY,
 	klarna: PAYMENT_METHOD_NAME_KLARNA,
 };
 
