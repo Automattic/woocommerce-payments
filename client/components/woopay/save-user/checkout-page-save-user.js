@@ -54,6 +54,13 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
 	);
+
+	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
+	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
+	const isWCPayWithNewTokenChosen = isBlocksCheckout
+		? isWCPayChosen
+		: isWCPayChosen && isNewPaymentTokenChosen;
+
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
 
@@ -193,7 +200,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			return;
 		}
 
-		if ( isSaveDetailsChecked && ! isPhoneValid ) {
+		if (
+			isSaveDetailsChecked &&
+			! isPhoneValid &&
+			isWCPayWithNewTokenChosen
+		) {
 			setValidationErrors( {
 				[ errorId ]: {
 					message: __(
@@ -212,13 +223,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		isSaveDetailsChecked,
 		sendExtensionData,
 		setValidationErrors,
+		isWCPayWithNewTokenChosen,
 	] );
-
-	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
-	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
-	const isWCPayWithNewTokenChosen = isBlocksCheckout
-		? isWCPayChosen
-		: isWCPayChosen && isNewPaymentTokenChosen;
 
 	const updatePhoneNumber = useCallback( () => {
 		if ( isPhoneNumberTouched.current ) {

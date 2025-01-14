@@ -283,10 +283,7 @@ describe( 'Express checkout event handlers', () => {
 			);
 
 			expect( elements.submit ).toHaveBeenCalled();
-			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
-				'Submit error'
-			);
+			expect( abortPayment ).toHaveBeenCalledWith( 'Submit error' );
 			expect( completePayment ).not.toHaveBeenCalled();
 		} );
 
@@ -310,7 +307,6 @@ describe( 'Express checkout event handlers', () => {
 				elements,
 			} );
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Payment method error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
@@ -340,7 +336,6 @@ describe( 'Express checkout event handlers', () => {
 				expectedOrderData
 			);
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Order creation error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
@@ -432,7 +427,6 @@ describe( 'Express checkout event handlers', () => {
 				'https://example.com/redirect'
 			);
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Intent confirmation error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
@@ -467,7 +461,6 @@ describe( 'Express checkout event handlers', () => {
 				expectedOrderData
 			);
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Order creation error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
@@ -562,7 +555,6 @@ describe( 'Express checkout event handlers', () => {
 				'https://example.com/redirect'
 			);
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Intent confirmation error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();

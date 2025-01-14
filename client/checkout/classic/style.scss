@@ -18,6 +18,7 @@
 	position: relative;
 }
 
+// Stripe Link button styles.
 .wcpay-checkout-email-field button.wcpay-stripelink-modal-trigger {
 	display: none;
 	position: absolute;
@@ -30,66 +31,111 @@
 	border: none;
 }
 
+// Logo styles.
 #payment .payment_methods {
-	li[class*='payment_method_woocommerce_payments'] label img {
-		float: right;
-		border: 0;
-		padding: 0;
-		height: 24px !important;
-		max-height: 24px !important;
+	li[class*='payment_method_woocommerce_payments'] label {
+		display: inline;
+		img {
+			float: right;
+			border: 0;
+			padding: 0;
+			height: 24px !important;
+			max-height: 24px !important;
+		}
 	}
 }
 
-li.wc_payment_method:has( .input-radio:not( :checked )
-		+ label
-		.stripe-pmme-container ) {
+// Payment methods with PMME styles.
+li.wc_payment_method:has( label .stripe-pmme-container ) {
 	display: grid;
-	grid-template-columns: min-content 1fr;
-	grid-template-rows: auto auto;
+	grid-template-columns: max-content 1fr;
+	grid-template-areas: 'li-input li-label'; // List Item grid.
 	align-items: baseline;
 
 	.input-radio {
-		grid-row: 1;
-		grid-column: 1;
+		grid-area: li-input;
 	}
 
-	label {
-		grid-column: 2;
-		grid-row: 1;
-	}
+	> label {
+		grid-area: li-label;
 
-	img {
-		grid-row: 1 / span 2;
-		align-self: center;
-	}
+		display: grid !important;
+		grid-template-columns: max-content 1fr;
+		grid-template-areas: 'label-spacer label-inner'; // Label grid.
 
-	.stripe-pmme-container {
-		width: 100%;
-		grid-column: 1;
-		grid-row-start: 2;
-		pointer-events: none;
-	}
+		> span.spacer {
+			grid-area: label-spacer;
+		}
 
-	.payment_box {
-		flex: 0 0 100%;
-		grid-row: 2;
-		grid-column: 1 / span 2;
+		> .woopayments-inner-label {
+			grid-area: label-inner;
+			display: grid;
+			grid-template-columns: 1fr max-content;
+			grid-template-areas:
+				'inner-text inner-logo'
+				'inner-pmme inner-logo'; // Inner label grid.
+			align-items: center;
+
+			> img {
+				grid-area: inner-logo;
+				justify-self: right;
+			}
+
+			> .stripe-pmme-container {
+				width: 100%;
+				grid-area: inner-pmme;
+				pointer-events: none;
+			}
+		}
 	}
 }
 
+// Hide the PMMe container when the payment method is checked.
 li.wc_payment_method:has( .input-radio:checked
 		+ label
 		.stripe-pmme-container ) {
-	display: block;
-
 	.input-radio:checked {
 		+ label {
 			.stripe-pmme-container {
 				display: none;
 			}
+		}
+	}
+}
 
-			img {
-				grid-column: 2;
+// Pseudo-element radio button compatibility.
+// Unfortunately, there is no direct way to detect the existence of pseudo-elements like ::before using CSS selectors,
+// so we use the theme class to add the necessary styles.
+.theme-storefront,
+.theme-twentytwenty,
+.theme-twentytwentyone,
+.theme-twentytwentytwo,
+.theme-twentytwentythree {
+	#payment {
+		.payment_methods {
+			> li.wc_payment_method {
+				// Storefront does not render the input radio button.
+				grid-template-areas: 'li-label'; // List Item grid for Storefront.
+				grid-template-columns: 1fr;
+
+				> input + label {
+					// Storefront uses a label::before for the radio button so we need to adjust the grid.
+					grid-template-areas: 'label-before label-spacer label-inner'; // Label grid for Storefront.
+					grid-template-columns: max-content max-content 1fr;
+				}
+
+				> input + label {
+					&::before {
+						grid-area: label-before;
+					}
+				}
+			}
+
+			// This makes sure labels that don't have the pmme container are displayed correctly.
+			li[class*='payment_method_woocommerce_payments'] {
+				> input + label {
+					display: block;
+				}
 			}
 		}
 	}

@@ -105,7 +105,7 @@ export const onConfirmHandler = async (
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
-		return abortPayment( event, submitError.message );
+		return abortPayment( submitError.message );
 	}
 
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
@@ -113,7 +113,7 @@ export const onConfirmHandler = async (
 	} );
 
 	if ( error ) {
-		return abortPayment( event, error.message );
+		return abortPayment( error.message );
 	}
 
 	try {
@@ -133,7 +133,6 @@ export const onConfirmHandler = async (
 
 		if ( orderResponse.payment_result.payment_status !== 'success' ) {
 			return abortPayment(
-				event,
 				getErrorMessageFromNotice(
 					orderResponse.message ??
 						orderResponse.payment_result?.payment_details.find(
@@ -163,7 +162,6 @@ export const onConfirmHandler = async (
 		}
 
 		return abortPayment(
-			event,
 			getErrorMessageFromNotice(
 				e.message ||
 					e.payment_result?.payment_details.find(

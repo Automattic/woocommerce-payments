@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Change ID to uppercase in the 'Transaction ID' column label for consistency with similar unique IDs in the UI.
-
-
