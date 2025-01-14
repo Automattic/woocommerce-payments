@@ -11,12 +11,7 @@ import os from 'os';
  * Internal dependencies
  */
 import DisputesList from '..';
-import {
-	useDisputes,
-	useDisputesSummary,
-	useReportingExportLanguage,
-	useSettings,
-} from 'data/index';
+import { useDisputes, useDisputesSummary, useSettings } from 'data/index';
 import { getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
 import {
@@ -55,7 +50,6 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 	useSettings: jest.fn(),
 } ) );
 
@@ -77,10 +71,6 @@ const mockUseSettings = useSettings as jest.MockedFunction<
 	typeof useSettings
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
->;
-
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
@@ -98,11 +88,11 @@ declare const global: {
 				precision: number;
 			};
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
-		};
 		dateFormat?: string;
 		timeFormat?: string;
+		userLocale: {
+			code: string;
+		};
 	};
 };
 
@@ -173,8 +163,6 @@ describe( 'Disputes list', () => {
 			new Date( '2019-11-07T12:33:37.000Z' ).getTime()
 		);
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
-
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
 			isSaving: false,
@@ -198,11 +186,11 @@ describe( 'Disputes list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
-			},
 			dateFormat: 'Y-m-d',
 			timeFormat: 'g:iA',
+			userLocale: {
+				code: 'en',
+			},
 		};
 	} );
 
