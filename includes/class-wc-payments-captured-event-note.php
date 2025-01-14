@@ -123,14 +123,14 @@ class WC_Payments_Captured_Event_Note {
 				WC_Payments_Utils::format_currency( - $fee_amount, $fee_currency )
 			);
 		}
-		$is_same_symbol = $this->has_same_currency_symbol( $fixed_currency, $fee_currency );
+		$is_same_symbol = $this->has_same_currency_symbol( $data['transaction_details']['store_currency'], $data['transaction_details']['customer_currency'] );
 
 		return sprintf(
 			'%1$s (%2$s%% + %3$s%4$s): %5$s%6$s',
 			$base_fee_label,
 			self::format_fee( $percentage ),
 			WC_Payments_Utils::format_currency( $fixed, $fixed_currency ),
-			$is_same_symbol ? " $fixed_currency" : '',
+			$is_same_symbol ? ' ' . $data['transaction_details']['customer_currency'] : '',
 			WC_Payments_Utils::format_currency( -$fee_amount, $fee_currency ),
 			$is_same_symbol ? " $fee_currency" : ''
 		);
@@ -459,6 +459,6 @@ class WC_Payments_Captured_Event_Note {
 	 * @return bool
 	 */
 	private function has_same_currency_symbol( string $base_currency, string $currency ): bool {
-		return $base_currency !== $currency && get_woocommerce_currency_symbol( $base_currency ) === get_woocommerce_currency_symbol( $currency );
+		return strcasecmp( $base_currency, $currency ) !== 0 && get_woocommerce_currency_symbol( $base_currency ) === get_woocommerce_currency_symbol( $currency );
 	}
 }
