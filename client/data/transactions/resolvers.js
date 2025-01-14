@@ -58,7 +58,7 @@ export const formatQueryFilters = ( query ) => ( {
 	source_is_not: query.sourceIsNot,
 	search: query.search,
 	user_timezone: getUserTimeZone(),
-	locale: query.locale,
+	locale: query.userLocale,
 } );
 
 /**
