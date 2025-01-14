@@ -45,9 +45,12 @@ test.describe( 'Admin order analytics', () => {
 	test( 'should load without any errors', async ( { browser } ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
-		expect(
-			merchantPage.locator( 'h2:text="Orders"' ).isVisible()
-		).toBeTruthy();
+		const ordersTitle = merchantPage.getByRole( 'heading', {
+			name: 'Orders',
+			level: 1,
+			exact: true,
+		} );
+		await expect( ordersTitle ).toBeVisible();
 		await expect( merchantPage ).toHaveScreenshot();
 	} );
 	test( 'orders table should have the customer currency column', async ( {
@@ -55,12 +58,21 @@ test.describe( 'Admin order analytics', () => {
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
-		expect(
-			merchantPage.locator( 'span:text="Customer Currency"' ).isVisible()
-		).toBeTruthy();
-		const customerCurrencyColumn = merchantPage.getByText(
-			'Customer Currency'
+		const columnToggle = merchantPage.getByTitle(
+			'Choose which values to display'
 		);
-		await expect( customerCurrencyColumn ).toHaveScreenshot();
+		await columnToggle.click();
+		const customerCurrencyToggle = merchantPage.getByRole(
+			'menuitemcheckbox',
+			{
+				name: 'Customer Currency',
+			}
+		);
+		await expect( customerCurrencyToggle ).toBeVisible();
+		await customerCurrencyToggle.click();
+		const customerCurrencyColumn = merchantPage.getByRole( 'columnheader', {
+			name: 'Customer Currency',
+		} );
+		await expect( customerCurrencyColumn ).toBeVisible();
 	} );
 } );
