@@ -17,7 +17,7 @@ body.wcpay-onboarding__body {
 				padding-left: 8px;
 				padding-right: 8px;
 				display: grid;
-				grid-template-columns: 102px 1fr 102px;
+				grid-template-columns: 94px 1fr; // Sizing counted for the right padding inside 1st column (logo)
 				align-items: stretch;
 				background-color: #fff;
 				border-bottom: 1px solid $gray-300;
