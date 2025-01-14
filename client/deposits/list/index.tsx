@@ -23,7 +23,6 @@ import { parseInt } from 'lodash';
  */
 import type { DepositsTableHeader } from 'wcpay/types/deposits';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
-import { useReportingExportLanguage } from 'data/index';
 import { displayType, depositStatusLabels } from '../strings';
 import {
 	formatExplicitCurrency,
@@ -37,13 +36,6 @@ import DownloadButton from 'components/download-button';
 import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
 import { applyThousandSeparator } from '../../utils/index.js';
 import DepositStatusChip from 'components/deposit-status-chip';
-import {
-	isExportModalDismissed,
-	getExportLanguage,
-	isDefaultSiteLanguage,
-} from 'utils';
-import CSVExportModal from 'components/csv-export-modal';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
@@ -105,18 +97,12 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 ];
 
 export const DepositsList = (): JSX.Element => {
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
-
 	const [ isDownloading, setIsDownloading ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { deposits, isLoading } = useDeposits( getQuery() );
 	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
 		getQuery()
 	);
-
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
 
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columns = getColumns( sortByDate );
@@ -227,12 +213,9 @@ export const DepositsList = (): JSX.Element => {
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
-		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { page, path, ...params } = getQuery();
+	const endpointExport = async () => {
 		const userEmail = wcpaySettings.currentUserEmail;
-		const locale = getExportLanguage( language, exportLanguage );
+		const userLocale = wcpaySettings.userLocale.code;
 
 		const {
 			date_before: dateBefore,
@@ -275,7 +258,7 @@ export const DepositsList = (): JSX.Element => {
 				} >( {
 					path: getDepositsCSV( {
 						userEmail,
-						locale,
+						userLocale,
 						dateAfter,
 						dateBefore,
 						dateBetween,
@@ -320,11 +303,7 @@ export const DepositsList = (): JSX.Element => {
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
+			endpointExport();
 		} else {
 			const params = getQuery();
 
@@ -360,16 +339,6 @@ export const DepositsList = (): JSX.Element => {
 		setIsDownloading( false );
 	};
 
-	const closeModal = () => {
-		setCSVExportModalOpen( false );
-	};
-
-	const exportDeposits = ( language: string ) => {
-		endpointExport( language );
-
-		closeModal();
-	};
-
 	return (
 		<Page>
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
@@ -395,16 +364,6 @@ export const DepositsList = (): JSX.Element => {
 					),
 				] }
 			/>
-			{ ! isDefaultSiteLanguage() &&
-				! isExportModalDismissed() &&
-				isCSVExportModalOpen && (
-					<CSVExportModal
-						onClose={ closeModal }
-						onSubmit={ exportDeposits }
-						totalItems={ totalRows }
-						exportType={ 'deposits' }
-					/>
-				) }
 		</Page>
 	);
 };

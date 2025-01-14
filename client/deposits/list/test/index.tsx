@@ -15,11 +15,7 @@ import { useUserPreferences } from '@woocommerce/data';
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import {
-	useDeposits,
-	useDepositsSummary,
-	useReportingExportLanguage,
-} from 'wcpay/data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { getUnformattedAmount } from 'wcpay/utils/test-utils';
 import {
 	CachedDeposit,
@@ -30,7 +26,6 @@ import {
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -94,10 +89,10 @@ declare const global: {
 		connect: {
 			country: string;
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
-		};
 		dateFormat: string;
+		userLocale: {
+			code: string;
+		};
 	};
 };
 
@@ -170,10 +165,10 @@ describe( 'Deposits list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
-			},
 			dateFormat: 'M j Y',
+			userLocale: {
+				code: 'en',
+			},
 		};
 	} );
 
