@@ -11,6 +11,7 @@ import {
 	ConnectComponentsProvider,
 } from '@stripe/react-connect-js';
 import { __ } from '@wordpress/i18n';
+import { Spinner } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -51,6 +52,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 		setStripeConnectInstance,
 	] = useState< StripeConnectInstance | null >( null );
 	const [ loading, setLoading ] = useState( true );
+	const [ finalizingAccount, setFinalizingAccount ] = useState( false );
 	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
 
 	const fetchAccountSession = useCallback( async () => {
@@ -153,6 +155,8 @@ const EmbeddedKyc: React.FC< Props > = ( {
 		const urlSource =
 			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
 
+		setFinalizingAccount( true );
+
 		try {
 			const response = await finalizeOnboarding( urlSource );
 			if ( response.success ) {
@@ -212,6 +216,11 @@ const EmbeddedKyc: React.FC< Props > = ( {
 						} }
 					/>
 				</ConnectComponentsProvider>
+			) }
+			{ finalizingAccount && (
+				<div className="loading-step">
+					<Spinner />
+				</div>
 			) }
 		</>
 	);
