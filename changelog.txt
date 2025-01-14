@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 8.7.1 - 2025-01-14 =
+* Fix - Broaden billing field queries from form-scoped to document-scoped
+
 = 8.7.0 - 2024-12-25 =
 * Add - Add seller_message to failed order notes
 * Add - Add WooPay Klaviyo newsletter integration.
