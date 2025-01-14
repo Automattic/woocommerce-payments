@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Simplify localization of CSV exports to use user language settings from WP Admin, allowing the CSV export to match the localization of the data presented in the admin UI.
