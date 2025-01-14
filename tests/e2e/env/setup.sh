@@ -210,6 +210,12 @@ cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
 
+echo "Deactivating Coming Soon mode in WooCommerce..."
+cli wp option set woocommerce_coming_soon "no"
+
+echo "Enabling company field as an optional parameter in checkout form..."
+cli wp option set woocommerce_checkout_company_field "optional"
+
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
 

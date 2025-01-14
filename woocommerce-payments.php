@@ -11,7 +11,7 @@
  * WC tested up to: 9.5.1
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 8.7.0
+ * Version: 8.7.1
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -160,7 +160,9 @@ function wcpay_init() {
 	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
-	( new WC_Payments_Payment_Request_Session() )->init();
+	if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
+		( new WC_Payments_Payment_Request_Session() )->init();
+	}
 }
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.

@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: refactor: ECE refreshes blocks UI in all scenarios, taking into account selected shipping option
+
+
