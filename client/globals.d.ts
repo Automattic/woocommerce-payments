@@ -122,12 +122,26 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
-		reporting: {
-			exportModalDismissed?: boolean;
-		};
-		locale: {
+		userLocale: {
+			/**
+			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
+			 *
+			 * @example 'es' // Spanish
+			 *
+			 * @see WC_Payments_Utils::convert_locale_to_language_code
+			 */
 			code: string;
+			/**
+			 * The English name of the locale.
+			 *
+			 * @example 'Spanish'
+			 */
 			english_name: string;
+			/**
+			 * The native name of the locale.
+			 *
+			 * @example 'Español'
+			 */
 			native_name: string;
 		};
 		trackingInfo?: {
@@ -187,6 +201,20 @@ declare global {
 		adminUrl: string;
 		countries: Record< string, string >;
 		homeUrl: string;
+		locale: {
+			/**
+			 * The locale of the current site, as set in WP Admin → Settings → General.
+			 *
+			 * @example 'en_AU' // English (Australia)
+			 */
+			siteLocale: string;
+			/**
+			 * The locale of the current user profile, as set in WP Admin → Users → Profile → Language.
+			 *
+			 * @example 'en_UK' // English (United Kingdom)
+			 */
+			userLocale: string;
+		};
 		siteTitle: string;
 	};
 

@@ -12,7 +12,7 @@ import { shopperWCP } from '../../../utils';
 
 const { uiUnblocked } = require( '@woocommerce/e2e-utils' );
 const notice = 'div.wc-block-components-notice-banner';
-const oldNotice = 'div.woocommerce-NoticeGroup > ul.woocommerce-error > li';
+const oldNotice = 'div.woocommerce-NoticeGroup ul.woocommerce-error > li';
 
 const waitForBanner = async ( errorText ) => {
 	return shopperWCP.waitForErrorBanner( errorText, notice, oldNotice );
@@ -51,7 +51,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			page
 		).toMatchElement(
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
-			{ text: "Your card's expiration year is in the past." }
+			{ text: 'Your card’s expiration year is in the past.' }
 		);
 	} );
 
@@ -64,7 +64,7 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 			page
 		).toMatchElement(
 			'div.woocommerce-NoticeGroup > ul.woocommerce-error',
-			{ text: "Your card's security code is incomplete." }
+			{ text: 'Your card’s security code is incomplete.' }
 		);
 	} );
 
