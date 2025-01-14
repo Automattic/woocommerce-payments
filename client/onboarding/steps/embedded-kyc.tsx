@@ -11,14 +11,13 @@ import {
 	ConnectComponentsProvider,
 } from '@stripe/react-connect-js';
 import { __ } from '@wordpress/i18n';
-import { Spinner } from '@wordpress/components';
+import { Button, Spinner } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import appearance from '../kyc/appearance';
 import BannerNotice from 'wcpay/components/banner-notice';
-import LoadBar from 'wcpay/components/load-bar';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import {
 	createAccountSession,
@@ -30,6 +29,7 @@ import {
 	trackEmbeddedStepChange,
 	trackRedirected,
 } from 'wcpay/onboarding/tracking';
+import strings from 'wcpay/onboarding/strings';
 
 interface Props {
 	continueKyc?: boolean;
@@ -67,7 +67,6 @@ const EmbeddedKyc: React.FC< Props > = ( {
 				return accountSession; // Return the full account session object
 			}
 
-			setLoading( false );
 			setLoadErrorMessage(
 				__(
 					"Failed to create account session. Please check that you're using the latest version of WooPayments.",
@@ -75,7 +74,6 @@ const EmbeddedKyc: React.FC< Props > = ( {
 				)
 			);
 		} catch ( error ) {
-			setLoading( false );
 			setLoadErrorMessage(
 				__(
 					'Failed to retrieve account session. Please try again later.',
@@ -108,15 +106,12 @@ const EmbeddedKyc: React.FC< Props > = ( {
 					setClientSecret( () => fetchClientSecret );
 				}
 			} catch ( error ) {
-				setLoading( false );
 				setLoadErrorMessage(
 					__(
 						'Failed to create account session. Please check that you are using the latest version of WooPayments.',
 						'woocommerce-payments'
 					)
 				);
-			} finally {
-				setLoading( false );
 			}
 		};
 
@@ -189,7 +184,24 @@ const EmbeddedKyc: React.FC< Props > = ( {
 
 	return (
 		<>
-			{ loading && <LoadBar /> }
+			{ loading && (
+				<div className="loading-step centered">
+					<h1 className="stepper__heading">
+						{ strings.steps.loading.heading }
+					</h1>
+					<h2 className="stepper__subheading">
+						{ strings.steps.loading.subheading }
+					</h2>
+					<Button
+						variant={ 'primary' }
+						isBusy={ true }
+						disabled={ true }
+						className="stepper__cta inline"
+					>
+						{ strings.steps.loading.cta }
+					</Button>
+				</div>
+			) }
 			{ loadErrorMessage && (
 				<BannerNotice status="error">{ loadErrorMessage }</BannerNotice>
 			) }

@@ -109,6 +109,42 @@ body.wcpay-onboarding__body {
 						$gutenberg-blueberry-focus
 					);
 				}
+				&.inline {
+					width: auto; // Adjust the button width not to take 100%.
+					margin-top: 0; // No need to have margin in this case.
+				}
+				// Support busy/disabled state for gutenberg blueberry MOX button.
+				&.components-button.is-primary.is-busy,
+				&.components-button.is-primary.is-busy:disabled,
+				&.components-button.is-primary.is-busy[aria-disabled='true'] {
+					background: linear-gradient(
+						-45deg,
+						var(
+								--wp-components-color-accent,
+								$gutenberg-blueberry
+							)
+							33%,
+						var(
+								--wp-components-color-accent-darker-20,
+								$gutenberg-blueberry-focus
+							)
+							33%,
+						var(
+								--wp-components-color-accent-darker-20,
+								$gutenberg-blueberry-focus
+							)
+							70%,
+						var(
+								--wp-components-color-accent,
+								var(
+									--wp-components-color-accent,
+									$gutenberg-blueberry
+								)
+							)
+							70%
+					);
+					background-size: 100px 100%;
+				}
 			}
 		}
 
@@ -147,6 +183,14 @@ body.wcpay-onboarding__body {
 			position: absolute;
 			left: 50%;
 			transform: translate( -50%, -50% );
+			&.centered {
+				top: 35%;
+				display: flex;
+				flex-direction: column;
+				align-items: center; // Centers children horizontally
+				justify-content: center; // Centers children vertically
+				text-align: center; // Center-aligns text
+			}
 		}
 
 		.onboarding-mode__note {
