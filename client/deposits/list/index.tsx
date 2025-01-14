@@ -5,7 +5,6 @@
  */
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
-import { useMemo } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
