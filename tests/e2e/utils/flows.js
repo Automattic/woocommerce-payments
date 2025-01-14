@@ -982,9 +982,6 @@ export const merchantWCP = {
 			'select[name="item_id"]'
 		);
 		await selectItem.click();
-		await page.click(
-			'.widefat > tbody:nth-child(2) > tr:nth-child(1) > td:nth-child(1) > span:nth-child(2) > span:nth-child(1) > span:nth-child(1)'
-		);
 		const dropdownInput = await page.waitForSelector(
 			'.select2-search--dropdown > input'
 		);
