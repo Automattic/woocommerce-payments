@@ -9,8 +9,13 @@ import { test, expect } from '@playwright/test';
 import * as shopper from '../../utils/shopper';
 import { config } from '../../config/default';
 import { getMerchant, getShopper, useMerchant } from '../../utils/helpers';
-import { ensureOrderIsProcessed } from '../../utils/merchant';
+import {
+	activateMulticurrency,
+	ensureOrderIsProcessed,
+	isMulticurrencyEnabled,
+} from '../../utils/merchant';
 import { goToOrderAnalytics } from '../../utils/merchant-navigation';
+import { clickOnCloseModalButton } from '@wordpress/e2e-test-utils/build/click-on-close-modal-button';
 
 test.describe( 'Admin order analytics', () => {
 	let orderId: string;
@@ -21,6 +26,10 @@ test.describe( 'Admin order analytics', () => {
 	test.beforeAll( async ( { browser } ) => {
 		const { shopperPage } = await getShopper( browser );
 		const { merchantPage } = await getMerchant( browser );
+
+		if ( false === ( await isMulticurrencyEnabled( merchantPage ) ) ) {
+			await activateMulticurrency( merchantPage );
+		}
 
 		// Place an order to ensure the analytics data is correct.
 		await shopperPage.goto( '/cart/' );
@@ -45,6 +54,26 @@ test.describe( 'Admin order analytics', () => {
 	test( 'should load without any errors', async ( { browser } ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
+
+		// Wait for the order table to load.
+		await merchantPage
+			.locator( '.woocommerce-table__table.is-loading' )
+			.waitFor( { state: 'hidden' } );
+
+		// Skip the tour if it's visible.
+		if (
+			await merchantPage.isVisible(
+				'.woocommerce-revenue-report-date-tour',
+				{
+					timeout: 2000,
+				}
+			)
+		) {
+			await merchantPage
+				.locator( ".tour-kit button[aria-label='Close Tour']" )
+				.click();
+		}
+
 		const ordersTitle = merchantPage.getByRole( 'heading', {
 			name: 'Orders',
 			level: 1,
@@ -58,6 +87,26 @@ test.describe( 'Admin order analytics', () => {
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
+
+		// Wait for the order table to load.
+		await merchantPage
+			.locator( '.woocommerce-table__table.is-loading' )
+			.waitFor( { state: 'hidden' } );
+
+		// Skip tour component if visible.
+		if (
+			await merchantPage.isVisible(
+				'.woocommerce-revenue-report-date-tour',
+				{
+					timeout: 2000,
+				}
+			)
+		) {
+			await merchantPage
+				.locator( ".tour-kit button[aria-label='Close Tour']" )
+				.click();
+		}
+
 		const columnToggle = merchantPage.getByTitle(
 			'Choose which values to display'
 		);
