@@ -3,12 +3,13 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-
 import os from 'os';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -21,7 +22,6 @@ import {
 	CachedDeposits,
 	DepositsSummary,
 } from 'wcpay/types/deposits';
-import React from 'react';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
@@ -38,6 +38,15 @@ jest.mock( '@woocommerce/csv-export', () => {
 } );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
 
 const mockDeposits = [
 	{
@@ -117,12 +126,22 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
+>;
+
 describe( 'Deposits list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_payouts_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
