@@ -934,6 +934,8 @@ export const merchantWCP = {
 			waitUntil: 'load',
 		} );
 
+		await page.waitForTimeout( 2000 );
+
 		const closeWelcomeModal = await page.$( 'button[aria-label="Close"]' );
 		if ( closeWelcomeModal ) {
 			await closeWelcomeModal.click();
@@ -948,7 +950,7 @@ export const merchantWCP = {
 			const searchInput = await page.waitForSelector(
 				'input[placeholder="Search"]'
 			);
-			searchInput.type( 'switcher', { delay: 20 } );
+			await searchInput.type( 'switcher', { delay: 20 } );
 
 			await page.waitForSelector(
 				'button.components-button[role="option"]',
