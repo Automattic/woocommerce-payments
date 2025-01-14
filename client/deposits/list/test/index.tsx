@@ -126,10 +126,6 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
->;
-
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences
 >;
@@ -140,8 +136,6 @@ describe( 'Deposits list', () => {
 
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
-
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
 
 		mockUseUserPreferences.mockReturnValue( {
 			updateUserPreferences: jest.fn(),

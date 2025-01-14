@@ -304,12 +304,6 @@ export const TransactionsList = (
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
-
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
-
 	const { onColumnsChange, columnsToDisplay } = usePersistedColumnVisibility<
 		Column
 	>(

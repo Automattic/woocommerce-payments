@@ -81,10 +81,6 @@ const mockUseFraudOutcomeTransactionsSummary = useFraudOutcomeTransactionsSummar
 	typeof useFraudOutcomeTransactionsSummary
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
->;
-
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences
 >;

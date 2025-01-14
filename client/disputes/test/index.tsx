@@ -81,10 +81,6 @@ const mockUseSettings = useSettings as jest.MockedFunction<
 	typeof useSettings
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
->;
-
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences
 >;

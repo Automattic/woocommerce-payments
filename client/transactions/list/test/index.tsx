@@ -86,10 +86,6 @@ const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction
 	typeof useTransactionsSummary
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
->;
-
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences
 >;
@@ -235,8 +231,6 @@ describe( 'Transactions list', () => {
 
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
-
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
 
 		mockUseUserPreferences.mockReturnValue( {
 			updateUserPreferences: jest.fn(),
