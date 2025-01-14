@@ -46,7 +46,7 @@ describe.each( cardTestingPreventionStates )(
 			await shopperWCP.waitForErrorBanner(
 				'Error: Your card was declined.',
 				'div.wc-block-components-notice-banner',
-				'div.woocommerce-NoticeGroup > ul.woocommerce-error > li'
+				'div.woocommerce-NoticeGroup ul.woocommerce-error > li'
 			);
 
 			// after the card has been declined, go to the order page and pay with a basic card

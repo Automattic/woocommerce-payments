@@ -58,7 +58,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect(
 			page
 		).toMatchElement(
-			`[aria-label='The "WooPayments" payment method is currently enabled']`,
+			`[aria-label='The "WooPayments (Credit card / debit card)" payment method is currently enabled']`,
 			{ text: 'Yes' }
 		);
 
@@ -83,7 +83,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect(
 			page
 		).toMatchElement(
-			`[aria-label='The "WooPayments" payment method is currently enabled']`,
+			`[aria-label='The "WooPayments (Credit card / debit card)" payment method is currently enabled']`,
 			{ text: 'Yes' }
 		);
 	} );
@@ -92,7 +92,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect(
 			page
 		).toMatchElement(
-			`[aria-label='The "WooPayments" payment method is currently enabled']`,
+			`[aria-label='The "WooPayments (Credit card / debit card)" payment method is currently enabled']`,
 			{ text: 'Yes' }
 		);
 
@@ -121,7 +121,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect(
 			page
 		).toMatchElement(
-			`[aria-label='The "WooPayments" payment method is currently disabled']`,
+			`[aria-label='The "WooPayments (Credit card / debit card)" payment method is currently disabled']`,
 			{ text: 'No' }
 		);
 
@@ -136,7 +136,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect(
 			page
 		).toMatchElement(
-			`[aria-label='The "WooPayments" payment method is currently enabled']`,
+			`[aria-label='The "WooPayments (Credit card / debit card)" payment method is currently enabled']`,
 			{ text: 'Yes' }
 		);
 	} );
@@ -145,7 +145,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect(
 			page
 		).toMatchElement(
-			`[aria-label='The "WooPayments" payment method is currently enabled']`,
+			`[aria-label='The "WooPayments (Credit card / debit card)" payment method is currently enabled']`,
 			{ text: 'Yes' }
 		);
 
@@ -167,7 +167,7 @@ describe( 'payment gateways disable confirmation', () => {
 		await expect(
 			page
 		).toMatchElement(
-			`[aria-label='The "WooPayments" payment method is currently enabled']`,
+			`[aria-label='The "WooPayments (Credit card / debit card)" payment method is currently enabled']`,
 			{ text: 'Yes' }
 		);
 
