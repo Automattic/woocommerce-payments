@@ -93,3 +93,9 @@ export const getAnonymousShopper = async (
 	const shopperPage = await shopperContext.newPage();
 	return { shopperPage, shopperContext };
 };
+
+/**
+ * Conditionally determine whether or not to skip a test suite.
+ */
+export const describeif = ( condition: boolean ) =>
+	condition ? test.describe : test.describe.skip;
