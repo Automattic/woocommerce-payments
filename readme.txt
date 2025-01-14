@@ -87,7 +87,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
-= 8.8.0 - 2025-01-15 =
+= 8.8.0-test-3 - unreleased =
 * Add - Allow transactions filtered by Payment Method
 * Add - Falback terms and conditions for WooPay
 * Fix - Broaden billing field queries from form-scoped to document-scoped
