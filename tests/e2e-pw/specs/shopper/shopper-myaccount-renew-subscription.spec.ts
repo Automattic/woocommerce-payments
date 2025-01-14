@@ -68,8 +68,7 @@ describeif( shouldRunSubscriptionsTests )(
 			await page
 				.getByText( 'Complete checkout to renew now.' )
 				.isVisible();
-			await page.waitForLoadState( 'networkidle' );
-
+			await shopper.focusPlaceOrderButton( page );
 			await shopper.placeOrder( page );
 			await expect(
 				page.getByRole( 'heading', { name: 'Order received' } )
