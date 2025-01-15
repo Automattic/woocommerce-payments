@@ -153,6 +153,15 @@ export const confirmCardAuthentication = async (
 	await button.click();
 };
 
+export const ensureSavedCardNotSelected = async ( page: Page ) => {
+	const savedCard = await page.locator(
+		'#wc-woocommerce_payments-payment-token-new'
+	);
+	if ( savedCard ) {
+		await savedCard.click();
+	}
+};
+
 /**
  * Retrieves the product price from the current product page.
  *

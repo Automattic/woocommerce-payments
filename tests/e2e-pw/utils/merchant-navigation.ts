@@ -94,3 +94,17 @@ export const goToConnect = async ( page: Page ) => {
 	);
 	await dataHasLoaded( page );
 };
+
+export const goToSubscriptionPage = async (
+	page: Page,
+	subscriptionId: number
+) => {
+	await page.goto( '/wp-admin/admin.php?page=wc-orders--shop_subscription', {
+		waitUntil: 'load',
+	} );
+	const orderRow = page.locator(
+		'tr#order-' + subscriptionId + ' .order_title a:nth-child(1)'
+	);
+	orderRow.evaluate( ( el: HTMLLinkElement ) => el.click() );
+	await dataHasLoaded( page );
+};

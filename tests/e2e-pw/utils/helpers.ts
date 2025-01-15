@@ -99,3 +99,13 @@ export const getAnonymousShopper = async (
  */
 export const describeif = ( condition: boolean ) =>
 	condition ? test.describe : test.describe.skip;
+
+const acceptDialogCallback = ( dialog: any ) => dialog.accept();
+
+export const prepareAcceptingDialogs = async ( page: Page ) => {
+	page.on( 'dialog', acceptDialogCallback );
+};
+
+export const removeDialogListener = async ( page: Page ) => {
+	page.removeListener( 'dialog', acceptDialogCallback );
+};
