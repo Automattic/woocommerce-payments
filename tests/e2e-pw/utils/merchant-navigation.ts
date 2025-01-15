@@ -23,6 +23,37 @@ export const goToWooPaymentsSettings = async ( page: Page ) => {
 	);
 };
 
+export const goToOptionsPage = async ( page: Page ) => {
+	await page.goto( '/wp-admin/options.php', {
+		waitUntil: 'load',
+	} );
+};
+
+export const goToActionScheduler = async (
+	page: Page,
+	status?: string,
+	search?: string
+) => {
+	let pageUrl = '/wp-admin/tools.php?page=action-scheduler';
+	if ( status ) {
+		pageUrl += `&status=${ status }`;
+	}
+	if ( search ) {
+		pageUrl += `&s=${ search }`;
+	}
+	await page.goto( pageUrl, {
+		waitUntil: 'load',
+	} );
+};
+
+export const goToOrderAnalytics = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fanalytics%2Forders',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
 export const goToMultiCurrencySettings = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency',
