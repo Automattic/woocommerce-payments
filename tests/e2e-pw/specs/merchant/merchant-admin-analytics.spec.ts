@@ -34,22 +34,7 @@ test.describe( 'Admin order analytics', () => {
 		}
 
 		// Place an order to ensure the analytics data is correct.
-		await shopperPage.goto( '/cart/' );
-		await shopper.addCartProduct( shopperPage );
-
-		await shopper.setupCheckout(
-			shopperPage,
-			config.addresses.customer.billing
-		);
-		await shopper.fillCardDetails( shopperPage, config.cards.basic );
-		await shopper.placeOrder( shopperPage );
-
-		// Get the order ID
-		const orderIdField = shopperPage.locator(
-			'.woocommerce-order-overview__order.order > strong'
-		);
-
-		orderId = await orderIdField.innerText();
+		orderId = await shopper.placeOrderWithCurrency( shopperPage, 'USD' );
 		await ensureOrderIsProcessed( merchantPage, orderId );
 	} );
 
