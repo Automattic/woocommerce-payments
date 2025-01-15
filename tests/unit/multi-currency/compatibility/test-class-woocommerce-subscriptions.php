@@ -651,7 +651,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	 * Confirm that true is returned even if there is resubscribe in the cart, but the backtraces are not correct.
 	 * This is the same as the above, with the second backtrace check being true, so the third one is now checked.
 	 */
-	public function test_should_convert_product_price_return_true_when_sub_type_in_cart_and_backtraces_do_not_match_exactly() {
+	public function test_should_convert_product_price_return_true_when_resubscribe_in_cart_and_backtraces_do_not_match_exactly() {
 		// Arrange: Create a subscription and cart_items to be used.
 		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'resubscribe' );
 
