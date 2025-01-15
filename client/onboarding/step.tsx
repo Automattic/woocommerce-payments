@@ -11,7 +11,7 @@ import { OnboardingSteps } from './types';
 import { useTrackAbandoned } from './tracking';
 import strings from './strings';
 import WooLogo from 'assets/images/woo-logo.svg';
-import CloseIcon from 'assets/images/icons/close.svg';
+import CloseIcon from 'assets/images/icons/close.svg?asset';
 import './style.scss';
 
 interface Props {
