@@ -17,6 +17,7 @@ use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Subscriptions_Utilities;
 use WCPay\Logger;
+use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinition;
 
 /**
  * Extendable abstract class for payment methods.
@@ -24,6 +25,13 @@ use WCPay\Logger;
 abstract class UPE_Payment_Method {
 
 	use WC_Payments_Subscriptions_Utilities;
+
+	/**
+	 * Payment method definition.
+	 *
+	 * @var PaymentMethodDefinition
+	 */
+	protected $definition;
 
 	/**
 	 * Stripe key name

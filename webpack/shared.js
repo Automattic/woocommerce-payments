@@ -5,6 +5,7 @@ const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
 const WebpackRTLPlugin = require( './webpack-rtl-plugin' );
+const PaymentMethodsPlugin = require( '../build/payment-methods-plugin' );
 
 module.exports = {
 	entry: mapValues(
@@ -162,6 +163,7 @@ module.exports = {
 				}
 			},
 		} ),
+		new PaymentMethodsPlugin(),
 	],
 	resolveLoader: {
 		modules: [

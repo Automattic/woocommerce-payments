@@ -421,6 +421,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
+		include_once __DIR__ . '/payment-methods/class-payment-method-definition-registry.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';

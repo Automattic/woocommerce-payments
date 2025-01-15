@@ -90,6 +90,7 @@
     "autoload": {
         "psr-4": {
             "WCPay\\MultiCurrency\\": "includes/multi-currency",
+            "WCPay\\PaymentMethods\\Configs\\": "includes/payment-methods/Configs",
             "WCPay\\Vendor\\": "lib/packages",
             "WCPay\\": "src"
         },
