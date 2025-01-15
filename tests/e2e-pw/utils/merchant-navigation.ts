@@ -94,3 +94,10 @@ export const goToConnect = async ( page: Page ) => {
 	);
 	await dataHasLoaded( page );
 };
+
+export const goToSubscriptions = async ( page: Page ) => {
+	await page.goto( '/wp-admin/admin.php?page=wc-orders--shop_subscription', {
+		waitUntil: 'load',
+	} );
+	await dataHasLoaded( page );
+};

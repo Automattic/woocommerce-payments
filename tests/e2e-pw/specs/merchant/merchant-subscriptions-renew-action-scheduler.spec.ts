@@ -1,18 +1,29 @@
 /**
  * External dependencies
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
  */
-import { useMerchant, describeif } from '../../utils/helpers';
-import { addCartProduct, placeOrder, setupCheckout } from '../../utils/shopper';
+import {
+	describeif,
+	getAnonymousShopper,
+	getMerchant,
+	useMerchant,
+} from '../../utils/helpers';
+import * as shopper from '../../utils/shopper';
 import { config } from '../../config/default';
 import {
+	products,
 	shouldRunActionSchedulerTests,
 	shouldRunSubscriptionsTests,
 } from '../../utils/constants';
+import RestAPI from '../../utils/rest-api';
+import {
+	goToActionScheduler,
+	goToSubscriptions,
+} from '../../utils/merchant-navigation';
 
 // Run the tests if the two 'skip' environment variables are not set.
 describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
@@ -20,21 +31,63 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 	() => {
 		useMerchant();
 
-		test.beforeEach( async ( { page } ) => {
-			await addCartProduct( page, 88 ); // Subscription no signup fee product
-			await setupCheckout(
-				page,
-				config.addresses[ 'subscriptions-customer' ].billing
+		const actionSchedulerHook =
+			'woocommerce_scheduled_subscription_payment';
+
+		const customerBillingConfig =
+			config.addresses[ 'subscriptions-customer' ].billing;
+
+		let page: Page;
+
+		test.beforeAll( async ( { browser }, { project } ) => {
+			const restApi = new RestAPI( project.use.baseURL );
+			await restApi.deleteCustomerByEmailAddress(
+				customerBillingConfig.email
 			);
-			await placeOrder( page );
+
+			const { shopperPage } = await getAnonymousShopper( browser );
+			page = shopperPage;
+
+			await shopper.addCartProduct(
+				page,
+				products.SUBSCRIPTION_SIGNUP_FEE
+			);
+			await shopper.setupCheckout( page, customerBillingConfig );
+			await shopper.fillCardDetails( page, config.cards.basic );
+			await shopper.placeOrder( page );
+			await expect(
+				page.getByRole( 'heading', { name: 'Order received' } )
+			).toBeVisible();
+
+			const { merchantPage } = await getMerchant( browser );
+			page = merchantPage;
 		} );
 
-		test( 'should renew a subscription with action scheduler', async ( {
-			page,
-		} ) => {
-			// WIP: This test is not yet implemented.
-			// To keep the linter happy for now:
-			expect( page.url() ).toContain( '/checkout/' );
+		test( 'should renew a subscription with action scheduler', async () => {
+			// Go to Action Scheduler
+			await goToActionScheduler( page, 'pending' );
+
+			await page
+				.getByLabel( 'Search hook, args and claim' )
+				.fill( actionSchedulerHook );
+
+			await page
+				.getByRole( 'button', {
+					name: 'Search hook, args and claim ID',
+				} )
+				.click();
+
+			await page.getByRole( 'button', { name: 'Run' } ).click();
+
+			await expect(
+				page.getByRole( 'code', { name: actionSchedulerHook } )
+			).toBeVisible();
+
+			// Go to Subscriptions and verify the subscription renewal
+			await goToSubscriptions( page );
+			await expect(
+				page.getByRole( 'link', { name: '2' } )
+			).toBeVisible();
 		} );
 	}
 );
