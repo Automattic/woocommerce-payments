@@ -13,11 +13,10 @@ import {
 	activateMulticurrency,
 	ensureOrderIsProcessed,
 	isMulticurrencyEnabled,
-	skipTour,
+	setOption,
 	tableDataHasLoaded,
 } from '../../utils/merchant';
 import { goToOrderAnalytics } from '../../utils/merchant-navigation';
-import { clickOnCloseModalButton } from '@wordpress/e2e-test-utils/build/click-on-close-modal-button';
 
 test.describe( 'Admin order analytics', () => {
 	let orderId: string;
@@ -51,13 +50,19 @@ test.describe( 'Admin order analytics', () => {
 
 		orderId = await orderIdField.innerText();
 		await ensureOrderIsProcessed( merchantPage, orderId );
+
+		// Ensure that the tour modal is not shown.
+		await setOption(
+			merchantPage,
+			'woocommerce_orders_report_date_tour_shown',
+			'yes'
+		);
 	} );
 
 	test( 'should load without any errors', async ( { browser } ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
 		await tableDataHasLoaded( merchantPage );
-		await skipTour( merchantPage );
 
 		const ordersTitle = merchantPage.getByRole( 'heading', {
 			name: 'Orders',
@@ -73,7 +78,6 @@ test.describe( 'Admin order analytics', () => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
 		await tableDataHasLoaded( merchantPage );
-		await skipTour( merchantPage );
 
 		const columnToggle = merchantPage.getByTitle(
 			'Choose which values to display'

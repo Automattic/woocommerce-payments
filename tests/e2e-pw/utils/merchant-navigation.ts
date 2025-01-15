@@ -23,6 +23,12 @@ export const goToWooPaymentsSettings = async ( page: Page ) => {
 	);
 };
 
+export const goToOptionsPage = async ( page: Page ) => {
+	await page.goto( '/wp-admin/options.php', {
+		waitUntil: 'load',
+	} );
+};
+
 export const goToActionScheduler = async (
 	page: Page,
 	status?: string,

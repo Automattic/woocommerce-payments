@@ -20,15 +20,15 @@ export const tableDataHasLoaded = async ( page: Page ) => {
 		.waitFor( { state: 'hidden' } );
 };
 
-export const skipTour = async ( page: Page ) => {
-	const tourKitDismissButton = await page.$(
-		`button.woocommerce-tour-kit-step-controls__close-btn`
-	);
-	if ( tourKitDismissButton ) {
-		await tourKitDismissButton.evaluate( ( button: HTMLButtonElement ) =>
-			button.click()
-		);
-	}
+export const setOption = async (
+	page: Page,
+	optionName: string,
+	value: string
+) => {
+	await navigation.goToOptionsPage( page );
+	const optionInput = page.getByRole( 'textbox', { name: optionName } );
+	await optionInput.fill( value );
+	await page.getByRole( 'button', { name: 'Save Changes' } ).click();
 };
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
@@ -270,7 +270,7 @@ export const disablePaymentMethods = async (
 
 export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 	await navigation.goToActionScheduler( page, 'pending', orderId );
-	page.$eval(
+	await page.$eval(
 		'td:has-text("wc-admin_import_orders") a:has-text("Run")',
 		( el: HTMLLinkElement ) => el.click()
 	);
