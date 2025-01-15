@@ -7,15 +7,15 @@ import { test, expect } from '@playwright/test';
  * Internal dependencies
  */
 import { useMerchant, describeif } from '../../utils/helpers';
-import {
-	runSubscriptionsTests,
-	runActionSchedulerTests,
-} from '../../utils/flows';
 import { addCartProduct, placeOrder, setupCheckout } from '../../utils/shopper';
 import { config } from '../../config/default';
+import {
+	shouldRunActionSchedulerTests,
+	shouldRunSubscriptionsTests,
+} from '../../utils/constants';
 
 // Run the tests if the two 'skip' environment variables are not set.
-describeif( runSubscriptionsTests && runActionSchedulerTests )(
+describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 	'Subscriptions > Renew a subscription via Action Scheduler',
 	() => {
 		useMerchant();
