@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added persistent column visibility preferences for reporting tables, allowing merchants to customize and save their preferred table view layouts across sessions.
