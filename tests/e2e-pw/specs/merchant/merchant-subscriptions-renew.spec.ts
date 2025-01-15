@@ -9,6 +9,7 @@ import { test, expect } from '@playwright/test';
 import RestAPI from '../../utils/rest-api';
 import { config } from '../../config/default';
 import {
+	describeif,
 	getMerchant,
 	getShopper,
 	prepareAcceptingDialogs,
@@ -23,13 +24,14 @@ import {
 } from '../../utils/shopper';
 import { goToShop } from '../../utils/shopper-navigation';
 import { goToSubscriptionPage } from '../../utils/merchant-navigation';
+import { shouldRunSubscriptionsTests } from '../../utils/constants';
 
 const productName = 'Subscription signup fee product';
 const customerBillingConfig =
 	config.addresses[ 'subscriptions-customer' ].billing;
 let subscriptionId = null;
 
-test.describe( 'Admin order analytics', () => {
+describeif( shouldRunSubscriptionsTests )( 'Admin order analytics', () => {
 	test.beforeAll( async ( { browser }, { project } ) => {
 		const restApi = new RestAPI( project.use.baseURL );
 		restApi.deleteCustomerByEmailAddress( customerBillingConfig.email );
