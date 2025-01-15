@@ -61,4 +61,23 @@ export const PaymentMethodDefinitions: PaymentMethodConfigurations = {
 			},
 		},
 	},
+	afterpay_clearpay: {
+		id: 'afterpay_clearpay',
+		stripeId: 'afterpay_clearpay',
+		title: 'Afterpay',
+		description: 'Allow customers to pay over time with Afterpay.',
+		capabilities: [
+			'refunds',
+			'buy_now_pay_later',
+			'multi_currency',
+			'domestic_transactions_only',
+		],
+		currencies: [ 'USD', 'CAD', 'AUD', 'NZD', 'GBP' ],
+		countries: [ 'US', 'CA', 'AU', 'NZ', 'GB' ],
+		icons: {
+			default: {
+				path: '/assets/images/payment-methods/afterpay-badge.svg',
+			},
+		},
+	},
 };

@@ -8,9 +8,12 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
-use WC_Payments_Utils;
-use WCPay\Constants\Country_Code;
-use WCPay\Constants\Currency_Code;
+use WCPay\PaymentMethods\Configs\Definitions\Afterpay as AfterpayDefinition;
+use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
+use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinition;
+use WCPay\PaymentMethods\Configs\Interfaces\BNPLPaymentMethodDefinition;
+use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
+
 
 /**
  * Afterpay Payment Method class extending UPE base class
@@ -20,20 +23,45 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	const PAYMENT_METHOD_STRIPE_ID = 'afterpay_clearpay';
 
 	/**
+	 * The payment method definition.
+	 *
+	 * @var BNPLPaymentMethodDefinition
+	 */
+	protected $definition;
+
+	/**
 	 * Constructor for Afterpay payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Token class instance.
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->is_reusable                  = false;
-		$this->is_bnpl                      = true;
-		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay-logo.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR, Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::NEW_ZEALAND_DOLLAR, Currency_Code::POUND_STERLING ];
-		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::CANADA, Country_Code::AUSTRALIA, Country_Code::NEW_ZEALAND, Country_Code::UNITED_KINGDOM ];
-		$this->accept_only_domestic_payment = true;
-		$this->limits_per_currency          = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
+		$this->definition = new AfterpayDefinition();
+
+		// Register the payment method definition so it's exported for the client.
+		$this->register_payment_method( $this->definition );
+
+		$capabilities = $this->definition->get_capabilities();
+		$icons        = $this->definition->get_icons();
+
+		$this->stripe_id                    = $this->definition->get_stripe_id();
+		$this->is_reusable                  = in_array( Payment_Method_Capability::TOKENIZATION, $capabilities, true );
+		$this->is_bnpl                      = in_array( Payment_Method_Capability::BUY_NOW_PAY_LATER, $capabilities, true );
+		$this->icon_url                     = $icons['default']['path'];
+		$this->currencies                   = $this->definition->get_supported_currencies();
+		$this->countries                    = $this->definition->get_supported_countries();
+		$this->accept_only_domestic_payment = in_array( Payment_Method_Capability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
+		$this->limits_per_currency          = $this->definition->get_limits_per_currency();
+	}
+
+	/**
+	 * Register the payment method definition.
+	 *
+	 * @param PaymentMethodDefinition $definition The payment method definition to register.
+	 */
+	public function register_payment_method( PaymentMethodDefinition $definition ): void {
+		$registry = Payment_Method_Definition_Registry::instance();
+		$registry->register_payment_method( $definition );
 	}
 
 	/**
@@ -46,11 +74,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
-		if ( 'GB' === $account_country ) {
-			return __( 'Clearpay', 'woocommerce-payments' );
-		}
-
-		return __( 'Afterpay', 'woocommerce-payments' );
+		return $this->definition->get_title( $account_country );
 	}
 
 	/**
@@ -60,11 +84,8 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * @return string|null
 	 */
 	public function get_icon( ?string $account_country = null ) {
-		if ( 'GB' === $account_country ) {
-			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
-		}
-
-		return plugins_url( 'assets/images/payment-methods/afterpay-badge.svg', WCPAY_PLUGIN_FILE );
+		$filename_base = $this->definition->get_icon_filename_base( $account_country );
+		return plugins_url( 'assets/images/payment-methods/' . $filename_base . '.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
