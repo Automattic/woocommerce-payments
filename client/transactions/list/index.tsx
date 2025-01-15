@@ -6,7 +6,6 @@
 import React, { Fragment, useState } from 'react';
 import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
-import { useMemo } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	TableCard,
@@ -29,11 +28,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import {
-	useTransactions,
-	useTransactionsSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useTransactions, useTransactionsSummary } from 'data/index';
 import { Transaction } from 'data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
@@ -41,13 +36,7 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { depositStatusLabels } from 'deposits/strings';
-import {
-	formatStringValue,
-	isExportModalDismissed,
-	getExportLanguage,
-	isDefaultSiteLanguage,
-	applyThousandSeparator,
-} from 'wcpay/utils';
+import { formatStringValue, applyThousandSeparator } from 'wcpay/utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
@@ -62,13 +51,12 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
 import DownloadButton from 'components/download-button';
-import CSVExportModal from 'components/csv-export-modal';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -316,19 +304,11 @@ export const TransactionsList = (
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
-
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
-
-	const columnsToDisplay = useMemo(
-		() =>
-			getColumns(
-				! props.depositId,
-				wcpaySettings.isSubscriptionsActive
-			),
-		[ props.depositId ]
+	const { onColumnsChange, columnsToDisplay } = usePersistedColumnVisibility<
+		Column
+	>(
+		'wc_payments_transactions_hidden_columns',
+		getColumns( ! props.depositId, wcpaySettings.isSubscriptionsActive )
 	);
 
 	const totalRows = transactionsSummary.count || 0;
@@ -599,13 +579,13 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
+	const endpointExport = async () => {
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		const locale = getExportLanguage( language, exportLanguage );
+		const userLocale = wcpaySettings.userLocale.code;
 		const {
 			date_after: dateAfter,
 			date_before: dateBefore,
@@ -665,7 +645,7 @@ export const TransactionsList = (
 				await apiFetch( {
 					path: getTransactionsCSV( {
 						userEmail,
-						locale,
+						userLocale,
 						dateAfter,
 						dateBefore,
 						dateBetween,
@@ -728,11 +708,7 @@ export const TransactionsList = (
 		} );
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
+			endpointExport();
 		} else {
 			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
 				if ( column.labelInCsv ) {
@@ -816,16 +792,6 @@ export const TransactionsList = (
 		}
 	}
 
-	const closeModal = () => {
-		setCSVExportModalOpen( false );
-	};
-
-	const exportTransactions = ( language: string ) => {
-		endpointExport( language );
-
-		closeModal();
-	};
-
 	const showFilters = ! props.depositId;
 	const storeCurrencies =
 		transactionsSummary.store_currencies ||
@@ -853,6 +819,7 @@ export const TransactionsList = (
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					<Search
 						allowFreeTextSearch={ true }
@@ -878,17 +845,6 @@ export const TransactionsList = (
 					),
 				] }
 			/>
-
-			{ ! isDefaultSiteLanguage() &&
-				! isExportModalDismissed() &&
-				isCSVExportModalOpen && (
-					<CSVExportModal
-						onClose={ closeModal }
-						onSubmit={ exportTransactions }
-						totalItems={ totalRows }
-						exportType={ 'transactions' }
-					/>
-				) }
 		</Page>
 	);
 };

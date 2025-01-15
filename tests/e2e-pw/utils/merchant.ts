@@ -14,6 +14,28 @@ export const dataHasLoaded = async ( page: Page ) => {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
 };
 
+export const tableDataHasLoaded = async ( page: Page ) => {
+	await page
+		.locator( '.woocommerce-table__table.is-loading' )
+		.waitFor( { state: 'hidden' } );
+};
+
+export const waitAndSkipTourComponent = async (
+	page: Page,
+	containerClass: string
+) => {
+	try {
+		await page.waitForSelector( `${ containerClass }`, { timeout: 3000 } );
+		if ( await page.isVisible( `${ containerClass }` ) ) {
+			await page.click(
+				`${ containerClass } button.woocommerce-tour-kit-step-controls__close-btn`
+			);
+		}
+	} catch ( error ) {
+		// Do nothing. The tour component being not present shouldn't cause the test to fail.
+	}
+};
+
 export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
@@ -249,6 +271,14 @@ export const disablePaymentMethods = async (
 	}
 
 	await saveWooPaymentsSettings( page );
+};
+
+export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
+	await navigation.goToActionScheduler( page, 'pending', orderId );
+	await page.$eval(
+		'td:has-text("wc-admin_import_orders") a:has-text("Run")',
+		( el: HTMLLinkElement ) => el.click()
+	);
 };
 
 export const isWooPayEnabled = async ( page: Page ) => {
