@@ -18,17 +18,13 @@ test.describe( 'Merchant disputes', () => {
 		);
 
 		// Wait for the disputes table to load.
-		await page
-			.locator( '.woocommerce-table__table.is-loading' )
-			.waitFor( { state: 'hidden' } );
+		await expect(
+			page.locator( '.woocommerce-table__table.is-loading' )
+		).toHaveCount( 0 );
 
 		// .nth( 1 ) defines the second instance of the Disputes heading, which is in the table.
 		expect(
-			page
-				.getByRole( 'heading', {
-					name: 'Disputes',
-				} )
-				.nth( 1 )
+			page.getByRole( 'heading', { name: 'Disputes' } ).nth( 1 )
 		).toBeVisible();
 	} );
 } );
