@@ -10,6 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { useUserPreferences } from '@woocommerce/data';
 import { getUserTimeZone } from 'wcpay/utils/test-utils';
 import moment from 'moment';
 import os from 'os';
@@ -27,6 +28,15 @@ jest.mock( '@woocommerce/csv-export', () => {
 	return {
 		...actualModule,
 		downloadCSVFile: jest.fn(),
+	};
+} );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
 	};
 } );
 
@@ -74,6 +84,10 @@ const mockUseTransactions = useTransactions as jest.MockedFunction<
 
 const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
 	typeof useTransactionsSummary
+>;
+
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -217,6 +231,12 @@ describe( 'Transactions list', () => {
 
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_transactions_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			featureFlags: {
@@ -512,6 +532,46 @@ describe( 'Transactions list', () => {
 
 		const { container } = render( <TransactionsList /> );
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders columns hidden as per user preferences', () => {
+		mockUseTransactions.mockReturnValue( {
+			transactions: getMockTransactions(),
+			isLoading: false,
+			transactionsError: undefined,
+		} );
+
+		mockUseTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 10,
+				currency: 'usd',
+				store_currencies: [ 'usd' ],
+				fees: 100,
+				total: 1000,
+				net: 900,
+			},
+			isLoading: false,
+		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			wc_payments_transactions_hidden_columns: [ 'fees' ],
+		} as any );
+
+		const { getByRole, queryByRole } = render( <TransactionsList /> );
+
+		// Fees column should not be visible, as it is hidden in user preferences.
+		expect(
+			queryByRole( 'columnheader', {
+				name: /Fees/i,
+			} )
+		).not.toBeInTheDocument();
+
+		// Channel column should be visible, as it is not hidden in user preferences.
+		expect(
+			getByRole( 'columnheader', {
+				name: /Channel/i,
+			} )
+		).toBeInTheDocument();
 	} );
 
 	describe( 'CSV download', () => {
