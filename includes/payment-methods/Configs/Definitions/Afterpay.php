@@ -72,7 +72,7 @@ class Afterpay implements BNPLPaymentMethodDefinition {
 	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	protected function get_icon_filename_base( ?string $account_country = null ): string {
+	public function get_icon_filename_base( ?string $account_country = null ): string {
 		if ( 'GB' === $account_country ) {
 			return 'clearpay';
 		}
