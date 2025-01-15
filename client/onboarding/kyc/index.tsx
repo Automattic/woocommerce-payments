@@ -12,7 +12,7 @@ import { OnboardingContextProvider } from 'onboarding/context';
 import EmbeddedKyc from 'onboarding/steps/embedded-kyc';
 import { getConnectUrl } from 'utils';
 import { trackKycExit } from 'wcpay/onboarding/tracking';
-import CloseIcon from 'assets/images/icons/close.svg';
+import CloseIcon from 'assets/images/icons/close.svg?asset';
 
 const OnboardingKycPage: React.FC = () => {
 	const urlParams = new URLSearchParams( window.location.search );
