@@ -79,10 +79,10 @@ trait Payment_Method_Icons {
 			],
 		];
 
-		$dark_icon_path = plugin_dir_url( WCPAY_PLUGIN_FILE ) . '/assets/images/payment-methods/' . $base . '-dark.svg';
-		if ( file_exists( $plugin_root . $dark_icon_path ) ) {
+		$dark_icon_filesystem_path = $plugin_root . '/assets/images/payment-methods/' . $base . '-dark.svg';
+		if ( file_exists( $dark_icon_filesystem_path ) ) {
 			$icons['dark'] = [
-				'path' => $dark_icon_path,
+				'path' => plugin_dir_url( WCPAY_PLUGIN_FILE ) . '/assets/images/payment-methods/' . $base . '-dark.svg',
 			];
 		}
 
