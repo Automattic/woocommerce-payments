@@ -20,6 +20,7 @@ import Page from '../../components/page';
 import { getDocumentUrl } from 'wcpay/utils';
 import VatFormModal from 'wcpay/vat/form-modal';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 interface Column extends TableCardColumn {
 	key: 'date' | 'type' | 'description' | 'download';
@@ -160,7 +161,11 @@ export const DocumentsList = (): JSX.Element => {
 		}
 	}, [ requestedDocumentID, requestedDocumentType, downloadDocument ] );
 
-	const columnsToDisplay = getColumns();
+	const columns = getColumns();
+
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		Column
+	>( 'wc_payments_documents_hidden_columns', columns );
 
 	const totalRows = documentsSummary.count || 0;
 	const rows = documents.map( ( document: Document ) => {
@@ -243,6 +248,7 @@ export const DocumentsList = (): JSX.Element => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [] }
 			/>
 			<VatFormModal
