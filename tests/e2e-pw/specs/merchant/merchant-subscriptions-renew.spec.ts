@@ -12,7 +12,6 @@ import {
 	getMerchant,
 	getShopper,
 	prepareAcceptingDialogs,
-	removeDialogListener,
 } from '../../utils/helpers';
 import {
 	emptyCart,
@@ -24,7 +23,6 @@ import {
 } from '../../utils/shopper';
 import { goToShop } from '../../utils/shopper-navigation';
 import { goToSubscriptionPage } from '../../utils/merchant-navigation';
-import { after } from 'lodash';
 
 const productName = 'Subscription signup fee product';
 const customerBillingConfig =
