@@ -15,6 +15,7 @@ import {
 	isMulticurrencyEnabled,
 	setOption,
 	tableDataHasLoaded,
+	waitAndSkipTourComponent,
 } from '../../utils/merchant';
 import { goToOrderAnalytics } from '../../utils/merchant-navigation';
 
@@ -50,19 +51,16 @@ test.describe( 'Admin order analytics', () => {
 
 		orderId = await orderIdField.innerText();
 		await ensureOrderIsProcessed( merchantPage, orderId );
-
-		// Ensure that the tour modal is not shown.
-		await setOption(
-			merchantPage,
-			'woocommerce_orders_report_date_tour_shown',
-			'yes'
-		);
 	} );
 
 	test( 'should load without any errors', async ( { browser } ) => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
 		await tableDataHasLoaded( merchantPage );
+		await waitAndSkipTourComponent(
+			merchantPage,
+			'.woocommerce-revenue-report-date-tour'
+		);
 
 		const ordersTitle = merchantPage.getByRole( 'heading', {
 			name: 'Orders',
@@ -78,6 +76,10 @@ test.describe( 'Admin order analytics', () => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
 		await tableDataHasLoaded( merchantPage );
+		await waitAndSkipTourComponent(
+			merchantPage,
+			'.woocommerce-revenue-report-date-tour'
+		);
 
 		const columnToggle = merchantPage.getByTitle(
 			'Choose which values to display'

@@ -20,15 +20,20 @@ export const tableDataHasLoaded = async ( page: Page ) => {
 		.waitFor( { state: 'hidden' } );
 };
 
-export const setOption = async (
+export const waitAndSkipTourComponent = async (
 	page: Page,
-	optionName: string,
-	value: string
+	containerClass: string
 ) => {
-	await navigation.goToOptionsPage( page );
-	const optionInput = page.getByRole( 'textbox', { name: optionName } );
-	await optionInput.fill( value );
-	await page.getByRole( 'button', { name: 'Save Changes' } ).click();
+	try {
+		await page.waitForSelector( `${ containerClass }`, { timeout: 3000 } );
+		if ( await page.isVisible( `${ containerClass }` ) ) {
+			await page.click(
+				`${ containerClass } button.woocommerce-tour-kit-step-controls__close-btn`
+			);
+		}
+	} catch ( error ) {
+		// Do nothing. The tour component being not present shouldn't cause the test to fail.
+	}
 };
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
