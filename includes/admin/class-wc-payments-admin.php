@@ -972,7 +972,6 @@ class WC_Payments_Admin {
 			'storeName'                          => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
-			'isDateFormatNoticeDismissed'        => get_option( 'wcpay_date_format_notice_dismissed', false ),
 			'dismissedDuplicateNotices'          => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
 			'userLocale'                         => WC_Payments_Utils::get_language_data( get_user_locale() ), // Language code found in current user's profile. This is different from the site's locale.
 			'isOverviewSurveySubmitted'          => get_option( 'wcpay_survey_payment_overview_submitted', false ),
