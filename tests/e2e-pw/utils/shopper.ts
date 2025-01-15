@@ -154,11 +154,17 @@ export const confirmCardAuthentication = async (
 };
 
 export const ensureSavedCardNotSelected = async ( page: Page ) => {
-	const savedCard = await page.locator(
-		'#wc-woocommerce_payments-payment-token-new'
-	);
-	if ( savedCard ) {
-		await savedCard.click();
+	if (
+		await page
+			.locator( '#wc-woocommerce_payments-payment-token-new' )
+			.isVisible()
+	) {
+		const newCardOption = await page.locator(
+			'#wc-woocommerce_payments-payment-token-new'
+		);
+		if ( newCardOption ) {
+			await newCardOption.click();
+		}
 	}
 };
 
