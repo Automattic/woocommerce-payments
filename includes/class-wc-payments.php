@@ -918,7 +918,9 @@ class WC_Payments {
 	}
 
 	/**
-	 * Adds fields so that we can store inbox notifications last read and open times.
+	 * Define fields for storing user preferences in the wp_usermeta table.
+	 *
+	 * Includes fields for inbox notifications and table column visibility.
 	 *
 	 * @param array $user_data_fields User data fields.
 	 * @return array
@@ -926,7 +928,19 @@ class WC_Payments {
 	public static function add_user_data_fields( $user_data_fields ) {
 		return array_merge(
 			$user_data_fields,
-			[ 'wc_payments_overview_inbox_last_read' ]
+			[
+				// Inbox notifications.
+				'wc_payments_overview_inbox_last_read',
+
+				// Column visibility preferences.
+				'wc_payments_transactions_hidden_columns',
+				'wc_payments_transactions_blocked_hidden_columns',
+				'wc_payments_transactions_risk_review_hidden_columns',
+				'wc_payments_transactions_uncaptured_hidden_columns',
+				'wc_payments_payouts_hidden_columns',
+				'wc_payments_disputes_hidden_columns',
+				'wc_payments_documents_hidden_columns',
+			]
 		);
 	}
 
