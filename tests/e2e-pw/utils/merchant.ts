@@ -20,16 +20,14 @@ export const tableDataHasLoaded = async ( page: Page ) => {
 		.waitFor( { state: 'hidden' } );
 };
 
-export const skipTour = async ( page: Page, containerClass: string ) => {
-	// Skip tour component if visible.
-	if (
-		await page.isVisible( containerClass, {
-			timeout: 2000,
-		} )
-	) {
-		await page
-			.locator( containerClass + " button[aria-label='Close Tour']" )
-			.click();
+export const skipTour = async ( page: Page ) => {
+	const tourKitDismissButton = await page.$(
+		`button.woocommerce-tour-kit-step-controls__close-btn`
+	);
+	if ( tourKitDismissButton ) {
+		await tourKitDismissButton.evaluate( ( button: HTMLButtonElement ) =>
+			button.click()
+		);
 	}
 };
 

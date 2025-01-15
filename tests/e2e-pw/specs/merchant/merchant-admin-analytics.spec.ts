@@ -57,7 +57,7 @@ test.describe( 'Admin order analytics', () => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
 		await tableDataHasLoaded( merchantPage );
-		await skipTour( merchantPage, '.woocommerce-revenue-report-date-tour' );
+		await skipTour( merchantPage );
 
 		const ordersTitle = merchantPage.getByRole( 'heading', {
 			name: 'Orders',
@@ -73,7 +73,7 @@ test.describe( 'Admin order analytics', () => {
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrderAnalytics( merchantPage );
 		await tableDataHasLoaded( merchantPage );
-		await skipTour( merchantPage, '.woocommerce-revenue-report-date-tour' );
+		await skipTour( merchantPage );
 
 		const columnToggle = merchantPage.getByTitle(
 			'Choose which values to display'
