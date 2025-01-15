@@ -56,3 +56,10 @@ export const goToMultiCurrencyOnboarding = async ( page: Page ) => {
 	);
 	await dataHasLoaded( page );
 };
+
+export const goToConnect = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=/payments/connect'
+	);
+	await dataHasLoaded( page );
+};
