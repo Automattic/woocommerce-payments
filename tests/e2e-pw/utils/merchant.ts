@@ -14,6 +14,25 @@ export const dataHasLoaded = async ( page: Page ) => {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
 };
 
+export const tableDataHasLoaded = async ( page: Page ) => {
+	await page
+		.locator( '.woocommerce-table__table.is-loading' )
+		.waitFor( { state: 'hidden' } );
+};
+
+export const skipTour = async ( page: Page, containerClass: string ) => {
+	// Skip tour component if visible.
+	if (
+		await page.isVisible( containerClass, {
+			timeout: 2000,
+		} )
+	) {
+		await page
+			.locator( containerClass + " button[aria-label='Close Tour']" )
+			.click();
+	}
+};
+
 export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
