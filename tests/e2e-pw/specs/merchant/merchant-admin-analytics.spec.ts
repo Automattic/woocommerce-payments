@@ -7,13 +7,11 @@ import { test, expect } from '@playwright/test';
  * Internal dependencies
  */
 import * as shopper from '../../utils/shopper';
-import { config } from '../../config/default';
 import { getMerchant, getShopper, useMerchant } from '../../utils/helpers';
 import {
 	activateMulticurrency,
 	ensureOrderIsProcessed,
 	isMulticurrencyEnabled,
-	setOption,
 	tableDataHasLoaded,
 	waitAndSkipTourComponent,
 } from '../../utils/merchant';
@@ -55,6 +53,7 @@ test.describe( 'Admin order analytics', () => {
 		await expect( ordersTitle ).toBeVisible();
 		await expect( merchantPage ).toHaveScreenshot();
 	} );
+
 	test( 'orders table should have the customer currency column', async ( {
 		browser,
 	} ) => {
