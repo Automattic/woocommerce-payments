@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+update: add incompatibility notice for GooglePay/ApplePay with shipping settings.

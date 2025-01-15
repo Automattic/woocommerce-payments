@@ -475,6 +475,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'available_payment_method_ids'           => $available_upe_payment_methods,
 				'payment_method_statuses'                => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'duplicated_payment_method_ids'          => $this->wcpay_gateway->find_duplicates(),
+				'is_requiring_full_address_checkout'     => wc_shipping_enabled() && 'yes' === get_option( 'woocommerce_shipping_cost_requires_address' ),
 				'is_wcpay_enabled'                       => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
 				'is_test_mode_enabled'                   => WC_Payments::mode()->is_test(),

@@ -272,3 +272,7 @@ export const getStripeBillingSubscriptionCount = ( state ) => {
 export const getStripeBillingMigratedCount = ( state ) => {
 	return getSettings( state ).stripe_billing_migrated_count || 0;
 };
+
+export const getIsRequiringFullAddressAtCheckout = ( state ) => {
+	return getSettings( state ).is_requiring_full_address_checkout || false;
+};

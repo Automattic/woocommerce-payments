@@ -15,6 +15,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
 } from 'wcpay/data';
+import AppleGooglePayShippingSettingsCompatibilityNotice from 'wcpay/components/google-pay-apple-pay-shipping-compatibility-notice';
 
 const PaymentRequestSettings = ( { section } ) => {
 	const [
@@ -44,6 +45,7 @@ const PaymentRequestSettings = ( { section } ) => {
 		<Card>
 			{ section === 'enable' && (
 				<CardBody>
+					<AppleGooglePayShippingSettingsCompatibilityNotice />
 					<CheckboxControl
 						checked={ isPaymentRequestEnabled }
 						onChange={ updateIsPaymentRequestEnabled }
