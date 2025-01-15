@@ -3,34 +3,29 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-
 import os from 'os';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import {
-	useDeposits,
-	useDepositsSummary,
-	useReportingExportLanguage,
-} from 'wcpay/data';
-import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import { getUnformattedAmount } from 'wcpay/utils/test-utils';
 import {
 	CachedDeposit,
 	CachedDeposits,
 	DepositsSummary,
 } from 'wcpay/types/deposits';
-import React from 'react';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -43,6 +38,15 @@ jest.mock( '@woocommerce/csv-export', () => {
 } );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
 
 const mockDeposits = [
 	{
@@ -85,8 +89,9 @@ declare const global: {
 		connect: {
 			country: string;
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
+		dateFormat: string;
+		userLocale: {
+			code: string;
 		};
 	};
 };
@@ -121,8 +126,8 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 describe( 'Deposits list', () => {
@@ -132,7 +137,11 @@ describe( 'Deposits list', () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_payouts_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
@@ -150,8 +159,9 @@ describe( 'Deposits list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
+			dateFormat: 'M j Y',
+			userLocale: {
+				code: 'en',
 			},
 		};
 	} );
@@ -321,7 +331,7 @@ describe( 'Deposits list', () => {
 			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
 			//    trailing zeros as in the display amount.
 			//
-			expect( formatDate( csvFirstDeposit[ 1 ], 'M j, Y' ) ).toBe(
+			expect( csvFirstDeposit[ 1 ].replace( /^"|"$/g, '' ) ).toBe(
 				displayFirstDeposit[ 0 ]
 			); // date
 			expect( csvFirstDeposit[ 2 ] ).toBe( displayFirstDeposit[ 1 ] ); // type

@@ -921,7 +921,9 @@ class WC_Payments {
 	}
 
 	/**
-	 * Adds fields so that we can store inbox notifications last read and open times.
+	 * Define fields for storing user preferences in the wp_usermeta table.
+	 *
+	 * Includes fields for inbox notifications and table column visibility.
 	 *
 	 * @param array $user_data_fields User data fields.
 	 * @return array
@@ -929,7 +931,19 @@ class WC_Payments {
 	public static function add_user_data_fields( $user_data_fields ) {
 		return array_merge(
 			$user_data_fields,
-			[ 'wc_payments_overview_inbox_last_read' ]
+			[
+				// Inbox notifications.
+				'wc_payments_overview_inbox_last_read',
+
+				// Column visibility preferences.
+				'wc_payments_transactions_hidden_columns',
+				'wc_payments_transactions_blocked_hidden_columns',
+				'wc_payments_transactions_risk_review_hidden_columns',
+				'wc_payments_transactions_uncaptured_hidden_columns',
+				'wc_payments_payouts_hidden_columns',
+				'wc_payments_disputes_hidden_columns',
+				'wc_payments_documents_hidden_columns',
+			]
 		);
 	}
 
@@ -1926,13 +1940,13 @@ class WC_Payments {
 				'woocommerce_remind_me_later_todo_tasks',
 				'woocommerce_deleted_todo_tasks',
 				'wcpay_fraud_protection_welcome_tour_dismissed',
-				'wcpay_payouts_rename_notice_dismissed',
 				'wcpay_capability_request_dismissed_notices',
 				'wcpay_onboarding_eligibility_modal_dismissed',
 				'wcpay_next_deposit_notice_dismissed',
 				'wcpay_duplicate_payment_method_notices_dismissed',
 				'wcpay_exit_survey_dismissed',
 				'wcpay_instant_deposit_notice_dismissed',
+				'wcpay_date_format_notice_dismissed',
 			],
 			true
 		);

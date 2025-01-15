@@ -6,6 +6,7 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
@@ -958,7 +959,6 @@ class WC_Payments_Admin {
 			'fraudProtection'                    => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
-			'isPayoutsRenameNoticeDismissed'     => WC_Payments_Features::is_payouts_rename_notice_dismissed(),
 			'enabledPaymentMethods'              => $this->get_enabled_payment_method_ids(),
 			'progressiveOnboarding'              => $this->account->get_progressive_onboarding_details(),
 			'accountDefaultCurrency'             => $this->account->get_account_default_currency(),
@@ -972,18 +972,22 @@ class WC_Payments_Admin {
 			'storeName'                          => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
-			'reporting'                          => [
-				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
-			],
 			'dismissedDuplicateNotices'          => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
-			'locale'                             => WC_Payments_Utils::get_language_data( get_locale() ),
+			'userLocale'                         => WC_Payments_Utils::get_language_data( get_user_locale() ), // Language code found in current user's profile. This is different from the site's locale.
 			'isOverviewSurveySubmitted'          => get_option( 'wcpay_survey_payment_overview_submitted', false ),
 			'trackingInfo'                       => $this->account->get_tracking_info(),
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
+			'dateFormat'                         => wc_date_format(),
+			'timeFormat'                         => get_option( 'time_format' ),
 		];
 
+		/**
+		 * Filter the WCPay JS settings.
+		 *
+		 * @since 6.1.0
+		 */
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
 	}
 
@@ -997,6 +1001,11 @@ class WC_Payments_Admin {
 			'exitSurveyLastShown' => get_option( 'wcpay_exit_survey_last_shown', null ),
 		];
 
+		/**
+		 * Filter the plugins page settings.
+		 *
+		 * @since 7.8.0
+		 */
 		return apply_filters( 'wcpay_plugins_page_js_settings', $plugins_page_settings );
 	}
 
@@ -1253,7 +1262,7 @@ class WC_Payments_Admin {
 	 */
 	public function display_wcpay_transaction_fee( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( ! $order || ! $order->get_meta( '_wcpay_transaction_fee' ) ) {
+		if ( ! $order || ! $order->get_meta( '_wcpay_transaction_fee' ) || Intent_Status::REQUIRES_CAPTURE === $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ) ) {
 			return;
 		}
 		?>

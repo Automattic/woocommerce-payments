@@ -404,17 +404,18 @@ function getParsedLocale() {
 	}
 }
 
-export const isBillingInformationMissing = ( form ) => {
+export const isBillingInformationMissing = () => {
 	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
 
 	// first name and last name are kinda special - we just need one of them to be at checkout
 	const name = `${
-		form.querySelector(
+		document.querySelector(
 			`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.first_name }`
 		)?.value || ''
 	} ${
-		form.querySelector( `#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }` )
-			?.value || ''
+		document.querySelector(
+			`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.last_name }`
+		)?.value || ''
 	}`.trim();
 	if (
 		! name &&
@@ -435,14 +436,15 @@ export const isBillingInformationMissing = ( form ) => {
 	const country = billingFieldsToValidate.includes(
 		SHORTCODE_BILLING_ADDRESS_FIELDS.country
 	)
-		? form.querySelector( `#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }` )
-				?.value
+		? document.querySelector(
+				`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }`
+		  )?.value
 		: null;
 
 	// We need to just find one field with missing information. If even only one is missing, just return early.
 	return Boolean(
 		billingFieldsToValidate.find( ( fieldName ) => {
-			const field = form.querySelector( `#${ fieldName }` );
+			const field = document.querySelector( `#${ fieldName }` );
 			let isRequired = enabledBillingFields[ fieldName ]?.required;
 			const locale = getParsedLocale();
 

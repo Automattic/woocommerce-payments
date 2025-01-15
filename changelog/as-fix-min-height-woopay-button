@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Set a default minimum height to the WooPay button.

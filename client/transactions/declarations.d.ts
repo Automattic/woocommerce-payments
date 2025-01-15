@@ -79,6 +79,7 @@ declare module '@woocommerce/components' {
 		defaultOrder?: 'desc' | 'asc';
 		isSortable?: boolean;
 		defaultSort?: boolean;
+		visible?: boolean;
 	}
 
 	interface TableCardBodyColumn {
@@ -97,6 +98,7 @@ declare module '@woocommerce/components' {
 		summary?: { label: string; value: string | number | boolean }[];
 		query?: Query;
 		onQueryChange?: unknown;
+		onColumnsChange?: ( showCols: Array< string >, key?: string ) => void;
 		actions?: React.ReactNode[];
 		showMenu?: boolean;
 	}
@@ -139,6 +141,8 @@ declare module '@woocommerce/navigation' {
 		risk_level_is_not?: string;
 		customer_currency_is?: unknown;
 		customer_currency_is_not?: unknown;
+		source_is?: string;
+		source_is_not?: string;
 		store_currency_is?: string;
 		loan_id_is?: string;
 		search?: string[];

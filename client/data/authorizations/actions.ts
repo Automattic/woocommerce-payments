@@ -196,6 +196,13 @@ export function* submitCaptureAuthorization(
 			'getPaymentIntent'
 		);
 
+		// Need to invalidate transactions tab to update newly captured transaction if needed.
+		yield controls.dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getTransactions'
+		);
+
 		// Create success notice.
 		yield controls.dispatch(
 			'core/notices',

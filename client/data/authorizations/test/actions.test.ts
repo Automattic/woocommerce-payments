@@ -120,6 +120,14 @@ describe( 'Authorizations actions', () => {
 
 			expect( generator.next().value ).toEqual(
 				controls.dispatch(
+					'wc/payments',
+					'invalidateResolutionForStoreSelector',
+					'getTransactions'
+				)
+			);
+
+			expect( generator.next().value ).toEqual(
+				controls.dispatch(
 					'core/notices',
 					'createSuccessNotice',
 					'Payment for order #254 captured successfully.'

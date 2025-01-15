@@ -17,6 +17,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\Logger;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 use WCPay\MultiCurrency\Utils;
+use WC_Payments_Features;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -832,21 +833,23 @@ class MultiCurrency {
 			return (float) $price;
 		}
 
-		// We must ceil the converted price here so that we don't introduce rounding errors when
-		// summing up costs. Consider, e.g. a converted price of 10.003 for a 2-decimal currency.
-		// A single product would cost 10.00, but 2 of them would cost 20.01, _unless_ we round
-		// the individual parts correctly.
 		$converted_price = ( (float) $price ) * $currency->get_rate();
-		$converted_price = $this->ceil_price_for_currency( $converted_price, $currency );
 
 		if ( 'tax' === $type || 'coupon' === $type || 'exchange_rate' === $type ) {
-			return $converted_price;
+			// We must make sure the price is rounded properly before returning it, otherwise we
+			// may end up with inconsistent prices in the cart.
+			$num_decimals = absint(
+				$this->localization_service->get_currency_format(
+					$currency->get_code()
+				)['num_decimals']
+			);
+			return round( $converted_price, $num_decimals );
 		}
 
 		$charm_compatible_types = [ 'product', 'shipping' ];
 		$apply_charm_pricing    = $this->get_apply_charm_only_to_products()
-		? 'product' === $type
-		: in_array( $type, $charm_compatible_types, true );
+			? 'product' === $type
+			: in_array( $type, $charm_compatible_types, true );
 
 		return $this->get_adjusted_price( $converted_price, $apply_charm_pricing, $currency );
 	}
@@ -1107,7 +1110,7 @@ class MultiCurrency {
 		woocommerce_admin_meta_boxes.rounding_precision = <?php echo (int) $rounding_precision; ?>;
 		</script>
 			<?php
-		endif;
+			endif;
 	}
 
 	/**
@@ -1251,10 +1254,10 @@ class MultiCurrency {
 	public function is_multi_currency_settings_page(): bool {
 		global $current_screen, $current_tab;
 		return (
-			is_admin()
-			&& $current_tab && $current_screen
-			&& 'wcpay_multi_currency' === $current_tab
-			&& 'woocommerce_page_wc-settings' === $current_screen->base
+		is_admin()
+		&& $current_tab && $current_screen
+		&& 'wcpay_multi_currency' === $current_tab
+		&& 'woocommerce_page_wc-settings' === $current_screen->base
 		);
 	}
 
@@ -1276,7 +1279,7 @@ class MultiCurrency {
 		$query_union = [];
 
 		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
-					\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
+				\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			foreach ( $currencies as $currency ) {
 				$query_union[] = $wpdb->prepare(
 					"SELECT %s AS currency_code, EXISTS(SELECT currency FROM {$wpdb->prefix}wc_orders WHERE currency=%s LIMIT 1) AS exists_in_orders",
@@ -1327,6 +1330,46 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Adjusts the given amount for the currently selected currency.
+	 *
+	 * Applies charm pricing if specified, and adjusts the amount according to
+	 * the selected currency's conversion rate.
+	 *
+	 * @param  float $amount              The original amount to adjust.
+	 * @param  bool  $apply_charm_pricing Optional. Whether to apply charm pricing to the adjusted amount. Default true.
+	 * @return float                       The amount adjusted for the selected currency.
+	 */
+	public function adjust_amount_for_selected_currency( $amount, $apply_charm_pricing = true ) {
+		return $this->get_adjusted_price( $amount, $apply_charm_pricing, $this->get_selected_currency() );
+	}
+
+	/**
+	 * Returns the amount with the backend format.
+	 *
+	 * @param float $amount The amount to format.
+	 * @param array $args The arguments to pass to wc_price.
+	 *
+	 * @return string The formatted amount.
+	 */
+	public function get_backend_formatted_wc_price( float $amount, array $args = [] ): string {
+		// Return early if MC isn't enabled or merchant has a single currency.
+		if ( ! self::has_additional_currencies_enabled() || ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
+			return wc_price( $amount, $args );
+		}
+
+		$has_filter = has_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ] );
+		if ( false !== $has_filter ) {
+			return wc_price( $amount, $args );
+		}
+
+		add_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
+		$price = wc_price( $amount, $args );
+		remove_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
+
+		return $price;
+	}
+
+	/**
 	 * Gets the price after adjusting it with the rounding and charm settings.
 	 *
 	 * @param float    $price               The price to be adjusted.
@@ -1336,7 +1379,26 @@ class MultiCurrency {
 	 * @return float The adjusted price.
 	 */
 	protected function get_adjusted_price( $price, $apply_charm_pricing, $currency ): float {
-		$price = $this->ceil_price( $price, (float) $currency->get_rounding() );
+		$rounding = (float) $currency->get_rounding();
+
+		// If rounding is configured to be `0.00` we still need to round to the nearest lowest
+		// currency denomination.
+		// Otherwise we ceil the price to the configured rounding option.
+		// NOTE: We don't round if currency rounding is > 0.00 because in those cases we want to
+		// ceil the amount. For example: if $price = 1.251 and currency rounding = 0.25 we
+		// want that amount ceiled to 1.50. If we round( 1.251 ) to 1.25 before ceiling the
+		// price to the nearest 0.25 amount the final amount will be 1.25, which is incorrect.
+		if ( 0.00 === $rounding ) {
+			$num_decimals = absint(
+				$this->localization_service->get_currency_format(
+					$currency->get_code()
+				)['num_decimals']
+			);
+
+			$price = round( $price, $num_decimals );
+		} else {
+			$price = $this->ceil_price( $price, $rounding );
+		}
 
 		if ( $apply_charm_pricing ) {
 			$price += (float) $currency->get_charm();
@@ -1359,39 +1421,6 @@ class MultiCurrency {
 			return $price;
 		}
 		return ceil( $price / $rounding ) * $rounding;
-	}
-
-	/**
-	 * Ceils the price to the precision dictated by the number of decimals in the provided currency.
-	 *
-	 * For example: US$10.0091 -> US$10.01, JPY 1001.01 -> JPY 1002.
-	 *
-	 * @param float    $price     The price to be ceiled.
-	 * @param Currency $currency  The currency used to figure out the ceil precision.
-	 *
-	 * @return float  The ceiled price.
-	 */
-	protected function ceil_price_for_currency( float $price, Currency $currency ): float {
-		// phpcs:disable Squiz.PHP.CommentedOutCode.Found, example comments look like code.
-
-		// Example to explain the math:
-		// $price            = 10.003.
-		// expected rounding = 10.01.
-
-		// $num_decimals = 2.
-		// $factor.      = 10^2 = 100.
-		$num_decimals = absint(
-			$this->localization_service->get_currency_format(
-				$currency->get_code()
-			)['num_decimals']
-		);
-		$factor       = 10 ** $num_decimals; // 10^{$num_decimals}.
-
-		// ceil( 10.003 * $factor ) = ceil( 1_000.3 ) = 1_001.
-		// 1_001 / 100 = 10.01.
-		return ceil( $price * $factor ) / $factor; // = 10.01.
-
-		// phpcs:enable Squiz.PHP.CommentedOutCode.Found
 	}
 
 	/**
