@@ -44,9 +44,9 @@ import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
-import DateFormatNotice from 'wcpay/components/date-format-notice';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -208,6 +208,10 @@ export const DisputesList = (): JSX.Element => {
 	);
 
 	const headers = getHeaders( getQuery().orderby );
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		DisputesTableHeader
+	>( 'wc_payments_disputes_hidden_columns', headers );
+
 	const totalRows = disputesSummary.count || 0;
 
 	const rows = disputes.map( ( dispute ) => {
@@ -524,7 +528,6 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			<DateFormatNotice />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
@@ -533,11 +536,12 @@ export const DisputesList = (): JSX.Element => {
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
-				headers={ headers }
+				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					downloadable && (
 						<DownloadButton
