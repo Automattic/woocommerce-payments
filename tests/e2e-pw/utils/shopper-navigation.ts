@@ -43,3 +43,8 @@ export const goToOrder = async ( page: Page, orderId: string ) => {
 		waitUntil: 'load',
 	} );
 };
+
+export const goToSubscriptions = ( page: Page ) =>
+	page.goto( '/my-account/subscriptions/', {
+		waitUntil: 'load',
+	} );

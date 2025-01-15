@@ -21,6 +21,7 @@ import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { recordEvent } from 'tracks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 interface Column extends TableCardColumn {
 	key:
@@ -104,7 +105,11 @@ const getColumns = (): Column[] =>
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 export const AuthorizationsList = (): JSX.Element => {
-	const columnsToDisplay = getColumns();
+	const columns = getColumns();
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		Column
+	>( 'wc_payments_transactions_uncaptured_hidden_columns', columns );
+
 	const {
 		authorizationsSummary,
 		isLoading: isSummaryLoading,
@@ -260,6 +265,7 @@ export const AuthorizationsList = (): JSX.Element => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 			/>
 		</Page>
 	);
