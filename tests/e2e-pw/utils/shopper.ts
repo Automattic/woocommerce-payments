@@ -12,6 +12,24 @@ export const isUIUnblocked = async ( page: Page ) => {
 	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
 };
 
+/**
+ * Waits for the UI to refresh after a user interaction.
+ *
+ * Woo core blocks and refreshes the UI after 1s after each key press
+ * in a text field or immediately after a select field changes.
+ * We need to wait to make sure that all key presses were processed by that mechanism.
+ */
+export const waitForUiRefresh = ( page: Page ) => page.waitForTimeout( 1000 );
+
+/**
+ * Takes off the focus out of the Stripe elements to let Stripe logic
+ * wrap up and make sure the Place Order button is clickable.
+ */
+export const focusPlaceOrderButton = async ( page: Page ) => {
+	await page.locator( '#place_order' ).focus();
+	await waitForUiRefresh( page );
+};
+
 export const fillBillingAddress = async (
 	page: Page,
 	billingAddress: CustomerAddress
@@ -188,10 +206,7 @@ export const setupCheckout = async (
 ) => {
 	await navigation.goToCheckout( page );
 	await fillBillingAddress( page, billingAddress );
-	// Woo core blocks and refreshes the UI after 1s after each key press
-	// in a text field or immediately after a select field changes.
-	// We need to wait to make sure that all key presses were processed by that mechanism.
-	await page.waitForTimeout( 1000 );
+	await waitForUiRefresh( page );
 	await isUIUnblocked( page );
 	await page
 		.locator( '.wc_payment_method.payment_method_woocommerce_payments' )
@@ -252,10 +267,7 @@ export const placeOrderWithCurrency = async (
 	await navigation.goToShopWithCurrency( page, currency );
 	await setupProductCheckout( page, [ [ config.products.simple.name, 1 ] ] );
 	await fillCardDetails( page, config.cards.basic );
-	// Takes off the focus out of the Stripe elements to let Stripe logic
-	// wrap up and make sure the Place Order button is clickable.
-	await page.locator( '#place_order' ).focus();
-	await page.waitForTimeout( 1000 );
+	await focusPlaceOrderButton( page );
 	await placeOrder( page );
 	await page.waitForURL( /\/order-received\//, { waitUntil: 'load' } );
 	await expect(
