@@ -8,9 +8,6 @@ import { __ } from '@wordpress/i18n';
  */
 
 import {
-	AffirmIcon,
-	AfterpayIcon,
-	ClearpayIcon,
 	BancontactIcon,
 	BankDebitIcon,
 	CreditCardIcon,
@@ -24,7 +21,7 @@ import {
 	SofortIcon,
 } from 'wcpay/payment-methods-icons';
 
-const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
+import GeneratedPaymentMethodInformationObject from './payment-methods/generated-map';
 
 export interface PaymentMethodMapEntry {
 	id: string;
@@ -168,43 +165,6 @@ const PaymentMethodInformationObject: Record<
 		allows_pay_later: false,
 		accepts_only_domestic_payment: false,
 	},
-	affirm: {
-		id: 'affirm',
-		label: __( 'Affirm', 'woocommerce-payments' ),
-		description: __(
-			'Allow customers to pay over time with Affirm.',
-			'woocommerce-payments'
-		),
-		icon: AffirmIcon,
-		currencies: [ 'USD', 'CAD' ],
-		stripe_key: 'affirm_payments',
-		allows_manual_capture: false,
-		allows_pay_later: true,
-		accepts_only_domestic_payment: true,
-	},
-	afterpay_clearpay: {
-		id: 'afterpay_clearpay',
-		label:
-			'GB' === accountCountry
-				? __( 'Clearpay', 'woocommerce-payments' )
-				: __( 'Afterpay', 'woocommerce-payments' ),
-		description:
-			'GB' === accountCountry
-				? __(
-						'Allow customers to pay over time with Clearpay.',
-						'woocommerce-payments'
-				  )
-				: __(
-						'Allow customers to pay over time with Afterpay.',
-						'woocommerce-payments'
-				  ),
-		icon: 'GB' === accountCountry ? ClearpayIcon : AfterpayIcon,
-		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP' ],
-		stripe_key: 'afterpay_clearpay_payments',
-		allows_manual_capture: false,
-		allows_pay_later: true,
-		accepts_only_domestic_payment: true,
-	},
 	jcb: {
 		id: 'jcb',
 		label: __( 'JCB', 'woocommerce-payments' ),
@@ -233,6 +193,7 @@ const PaymentMethodInformationObject: Record<
 		allows_pay_later: true,
 		accepts_only_domestic_payment: true,
 	},
+	...GeneratedPaymentMethodInformationObject,
 };
 
 export default PaymentMethodInformationObject;
