@@ -418,6 +418,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
+		include_once __DIR__ . '/class-logger-context.php';
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
@@ -509,6 +510,8 @@ class WC_Payments {
 		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
 		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
 		include_once __DIR__ . '/class-duplicates-detection-service.php';
+
+		wcpay_get_container()->get( \WCPay\Internal\LoggerContext::class )->init_hooks();
 
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
@@ -918,7 +921,9 @@ class WC_Payments {
 	}
 
 	/**
-	 * Adds fields so that we can store inbox notifications last read and open times.
+	 * Define fields for storing user preferences in the wp_usermeta table.
+	 *
+	 * Includes fields for inbox notifications and table column visibility.
 	 *
 	 * @param array $user_data_fields User data fields.
 	 * @return array
@@ -926,7 +931,19 @@ class WC_Payments {
 	public static function add_user_data_fields( $user_data_fields ) {
 		return array_merge(
 			$user_data_fields,
-			[ 'wc_payments_overview_inbox_last_read' ]
+			[
+				// Inbox notifications.
+				'wc_payments_overview_inbox_last_read',
+
+				// Column visibility preferences.
+				'wc_payments_transactions_hidden_columns',
+				'wc_payments_transactions_blocked_hidden_columns',
+				'wc_payments_transactions_risk_review_hidden_columns',
+				'wc_payments_transactions_uncaptured_hidden_columns',
+				'wc_payments_payouts_hidden_columns',
+				'wc_payments_disputes_hidden_columns',
+				'wc_payments_documents_hidden_columns',
+			]
 		);
 	}
 

@@ -7,6 +7,7 @@ import * as React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -38,12 +39,25 @@ jest.mock( 'data/index', () => ( {
 	} ) ),
 } ) );
 
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
+
 const mockUseAuthorizations = useAuthorizations as jest.MockedFunction<
 	typeof useAuthorizations
 >;
 
 const mockUseAuthorizationsSummary = useAuthorizationsSummary as jest.MockedFunction<
 	typeof useAuthorizationsSummary
+>;
+
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -107,6 +121,12 @@ describe( 'Authorizations list', () => {
 
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_transactions_uncaptured_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			featureFlags: {

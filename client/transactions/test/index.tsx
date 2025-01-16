@@ -6,6 +6,7 @@
 import * as React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -47,6 +48,15 @@ jest.mock( 'data/index', () => ( {
 	useAuthorizationsSummary: jest.fn(),
 } ) );
 
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
+
 const mockUseTransactions = useTransactions as jest.MockedFunction<
 	typeof useTransactions
 >;
@@ -69,6 +79,10 @@ const mockUseAuthorizationsSummary = useAuthorizationsSummary as jest.MockedFunc
 
 const mockUseFraudOutcomeTransactionsSummary = useFraudOutcomeTransactionsSummary as jest.MockedFunction<
 	typeof useFraudOutcomeTransactionsSummary
+>;
+
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -118,6 +132,12 @@ describe( 'TransactionsPage', () => {
 			isLoading: false,
 			transactionsSummary: {},
 		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_transactions_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			featureFlags: {
