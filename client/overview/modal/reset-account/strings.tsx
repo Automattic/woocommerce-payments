@@ -15,9 +15,9 @@ export default {
 		: __( 'Reset account', 'woocommerce-payments' ),
 	description: isInTestModeOnboarding()
 		? sprintf(
-				/* translators: %s: WooPayments. */
+				/* translators: 1: WooPayments. */
 				__(
-					'When you reset your test account, all data — including your %s account details, test transactions, and payouts history — will be lost. This action cannot be undone, but you can create a new test account at any time.',
+					'When you reset your test account, all data — including your %1$s account details, test transactions, and payouts history — will be lost. This action cannot be undone, but you can create a new test account at any time.',
 					'woocommerce-payments'
 				),
 				'WooPayments'
