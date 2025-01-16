@@ -26,7 +26,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WooPay_Utilities $woopay_utilities WCPay gateway.
+	 * @param WooPay_Utilities $woopay_utilities WooPay utilities.
 	 */
 	public function __construct( WooPay_Utilities $woopay_utilities ) {
 		$this->woopay_utilities = $woopay_utilities;
