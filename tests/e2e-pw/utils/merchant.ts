@@ -36,7 +36,26 @@ export const waitAndSkipTourComponent = async (
 	}
 };
 
+const isWooPaymentsSettingsPage = ( page: Page ) => {
+	return page
+		.url()
+		.includes(
+			'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments'
+		);
+};
+
+const ensureSupportPhoneIsFilled = async ( page: Page ) => {
+	if ( isWooPaymentsSettingsPage( page ) ) {
+		const supportPhoneInput = page.getByPlaceholder( 'Mobile number' );
+		if ( ( await supportPhoneInput.inputValue() ) === '' ) {
+			await supportPhoneInput.fill( '0000000000' );
+		}
+	}
+};
+
 export const saveWooPaymentsSettings = async ( page: Page ) => {
+	await ensureSupportPhoneIsFilled( page );
+
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
 		timeout: 10000,

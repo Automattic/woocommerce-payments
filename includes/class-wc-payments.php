@@ -418,6 +418,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
+		include_once __DIR__ . '/class-logger-context.php';
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
@@ -509,6 +510,8 @@ class WC_Payments {
 		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
 		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
 		include_once __DIR__ . '/class-duplicates-detection-service.php';
+
+		wcpay_get_container()->get( \WCPay\Internal\LoggerContext::class )->init_hooks();
 
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
