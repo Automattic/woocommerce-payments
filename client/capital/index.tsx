@@ -12,7 +12,7 @@ import { TableCard } from '@woocommerce/components';
  */
 import Page from 'components/page';
 import { TestModeNotice } from 'components/test-mode-notice';
-import ErrorBoundary from 'components/error-boundary';
+import AdminErrorBoundary from 'wcpay/components/admin-error-boundary';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import {
 	formatExplicitCurrency,
@@ -212,9 +212,9 @@ const CapitalPage = (): JSX.Element => {
 			<TestModeNotice currentPage="loans" />
 
 			{ wcpaySettings.accountLoans.has_active_loan && (
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<ActiveLoanSummary />
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			) }
 			<TableCard
 				className="wcpay-loans-list"

@@ -1,7 +1,7 @@
 /* eslint-disable */
 const path = require( 'path' );
 const { mapValues } = require( 'lodash' );
-const { ProvidePlugin } = require( 'webpack' );
+const { ProvidePlugin, DefinePlugin, webpack } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
 const WebpackRTLPlugin = require( './webpack-rtl-plugin' );
@@ -161,6 +161,11 @@ module.exports = {
 						return 'wp-mediaelement';
 				}
 			},
+		} ),
+		new DefinePlugin( {
+			'process.env.MODE': JSON.stringify(
+				process.env.NODE_ENV || 'development'
+			),
 		} ),
 	],
 	resolveLoader: {

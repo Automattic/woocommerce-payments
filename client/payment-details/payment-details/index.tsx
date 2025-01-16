@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 import { TestModeNotice } from '../../components/test-mode-notice';
 import Page from '../../components/page';
 import { Card, CardBody } from '@wordpress/components';
-import ErrorBoundary from '../../components/error-boundary';
+import AdminErrorBoundary from '../../components/admin-error-boundary';
 import PaymentDetailsSummary from '../summary';
 import PaymentDetailsTimeline from '../timeline';
 import PaymentDetailsPaymentMethod from '../payment-method';
@@ -57,27 +57,27 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			<TestModeNotice currentPage="payments" isDetailsView={ true } />
-			<ErrorBoundary>
+			<AdminErrorBoundary>
 				<PaymentDetailsSummary
 					charge={ charge }
 					metadata={ metadata }
 					isLoading={ isLoading }
 					paymentIntent={ paymentIntent }
 				/>
-			</ErrorBoundary>
+			</AdminErrorBoundary>
 
 			{ showTimeline && wcpaySettings.featureFlags.paymentTimeline && (
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<PaymentDetailsTimeline paymentIntentId={ id } />
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			) }
 
-			<ErrorBoundary>
+			<AdminErrorBoundary>
 				<PaymentDetailsPaymentMethod
 					charge={ charge }
 					isLoading={ isLoading }
 				/>
-			</ErrorBoundary>
+			</AdminErrorBoundary>
 		</Page>
 	);
 };

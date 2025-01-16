@@ -12,6 +12,7 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import ErrorBoundary from 'wcpay/components/error-boundary';
 
 const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 const PaymentMethodMessageWrapper = ( {
@@ -114,31 +115,34 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 					alt={ title }
 				/>
 			</div>
-			<PaymentMethodMessageWrapper
-				upeName={ upeName }
-				countries={ countries }
-				amount={ amount }
-				currentCountry={ currentCountry }
-				appearance={ appearance }
-			>
-				<Elements
-					stripe={ stripe }
-					options={ {
-						appearance: appearance,
-						fonts: fontRules,
-					} }
+			<ErrorBoundary>
+				<PaymentMethodMessageWrapper
+					upeName={ upeName }
+					countries={ countries }
+					amount={ amount }
+					currentCountry={ currentCountry }
+					appearance={ appearance }
 				>
-					<PaymentMethodMessagingElement
+					<Elements
+						stripe={ stripe }
 						options={ {
-							amount: amount || 0,
-							currency: cartData.totals.currency_code || 'USD',
-							paymentMethodTypes: [ upeName ],
-							countryCode: currentCountry,
-							displayType: 'promotional_text',
+							appearance: appearance,
+							fonts: fontRules,
 						} }
-					/>
-				</Elements>
-			</PaymentMethodMessageWrapper>
+					>
+						<PaymentMethodMessagingElement
+							options={ {
+								amount: amount || 0,
+								currency:
+									cartData.totals.currency_code || 'USD',
+								paymentMethodTypes: [ upeName ],
+								countryCode: currentCountry,
+								displayType: 'promotional_text',
+							} }
+						/>
+					</Elements>
+				</PaymentMethodMessageWrapper>
+			</ErrorBoundary>
 		</>
 	);
 };

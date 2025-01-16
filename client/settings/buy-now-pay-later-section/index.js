@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
 import PaymentMethodsList from '../payment-methods-list';
 import SettingsSection from '../settings-section';
 import LoadableSettingsSection from '../loadable-settings-section';
-import ErrorBoundary from '../../components/error-boundary';
+import AdminErrorBoundary from '../../components/admin-error-boundary';
 import { useGetAvailablePaymentMethodIds } from 'wcpay/data';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 import CardBody from 'wcpay/settings/card-body';
@@ -52,7 +52,7 @@ const BuyNowPayLaterSection = () => {
 			id="buy-now-pay-later-methods"
 		>
 			<LoadableSettingsSection numLines={ 30 }>
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<Card className="payment-methods">
 						<CardBody size={ null }>
 							<PaymentMethodsList
@@ -60,7 +60,7 @@ const BuyNowPayLaterSection = () => {
 							/>
 						</CardBody>
 					</Card>
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			</LoadableSettingsSection>
 		</SettingsSection>
 	);

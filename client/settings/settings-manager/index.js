@@ -21,7 +21,7 @@ import Deposits from '../deposits';
 import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
-import ErrorBoundary from '../../components/error-boundary';
+import AdminErrorBoundary from '../../components/admin-error-boundary';
 import {
 	useDepositDelayDays,
 	useGetDuplicatedPaymentMethodIds,
@@ -186,9 +186,9 @@ const SettingsManager = () => {
 				id="general"
 			>
 				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
+					<AdminErrorBoundary>
 						<GeneralSettings />
-					</ErrorBoundary>
+					</AdminErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<DuplicatedPaymentMethodsContext.Provider
@@ -205,9 +205,9 @@ const SettingsManager = () => {
 					description={ ExpressCheckoutDescription }
 				>
 					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
+						<AdminErrorBoundary>
 							<ExpressCheckout />
-						</ErrorBoundary>
+						</AdminErrorBoundary>
 					</LoadableSettingsSection>
 				</SettingsSection>
 			</DuplicatedPaymentMethodsContext.Provider>
@@ -216,21 +216,21 @@ const SettingsManager = () => {
 				id="transactions"
 			>
 				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
+					<AdminErrorBoundary>
 						<Transactions
 							setTransactionInputsValid={
 								setTransactionInputsValid
 							}
 						/>
-					</ErrorBoundary>
+					</AdminErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection description={ DepositsDescription } id="deposits">
 				<div id="payout-schedule">
 					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
+						<AdminErrorBoundary>
 							<Deposits />
-						</ErrorBoundary>
+						</AdminErrorBoundary>
 					</LoadableSettingsSection>
 				</div>
 			</SettingsSection>
@@ -239,9 +239,9 @@ const SettingsManager = () => {
 				id="fp-settings"
 			>
 				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
+					<AdminErrorBoundary>
 						<FraudProtection />
-					</ErrorBoundary>
+					</AdminErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection
@@ -249,9 +249,9 @@ const SettingsManager = () => {
 				id="advanced-settings"
 			>
 				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
+					<AdminErrorBoundary>
 						<AdvancedSettings />
-					</ErrorBoundary>
+					</AdminErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />

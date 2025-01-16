@@ -11,7 +11,7 @@ import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
 import ExpressCheckoutSettings from './express-checkout-settings';
 import WCPaySettingsContext from './wcpay-settings-context';
-import ErrorBoundary from '../components/error-boundary';
+import AdminErrorBoundary from '../components/admin-error-boundary';
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( wcpaySettings.fraudServices );
@@ -23,9 +23,9 @@ const settingsContainer = document.getElementById(
 if ( settingsContainer ) {
 	ReactDOM.render(
 		<WCPaySettingsContext.Provider value={ wcpaySettings }>
-			<ErrorBoundary>
+			<AdminErrorBoundary>
 				<SettingsManager />
-			</ErrorBoundary>
+			</AdminErrorBoundary>
 		</WCPaySettingsContext.Provider>,
 		settingsContainer
 	);
@@ -39,9 +39,9 @@ if ( expressCheckoutSettingsContainer ) {
 
 	ReactDOM.render(
 		<WCPaySettingsContext.Provider value={ wcpaySettings }>
-			<ErrorBoundary>
+			<AdminErrorBoundary>
 				<ExpressCheckoutSettings methodId={ methodId } />
-			</ErrorBoundary>
+			</AdminErrorBoundary>
 		</WCPaySettingsContext.Provider>,
 		expressCheckoutSettingsContainer
 	);

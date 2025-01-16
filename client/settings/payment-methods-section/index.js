@@ -11,7 +11,7 @@ import { Card, CardHeader } from '@wordpress/components';
  */
 import SettingsSection from '../settings-section';
 import LoadableSettingsSection from '../loadable-settings-section';
-import ErrorBoundary from '../../components/error-boundary';
+import AdminErrorBoundary from '../../components/admin-error-boundary';
 import { useGetAvailablePaymentMethodIds } from '../../data';
 import CardBody from 'wcpay/settings/card-body';
 import PaymentMethodsList from '../payment-methods-list';
@@ -60,7 +60,7 @@ const PaymentMethodsSection = () => {
 			id="payment-methods"
 		>
 			<LoadableSettingsSection numLines={ 60 }>
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<Card className="payment-methods">
 						<CardHeader className="payment-methods__header">
 							<h4 className="payment-methods__heading">
@@ -81,7 +81,7 @@ const PaymentMethodsSection = () => {
 							/>
 						</CardBody>
 					</Card>
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			</LoadableSettingsSection>
 		</SettingsSection>
 	);

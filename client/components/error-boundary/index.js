@@ -1,13 +1,36 @@
 /**
- * WordPress dependencies
+ * External dependencies
  */
 import { Component } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
-import InlineNotice from 'components/inline-notice';
+import { __, sprintf } from '@wordpress/i18n';
+
+const DevFallback = ( { error } ) => {
+	if ( process.env.MODE === 'production' ) {
+		return null;
+	}
+
+	return (
+		<div
+			style={ {
+				padding: '5px 10px',
+				background: 'papayawhip',
+			} }
+		>
+			{ sprintf(
+				/* translators: %s: Error message - used in development mode */
+				__(
+					'Development error caught by error boundary: %s',
+					'woocommerce-payments'
+				),
+				error.toString()
+			) }
+		</div>
+	);
+};
 
 class ErrorBoundary extends Component {
-	constructor() {
-		super( ...arguments );
+	constructor( props ) {
+		super( props );
 
 		this.state = {
 			error: null,
@@ -19,26 +42,25 @@ class ErrorBoundary extends Component {
 	}
 
 	componentDidCatch( error, info ) {
+		// this branch of code will not be present in a production build
+		if ( process.env.MODE !== 'production' ) {
+			// eslint-disable-next-line no-console
+			console.error( error, info );
+		}
+
 		if ( this.props.onError ) {
 			this.props.onError( error, info );
 		}
 	}
 
 	render() {
+		const { children, fallbackRender: Fallback = DevFallback } = this.props;
+
 		if ( ! this.state.error ) {
-			return this.props.children;
+			return children;
 		}
 
-		return (
-			<InlineNotice icon status="error" isDismissible={ false }>
-				{ __(
-					'There was an error rendering this view. Please contact support for assistance if the problem persists.',
-					'woocommerce-payments'
-				) }
-				<br />
-				{ this.state.error.toString() }
-			</InlineNotice>
-		);
+		return <Fallback error={ this.state.error } />;
 	}
 }
 

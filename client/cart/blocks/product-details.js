@@ -11,6 +11,7 @@ import { select } from '@wordpress/data';
  * Internal dependencies
  */
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import ErrorBoundary from 'wcpay/components/error-boundary';
 import { useStripeAsync } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../../checkout/api';
@@ -99,14 +100,16 @@ const ProductDetail = ( { cart, context } ) => {
 	};
 
 	return (
-		<div className="wc-block-components-bnpl-wrapper">
-			<Elements
-				stripe={ stripe }
-				options={ { appearance, fonts: fontRules } }
-			>
-				<PaymentMethodMessagingElement options={ options } />
-			</Elements>
-		</div>
+		<ErrorBoundary>
+			<div className="wc-block-components-bnpl-wrapper">
+				<Elements
+					stripe={ stripe }
+					options={ { appearance, fonts: fontRules } }
+				>
+					<PaymentMethodMessagingElement options={ options } />
+				</Elements>
+			</div>
+		</ErrorBoundary>
 	);
 };
 
@@ -114,6 +117,7 @@ export const renderBNPLCartMessaging = () => {
 	if ( isInEditor() ) {
 		return null;
 	}
+
 	return (
 		<ExperimentalOrderMeta>
 			<ProductDetail />

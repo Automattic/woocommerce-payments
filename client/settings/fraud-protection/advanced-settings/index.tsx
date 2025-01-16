@@ -24,7 +24,7 @@ import {
 	useAdvancedFraudProtectionSettings,
 	useSettings,
 } from '../../../data';
-import ErrorBoundary from '../../../components/error-boundary';
+import AdminErrorBoundary from 'wcpay/components/admin-error-boundary';
 import { getAdminUrl } from '../../../utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import AVSMismatchRuleCard from './cards/avs-mismatch';
@@ -342,7 +342,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 			} }
 		>
 			<SettingsLayout displayBanner={ false }>
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<div className="fraud-protection-advanced-settings-layout">
 						<Breadcrumb />
 						{ validationError && (
@@ -417,7 +417,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 							{ renderSaveButton() }
 						</footer>
 					</div>
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			</SettingsLayout>
 			<SaveFraudProtectionSettingsButton>
 				<div className="fraud-protection-header-save-button">

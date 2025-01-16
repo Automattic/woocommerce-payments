@@ -14,7 +14,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 import { recordEvent } from 'wcpay/tracks';
 import { ClickTooltip } from 'wcpay/components/tooltip';
-import ErrorBoundary from 'wcpay/components/error-boundary';
+import AdminErrorBoundary from 'wcpay/components/admin-error-boundary';
 import SetupLivePaymentsModal from './modal';
 import './style.scss';
 
@@ -111,13 +111,13 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 				} ) }
 			</BannerNotice>
 			{ livePaymentsModalVisible && (
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<SetupLivePaymentsModal
 						from={ from }
 						source={ source }
 						onClose={ () => setLivePaymentsModalVisible( false ) }
 					/>
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			) }
 		</>
 	);

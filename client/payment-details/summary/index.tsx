@@ -60,7 +60,7 @@ import { PaymentIntent } from '../../types/payment-intents';
 import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
-import ErrorBoundary from 'components/error-boundary';
+import AdminErrorBoundary from 'components/admin-error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import CardNotice from 'wcpay/components/card-notice';
 import {
@@ -633,7 +633,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			</CardBody>
 
 			{ charge.dispute && (
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					{ isAwaitingResponse( charge.dispute.status ) ? (
 						<DisputeAwaitingResponseDetails
 							dispute={ charge.dispute }
@@ -647,7 +647,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					) : (
 						<DisputeResolutionFooter dispute={ charge.dispute } />
 					) }
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			) }
 			{ isRefundModalOpen && (
 				<RefundModal

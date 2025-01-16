@@ -17,7 +17,7 @@ import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessNotice from './connection-sucess-notice';
 import DepositsOverview from 'components/deposits-overview';
-import ErrorBoundary from 'components/error-boundary';
+import AdminErrorBoundary from 'components/admin-error-boundary';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import Page from 'components/page';
@@ -187,66 +187,66 @@ const OverviewPage = () => {
 					actions={ [] }
 				/>
 			) }
-			<ErrorBoundary>
+			<AdminErrorBoundary>
 				<FRTDiscoverabilityBanner />
-			</ErrorBoundary>
+			</AdminErrorBoundary>
 
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 			{ ! accountRejected && ! accountUnderReview && (
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<Welcome />
 
 					{ showTaskList && (
 						<Card>
-							<ErrorBoundary>
+							<AdminErrorBoundary>
 								<TaskList
 									tasks={ tasks }
 									overviewTasksVisibility={
 										overviewTasksVisibility
 									}
 								/>
-							</ErrorBoundary>
+							</AdminErrorBoundary>
 						</Card>
 					) }
 
 					<Card>
-						<ErrorBoundary>
+						<AdminErrorBoundary>
 							<AccountBalances />
-						</ErrorBoundary>
+						</AdminErrorBoundary>
 					</Card>
 
 					{
 						/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
 						isPaymentOverviewWidgetEnabled && (
-							<ErrorBoundary>
+							<AdminErrorBoundary>
 								<PaymentActivity />
-							</ErrorBoundary>
+							</AdminErrorBoundary>
 						)
 					}
 
 					<DepositsOverview />
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			) }
-			<ErrorBoundary>
+			<AdminErrorBoundary>
 				<AccountStatus
 					accountStatus={ accountStatus }
 					accountFees={ activeAccountFees }
 				/>
-			</ErrorBoundary>
+			</AdminErrorBoundary>
 			{ hasActiveLoan && (
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<ActiveLoanSummary />
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			) }
 			{ ! accountRejected && ! accountUnderReview && (
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<InboxNotifications />
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			) }
 			{ showProgressiveOnboardingEligibilityModal && (
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					<ProgressiveOnboardingEligibilityModal />
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			) }
 		</Page>
 	);

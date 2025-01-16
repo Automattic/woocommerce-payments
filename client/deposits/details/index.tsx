@@ -29,7 +29,7 @@ import type { CachedDeposit } from 'types/deposits';
 import { useDeposit } from 'data';
 import TransactionsList from 'transactions/list';
 import Page from 'components/page';
-import ErrorBoundary from 'components/error-boundary';
+import AdminErrorBoundary from 'components/admin-error-boundary';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InlineNotice from 'components/inline-notice';
 import {
@@ -242,16 +242,16 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 	return (
 		<Page>
 			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
-			<ErrorBoundary>
+			<AdminErrorBoundary>
 				{ isLoading ? (
 					<SummaryListPlaceholder numberOfItems={ 2 } />
 				) : (
 					<DepositOverview deposit={ deposit } />
 				) }
-			</ErrorBoundary>
+			</AdminErrorBoundary>
 
 			{ deposit && (
-				<ErrorBoundary>
+				<AdminErrorBoundary>
 					{ isInstantDeposit ? (
 						// If instant deposit, show a message instead of the transactions list.
 						// Matching the components used in @woocommerce/components TableCard for consistent UI.
@@ -282,7 +282,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 					) : (
 						<TransactionsList depositId={ depositId } />
 					) }
-				</ErrorBoundary>
+				</AdminErrorBoundary>
 			) }
 		</Page>
 	);

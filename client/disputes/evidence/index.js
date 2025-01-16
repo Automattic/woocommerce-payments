@@ -30,7 +30,7 @@ import { FileUploadControl, UploadedReadOnly } from 'components/file-upload';
 import { TestModeNotice } from 'components/test-mode-notice';
 import Info from '../info';
 import Page from 'components/page';
-import ErrorBoundary from 'components/error-boundary';
+import AdminErrorBoundary from 'components/admin-error-boundary';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
@@ -324,7 +324,7 @@ export const DisputeEvidencePage = ( props ) => {
 		<Page isNarrow className="wcpay-dispute-evidence">
 			<TestModeNotice currentPage="disputes" isDetailsView={ true } />
 			{ readOnly && ! isLoading && readOnlyNotice }
-			<ErrorBoundary>
+			<AdminErrorBoundary>
 				<Card size="large">
 					<CardHeader>
 						{
@@ -341,8 +341,8 @@ export const DisputeEvidencePage = ( props ) => {
 						<Info dispute={ dispute } isLoading={ isLoading } />
 					</CardBody>
 				</Card>
-			</ErrorBoundary>
-			<ErrorBoundary>
+			</AdminErrorBoundary>
+			<AdminErrorBoundary>
 				<Card size="large">
 					<CardHeader>
 						{
@@ -406,17 +406,17 @@ export const DisputeEvidencePage = ( props ) => {
 						</LoadableBlock>
 					</CardBody>
 				</Card>
-			</ErrorBoundary>
+			</AdminErrorBoundary>
 			{
 				// Don't render the form placeholder while the dispute is being loaded.
 				// The form content depends on the selected product type, hence placeholder might disappear after loading.
 				! isLoading && (
-					<ErrorBoundary>
+					<AdminErrorBoundary>
 						<DisputeEvidenceForm
 							{ ...evidenceFormProps }
 							readOnly={ readOnly }
 						/>
-					</ErrorBoundary>
+					</AdminErrorBoundary>
 				)
 			}
 		</Page>

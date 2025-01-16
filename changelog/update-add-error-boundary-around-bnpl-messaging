@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: add error boundary around BNPL messaging element

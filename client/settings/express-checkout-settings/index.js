@@ -16,7 +16,7 @@ import WooPaySettings from './woopay-settings';
 import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
-import ErrorBoundary from '../../components/error-boundary';
+import AdminErrorBoundary from '../../components/admin-error-boundary';
 import {
 	ApplePayIcon,
 	GooglePayIcon,
@@ -149,9 +149,9 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 			{ sections.map( ( { section, description } ) => (
 				<SettingsSection key={ section } description={ description }>
 					<LoadableSettingsSection numLines={ 30 }>
-						<ErrorBoundary>
+						<AdminErrorBoundary>
 							<Controls section={ section } />
-						</ErrorBoundary>
+						</AdminErrorBoundary>
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) ) }
