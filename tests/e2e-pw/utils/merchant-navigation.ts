@@ -23,6 +23,12 @@ export const goToWooPaymentsSettings = async ( page: Page ) => {
 	);
 };
 
+export const goToWooCommerceSettings = async ( page: Page, tab?: string ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-settings' + ( tab ? '&tab=' + tab : '' )
+	);
+};
+
 export const goToOptionsPage = async ( page: Page ) => {
 	await page.goto( '/wp-admin/options.php', {
 		waitUntil: 'load',
@@ -95,9 +101,19 @@ export const goToConnect = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
-export const goToSubscriptions = async ( page: Page ) => {
+export const goToSubscriptions = async ( page: Page ) =>
 	await page.goto( '/wp-admin/admin.php?page=wc-orders--shop_subscription', {
 		waitUntil: 'load',
 	} );
+
+export const goToSubscriptionPage = async (
+	page: Page,
+	subscriptionId: number
+) => {
+	await goToSubscriptions( page );
+	const orderRow = page.locator(
+		'tr#order-' + subscriptionId + ' .order_title a:nth-child(1)'
+	);
+	orderRow.evaluate( ( el: HTMLLinkElement ) => el.click() );
 	await dataHasLoaded( page );
 };

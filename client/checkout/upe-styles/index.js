@@ -167,9 +167,9 @@ export const appearanceSelectors = {
 		buttonSelectors: [ '#place_order' ],
 		linkSelectors: [ 'a' ],
 		containerSelectors: [ '.woocommerce-checkout-review-order-table' ],
-		headerSelectors: [ '.site-header' ],
-		footerSelectors: [ '.site-footer' ],
-		footerLink: [ '.site-footer a' ],
+		headerSelectors: [ '.site-header', 'header > div' ],
+		footerSelectors: [ '.site-footer', 'footer > div' ],
+		footerLink: [ '.site-footer a', 'footer a' ],
 	},
 
 	/**
