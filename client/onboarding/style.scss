@@ -178,21 +178,6 @@ body.wcpay-onboarding__body {
 			margin-top: 4px;
 		}
 
-		.loading-step {
-			max-width: 520px;
-			position: absolute;
-			left: 50%;
-			transform: translate( -50%, -50% );
-			&.centered {
-				top: 35%;
-				display: flex;
-				flex-direction: column;
-				align-items: center; // Centers children horizontally
-				justify-content: center; // Centers children vertically
-				text-align: center; // Center-aligns text
-			}
-		}
-
 		.onboarding-mode__note {
 			background-color: $wp-blue-0;
 			padding: $gap-small $gap;
@@ -260,5 +245,14 @@ body.wcpay-onboarding__body {
 	// Hide Jetpack's JITM (Just in time messages) banners for onboarding.
 	.woocommerce-layout__jitm {
 		display: none;
+	}
+
+	// Wrap loader so it's centered and does not get cut.
+	.embedded-kyc-loader-wrapper {
+		text-align: center;
+		height: 35px;
+		&.padded {
+			padding-top: 61px; // Takes the same padding as Stripe embedded component.
+		}
 	}
 }
