@@ -13,7 +13,6 @@ import { config } from '../../config/default';
 import {
 	confirmCardAuthentication,
 	emptyCart,
-	ensureSavedCardNotSelected,
 	fillCardDetails,
 	setupCheckout,
 } from '../../utils/shopper';
@@ -113,8 +112,6 @@ describeif( shouldRunSubscriptionsTests )(
 					testSelectors.cartSubscriptionFirstPaymentDate
 				)
 			).toHaveText( `First renewal: ${ renewalDateFormatted }` );
-
-			await ensureSavedCardNotSelected( shopperPage );
 
 			// Pay using a 3DS card
 			const card = config.cards[ '3dsOTP' ];
