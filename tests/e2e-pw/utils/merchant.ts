@@ -36,7 +36,16 @@ export const waitAndSkipTourComponent = async (
 	}
 };
 
+const ensureSupportPhoneIsFilled = async ( page: Page ) => {
+	const supportPhoneInput = await page.getByPlaceholder( 'Mobile number' );
+	if ( ( await supportPhoneInput.inputValue() ) === '' ) {
+		await supportPhoneInput.fill( '0000000000' );
+	}
+};
+
 export const saveWooPaymentsSettings = async ( page: Page ) => {
+	await ensureSupportPhoneIsFilled( page );
+
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
 		timeout: 10000,
