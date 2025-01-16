@@ -8,13 +8,13 @@
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
 use WCPay\PaymentMethods\Configs\Interfaces\BNPLPaymentMethodDefinition;
-use WCPay\PaymentMethods\Configs\Traits\BNPL_Payment_Method;
 use WCPay\PaymentMethods\Configs\Traits\Base_Payment_Method;
+use WCPay\PaymentMethods\Configs\Traits\BNPL_Payment_Method;
+use WCPay\PaymentMethods\Configs\Traits\Payment_Method_Icons;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
-use WCPay\PaymentMethods\Configs\Traits\Payment_Method_Icons;
-
+use WCPay\Constants\Payment_Method;
 /**
  * Class implementing the Affirm payment method definition.
  */
@@ -29,7 +29,7 @@ class Affirm implements BNPLPaymentMethodDefinition {
 	 * @return string
 	 */
 	public function get_id(): string {
-		return 'affirm';
+		return Payment_Method::AFFIRM;
 	}
 
 	/**
