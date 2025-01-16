@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-Replace connection success notice for live accounts with a modal.
+Replace payments overview page connection success notice with a modal for live accounts.
