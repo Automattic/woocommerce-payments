@@ -44,7 +44,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$capabilities = $this->definition->get_capabilities();
 		$icons        = $this->definition->get_icons();
 
-		$this->stripe_id                    = $this->definition->get_stripe_id();
+		$this->stripe_id                    = $this->definition->get_id();
 		$this->is_reusable                  = in_array( Payment_Method_Capability::TOKENIZATION, $capabilities, true );
 		$this->is_bnpl                      = in_array( Payment_Method_Capability::BUY_NOW_PAY_LATER, $capabilities, true );
 		$this->icon_url                     = $icons['default']['path'];
