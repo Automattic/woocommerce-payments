@@ -10,7 +10,7 @@ import GooglePayAssetDark from 'assets/images/cards/google-pay-preview-dark.svg?
 import GooglePayAssetLight from 'assets/images/cards/google-pay-preview-light.svg?asset';
 import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
 
-const ExpressCheckoutButtonPreviewComponent = ( {
+const ExpressCheckoutButtonPreview = ( {
 	expressPaymentMethod,
 	options,
 	buttonAttributes,
@@ -58,4 +58,4 @@ const ExpressCheckoutButtonPreviewComponent = ( {
 	);
 };
 
-export default ExpressCheckoutButtonPreviewComponent;
+export default ExpressCheckoutButtonPreview;

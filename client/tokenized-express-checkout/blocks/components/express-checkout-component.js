@@ -12,7 +12,7 @@ import {
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
-import ExpressCheckoutButtonPreviewComponent from './express-checkout-button-preview';
+import ExpressCheckoutButtonPreview from './express-checkout-button-preview';
 
 const FALLBACK_BUTTON_WAIT_TIME = 3000; // 3 seconds
 
@@ -161,7 +161,7 @@ const ExpressCheckoutComponent = ( {
 
 	if ( showFallbackButton ) {
 		return (
-			<ExpressCheckoutButtonPreviewComponent
+			<ExpressCheckoutButtonPreview
 				expressPaymentMethod={ expressPaymentMethod }
 				buttonAttributes={ buttonAttributes }
 				options={ checkoutElementOptions }
