@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Convert shopper purchase multiple subscriptions E2E tests to Playwright
