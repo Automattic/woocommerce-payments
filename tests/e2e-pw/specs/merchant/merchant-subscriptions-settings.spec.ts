@@ -14,11 +14,17 @@ describeif( shouldRunSubscriptionsTests )(
 			page,
 		} ) => {
 			await goToWooCommerceSettings( page, 'subscriptions' );
-			expect(
-				page.locator( 'a.nav-tab-active', {
-					hasText: 'Subscriptions',
-				} )
-			).toBeVisible();
+			const menuItem = page.getByRole( 'main' ).getByRole( 'link', {
+				name: 'Subscriptions',
+				exact: true,
+			} );
+			await expect( menuItem ).toBeVisible();
+
+			// An alternative way to verify the subscriptions menu page is active, avoiding the active tab classname.
+			const heading = await page.getByRole( 'heading', {
+				name: 'Subscriptions',
+			} );
+			await expect( heading ).toBeVisible();
 		} );
 	}
 );
