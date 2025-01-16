@@ -75,10 +75,26 @@ export const addCartProduct = async (
 	await page.goto( `/shop/?add-to-cart=${ productId }` );
 };
 
+const ensureSavedCardNotSelected = async ( page: Page ) => {
+	if (
+		await page
+			.locator( '#wc-woocommerce_payments-payment-token-new' )
+			.isVisible()
+	) {
+		const newCardOption = await page.locator(
+			'#wc-woocommerce_payments-payment-token-new'
+		);
+		if ( newCardOption ) {
+			await newCardOption.click();
+		}
+	}
+};
+
 export const fillCardDetails = async (
 	page: Page,
 	card = config.cards.basic
 ) => {
+	await ensureSavedCardNotSelected( page );
 	if (
 		await page.$(
 			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'

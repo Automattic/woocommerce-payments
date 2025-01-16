@@ -16,6 +16,8 @@ use WCPay\Core\Mode;
 use WCPay\Internal\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
 
+use WCPay\Logger as LoggerWrapper;
+
 /**
  * Internal Logger tests.
  *
@@ -36,7 +38,7 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	private $mock_wc_logger;
 
 	/**
-	 * Holds the underlying WC_Logger
+	 * Holds the Mode class
 	 *
 	 * @var Mode|MockObject
 	 */
@@ -190,5 +192,17 @@ class LoggerTest extends WCPAY_UnitTestCase {
 			->willReturn( false );
 		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enable_logging' => 'yes' ] );
 		$this->assertTrue( $this->sut->can_log() );
+	}
+
+	/**
+	 * Test that format_object method can handle failures.
+	 */
+	public function test_format_object_failure() {
+		$recursive_array        = [];
+		$recursive_array['foo'] = &$recursive_array;
+
+		$formatted_object = LoggerWrapper::format_object( 'TEST', $recursive_array );
+
+		$this->assertStringContainsString( 'Recursion detected', $formatted_object );
 	}
 }
