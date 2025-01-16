@@ -210,6 +210,12 @@ cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
 
+echo "Deactivating Coming Soon mode in WooCommerce..."
+cli wp option set woocommerce_coming_soon "no"
+
+echo "Enabling company field as an optional parameter in checkout form..."
+cli wp option set woocommerce_checkout_company_field "optional"
+
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
 
@@ -338,6 +344,9 @@ cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m
 
 echo "Setting up a coupon for E2E tests"
 cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
+
+echo "Syncing COT data"
+cli wp wc cot sync
 
 # Log test configuration for visibility
 echo
