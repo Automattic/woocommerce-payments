@@ -17,6 +17,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_WooPay_Direct_Checkout {
 	/**
+	 * WooPay_Utilities instance.
+	 *
+	 * @var WooPay_Utilities
+	 */
+	private $woopay_utilities;
+
+	/**
+	 * Initialize class actions.
+	 *
+	 * @param WooPay_Utilities $woopay_utilities WCPay gateway.
+	 */
+	public function __construct( WooPay_Utilities $woopay_utilities ) {
+		$this->woopay_utilities = $woopay_utilities;
+	}
+
+	/**
 	 * Initialize the hooks.
 	 *
 	 * @return void
@@ -73,9 +89,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 			return;
 		}
 
-		$woopay_util = new WooPay_Utilities();
-
-		if ( ! $woopay_util->should_enable_woopay_on_cart_or_checkout() ) {
+		if ( ! $this->woopay_utilities->should_enable_woopay_on_cart_or_checkout() ) {
 			return;
 		}
 
