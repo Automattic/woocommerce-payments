@@ -37,6 +37,7 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 		const customerBillingConfig =
 			config.addresses[ 'subscriptions-customer' ].billing;
 
+		let subscriptionId: string;
 		let page: Page;
 
 		test.beforeAll( async ( { browser }, { project } ) => {
@@ -59,6 +60,10 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 				page.getByRole( 'heading', { name: 'Order received' } )
 			).toBeVisible();
 
+			subscriptionId = await page
+				.getByLabel( 'View subscription number' )
+				.innerText();
+
 			const { merchantPage } = await getMerchant( browser );
 			page = merchantPage;
 		} );
@@ -77,16 +82,22 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 				} )
 				.click();
 
-			await page.getByRole( 'button', { name: 'Run' } ).click();
+			await page.getByRole( 'link', { name: 'Run' } ).focus();
+			await page.getByRole( 'link', { name: 'Run' } ).click();
 
 			await expect(
-				page.getByRole( 'code', { name: actionSchedulerHook } )
+				page.getByText( actionSchedulerHook, { exact: true } )
 			).toBeVisible();
 
 			// Go to Subscriptions and verify the subscription renewal
 			await goToSubscriptions( page );
+
+			const numericSubscriptionId = subscriptionId.substring( 1 );
+
 			await expect(
-				page.getByRole( 'link', { name: '2' } )
+				page
+					.locator( `#order-${ numericSubscriptionId }` )
+					.getByRole( 'cell', { name: '2', exact: true } )
 			).toBeVisible();
 		} );
 	}
