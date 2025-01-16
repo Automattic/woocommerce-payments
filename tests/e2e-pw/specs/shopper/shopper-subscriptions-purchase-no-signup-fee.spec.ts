@@ -12,7 +12,6 @@ import RestAPI from '../../utils/rest-api';
 import { config } from '../../config/default';
 import { goToSubscriptions, goToOrder } from '../../utils/merchant-navigation';
 import {
-	ensureSavedCardNotSelected,
 	fillCardDetails,
 	placeOrder,
 	setupCheckout,
@@ -47,7 +46,6 @@ describeif( shouldRunSubscriptionsTests )(
 				shopperPage.getByText( /has been added to your cart\./ )
 			).toBeVisible();
 			await setupCheckout( shopperPage, customerBillingConfig );
-			await ensureSavedCardNotSelected( shopperPage );
 			const card = config.cards.basic;
 			await fillCardDetails( shopperPage, card );
 			await placeOrder( shopperPage );

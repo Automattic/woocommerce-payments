@@ -13,19 +13,6 @@ export const goToOrder = async ( page: Page, orderId: string ) => {
 	);
 };
 
-export const goToSubscriptions = async (
-	page: Page,
-	subscriptionId?: number
-) => {
-	await page.goto(
-		'/wp-admin/admin.php?page=wc-orders--shop_subscription' +
-			( subscriptionId ? `&action=edit&id=${ subscriptionId }` : '' ),
-		{
-			waitUntil: 'load',
-		}
-	);
-};
-
 export const goToPaymentDetails = async (
 	page: Page,
 	paymentIntentId: string
