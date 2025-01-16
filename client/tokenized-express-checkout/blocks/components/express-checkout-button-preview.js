@@ -54,6 +54,7 @@ const ExpressCheckoutButtonPreview = ( {
 					buttonColor,
 					buttonRadius: parseFloat( borderRadius ),
 					buttonSizeMode: 'fill',
+					onClick: () => {},
 				} );
 				ref.current.appendChild( button );
 			} )();
