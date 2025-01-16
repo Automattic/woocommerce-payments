@@ -439,8 +439,12 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object  = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$intent_status = $this->read_webhook_property( $event_object, 'status' );
-
-		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
+		if ( Payment_Method::CARD_PRESENT === $payment_method_type ) {
+			$created = $event_object['created'] ?? null;
+			$this->order_service->mark_terminal_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ), $created );
+		} else {
+			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
+		}
 	}
 
 	/**
