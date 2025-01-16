@@ -11,7 +11,6 @@ import { config } from '../../config/default';
 import { describeif, getMerchant, getShopper } from '../../utils/helpers';
 import {
 	emptyCart,
-	ensureSavedCardNotSelected,
 	fillCardDetails,
 	focusPlaceOrderButton,
 	placeOrder,
@@ -41,7 +40,6 @@ describeif( shouldRunSubscriptionsTests )(
 				[ [ productName, 1 ] ],
 				customerBillingConfig
 			);
-			await ensureSavedCardNotSelected( shopperPage );
 			await fillCardDetails( shopperPage, config.cards.basic );
 			await focusPlaceOrderButton( shopperPage );
 			await placeOrder( shopperPage );
@@ -74,7 +72,7 @@ describeif( shouldRunSubscriptionsTests )(
 					name: 'Edit Subscription',
 				} )
 			).toBeVisible();
-			const orderActions = await merchantPage.locator(
+			const orderActions = merchantPage.locator(
 				'select[name="wc_order_action"]'
 			);
 			await orderActions.selectOption( { label: 'Process renewal' } );
