@@ -38,7 +38,7 @@ class Afterpay implements BNPLPaymentMethodDefinition {
 	 * @return string
 	 */
 	public function get_stripe_id(): string {
-		return 'afterpay_clearpay';
+		return 'afterpay_clearpay_payments';
 	}
 
 	/**

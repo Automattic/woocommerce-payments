@@ -41,7 +41,7 @@ export type PaymentMethodCapabilityType = typeof PaymentMethodCapability[ keyof 
 export const PaymentMethodDefinitions: PaymentMethodConfigurations = {
 	affirm: {
 		id: 'affirm',
-		stripeId: 'affirm',
+		stripeId: 'affirm_payments',
 		title: 'Affirm',
 		description: 'Allow customers to pay over time with Affirm.',
 		capabilities: [
@@ -63,7 +63,7 @@ export const PaymentMethodDefinitions: PaymentMethodConfigurations = {
 	},
 	afterpay_clearpay: {
 		id: 'afterpay_clearpay',
-		stripeId: 'afterpay_clearpay',
+		stripeId: 'afterpay_clearpay_payments',
 		title: 'Afterpay',
 		description: 'Allow customers to pay over time with Afterpay.',
 		capabilities: [
