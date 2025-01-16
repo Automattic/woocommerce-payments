@@ -61,6 +61,12 @@ const ExpressCheckoutButtonPreview = ( {
 		}
 	}, [ ref, theme, expressPaymentMethod, borderRadius ] );
 
+	useEffect( () => {
+		ref.current
+			?.querySelector( 'button' )
+			?.style?.setProperty( 'border-radius', borderRadius );
+	}, [ ref, borderRadius ] );
+
 	if ( expressPaymentMethod === 'googlePay' ) {
 		return (
 			<div
