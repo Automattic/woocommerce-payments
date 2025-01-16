@@ -254,6 +254,39 @@ export async function setupProductCheckout(
 }
 
 /**
+ * Places an order with custom options.
+ *
+ * @param  page The Playwright page object.
+ * @param  options The custom options to use for the order.
+ * @return The order ID.
+ */
+export const placeOrderWithOptions = async (
+	page: Page,
+	options?: {
+		productId?: number;
+		billingAddress?: CustomerAddress;
+	}
+) => {
+	await addCartProduct( page, options?.productId );
+	await setupCheckout(
+		page,
+		options?.billingAddress || config.addresses.customer.billing
+	);
+	await fillCardDetails( page, config.cards.basic );
+	await focusPlaceOrderButton( page );
+	await placeOrder( page );
+	await page.waitForURL( /\/order-received\//, {
+		waitUntil: 'load',
+	} );
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
+
+	const url = await page.url();
+	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+};
+
+/**
  * Places an order with a specified currency.
  *
  * @param {Page} page The Playwright page object.
@@ -265,17 +298,7 @@ export const placeOrderWithCurrency = async (
 	currency: string
 ) => {
 	await navigation.goToShopWithCurrency( page, currency );
-	await setupProductCheckout( page, [ [ config.products.simple.name, 1 ] ] );
-	await fillCardDetails( page, config.cards.basic );
-	await focusPlaceOrderButton( page );
-	await placeOrder( page );
-	await page.waitForURL( /\/order-received\//, { waitUntil: 'load' } );
-	await expect(
-		page.getByRole( 'heading', { name: 'Order received' } )
-	).toBeVisible();
-
-	const url = await page.url();
-	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+	return placeOrderWithOptions( page );
 };
 
 export const emptyCart = async ( page: Page ) => {
