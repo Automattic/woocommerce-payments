@@ -7,7 +7,10 @@ import { test, expect, Page } from '@playwright/test';
  * Internal dependencies
  */
 import { getMerchant, getShopper } from '../../utils/helpers';
-import { deactivateMulticurrency } from '../../utils/merchant';
+import {
+	deactivateMulticurrency,
+	isMulticurrencyEnabled,
+} from '../../utils/merchant';
 import * as shopper from '../../utils/shopper';
 import { goToOrder, goToPaymentDetails } from '../../utils/merchant-navigation';
 
@@ -23,7 +26,9 @@ test.describe( 'WooCommerce Payments - Full Refund', () => {
 
 		// Disable multi-currency in the merchant settings. This step is important because local environment setups
 		// might have multi-currency enabled. We need to ensure a consistent environment for the test.
-		await deactivateMulticurrency( merchantPage );
+		if ( await isMulticurrencyEnabled( merchantPage ) ) {
+			await deactivateMulticurrency( merchantPage );
+		}
 	} );
 
 	test( 'should process a full refund for an order', async () => {
