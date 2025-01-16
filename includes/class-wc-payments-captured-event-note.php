@@ -66,7 +66,7 @@ class WC_Payments_Captured_Event_Note {
 
 		$html = '';
 		foreach ( $lines as $line ) {
-			$html .= self::HTML_BR . $line . PHP_EOL;
+			$html .= '<p>' . $line . '</p>' . PHP_EOL;
 		}
 
 		return '<div class="captured-event-details" style="line-height: 0.8;padding-top: 15px;">' . PHP_EOL
