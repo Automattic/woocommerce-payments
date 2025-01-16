@@ -12,6 +12,18 @@ namespace WCPay\PaymentMethods\Configs\Traits;
  */
 trait Base_Payment_Method {
 	/**
+	 * Get the Stripe payment method ID.
+	 * By default, this appends '_payments' to the payment method ID. If Stripe changes their
+	 * capability key, we'll need to update this. Individual payment method definitions can
+	 * override this if its naming convention is different.
+	 *
+	 * @return string
+	 */
+	public function get_stripe_id(): string {
+		return $this->get_id() . '_payments';
+	}
+
+	/**
 	 * Whether this payment method is available for the given currency and country
 	 *
 	 * @param string $currency        The currency code to check.

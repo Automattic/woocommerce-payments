@@ -33,18 +33,6 @@ class Afterpay implements BNPLPaymentMethodDefinition {
 	}
 
 	/**
-	 * Get the Stripe payment method ID
-	 *
-	 * This "stripe_id" is what would normally be used for capability checks. For payments, we just need the id above.
-	 * TODO: We need to re-think the current mapping we have in WC_Payment_Gateway_WCPay->payment_method_capability_key_map.
-	 *
-	 * @return string
-	 */
-	public function get_stripe_id(): string {
-		return 'afterpay_clearpay_payments';
-	}
-
-	/**
 	 * Get the customer-facing title of the payment method
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.

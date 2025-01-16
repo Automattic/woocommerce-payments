@@ -20,7 +20,7 @@ interface PaymentMethodDefinition {
 	public function get_id(): string;
 
 	/**
-	 * Get the Stripe payment method ID (e.g. 'card', 'klarna')
+	 * Get the Stripe payment method ID (e.g. 'card_payments', 'klarna_payments')
 	 *
 	 * @return string
 	 */
