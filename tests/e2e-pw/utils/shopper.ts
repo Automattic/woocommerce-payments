@@ -153,6 +153,21 @@ export const confirmCardAuthentication = async (
 	await button.click();
 };
 
+export const ensureSavedCardNotSelected = async ( page: Page ) => {
+	if (
+		await page
+			.getByRole( 'radio', { name: /use a new payment method/i } )
+			.isVisible()
+	) {
+		const newCardOption = page.getByRole( 'radio', {
+			name: /use a new payment method/i,
+		} );
+		if ( newCardOption ) {
+			await newCardOption.click();
+		}
+	}
+};
+
 /**
  * Retrieves the product price from the current product page.
  *
