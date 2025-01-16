@@ -3,6 +3,7 @@
  */
 import { useCallback } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -58,22 +59,43 @@ export const useExpressCheckout = ( {
 				return;
 			}
 
+			const shippingAddressRequired = shippingData?.needsShipping;
+
+			const shippingRatesMap = shippingData?.shippingRates[ 0 ]?.shipping_rates?.map(
+				( r ) => {
+					return {
+						id: r.rate_id,
+						amount: parseInt( r.price, 10 ),
+						displayName: r.name,
+					};
+				}
+			);
+			const shippingOptionsWithFallback =
+				// the variable could be undefined or it could just be an array without values.
+				! shippingRatesMap || shippingRatesMap.length === 0
+					? [
+							// fallback for initialization (and initialization _only_), before an address is provided by the ECE.
+							{
+								id: 'pending',
+								displayName: __(
+									'Pending',
+									'woocommerce-payments'
+								),
+								amount: 0,
+							},
+					  ]
+					: shippingRatesMap;
+
 			const options = {
 				lineItems: normalizeLineItems( billing?.cartTotalItems ),
 				emailRequired: true,
-				shippingAddressRequired: shippingData?.needsShipping,
+				shippingAddressRequired,
 				phoneNumberRequired:
 					getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
 					false,
-				shippingRates: shippingData?.shippingRates[ 0 ]?.shipping_rates?.map(
-					( r ) => {
-						return {
-							id: r.rate_id,
-							amount: parseInt( r.price, 10 ),
-							displayName: r.name,
-						};
-					}
-				),
+				shippingRates: shippingAddressRequired
+					? shippingOptionsWithFallback
+					: undefined,
 				allowedShippingCountries: getExpressCheckoutData( 'checkout' )
 					.allowed_shipping_countries,
 			};
