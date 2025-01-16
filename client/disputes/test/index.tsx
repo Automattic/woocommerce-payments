@@ -6,17 +6,13 @@ import { render, waitFor } from '@testing-library/react';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 import os from 'os';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
  */
 import DisputesList from '..';
-import {
-	useDisputes,
-	useDisputesSummary,
-	useReportingExportLanguage,
-	useSettings,
-} from 'data/index';
+import { useDisputes, useDisputesSummary, useSettings } from 'data/index';
 import { getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
 import {
@@ -55,9 +51,17 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 	useSettings: jest.fn(),
 } ) );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
 
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
@@ -77,8 +81,8 @@ const mockUseSettings = useSettings as jest.MockedFunction<
 	typeof useSettings
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -98,11 +102,11 @@ declare const global: {
 				precision: number;
 			};
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
-		};
 		dateFormat?: string;
 		timeFormat?: string;
+		userLocale: {
+			code: string;
+		};
 	};
 };
 
@@ -173,14 +177,18 @@ describe( 'Disputes list', () => {
 			new Date( '2019-11-07T12:33:37.000Z' ).getTime()
 		);
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
-
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
 			isSaving: false,
 			saveSettings: ( a ) => a,
 			isDirty: false,
 		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_disputes_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
@@ -198,11 +206,11 @@ describe( 'Disputes list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
-			},
 			dateFormat: 'Y-m-d',
 			timeFormat: 'g:iA',
+			userLocale: {
+				code: 'en',
+			},
 		};
 	} );
 
@@ -226,6 +234,40 @@ describe( 'Disputes list', () => {
 
 		const { container: list } = render( <DisputesList /> );
 		expect( list ).toMatchSnapshot();
+	} );
+
+	test( 'renders columns hidden as per user preferences', () => {
+		mockUseDisputes.mockReturnValue( {
+			isLoading: false,
+			disputes: mockDisputes,
+		} );
+
+		mockUseDisputesSummary.mockReturnValue( {
+			isLoading: false,
+			disputesSummary: {
+				count: 25,
+			},
+		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			wc_payments_disputes_hidden_columns: [ 'customerEmail' ],
+		} as any );
+
+		const { getByRole, queryByRole } = render( <DisputesList /> );
+
+		// Email column should not be visible, as it is hidden in user preferences.
+		expect(
+			queryByRole( 'columnheader', {
+				name: /Email/i,
+			} )
+		).not.toBeInTheDocument();
+
+		// Country column should be visible, as it is not hidden in user preferences.
+		expect(
+			getByRole( 'columnheader', {
+				name: /Country/i,
+			} )
+		).toBeInTheDocument();
 	} );
 
 	describe( 'Download button', () => {

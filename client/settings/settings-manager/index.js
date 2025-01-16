@@ -14,7 +14,6 @@ import AdvancedSettings from '../advanced-settings';
 import ExpressCheckout from '../express-checkout';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
-import ReportingSettings from '../reporting-settings';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
@@ -29,7 +28,6 @@ import {
 	useSettings,
 } from '../../data';
 import FraudProtection from '../fraud-protection';
-import { isDefaultSiteLanguage } from 'wcpay/utils';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 
 const ExpressCheckoutDescription = () => (
@@ -120,20 +118,6 @@ const FraudProtectionDescription = () => {
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
-		</>
-	);
-};
-
-const ReportingDescription = () => {
-	return (
-		<>
-			<h2>{ __( 'Reporting', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ __(
-					'Adjust your report exporting language preferences.',
-					'woocommerce-payments'
-				) }
-			</p>
 		</>
 	);
 };
@@ -260,18 +244,6 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ ! isDefaultSiteLanguage() && (
-				<SettingsSection
-					description={ ReportingDescription }
-					id="fp-settings"
-				>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<ReportingSettings />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
 			<SettingsSection
 				description={ AdvancedDescription }
 				id="advanced-settings"

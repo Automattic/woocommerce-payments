@@ -17,7 +17,7 @@ import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
-interface Column extends TableCardColumn {
+export interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'status';
 	visible?: boolean;
 	cellClassName?: string;

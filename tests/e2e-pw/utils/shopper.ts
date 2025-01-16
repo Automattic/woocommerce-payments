@@ -12,6 +12,24 @@ export const isUIUnblocked = async ( page: Page ) => {
 	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
 };
 
+/**
+ * Waits for the UI to refresh after a user interaction.
+ *
+ * Woo core blocks and refreshes the UI after 1s after each key press
+ * in a text field or immediately after a select field changes.
+ * We need to wait to make sure that all key presses were processed by that mechanism.
+ */
+export const waitForUiRefresh = ( page: Page ) => page.waitForTimeout( 1000 );
+
+/**
+ * Takes off the focus out of the Stripe elements to let Stripe logic
+ * wrap up and make sure the Place Order button is clickable.
+ */
+export const focusPlaceOrderButton = async ( page: Page ) => {
+	await page.locator( '#place_order' ).focus();
+	await waitForUiRefresh( page );
+};
+
 export const fillBillingAddress = async (
 	page: Page,
 	billingAddress: CustomerAddress
@@ -188,10 +206,7 @@ export const setupCheckout = async (
 ) => {
 	await navigation.goToCheckout( page );
 	await fillBillingAddress( page, billingAddress );
-	// Woo core blocks and refreshes the UI after 1s after each key press
-	// in a text field or immediately after a select field changes.
-	// We need to wait to make sure that all key presses were processed by that mechanism.
-	await page.waitForTimeout( 1000 );
+	await waitForUiRefresh( page );
 	await isUIUnblocked( page );
 	await page
 		.locator( '.wc_payment_method.payment_method_woocommerce_payments' )
@@ -239,6 +254,39 @@ export async function setupProductCheckout(
 }
 
 /**
+ * Places an order with custom options.
+ *
+ * @param  page The Playwright page object.
+ * @param  options The custom options to use for the order.
+ * @return The order ID.
+ */
+export const placeOrderWithOptions = async (
+	page: Page,
+	options?: {
+		productId?: number;
+		billingAddress?: CustomerAddress;
+	}
+) => {
+	await addCartProduct( page, options?.productId );
+	await setupCheckout(
+		page,
+		options?.billingAddress || config.addresses.customer.billing
+	);
+	await fillCardDetails( page, config.cards.basic );
+	await focusPlaceOrderButton( page );
+	await placeOrder( page );
+	await page.waitForURL( /\/order-received\//, {
+		waitUntil: 'load',
+	} );
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
+
+	const url = await page.url();
+	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+};
+
+/**
  * Places an order with a specified currency.
  *
  * @param {Page} page The Playwright page object.
@@ -250,20 +298,7 @@ export const placeOrderWithCurrency = async (
 	currency: string
 ) => {
 	await navigation.goToShopWithCurrency( page, currency );
-	await setupProductCheckout( page, [ [ config.products.simple.name, 1 ] ] );
-	await fillCardDetails( page, config.cards.basic );
-	// Takes off the focus out of the Stripe elements to let Stripe logic
-	// wrap up and make sure the Place Order button is clickable.
-	await page.locator( '#place_order' ).focus();
-	await page.waitForTimeout( 1000 );
-	await placeOrder( page );
-	await page.waitForURL( /\/order-received\//, { waitUntil: 'load' } );
-	await expect(
-		page.getByRole( 'heading', { name: 'Order received' } )
-	).toBeVisible();
-
-	const url = await page.url();
-	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+	return placeOrderWithOptions( page );
 };
 
 export const emptyCart = async ( page: Page ) => {
