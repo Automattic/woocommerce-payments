@@ -32,7 +32,7 @@ const ExpressCheckoutButtonPreview = ( {
 			renderGooglePayButtonPromise.current = ( async () => {
 				const targetDocument = ref.current.ownerDocument;
 				const targetWindow = targetDocument.defaultView;
-				if ( ! targetWindow.googlePayClient ) {
+				if ( ! targetWindow.google?.payments?.api?.PaymentsClient ) {
 					await new Promise( ( resolve ) => {
 						const script = document.createElement( 'script' );
 						script.src = 'https://pay.google.com/gp/p/js/pay.js';
