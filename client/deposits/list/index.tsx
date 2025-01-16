@@ -5,7 +5,6 @@
  */
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
-import { useMemo } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
@@ -23,7 +22,6 @@ import { parseInt } from 'lodash';
  */
 import type { DepositsTableHeader } from 'wcpay/types/deposits';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
-import { useReportingExportLanguage } from 'data/index';
 import { displayType, depositStatusLabels } from '../strings';
 import {
 	formatExplicitCurrency,
@@ -37,16 +35,10 @@ import DownloadButton from 'components/download-button';
 import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
 import { applyThousandSeparator } from '../../utils/index.js';
 import DepositStatusChip from 'components/deposit-status-chip';
-import {
-	isExportModalDismissed,
-	getExportLanguage,
-	isDefaultSiteLanguage,
-} from 'utils';
-import CSVExportModal from 'components/csv-export-modal';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
 
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
@@ -104,10 +96,6 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 ];
 
 export const DepositsList = (): JSX.Element => {
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
-
 	const [ isDownloading, setIsDownloading ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { deposits, isLoading } = useDeposits( getQuery() );
@@ -115,10 +103,12 @@ export const DepositsList = (): JSX.Element => {
 		getQuery()
 	);
 
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
-
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
-	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
+	const columns = getColumns( sortByDate );
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		DepositsTableHeader
+	>( 'wc_payments_payouts_hidden_columns', columns );
+
 	const totalRows = depositsSummary.count || 0;
 
 	const rows = deposits.map( ( deposit ) => {
@@ -171,7 +161,9 @@ export const DepositsList = (): JSX.Element => {
 			},
 		};
 
-		return columns.map( ( { key } ) => data[ key ] || { display: null } );
+		return columnsToDisplay.map(
+			( { key } ) => data[ key ] || { display: null }
+		);
 	} );
 
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
@@ -220,12 +212,9 @@ export const DepositsList = (): JSX.Element => {
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
-		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { page, path, ...params } = getQuery();
+	const endpointExport = async () => {
 		const userEmail = wcpaySettings.currentUserEmail;
-		const locale = getExportLanguage( language, exportLanguage );
+		const userLocale = wcpaySettings.userLocale.code;
 
 		const {
 			date_before: dateBefore,
@@ -268,7 +257,7 @@ export const DepositsList = (): JSX.Element => {
 				} >( {
 					path: getDepositsCSV( {
 						userEmail,
-						locale,
+						userLocale,
 						dateAfter,
 						dateBefore,
 						dateBetween,
@@ -313,11 +302,7 @@ export const DepositsList = (): JSX.Element => {
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
+			endpointExport();
 		} else {
 			const params = getQuery();
 
@@ -353,16 +338,6 @@ export const DepositsList = (): JSX.Element => {
 		setIsDownloading( false );
 	};
 
-	const closeModal = () => {
-		setCSVExportModalOpen( false );
-	};
-
-	const exportDeposits = ( language: string ) => {
-		endpointExport( language );
-
-		closeModal();
-	};
-
 	return (
 		<Page>
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
@@ -372,11 +347,12 @@ export const DepositsList = (): JSX.Element => {
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '' ) || 25 }
 				totalRows={ totalRows }
-				headers={ columns }
+				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					downloadable && (
 						<DownloadButton
@@ -387,16 +363,6 @@ export const DepositsList = (): JSX.Element => {
 					),
 				] }
 			/>
-			{ ! isDefaultSiteLanguage() &&
-				! isExportModalDismissed() &&
-				isCSVExportModalOpen && (
-					<CSVExportModal
-						onClose={ closeModal }
-						onSubmit={ exportDeposits }
-						totalItems={ totalRows }
-						exportType={ 'deposits' }
-					/>
-				) }
 		</Page>
 	);
 };
