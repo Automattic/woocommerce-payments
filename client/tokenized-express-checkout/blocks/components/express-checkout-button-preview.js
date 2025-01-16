@@ -1,13 +1,11 @@
 /**
  * External dependencies
  */
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 /**
  * Internal dependencies
  */
-import GooglePayAssetDark from 'assets/images/cards/google-pay-preview-dark.svg?asset';
-import GooglePayAssetLight from 'assets/images/cards/google-pay-preview-light.svg?asset';
 import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
 
 const ExpressCheckoutButtonPreview = ( {
@@ -19,13 +17,65 @@ const ExpressCheckoutButtonPreview = ( {
 		() => getExpressCheckoutButtonAppearance( buttonAttributes ),
 		[ buttonAttributes ]
 	);
+	const ref = useRef( null );
+	const renderGooglePayButtonPromise = useRef( null );
+
+	const theme = options.buttonTheme[ expressPaymentMethod ];
+	const borderRadius = appearance.variables.borderRadius;
+
+	useEffect( () => {
+		if (
+			ref.current &&
+			expressPaymentMethod === 'googlePay' &&
+			! renderGooglePayButtonPromise.current
+		) {
+			renderGooglePayButtonPromise.current = ( async () => {
+				const targetDocument = ref.current.ownerDocument;
+				const targetWindow = targetDocument.defaultView;
+				if ( ! targetWindow.googlePayClient ) {
+					await new Promise( ( resolve ) => {
+						const script = document.createElement( 'script' );
+						script.src = 'https://pay.google.com/gp/p/js/pay.js';
+						script.onload = resolve;
+						targetDocument.head.appendChild( script );
+					} );
+				}
+
+				const googlePayClient = new targetWindow.google.payments.api.PaymentsClient(
+					{
+						environment: 'TEST',
+					}
+				);
+
+				const buttonColor = theme === 'black' ? 'black' : 'white'; // There is no 'outline' theme in Google Pay.
+
+				const button = googlePayClient.createButton( {
+					buttonType: 'plain',
+					buttonColor,
+					buttonRadius: parseFloat( borderRadius ),
+					buttonSizeMode: 'fill',
+				} );
+				ref.current.appendChild( button );
+			} )();
+		}
+	}, [ ref, theme, expressPaymentMethod, borderRadius ] );
+
+	if ( expressPaymentMethod === 'googlePay' ) {
+		return (
+			<div
+				ref={ ref }
+				style={ {
+					height: `${ options.buttonHeight }px`,
+					width: '100%',
+				} }
+			/>
+		);
+	}
 
 	const buttonStyle = {
 		height: `${ options.buttonHeight }px`,
-		borderRadius: appearance.variables.borderRadius,
+		borderRadius,
 	};
-
-	const theme = options.buttonTheme[ expressPaymentMethod ];
 
 	if ( expressPaymentMethod === 'applePay' ) {
 		buttonStyle.WebkitAppearance = '-apple-pay-button';
@@ -36,26 +86,20 @@ const ExpressCheckoutButtonPreview = ( {
 		} else {
 			buttonStyle.ApplePayButtonStyle = 'white';
 		}
+
+		return (
+			<div>
+				<button
+					type="button"
+					id={ `express-checkout-button-preview-${ expressPaymentMethod }` }
+					className="express-checkout-button-preview"
+					style={ buttonStyle }
+				/>
+			</div>
+		);
 	}
 
-	if ( expressPaymentMethod === 'googlePay' ) {
-		if ( theme === 'black' ) {
-			buttonStyle.backgroundColor = 'black';
-			buttonStyle.backgroundImage = `url(${ GooglePayAssetDark })`;
-		} else {
-			buttonStyle.backgroundColor = 'white';
-			buttonStyle.backgroundImage = `url(${ GooglePayAssetLight })`;
-		}
-	}
-
-	return (
-		<button
-			type="button"
-			id={ `express-checkout-button-preview-${ expressPaymentMethod }` }
-			className="express-checkout-button-preview"
-			style={ buttonStyle }
-		/>
-	);
+	return null;
 };
 
 export default ExpressCheckoutButtonPreview;
