@@ -100,3 +100,8 @@ export const goToConnect = async ( page: Page ) => {
 	);
 	await dataHasLoaded( page );
 };
+
+export const goToSubscriptions = ( page: Page ) =>
+	page.goto( '/wp-admin/edit.php?post_type=shop_subscription', {
+		waitUntil: 'load',
+	} );
