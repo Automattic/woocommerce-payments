@@ -21,6 +21,16 @@ const toggleCardTestingProtection = ( page: Page ) =>
 		.locator( 'label[for="wcpaydev_force_card_testing_protection_on"]' )
 		.click();
 
+const getIsActAsDisconnectedFromWCPayEnabled = ( page: Page ) =>
+	page
+		.getByLabel( 'act as disconnected from the Transact Platform Server' )
+		.isChecked();
+
+const toggleActAsDisconnectedFromWCPay = ( page: Page ) =>
+	page
+		.getByLabel( 'act as disconnected from the Transact Platform Server' )
+		.click();
+
 export const enableCardTestingProtection = async ( page: Page ) => {
 	await goToDevToolsSettings( page );
 
@@ -35,6 +45,24 @@ export const disableCardTestingProtection = async ( page: Page ) => {
 
 	if ( await getIsCardTestingProtectionEnabled( page ) ) {
 		await toggleCardTestingProtection( page );
+		await saveDevToolsSettings( page );
+	}
+};
+
+export const enableActAsDisconnectedFromWCPay = async ( page: Page ) => {
+	await goToDevToolsSettings( page );
+
+	if ( ! ( await getIsActAsDisconnectedFromWCPayEnabled( page ) ) ) {
+		await toggleActAsDisconnectedFromWCPay( page );
+		await saveDevToolsSettings( page );
+	}
+};
+
+export const disableActAsDisconnectedFromWCPay = async ( page: Page ) => {
+	await goToDevToolsSettings( page );
+
+	if ( await getIsActAsDisconnectedFromWCPayEnabled( page ) ) {
+		await toggleActAsDisconnectedFromWCPay( page );
 		await saveDevToolsSettings( page );
 	}
 };
