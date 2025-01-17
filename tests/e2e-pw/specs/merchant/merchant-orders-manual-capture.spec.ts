@@ -22,14 +22,12 @@ import {
 import { goToShop } from '../../utils/shopper-navigation';
 
 /**
- *
+ * Local variables.
  */
 let orderId;
 
 test.describe( 'Order > Manual Capture', () => {
 	test.beforeEach( async ( { browser } ) => {
-		//test.setTimeout( 60000 ); Do we need this?
-
 		// Merchant go to settings, enable capture later, and then save.
 		const { merchantPage } = await getMerchant( browser );
 		await goToWooPaymentsSettings( merchantPage );
@@ -69,34 +67,24 @@ test.describe( 'Order > Manual Capture', () => {
 		await saveWooPaymentsSettings( merchantPage );
 	} );
 
-	test( 'should create an order with status "On Hold"', async ( {
+	test( 'should create an "On hold" order then capture the charge', async ( {
 		browser,
 	} ) => {
-		// Merchant go to the order and confirm that it is On Hold.
+		// Merchant go to the order.
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrder( merchantPage, orderId );
+
+		// Confirm order status is 'On hold', and that there's an 'authorized' note.
 		await expect( merchantPage.getByTitle( 'On hold' ) ).toHaveText(
 			'On hold'
 		);
-	} );
-
-	test( 'should create an order note mentioning authorization', async ( {
-		browser,
-	} ) => {
-		// Merchant go to order and confirm order note authorized.
-		const { merchantPage } = await getMerchant( browser );
-		await goToOrder( merchantPage, orderId );
 		await expect(
 			merchantPage.getByText(
 				/A payment of \$\d+\.\d{2}.* was authorized using WooPayments/
 			)
 		).toBeVisible();
-	} );
 
-	test( 'should capture the charge', async ( { browser } ) => {
-		// Merchant go to order, set to capture charge, submit, and confirm order note.
-		const { merchantPage } = await getMerchant( browser );
-		await goToOrder( merchantPage, orderId );
+		// Set select to 'capture_charge', submit, and confirm 'captured' order note.
 		merchantPage
 			.locator( '#woocommerce-order-actions select' )
 			.selectOption( 'capture_charge' );
