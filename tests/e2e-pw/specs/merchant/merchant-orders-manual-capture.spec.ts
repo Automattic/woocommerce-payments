@@ -28,7 +28,7 @@ let orderId;
 
 test.describe( 'Order > Manual Capture', () => {
 	test.beforeEach( async ( { browser } ) => {
-		//test.setTimeout( 60000 );
+		//test.setTimeout( 60000 ); Do we need this?
 
 		// Merchant go to settings, enable capture later, and then save.
 		const { merchantPage } = await getMerchant( browser );
@@ -83,11 +83,30 @@ test.describe( 'Order > Manual Capture', () => {
 	test( 'should create an order note mentioning authorization', async ( {
 		browser,
 	} ) => {
+		// Merchant go to order and confirm order note authorized.
 		const { merchantPage } = await getMerchant( browser );
 		await goToOrder( merchantPage, orderId );
 		await expect(
 			merchantPage.getByText(
 				/A payment of \$\d+\.\d{2}.* was authorized using WooPayments/
+			)
+		).toBeVisible();
+	} );
+
+	test( 'should capture the charge', async ( { browser } ) => {
+		// Merchant go to order, set to capture charge, submit, and confirm order note.
+		const { merchantPage } = await getMerchant( browser );
+		await goToOrder( merchantPage, orderId );
+		merchantPage
+			.locator( '#woocommerce-order-actions select' )
+			.selectOption( 'capture_charge' );
+		// Using locator due to there are several buttons "named" Update.
+		merchantPage
+			.locator( '#woocommerce-order-actions li#actions button' )
+			.click();
+		await expect(
+			merchantPage.getByText(
+				/A payment of \$\d+\.\d{2}.* was successfully captured using WooPayments/
 			)
 		).toBeVisible();
 	} );
