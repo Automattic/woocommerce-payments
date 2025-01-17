@@ -43,6 +43,10 @@ export default {
 				'This will take place in a secure environment through our partner. Once your business details are verified, you’ll be redirected back to your store dashboard.',
 				'woocommerce-payments'
 			),
+			cta: __(
+				'Finish your verification process',
+				'woocommerce-payments'
+			),
 		},
 		embedded: {
 			heading: __(
@@ -73,7 +77,7 @@ export default {
 			'woocommerce-payments'
 		),
 		annual_revenue: __(
-			'What is your estimated annual Ecommerce revenue (USD)?',
+			'What is your estimated annual ecommerce revenue (USD)?',
 			'woocommerce-payments'
 		),
 		go_live_timeframe: __(
