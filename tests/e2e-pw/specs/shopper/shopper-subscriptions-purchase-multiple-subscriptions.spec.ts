@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import test, { expect } from '@playwright/test';
+import test, { Page, expect } from '@playwright/test';
 
 /**
  * Internal dependencies
  */
 import { shouldRunSubscriptionsTests } from '../../utils/constants';
-import { describeif, getShopper } from '../../utils/helpers';
+import { describeif, getMerchant, getShopper } from '../../utils/helpers';
 import RestAPI from '../../utils/rest-api';
 import { config } from '../../config/default';
 import {
@@ -21,29 +21,42 @@ import {
 	goToShopWithCurrency,
 	goToSubscriptions,
 } from '../../utils/shopper-navigation';
-import { getByText } from '@testing-library/react';
+import {
+	activateMulticurrency,
+	deactivateMulticurrency,
+} from '../../utils/merchant';
 
 const products = {
 	'Subscription no signup fee product': 'subscription-no-signup-fee-product',
 	'Subscription signup fee product': 'subscription-signup-fee-product',
 };
 const configBillingAddress = config.addresses.customer.billing;
+let wasMulticurrencyEnabled = false;
 
 describeif( shouldRunSubscriptionsTests )(
 	'Subscriptions > Purchase multiple subscriptions',
 	() => {
-		test.beforeAll( async ( {}, { project } ) => {
+		let merchantPage, shopperPage: Page;
+		test.beforeAll( async ( { browser }, { project } ) => {
 			const restApi = new RestAPI( project.use.baseURL );
 			await restApi.deleteCustomerByEmailAddress(
 				configBillingAddress.email
 			);
+			merchantPage = ( await getMerchant( browser ) ).merchantPage;
+			shopperPage = ( await getShopper( browser ) ).shopperPage;
+			wasMulticurrencyEnabled = await activateMulticurrency(
+				merchantPage
+			);
 		} );
 
-		test( ' should be able to purchase multiple subscriptions', async ( {
-			browser,
-		} ) => {
+		test.afterAll( async () => {
+			if ( ! wasMulticurrencyEnabled ) {
+				await deactivateMulticurrency( merchantPage );
+			}
+		} );
+
+		test( ' should be able to purchase multiple subscriptions', async () => {
 			// As a Shopper, purchase the subscription products.
-			const { shopperPage } = await getShopper( browser );
 			await emptyCart( shopperPage );
 			await goToShopWithCurrency( shopperPage, 'USD' );
 			await goToShop( shopperPage, 2 );
