@@ -95,7 +95,7 @@ class FrontendPrices {
 			return $query;
 		}
 
-		if ( ! isset( $query['meta_query'] ) || ( ! is_array( $query['meta_query'] ) && ! empty( $query['meta_query'] ) ) ) {
+		if ( empty( $query['meta_query'] ) || ! is_array( $query['meta_query'] ) ) {
 			return $query;
 		}
 
