@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Popover } from '@wordpress/components';
 
 /**
@@ -126,6 +126,8 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 	const totalPaymentMethods = 20;
 	const [ maxShownElements, setMaxShownElements ] = useState( maxElements );
 	const [ isPopoverVisible, setIsPopoverVisible ] = useState( false );
+	const popoverTimeoutRef = useRef< NodeJS.Timeout >();
+
 	// Reduce the total number of payment methods by one if the store is not eligible for WooPay.
 	const maxSupportedPaymentMethods = isWooPayEligible
 		? totalPaymentMethods
@@ -163,6 +165,29 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 		getMaxShownElements( maxShownElements )
 	).filter( ( pm ) => isWooPayEligible || pm.name !== 'woopay' );
 
+	const showPopover = () => {
+		if ( popoverTimeoutRef.current ) {
+			clearTimeout( popoverTimeoutRef.current );
+		}
+		setIsPopoverVisible( true );
+	};
+
+	const hidePopover = () => {
+		// Add a delay before hiding the popover
+		popoverTimeoutRef.current = setTimeout( () => {
+			setIsPopoverVisible( false );
+		}, 300 ); // 300ms delay
+	};
+
+	// Cleanup timeout on unmount
+	useEffect( () => {
+		return () => {
+			if ( popoverTimeoutRef.current ) {
+				clearTimeout( popoverTimeoutRef.current );
+			}
+		};
+	}, [] );
+
 	return (
 		<div className="woocommerce-woopayments-payment-methods-logos">
 			{ visiblePaymentMethods
@@ -182,8 +207,8 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 				<div
 					className="woocommerce-woopayments-payment-methods-logos-count"
 					onClick={ () => setIsPopoverVisible( ! isPopoverVisible ) }
-					onMouseEnter={ () => setIsPopoverVisible( true ) }
-					onMouseLeave={ () => setIsPopoverVisible( false ) }
+					onMouseEnter={ showPopover }
+					onMouseLeave={ hidePopover }
 					role="button"
 					tabIndex={ 0 }
 					onKeyDown={ ( event ) => {
@@ -198,8 +223,14 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 							position="bottom left"
 							noArrow={ true }
 							onClose={ () => setIsPopoverVisible( false ) }
+							onMouseEnter={ showPopover }
+							onMouseLeave={ hidePopover }
 						>
-							<div className="woocommerce-woopayments-payment-methods-logos inside-popover">
+							<div
+								className="woocommerce-woopayments-payment-methods-logos inside-popover"
+								onMouseEnter={ showPopover }
+								onMouseLeave={ hidePopover }
+							>
 								{ hiddenPaymentMethods.map( ( pm ) => {
 									return (
 										<img
