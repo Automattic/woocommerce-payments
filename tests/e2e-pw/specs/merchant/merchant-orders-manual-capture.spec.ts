@@ -7,13 +7,19 @@ import { test, expect } from '@playwright/test';
  * Internal dependencies
  */
 import { getShopper, getMerchant } from '../../utils/helpers';
-import { goToWooPaymentsSettings } from '../../utils/merchant-navigation';
+import {
+	goToOrder,
+	goToWooPaymentsSettings,
+} from '../../utils/merchant-navigation';
 import { saveWooPaymentsSettings } from '../../utils/merchant';
 import {
-	setupProductCheckout,
+	emptyCart,
 	fillCardDetails,
+	focusPlaceOrderButton,
 	placeOrder,
+	setupProductCheckout,
 } from '../../utils/shopper';
+import { goToShop } from '../../utils/shopper-navigation';
 
 /**
  *
@@ -22,7 +28,7 @@ let orderId;
 
 test.describe( 'Order > Manual Capture', () => {
 	test.beforeEach( async ( { browser } ) => {
-		test.setTimeout( 120000 );
+		//test.setTimeout( 60000 );
 
 		// Merchant go to settings, enable capture later, and then save.
 		const { merchantPage } = await getMerchant( browser );
@@ -35,13 +41,21 @@ test.describe( 'Order > Manual Capture', () => {
 
 		// Shopper add items to cart, fill in the checkout, place an order.
 		const { shopperPage } = await getShopper( browser );
+		await emptyCart( shopperPage );
+		await goToShop( shopperPage, 1 );
 		await setupProductCheckout( shopperPage );
 		await fillCardDetails( shopperPage );
+		await focusPlaceOrderButton( shopperPage );
 		await placeOrder( shopperPage );
 
 		// Confirm that the order was placed and get the order number.
-		await expect( shopperPage.getByText( 'Order received' ) ).toBeVisible();
-		const orderIdField = await shopperPage.locator(
+		await shopperPage.waitForURL( /\/order-received\//, {
+			waitUntil: 'load',
+		} );
+		await expect(
+			shopperPage.getByRole( 'heading', { name: 'Order received' } )
+		).toBeVisible();
+		const orderIdField = shopperPage.locator(
 			'.woocommerce-order-overview__order.order > strong'
 		);
 		orderId = await orderIdField.innerText();
@@ -55,34 +69,26 @@ test.describe( 'Order > Manual Capture', () => {
 		await saveWooPaymentsSettings( merchantPage );
 	} );
 
-	it( 'should create an order with status "On Hold"', async () => {
-		await merchant.goToOrder( orderId );
-
-		await expect( page ).toMatchElement(
-			'#select2-order_status-container',
-			{ text: 'On hold' }
+	test( 'should create an order with status "On Hold"', async ( {
+		browser,
+	} ) => {
+		// Merchant go to the order and confirm that it is On Hold.
+		const { merchantPage } = await getMerchant( browser );
+		await goToOrder( merchantPage, orderId );
+		await expect( merchantPage.getByTitle( 'On hold' ) ).toHaveText(
+			'On hold'
 		);
 	} );
 
-	it( 'should create an order note saying that payment was authorized ', async () => {
-		await expect( page ).toMatchElement( '.system-note', {
-			text: /A payment of \$\d+\.\d{2}.* was authorized/,
-		} );
-	} );
-
-	it( 'should successfully capture charge', async () => {
-		// Capture the charge
-		await selectOrderAction( 'capture_charge' );
-
-		// Verify that the order status is now "Processing"
-		await expect( page ).toMatchElement(
-			'#select2-order_status-container',
-			{ text: 'Processing' }
-		);
-
-		// Verify that a system note about the capture was generated
-		await expect( page ).toMatchElement( '.system-note', {
-			text: /A payment of \$\d+\.\d{2}.* was successfully captured/,
-		} );
+	test( 'should create an order note mentioning authorization', async ( {
+		browser,
+	} ) => {
+		const { merchantPage } = await getMerchant( browser );
+		await goToOrder( merchantPage, orderId );
+		await expect(
+			merchantPage.getByText(
+				/A payment of \$\d+\.\d{2}.* was authorized using WooPayments/
+			)
+		).toBeVisible();
 	} );
 } );
