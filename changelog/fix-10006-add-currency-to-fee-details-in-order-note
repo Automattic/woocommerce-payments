@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add currency code to fee breakdown when multi-currency is enabled, and currencies share the same symbol.

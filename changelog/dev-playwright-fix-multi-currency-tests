@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Restore activated currencies after all tests that deactivate current ones.
