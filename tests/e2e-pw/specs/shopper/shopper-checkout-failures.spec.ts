@@ -17,7 +17,8 @@ test.describe( 'Shopper > Checkout > Failures with various cards', () => {
 
 	test.beforeEach( async ( { page } ) => {
 		await shopper.addCartProduct( page );
-		await shopper.setupCheckout( page, config.addresses.customer.billing );
+		await shopper.setupCheckout( page );
+		await shopper.selectPaymentMethod( page );
 	} );
 
 	test( 'should throw an error that the card was simply declined', async ( {
