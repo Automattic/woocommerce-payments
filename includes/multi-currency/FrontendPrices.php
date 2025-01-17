@@ -139,7 +139,7 @@ class FrontendPrices {
 					$mq = array_merge( [ 'relation' => $relation ], $modified_nested );
 				}
 			} elseif ( isset( $mq['key'] ) && '_price' === $mq['key'] && isset( $mq['value'] ) && is_numeric( $mq['value'] ) ) {
-					$converted_price = $this->multi_currency->get_raw_conversion( $mq['value'], $from_currency, $target_currency );
+				$converted_price = $this->multi_currency->get_raw_conversion( $mq['value'], $from_currency, $target_currency );
 
 				if ( is_numeric( $converted_price ) ) {
 					// Apply floor or ceil based on the 'compare' operator.
