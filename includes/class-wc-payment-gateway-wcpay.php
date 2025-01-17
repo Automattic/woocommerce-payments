@@ -1786,6 +1786,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$processing    = [];
 		}
 
+		$is_offline_payment_method = $payment_information->is_offline_payment_method();
 		if ( ! empty( $intent ) ) {
 			if ( ! $intent->is_authorized() ) {
 				$intent_failed = true;
@@ -1836,11 +1837,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( Intent_Status::REQUIRES_ACTION === $status ) {
-				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
+				$next_action_type = $next_action['type'] ?? null;
+				if ( 'redirect_to_url' === $next_action_type && ! empty( $next_action[ $next_action_type ]['url'] ) ) {
 					$response = [
 						'result'   => 'success',
-						'redirect' => $next_action['redirect_to_url']['url'],
+						'redirect' => $next_action[ $next_action_type ]['url'],
 					];
+				} elseif ( 'multibanco_display_details' === $next_action_type && ! empty( $next_action[ $next_action_type ]['hosted_voucher_url'] ) ) {
+					$order->add_meta_data( 'hosted_voucer_url', $next_action[ $next_action_type ]['hosted_voucher_url'], true );
 				} else {
 					$response = [
 						'result'         => 'success',
@@ -1862,7 +1866,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->order_service->attach_intent_info_to_order( $order, $intent );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
-		if ( Intent_Status::SUCCEEDED === $status ) {
+		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 		}
 		$this->order_service->update_order_status_from_intent( $order, $intent );
@@ -1870,7 +1874,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
-		if ( isset( $response ) ) {
+		if ( isset( $response ) && ! $is_offline_payment_method ) {
 			return $response;
 		}
 

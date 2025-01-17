@@ -47,4 +47,8 @@ class Payment_Method extends Base_Constant {
 		self::AFTERPAY,
 		self::KLARNA,
 	];
+
+	const OFFLINE_PAYMENT_METHODS = [
+		self::MULTIBANCO,
+	];
 }
