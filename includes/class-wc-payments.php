@@ -1942,6 +1942,7 @@ class WC_Payments {
 				'wcpay_fraud_protection_welcome_tour_dismissed',
 				'wcpay_capability_request_dismissed_notices',
 				'wcpay_onboarding_eligibility_modal_dismissed',
+				'wcpay_connection_success_modal_dismissed',
 				'wcpay_next_deposit_notice_dismissed',
 				'wcpay_duplicate_payment_method_notices_dismissed',
 				'wcpay_exit_survey_dismissed',
