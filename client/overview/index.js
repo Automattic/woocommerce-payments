@@ -15,7 +15,7 @@ import { dispatch } from '@wordpress/data';
 import AccountBalances from 'components/account-balances';
 import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
-import ConnectionSuccessNotice from './connection-sucess-notice';
+import ConnectionSuccessModal from './modal/connection-success';
 import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
@@ -32,7 +32,6 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
-import DateFormatNotice from 'wcpay/components/date-format-notice';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -115,6 +114,12 @@ const OverviewPage = () => {
 		! progressiveOnboarding.isComplete;
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
+	const isPoDisabledOrCompleted =
+		! progressiveOnboarding.isEnabled || progressiveOnboarding.isComplete;
+	const showConnectionSuccessModal =
+		showConnectionSuccess &&
+		! isTestModeOnboarding &&
+		isPoDisabledOrCompleted;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -152,7 +157,6 @@ const OverviewPage = () => {
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
 			<JetpackIdcNotice />
-			<DateFormatNotice />
 			{ showLoanOfferError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(
@@ -193,7 +197,6 @@ const OverviewPage = () => {
 				<FRTDiscoverabilityBanner />
 			</ErrorBoundary>
 
-			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<Welcome />
@@ -248,6 +251,11 @@ const OverviewPage = () => {
 			{ showProgressiveOnboardingEligibilityModal && (
 				<ErrorBoundary>
 					<ProgressiveOnboardingEligibilityModal />
+				</ErrorBoundary>
+			) }
+			{ showConnectionSuccessModal && (
+				<ErrorBoundary>
+					<ConnectionSuccessModal />
 				</ErrorBoundary>
 			) }
 		</Page>

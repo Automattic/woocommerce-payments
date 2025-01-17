@@ -7,8 +7,12 @@ import { Page } from 'playwright/test';
  */
 import { isUIUnblocked } from './shopper';
 
-export const goToShop = async ( page: Page ) => {
-	await page.goto( `/shop/`, { waitUntil: 'load' } );
+export const goToShop = async ( page: Page, pageNumber?: number ) => {
+	if ( pageNumber ) {
+		await page.goto( `/shop/page/` + pageNumber, { waitUntil: 'load' } );
+	} else {
+		await page.goto( `/shop/`, { waitUntil: 'load' } );
+	}
 };
 
 export const goToShopWithCurrency = async ( page: Page, currency: string ) => {
@@ -43,3 +47,8 @@ export const goToOrder = async ( page: Page, orderId: string ) => {
 		waitUntil: 'load',
 	} );
 };
+
+export const goToSubscriptions = ( page: Page ) =>
+	page.goto( '/my-account/subscriptions/', {
+		waitUntil: 'load',
+	} );

@@ -972,12 +972,9 @@ class WC_Payments_Admin {
 			'storeName'                          => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
-			'isDateFormatNoticeDismissed'        => get_option( 'wcpay_date_format_notice_dismissed', false ),
-			'reporting'                          => [
-				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
-			],
 			'dismissedDuplicateNotices'          => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
-			'locale'                             => WC_Payments_Utils::get_language_data( get_locale() ),
+			'isConnectionSuccessModalDismissed'  => get_option( 'wcpay_connection_success_modal_dismissed', false ),
+			'userLocale'                         => WC_Payments_Utils::get_language_data( get_user_locale() ), // Language code found in current user's profile. This is different from the site's locale.
 			'isOverviewSurveySubmitted'          => get_option( 'wcpay_survey_payment_overview_submitted', false ),
 			'trackingInfo'                       => $this->account->get_tracking_info(),
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
@@ -987,6 +984,11 @@ class WC_Payments_Admin {
 			'timeFormat'                         => get_option( 'time_format' ),
 		];
 
+		/**
+		 * Filter the WCPay JS settings.
+		 *
+		 * @since 6.1.0
+		 */
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
 	}
 
@@ -1000,6 +1002,11 @@ class WC_Payments_Admin {
 			'exitSurveyLastShown' => get_option( 'wcpay_exit_survey_last_shown', null ),
 		];
 
+		/**
+		 * Filter the plugins page settings.
+		 *
+		 * @since 7.8.0
+		 */
 		return apply_filters( 'wcpay_plugins_page_js_settings', $plugins_page_settings );
 	}
 
