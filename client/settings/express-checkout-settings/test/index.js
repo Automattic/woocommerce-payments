@@ -76,6 +76,13 @@ describe( 'ExpressCheckoutSettings', () => {
 		};
 	} );
 
+	test( 'renders banner at the top', () => {
+		render( <ExpressCheckoutSettings methodId="payment_request" /> );
+
+		const banner = screen.queryByAltText( 'WooPayments logo' );
+		expect( banner ).toBeInTheDocument();
+	} );
+
 	test( 'renders error message for invalid method IDs', () => {
 		render( <ExpressCheckoutSettings methodId="foo" /> );
 

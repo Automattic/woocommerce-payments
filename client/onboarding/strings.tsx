@@ -77,7 +77,7 @@ export default {
 			'woocommerce-payments'
 		),
 		annual_revenue: __(
-			'What is your estimated annual ecommerce revenue (USD)?',
+			'What is your estimated annual Ecommerce revenue (USD)?',
 			'woocommerce-payments'
 		),
 		go_live_timeframe: __(
