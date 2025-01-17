@@ -1646,7 +1646,7 @@ class WC_Payments {
 			return;
 		}
 
-		$woopay_direct_checkout = new WC_Payments_WooPay_Direct_Checkout();
+		$woopay_direct_checkout = new WC_Payments_WooPay_Direct_Checkout( self::$woopay_util );
 		$woopay_direct_checkout->init();
 	}
 
