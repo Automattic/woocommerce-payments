@@ -353,3 +353,29 @@ function htmlDecode( input ) {
 	const doc = new DOMParser().parseFromString( input, 'text/html' );
 	return doc.documentElement.textContent;
 }
+
+/**
+ * Checks if two currencies share the same symbol. Don't use this function to compare the same currency.
+ *
+ * @param {string} currencyCode1 First currency code
+ * @param {string} currencyCode2 Second currency code
+ *
+ * @return {boolean} True if currencies share same symbol, false otherwise
+ */
+export const hasSameSymbol = ( currencyCode1, currencyCode2 ) => {
+	currencyCode1 = currencyCode1.toUpperCase();
+	currencyCode2 = currencyCode2.toUpperCase();
+	if ( currencyCode1 === currencyCode2 ) {
+		return false;
+	}
+	const { currencyData } = wcpaySettings;
+
+	const currency1 = find( currencyData, { code: currencyCode1 } );
+	const currency2 = find( currencyData, { code: currencyCode2 } );
+
+	if ( ! currency1 || ! currency2 ) {
+		return false;
+	}
+
+	return currency1.symbol === currency2.symbol;
+};
