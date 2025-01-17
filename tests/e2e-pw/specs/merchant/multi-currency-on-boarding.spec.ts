@@ -14,6 +14,7 @@ import {
 	disableAllEnabledCurrencies,
 	getActiveThemeSlug,
 	removeCurrency,
+	restoreCurrencies,
 } from '../../utils/merchant';
 import * as navigation from '../../utils/merchant-navigation';
 
@@ -38,7 +39,7 @@ test.describe( 'Multi-currency on-boarding', () => {
 	test.afterAll( async () => {
 		// Restore original theme.
 		await activateTheme( page, activeThemeSlug );
-
+		await restoreCurrencies( page );
 		if ( ! wasMulticurrencyEnabled ) {
 			await deactivateMulticurrency( page );
 		}
