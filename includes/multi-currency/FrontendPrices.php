@@ -121,10 +121,16 @@ class FrontendPrices {
 	 * @param array  $meta_query       The meta_query array to traverse.
 	 * @param string $from_currency   The from currency code.
 	 * @param string $target_currency The target currency code.
+	 * @param int    $depth           The current depth of the recursion.
 	 *
 	 * @return array The modified meta_query array.
 	 */
-	private function convert_meta_query_price_filters( $meta_query, $from_currency, $target_currency ) {
+	private function convert_meta_query_price_filters( $meta_query, $from_currency, $target_currency, $depth = 0 ) {
+		// Prevent infinite recursion in a malformed meta_query.
+		if ( $depth > 4 ) {
+			return $meta_query;
+		}
+
 		foreach ( $meta_query as &$mq ) {
 			// If the current element is a nested meta_query with a relation.
 			if ( isset( $mq['relation'] ) && is_array( $mq ) ) {
@@ -133,7 +139,7 @@ class FrontendPrices {
 					// Extract the relation and the nested queries.
 					$relation = $mq['relation'];
 
-					$modified_nested = $this->convert_meta_query_price_filters( $mq, $from_currency, $target_currency );
+					$modified_nested = $this->convert_meta_query_price_filters( $mq, $from_currency, $target_currency, $depth + 1 );
 
 					// Reconstruct the meta_query with the modified nested queries.
 					$mq = array_merge( [ 'relation' => $relation ], $modified_nested );
