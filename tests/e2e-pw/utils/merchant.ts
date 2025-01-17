@@ -203,6 +203,13 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	).toBeVisible();
 };
 
+export const restoreCurrencies = async ( page: Page ) => {
+	await disableAllEnabledCurrencies( page );
+	await addCurrency( page, 'USD' );
+	await addCurrency( page, 'EUR' );
+	await addCurrency( page, 'GBP' );
+};
+
 export const removeCurrency = async ( page: Page, currencyCode: string ) => {
 	await navigation.goToMultiCurrencySettings( page );
 	await page

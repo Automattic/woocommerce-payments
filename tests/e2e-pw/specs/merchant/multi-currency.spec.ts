@@ -11,6 +11,7 @@ import {
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
 	disableAllEnabledCurrencies,
+	restoreCurrencies,
 } from '../../utils/merchant';
 import * as navigation from '../../utils/merchant-navigation';
 
@@ -29,6 +30,7 @@ test.describe( 'Multi-currency', () => {
 	} );
 
 	test.afterAll( async () => {
+		await restoreCurrencies( page );
 		if ( ! wasMulticurrencyEnabled ) {
 			await deactivateMulticurrency( page );
 		}
