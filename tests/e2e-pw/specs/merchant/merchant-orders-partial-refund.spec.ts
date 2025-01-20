@@ -61,17 +61,12 @@ test.describe( 'Order > Partial refund', () => {
 		],
 	];
 
-	let orderId;
-	let orderTotal;
+	let firstOrderId: string;
+	let orderTotal: string;
 
-	test.beforeAll( async ( { browser } ) => {
+	const orderProducts = async ( { browser }, dataTableIndex: number ) => {
 		const { shopperPage } = await getShopper( browser );
-		await emptyCart( shopperPage );
-	} );
-
-	test( 'Refund one product of two product order', async ( { browser } ) => {
-		const { shopperPage } = await getShopper( browser );
-		const { lineItems, refundInputs } = dataTable[ 0 ][ 1 ];
+		const lineItems = dataTable[ dataTableIndex ][ 1 ].lineItems;
 		await goToShop( shopperPage );
 		await setupProductCheckout( shopperPage, lineItems );
 		await fillCardDetails( shopperPage );
@@ -83,10 +78,21 @@ test.describe( 'Order > Partial refund', () => {
 		const orderIdField = shopperPage.locator(
 			'.woocommerce-order-overview__order.order > strong'
 		);
-		orderId = await orderIdField.innerText();
+		const orderId = await orderIdField.innerText();
 
+		return orderId;
+	};
+
+	test.beforeAll( async ( { browser } ) => {
+		const { shopperPage } = await getShopper( browser );
+		await emptyCart( shopperPage );
+		firstOrderId = await orderProducts( { browser }, 0 );
+	} );
+
+	test( 'Refund one product of two product order', async ( { browser } ) => {
+		const { refundInputs } = dataTable[ 0 ][ 1 ];
 		const { merchantPage } = await getMerchant( browser );
-		await goToOrder( merchantPage, orderId );
+		await goToOrder( merchantPage, firstOrderId );
 
 		const orderTotalField = merchantPage
 			.getByRole( 'row', { name: 'Order Total: $' } )
