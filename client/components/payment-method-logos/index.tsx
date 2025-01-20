@@ -189,7 +189,7 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 	}, [] );
 
 	return (
-		<div className="woocommerce-woopayments-payment-methods-logos">
+		<div className="connect-account-page__payment-methods--logos">
 			{ visiblePaymentMethods
 				.slice( 0, maxShownElements )
 				.map( ( pm ) => {
@@ -205,7 +205,7 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 				} ) }
 			{ maxShownElements < maxSupportedPaymentMethods && (
 				<div
-					className="woocommerce-woopayments-payment-methods-logos-count"
+					className="connect-account-page__payment-methods--logos-count"
 					onClick={ () => setIsPopoverVisible( ! isPopoverVisible ) }
 					onMouseEnter={ showPopover }
 					onMouseLeave={ hidePopover }
@@ -227,7 +227,7 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 							onMouseLeave={ hidePopover }
 						>
 							<div
-								className="woocommerce-woopayments-payment-methods-logos inside-popover"
+								className="connect-account-page__payment-methods--logos connect-account-page__payment-methods--logos-inside-popover"
 								onMouseEnter={ showPopover }
 								onMouseLeave={ hidePopover }
 							>
