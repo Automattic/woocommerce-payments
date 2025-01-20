@@ -490,7 +490,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	}
 
 	/**
-	 * Confirm that true is returned if renewal is in cart and WooCommerce Subscriptions is setting up cart.
+	 * Tests that should_convert_product_price returns true when WooCommerce Subscriptions is setting up WC cart with the renewal item.
 	 */
 	public function test_should_convert_product_price_return_true_when_renewal_in_cart_and_cart_is_being_set_up() {
 		// Arrange: Create a subscription and cart_items to be used.
