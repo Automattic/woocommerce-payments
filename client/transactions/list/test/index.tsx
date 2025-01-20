@@ -111,9 +111,6 @@ declare const global: {
 				precision: number;
 			};
 		};
-		userLocale: {
-			code: string;
-		};
 	};
 };
 
@@ -257,9 +254,6 @@ describe( 'Transactions list', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
-			},
-			userLocale: {
-				code: 'en',
 			},
 		};
 		window.wcpaySettings.dateFormat = 'M j, Y';
