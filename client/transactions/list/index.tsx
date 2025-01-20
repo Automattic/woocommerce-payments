@@ -584,6 +584,7 @@ export const TransactionsList = (
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
+		const locale = wcSettings.locale.userLocale;
 
 		const {
 			date_after: dateAfter,
@@ -664,6 +665,7 @@ export const TransactionsList = (
 						riskLevelIs,
 						riskLevelIsNot,
 						depositId,
+						locale,
 					} ),
 					method: 'POST',
 				} );

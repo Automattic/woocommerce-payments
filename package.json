@@ -78,7 +78,6 @@
   },
   "dependencies": {
     "@automattic/interpolate-components": "1.2.1",
-    "@automattic/languages": "1.0.0",
     "@fingerprintjs/fingerprintjs": "3.4.1",
     "@stripe/connect-js": "3.3.16",
     "@stripe/react-connect-js": "3.3.17",
