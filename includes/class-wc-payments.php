@@ -418,6 +418,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
+		include_once __DIR__ . '/class-logger-context.php';
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
@@ -509,6 +510,8 @@ class WC_Payments {
 		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
 		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
 		include_once __DIR__ . '/class-duplicates-detection-service.php';
+
+		wcpay_get_container()->get( \WCPay\Internal\LoggerContext::class )->init_hooks();
 
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
@@ -1643,7 +1646,7 @@ class WC_Payments {
 			return;
 		}
 
-		$woopay_direct_checkout = new WC_Payments_WooPay_Direct_Checkout();
+		$woopay_direct_checkout = new WC_Payments_WooPay_Direct_Checkout( self::$woopay_util );
 		$woopay_direct_checkout->init();
 	}
 
@@ -1939,6 +1942,7 @@ class WC_Payments {
 				'wcpay_fraud_protection_welcome_tour_dismissed',
 				'wcpay_capability_request_dismissed_notices',
 				'wcpay_onboarding_eligibility_modal_dismissed',
+				'wcpay_connection_success_modal_dismissed',
 				'wcpay_next_deposit_notice_dismissed',
 				'wcpay_duplicate_payment_method_notices_dismissed',
 				'wcpay_exit_survey_dismissed',

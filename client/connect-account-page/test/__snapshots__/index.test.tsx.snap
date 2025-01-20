@@ -86,12 +86,6 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               width="38"
             />
             <img
-              alt="woopay"
-              height="24"
-              src="assets/images/payment-method-icons/woopay.svg"
-              width="38"
-            />
-            <img
               alt="applepay"
               height="24"
               src="assets/images/payment-method-icons/applepay.svg"
@@ -121,11 +115,19 @@ exports[`ConnectAccountPage should render correctly 1`] = `
               src="assets/images/payment-method-icons/klarna.svg"
               width="38"
             />
+            <img
+              alt="cartebancaire"
+              height="24"
+              src="assets/images/cards/cartes_bancaires.svg"
+              width="38"
+            />
             <div
               class="connect-account-page__payment-methods--logos-count"
+              role="button"
+              tabindex="0"
             >
               + 
-              10
+              9
             </div>
           </div>
           <div
@@ -388,6 +390,8 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
             />
             <div
               class="connect-account-page__payment-methods--logos-count"
+              role="button"
+              tabindex="0"
             >
               + 
               10
@@ -578,12 +582,6 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               width="38"
             />
             <img
-              alt="woopay"
-              height="24"
-              src="assets/images/payment-method-icons/woopay.svg"
-              width="38"
-            />
-            <img
               alt="applepay"
               height="24"
               src="assets/images/payment-method-icons/applepay.svg"
@@ -613,11 +611,19 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
               src="assets/images/payment-method-icons/klarna.svg"
               width="38"
             />
+            <img
+              alt="cartebancaire"
+              height="24"
+              src="assets/images/cards/cartes_bancaires.svg"
+              width="38"
+            />
             <div
               class="connect-account-page__payment-methods--logos-count"
+              role="button"
+              tabindex="0"
             >
               + 
-              10
+              9
             </div>
           </div>
           <div

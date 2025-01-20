@@ -17,7 +17,7 @@ import { __ } from '@wordpress/i18n';
  */
 import appearance from '../kyc/appearance';
 import BannerNotice from 'wcpay/components/banner-notice';
-import LoadBar from 'wcpay/components/load-bar';
+import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import {
 	createAccountSession,
@@ -51,6 +51,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 		setStripeConnectInstance,
 	] = useState< StripeConnectInstance | null >( null );
 	const [ loading, setLoading ] = useState( true );
+	const [ finalizingAccount, setFinalizingAccount ] = useState( false );
 	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
 
 	const fetchAccountSession = useCallback( async () => {
@@ -65,7 +66,6 @@ const EmbeddedKyc: React.FC< Props > = ( {
 				return accountSession; // Return the full account session object
 			}
 
-			setLoading( false );
 			setLoadErrorMessage(
 				__(
 					"Failed to create account session. Please check that you're using the latest version of WooPayments.",
@@ -73,7 +73,6 @@ const EmbeddedKyc: React.FC< Props > = ( {
 				)
 			);
 		} catch ( error ) {
-			setLoading( false );
 			setLoadErrorMessage(
 				__(
 					'Failed to retrieve account session. Please try again later.',
@@ -106,15 +105,12 @@ const EmbeddedKyc: React.FC< Props > = ( {
 					setClientSecret( () => fetchClientSecret );
 				}
 			} catch ( error ) {
-				setLoading( false );
 				setLoadErrorMessage(
 					__(
 						'Failed to create account session. Please check that you are using the latest version of WooPayments.',
 						'woocommerce-payments'
 					)
 				);
-			} finally {
-				setLoading( false );
 			}
 		};
 
@@ -153,6 +149,8 @@ const EmbeddedKyc: React.FC< Props > = ( {
 		const urlSource =
 			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
 
+		setFinalizingAccount( true );
+
 		try {
 			const response = await finalizeOnboarding( urlSource );
 			if ( response.success ) {
@@ -185,9 +183,18 @@ const EmbeddedKyc: React.FC< Props > = ( {
 
 	return (
 		<>
-			{ loading && <LoadBar /> }
+			{ loading && (
+				<div className="embedded-kyc-loader-wrapper padded">
+					<StripeSpinner />
+				</div>
+			) }
 			{ loadErrorMessage && (
 				<BannerNotice status="error">{ loadErrorMessage }</BannerNotice>
+			) }
+			{ finalizingAccount && (
+				<div className="embedded-kyc-loader-wrapper">
+					<StripeSpinner />
+				</div>
 			) }
 			{ stripeConnectInstance && (
 				<ConnectComponentsProvider
