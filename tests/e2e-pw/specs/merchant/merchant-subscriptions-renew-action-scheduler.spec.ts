@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -10,7 +10,6 @@ import {
 	describeif,
 	getAnonymousShopper,
 	getMerchant,
-	useMerchant,
 } from '../../utils/helpers';
 import * as shopper from '../../utils/shopper';
 import { config } from '../../config/default';
@@ -29,8 +28,6 @@ import {
 describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 	'Subscriptions > Renew a subscription via Action Scheduler',
 	() => {
-		useMerchant();
-
 		const actionSchedulerHook =
 			'woocommerce_scheduled_subscription_payment';
 
@@ -38,7 +35,6 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 			config.addresses[ 'subscriptions-customer' ].billing;
 
 		let subscriptionId: string;
-		let page: Page;
 
 		test.beforeAll( async ( { browser }, { project } ) => {
 			const restApi = new RestAPI( project.use.baseURL );
@@ -47,55 +43,54 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 			);
 
 			const { shopperPage } = await getAnonymousShopper( browser );
-			page = shopperPage;
 
 			await shopper.addCartProduct(
-				page,
+				shopperPage,
 				products.SUBSCRIPTION_SIGNUP_FEE
 			);
-			await shopper.setupCheckout( page, customerBillingConfig );
-			await shopper.fillCardDetails( page, config.cards.basic );
-			await shopper.placeOrder( page );
+			await shopper.setupCheckout( shopperPage, customerBillingConfig );
+			await shopper.fillCardDetails( shopperPage, config.cards.basic );
+			await shopper.placeOrder( shopperPage );
 			await expect(
-				page.getByRole( 'heading', { name: 'Order received' } )
+				shopperPage.getByRole( 'heading', { name: 'Order received' } )
 			).toBeVisible();
 
-			subscriptionId = await page
+			subscriptionId = await shopperPage
 				.getByLabel( 'View subscription number' )
 				.innerText();
-
-			const { merchantPage } = await getMerchant( browser );
-			page = merchantPage;
 		} );
 
-		test( 'should renew a subscription with action scheduler', async () => {
+		test( 'should renew a subscription with action scheduler', async ( {
+			browser,
+		} ) => {
+			const { merchantPage } = await getMerchant( browser );
 			// Go to Action Scheduler
-			await goToActionScheduler( page, 'pending' );
+			await goToActionScheduler( merchantPage, 'pending' );
 
-			await page
+			await merchantPage
 				.getByLabel( 'Search hook, args and claim' )
 				.fill( actionSchedulerHook );
 
-			await page
+			await merchantPage
 				.getByRole( 'button', {
 					name: 'Search hook, args and claim ID',
 				} )
 				.click();
 
-			await page.getByRole( 'link', { name: 'Run' } ).focus();
-			await page.getByRole( 'link', { name: 'Run' } ).click();
+			await merchantPage.getByRole( 'link', { name: 'Run' } ).focus();
+			await merchantPage.getByRole( 'link', { name: 'Run' } ).click();
 
 			await expect(
-				page.getByText( actionSchedulerHook, { exact: true } )
+				merchantPage.getByText( actionSchedulerHook, { exact: true } )
 			).toBeVisible();
 
 			// Go to Subscriptions and verify the subscription renewal
-			await goToSubscriptions( page );
+			await goToSubscriptions( merchantPage );
 
 			const numericSubscriptionId = subscriptionId.substring( 1 );
 
 			await expect(
-				page
+				merchantPage
 					.locator( `#order-${ numericSubscriptionId }` )
 					.getByRole( 'cell', { name: '2', exact: true } )
 			).toBeVisible();
