@@ -23,7 +23,7 @@ import {
 	updateFraudOutcomeTransactionsSummary,
 	updateErrorForFraudOutcomeTransactionsSummary,
 } from './actions';
-import { formatDateValue } from 'utils';
+import { formatDateValue, getUserWpcomLangSlug } from 'utils';
 
 function getUserTimeZone() {
 	return moment( new Date() ).format( 'Z' );
@@ -58,7 +58,7 @@ export const formatQueryFilters = ( query ) => ( {
 	source_is_not: query.sourceIsNot,
 	search: query.search,
 	user_timezone: getUserTimeZone(),
-	locale: query.userLocale,
+	locale: getUserWpcomLangSlug(),
 } );
 
 /**
