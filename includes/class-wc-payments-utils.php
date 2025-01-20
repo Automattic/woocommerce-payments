@@ -1278,47 +1278,31 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Converts a locale to the server supported languages.
+	 * Converts a WP locale to a wpcom-compatible language code.
 	 *
-	 * @param string $locale The locale to convert.
+	 * @see Automattic\Jetpack\Jetpack_Mu_Wpcom\Common::get_iso_639_locale() for similar logic.
+	 * @see https://translate.wordpress.com/projects/wpcom/ for the current state of wpcom translations.
 	 *
-	 * @return string Closest locale supported ('en' if NONE)
+	 * @param string $wp_locale a WordPress locale code to be converted e.g. "en_US", "pt_BR".
+	 * @return string language code compatible with wpcom e.g. "en", "pt-br".
 	 */
-	public static function convert_to_server_locale( string $locale ): string {
-		$supported = [
-			'ar',     // Arabic.
-			'de',     // German (Germany).
-			'es',     // Spanish (Spain).
-			'fr',     // French (France).
-			'he',     // Hebrew (Israel).
-			'id',     // Indonesian (Indonesia).
-			'it',     // Italian (Italy).
-			'ja',     // Japanese.
-			'ko',     // Korean.
-			'nl',     // Dutch (Netherlands).
-			'pt-br',  // Portuguese (Brazil).
-			'ru',     // Russian (Russia).
-			'sv',     // Swedish (Sweden).
-			'tr',     // Turkish (Turkey).
-			'zh-cn',  // Simplified, Singapore).
-			'zh-tw',  // Chinese Traditional (Taiwan).
-		];
+	public static function convert_to_server_locale( string $wp_locale ): string {
+		$wp_locale_lowercase                    = strtolower( $wp_locale );
+		$region_specific_wpcom_language_codes   = [ 'pt_br', 'pt-br', 'zh_tw', 'zh-tw', 'zh_cn', 'zh-cn' ];
+		$is_region_specific_wpcom_language_code = in_array( $wp_locale_lowercase, $region_specific_wpcom_language_codes, true );
 
-		// Replace '-' with '_' (used in WordPress).
-		$locale = str_replace( '_', '-', $locale );
+		$language_code = $is_region_specific_wpcom_language_code ?
+			// If it is a region-specific language code, we replace the underscore with a dash, e.g. 'pt_br' => 'pt-br'.
+			str_replace( '_', '-', $wp_locale_lowercase ) :
+			// Otherwise, we remove the country code and return only the language code, e.g. 'nl_NL' => 'nl'.
+			preg_replace( '/([-_].*)$/i', '', $wp_locale_lowercase );
 
-		if ( in_array( $locale, $supported, true ) ) {
-			return $locale;
+		if ( empty( $language_code ) ) {
+			// If the language code is empty, we return 'en' as a fallback.
+			return 'en';
 		}
 
-		// Remove the country code and try with that.
-		$base_locale = substr( $locale, 0, 2 );
-		if ( in_array( $base_locale, $supported, true ) ) {
-			return $base_locale;
-		}
-
-		// Return 'en_US' to match the default site language.
-		return 'en_US';
+		return $language_code;
 	}
 
 	/**
