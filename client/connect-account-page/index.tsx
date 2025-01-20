@@ -79,17 +79,17 @@ const TestDriveLoader: React.FunctionComponent< {
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
-	const [ modalVisible, setModalVisible ] = useState( true );
+	const [ modalVisible, setModalVisible ] = useState( false );
 
 	const [ errorMessage, setErrorMessage ] = useState< string >(
 		wcpaySettings.errorMessage
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
-		true
+		false
 	);
 	const [ isTestDriveModeModalShown, setTestDriveModeModalShown ] = useState(
-		true
+		false
 	);
 	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] = useState(
 		5
