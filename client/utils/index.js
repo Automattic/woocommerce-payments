@@ -7,6 +7,7 @@ import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { numberFormat } from '@woocommerce/number';
+import languages from '@automattic/languages';
 
 /**
  * Returns whether a value is an object.
@@ -246,4 +247,37 @@ export const objectRemoveEmptyProperties = ( obj ) => {
 	return Object.keys( obj )
 		.filter( ( k ) => obj[ k ] !== null && obj[ k ] !== undefined )
 		.reduce( ( a, k ) => ( { ...a, [ k ]: obj[ k ] } ), {} );
+};
+
+/**
+ * Returns the WPCOM-server language code, a.k.a "langSlug", for a provided WordPress locale.
+ *
+ * Required to format the correct `locale` query param when making API requests to transact-platform-server.
+ *
+ * @see https://github.com/Automattic/wp-calypso/blob/trunk/packages/languages/README.md
+ *
+ * @param {string} locale The WordPress locale.
+ * @return {string} The WPCOM-server language code, a.k.a "langSlug". Returns 'en' if the locale is not found.
+ * @example
+ * getLangSlug( 'pt_BR' ); // 'pt-br'
+ * getLangSlug( 'sv_SE' ); // 'sv'
+ */
+export const getWpcomLangSlug = ( locale ) => {
+	const matchingLanguage = languages.find(
+		( lang ) => lang.wpLocale === locale
+	);
+	return matchingLanguage?.langSlug || 'en';
+};
+
+/**
+ * Returns the WPCOM-server language code, a.k.a "langSlug", for the current WP user's locale.
+ *
+ * @return {string} The WPCOM-server language code, a.k.a "langSlug".
+ * @example
+ * getUserWpcomLangSlug(); // 'pt-br'
+ * getUserWpcomLangSlug(); // 'sv'
+ */
+export const getUserWpcomLangSlug = () => {
+	const userLocale = wcSettings.locale.userLocale;
+	return getWpcomLangSlug( userLocale );
 };
