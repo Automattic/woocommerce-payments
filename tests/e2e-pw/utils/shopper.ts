@@ -269,6 +269,21 @@ export async function setupProductCheckout(
 	await setupCheckout( page, billingAddress );
 }
 
+export const expectFraudPreventionToken = async (
+	page: Page,
+	toBeDefined: boolean
+) => {
+	const token = await page.evaluate( () => {
+		return ( window as any ).wcpayFraudPreventionToken;
+	} );
+
+	if ( toBeDefined ) {
+		expect( token ).toBeDefined();
+	} else {
+		expect( token ).toBeUndefined();
+	}
+};
+
 /**
  * Places an order with custom options.
  *
