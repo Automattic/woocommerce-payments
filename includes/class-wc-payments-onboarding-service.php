@@ -20,8 +20,9 @@ use WCPay\Logger;
  */
 class WC_Payments_Onboarding_Service {
 
-	const TEST_MODE_OPTION                    = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_ELIGIBILITY_MODAL_OPTION = 'wcpay_onboarding_eligibility_modal_dismissed';
+	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
+	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
+	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
@@ -655,12 +656,13 @@ class WC_Payments_Onboarding_Service {
 
 	/**
 	 * Clear any account options we may want to reset when a new onboarding flow is initialised.
-	 * Currently, just deletes the option which stores whether the eligibility modal has been dismissed.
+	 * Currently, this deletes two options that store whether the eligibility and connection success modals have been dismissed.
 	 *
-	 * @return boolean Whether the option was deleted successfully.
+	 * @return void
 	 */
-	public static function clear_account_options(): bool {
-		return delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
+	public static function clear_account_options(): void {
+		delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
+		delete_option( self::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION );
 	}
 
 	/**
