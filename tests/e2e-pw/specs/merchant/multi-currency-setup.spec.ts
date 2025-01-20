@@ -12,6 +12,7 @@ import {
 	deactivateMulticurrency,
 	disableAllEnabledCurrencies,
 	removeCurrency,
+	restoreCurrencies,
 	setCurrencyCharmPricing,
 	setCurrencyPriceRounding,
 	setCurrencyRate,
@@ -31,6 +32,8 @@ test.describe( 'Multi-currency setup', () => {
 	} );
 
 	test.afterAll( async () => {
+		await restoreCurrencies( merchantPage );
+
 		if ( ! wasMulticurrencyEnabled ) {
 			await deactivateMulticurrency( merchantPage );
 		}
