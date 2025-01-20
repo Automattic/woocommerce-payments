@@ -114,6 +114,10 @@
 
 				&.is-primary {
 					background: $studio-wordpress-blue-50;
+
+					&:hover {
+						background: $studio-wordpress-blue-40;
+					}
 				}
 			}
 		}
@@ -163,25 +167,6 @@
 				@include wc-others-caption;
 				color: $gray-800;
 				margin-top: $gap-smallest;
-			}
-		}
-
-		&__info-modal {
-			&.components-modal__frame {
-				max-width: 700px;
-			}
-
-			.components-notice {
-				margin: $gap 0 0;
-				padding: $gap-small $gap-small 0;
-			}
-
-			hr {
-				margin: $gap-large 0;
-			}
-
-			&__footer {
-				@include modal-footer-buttons;
 			}
 		}
 
@@ -280,6 +265,27 @@
 				top: 18px;
 				left: 36px;
 			}
+		}
+	}
+}
+
+.connect-account-page {
+	&__info-modal {
+		&.components-modal__frame {
+			max-width: 700px;
+		}
+
+		.components-notice {
+			margin: $gap 0 0;
+			padding: $gap-small $gap-small 0;
+		}
+
+		hr {
+			margin: $gap-large 0;
+		}
+
+		&__footer {
+			@include modal-footer-buttons;
 		}
 	}
 }
