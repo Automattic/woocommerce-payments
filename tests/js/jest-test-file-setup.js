@@ -75,7 +75,8 @@ global.wcSettings = {
 		failed: 'Failed',
 		paid: 'Paid',
 	},
-	l10n: {
+	locale: {
+		siteLocale: 'en_US',
 		userLocale: 'en_US',
 		weekdaysShort: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ],
 	},
@@ -102,10 +103,6 @@ global.wpApiSettings = {
 };
 
 global.wcpaySettings = {
-	locale: {
-		code: 'es_ES',
-		native_name: 'Spanish',
-	},
 	accountLoans: {
 		loans: [ 'flxln_123456|active' ],
 	},
