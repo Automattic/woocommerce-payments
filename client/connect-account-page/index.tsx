@@ -56,7 +56,11 @@ const TestDriveLoader: React.FunctionComponent< {
 		<img className="logo" src={ WooLogo } alt="" />
 		<Loader.Layout>
 			<Loader.Illustration>
-				<img src={ SetupImg } alt="setup" />
+				<img
+					src={ SetupImg }
+					alt="setup"
+					style={ { maxWidth: '223px' } }
+				/>
 			</Loader.Illustration>
 
 			<Loader.Title>
@@ -75,17 +79,17 @@ const TestDriveLoader: React.FunctionComponent< {
 const ConnectAccountPage: React.FC = () => {
 	const firstName = wcSettings.admin?.currentUserData?.first_name;
 	const incentive = wcpaySettings.connectIncentive;
-	const [ modalVisible, setModalVisible ] = useState( false );
+	const [ modalVisible, setModalVisible ] = useState( true );
 
 	const [ errorMessage, setErrorMessage ] = useState< string >(
 		wcpaySettings.errorMessage
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
-		false
+		true
 	);
 	const [ isTestDriveModeModalShown, setTestDriveModeModalShown ] = useState(
-		false
+		true
 	);
 	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] = useState(
 		5
