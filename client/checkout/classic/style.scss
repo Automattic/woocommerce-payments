@@ -35,6 +35,13 @@
 #payment .payment_methods {
 	li[class*='payment_method_woocommerce_payments'] label {
 		display: inline;
+		.payment-methods--logos {
+			float: right;
+
+			img:last-of-type {
+				margin-right: 0;
+			}
+		}
 		img {
 			float: right;
 			border: 0;
