@@ -1251,33 +1251,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Returns language data: english name and native name
-	 *
-	 * @param string $language Language code.
-	 *
-	 * @return array
-	 */
-	public static function get_language_data( $language ) {
-		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
-
-		$translations = wp_get_available_translations();
-
-		if ( isset( $translations[ $language ] ) ) {
-			return [
-				'code'         => self::convert_to_server_locale( $language ),
-				'english_name' => $translations[ $language ]['english_name'] ?? $language,
-				'native_name'  => $translations[ $language ]['native_name'] ?? $language,
-			];
-		}
-
-		return [
-			'code'         => 'en_US',
-			'english_name' => 'English (United States)',
-			'native_name'  => 'English (United States)',
-		];
-	}
-
-	/**
 	 * Converts a WP locale to a wpcom-compatible language code.
 	 *
 	 * @see Automattic\Jetpack\Jetpack_Mu_Wpcom\Common::get_iso_639_locale() for similar logic.

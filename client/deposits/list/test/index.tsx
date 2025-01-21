@@ -90,9 +90,6 @@ declare const global: {
 			country: string;
 		};
 		dateFormat: string;
-		userLocale: {
-			code: string;
-		};
 	};
 };
 
@@ -160,9 +157,6 @@ describe( 'Deposits list', () => {
 				},
 			},
 			dateFormat: 'M j Y',
-			userLocale: {
-				code: 'en',
-			},
 		};
 	} );
 

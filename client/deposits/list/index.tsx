@@ -214,7 +214,7 @@ export const DepositsList = (): JSX.Element => {
 
 	const endpointExport = async () => {
 		const userEmail = wcpaySettings.currentUserEmail;
-		const userLocale = wcpaySettings.userLocale.code;
+		const locale = wcSettings.locale.userLocale;
 
 		const {
 			date_before: dateBefore,
@@ -257,7 +257,7 @@ export const DepositsList = (): JSX.Element => {
 				} >( {
 					path: getDepositsCSV( {
 						userEmail,
-						userLocale,
+						locale,
 						dateAfter,
 						dateBefore,
 						dateBetween,

@@ -351,7 +351,7 @@ export const DisputesList = (): JSX.Element => {
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		const userLocale = wcpaySettings.userLocale.code;
+		const locale = wcSettings.locale.userLocale;
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
@@ -392,7 +392,7 @@ export const DisputesList = (): JSX.Element => {
 				} >( {
 					path: getDisputesCSV( {
 						userEmail,
-						userLocale,
+						locale,
 						dateAfter,
 						dateBefore,
 						dateBetween,

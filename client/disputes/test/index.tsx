@@ -104,9 +104,6 @@ declare const global: {
 		};
 		dateFormat?: string;
 		timeFormat?: string;
-		userLocale: {
-			code: string;
-		};
 	};
 };
 
@@ -208,9 +205,6 @@ describe( 'Disputes list', () => {
 			},
 			dateFormat: 'Y-m-d',
 			timeFormat: 'g:iA',
-			userLocale: {
-				code: 'en',
-			},
 		};
 	} );
 
