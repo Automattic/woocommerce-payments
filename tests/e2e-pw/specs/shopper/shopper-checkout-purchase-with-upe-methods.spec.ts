@@ -57,10 +57,10 @@ test.describe( 'Enable UPE with deferred intent creation', () => {
 
 		// Restore merchant side of tests
 		await disablePaymentMethods( merchantPage, [ 'bancontact' ] );
+		await restoreCurrencies( merchantPage );
 		if ( ! wasMultiCurrencyEnabled ) {
 			await deactivateMulticurrency( merchantPage );
 		}
-		await restoreCurrencies( merchantPage );
 	} );
 
 	const testBancontactOrder = async (
