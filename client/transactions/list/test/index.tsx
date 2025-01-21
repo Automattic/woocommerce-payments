@@ -664,7 +664,7 @@ describe( 'Transactions list', () => {
 					method: 'POST',
 					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock&user_timezone=${ encodeURIComponent(
 						getUserTimeZone()
-					) }&locale=en`,
+					) }&locale=en_US`,
 				} );
 			} );
 		} );

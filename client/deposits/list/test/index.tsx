@@ -369,7 +369,7 @@ describe( 'Deposits list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
 					path:
-						'/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en',
+						'/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en_US',
 				} );
 			} );
 		} );
