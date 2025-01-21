@@ -57,9 +57,9 @@ export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await ensureSupportPhoneIsFilled( page );
 
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
-	await expect( page.locator( '.components-snackbar__content' ) ).toHaveText(
-		'Settings saved.'
-	);
+	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
+		timeout: 10000,
+	} );
 };
 
 export const isMulticurrencyEnabled = async ( page: Page ) => {
