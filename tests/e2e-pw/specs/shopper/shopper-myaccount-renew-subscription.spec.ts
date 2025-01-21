@@ -38,6 +38,7 @@ describeif( shouldRunSubscriptionsTests )(
 				products.SUBSCRIPTION_SIGNUP_FEE
 			);
 			await shopper.setupCheckout( page, customerBillingConfig );
+			await shopper.selectPaymentMethod( page );
 			await shopper.fillCardDetails( page, config.cards.basic );
 			await shopper.placeOrder( page );
 			await expect(

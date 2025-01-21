@@ -38,7 +38,7 @@ const ReceiptSettings = (): JSX.Element => {
 	const areInputsValid = isBusinessInputsValid && isContactsInputsValid;
 
 	return (
-		<SettingsLayout>
+		<SettingsLayout displayBanner={ false }>
 			<SettingsSection description={ ReadersSettingsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<Card className="card-readers-settings__wrapper">
