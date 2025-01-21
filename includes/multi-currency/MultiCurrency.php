@@ -747,6 +747,10 @@ class MultiCurrency {
 			WC()->initialize_session();
 		}
 
+		if ( $this->get_stored_currency_code() !== $code && $persist_change ) {
+			$this->frontend_currencies->clear_url_price_params();
+		}
+
 		if ( 0 === $user_id && WC()->session ) {
 			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->get_code() );
 			// Set the session cookie if is not yet to persist the selected currency.
