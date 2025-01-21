@@ -341,7 +341,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 				setIsDirty,
 			} }
 		>
-			<SettingsLayout>
+			<SettingsLayout displayBanner={ false }>
 				<ErrorBoundary>
 					<div className="fraud-protection-advanced-settings-layout">
 						<Breadcrumb />

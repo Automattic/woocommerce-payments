@@ -119,7 +119,7 @@ describe( 'Onboarding Form', () => {
 			render( <OnboardingTextField name="annual_revenue" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual ecommerce revenue (USD)?'
+				'What is your estimated annual Ecommerce revenue (USD)?'
 			);
 			const errorMessage = screen.getByText( 'error message' );
 
@@ -131,7 +131,7 @@ describe( 'Onboarding Form', () => {
 			render( <OnboardingTextField name="annual_revenue" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual ecommerce revenue (USD)?'
+				'What is your estimated annual Ecommerce revenue (USD)?'
 			);
 			textField.focus(); // Workaround for `type` not triggering focus.
 			userEvent.type( textField, 'Less than $250k' );
@@ -148,7 +148,7 @@ describe( 'Onboarding Form', () => {
 			render( <OnboardingTextField name="annual_revenue" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual ecommerce revenue (USD)?'
+				'What is your estimated annual Ecommerce revenue (USD)?'
 			);
 			userEvent.type( textField, 'John' );
 
@@ -159,7 +159,7 @@ describe( 'Onboarding Form', () => {
 			render( <OnboardingTextField name="annual_revenue" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual ecommerce revenue (USD)?'
+				'What is your estimated annual Ecommerce revenue (USD)?'
 			);
 			userEvent.type( textField, 'John' );
 
@@ -170,7 +170,7 @@ describe( 'Onboarding Form', () => {
 			render( <OnboardingTextField name="annual_revenue" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual ecommerce revenue (USD)?'
+				'What is your estimated annual Ecommerce revenue (USD)?'
 			);
 			userEvent.type( textField, 'John' );
 			userEvent.tab();
