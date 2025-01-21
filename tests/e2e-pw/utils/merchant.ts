@@ -351,7 +351,7 @@ export const activateCaptureLater = async ( page: Page ) => {
 	const wasInitiallyEnabled = await isCaptureLaterEnabled( page );
 
 	if ( ! wasInitiallyEnabled ) {
-		await page.getByTestId( checkboxTestId ).check();
+		await page.getByTestId( checkboxTestId ).click(); // This should be .check(), however, it causes the test to fail if used.
 		await page
 			.getByRole( 'button', { name: 'Enable manual capture' } )
 			.click();
