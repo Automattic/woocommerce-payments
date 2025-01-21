@@ -3,6 +3,11 @@
  * External dependencies
  */
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+import path from 'path';
+
+config( { path: path.resolve( __dirname, '../e2e/config', '.env' ) } );
+config( { path: path.resolve( __dirname, '../e2e/config', 'local.env' ) } );
 
 const { BASE_URL } = process.env;
 

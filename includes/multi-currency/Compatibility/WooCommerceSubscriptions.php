@@ -235,18 +235,30 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $return;
 		}
 
-		// Check for subscription renewal or resubscribe.
-		if ( $this->get_subscription_type_from_cart( 'renewal' )
-			|| $this->get_subscription_type_from_cart( 'resubscribe' ) ) {
-			$calls = [
-				'WC_Cart_Totals->calculate_item_totals',
-				'WC_Cart->get_product_subtotal',
-				'wc_get_price_excluding_tax',
-				'wc_get_price_including_tax',
-			];
+		$calls = [
+			'WC_Cart_Totals->calculate_item_totals',
+			'WC_Cart->get_product_subtotal',
+			'wc_get_price_excluding_tax',
+			'wc_get_price_including_tax',
+		];
+
+		// Check for renewal.
+		if ( $this->get_subscription_type_from_cart( 'renewal' ) ) {
+			// When WCPay Subs programmatically sets up the cart, we need to return the
+			// converted price so the user lands at the checkout with the correct price.
+			if ( $this->utils->is_call_in_backtrace( [ 'WCS_Cart_Renewal->setup_cart' ] ) ) {
+				return $return;
+			}
+
 			if ( $this->utils->is_call_in_backtrace( $calls ) ) {
 				return false;
 			}
+		}
+
+		// Check for resubscribe.
+		if ( $this->get_subscription_type_from_cart( 'resubscribe' )
+			&& $this->utils->is_call_in_backtrace( $calls ) ) {
+			return false;
 		}
 
 		// WCPay Subs does a check against the product price and the total, we need to return the actual product price for this check.
