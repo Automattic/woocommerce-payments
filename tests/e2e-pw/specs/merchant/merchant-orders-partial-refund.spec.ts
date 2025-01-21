@@ -154,7 +154,7 @@ test.describe( 'Order > Partial refund', () => {
 
 			await merchantPage
 				.getByLabel( 'Reason for refund (optional):' )
-				.fill( dataTable[ 0 ][ 0 ] );
+				.fill( dataTable[ i ][ 0 ] );
 
 			merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
 
