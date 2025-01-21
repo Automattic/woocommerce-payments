@@ -24,7 +24,7 @@ import {
 	ApplePayIcon,
 	GooglePayIcon,
 	LinkIcon,
-	WooIcon,
+	WooIconShort,
 } from 'wcpay/payment-methods-icons';
 
 const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
@@ -132,7 +132,7 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				{ isWooPayEnabled && (
 					<li>
 						<PaymentMethodIcon
-							Icon={ WooIcon }
+							Icon={ WooIconShort }
 							label={ __( 'WooPay', 'woocommerce-payments' ) }
 						/>
 					</li>

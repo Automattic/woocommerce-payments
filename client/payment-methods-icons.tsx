@@ -25,6 +25,7 @@ import VisaAsset from 'assets/images/cards/visa.svg?asset';
 import MasterCardAsset from 'assets/images/cards/mastercard.svg?asset';
 import AmexAsset from 'assets/images/cards/amex.svg?asset';
 import WooAsset from 'assets/images/payment-methods/woo.svg?asset';
+import WooAssetShort from 'assets/images/payment-methods/woo-short.svg?asset';
 import ApplePayAsset from 'assets/images/cards/apple-pay.svg?asset';
 import GooglePayAsset from 'assets/images/cards/google-pay.svg?asset';
 import DinersClubAsset from 'assets/images/cards/diners.svg?asset';
@@ -151,6 +152,11 @@ export const VisaIcon = iconComponent(
 );
 export const WooIcon = iconComponent(
 	WooAsset,
+	__( 'WooPay', 'woocommerce-payments' ),
+	false
+);
+export const WooIconShort = iconComponent(
+	WooAssetShort,
 	__( 'WooPay', 'woocommerce-payments' ),
 	false
 );
