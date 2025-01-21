@@ -28,12 +28,12 @@ export const goToProductPageBySlug = async (
 
 export const goToCart = async ( page: Page ) => {
 	await page.goto( '/cart/', { waitUntil: 'load' } );
-	isUIUnblocked( page );
+	await isUIUnblocked( page );
 };
 
 export const goToCheckout = async ( page: Page ) => {
 	await page.goto( '/checkout/', { waitUntil: 'load' } );
-	isUIUnblocked( page );
+	await isUIUnblocked( page );
 };
 
 export const goToOrders = async ( page: Page ) => {
