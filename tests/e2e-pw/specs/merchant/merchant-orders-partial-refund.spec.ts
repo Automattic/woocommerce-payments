@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -9,13 +9,17 @@ import { test, expect } from '@playwright/test';
 import { config } from '../../config/default';
 import { getMerchant, getShopper } from '../../utils/helpers';
 import {
-	emptyCart,
 	fillCardDetails,
 	placeOrder,
 	setupProductCheckout,
 } from '../../utils/shopper';
 import { goToShop } from '../../utils/shopper-navigation';
 import { goToOrder } from '../../utils/merchant-navigation';
+import {
+	activateMulticurrency,
+	deactivateMulticurrency,
+	restoreCurrencies,
+} from '../../utils/merchant';
 
 // Needs to be finished.
 test.describe( 'Order > Partial refund', () => {
@@ -63,9 +67,11 @@ test.describe( 'Order > Partial refund', () => {
 
 	let firstOrderId: string;
 	let orderTotal: string;
+	let wasMulticurrencyEnabled = false;
+	let merchantPage: Page, shopperPage: Page;
 
 	const orderProducts = async ( { browser }, dataTableIndex: number ) => {
-		const { shopperPage } = await getShopper( browser );
+		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		const lineItems = dataTable[ dataTableIndex ][ 1 ].lineItems;
 		await goToShop( shopperPage );
 		await setupProductCheckout( shopperPage, lineItems );
@@ -84,14 +90,23 @@ test.describe( 'Order > Partial refund', () => {
 	};
 
 	test.beforeAll( async ( { browser } ) => {
-		const { shopperPage } = await getShopper( browser );
-		await emptyCart( shopperPage );
 		firstOrderId = await orderProducts( { browser }, 0 );
+		merchantPage = ( await getMerchant( browser ) ).merchantPage;
+		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
+		await restoreCurrencies( merchantPage );
 	} );
 
-	test( 'Refund one product of two product order', async ( { browser } ) => {
+	test.afterAll( async () => {
+		if ( ! wasMulticurrencyEnabled ) {
+			await deactivateMulticurrency( merchantPage );
+		}
+	} );
+
+	test( 'Partially refund one product of two product order', async ( {
+		browser,
+	} ) => {
+		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 		const { refundInputs } = dataTable[ 0 ][ 1 ];
-		const { merchantPage } = await getMerchant( browser );
 		await goToOrder( merchantPage, firstOrderId );
 
 		const orderTotalField = merchantPage
@@ -136,6 +151,6 @@ test.describe( 'Order > Partial refund', () => {
 			merchantPage
 				.getByRole( 'row', { name: 'Net Payment' } )
 				.locator( 'bdi' )
-		).toHaveText( `$${ netPayment.toFixed( 2 ) }` );
+		).toHaveText( `$${ netPayment.toFixed( 2 ) } USD` );
 	} );
 } );
