@@ -17,6 +17,7 @@ import {
 	addCartProduct,
 	confirmCardAuthentication,
 	emptyCart,
+	expectFraudPreventionToken,
 	fillCardDetails,
 	placeOrder,
 	setupCheckout,
@@ -64,14 +65,7 @@ import { goToShop } from '../../utils/shopper-navigation';
 			threeDSenabled: boolean,
 			cardTestingFlag: boolean
 		) => {
-			const token = await page.evaluate( () => {
-				return ( window as any ).wcpayFraudPreventionToken;
-			} );
-			if ( cardTestingFlag ) {
-				expect( token ).toBeDefined();
-			} else {
-				expect( token ).toBeUndefined();
-			}
+			await expectFraudPreventionToken( page, cardTestingFlag );
 			await fillCardDetails( page, card );
 			await placeOrder( page );
 			if ( threeDSenabled ) {
