@@ -38,6 +38,10 @@ test.describe(
 			await page.getByRole( 'button', { name: 'Apply coupon' } ).click();
 		} );
 
+		test.afterEach( async ( { page } ) => {
+			await emptyCart( page );
+		} );
+
 		test( 'Checkout with a free coupon', async ( { page } ) => {
 			await goToCheckout( page );
 			await fillBillingAddress( page, config.addresses.customer.billing );
@@ -50,7 +54,6 @@ test.describe(
 					name: 'Order received',
 				} )
 			).toBeVisible();
-			await emptyCart( page );
 		} );
 
 		test( 'Remove free coupon, then checkout', async ( { page } ) => {
@@ -67,7 +70,6 @@ test.describe(
 					name: 'Order received',
 				} )
 			).toBeVisible();
-			await emptyCart( page );
 		} );
 	}
 );
