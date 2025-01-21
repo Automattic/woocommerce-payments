@@ -7,31 +7,20 @@ import { test, expect } from '@playwright/test';
  * Internal dependencies
  */
 import { getShopper, getMerchant } from '../../utils/helpers';
-import {
-	goToOrder,
-	goToWooPaymentsSettings,
-} from '../../utils/merchant-navigation';
+import { goToOrder } from '../../utils/merchant-navigation';
 import {
 	activateCaptureLater,
 	deactivateCaptureLater,
 } from '../../utils/merchant';
-import {
-	emptyCart,
-	fillCardDetails,
-	focusPlaceOrderButton,
-	placeOrder,
-	setupProductCheckout,
-} from '../../utils/shopper';
-import { goToShop } from '../../utils/shopper-navigation';
+import { placeOrderWithOptions } from '../../utils/shopper';
 
 /**
  * Local variables.
  */
 let orderId;
+let merchantPage;
 
 test.describe( 'Order > Manual Capture', () => {
-	let merchantPage;
-
 	test.beforeAll( async ( { browser } ) => {
 		// Merchant go to settings, enable capture later, and then save.
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
@@ -39,24 +28,7 @@ test.describe( 'Order > Manual Capture', () => {
 
 		// Shopper add items to cart, fill in the checkout, place an order.
 		const { shopperPage } = await getShopper( browser );
-		await emptyCart( shopperPage );
-		await goToShop( shopperPage, 1 );
-		await setupProductCheckout( shopperPage );
-		await fillCardDetails( shopperPage );
-		await focusPlaceOrderButton( shopperPage );
-		await placeOrder( shopperPage );
-
-		// Confirm that the order was placed and get the order number.
-		await shopperPage.waitForURL( /\/order-received\//, {
-			waitUntil: 'load',
-		} );
-		await expect(
-			shopperPage.getByRole( 'heading', { name: 'Order received' } )
-		).toBeVisible();
-		const orderIdField = shopperPage.locator(
-			'.woocommerce-order-overview__order.order > strong'
-		);
-		orderId = await orderIdField.innerText();
+		orderId = await placeOrderWithOptions( shopperPage );
 	} );
 
 	test.afterAll( async () => {
@@ -69,23 +41,23 @@ test.describe( 'Order > Manual Capture', () => {
 		await goToOrder( merchantPage, orderId );
 
 		// Confirm order status is 'On hold', and that there's an 'authorized' note.
-		await expect( merchantPage.getByTitle( 'On hold' ) ).toHaveText(
-			'On hold'
-		);
+		await expect( merchantPage.getByTitle( 'On hold' ) ).toBeVisible();
 		await expect(
 			merchantPage.getByText(
 				/A payment of \$\d+\.\d{2}.* was authorized using WooPayments/
 			)
 		).toBeVisible();
 
-		// Set select to 'capture_charge', submit, and confirm 'captured' order note.
-		merchantPage
+		// Set select to 'capture_charge' and submit.
+		await merchantPage
 			.locator( '#woocommerce-order-actions select' )
 			.selectOption( 'capture_charge' );
-		// Using locator due to there are several buttons "named" Update.
-		merchantPage
-			.locator( '#woocommerce-order-actions li#actions button' )
+		await merchantPage
+			.locator( '#woocommerce-order-actions li#actions button' ) // Using locator due to there are several buttons "named" Update.
 			.click();
+
+		// After the page reloads, confirm the order is processing and we have a 'captured' order note.
+		await expect( merchantPage.getByTitle( 'Processing' ) ).toBeVisible();
 		await expect(
 			merchantPage.getByText(
 				/A payment of \$\d+\.\d{2}.* was successfully captured using WooPayments/
