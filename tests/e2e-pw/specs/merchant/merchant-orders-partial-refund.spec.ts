@@ -25,7 +25,7 @@ import {
 test.describe( 'Order > Partial refund', () => {
 	const product1 = config.products.simple.name;
 	const product2 = 'Belt';
-	const product3 = 'Hoodie';
+	const product3 = 'Hoodie with Logo';
 
 	/**
 	 * Elements:
@@ -40,7 +40,7 @@ test.describe( 'Order > Partial refund', () => {
 		}
 	][] = [
 		[
-			'a single line item',
+			'Partially refund one product of two product order',
 			{
 				lineItems: [
 					[ product1, 1 ],
@@ -50,7 +50,7 @@ test.describe( 'Order > Partial refund', () => {
 			},
 		],
 		[
-			'several line items',
+			'Refund two products of three product order',
 			{
 				lineItems: [
 					[ product1, 1 ],
@@ -66,6 +66,8 @@ test.describe( 'Order > Partial refund', () => {
 	];
 
 	let firstOrderId: string;
+	let secondOrderId: string;
+	let orderIds: string[];
 	let orderTotal: string;
 	let wasMulticurrencyEnabled = false;
 	let merchantPage: Page, shopperPage: Page;
@@ -90,10 +92,12 @@ test.describe( 'Order > Partial refund', () => {
 	};
 
 	test.beforeAll( async ( { browser } ) => {
-		firstOrderId = await orderProducts( { browser }, 0 );
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
 		await restoreCurrencies( merchantPage );
+		firstOrderId = await orderProducts( { browser }, 0 );
+		secondOrderId = await orderProducts( { browser }, 1 );
+		orderIds = [ firstOrderId, secondOrderId ];
 	} );
 
 	test.afterAll( async () => {
@@ -102,55 +106,69 @@ test.describe( 'Order > Partial refund', () => {
 		}
 	} );
 
-	test( 'Partially refund one product of two product order', async ( {
-		browser,
-	} ) => {
-		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		const { refundInputs } = dataTable[ 0 ][ 1 ];
-		await goToOrder( merchantPage, firstOrderId );
+	for ( let i = 0; i < dataTable.length; i++ ) {
+		test( dataTable[ i ][ 0 ], async ( { browser } ) => {
+			merchantPage = ( await getMerchant( browser ) ).merchantPage;
+			const { refundInputs } = dataTable[ i ][ 1 ];
+			await goToOrder( merchantPage, orderIds[ i ] );
 
-		const orderTotalField = merchantPage
-			.getByRole( 'row', { name: 'Order Total: $' } )
-			.locator( 'bdi' );
+			const orderTotalField = merchantPage
+				.getByRole( 'row', { name: 'Order Total: $' } )
+				.locator( 'bdi' );
 
-		orderTotal = await orderTotalField.innerText();
-		const orderTotalNumber = parseFloat( orderTotal.substring( 1 ) );
-		const { refundQty, refundAmount } = refundInputs[ 0 ];
-		const netPayment = orderTotalNumber - refundAmount;
+			orderTotal = await orderTotalField.innerText();
+			const orderTotalNumber = parseFloat( orderTotal.substring( 1 ) );
+			const refundTotal = refundInputs
+				.map( ( { refundAmount } ) => refundAmount )
+				.reduce( ( acc, cur ) => acc + cur );
+			const refundTotalString = refundTotal.toFixed( 2 );
+			const netPayment = ( orderTotalNumber - refundTotal ).toFixed( 2 );
 
-		await merchantPage.getByRole( 'button', { name: 'Refund' } ).click();
-		await merchantPage
-			.locator( '.refund_order_item_qty' )
-			.first()
-			.fill( refundQty.toString() );
+			await merchantPage
+				.getByRole( 'button', { name: 'Refund' } )
+				.click();
 
-		await merchantPage.locator( '.refund_line_total' ).first().clear();
+			for ( let j = 0; j < refundInputs.length; j++ ) {
+				const { refundQty, refundAmount } = refundInputs[ j ];
+				await merchantPage
+					.locator( '.refund_order_item_qty' )
+					.nth( j )
+					.fill( refundQty.toString() );
 
-		await merchantPage
-			.locator( '.refund_line_total' )
-			.first()
-			.fill( refundAmount.toString() );
+				await merchantPage
+					.locator( '.refund_line_total' )
+					.nth( j )
+					.clear();
 
-		await merchantPage.keyboard.press( 'Tab' );
+				await merchantPage
+					.locator( '.refund_line_total' )
+					.nth( j )
+					.fill( refundAmount.toString() );
 
-		await expect( merchantPage.getByLabel( 'Refund amount:' ) ).toHaveValue(
-			'5.00'
-		);
+				await merchantPage.keyboard.press( 'Tab' );
+			}
 
-		await merchantPage
-			.getByLabel( 'Reason for refund (optional):' )
-			.fill( 'Refund a single line item' );
+			await expect(
+				merchantPage.getByLabel( 'Refund amount:' )
+			).toHaveValue( `${ refundTotalString }` );
 
-		merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
+			await merchantPage
+				.getByLabel( 'Reason for refund (optional):' )
+				.fill( dataTable[ 0 ][ 0 ] );
 
-		await merchantPage
-			.getByRole( 'button', { name: 'Refund $5.00 via WooPayments' } )
-			.click();
+			merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
 
-		await expect(
-			merchantPage
-				.getByRole( 'row', { name: 'Net Payment' } )
-				.locator( 'bdi' )
-		).toHaveText( `$${ netPayment.toFixed( 2 ) } USD` );
-	} );
+			await merchantPage
+				.getByRole( 'button', {
+					name: `Refund $${ refundTotalString } via WooPayments`,
+				} )
+				.click();
+
+			await expect(
+				merchantPage
+					.getByRole( 'row', { name: 'Net Payment' } )
+					.locator( 'bdi' )
+			).toHaveText( `$${ netPayment } USD` );
+		} );
+	}
 } );
