@@ -122,6 +122,7 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
+		isConnectionSuccessModalDismissed: boolean;
 		userLocale: {
 			/**
 			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
