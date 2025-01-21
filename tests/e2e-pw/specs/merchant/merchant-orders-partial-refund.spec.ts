@@ -156,6 +156,10 @@ test.describe( 'Order > Partial refund', () => {
 				.getByLabel( 'Reason for refund (optional):' )
 				.fill( dataTable[ i ][ 0 ] );
 
+			await expect(
+				merchantPage.getByLabel( 'Reason for refund (optional):' )
+			).toHaveValue( dataTable[ i ][ 0 ] );
+
 			merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
 
 			await merchantPage
