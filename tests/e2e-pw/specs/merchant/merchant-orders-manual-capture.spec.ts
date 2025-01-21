@@ -44,7 +44,7 @@ test.describe( 'Order > Manual Capture', () => {
 		await expect( merchantPage.getByTitle( 'On hold' ) ).toBeVisible();
 		await expect(
 			merchantPage.getByText(
-				/A payment of \$\d+\.\d{2}.* was authorized using WooPayments/
+				'A payment of $18.00 was authorized using WooPayments'
 			)
 		).toBeVisible();
 
@@ -60,7 +60,7 @@ test.describe( 'Order > Manual Capture', () => {
 		await expect( merchantPage.getByTitle( 'Processing' ) ).toBeVisible();
 		await expect(
 			merchantPage.getByText(
-				/A payment of \$\d+\.\d{2}.* was successfully captured using WooPayments/
+				'A payment of $18.00 was successfully captured using WooPayments'
 			)
 		).toBeVisible();
 	} );
