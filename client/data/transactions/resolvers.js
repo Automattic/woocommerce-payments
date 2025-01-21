@@ -97,6 +97,10 @@ export function getTransactionsCSV( query ) {
 	return path;
 }
 
+export function getTransactionsDownloadURL( query ) {
+	return `${ NAMESPACE }/transactions/download/${ query.exportId }`;
+}
+
 /**
  * Retrieves the transactions summary from the summary API.
  *

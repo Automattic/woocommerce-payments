@@ -7,6 +7,7 @@ import React, { Fragment, useState } from 'react';
 import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
 import { __, _n, sprintf } from '@wordpress/i18n';
+import { Notice } from '@wordpress/components';
 import {
 	TableCard,
 	Search,
@@ -18,11 +19,6 @@ import {
 	getQuery,
 	updateQueryString,
 } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -51,7 +47,10 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
 import DownloadButton from 'components/download-button';
-import { getTransactionsCSV } from '../../data/transactions/resolvers';
+import {
+	getTransactionsCSV,
+	getTransactionsDownloadURL,
+} from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
@@ -82,6 +81,11 @@ interface Column extends TableCardColumn {
 	visible?: boolean;
 	cellClassName?: string;
 	labelInCsv?: string;
+}
+
+interface TransactionExportResponse {
+	export_id?: string;
+	exported_transactions: number;
 }
 
 const getPaymentSourceDetails = ( txn: Transaction ) => {
@@ -579,6 +583,16 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
+	const successNotice = ( userEmail: string, downloadURL: string ) => {
+		const noticeMessage = downloadURL
+			? __(
+					'Your export is downloaded. It will also be emailed to %s',
+					'woocommerce-payments'
+			  )
+			: __( 'Your export will be emailed to %s', 'woocommerce-payments' );
+		createNotice( 'success', sprintf( noticeMessage, userEmail ) );
+	};
+
 	const endpointExport = async () => {
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -642,7 +656,7 @@ export const TransactionsList = (
 			window.confirm( confirmMessage )
 		) {
 			try {
-				await apiFetch( {
+				const response = await apiFetch< TransactionExportResponse >( {
 					path: getTransactionsCSV( {
 						userEmail,
 						userLocale,
@@ -670,16 +684,24 @@ export const TransactionsList = (
 					method: 'POST',
 				} );
 
-				createNotice(
-					'success',
-					sprintf(
-						__(
-							'Your export will be emailed to %s',
-							'woocommerce-payments'
-						),
-						userEmail
-					)
-				);
+				if ( response.export_id ) {
+					setTimeout( async () => {
+						const URL = await apiFetch< string >( {
+							path: getTransactionsDownloadURL( {
+								exportId: response.export_id,
+							} ),
+							method: 'GET',
+						} );
+						if ( URL ) {
+							const link = document.createElement( 'a' );
+							// Add force_download=true to the URL to force the download, which adds the appropriate `Content-Disposition: attachment` header when using production server.
+							link.href = URL + '?force_download=true';
+							link.click();
+						}
+						setIsDownloading( false );
+						successNotice( userEmail, URL );
+					}, 2000 ); // Waiting for the download to be available
+				}
 			} catch {
 				createNotice(
 					'error',
@@ -698,31 +720,14 @@ export const TransactionsList = (
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
 		recordEvent( 'wcpay_transactions_download_csv_click', {
 			location: props.depositId ? 'deposit_details' : 'transactions',
-			download_type: downloadType,
 			exported_transactions: rows.length,
 			total_transactions: transactionsSummary.count,
 		} );
 
-		if ( 'endpoint' === downloadType ) {
-			endpointExport();
-		} else {
-			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
-				if ( column.labelInCsv ) {
-					return { ...column, label: column.labelInCsv };
-				}
-				return column;
-			} );
-			downloadCSVFile(
-				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( columnsToDisplayInCsv, rows )
-			);
-		}
-
-		setIsDownloading( false );
+		endpointExport();
 	};
 
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
@@ -807,6 +812,14 @@ export const TransactionsList = (
 					customerCurrencies={ customerCurrencies }
 					transactionSources={ transactionSources }
 				/>
+			) }
+			{ isDownloading && (
+				<Notice status="warning" isDismissible={ false }>
+					{ __(
+						'Your download is being prepared.',
+						'woocommerce-payments'
+					) }
+				</Notice>
 			) }
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
