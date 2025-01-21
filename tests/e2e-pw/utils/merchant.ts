@@ -99,9 +99,9 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 		await page.getByRole( 'button', { name: 'Close' } ).click();
 	}
 
-	const isWidgetAdded = await page
-		.getByRole( 'heading', { name: 'Currency Switcher Widget' } )
-		.isVisible();
+	const isWidgetAdded = !! ( await page.getByRole( 'heading', {
+		name: 'Currency Switcher Widget',
+	} ) );
 
 	if ( ! isWidgetAdded ) {
 		await page.getByRole( 'button', { name: 'Add block' } ).click();
