@@ -300,10 +300,17 @@ export const placeOrderWithOptions = async (
 	options?: {
 		productId?: number;
 		billingAddress?: CustomerAddress;
+		createAccount?: boolean;
 	}
 ) => {
 	await addCartProduct( page, options?.productId );
 	await setupCheckout( page, options?.billingAddress );
+	if (
+		options?.createAccount &&
+		( await page.getByLabel( 'Create an account?' ).isVisible() )
+	) {
+		await page.getByLabel( 'Create an account?' ).check();
+	}
 	await selectPaymentMethod( page );
 	await fillCardDetails( page, config.cards.basic );
 	await focusPlaceOrderButton( page );
@@ -332,6 +339,46 @@ export const placeOrderWithCurrency = async (
 ) => {
 	await navigation.goToShopWithCurrency( page, currency );
 	return placeOrderWithOptions( page );
+};
+
+export const setSavePaymentMethod = async ( page: Page, save = true ) => {
+	const checkbox = page.getByLabel(
+		'Save payment information to my account for future purchases.'
+	);
+	if ( save ) {
+		await checkbox.check();
+	} else {
+		await checkbox.uncheck();
+	}
+};
+
+export const selectSavedPaymentMethod = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const savedCardOption = page
+		.getByLabel(
+			`Visa ending in ${ card.number.slice( -4 ) } (expires ${
+				card.expires.month
+			}/${ card.expires.year })`
+		)
+		.first();
+	if ( savedCardOption ) {
+		await savedCardOption.click();
+	}
+};
+
+export const deleteSavedCard = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	await page
+		.getByRole( 'row', { name: card.label } )
+		.first()
+		.getByRole( 'link', { name: 'Delete' } )
+		.click();
+	await page.waitForTimeout( 1000 );
+	await expect( page.getByText( 'Payment method deleted.' ) ).toBeVisible();
 };
 
 export const emptyCart = async ( page: Page ) => {
