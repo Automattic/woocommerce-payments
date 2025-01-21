@@ -36,7 +36,7 @@ let wasMulticurrencyEnabled = false;
 describeif( shouldRunSubscriptionsTests )(
 	'Subscriptions > Purchase multiple subscriptions',
 	() => {
-		let merchantPage, shopperPage: Page;
+		let merchantPage: Page, shopperPage: Page;
 		test.beforeAll( async ( { browser }, { project } ) => {
 			const restApi = new RestAPI( project.use.baseURL );
 			await restApi.deleteCustomerByEmailAddress(
