@@ -216,17 +216,21 @@ export const addToCartFromShopPage = async (
 	}
 };
 
+export const selectPaymentMethod = async (
+	page: Page,
+	paymentMethod = 'Credit card'
+) => {
+	await page.getByText( paymentMethod ).click();
+};
+
 export const setupCheckout = async (
 	page: Page,
-	billingAddress: CustomerAddress
+	billingAddress: CustomerAddress = config.addresses.customer.billing
 ) => {
 	await navigation.goToCheckout( page );
 	await fillBillingAddress( page, billingAddress );
 	await waitForUiRefresh( page );
 	await isUIUnblocked( page );
-	await page
-		.locator( '.wc_payment_method.payment_method_woocommerce_payments' )
-		.click();
 };
 
 /**
@@ -299,10 +303,8 @@ export const placeOrderWithOptions = async (
 	}
 ) => {
 	await addCartProduct( page, options?.productId );
-	await setupCheckout(
-		page,
-		options?.billingAddress || config.addresses.customer.billing
-	);
+	await setupCheckout( page, options?.billingAddress );
+	await selectPaymentMethod( page );
 	await fillCardDetails( page, config.cards.basic );
 	await focusPlaceOrderButton( page );
 	await placeOrder( page );
