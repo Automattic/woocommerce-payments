@@ -286,6 +286,7 @@ export const placeOrderWithOptions = async (
 	options?: {
 		productId?: number;
 		billingAddress?: CustomerAddress;
+		createAccount?: boolean;
 	}
 ) => {
 	await addCartProduct( page, options?.productId );
@@ -293,6 +294,12 @@ export const placeOrderWithOptions = async (
 		page,
 		options?.billingAddress || config.addresses.customer.billing
 	);
+	if (
+		options?.createAccount &&
+		( await page.getByLabel( 'Create an account?' ).isVisible() )
+	) {
+		await page.getByLabel( 'Create an account?' ).check();
+	}
 	await fillCardDetails( page, config.cards.basic );
 	await focusPlaceOrderButton( page );
 	await placeOrder( page );
@@ -363,25 +370,6 @@ export const changeAccountCurrency = async (
 	await expect(
 		page.getByText( 'Account details changed successfully.' )
 	).toBeVisible();
-};
-
-export const clearSavedCardsNonDefault = async ( page: Page ) => {
-	await navigation.goToMyAccount( page, 'payment-methods' );
-	while ( true ) {
-		const nonDefaultSavedCard = page
-			.locator(
-				'.account-payment-methods-table .payment-method:not(.default-payment-method)'
-			)
-			.first();
-		if ( ( await nonDefaultSavedCard.count() ) === 0 ) break;
-		await nonDefaultSavedCard
-			.getByRole( 'link', { name: 'Delete' } )
-			.click();
-		await page.waitForLoadState( 'load' );
-		await expect(
-			page.getByText( 'Payment method deleted.' )
-		).toBeVisible();
-	}
 };
 
 export const addSavedCard = async (

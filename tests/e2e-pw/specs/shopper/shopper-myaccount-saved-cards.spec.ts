@@ -8,22 +8,36 @@ import test, { Page, expect } from '@playwright/test';
  */
 import { config } from '../../config/default';
 import { goToMyAccount } from '../../utils/shopper-navigation';
-import { getShopper, useShopper } from '../../utils/helpers';
+import { getAnonymousShopper } from '../../utils/helpers';
 import {
 	addSavedCard,
-	clearSavedCardsNonDefault,
 	deleteSavedCard,
+	placeOrderWithOptions,
 	setDefaultPaymentMethod,
 } from '../../utils/shopper';
+import RestAPI from '../../utils/rest-api';
 
 test.describe( 'Shopper can save and delete cards', () => {
 	let timeAdded: number;
 	// Use cards different than other tests to prevent conflicts.
 	const card = config.cards.basic2;
 	const card2 = config.cards.basic3;
+	let shopperPage: Page = null;
+	const customerBillingConfig =
+		config.addresses[ 'subscriptions-customer' ].billing;
 
-	// File uses shopper for all tests.
-	useShopper();
+	test.beforeAll( async ( { browser }, { project } ) => {
+		const restApi = new RestAPI( project.use.baseURL );
+		await restApi.deleteCustomerByEmailAddress(
+			customerBillingConfig.email
+		);
+
+		shopperPage = ( await getAnonymousShopper( browser ) ).shopperPage;
+		await placeOrderWithOptions( shopperPage, {
+			billingAddress: customerBillingConfig,
+			createAccount: true,
+		} );
+	} );
 
 	async function waitTwentySecondsSinceLastCardAdded( page: Page ) {
 		// Make sure that at least 20s had already elapsed since the last card was added.
@@ -38,110 +52,91 @@ test.describe( 'Shopper can save and delete cards', () => {
 		await page.waitForTimeout( remainingWaitTime );
 	}
 
-	test.beforeAll( async ( { browser } ) => {
-		const page = ( await getShopper( browser ) ).shopperPage;
-		await goToMyAccount( page, 'payment-methods' );
-		// Set the basic card as the default payment method, so it doesn't interfere with the tests.
-		const alreadySavedDefault = page.getByRole( 'row', {
-			name: config.cards.basic.label,
-		} );
-		if ( ( await alreadySavedDefault.count() ) > 0 ) {
-			// If the basic card is already saved, set it as the default payment method.
-			await setDefaultPaymentMethod( page, config.cards.basic );
-			await clearSavedCardsNonDefault( page );
-		} else {
-			// If the basic card is not saved, add it and set it as the default payment method.
-			await addSavedCard( page, config.cards.basic, 'US', '94110' );
-			timeAdded = +Date.now();
-			await setDefaultPaymentMethod( page, config.cards.basic );
-			await clearSavedCardsNonDefault( page );
-			await waitTwentySecondsSinceLastCardAdded( page );
-		}
-	} );
-
-	test( 'should add the card as a new payment method', async ( { page } ) => {
-		await goToMyAccount( page, 'payment-methods' );
-		await addSavedCard( page, card, 'US', '94110' );
+	test( 'should add the card as a new payment method', async () => {
+		await goToMyAccount( shopperPage, 'payment-methods' );
+		await addSavedCard( shopperPage, card, 'US', '94110' );
 		// Take note of the time when we added this card
 		timeAdded = +Date.now();
 
 		// Verify that the card was added
 		await expect(
-			page.getByText(
+			shopperPage.getByText(
 				'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
 			)
 		).not.toBeVisible();
 
 		await expect(
-			page.getByText( 'Payment method successfully added' )
+			shopperPage.getByText( 'Payment method successfully added' )
 		).toBeVisible();
 
 		await expect(
-			page.getByText( `${ card.expires.month }/${ card.expires.year }` )
+			shopperPage.getByText(
+				`${ card.expires.month }/${ card.expires.year }`
+			)
 		).toBeVisible();
 
-		await waitTwentySecondsSinceLastCardAdded( page );
+		await waitTwentySecondsSinceLastCardAdded( shopperPage );
 	} );
 
-	test( 'shouldn`t add the card as a new payment method in 20 seconds', async ( {
-		page,
-	} ) => {
-		await goToMyAccount( page, 'payment-methods' );
+	test( 'shouldn`t add the card as a new payment method in 20 seconds', async () => {
+		await goToMyAccount( shopperPage, 'payment-methods' );
 		// Take note of the time when we added this card
-		await addSavedCard( page, card, 'US', '94110' );
+		await addSavedCard( shopperPage, card, 'US', '94110' );
 		timeAdded = +Date.now();
 
 		// Try to add a new card before 20 seconds have passed
-		await addSavedCard( page, card, 'US', '94110' );
+		await addSavedCard( shopperPage, card, 'US', '94110' );
 
 		// Verify that the card was not added
 		await expect(
-			page.getByText(
+			shopperPage.getByText(
 				'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
 			)
 		).toBeVisible();
 
 		await expect(
-			page.getByText( 'Payment method successfully added' )
+			shopperPage.getByText( 'Payment method successfully added' )
 		).not.toBeVisible();
 
 		await expect(
-			page.getByText( `${ card.expires.month }/${ card.expires.year }` )
+			shopperPage.getByText(
+				`${ card.expires.month }/${ card.expires.year }`
+			)
 		).not.toBeVisible();
 
-		await waitTwentySecondsSinceLastCardAdded( page );
+		await waitTwentySecondsSinceLastCardAdded( shopperPage );
 	} );
 
-	test( 'should be able to set payment method as default', async ( {
-		page,
-	} ) => {
-		await goToMyAccount( page, 'payment-methods' );
-		await addSavedCard( page, card2, 'US', '94110' );
+	test( 'should be able to set payment method as default', async () => {
+		await goToMyAccount( shopperPage, 'payment-methods' );
+		await addSavedCard( shopperPage, card2, 'US', '94110' );
 		await expect(
-			page.getByText( 'Payment method successfully added' )
+			shopperPage.getByText( 'Payment method successfully added' )
 		).toBeVisible();
 		await expect(
-			page.getByText( `${ card2.expires.month }/${ card2.expires.year }` )
+			shopperPage.getByText(
+				`${ card2.expires.month }/${ card2.expires.year }`
+			)
 		).toBeVisible();
-		await setDefaultPaymentMethod( page, card2 );
+		await setDefaultPaymentMethod( shopperPage, card2 );
 		// Verify that the card was set as default
 		await expect(
-			page.getByText(
+			shopperPage.getByText(
 				'This payment method was successfully set as your default.'
 			)
 		).toBeVisible();
 	} );
 
-	test( 'should be able to delete cards', async ( { page } ) => {
-		await goToMyAccount( page, 'payment-methods' );
-		await deleteSavedCard( page, card );
+	test( 'should be able to delete cards', async () => {
+		await goToMyAccount( shopperPage, 'payment-methods' );
+		await deleteSavedCard( shopperPage, card );
 		await expect(
-			page.getByText( 'Payment method deleted.' )
+			shopperPage.getByText( 'Payment method deleted.' )
 		).toBeVisible();
 
-		await deleteSavedCard( page, card2 );
+		await deleteSavedCard( shopperPage, card2 );
 		await expect(
-			page.getByText( 'Payment method deleted.' )
+			shopperPage.getByText( 'Payment method deleted.' )
 		).toBeVisible();
 	} );
 } );
