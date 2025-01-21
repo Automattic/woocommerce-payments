@@ -24,6 +24,7 @@ import {
 import {
 	activateMulticurrency,
 	deactivateMulticurrency,
+	restoreCurrencies,
 } from '../../utils/merchant';
 
 const products = {
@@ -47,6 +48,7 @@ describeif( shouldRunSubscriptionsTests )(
 			wasMulticurrencyEnabled = await activateMulticurrency(
 				merchantPage
 			);
+			await restoreCurrencies( merchantPage );
 		} );
 
 		test.afterAll( async () => {
