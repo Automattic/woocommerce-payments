@@ -49,7 +49,12 @@ export const fillBillingAddress = async (
 		.locator( '#billing_address_2' )
 		.fill( billingAddress.addresssecondline );
 	await page.locator( '#billing_city' ).fill( billingAddress.city );
-	await page.locator( '#billing_state' ).selectOption( billingAddress.state );
+	if ( billingAddress.state ) {
+		// Setting the state is optional, relative to the selected country. E.g Selecting Belgium hides the state input.
+		await page
+			.locator( '#billing_state' )
+			.selectOption( billingAddress.state );
+	}
 	await page.locator( '#billing_postcode' ).fill( billingAddress.postcode );
 	await page.locator( '#billing_phone' ).fill( billingAddress.phone );
 	await page.locator( '#billing_email' ).fill( billingAddress.email );
@@ -343,4 +348,94 @@ export const emptyCart = async ( page: Page ) => {
 	await expect( page.locator( '.cart-empty.woocommerce-info' ) ).toHaveText(
 		'Your cart is currently empty.'
 	);
+};
+
+export const changeAccountCurrency = async (
+	page: Page,
+	customerDetails: any,
+	currency: string
+) => {
+	await navigation.goToMyAccount( page, 'edit-account' );
+	await page.getByLabel( 'First name *' ).fill( customerDetails.firstname );
+	await page.getByLabel( 'Last name *' ).fill( customerDetails.lastname );
+	await page.getByLabel( 'Default currency' ).selectOption( currency );
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	await expect(
+		page.getByText( 'Account details changed successfully.' )
+	).toBeVisible();
+};
+
+export const clearSavedCardsNonDefault = async ( page: Page ) => {
+	await navigation.goToMyAccount( page, 'payment-methods' );
+	while ( true ) {
+		const nonDefaultSavedCard = page
+			.locator(
+				'.account-payment-methods-table .payment-method:not(.default-payment-method)'
+			)
+			.first();
+		if ( ( await nonDefaultSavedCard.count() ) === 0 ) break;
+		await nonDefaultSavedCard
+			.getByRole( 'link', { name: 'Delete' } )
+			.click();
+		await page.waitForLoadState( 'load' );
+		await expect(
+			page.getByText( 'Payment method deleted.' )
+		).toBeVisible();
+	}
+};
+
+export const addSavedCard = async (
+	page: Page,
+	card: typeof config.cards.basic,
+	country: string,
+	zipCode?: string
+) => {
+	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
+	await page.waitForLoadState( 'networkidle' );
+	await page.getByText( 'Credit card / debit card' ).click();
+	const frameHandle = page.getByTitle( 'Secure payment input frame' );
+	const stripeFrame = frameHandle.contentFrame();
+
+	if ( ! stripeFrame ) return;
+
+	await stripeFrame
+		.getByPlaceholder( '1234 1234 1234 1234' )
+		.fill( card.number );
+
+	await stripeFrame
+		.getByPlaceholder( 'MM / YY' )
+		.fill( card.expires.month + card.expires.year );
+
+	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
+	await stripeFrame
+		.getByRole( 'combobox', { name: 'country' } )
+		.selectOption( country );
+	const zip = stripeFrame.getByLabel( 'ZIP Code' );
+	if ( zip ) await zip.fill( zipCode ?? '90210' );
+
+	await page.getByRole( 'button', { name: 'Add payment method' } ).click();
+};
+
+export const deleteSavedCard = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	await page
+		.getByRole( 'row', { name: card.label } )
+		.first()
+		.getByRole( 'link', { name: 'Delete' } )
+		.click();
+	await page.waitForTimeout( 1000 );
+	await expect( page.getByText( 'Payment method deleted.' ) ).toBeVisible();
+};
+
+export const setDefaultPaymentMethod = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	await page
+		.getByRole( 'row', { name: card.label } )
+		.first()
+		.getByRole( 'link', { name: 'Make default' } )
+		.click();
 };
