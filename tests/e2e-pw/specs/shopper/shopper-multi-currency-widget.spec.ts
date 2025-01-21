@@ -26,7 +26,6 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 	} );
 
 	test.afterAll( async () => {
-		await merchant.restoreCurrencies( merchantPage );
 		if ( ! wasMulticurrencyEnabled ) {
 			await merchant.deactivateMulticurrency( merchantPage );
 		}
