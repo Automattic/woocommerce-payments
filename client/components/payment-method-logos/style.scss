@@ -37,14 +37,16 @@
 		gap: $gap-smaller;
 		padding: 0;
 	}
-}
 
-.components-popover__content {
-	background: $white;
-	border: 1px solid $gray-100;
-	border-radius: 3px;
-	max-width: 246px;
-	padding: $gap-smaller;
-	box-shadow: none;
-	margin-top: $gap-smaller;
+	&-popover {
+		.components-popover__content {
+			background: $white;
+			border: 1px solid $gray-100;
+			border-radius: 3px;
+			max-width: 246px;
+			padding: $gap-smaller;
+			box-shadow: none;
+			margin-top: $gap-smaller;
+		}
+	}
 }
