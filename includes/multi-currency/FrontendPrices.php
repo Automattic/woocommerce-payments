@@ -72,7 +72,140 @@ class FrontendPrices {
 
 			// Order hooks.
 			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 99, 2 );
+
+			// Price Filter Hooks.
+			add_filter( 'rest_post_dispatch', [ $this, 'maybe_modify_price_ranges_rest_response' ], 10, 3 );
+			add_filter( 'query_loop_block_query_vars', [ $this, 'maybe_modify_price_ranges_query_var' ], 10, 3 );
 		}
+	}
+
+	/**
+	 * Modifies the price range query parameters when the selected currency is not the same as the store currency.
+	 *
+	 * This method converts the '_price' parameters based on the selected currency.
+	 *
+	 * @param array     $query The current query variables.
+	 * @param \WP_Block $block The current block instance.
+	 * @param int       $page  The current page number.
+	 *
+	 * @return array The modified query variables.
+	 */
+	public function maybe_modify_price_ranges_query_var( $query, $block, $page ) {
+		if ( 'product' !== $query['post_type'] ) {
+			return $query;
+		}
+
+		if ( empty( $query['meta_query'] ) || ! is_array( $query['meta_query'] ) ) {
+			return $query;
+		}
+
+		$store_currency    = $this->multi_currency->get_default_currency()->get_code();
+		$selected_currency = $this->multi_currency->get_selected_currency()->get_code();
+
+		// If currencies are the same, no need to convert prices in the query.
+		if ( $store_currency === $selected_currency ) {
+			return $query;
+		}
+
+		// Traverse and modify the meta_query array.
+		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		$query['meta_query'] = $this->convert_meta_query_price_filters( $query['meta_query'], $store_currency, $selected_currency );
+
+		return $query;
+	}
+
+	/**
+	 * Recursively traverses and modifies the meta_query array to adjust '_price' values
+	 * from the 'from_currency' to the 'target_currency'.
+	 *
+	 * @param array  $meta_query       The meta_query array to traverse.
+	 * @param string $from_currency   The from currency code.
+	 * @param string $target_currency The target currency code.
+	 * @param int    $depth           The current depth of the recursion.
+	 *
+	 * @return array The modified meta_query array.
+	 */
+	private function convert_meta_query_price_filters( $meta_query, $from_currency, $target_currency, $depth = 0 ) {
+		// Prevent infinite recursion in a malformed meta_query.
+		if ( $depth > 4 ) {
+			return $meta_query;
+		}
+
+		foreach ( $meta_query as &$mq ) {
+			// If the current element is a nested meta_query with a relation.
+			if ( isset( $mq['relation'] ) && is_array( $mq ) ) {
+				// Recursively modify the nested meta_query.
+				if ( isset( $mq['relation'] ) ) {
+					// Extract the relation and the nested queries.
+					$relation = $mq['relation'];
+
+					$modified_nested = $this->convert_meta_query_price_filters( $mq, $from_currency, $target_currency, $depth + 1 );
+
+					// Reconstruct the meta_query with the modified nested queries.
+					$mq = array_merge( [ 'relation' => $relation ], $modified_nested );
+				}
+			} elseif ( isset( $mq['key'] ) && '_price' === $mq['key'] && isset( $mq['value'] ) && is_numeric( $mq['value'] ) ) {
+				$converted_price = $this->multi_currency->get_raw_conversion( $mq['value'], $from_currency, $target_currency );
+
+				if ( is_numeric( $converted_price ) ) {
+					// Apply floor or ceil based on the 'compare' operator.
+					if ( isset( $mq['compare'] ) ) {
+						if ( '<=' === $mq['compare'] ) {
+							$mq['value'] = (string) ceil( $converted_price ); // max_price.
+						} elseif ( '>=' === $mq['compare'] ) {
+							$mq['value'] = (string) floor( $converted_price ); // min_price.
+						}
+					}
+				}
+			}
+		}
+		unset( $mq );
+
+		return $meta_query;
+	}
+
+	/**
+	 * Modify the products/collection-data REST API response to include converted price ranges.
+	 *
+	 * @param \WP_REST_Response $response The original REST response.
+	 * @param \WP_REST_Server   $server   The REST server instance.
+	 * @param \WP_REST_Request  $request  The REST request instance.
+	 *
+	 * @return \WP_REST_Response The modified REST response.
+	 */
+	public function maybe_modify_price_ranges_rest_response( $response, $server, $request ) {
+		if ( '/wc/store/v1/products/collection-data' !== $request->get_route() ) {
+			return $response;
+		}
+
+		$data = $response->get_data();
+
+		if ( empty( $data['price_range'] ) || ! is_object( $data['price_range'] ) ) {
+			return $response;
+		}
+
+		$store_currency    = $this->multi_currency->get_default_currency()->get_code();
+		$selected_currency = $this->multi_currency->get_selected_currency()->get_code();
+
+		if ( $store_currency === $selected_currency ) {
+			return $response;
+		}
+
+		$price_fields = [ 'min_price', 'max_price' ];
+
+		foreach ( $price_fields as $field ) {
+			if ( property_exists( $data['price_range'], $field ) && is_numeric( $data['price_range']->$field ) ) {
+				$converted_price = $this->multi_currency->get_price( $data['price_range']->$field, 'product' );
+
+				if ( is_numeric( $converted_price ) ) {
+					$data['price_range']->$field = (string) $converted_price;
+				}
+			}
+		}
+
+		$response->set_data( $data );
+
+		return $response;
 	}
 
 	/**

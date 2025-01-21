@@ -48,22 +48,24 @@ class Logger {
 	/**
 	 * Add a log entry.
 	 *
-	 * @param string $message Log message.
-	 * @param string $level One of the following:
-	 *     'emergency': System is unusable.
-	 *     'alert': Action must be taken immediately.
-	 *     'critical': Critical conditions.
-	 *     'error': Error conditions.
-	 *     'warning': Warning conditions.
-	 *     'notice': Normal but significant condition.
-	 *     'info': Informational messages.
-	 *     'debug': Debug-level messages.
+	 * @param string                $message Log message.
+	 * @param string                $level One of the following:
+	 *                    'emergency': System is unusable.
+	 *                    'alert': Action must be taken immediately.
+	 *                    'critical': Critical conditions.
+	 *                    'error': Error conditions.
+	 *                    'warning': Warning conditions.
+	 *                    'notice': Normal but significant condition.
+	 *                    'info': Informational messages.
+	 *                    'debug': Debug-level messages.
+	 * @param array<string, string> $context Context data.
 	 */
-	public function log( $message, $level = 'info' ): void {
+	public function log( $message, $level = 'info', $context = [] ): void {
 		if ( ! $this->can_log() ) {
 			return;
 		}
-		$this->wc_logger->log( $level, $message, [ 'source' => self::LOG_FILENAME ] );
+		$context = array_merge( $context, [ 'source' => self::LOG_FILENAME ] );
+		$this->wc_logger->log( $level, $message, $context );
 	}
 
 	/**

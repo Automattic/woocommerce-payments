@@ -66,10 +66,10 @@ class WC_Payments_Captured_Event_Note {
 
 		$html = '';
 		foreach ( $lines as $line ) {
-			$html .= self::HTML_BR . $line . PHP_EOL;
+			$html .= '<p>' . $line . '</p>' . PHP_EOL;
 		}
 
-		return '<div class="captured-event-details" style="line-height: 0.8;padding-top: 15px;">' . PHP_EOL
+		return '<div class="captured-event-details">' . PHP_EOL
 				. $html
 				. '</div>';
 	}
@@ -123,13 +123,16 @@ class WC_Payments_Captured_Event_Note {
 				WC_Payments_Utils::format_currency( - $fee_amount, $fee_currency )
 			);
 		}
+		$is_same_symbol = $this->has_same_currency_symbol( $data['transaction_details']['store_currency'], $data['transaction_details']['customer_currency'] );
 
 		return sprintf(
-			'%1$s (%2$s%% + %3$s): %4$s',
+			'%1$s (%2$s%% + %3$s%4$s): %5$s%6$s',
 			$base_fee_label,
 			self::format_fee( $percentage ),
 			WC_Payments_Utils::format_currency( $fixed, $fixed_currency ),
-			WC_Payments_Utils::format_currency( - $fee_amount, $fee_currency )
+			$is_same_symbol ? ' ' . $data['transaction_details']['customer_currency'] : '',
+			WC_Payments_Utils::format_currency( -$fee_amount, $fee_currency ),
+			$is_same_symbol ? " $fee_currency" : ''
 		);
 	}
 
@@ -237,6 +240,10 @@ class WC_Payments_Captured_Event_Note {
 				WC_Payments_Utils::interpret_stripe_amount( $fixed_rate ),
 				$currency
 			);
+
+			if ( $this->has_same_currency_symbol( $data['transaction_details']['customer_currency'], $data['transaction_details']['store_currency'] ) ) {
+				$fix_rate_formatted = $fix_rate_formatted . ' ' . $data['transaction_details']['store_currency'];
+			}
 
 			$label = sprintf(
 				$this->fee_label_mapping( $fixed_rate, $is_capped )[ $label_type ],
@@ -441,5 +448,17 @@ class WC_Payments_Captured_Event_Note {
 		$custom_format['decimals'] = WC_Payments_Utils::get_currency_format_for_wc_price( $currency )['decimals'];
 
 		return WC_Payments_Utils::format_explicit_currency( $amount, $currency, $skip_symbol, $custom_format );
+	}
+
+	/**
+	 * Compare does two currencies have the same symbol.
+	 *
+	 * @param string $base_currency Base currency.
+	 * @param string $currency Currency to compare.
+	 *
+	 * @return bool
+	 */
+	private function has_same_currency_symbol( string $base_currency, string $currency ): bool {
+		return strcasecmp( $base_currency, $currency ) !== 0 && get_woocommerce_currency_symbol( $base_currency ) === get_woocommerce_currency_symbol( $currency );
 	}
 }
