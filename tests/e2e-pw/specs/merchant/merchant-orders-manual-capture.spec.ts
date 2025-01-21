@@ -11,7 +11,10 @@ import {
 	goToOrder,
 	goToWooPaymentsSettings,
 } from '../../utils/merchant-navigation';
-import { saveWooPaymentsSettings } from '../../utils/merchant';
+import {
+	activateCaptureLater,
+	deactivateCaptureLater,
+} from '../../utils/merchant';
 import {
 	emptyCart,
 	fillCardDetails,
@@ -27,15 +30,12 @@ import { goToShop } from '../../utils/shopper-navigation';
 let orderId;
 
 test.describe( 'Order > Manual Capture', () => {
-	test.beforeEach( async ( { browser } ) => {
+	let merchantPage;
+
+	test.beforeAll( async ( { browser } ) => {
 		// Merchant go to settings, enable capture later, and then save.
-		const { merchantPage } = await getMerchant( browser );
-		await goToWooPaymentsSettings( merchantPage );
-		await merchantPage.getByTestId( 'capture-later-checkbox' ).click();
-		await merchantPage
-			.getByRole( 'button', { name: 'Enable manual capture' } )
-			.click();
-		await saveWooPaymentsSettings( merchantPage );
+		merchantPage = ( await getMerchant( browser ) ).merchantPage;
+		await activateCaptureLater( merchantPage );
 
 		// Shopper add items to cart, fill in the checkout, place an order.
 		const { shopperPage } = await getShopper( browser );
@@ -59,19 +59,13 @@ test.describe( 'Order > Manual Capture', () => {
 		orderId = await orderIdField.innerText();
 	} );
 
-	test.afterEach( async ( { browser } ) => {
+	test.afterAll( async () => {
 		// Merchant go to settings, disable capture later, and then save.
-		const { merchantPage } = await getMerchant( browser );
-		await goToWooPaymentsSettings( merchantPage );
-		await merchantPage.getByTestId( 'capture-later-checkbox' ).click();
-		await saveWooPaymentsSettings( merchantPage );
+		await deactivateCaptureLater( merchantPage );
 	} );
 
-	test( 'should create an "On hold" order then capture the charge', async ( {
-		browser,
-	} ) => {
+	test( 'should create an "On hold" order then capture the charge', async () => {
 		// Merchant go to the order.
-		const { merchantPage } = await getMerchant( browser );
 		await goToOrder( merchantPage, orderId );
 
 		// Confirm order status is 'On hold', and that there's an 'authorized' note.
