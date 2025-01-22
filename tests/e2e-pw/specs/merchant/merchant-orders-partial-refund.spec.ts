@@ -174,35 +174,16 @@ test.describe( 'Order > Partial refund', () => {
 				const { refundQty, refundAmount } = refundInputs[ k ];
 
 				if ( refundQty ) {
-					const productOneRefundAmount =
-						dataTable[ i ][ 1 ].refundInputs[ 0 ].refundAmount;
-					const productTwoRefundAmount =
-						dataTable[ i ][ 1 ].refundInputs[ 1 ].refundAmount;
 					await expect(
-						merchantPage.getByText( '-1' ).first()
-					).toHaveText( `-${ refundQty.toString() }` );
-
-					await expect(
-						merchantPage.getByText( '-1' ).nth( 1 )
+						merchantPage.getByText( '-1' ).nth( k )
 					).toHaveText( `-${ refundQty.toString() }` );
 
 					await expect(
 						merchantPage
 							.locator( '#order_line_items' )
 							.getByText( '-$' )
-							.first()
-					).toHaveText(
-						`-$${ productOneRefundAmount.toFixed( 2 ) }`
-					);
-
-					await expect(
-						merchantPage
-							.locator( '#order_line_items' )
-							.getByText( '-$' )
-							.nth( 1 )
-					).toHaveText(
-						`-$${ productTwoRefundAmount.toFixed( 2 ) }`
-					);
+							.nth( k )
+					).toHaveText( `-$${ refundAmount.toFixed( 2 ) }` );
 				} else {
 					await expect(
 						merchantPage
