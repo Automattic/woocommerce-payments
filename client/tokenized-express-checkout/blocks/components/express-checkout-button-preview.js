@@ -50,7 +50,7 @@ const ExpressCheckoutButtonPreview = ( {
 				const buttonColor = theme === 'black' ? 'black' : 'white'; // There is no 'outline' theme in Google Pay.
 
 				const button = googlePayClient.createButton( {
-					buttonType: 'plain',
+					buttonType: options.buttonType.googlePay,
 					buttonColor,
 					buttonRadius: parseFloat( borderRadius ),
 					buttonSizeMode: 'fill',
@@ -59,7 +59,12 @@ const ExpressCheckoutButtonPreview = ( {
 				googlePlayContainerRef.current.appendChild( button );
 			} )();
 		}
-	}, [ theme, expressPaymentMethod, borderRadius ] );
+	}, [
+		theme,
+		expressPaymentMethod,
+		borderRadius,
+		options.buttonType.googlePay,
+	] );
 
 	useEffect( () => {
 		googlePlayContainerRef.current
@@ -82,6 +87,7 @@ const ExpressCheckoutButtonPreview = ( {
 	const buttonStyle = {
 		height: `${ options.buttonHeight }px`,
 		borderRadius,
+		ApplePayButtonType: options.buttonType.applePay,
 	};
 
 	if ( expressPaymentMethod === 'applePay' ) {
