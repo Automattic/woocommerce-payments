@@ -32,13 +32,13 @@ test.describe( 'Order > Partial refund', () => {
 	 * - test title
 	 * - object containing the items to be ordered, and the quantities and amounts to be refunded
 	 */
-	const dataTable: [
+	const dataTable: Array< [
 		string,
 		{
 			lineItems: Array< [ string, number ] >;
 			refundInputs: { refundQty: number; refundAmount: number }[];
 		}
-	][] = [
+	] > = [
 		[
 			'Partially refund one product of two product order',
 			{
@@ -104,10 +104,9 @@ test.describe( 'Order > Partial refund', () => {
 		}
 	} );
 
-	for ( let i = 0; i < dataTable.length; i++ ) {
-		test( dataTable[ i ][ 0 ], async ( { browser } ) => {
+	dataTable.forEach( ( [ title, { refundInputs } ], i ) => {
+		test( title, async ( { browser } ) => {
 			merchantPage = ( await getMerchant( browser ) ).merchantPage;
-			const { refundInputs } = dataTable[ i ][ 1 ];
 			await goToOrder( merchantPage, orderIds[ i ] );
 
 			const orderTotalField = merchantPage
@@ -172,5 +171,5 @@ test.describe( 'Order > Partial refund', () => {
 					.locator( 'bdi' )
 			).toHaveText( `$${ netPayment } USD` );
 		} );
-	}
+	} );
 } );
