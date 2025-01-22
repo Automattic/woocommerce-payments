@@ -417,6 +417,16 @@ export const deleteSavedCard = async (
 	await expect( page.getByText( 'Payment method deleted.' ) ).toBeVisible();
 };
 
+export const selectSavedCardOnCheckout = async (
+	page: Page,
+	card: typeof config.cards.basic
+) =>
+	await page
+		.getByText(
+			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
+		)
+		.click();
+
 export const setDefaultPaymentMethod = async (
 	page: Page,
 	card: typeof config.cards.basic
