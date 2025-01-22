@@ -46,4 +46,8 @@ class Payment_Method extends Base_Constant {
 		self::AFTERPAY,
 		self::KLARNA,
 	];
+
+	const OFFLINE_PAYMENT_METHODS = [
+		'offline_test_payment_method', // TODO: Remove this once we have a real offline payment method.
+	];
 }
