@@ -84,14 +84,15 @@ const ExpressCheckoutButtonPreview = ( {
 		);
 	}
 
-	const buttonStyle = {
-		height: `${ options.buttonHeight }px`,
-		borderRadius,
-		ApplePayButtonType: options.buttonType.applePay,
-	};
-
 	if ( expressPaymentMethod === 'applePay' ) {
-		buttonStyle.WebkitAppearance = '-apple-pay-button';
+		const buttonStyle = {
+			height: `${ options.buttonHeight }px`,
+			borderRadius,
+			ApplePayButtonType: options.buttonType.applePay,
+			WebkitAppearance: '-apple-pay-button',
+			width: '100%',
+		};
+
 		if ( theme === 'black' ) {
 			buttonStyle.ApplePayButtonStyle = 'black';
 		} else if ( theme === 'outline' ) {
