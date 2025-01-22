@@ -20,8 +20,9 @@ use WCPay\Logger;
  */
 class WC_Payments_Onboarding_Service {
 
-	const TEST_MODE_OPTION                    = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_ELIGIBILITY_MODAL_OPTION = 'wcpay_onboarding_eligibility_modal_dismissed';
+	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
+	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
+	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
@@ -276,6 +277,22 @@ class WC_Payments_Onboarding_Service {
 			$this->get_capabilities_from_request()
 		);
 		$actioned_notes = self::get_actioned_notes();
+
+		/**
+		 * ==================
+		 * Enforces the update of payment methods to 'enabled' based on the capabilities
+		 * provided during the NOX onboarding process.
+		 *
+		 * @see self::update_enabled_payment_methods_ids
+		 * ==================
+		 */
+		$capabilities = $this->get_capabilities_from_request();
+		$gateway      = WC_Payments::get_gateway();
+
+		// Activate enabled Payment Methods IDs.
+		if ( ! empty( $capabilities ) ) {
+			$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
+		}
 
 		try {
 			$account_session = $this->payments_api_client->initialize_onboarding_embedded_kyc(
@@ -639,12 +656,13 @@ class WC_Payments_Onboarding_Service {
 
 	/**
 	 * Clear any account options we may want to reset when a new onboarding flow is initialised.
-	 * Currently, just deletes the option which stores whether the eligibility modal has been dismissed.
+	 * Currently, this deletes two options that store whether the eligibility and connection success modals have been dismissed.
 	 *
-	 * @return boolean Whether the option was deleted successfully.
+	 * @return void
 	 */
-	public static function clear_account_options(): bool {
-		return delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
+	public static function clear_account_options(): void {
+		delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
+		delete_option( self::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION );
 	}
 
 	/**
@@ -1023,5 +1041,81 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Update payment methods to 'enabled' based on the capabilities
+	 * provided during the NOX onboarding process. Merchants can preselect their preferred
+	 * payment methods as part of this flow.
+	 *
+	 * The capabilities are provided in the following format:
+	 *
+	 * [
+	 *   'card' => true,
+	 *   'affirm' => true,
+	 *   ...
+	 * ]
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway Payment gateway instance.
+	 * @param array                    $capabilities Provided capabilities.
+	 */
+	public function update_enabled_payment_methods_ids( $gateway, $capabilities = [] ): void {
+		$enabled_gateways = $gateway->get_upe_enabled_payment_method_ids();
+
+		$enabled_payment_methods = array_unique(
+			array_merge(
+				$enabled_gateways,
+				$this->exclude_placeholder_payment_methods( $capabilities )
+			)
+		);
+
+		// Update the gateway option.
+		$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+
+		/**
+		 * Keeps the list of enabled payment method IDs synchronized between the default
+		 * `woocommerce_woocommerce_payments_settings` and duplicates in individual gateway settings.
+		 */
+		foreach ( $enabled_payment_methods as $payment_method_id ) {
+			$payment_gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			if ( $payment_gateway ) {
+				$payment_gateway->enable();
+				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+			}
+		}
+
+		// If WooPay is enabled, update the gateway option.
+		if ( ! empty( $capabilities['woopay'] ) ) {
+			$gateway->update_is_woopay_enabled( true );
+		}
+
+		// If Apple Pay and Google Pay are disabled update the gateway option,
+		// otherwise they are enabled by default.
+		if ( empty( $capabilities['apple_google'] ) ) {
+			$gateway->update_option( 'payment_request', 'no' );
+		}
+	}
+
+	/**
+	 * Excludes placeholder payment methods and removes duplicates.
+	 *
+	 * WooPay and Apple Pay & Google Pay are considered placeholder payment methods and are excluded.
+	 *
+	 * @param array $payment_methods Array of payment methods to process.
+	 *
+	 * @return array Filtered array of unique payment methods.
+	 */
+	private function exclude_placeholder_payment_methods( array $payment_methods ): array {
+		// Placeholder payment methods.
+		$excluded_methods = [ 'woopay', 'apple_google' ];
+
+		return array_filter(
+			array_unique(
+				array_keys( array_filter( $payment_methods ) )
+			),
+			function ( $payment_method ) use ( $excluded_methods ) {
+				return ! in_array( $payment_method, $excluded_methods, true );
+			}
+		);
 	}
 }

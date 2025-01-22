@@ -14,7 +14,48 @@ export const dataHasLoaded = async ( page: Page ) => {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
 };
 
+export const tableDataHasLoaded = async ( page: Page ) => {
+	await page
+		.locator( '.woocommerce-table__table.is-loading' )
+		.waitFor( { state: 'hidden' } );
+};
+
+export const waitAndSkipTourComponent = async (
+	page: Page,
+	containerClass: string
+) => {
+	try {
+		await page.waitForSelector( `${ containerClass }`, { timeout: 3000 } );
+		if ( await page.isVisible( `${ containerClass }` ) ) {
+			await page.click(
+				`${ containerClass } button.woocommerce-tour-kit-step-controls__close-btn`
+			);
+		}
+	} catch ( error ) {
+		// Do nothing. The tour component being not present shouldn't cause the test to fail.
+	}
+};
+
+const isWooPaymentsSettingsPage = ( page: Page ) => {
+	return page
+		.url()
+		.includes(
+			'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments'
+		);
+};
+
+const ensureSupportPhoneIsFilled = async ( page: Page ) => {
+	if ( isWooPaymentsSettingsPage( page ) ) {
+		const supportPhoneInput = page.getByPlaceholder( 'Mobile number' );
+		if ( ( await supportPhoneInput.inputValue() ) === '' ) {
+			await supportPhoneInput.fill( '0000000000' );
+		}
+	}
+};
+
 export const saveWooPaymentsSettings = async ( page: Page ) => {
+	await ensureSupportPhoneIsFilled( page );
+
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
 		timeout: 10000,
@@ -162,6 +203,13 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	).toBeVisible();
 };
 
+export const restoreCurrencies = async ( page: Page ) => {
+	await disableAllEnabledCurrencies( page );
+	await addCurrency( page, 'USD' );
+	await addCurrency( page, 'EUR' );
+	await addCurrency( page, 'GBP' );
+};
+
 export const removeCurrency = async ( page: Page, currencyCode: string ) => {
 	await navigation.goToMultiCurrencySettings( page );
 	await page
@@ -251,6 +299,14 @@ export const disablePaymentMethods = async (
 	await saveWooPaymentsSettings( page );
 };
 
+export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
+	await navigation.goToActionScheduler( page, 'pending', orderId );
+	await page.$eval(
+		'td:has-text("wc-admin_import_orders") a:has-text("Run")',
+		( el: HTMLLinkElement ) => el.click()
+	);
+};
+
 export const isWooPayEnabled = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
 
@@ -276,5 +332,36 @@ export const activateWooPay = async ( page: Page ) => {
 export const deactivateWooPay = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
 	await page.getByTestId( 'woopay-toggle' ).uncheck();
+	await saveWooPaymentsSettings( page );
+};
+
+export const isCaptureLaterEnabled = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
+
+	return isEnabled;
+};
+
+export const activateCaptureLater = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const wasInitiallyEnabled = await isCaptureLaterEnabled( page );
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).click();
+		await page
+			.getByRole( 'button', { name: 'Enable manual capture' } )
+			.click();
+		await saveWooPaymentsSettings( page );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const deactivateCaptureLater = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+	await page.getByTestId( 'capture-later-checkbox' ).uncheck();
 	await saveWooPaymentsSettings( page );
 };

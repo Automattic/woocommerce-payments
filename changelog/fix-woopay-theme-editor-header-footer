@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Pass theme editor footer and header styles to WooPay.

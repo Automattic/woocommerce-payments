@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Ensure WooPay 'enabled by default' value is correctly set in sandbox mode.

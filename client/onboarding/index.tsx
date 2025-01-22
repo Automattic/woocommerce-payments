@@ -14,7 +14,6 @@ import { OnboardingForm } from './form';
 import Step from './step';
 import BusinessDetails from './steps/business-details';
 import EmbeddedKyc from './steps/embedded-kyc';
-import StoreDetails from './steps/store-details';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
@@ -40,11 +39,6 @@ const OnboardingStepper = () => {
 			<Step name="business">
 				<OnboardingForm>
 					<BusinessDetails />
-				</OnboardingForm>
-			</Step>
-			<Step name="store">
-				<OnboardingForm>
-					<StoreDetails />
 				</OnboardingForm>
 			</Step>
 			<Step name="embedded" showHeading={ false }>

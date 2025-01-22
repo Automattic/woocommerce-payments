@@ -20,7 +20,7 @@ export const customerStorageFile = path.resolve(
 export const wpAdminLogin = async (
 	page: Page,
 	user: { username: string; password: string }
-): void => {
+): Promise< void > => {
 	await page.goto( `/wp-admin` );
 	await page.getByLabel( 'Username or Email Address' ).fill( user.username );
 	await page.getByLabel( 'Password', { exact: true } ).fill( user.password ); // Need exact match to avoid resolving "Show password" button.
@@ -93,3 +93,9 @@ export const getAnonymousShopper = async (
 	const shopperPage = await shopperContext.newPage();
 	return { shopperPage, shopperContext };
 };
+
+/**
+ * Conditionally determine whether or not to skip a test suite.
+ */
+export const describeif = ( condition: boolean ) =>
+	condition ? test.describe : test.describe.skip;

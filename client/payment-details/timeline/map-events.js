@@ -5,9 +5,7 @@
  */
 import { flatMap } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
 import { addQueryArgs } from '@wordpress/url';
-import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 import SyncIcon from 'gridicons/dist/sync';
@@ -31,6 +29,8 @@ import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
 import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
+import { hasSameSymbol } from 'multi-currency/utils/currency';
 
 /**
  * Creates a timeline item about a payment status change
@@ -84,10 +84,7 @@ const getDepositTimelineItem = (
 						'woocommerce-payments'
 				  ),
 			formattedAmount,
-			dateI18n(
-				'M j, Y',
-				moment( event.deposit.arrival_date * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( event.deposit.arrival_date )
 		);
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
@@ -143,10 +140,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 				'woocommerce-payments'
 			),
 			formattedAmount,
-			dateI18n(
-				'M j, Y',
-				moment( event.deposit.arrival_date * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( event.deposit.arrival_date )
 		);
 
 		const depositUrl = getAdminUrl( {
@@ -286,12 +280,19 @@ export const composeFeeString = ( event ) => {
 		);
 	}
 
+	const hasIdenticalSymbol = hasSameSymbol(
+		event.transaction_details.store_currency,
+		event.transaction_details.customer_currency
+	);
+
 	return sprintf(
-		'%1$s (%2$f%% + %3$s): %4$s',
+		'%1$s (%2$f%% + %3$s%4$s): %5$s%6$s',
 		baseFeeLabel,
 		formatFee( percentage ),
 		formatCurrency( fixed, fixedCurrency ),
-		formatCurrency( -feeAmount, feeCurrency )
+		hasIdenticalSymbol ? ` ${ fixedCurrency }` : '',
+		formatCurrency( -feeAmount, feeCurrency ),
+		hasIdenticalSymbol ? ` ${ feeCurrency }` : ''
 	);
 };
 
@@ -460,7 +461,14 @@ export const feeBreakdown = ( event ) => {
 		} = fee;
 
 		const percentageRateFormatted = formatFee( percentageRate );
-		const fixedRateFormatted = formatCurrency( fixedRate, currency );
+		const fixedRateFormatted = `${ formatCurrency( fixedRate, currency ) }${
+			hasSameSymbol(
+				event.transaction_details.store_currency,
+				event.transaction_details.customer_currency
+			)
+				? ` ${ currency.toUpperCase() }`
+				: ''
+		}`;
 
 		const label = sprintf(
 			feeLabelMapping( fixedRate, isCapped )[ labelType ],
