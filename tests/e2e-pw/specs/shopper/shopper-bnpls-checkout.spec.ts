@@ -24,6 +24,11 @@ test.describe( 'BNPL checkout', () => {
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 
 		await merchant.enablePaymentMethods( merchantPage, bnplProviders );
+
+		// TODO: Another spec has left MC enabled, so this will fail.
+		if ( await merchant.isMulticurrencyEnabled( merchantPage ) ) {
+			await merchant.deactivateMulticurrency( merchantPage );
+		}
 	} );
 
 	test.afterAll( async () => {
