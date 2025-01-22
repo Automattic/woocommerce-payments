@@ -1480,7 +1480,12 @@ class WC_Payments_Order_Service {
 	private function generate_terminal_payment_failure_note( $intent_id, $charge_id, $message, $formatted_amount, ?int $created = null ) {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$timestamp       = $created ?? time();
-		$formatted_time  = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp );
+		$time_format     = get_option( 'time_format' );
+		if ( ! is_string( $time_format ) || empty( $time_format ) ) {
+			$time_format = 'H:i'; // Default time format if none exists.
+		}
+		$time_format    = strpos( $time_format, ':s' ) !== false ? $time_format : $time_format . ':s';
+		$formatted_time = date_i18n( get_option( 'date_format' ) . ' ' . $time_format, $timestamp );
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(

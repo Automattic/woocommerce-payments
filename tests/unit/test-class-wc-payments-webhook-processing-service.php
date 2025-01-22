@@ -1828,6 +1828,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 						'data' => [
 							[
 								'id'                     => 'ch_123',
+								'created'                => 1706745600,
 								'payment_method_details' => [ 'type' => 'card_present' ],
 							],
 						],
