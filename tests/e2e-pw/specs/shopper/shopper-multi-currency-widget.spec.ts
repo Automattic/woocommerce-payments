@@ -15,15 +15,20 @@ import { getMerchant, getShopper } from '../../utils/helpers';
 test.describe( 'Shopper Multi-Currency widget', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
+	let wasMulticurrencyEnabled: boolean;
 
 	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		await merchant.activateMulticurrency( merchantPage );
+		wasMulticurrencyEnabled = await merchant.activateMulticurrency(
+			merchantPage
+		);
 	} );
 
 	test.afterAll( async () => {
-		await merchant.deactivateMulticurrency( merchantPage );
+		if ( ! wasMulticurrencyEnabled ) {
+			await merchant.deactivateMulticurrency( merchantPage );
+		}
 	} );
 
 	test( 'should display currency switcher widget if multi-currency is enabled', async () => {

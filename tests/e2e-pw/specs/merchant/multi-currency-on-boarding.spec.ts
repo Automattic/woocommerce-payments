@@ -20,6 +20,7 @@ import * as navigation from '../../utils/merchant-navigation';
 
 test.describe( 'Multi-currency on-boarding', () => {
 	let page: Page;
+	let wasMulticurrencyEnabled: boolean;
 	let activeThemeSlug: string;
 	const goToNextOnboardingStep = async ( currentPage: Page ) => {
 		await currentPage
@@ -31,7 +32,7 @@ test.describe( 'Multi-currency on-boarding', () => {
 
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		await activateMulticurrency( page );
+		wasMulticurrencyEnabled = await activateMulticurrency( page );
 		activeThemeSlug = await getActiveThemeSlug( page );
 	} );
 
@@ -39,7 +40,9 @@ test.describe( 'Multi-currency on-boarding', () => {
 		// Restore original theme.
 		await activateTheme( page, activeThemeSlug );
 		await restoreCurrencies( page );
-		await deactivateMulticurrency( page );
+		if ( ! wasMulticurrencyEnabled ) {
+			await deactivateMulticurrency( page );
+		}
 
 		await page.close();
 	} );

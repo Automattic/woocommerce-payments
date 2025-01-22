@@ -74,19 +74,20 @@ export const isMulticurrencyEnabled = async ( page: Page ) => {
 export const activateMulticurrency = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
 
-	if ( ! ( await page.getByTestId( 'multi-currency-toggle' ).isChecked() ) ) {
-		await page.getByTestId( 'multi-currency-toggle' ).check();
+	const checkboxTestId = 'multi-currency-toggle';
+	const wasInitiallyEnabled = await isMulticurrencyEnabled( page );
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).check();
 		await saveWooPaymentsSettings( page );
 	}
+	return wasInitiallyEnabled;
 };
 
 export const deactivateMulticurrency = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
-
-	if ( await page.getByTestId( 'multi-currency-toggle' ).isChecked() ) {
-		await page.getByTestId( 'multi-currency-toggle' ).uncheck();
-		await saveWooPaymentsSettings( page );
-	}
+	await page.getByTestId( 'multi-currency-toggle' ).uncheck();
+	await saveWooPaymentsSettings( page );
 };
 
 export const addMulticurrencyWidget = async ( page: Page ) => {
@@ -101,7 +102,6 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 
 	const isWidgetAdded = await page
 		.locator( 'iframe[srcdoc*=currency]' )
-		.first()
 		.isVisible();
 
 	if ( ! isWidgetAdded ) {
