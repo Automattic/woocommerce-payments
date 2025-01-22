@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Convert shopper free coupon checkout E2E test to Playwright
