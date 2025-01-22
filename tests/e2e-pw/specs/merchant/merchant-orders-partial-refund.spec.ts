@@ -70,8 +70,7 @@ test.describe( 'Order > Partial refund', () => {
 	let wasMulticurrencyEnabled = false;
 	let merchantPage: Page, shopperPage: Page;
 
-	const orderProducts = async ( { browser }, dataTableIndex: number ) => {
-		shopperPage = ( await getShopper( browser ) ).shopperPage;
+	const orderProducts = async ( dataTableIndex: number ) => {
 		const lineItems = dataTable[ dataTableIndex ][ 1 ].lineItems;
 		await goToShop( shopperPage );
 		await setupProductCheckout( shopperPage, lineItems );
@@ -93,8 +92,9 @@ test.describe( 'Order > Partial refund', () => {
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
 		await restoreCurrencies( merchantPage );
-		const firstOrderId = await orderProducts( { browser }, 0 );
-		const secondOrderId = await orderProducts( { browser }, 1 );
+		shopperPage = ( await getShopper( browser ) ).shopperPage;
+		const firstOrderId = await orderProducts( 0 );
+		const secondOrderId = await orderProducts( 1 );
 		orderIds = [ firstOrderId, secondOrderId ];
 	} );
 
