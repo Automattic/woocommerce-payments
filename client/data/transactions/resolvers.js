@@ -88,7 +88,7 @@ export function* getTransactions( query ) {
 	}
 }
 
-export function getTransactionsCSV( query ) {
+export function getTransactionsCSVRequestURL( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/transactions/download`,
 		formatQueryFilters( query )
@@ -97,9 +97,7 @@ export function getTransactionsCSV( query ) {
 	return path;
 }
 
-export function getTransactionsDownloadURL( query ) {
-	return `${ NAMESPACE }/transactions/download/${ query.exportId }`;
-}
+export const transactionsCSVFileAvailabilityEndpoint = `${ NAMESPACE }/transactions/download`;
 
 /**
  * Retrieves the transactions summary from the summary API.
