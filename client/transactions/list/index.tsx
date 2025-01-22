@@ -47,7 +47,7 @@ import { recordEvent } from 'tracks';
 import DownloadButton from 'components/download-button';
 import {
 	getTransactionsCSVRequestURL,
-	transactionsCSVFileAvailabilityEndpoint,
+	transactionsDownloadEndpoint,
 } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
@@ -669,7 +669,7 @@ export const TransactionsList = (
 		) {
 			requestReportExport( {
 				exportRequestURL,
-				exportFileAvailabilityEndpoint: transactionsCSVFileAvailabilityEndpoint,
+				exportFileAvailabilityEndpoint: transactionsDownloadEndpoint,
 				userEmail,
 			} );
 		}

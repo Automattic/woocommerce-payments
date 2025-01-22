@@ -88,16 +88,15 @@ export function* getTransactions( query ) {
 	}
 }
 
+export const transactionsDownloadEndpoint = `${ NAMESPACE }/transactions/download`;
 export function getTransactionsCSVRequestURL( query ) {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/transactions/download`,
+		transactionsDownloadEndpoint,
 		formatQueryFilters( query )
 	);
 
 	return path;
 }
-
-export const transactionsCSVFileAvailabilityEndpoint = `${ NAMESPACE }/transactions/download`;
 
 /**
  * Retrieves the transactions summary from the summary API.
