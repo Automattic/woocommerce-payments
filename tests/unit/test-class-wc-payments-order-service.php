@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
