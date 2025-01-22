@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add wcpay_capture_error_amount_too_small error type and minimum amount details when capturing payments below the supported threshold.
