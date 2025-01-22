@@ -113,6 +113,7 @@ test.describe( 'Order > Partial refund', () => {
 				.getByRole( 'row', { name: 'Order Total: $' } )
 				.locator( 'bdi' );
 
+			// Calculate order total, refund total, and net payment.
 			orderTotal = await orderTotalField.innerText();
 			const orderTotalNumber = parseFloat( orderTotal.substring( 1 ) );
 			const refundTotal = refundInputs
@@ -125,6 +126,7 @@ test.describe( 'Order > Partial refund', () => {
 				.getByRole( 'button', { name: 'Refund' } )
 				.click();
 
+			// Fill in the refund inputs.
 			for ( let j = 0; j < refundInputs.length; j++ ) {
 				const { refundQty, refundAmount } = refundInputs[ j ];
 				await merchantPage
@@ -145,17 +147,19 @@ test.describe( 'Order > Partial refund', () => {
 				await merchantPage.keyboard.press( 'Tab' );
 			}
 
+			// Check that the refund amount is correct.
 			await expect(
 				merchantPage.getByLabel( 'Refund amount:' )
 			).toHaveValue( `${ refundTotalString }` );
 
 			await merchantPage
 				.getByLabel( 'Reason for refund (optional):' )
-				.fill( dataTable[ i ][ 0 ] );
+				.fill( title );
 
+			// Check that the reason for refund is correct.
 			await expect(
 				merchantPage.getByLabel( 'Reason for refund (optional):' )
-			).toHaveValue( dataTable[ i ][ 0 ] );
+			).toHaveValue( title );
 
 			merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
 
@@ -165,6 +169,65 @@ test.describe( 'Order > Partial refund', () => {
 				} )
 				.click();
 
+			// Verify that the refunded amounts are correct.
+			for ( let k = 0; k < refundInputs.length; k++ ) {
+				const { refundQty, refundAmount } = refundInputs[ k ];
+
+				if ( refundQty ) {
+					const productOneRefundAmount =
+						dataTable[ i ][ 1 ].refundInputs[ 0 ].refundAmount;
+					const productTwoRefundAmount =
+						dataTable[ i ][ 1 ].refundInputs[ 1 ].refundAmount;
+					await expect(
+						merchantPage.getByText( '-1' ).first()
+					).toHaveText( `-${ refundQty.toString() }` );
+
+					await expect(
+						merchantPage.getByText( '-1' ).nth( 1 )
+					).toHaveText( `-${ refundQty.toString() }` );
+
+					await expect(
+						merchantPage
+							.locator( '#order_line_items' )
+							.getByText( '-$' )
+							.first()
+					).toHaveText(
+						`-$${ productOneRefundAmount.toFixed( 2 ) }`
+					);
+
+					await expect(
+						merchantPage
+							.locator( '#order_line_items' )
+							.getByText( '-$' )
+							.nth( 1 )
+					).toHaveText(
+						`-$${ productTwoRefundAmount.toFixed( 2 ) }`
+					);
+				} else {
+					await expect(
+						merchantPage
+							.locator( '#order_line_items' )
+							.getByText( '-$' )
+					).toHaveText( `-$${ refundAmount.toFixed( 2 ) }` );
+				}
+			}
+
+			// Check that the refund order note includes the refund amount and reason.
+			const refundNote = await merchantPage
+				.getByText( 'A refund of' )
+				.innerText();
+
+			expect( refundNote ).toContain( title );
+			expect( refundNote ).toContain( refundTotalString );
+
+			// Check that the refunded amount line item is correct.
+			await expect(
+				merchantPage
+					.getByRole( 'row', { name: 'Refunded' } )
+					.locator( 'bdi' )
+			).toHaveText( `$${ refundTotalString } USD` );
+
+			// Check that the net payment line item is correct.
 			await expect(
 				merchantPage
 					.getByRole( 'row', { name: 'Net Payment' } )
