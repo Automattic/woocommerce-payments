@@ -1,36 +1,36 @@
 /**
  * External dependencies
  */
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Internal dependencies
  */
-import { getExpressCheckoutButtonAppearance } from 'wcpay/express-checkout/utils';
+import { getExpressCheckoutButtonAppearance } from '../../utils';
 
 const ExpressCheckoutButtonPreview = ( {
 	expressPaymentMethod,
 	options,
 	buttonAttributes,
 } ) => {
-	const appearance = useMemo(
-		() => getExpressCheckoutButtonAppearance( buttonAttributes ),
-		[ buttonAttributes ]
-	);
-	const ref = useRef( null );
-	const renderGooglePayButtonPromise = useRef( null );
+	const googlePlayContainerRef = useRef( null );
+	const hasStartedLoadingGooglePlayButton = useRef( null );
 
 	const theme = options.buttonTheme[ expressPaymentMethod ];
+	const appearance = getExpressCheckoutButtonAppearance( buttonAttributes );
 	const borderRadius = appearance.variables.borderRadius;
 
 	useEffect( () => {
 		if (
-			ref.current &&
+			googlePlayContainerRef.current &&
 			expressPaymentMethod === 'googlePay' &&
-			! renderGooglePayButtonPromise.current
+			! hasStartedLoadingGooglePlayButton.current
 		) {
-			renderGooglePayButtonPromise.current = ( async () => {
-				const targetDocument = ref.current.ownerDocument;
+			hasStartedLoadingGooglePlayButton.current = true;
+			( async () => {
+				// The container may be inside an iframe, so we need to retrieve a reference to the document and window objects.
+				const targetDocument =
+					googlePlayContainerRef.current.ownerDocument;
 				const targetWindow = targetDocument.defaultView;
 				if ( ! targetWindow.google?.payments?.api?.PaymentsClient ) {
 					await new Promise( ( resolve ) => {
@@ -56,21 +56,21 @@ const ExpressCheckoutButtonPreview = ( {
 					buttonSizeMode: 'fill',
 					onClick: () => {},
 				} );
-				ref.current.appendChild( button );
+				googlePlayContainerRef.current.appendChild( button );
 			} )();
 		}
-	}, [ ref, theme, expressPaymentMethod, borderRadius ] );
+	}, [ theme, expressPaymentMethod, borderRadius ] );
 
 	useEffect( () => {
-		ref.current
+		googlePlayContainerRef.current
 			?.querySelector( 'button' )
 			?.style?.setProperty( 'border-radius', borderRadius );
-	}, [ ref, borderRadius ] );
+	}, [ borderRadius ] );
 
 	if ( expressPaymentMethod === 'googlePay' ) {
 		return (
 			<div
-				ref={ ref }
+				ref={ googlePlayContainerRef }
 				style={ {
 					height: `${ options.buttonHeight }px`,
 					width: '100%',

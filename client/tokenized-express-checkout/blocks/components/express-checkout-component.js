@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
 /**
  * Internal dependencies
@@ -125,26 +125,6 @@ const ExpressCheckoutComponent = ( {
 		onReady( event );
 	};
 
-	const checkoutElementOptions = useMemo( () => {
-		// The Cart & Checkout blocks provide unified styles across all buttons,
-		// which should override the extension specific settings.
-		const withBlockOverride = () => {
-			const override = {};
-			if ( typeof buttonAttributes !== 'undefined' ) {
-				override.buttonHeight = Number( buttonAttributes.height );
-			}
-			return {
-				...buttonOptions,
-				...override,
-			};
-		};
-		return {
-			...withBlockOverride(),
-			...adjustButtonHeights( withBlockOverride(), expressPaymentMethod ),
-			...getPaymentMethodsOverride( expressPaymentMethod ),
-		};
-	}, [ expressPaymentMethod, buttonAttributes, buttonOptions ] );
-
 	useEffect( () => {
 		if ( ! isPreview || onElementsReadyCalled.current ) {
 			return;
@@ -157,7 +137,26 @@ const ExpressCheckoutComponent = ( {
 		}, FALLBACK_BUTTON_WAIT_TIME );
 
 		return () => clearTimeout( handle );
-	}, [ isPreview, onElementsReadyCalled ] );
+	}, [ isPreview ] );
+
+	// The Cart & Checkout blocks provide unified styles across all buttons,
+	// which should override the extension specific settings.
+	const withBlockOverride = () => {
+		const override = {};
+		if ( typeof buttonAttributes !== 'undefined' ) {
+			override.buttonHeight = Number( buttonAttributes.height );
+		}
+		return {
+			...buttonOptions,
+			...override,
+		};
+	};
+
+	const checkoutElementOptions = {
+		...withBlockOverride(),
+		...adjustButtonHeights( withBlockOverride(), expressPaymentMethod ),
+		...getPaymentMethodsOverride( expressPaymentMethod ),
+	};
 
 	if ( showFallbackButton ) {
 		return (
