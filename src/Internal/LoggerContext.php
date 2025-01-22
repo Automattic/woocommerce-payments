@@ -125,12 +125,13 @@ class LoggerContext {
 		}
 
 		$formatted_lines = [];
-		$entry           = array_shift( $entries );
-		while ( null !== $entry ) {
-			foreach ( explode( "\n", $entry ) as $line ) {
+		$log_entry       = array_shift( $entries );
+		while ( null !== $log_entry ) {
+			foreach ( explode( "\n", $log_entry ) as $line ) {
 				$formatted_lines[] = $line_prefix . $line;
 			}
-			unset( $entry );
+			unset( $log_entry );
+			$log_entry = array_shift( $entries );
 		}
 
 		return implode( "\n", $formatted_lines );
