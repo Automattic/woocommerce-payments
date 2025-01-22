@@ -102,6 +102,7 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 
 	const isWidgetAdded = await page
 		.locator( 'iframe[srcdoc*=currency]' )
+		.first()
 		.isVisible();
 
 	if ( ! isWidgetAdded ) {
