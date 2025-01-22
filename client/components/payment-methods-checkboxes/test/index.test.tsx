@@ -195,7 +195,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			</PaymentMethodsCheckboxes>
 		);
 		const cardCheckbox = screen.getByRole( 'checkbox', {
-			name: 'Credit / Debit card',
+			name: 'Credit / Debit Cards',
 		} );
 		expect( cardCheckbox ).not.toBeChecked();
 		userEvent.click( cardCheckbox );
