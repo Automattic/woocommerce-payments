@@ -1998,4 +1998,56 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$response = $this->controller->capture_terminal_payment( $request );
 		$this->assertSame( 200, $response->status );
 	}
+
+	public function test_capture_terminal_payment_error_amount_too_small() {
+		$order       = $this->create_mock_order();
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => Intent_Status::REQUIRES_CAPTURE,
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->with( $this->isInstanceOf( WC_Order::class ) )
+			->willReturn(
+				[
+					'status'        => Intent_Status::REQUIRES_CAPTURE,
+					'id'            => $this->mock_intent_id,
+					'http_code'     => 400,
+					'error_code'    => 'amount_too_small',
+					'extra_details' => [
+						'minimum_amount'          => 50,
+						'minimum_amount_currency' => 'USD',
+					],
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_terminal_payment( $request );
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$this->assertSame( 'wcpay_capture_error', $response->get_error_code() );
+		$this->assertStringContainsString( 'Payment capture failed to complete', $response->get_error_message() );
+		$this->assertSame( 400, $response->get_error_data()['status'] );
+		$this->assertSame( 50, $response->get_error_data()['extra_details']['minimum_amount'] );
+		$this->assertSame( 'USD', $response->get_error_data()['extra_details']['minimum_amount_currency'] );
+		$this->assertSame( 'amount_too_small', $response->get_error_data()['error_type'] );
+	}
 }
