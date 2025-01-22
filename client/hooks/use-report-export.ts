@@ -10,6 +10,10 @@ interface ExportResponse {
 	export_id?: string;
 }
 
+interface ExportURLResponse {
+	download_url?: string;
+}
+
 const maxRetries = 5;
 
 /**
@@ -63,17 +67,21 @@ export const useReportExport = () => {
 	}: PollForFileProps ) {
 		timeoutIdRef.current = setTimeout( async () => {
 			retryCountRef.current++;
-			const exportedFileURL = await apiFetch< string >( {
-				path: checkFileURL,
-				method: 'GET',
-			} );
+			const exportedFileURLResponse = await apiFetch< ExportURLResponse >(
+				{
+					path: checkFileURL,
+					method: 'GET',
+				}
+			);
 
-			if ( exportedFileURL ) {
+			if ( exportedFileURLResponse.download_url ) {
 				// The file is available, so we can download it.
 				// Create a link element to trigger the download.
 				const link = document.createElement( 'a' );
 				// Add force_download=true to the URL to force the download, which adds the appropriate `Content-Disposition: attachment` header when using production server.
-				link.href = exportedFileURL + '?force_download=true';
+				link.href =
+					exportedFileURLResponse.download_url +
+					'?force_download=true';
 				link.click();
 
 				createNotice(
@@ -99,13 +107,16 @@ export const useReportExport = () => {
 					userEmail,
 				} );
 			} else {
-				// If the file is not available after the maximum number of retries, show an error notice.
+				// If the file is not available after the maximum number of retries, show that it will be emailed.
 				setIsDownloading( false );
 				createNotice(
-					'error',
-					__(
-						'There was a problem generating your CSV export. Please try again later.',
-						'woocommerce-payments'
+					'success',
+					sprintf(
+						__(
+							'Your export will be emailed to %s',
+							'woocommerce-payments'
+						),
+						userEmail
 					)
 				);
 			}

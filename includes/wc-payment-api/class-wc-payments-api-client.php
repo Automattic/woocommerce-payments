@@ -460,11 +460,11 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 *
 	 * @param string $export_id The export ID.
 	 *
-	 * @return string The export URL.
+	 * @return array The export URL response.
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_transactions_export_url( string $export_id ) {
-		return $this->request( [], sprintf( '%s/download/%s', self::TRANSACTIONS_API, $export_id ), self::GET );
+	public function get_transactions_export_url( string $export_id ): array {
+		return $this->request( [], self::TRANSACTIONS_API . "/download/{$export_id}", self::GET );
 	}
 
 	/**
