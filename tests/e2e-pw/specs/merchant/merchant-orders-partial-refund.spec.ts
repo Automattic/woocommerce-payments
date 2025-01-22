@@ -65,8 +65,6 @@ test.describe( 'Order > Partial refund', () => {
 		],
 	];
 
-	let firstOrderId: string;
-	let secondOrderId: string;
 	let orderIds: string[];
 	let orderTotal: string;
 	let wasMulticurrencyEnabled = false;
@@ -95,8 +93,8 @@ test.describe( 'Order > Partial refund', () => {
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
 		await restoreCurrencies( merchantPage );
-		firstOrderId = await orderProducts( { browser }, 0 );
-		secondOrderId = await orderProducts( { browser }, 1 );
+		const firstOrderId = await orderProducts( { browser }, 0 );
+		const secondOrderId = await orderProducts( { browser }, 1 );
 		orderIds = [ firstOrderId, secondOrderId ];
 	} );
 
