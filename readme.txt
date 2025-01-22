@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.3
-Stable tag: 8.5.0
+Stable tag: 8.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,11 +28,11 @@ Features previously only available on your payment provider’s website are now 
 
 **Pay as you go**
 
-WooPayments is **free to install**, with **no setup fees or monthly fees**. Pay-as-you-go fees start at 2.9% + $0.30 per transaction for U.S.-issued cards. [Read more about transaction fees](https://woocommerce.com/document/woopayments/fees-and-debits/fees/).
+WooPayments is **free to install**, with **no setup fees or monthly fees**. Our pay-as-you-go pricing model means we're incentivized to help you succeed! [Read more about transaction fees](https://woocommerce.com/document/woopayments/fees-and-debits/fees/).
 
 **Supported by the WooCommerce team**
 
-Our global support team is available to answer questions you may have about WooPayments installation, setup, or use. For assistance, [open a ticket on woocommerce.com](https://woocommerce.com/my-account/create-a-ticket/?select=5278104).
+Our global support team is available to answer questions you may have about WooPayments installation, setup, or use. For assistance, [open a ticket on woocommerce.com](https://woocommerce.com/my-account/contact-support/?select=5278104).
 
 == Getting Started ==
 
@@ -40,13 +40,11 @@ Our global support team is available to answer questions you may have about WooP
 
 * WordPress 6.0 or newer.
 * WooCommerce 7.6 or newer.
-* PHP 7.3 or newer is recommended.
+* PHP 7.3 or newer.
 
 = Try it now =
 
 To try WooPayments (previously WooCommerce Payments) on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts. Please see our [Startup Guide](https://woocommerce.com/document/woopayments/startup-guide/) for a full walkthrough of the process.
-
-WooPayments has experimental support for the Checkout block from [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/). Please check the [FAQ section](#faq) for more information.
 
 == Installation ==
 
@@ -56,13 +54,17 @@ Install and activate the WooCommerce and WooPayments plugins, if you haven't alr
 
 = What countries and currencies are supported? =
 
-If you are an individual or business based in [one of these countries](https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries), you can sign-up with WooPayments. After completing sign up, you can accept payments from customers anywhere in the world.
+If you are an individual or business based in [one of these countries](https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries), you can sign-up with WooPayments. After completing sign up, you can accept payments from customers anywhere in the world, as long as they are paying with [a supported currency](https://woocommerce.com/document/woopayments/currencies/available-currencies/).
 
 We are actively planning to expand into additional countries based on your interest. Let us know where you would like to [see WooPayments launch next](https://woocommerce.com/payments/#request-invite).
 
 = Why is a WordPress.com account and connection required? =
 
-WooPayments uses the WordPress.com connection to authenticate each request, connecting your store with our payments partner.
+WooPayments uses the WordPress.com connection to securely communicate with our payments server. This is necessary for WooPayments to function correctly, so it's not possible to use WooPayments without connecting. Please see [this document](https://woocommerce.com/document/woopayments/our-policies/connection/) for more information.
+
+Note that you do not need to host your site itself on WordPress.com, nor do you need to host *any* site on WordPress.com at all. You only need an account.
+
+Note that you do not need to host your site itself on WordPress.com. You only need an account on WordPress.com to establish the connection. You can create a WordPress.com account [at this link](https://wordpress.com/start/account/user-social).
 
 = How do I set up a store for a client? =
 
@@ -76,15 +78,6 @@ WooPayments is built in partnership with Stripe [Stripe](https://stripe.com/). W
 
 You can read our Terms of Service and other policies [here](https://woocommerce.com/document/woopayments/our-policies/).
 
-= How does the Checkout block work? =
-
-You need the [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/) plugin to be installed and active to use the Checkout block. Once you add the block to a page, WooPayments will automatically appear as an option.
-
-Please note that our support for the checkout block is still experimental and the following features of the gateway will probably not work:
-
-* Using saved cards and saving cards.
-* Integration with WooCommerce Subscriptions.
-
 == Screenshots ==
 
 1. View Transactions
@@ -93,6 +86,137 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 8.8.0 - 2025-01-15 =
+* Add - Allow transactions filtered by Payment Method.
+* Add - Falback terms and conditions for WooPay.
+* Fix - Broaden billing field queries from form-scoped to document-scoped.
+* Fix - Checkout: Make sure the font size for PMME is smaller than the labels.
+* Fix - Ensure consistent formatting of refund notes with MC.
+* Fix - Fix incompatibility with some bookings plugins.
+* Fix - Fix JS exception when ECE payment fails.
+* Fix - Fix transaction list sorting by payout currency.
+* Fix - Improve the mobile rendering of the Balances box within Payment Overview.
+* Fix - Update currency conversion method for booking products.
+* Fix - Update WordPress.org readme.txt file.
+* Fix - Upgrade `@woocommerce/csv-export` package to v1.10.0 – fixes unnecessary escaping of negative values in CSV exports that was preventing numerical analysis in spreadsheet applications.
+* Fix - Zero dollar subscriptions with zero dollar renewals checkout error.
+* Update - Bump stable tag for 8.7.0.
+* Update - Improve BNPL PMME and icon placement in shortcode checkout.
+* Update - Remove the overlay that announces the rename from deposits to payouts.
+* Update - Replaced the term "VAT" with "Tax" in Documents Listing Page.
+* Update - round to nearest lowest denominator instead of ceiling before applying currency rounding settings.
+* Dev - Add the Playwright Pay for Order spec and remove the equivalent Puppeteer spec.
+* Dev - Add type assertion for disputes CSV export response to ensure type safety and fix TypeScript error.
+* Dev - Update phpunit-watcher dev package version.
+* Dev - Update the PHP version and the Xdebug version used in the E2E testing environment.
+* Dev - Update the Playwright Payment Gateways Confirmation spec and remove the Puppeteer Payment Gateways Confirmation spec.
+
+= 8.7.1 - 2025-01-14 =
+* Fix - Broaden billing field queries from form-scoped to document-scoped
+
+= 8.7.0 - 2024-12-25 =
+* Add - Add seller_message to failed order notes
+* Add - Add WooPay Klaviyo newsletter integration.
+* Add - Clickwrap terms and conditions support on WooPay
+* Add - Implement gateway method to retrieve recommended payment method.
+* Add - Migrate active capabilities from test-drive account when switching to live account.
+* Add - Refresh the cart and checkout pages when ECE is dismissed and the shipping options were modified in the payment sheet.
+* Fix - Add a rounding entry to Level 3 data for rare cases where rounding errors break calculations.
+* Fix - Added conditional use of Jetpack Config callback to avoid i18n notices.
+* Fix - Browser error no longer shows after dispute evidence submission
+* Fix - Ceil product prices after applying currency conversion, but before charm pricing and price rounding from settings is applied.
+* Fix - Consider WooPay eligibility when retrieving WooPay enable state in the settings.
+* Fix - Enable ECE for Virtual Variable Subscriptions with Free Trials.
+* Fix - Ensure captured transactions appear in the Transactions tab without requiring a page refresh.
+* Fix - Ensure ECE login confirmation dialog is shown on Blocks.
+* Fix - Ensure WooPay 'enabled by default' value is correctly set in sandbox mode.
+* Fix - Errors were incorrectly marked as info in logs.
+* Fix - fix: undefined $cart_contains_subscription
+* Fix - Fix blank Payments > Overview page when WC onboarding is disabled.
+* Fix - Fixed Affirm using black logo on dark themes
+* Fix - Fixed an issue where order metadata was not updated when capturing an order in the processing state.
+* Fix - Fixed UPE country detection in Checkout for non-logged in users
+* Fix - Fix filtering in async Disputes CSV export
+* Fix - Fix inconsistent alignment of the download button across transactions, payouts, and disputes reporting views for a more cohesive user interface.
+* Fix - Fix Jetpack onboarding URL query from "woocommerce-payments" to "woocommerce-core-profiler"
+* Fix - Fix payment method filtering when billing country changes in Blocks checkout.
+* Fix - Fix styling of transaction details page in mobile view.
+* Fix - Hide transaction fee on admin view order screen when transaction is not captured.
+* Fix - Load checkout scripts when they are not previously loaded on checkout page.
+* Fix - Localize postal code check label based on country.
+* Fix - Normalize HK addresses for ECE
+* Fix - Order notes for inquiries have clearer content.
+* Fix - Performance improvements for Disputes Needing Response task shown in WooCommerce admin.
+* Fix - Remove translations during initialization, preventing unnecessary warnings.
+* Fix - Restrict Stripe Link to credit card payment method and improve cleanup.
+* Fix - Set payment method title once title is known.
+* Fix - Show express checkout for products w/o shipping but where tax is included into price.
+* Fix - Support 'type_is_in' filter for Transactions list report, to allow easy filtering by multiple types.
+* Fix - Use "currency conversion fee" instead "foreign exchange fee" in payment timeline and various other places.
+* Fix - Use translatable strings on the fee breakdown tooltip of the payment settings screen.
+* Update - Add failure reason to failed payments in the timeline.
+* Update - Add support for showing `In-Person (POS)` as the transaction channel for mobile POS transactions in wp-admin Payments, enhancing visibility in both transaction lists and details.
+* Update - Adjust the go-live modal to match the latest design.
+* Update - Apply User-Defined Date Formatting Settings to WP Admin React Components
+* Update - Change 'Bank reference key' label to 'Bank reference ID' in Payouts list column for consistency.
+* Update - chore: renamed PRB references in GooglePay/ApplePay implementation docs and logs files to ECE.
+* Update - Ensure more robust selectors scoping to improve theme compatibility.
+* Update - Make test instructions copy icon use the same color as the text next to it
+* Update - Remove payout timing notice and update the help tooltil on Payments Overview page.
+* Update - Update confirmation modal after onbarding
+* Update - Update Embedded Components and MOX to support custom width and paddings.
+* Update - Update error messages for payment authorization actions to provide more specific and user-friendly feedback.
+* Update - Update Jetpack onboarding flow
+* Update - WooPay theming copy in the settings page
+* Dev - Add support for utilizing NOX capabilities as URL parameters during account creation.
+* Dev - Enable Payment Methods preselected by NOX after onboarding accounts
+* Dev - Fixing issue with parsing QIT authentication.Fixing issue with parsing QIT authentication.
+* Dev - Refine verification for disabling ECE on subscriptions that require shipping.
+* Dev - Remove hooks from customer and token services to dedicated methods
+* Dev - Update the tunelling setup.
+
+= 8.6.1 - 2024-12-17 =
+* Fix - Checkout: Fix error when wc_address_i18n_params does not have data for a given country
+* Fix - Skip mysqlcheck SSL Requirement during E2E environment setup
+
+
+= 8.6.0 - 2024-12-04 =
+* Add - Add Bank reference key column in Payout reports. This will help reconcile WooPayments Payouts with bank statements.
+* Add - Display credit card brand icons on order received page.
+* Fix - Add support to load stripe js asynchronously when it is not immediately available in the global scope.
+* Fix - Add the missing "Download" column heading label and toggle menu option to the Payments → Documents list view table.
+* Fix - Ensure ECE button load events are triggered for multiple buttons on the same page.
+* Fix - Ensure ECE is displayed correctly taking into account the tax settings.
+* Fix - Evidence submission is no longer available for Klarna inquiries as this is not supported by Stripe / Klarna.
+* Fix - fix: express checkout to use its own css files.
+* Fix - fix: missing ece is_product_page checks
+* Fix - Fix ECE Tracks events not triggering when WooPay is disabled.
+* Fix - Fix WooPay component spacing.
+* Fix - Fix WooPay trial subscriptions purchases.
+* Fix - Make sure the status of manual capture enablement is fetched from the right place.
+* Fix - Prevent express checkout from being used if cart total becomes zero after coupon usage.
+* Fix - Resolved issue with terminal payments in the payment intent failed webhook processing.
+* Fix - Set the support phone field as mandatory in the settings page.
+* Fix - Update Link logo alignment issue when WooPay is enabled and a specific version of Gutenberg is enabled.
+* Fix - Use paragraph selector instead of label for pmme appearance
+* Fix - Validate required billing fields using data from objects instead of checking the labels.
+* Update - Avoid getting the appearance for pay for order page with the wrong appearance key.
+* Update - chore: rename wrapper from payment-request to express-checkout
+* Update - feat: add `wcpay_checkout_use_plain_method_label` filter to allow themes or merchants to force the "plain" WooPayments label on shortcode checkout.
+* Update - refactor: express checkout initialization page location checks
+* Update - refactor: express checkout utility for button UI interactions
+* Dev - Allow redirect to the settings page from WCPay connect
+* Dev - chore: removed old PRB implementation for ApplePay/GooglePay in favor of the ECE implementation; cleaned up ECE feature flag;
+* Dev - Disable visual regression testing from Playwright until a more reliable approach is defined.
+* Dev - Ensure proper return types in the webhook processing service.
+* Dev - fix: E_DEPRECATED on BNPL empty PMME
+* Dev - Fix return types
+* Dev - Update snapshots for E2E Playwright screenshots
+
+= 8.5.1 - 2024-11-25 =
+* Fix - fix: remove "test mode" badge from shortcode checkout.
+
 
 = 8.5.0 - 2024-11-13 =
 * Add - Add country-specific test card numbers for credit card testing

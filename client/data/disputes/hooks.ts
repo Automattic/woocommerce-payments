@@ -17,7 +17,6 @@ import type {
 } from 'wcpay/types/disputes';
 import type { ApiError } from 'wcpay/types/errors';
 import { STORE_NAME } from '../constants';
-import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
 /**
  * Returns the dispute object, error object, and loading state.
@@ -98,11 +97,6 @@ export const useDisputes = ( {
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
 
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
-
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
 					? '1'
@@ -119,7 +113,7 @@ export const useDisputes = ( {
 					dateBetween.sort( ( a, b ) =>
 						moment( a ).diff( moment( b ) )
 					),
-				search,
+				filter,
 				statusIs,
 				statusIsNot,
 				orderBy: orderBy || 'created',
@@ -163,11 +157,6 @@ export const useDisputesSummary = ( {
 		( select ) => {
 			const { getDisputesSummary, isResolving } = select( STORE_NAME );
 
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
-
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
 					? '1'
@@ -180,7 +169,7 @@ export const useDisputesSummary = ( {
 				dateBefore,
 				dateAfter,
 				dateBetween,
-				search,
+				filter,
 				statusIs,
 				statusIsNot,
 			};

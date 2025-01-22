@@ -99,7 +99,12 @@ class WC_Payments_Customer_Service {
 		$this->database_cache      = $database_cache;
 		$this->session_service     = $session_service;
 		$this->order_service       = $order_service;
+	}
 
+	/**
+	 * Initialize hooks
+	 */
+	public function init_hooks() {
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
 		 * to the WordPress user as metadata.
@@ -331,7 +336,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return array Customer data.
 	 */
-	public static function map_customer_data( WC_Order $wc_order = null, WC_Customer $wc_customer = null ): array {
+	public static function map_customer_data( ?WC_Order $wc_order = null, ?WC_Customer $wc_customer = null ): array {
 		if ( null === $wc_customer && null === $wc_order ) {
 			return [];
 		}

@@ -64,7 +64,6 @@ const upeMethods = {
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
 const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
@@ -99,13 +98,13 @@ Object.entries( enabledPaymentMethodsConfig )
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
 			canMakePayment: ( cartData ) => {
 				const billingCountry = cartData.billingAddress.country;
+				const needsPayment = cartData.cart.cartNeedsPayment;
 				const isRestrictedInAnyCountry = !! upeConfig.countries.length;
 				const isAvailableInTheCountry =
 					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
-				return (
-					isAvailableInTheCountry && !! api.getStripeForUPE( upeName )
-				);
+				// We used to check if stripe was loaded with `getStripeForUPE`, but we can't guarantee it will be loaded synchronously.
+				return needsPayment && isAvailableInTheCountry;
 			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
@@ -117,7 +116,6 @@ Object.entries( enabledPaymentMethodsConfig )
 					iconLight={ upeConfig.icon }
 					iconDark={ upeConfig.darkIcon }
 					upeName={ upeName }
-					upeAppearanceTheme={ upeAppearanceTheme }
 				/>
 			),
 			ariaLabel: 'WooPayments',

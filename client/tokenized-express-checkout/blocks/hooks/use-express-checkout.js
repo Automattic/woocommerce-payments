@@ -8,10 +8,11 @@ import { useStripe, useElements } from '@stripe/react-stripe-js';
  * Internal dependencies
  */
 import {
+	displayLoginConfirmation,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	normalizeLineItems,
-} from 'wcpay/express-checkout/utils';
+} from '../../utils';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -19,7 +20,7 @@ import {
 	onCompletePaymentHandler,
 	onConfirmHandler,
 	onReadyHandler,
-} from 'wcpay/express-checkout/event-handlers';
+} from '../../event-handlers';
 
 export const useExpressCheckout = ( {
 	api,
@@ -44,14 +45,19 @@ export const useExpressCheckout = ( {
 		window.location = redirectUrl;
 	};
 
-	const abortPayment = ( onConfirmEvent, message ) => {
-		onConfirmEvent.paymentFailed( { reason: 'fail' } );
+	const abortPayment = ( message ) => {
 		setExpressPaymentError( message );
 		onAbortPaymentHandler();
 	};
 
 	const onButtonClick = useCallback(
 		( event ) => {
+			// If login is required for checkout, display redirect confirmation dialog.
+			if ( getExpressCheckoutData( 'login_confirmation' ) ) {
+				displayLoginConfirmation( event.expressPaymentType );
+				return;
+			}
+
 			const options = {
 				lineItems: normalizeLineItems( billing?.cartTotalItems ),
 				emailRequired: true,

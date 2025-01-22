@@ -14,6 +14,15 @@ jest.mock( 'wcpay/data', () => ( {
 	useActiveLoanSummary: jest.fn(),
 } ) );
 
+// Mock dateI18n
+jest.mock( '@wordpress/date', () => ( {
+	dateI18n: jest.fn( ( format, date ) => {
+		return jest
+			.requireActual( '@wordpress/date' )
+			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
+	} ),
+} ) );
+
 describe( 'Active loan summary', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
@@ -34,6 +43,7 @@ describe( 'Active loan summary', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
 		};
 	} );
 	afterEach( () => {

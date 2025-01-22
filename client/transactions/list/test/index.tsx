@@ -10,6 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { dateI18n } from '@wordpress/date';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { useUserPreferences } from '@woocommerce/data';
 import { getUserTimeZone } from 'wcpay/utils/test-utils';
 import moment from 'moment';
 import os from 'os';
@@ -18,11 +19,7 @@ import os from 'os';
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import {
-	useTransactions,
-	useTransactionsSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useTransactions, useTransactionsSummary } from 'data/index';
 import type { Transaction } from 'data/transactions/hooks';
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -31,6 +28,15 @@ jest.mock( '@woocommerce/csv-export', () => {
 	return {
 		...actualModule,
 		downloadCSVFile: jest.fn(),
+	};
+} );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
 	};
 } );
 
@@ -55,7 +61,15 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
+} ) );
+
+// Mock dateI18n
+jest.mock( '@wordpress/date', () => ( {
+	dateI18n: jest.fn( ( format, date ) => {
+		return jest
+			.requireActual( '@wordpress/date' )
+			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
+	} ),
 } ) );
 
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
@@ -72,8 +86,8 @@ const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction
 	typeof useTransactionsSummary
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -97,8 +111,8 @@ declare const global: {
 				precision: number;
 			};
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
+		userLocale: {
+			code: string;
 		};
 	};
 };
@@ -218,7 +232,11 @@ describe( 'Transactions list', () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_transactions_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			featureFlags: {
@@ -240,10 +258,12 @@ describe( 'Transactions list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
+			userLocale: {
+				code: 'en',
 			},
 		};
+		window.wcpaySettings.dateFormat = 'M j, Y';
+		window.wcpaySettings.timeFormat = 'g:iA';
 	} );
 
 	test( 'renders correctly when filtered by payout', () => {
@@ -514,6 +534,46 @@ describe( 'Transactions list', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'renders columns hidden as per user preferences', () => {
+		mockUseTransactions.mockReturnValue( {
+			transactions: getMockTransactions(),
+			isLoading: false,
+			transactionsError: undefined,
+		} );
+
+		mockUseTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 10,
+				currency: 'usd',
+				store_currencies: [ 'usd' ],
+				fees: 100,
+				total: 1000,
+				net: 900,
+			},
+			isLoading: false,
+		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			wc_payments_transactions_hidden_columns: [ 'fees' ],
+		} as any );
+
+		const { getByRole, queryByRole } = render( <TransactionsList /> );
+
+		// Fees column should not be visible, as it is hidden in user preferences.
+		expect(
+			queryByRole( 'columnheader', {
+				name: /Fees/i,
+			} )
+		).not.toBeInTheDocument();
+
+		// Channel column should be visible, as it is not hidden in user preferences.
+		expect(
+			getByRole( 'columnheader', {
+				name: /Channel/i,
+			} )
+		).toBeInTheDocument();
+	} );
+
 	describe( 'CSV download', () => {
 		beforeEach( () => {
 			mockUseTransactions.mockReturnValue( {
@@ -621,7 +681,7 @@ describe( 'Transactions list', () => {
 			getByRole( 'button', { name: 'Download' } ).click();
 
 			const expected = [
-				'"Transaction Id"',
+				'"Transaction ID"',
 				'"Date / Time (UTC)"',
 				'Type',
 				'Channel',

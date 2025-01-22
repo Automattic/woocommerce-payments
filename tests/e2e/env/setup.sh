@@ -33,19 +33,19 @@ if [[ $FORCE_E2E_DEPS_SETUP ]]; then
 	sudo rm -rf tests/e2e/deps
 fi
 
-# Setup WCPay local server instance.
+# Setup Transact Platform local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	if [[ ! -d "$SERVER_PATH" ]]; then
-		step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
+		step "Fetching server (branch ${TRANSACT_PLATFORM_SERVER_BRANCH-trunk})"
 
-		if [[ -z $WCP_SERVER_REPO ]]; then
-			echo "WCP_SERVER_REPO env variable is not defined"
+		if [[ -z $TRANSACT_PLATFORM_SERVER_REPO ]]; then
+			echo "TRANSACT_PLATFORM_SERVER_REPO env variable is not defined"
 			exit 1;
 		fi
 
 		rm -rf "$SERVER_PATH"
-		git clone --depth=1 --branch "${WCP_SERVER_BRANCH-trunk}" "$WCP_SERVER_REPO" "$SERVER_PATH"
+		git clone --depth=1 --branch "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "$TRANSACT_PLATFORM_SERVER_REPO" "$SERVER_PATH"
 	else
 		echo "Using cached server at ${SERVER_PATH}"
 	fi
@@ -123,11 +123,11 @@ step "Setting up CLIENT site"
 # Wait for containers to be started up before the setup.
 # The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
 set +e
-cli wp db check --path=/var/www/html --quiet > /dev/null
+cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
 	sleep 5
-	cli wp db check --path=/var/www/html --quiet > /dev/null
+	cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 done
 echo "Client DB is up and running..."
 set -e
@@ -209,6 +209,12 @@ cli wp option set woocommerce_currency "USD"
 cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
+
+echo "Deactivating Coming Soon mode in WooCommerce..."
+cli wp option set woocommerce_coming_soon "no"
+
+echo "Enabling company field as an optional parameter in checkout form..."
+cli wp option set woocommerce_checkout_company_field "optional"
 
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
@@ -338,6 +344,9 @@ cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m
 
 echo "Setting up a coupon for E2E tests"
 cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
+
+echo "Syncing COT data"
+cli wp wc cot sync
 
 # Log test configuration for visibility
 echo

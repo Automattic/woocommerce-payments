@@ -49,7 +49,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_tokenized_cart_ece_enabled(): bool {
-		return '1' === get_option( self::TOKENIZED_CART_ECE_FLAG_NAME, '0' );
+		return '1' === get_option( self::TOKENIZED_CART_ECE_FLAG_NAME, '1' );
 	}
 
 	/**
@@ -296,15 +296,6 @@ class WC_Payments_Features {
 	 */
 	public static function is_fraud_protection_welcome_tour_dismissed(): bool {
 		return '1' === get_option( 'wcpay_fraud_protection_welcome_tour_dismissed', '0' );
-	}
-
-	/**
-	 * Checks whether the Payouts Rename Spotlight notice was dismissed.
-	 *
-	 * @return bool
-	 */
-	public static function is_payouts_rename_notice_dismissed(): bool {
-		return '1' === get_option( 'wcpay_payouts_rename_notice_dismissed', '0' );
 	}
 
 	/**

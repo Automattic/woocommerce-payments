@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Make sure the status of manual capture enablement is fetched from the right place.

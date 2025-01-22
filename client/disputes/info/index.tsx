@@ -5,8 +5,6 @@
  */
 import * as React from 'react';
 import { __ } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 import { Link } from '@woocommerce/components';
 
 /**
@@ -20,6 +18,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import './style.scss';
 import Loadable from 'components/loadable';
 import { Dispute } from 'wcpay/types/disputes';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 const fields: { key: string; label: string }[] = [
 	{ key: 'created', label: __( 'Dispute date', 'woocommerce-payments' ) },
@@ -69,20 +68,15 @@ const Info = ( {
 				transactionId: __( 'Transaction link', 'woocommerce-payments' ),
 		  }
 		: {
-				created: dateI18n(
-					'M j, Y',
-					moment( dispute.created * 1000 ).toISOString()
-				),
+				created: formatDateTimeFromTimestamp( dispute.created ),
 				amount: formatExplicitCurrency(
 					dispute.amount || 0,
 					dispute.currency || 'USD'
 				),
 				dueBy: dispute.evidence_details
-					? dateI18n(
-							'M j, Y - g:iA',
-							moment(
-								dispute.evidence_details.due_by * 1000
-							).toISOString()
+					? formatDateTimeFromTimestamp(
+							dispute.evidence_details.due_by,
+							{ separator: ' - ', includeTime: true }
 					  )
 					: null,
 				reason: composeDisputeReason( dispute ),

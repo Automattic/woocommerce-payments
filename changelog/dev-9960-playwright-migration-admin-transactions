@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Convert merchant admin transactions E2E test to Playwright

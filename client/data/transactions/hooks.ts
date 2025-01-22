@@ -32,7 +32,7 @@ export interface Transaction {
 	transaction_id: string;
 	date: string;
 	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
-	channel: 'in_person' | 'online';
+	channel: 'in_person' | 'in_person_pos' | 'online';
 	// A field to identify the payment's source.
 	// Usually last 4 digits for card payments, bank name for bank transfers...
 	source_identifier: string;
@@ -87,6 +87,7 @@ interface TransactionsSummary {
 		currency?: string;
 		store_currencies?: string[];
 		customer_currencies?: string[];
+		sources?: Transaction[ 'source' ][];
 	};
 	isLoading: boolean;
 }
@@ -146,6 +147,7 @@ export const useTransactions = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		type_is_in: typeIsIn,
 		source_device_is: sourceDeviceIs,
 		source_device_is_not: sourceDeviceIsNot,
 		channel_is: channelIs,
@@ -157,6 +159,8 @@ export const useTransactions = (
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
+		source_is: sourceIs,
+		source_is_not: sourceIsNot,
 		loan_id_is: loanIdIs,
 		search,
 	}: Query,
@@ -189,11 +193,14 @@ export const useTransactions = (
 					),
 				typeIs,
 				typeIsNot,
+				typeIsIn,
 				sourceDeviceIs,
 				sourceDeviceIsNot,
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
+				sourceIs,
+				sourceIsNot,
 				channelIs,
 				channelIsNot,
 				customerCountryIs,
@@ -222,11 +229,14 @@ export const useTransactions = (
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			JSON.stringify( typeIsIn ),
 			sourceDeviceIs,
 			sourceDeviceIsNot,
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
+			sourceIs,
+			sourceIsNot,
 			channelIs,
 			channelIsNot,
 			customerCountryIs,
@@ -247,11 +257,14 @@ export const useTransactionsSummary = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		type_is_in: typeIsIn,
 		source_device_is: sourceDeviceIs,
 		source_device_is_not: sourceDeviceIsNot,
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
+		source_is: sourceIs,
+		source_is_not: sourceIsNot,
 		channel_is: channelIs,
 		channel_is_not: channelIsNot,
 		customer_country_is: customerCountryIs,
@@ -276,11 +289,14 @@ export const useTransactionsSummary = (
 				dateBetween,
 				typeIs,
 				typeIsNot,
+				typeIsIn,
 				sourceDeviceIs,
 				sourceDeviceIsNot,
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
+				sourceIs,
+				sourceIsNot,
 				channelIs,
 				channelIsNot,
 				customerCountryIs,
@@ -304,11 +320,14 @@ export const useTransactionsSummary = (
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			JSON.stringify( typeIsIn ),
 			sourceDeviceIs,
 			sourceDeviceIsNot,
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
+			sourceIs,
+			sourceIsNot,
 			channelIs,
 			channelIsNot,
 			customerCountryIs,

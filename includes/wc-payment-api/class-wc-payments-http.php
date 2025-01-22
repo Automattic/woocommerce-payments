@@ -199,7 +199,8 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		wp_safe_redirect(
 			add_query_arg(
 				[
-					'from'        => 'woocommerce-payments',
+					'from'        => 'woocommerce-core-profiler',
+					'plugin_name' => 'woocommerce-payments',
 					'calypso_env' => $calypso_env,
 				],
 				$this->connection_manager->get_authorization_url( null, $redirect )

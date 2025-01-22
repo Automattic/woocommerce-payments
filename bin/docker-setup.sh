@@ -27,11 +27,11 @@ cli()
 set +e
 # Wait for containers to be started up before the setup.
 # The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
-cli wp db check --path=/var/www/html --quiet > /dev/null
+cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
 	sleep 5
-	cli wp db check --path=/var/www/html --quiet > /dev/null
+	cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 done
 
 # If the plugin is already active then return early
@@ -100,6 +100,12 @@ cli wp option set woocommerce_store_postcode "94110"
 cli wp option set woocommerce_currency "USD"
 cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
+
+echo "Deactivating Coming Soon mode in WooCommerce..."
+cli wp option set woocommerce_coming_soon "no"
+
+echo "Enabling company field as an optional parameter in checkout form..."
+cli wp option set woocommerce_checkout_company_field "optional"
 
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages

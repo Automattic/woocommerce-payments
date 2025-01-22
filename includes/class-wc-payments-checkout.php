@@ -103,6 +103,7 @@ class WC_Payments_Checkout {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
+		add_action( 'woocommerce_after_checkout_form', [ $this, 'maybe_load_checkout_scripts' ] );
 	}
 
 	/**
@@ -151,11 +152,18 @@ class WC_Payments_Checkout {
 			! has_block( 'woocommerce/checkout' ) &&
 			! wp_script_is( 'wcpay-upe-checkout', 'enqueued' )
 		) {
-			WC_Payments::get_gateway()->tokenization_script();
-			$script_handle = 'wcpay-upe-checkout';
-			$js_object     = 'wcpay_upe_config';
-			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-			wp_enqueue_script( $script_handle );
+			$this->load_checkout_scripts();
+		}
+	}
+
+	/**
+	 * Sometimes the filters can remove the payment gateway from the checkout page which results in the payment fields not being displayed.
+	 * This could prevent loading of the payment fields (checkout) scripts.
+	 * This function ensures that these scripts are loaded.
+	 */
+	public function maybe_load_checkout_scripts() {
+		if ( is_checkout() && ! wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) ) {
+			$this->load_checkout_scripts();
 		}
 	}
 
@@ -415,16 +423,23 @@ class WC_Payments_Checkout {
 				);
 			}
 
-			// Output the form HTML.
-			if ( ! empty( $this->gateway->get_description() ) ) : ?>
-				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
+			?>
+			<div class="wcpay-upe-form"
+				data-payment-method-type="<?php echo esc_attr( $this->gateway->get_stripe_id() ); ?>"
+				>
 				<?php
+
+				// Output the form HTML.
+				if ( ! empty( $this->gateway->get_description() ) ) :
+					?>
+				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
+					<?php
 			endif;
 
-			if ( WC_Payments::mode()->is_test() && false !== $this->gateway->get_payment_method()->get_testing_instructions( $this->account->get_account_country() ) ) :
-				?>
+				if ( WC_Payments::mode()->is_test() && false !== $this->gateway->get_payment_method()->get_testing_instructions( $this->account->get_account_country() ) ) :
+					?>
 				<p class="testmode-info">
-				<?php
+					<?php
 						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
@@ -435,21 +450,21 @@ class WC_Payments_Checkout {
 									'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
 								]
 							);
-				?>
+					?>
 				</p>
-				<?php
+					<?php
 			endif;
 
-			if ( $display_tokenization ) {
-				$this->gateway->tokenization_script();
-				// avoid showing saved payment methods on my-accounts add payment method page.
-				if ( ! is_add_payment_method_page() ) {
-					$this->gateway->saved_payment_methods();
+				if ( $display_tokenization ) {
+					$this->gateway->tokenization_script();
+					// avoid showing saved payment methods on my-accounts add payment method page.
+					if ( ! is_add_payment_method_page() ) {
+						$this->gateway->saved_payment_methods();
+					}
 				}
-			}
-			?>
+				?>
 
-			<fieldset style="padding: 7px" id="wc-<?php echo esc_attr( $this->gateway->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
+			<fieldset style="padding: 7px" class="wc-payment-form">
 				<?php
 					$this->gateway->display_gateway_html();
 				if ( $this->gateway->is_saved_cards_enabled() && $this->gateway->should_support_saved_payments() ) {
@@ -461,7 +476,7 @@ class WC_Payments_Checkout {
 				?>
 
 			</fieldset>
-
+			</div>
 			<?php
 
 			do_action( 'wcpay_payment_fields_upe', $this->gateway->id );
@@ -489,5 +504,16 @@ class WC_Payments_Checkout {
 		if ( null !== $payment_method_id ) {
 			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
+	}
+
+	/**
+	 * Load the checkout scripts.
+	 */
+	private function load_checkout_scripts() {
+		WC_Payments::get_gateway()->tokenization_script();
+		$script_handle = 'wcpay-upe-checkout';
+		$js_object     = 'wcpay_upe_config';
+		wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
+		wp_enqueue_script( $script_handle );
 	}
 }

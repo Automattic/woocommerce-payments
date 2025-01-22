@@ -36,7 +36,7 @@ describe( 'Setup Live Payments Modal', () => {
 
 		expect(
 			screen.queryByText(
-				'Before proceeding, please take note of the following information:'
+				"Before continuing, please make sure that you're aware of the following:"
 			)
 		).toBeInTheDocument();
 	} );
@@ -58,7 +58,7 @@ describe( 'Setup Live Payments Modal', () => {
 
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Continue setup',
+				name: 'Activate payments',
 			} )
 		);
 

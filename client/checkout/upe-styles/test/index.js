@@ -158,6 +158,9 @@ describe( 'Getting styles for automated theming', () => {
 					fontSize: '12px',
 					padding: '10px',
 				},
+				'.Label--resting': {
+					fontSize: '12px',
+				},
 				'.Tab': {
 					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
@@ -224,6 +227,29 @@ describe( 'Getting styles for automated theming', () => {
 				},
 				'.Container': {
 					backgroundColor: 'rgba(0, 0, 0, 0)',
+				},
+				'.Footer': {
+					color: 'rgb(109, 109, 109)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Footer-link': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Header': {
+					color: 'rgb(109, 109, 109)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
 				},
 			},
 			labels: 'above',

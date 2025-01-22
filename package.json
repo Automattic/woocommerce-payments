@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "8.5.0",
+  "version": "8.8.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -62,14 +62,15 @@
     "lint:css": "stylelint 'client/**/*.scss' 'client/**/*.css' 'assets/**/*.scss' 'assets/**/*.css'",
     "lint:js": "tsc --noEmit && eslint . --ext=js,jsx,ts,tsx",
     "lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
+    "lint:php-compatibility": "./vendor/bin/phpcs --standard=phpcs-compat.xml.dist $(git ls-files | grep .php$)",
     "lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist $(git ls-files | grep .php$)",
     "format": "npm run format:js && npm run format:css",
     "format:js": "npm run format:provided '**/*.js' '**/*.ts' '**/*.tsx'",
     "format:css": "npm run format:provided '**/*.scss' '**/*.css'",
     "format:provided": "prettier --write",
     "tube:setup": "./bin/jurassic-tube-setup.sh",
-    "tube:start": "./docker/bin/jt/tunnel.sh",
-    "tube:stop": "./docker/bin/jt/tunnel.sh break",
+    "tube:start": "source ./bin/jurassictube/config.env && jurassictube -u \"$username\" -s \"$subdomain\" -h \"$localhost\"",
+    "tube:stop": "source ./bin/jurassictube/config.env && jurassictube -b -s \"$subdomain\"",
     "psalm": "./bin/run-psalm.sh",
     "xdebug:toggle": "docker compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh",
     "changelog": "./vendor/bin/changelogger add",
@@ -114,7 +115,7 @@
     "@typescript-eslint/parser": "4.15.2",
     "@woocommerce/api": "0.2.0",
     "@woocommerce/components": "12.3.0",
-    "@woocommerce/csv-export": "1.9.0",
+    "@woocommerce/csv-export": "1.10.0",
     "@woocommerce/currency": "4.3.0",
     "@woocommerce/date": "4.2.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
@@ -214,7 +215,7 @@
   "overrides": {
     "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils#update/babel-deps",
     "@woocommerce/components": {
-      "@woocommerce/csv-export": "1.9.0",
+      "@woocommerce/csv-export": "1.10.0",
       "@woocommerce/currency": "4.3.0"
     },
     "@wordpress/scripts": {

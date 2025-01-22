@@ -102,11 +102,9 @@ jQuery( ( $ ) => {
 		/**
 		 * Abort the payment and display error messages.
 		 *
-		 * @param {PaymentResponse} payment Payment response instance.
-		 * @param {string} message Error message to display.
+		 * @param {string}  message Error message to display.
 		 */
-		abortPayment: ( payment, message ) => {
-			payment.paymentFailed( { reason: 'fail' } );
+		abortPayment: ( message ) => {
 			onAbortPaymentHandler();
 
 			$( '.woocommerce-error' ).remove();
@@ -194,7 +192,7 @@ jQuery( ( $ ) => {
 		 *
 		 * @param {Object} options ECE options.
 		 */
-		startExpressCheckoutElement: ( options ) => {
+		startExpressCheckoutElement: async ( options ) => {
 			const getShippingRates = () => {
 				if ( ! options.requestShipping ) {
 					return [];
@@ -237,7 +235,10 @@ jQuery( ( $ ) => {
 				return;
 			}
 
-			const elements = api.getStripe().elements( {
+			let addToCartPromise = Promise.resolve();
+			const stripe = await api.getStripe();
+
+			const elements = stripe.elements( {
 				mode: options?.mode ?? 'payment',
 				amount: options?.total,
 				currency: options?.currency,
@@ -254,10 +255,6 @@ jQuery( ( $ ) => {
 			expressCheckoutButtonUi.renderButton( eceButton );
 
 			eceButton.on( 'loaderror', () => {
-				wcPayECEError = __(
-					'The cart is incompatible with express checkout.',
-					'woocommerce-payments'
-				);
 				if ( ! document.getElementById( 'wcpay-woopay-button' ) ) {
 					expressCheckoutButtonUi.getButtonSeparator().hide();
 				}
@@ -305,7 +302,14 @@ jQuery( ( $ ) => {
 					}
 
 					// Add products to the cart if everything is right.
-					wcpayECE.addToCart();
+					// we are storing the promise to ensure that the "add to cart" call is completed,
+					// before the `shippingaddresschange` is triggered when the dialog is opened.
+					// Otherwise, it might happen that the `shippingaddresschange` is triggered before the "add to cart" call is done,
+					// which can cause errors.
+					addToCartPromise = wcpayECE.addToCart();
+					addToCartPromise.finally( () => {
+						addToCartPromise = Promise.resolve();
+					} );
 				}
 
 				const clickOptions = {
@@ -323,9 +327,10 @@ jQuery( ( $ ) => {
 				event.resolve( clickOptions );
 			} );
 
-			eceButton.on( 'shippingaddresschange', async ( event ) =>
-				shippingAddressChangeHandler( api, event, elements )
-			);
+			eceButton.on( 'shippingaddresschange', async ( event ) => {
+				await addToCartPromise;
+				return shippingAddressChangeHandler( api, event, elements );
+			} );
 
 			eceButton.on( 'shippingratechange', async ( event ) =>
 				shippingRateChangeHandler( api, event, elements )
@@ -336,7 +341,7 @@ jQuery( ( $ ) => {
 
 				return onConfirmHandler(
 					api,
-					api.getStripe(),
+					stripe,
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
@@ -365,7 +370,7 @@ jQuery( ( $ ) => {
 			} );
 
 			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				wcpayECE.attachProductPageEventListeners( elements );
+				wcpayECE.attachProductPageEventListeners( elements, eceButton );
 			}
 		},
 
@@ -416,7 +421,7 @@ jQuery( ( $ ) => {
 			return api.expressCheckoutECEGetSelectedProductData( data );
 		},
 
-		attachProductPageEventListeners: ( elements ) => {
+		attachProductPageEventListeners: ( elements, eceButton ) => {
 			// WooCommerce Deposits support.
 			// Trigger the "woocommerce_variation_has_changed" event when the deposit option is changed.
 			// Needs to be defined before the `woocommerce_variation_has_changed` event handler is set.
@@ -439,6 +444,18 @@ jQuery( ( $ ) => {
 
 					$.when( wcpayECE.getSelectedProductData() )
 						.then( ( response ) => {
+							// We do not support variable subscriptions with variations
+							// that require shipping and include a free trial.
+							if (
+								getExpressCheckoutData( 'product' )
+									.product_type === 'variable-subscription' &&
+								response.needs_shipping &&
+								response.has_free_trial
+							) {
+								eceButton.destroy();
+								return;
+							}
+
 							const isDeposits = wcpayECE.productHasDepositOption();
 							/**
 							 * If the customer aborted the express checkout,
@@ -451,8 +468,11 @@ jQuery( ( $ ) => {
 								! wcpayECE.paymentAborted &&
 								getExpressCheckoutData( 'product' )
 									.needs_shipping === response.needs_shipping;
-
-							if ( ! isDeposits && needsShipping ) {
+							if (
+								! isDeposits &&
+								needsShipping &&
+								! ( eceButton._destroyed ?? false )
+							) {
 								elements.update( {
 									amount: response.total.amount,
 								} );
@@ -534,7 +554,7 @@ jQuery( ( $ ) => {
 		/**
 		 * Initialize event handlers and UI state
 		 */
-		init: () => {
+		init: async () => {
 			if (
 				getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
 			) {
@@ -554,7 +574,7 @@ jQuery( ( $ ) => {
 					return;
 				}
 
-				wcpayECE.startExpressCheckoutElement( {
+				await wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total,
 					currency: getExpressCheckoutData( 'checkout' )
@@ -569,7 +589,7 @@ jQuery( ( $ ) => {
 			} else if (
 				getExpressCheckoutData( 'button_context' ) === 'product'
 			) {
-				wcpayECE.startExpressCheckoutElement( {
+				await wcpayECE.startExpressCheckoutElement( {
 					mode: 'payment',
 					total: getExpressCheckoutData( 'product' )?.total.amount,
 					currency: getExpressCheckoutData( 'product' )?.currency,
@@ -585,24 +605,23 @@ jQuery( ( $ ) => {
 			} else {
 				// If this is the cart or checkout page, we need to request the
 				// cart details.
-				api.expressCheckoutECEGetCartDetails().then( ( cart ) => {
-					if ( cart.total.amount === 0 ) {
-						expressCheckoutButtonUi.hideContainer();
-						expressCheckoutButtonUi.getButtonSeparator().hide();
-					} else {
-						wcpayECE.startExpressCheckoutElement( {
-							mode: 'payment',
-							total: cart.total.amount,
-							currency: getExpressCheckoutData( 'checkout' )
-								?.currency_code,
-							requestShipping: cart.needs_shipping,
-							requestPhone:
-								getExpressCheckoutData( 'checkout' )
-									?.needs_payer_phone ?? false,
-							displayItems: cart.displayItems,
-						} );
-					}
-				} );
+				const cart = await api.expressCheckoutECEGetCartDetails();
+				if ( cart.total.amount === 0 ) {
+					expressCheckoutButtonUi.hideContainer();
+					expressCheckoutButtonUi.getButtonSeparator().hide();
+				} else {
+					await wcpayECE.startExpressCheckoutElement( {
+						mode: 'payment',
+						total: cart.total.amount,
+						currency: getExpressCheckoutData( 'checkout' )
+							?.currency_code,
+						requestShipping: cart.needs_shipping,
+						requestPhone:
+							getExpressCheckoutData( 'checkout' )
+								?.needs_payer_phone ?? false,
+						displayItems: cart.displayItems,
+					} );
+				}
 			}
 
 			// After initializing a new express checkout button, we need to reset the paymentAborted flag.

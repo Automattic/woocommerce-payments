@@ -65,9 +65,11 @@ export const createAccountSession = async (
 	data: OnboardingFields,
 	isPoEligible: boolean
 ): Promise< AccountKycSession > => {
+	const urlParams = new URLSearchParams( window.location.search );
 	return await apiFetch< AccountKycSession >( {
 		path: addQueryArgs( `${ NAMESPACE }/onboarding/kyc/session`, {
 			self_assessment: fromDotNotation( data ),
+			capabilities: urlParams.get( 'capabilities' ) || '',
 			progressive: isPoEligible,
 		} ),
 		method: 'GET',
@@ -138,7 +140,7 @@ export const isPoEligible = async (
  * @return {string | undefined} The MCC code for the selected industry. Will return undefined if no industry is selected.
  */
 export const getMccFromIndustry = (): string | undefined => {
-	const industry = wcSettings.admin.onboarding.profile.industry?.[ 0 ];
+	const industry = wcSettings.admin?.onboarding?.profile?.industry?.[ 0 ];
 	if ( ! industry ) {
 		return undefined;
 	}
