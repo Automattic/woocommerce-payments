@@ -2159,32 +2159,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			}
 		}
 
-		$env                    = [];
-		$env['WP_User']         = is_user_logged_in() ? wp_get_current_user()->user_login : 'Guest (non logged-in user)';
-		$env['HTTP_REFERER']    = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '--' ) );
-		$env['HTTP_USER_AGENT'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '--' ) );
-		$env['REQUEST_URI']     = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) );
-		$env['DOING_AJAX']      = defined( 'DOING_AJAX' ) && DOING_AJAX;
-		$env['DOING_CRON']      = defined( 'DOING_CRON' ) && DOING_CRON;
-		$env['WP_CLI']          = defined( 'WP_CLI' ) && WP_CLI;
-		Logger::log(
-			'ENVIRONMENT: '
-			. var_export( $env, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-		);
-
-		Logger::log( "REQUEST $method $redacted_url" );
-		Logger::log(
-			'HEADERS: '
-			. var_export( $headers, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-		);
-
-		if ( null !== $body ) {
-			Logger::log(
-				'BODY: '
-				. var_export( $redacted_params, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			);
-		}
-
 		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
 		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
 		$retries        = 0;
@@ -2197,19 +2171,29 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			// The header intention is to give us insights into request latency between store and backend.
 			$headers['X-Request-Initiated'] = microtime( true );
 
+			$request_args = [
+				'url'             => $url,
+				'method'          => $method,
+				'headers'         => $headers,
+				'timeout'         => self::API_TIMEOUT_SECONDS,
+				'connect_timeout' => self::API_TIMEOUT_SECONDS,
+			];
+
+			$log_request_id = uniqid();
+
+			Logger::log(
+				Logger::format_object(
+					'REQUEST_' . $log_request_id,
+					array_merge(
+						$request_args,
+						[ 'url' => $redacted_url ],
+						null !== $body ? [ 'body' => $redacted_params ] : []
+					)
+				)
+			);
+
 			try {
-				$response = $this->http_client->remote_request(
-					[
-						'url'             => $url,
-						'method'          => $method,
-						'headers'         => $headers,
-						'timeout'         => self::API_TIMEOUT_SECONDS,
-						'connect_timeout' => self::API_TIMEOUT_SECONDS,
-					],
-					$body,
-					$is_site_specific,
-					$use_user_token
-				);
+				$response = $this->http_client->remote_request( $request_args, $body, $is_site_specific, $use_user_token );
 
 				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
 				$response_code = wp_remote_retrieve_response_code( $response );
@@ -2258,8 +2242,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		Logger::log(
-			'RESPONSE: '
-			. var_export( WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			Logger::format_object(
+				'RESPONSE_' . $log_request_id,
+				WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT )
+			)
 		);
 
 		return $response_body;

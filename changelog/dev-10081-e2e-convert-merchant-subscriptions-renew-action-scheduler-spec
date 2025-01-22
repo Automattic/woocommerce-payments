@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Migrate the merchant subscriptions renew action scheduler spec from Puppeteer to Playwright.

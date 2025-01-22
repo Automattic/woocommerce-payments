@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Upgrade `@woocommerce/csv-export` package to v1.10.0 – fixes unnecessary escaping of negative values in CSV exports that was preventing numerical analysis in spreadsheet applications

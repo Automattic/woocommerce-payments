@@ -75,10 +75,26 @@ export const addCartProduct = async (
 	await page.goto( `/shop/?add-to-cart=${ productId }` );
 };
 
+const ensureSavedCardNotSelected = async ( page: Page ) => {
+	if (
+		await page
+			.locator( '#wc-woocommerce_payments-payment-token-new' )
+			.isVisible()
+	) {
+		const newCardOption = await page.locator(
+			'#wc-woocommerce_payments-payment-token-new'
+		);
+		if ( newCardOption ) {
+			await newCardOption.click();
+		}
+	}
+};
+
 export const fillCardDetails = async (
 	page: Page,
 	card = config.cards.basic
 ) => {
+	await ensureSavedCardNotSelected( page );
 	if (
 		await page.$(
 			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
@@ -200,17 +216,21 @@ export const addToCartFromShopPage = async (
 	}
 };
 
+export const selectPaymentMethod = async (
+	page: Page,
+	paymentMethod = 'Credit card'
+) => {
+	await page.getByText( paymentMethod ).click();
+};
+
 export const setupCheckout = async (
 	page: Page,
-	billingAddress: CustomerAddress
+	billingAddress: CustomerAddress = config.addresses.customer.billing
 ) => {
 	await navigation.goToCheckout( page );
 	await fillBillingAddress( page, billingAddress );
 	await waitForUiRefresh( page );
 	await isUIUnblocked( page );
-	await page
-		.locator( '.wc_payment_method.payment_method_woocommerce_payments' )
-		.click();
 };
 
 /**
@@ -253,6 +273,52 @@ export async function setupProductCheckout(
 	await setupCheckout( page, billingAddress );
 }
 
+export const expectFraudPreventionToken = async (
+	page: Page,
+	toBeDefined: boolean
+) => {
+	const token = await page.evaluate( () => {
+		return ( window as any ).wcpayFraudPreventionToken;
+	} );
+
+	if ( toBeDefined ) {
+		expect( token ).toBeDefined();
+	} else {
+		expect( token ).toBeUndefined();
+	}
+};
+
+/**
+ * Places an order with custom options.
+ *
+ * @param  page The Playwright page object.
+ * @param  options The custom options to use for the order.
+ * @return The order ID.
+ */
+export const placeOrderWithOptions = async (
+	page: Page,
+	options?: {
+		productId?: number;
+		billingAddress?: CustomerAddress;
+	}
+) => {
+	await addCartProduct( page, options?.productId );
+	await setupCheckout( page, options?.billingAddress );
+	await selectPaymentMethod( page );
+	await fillCardDetails( page, config.cards.basic );
+	await focusPlaceOrderButton( page );
+	await placeOrder( page );
+	await page.waitForURL( /\/order-received\//, {
+		waitUntil: 'load',
+	} );
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
+
+	const url = await page.url();
+	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+};
+
 /**
  * Places an order with a specified currency.
  *
@@ -265,17 +331,7 @@ export const placeOrderWithCurrency = async (
 	currency: string
 ) => {
 	await navigation.goToShopWithCurrency( page, currency );
-	await setupProductCheckout( page, [ [ config.products.simple.name, 1 ] ] );
-	await fillCardDetails( page, config.cards.basic );
-	await focusPlaceOrderButton( page );
-	await placeOrder( page );
-	await page.waitForURL( /\/order-received\//, { waitUntil: 'load' } );
-	await expect(
-		page.getByRole( 'heading', { name: 'Order received' } )
-	).toBeVisible();
-
-	const url = await page.url();
-	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+	return placeOrderWithOptions( page );
 };
 
 export const emptyCart = async ( page: Page ) => {
