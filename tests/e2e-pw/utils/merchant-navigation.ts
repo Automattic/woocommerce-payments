@@ -60,6 +60,14 @@ export const goToOrderAnalytics = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
+export const goToTransactions = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
 export const goToMultiCurrencySettings = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency',
@@ -101,7 +109,19 @@ export const goToConnect = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
-export const goToSubscriptions = ( page: Page ) =>
-	page.goto( '/wp-admin/edit.php?post_type=shop_subscription', {
+export const goToSubscriptions = async ( page: Page ) =>
+	await page.goto( '/wp-admin/admin.php?page=wc-orders--shop_subscription', {
 		waitUntil: 'load',
 	} );
+
+export const goToSubscriptionPage = async (
+	page: Page,
+	subscriptionId: number
+) => {
+	await goToSubscriptions( page );
+	const orderRow = page.locator(
+		'tr#order-' + subscriptionId + ' .order_title a:nth-child(1)'
+	);
+	orderRow.evaluate( ( el: HTMLLinkElement ) => el.click() );
+	await dataHasLoaded( page );
+};
