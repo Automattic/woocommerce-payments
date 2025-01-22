@@ -23,20 +23,16 @@ import { getPriceFromProduct } from '../../utils/shopper';
 test.describe( 'Multi-currency setup', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
-	let wasMulticurrencyEnabled: boolean;
 
 	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
+		await activateMulticurrency( merchantPage );
 	} );
 
 	test.afterAll( async () => {
 		await restoreCurrencies( merchantPage );
-
-		if ( ! wasMulticurrencyEnabled ) {
-			await deactivateMulticurrency( merchantPage );
-		}
+		await deactivateMulticurrency( merchantPage );
 	} );
 
 	test( 'can disable the multi-currency feature', async () => {

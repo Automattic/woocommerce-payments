@@ -18,28 +18,19 @@ import {
 test.describe( 'Klarna Checkout', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
-	let wasMulticurrencyEnabled: boolean;
 
 	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await merchant.isMulticurrencyEnabled(
-			merchantPage
-		);
-		if ( wasMulticurrencyEnabled ) {
-			await merchant.deactivateMulticurrency( merchantPage );
-		}
+
+		await merchant.deactivateMulticurrency( merchantPage );
 		await merchant.enablePaymentMethods( merchantPage, [ 'klarna' ] );
 	} );
 
 	test.afterAll( async () => {
 		await shopper.emptyCart( shopperPage );
-
 		await merchant.disablePaymentMethods( merchantPage, [ 'klarna' ] );
-
-		if ( wasMulticurrencyEnabled ) {
-			await merchant.activateMulticurrency( merchantPage );
-		}
+		await merchant.activateMulticurrency( merchantPage );
 	} );
 
 	test( 'shows the message in the product page', async () => {

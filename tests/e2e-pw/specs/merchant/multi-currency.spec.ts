@@ -11,12 +11,10 @@ import {
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
 	disableAllEnabledCurrencies,
-	restoreCurrencies,
 } from '../../utils/merchant';
 import * as navigation from '../../utils/merchant-navigation';
 
 test.describe( 'Multi-currency', () => {
-	let wasMulticurrencyEnabled: boolean;
 	let page: Page;
 
 	// Use the merchant user for this test suite.
@@ -24,16 +22,13 @@ test.describe( 'Multi-currency', () => {
 
 	test.beforeAll( async ( { browser } ) => {
 		page = await browser.newPage();
-		wasMulticurrencyEnabled = await activateMulticurrency( page );
+		await activateMulticurrency( page );
 
 		await disableAllEnabledCurrencies( page );
 	} );
 
 	test.afterAll( async () => {
-		await restoreCurrencies( page );
-		if ( ! wasMulticurrencyEnabled ) {
-			await deactivateMulticurrency( page );
-		}
+		await deactivateMulticurrency( page );
 		await page.close();
 	} );
 

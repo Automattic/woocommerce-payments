@@ -1,43 +1,43 @@
 /**
  * External dependencies
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
  */
 import * as shopper from '../../utils/shopper';
-import { getMerchant, getShopper, useMerchant } from '../../utils/helpers';
+import { getMerchant, getShopper } from '../../utils/helpers';
 import {
-	activateMulticurrency,
 	ensureOrderIsProcessed,
-	isMulticurrencyEnabled,
 	tableDataHasLoaded,
 	waitAndSkipTourComponent,
+	activateMulticurrency,
+	deactivateMulticurrency,
 } from '../../utils/merchant';
 import { goToOrderAnalytics } from '../../utils/merchant-navigation';
 
 test.describe( 'Admin order analytics', () => {
+	let shopperPage: Page;
+	let merchantPage: Page;
 	let orderId: string;
 
-	// Use the merchant user for this test suite.
-	useMerchant();
-
 	test.beforeAll( async ( { browser } ) => {
-		const { shopperPage } = await getShopper( browser );
-		const { merchantPage } = await getMerchant( browser );
+		shopperPage = ( await getShopper( browser ) ).shopperPage;
+		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 
-		if ( false === ( await isMulticurrencyEnabled( merchantPage ) ) ) {
-			await activateMulticurrency( merchantPage );
-		}
+		await activateMulticurrency( merchantPage );
 
 		// Place an order to ensure the analytics data is correct.
 		orderId = await shopper.placeOrderWithCurrency( shopperPage, 'USD' );
 		await ensureOrderIsProcessed( merchantPage, orderId );
 	} );
 
-	test( 'should load without any errors', async ( { browser } ) => {
-		const { merchantPage } = await getMerchant( browser );
+	test.afterAll( async () => {
+		await deactivateMulticurrency( merchantPage );
+	} );
+
+	test( 'should load without any errors', async () => {
 		await goToOrderAnalytics( merchantPage );
 		await tableDataHasLoaded( merchantPage );
 		await waitAndSkipTourComponent(
@@ -54,10 +54,7 @@ test.describe( 'Admin order analytics', () => {
 		await expect( merchantPage ).toHaveScreenshot();
 	} );
 
-	test( 'orders table should have the customer currency column', async ( {
-		browser,
-	} ) => {
-		const { merchantPage } = await getMerchant( browser );
+	test( 'orders table should have the customer currency column', async () => {
 		await goToOrderAnalytics( merchantPage );
 		await tableDataHasLoaded( merchantPage );
 		await waitAndSkipTourComponent(

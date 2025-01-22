@@ -8,9 +8,7 @@ import { test, expect, Page } from '@playwright/test';
 import { getMerchant, getShopper } from '../../utils/helpers';
 import {
 	activateMulticurrency,
-	addCurrency,
 	deactivateMulticurrency,
-	restoreCurrencies,
 } from '../../utils/merchant';
 import { emptyCart, placeOrderWithCurrency } from '../../utils/shopper';
 import * as navigation from '../../utils/shopper-navigation';
@@ -18,7 +16,6 @@ import * as navigation from '../../utils/shopper-navigation';
 test.describe( 'Multi-currency checkout', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
-	let wasMulticurrencyEnabled: boolean;
 	const currenciesOrders = {
 		USD: null,
 		EUR: null,
@@ -27,18 +24,13 @@ test.describe( 'Multi-currency checkout', () => {
 	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
 
-		await addCurrency( merchantPage, 'EUR' );
+		await activateMulticurrency( merchantPage );
 	} );
 
 	test.afterAll( async () => {
-		await restoreCurrencies( merchantPage );
 		await emptyCart( shopperPage );
-
-		if ( ! wasMulticurrencyEnabled ) {
-			await deactivateMulticurrency( merchantPage );
-		}
+		await deactivateMulticurrency( merchantPage );
 	} );
 
 	test.describe( `Checkout with multiple currencies`, async () => {
