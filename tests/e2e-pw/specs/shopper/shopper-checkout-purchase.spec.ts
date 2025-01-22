@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -9,34 +9,65 @@ import { test, expect } from '@playwright/test';
 
 import { config } from '../../config/default';
 import * as shopper from '../../utils/shopper';
+import * as devtools from '../../utils/devtools';
+import { getMerchant, getShopper } from '../../utils/helpers';
 
 test.describe( 'Successful purchase', () => {
-	test.beforeEach( async ( { page } ) => {
-		await shopper.addCartProduct( page );
+	let merchantPage: Page;
+	let shopperPage: Page;
 
-		await page.goto( '/checkout/' );
-		await shopper.fillBillingAddress(
-			page,
-			config.addresses.customer.billing
-		);
-	} );
+	for ( const ctpEnabled of [ false, true ] ) {
+		test.describe( `Carding protection ${ ctpEnabled }`, () => {
+			test.beforeAll( async ( { browser } ) => {
+				shopperPage = ( await getShopper( browser ) ).shopperPage;
+				merchantPage = ( await getMerchant( browser ) ).merchantPage;
+				if ( ctpEnabled ) {
+					await devtools.enableCardTestingProtection( merchantPage );
+				}
+			} );
 
-	test( 'using a basic card', async ( { page } ) => {
-		await shopper.fillCardDetails( page );
-		await shopper.placeOrder( page );
+			test.afterAll( async () => {
+				if ( ctpEnabled ) {
+					await devtools.disableCardTestingProtection( merchantPage );
+				}
+			} );
 
-		await expect(
-			page.getByText( 'Order received' ).first()
-		).toBeVisible();
-	} );
+			test.beforeEach( async () => {
+				await shopper.addCartProduct( shopperPage );
+				await shopper.setupCheckout(
+					shopperPage,
+					config.addresses.customer.billing
+				);
+				await shopper.expectFraudPreventionToken(
+					shopperPage,
+					ctpEnabled
+				);
+			} );
 
-	test( 'using a 3DS card', async ( { page } ) => {
-		await shopper.fillCardDetails( page, config.cards[ '3ds' ] );
-		await shopper.placeOrder( page );
-		await shopper.confirmCardAuthentication( page );
+			test( 'using a basic card', async () => {
+				await shopper.fillCardDetails( shopperPage );
+				await shopper.placeOrder( shopperPage );
 
-		await expect(
-			page.getByText( 'Order received' ).first()
-		).toBeVisible();
-	} );
+				await expect(
+					shopperPage.getByRole( 'heading', {
+						name: 'Order received',
+					} )
+				).toBeVisible();
+			} );
+
+			test( 'using a 3DS card', async () => {
+				await shopper.fillCardDetails(
+					shopperPage,
+					config.cards[ '3ds' ]
+				);
+				await shopper.placeOrder( shopperPage );
+				await shopper.confirmCardAuthentication( shopperPage );
+				await expect(
+					shopperPage.getByRole( 'heading', {
+						name: 'Order received',
+					} )
+				).toBeVisible();
+			} );
+		} );
+	}
 } );
