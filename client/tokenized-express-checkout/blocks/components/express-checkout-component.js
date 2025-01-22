@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef, useState } from 'react';
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
 /**
  * Internal dependencies
@@ -13,8 +12,6 @@ import {
 import { useExpressCheckout } from '../hooks/use-express-checkout';
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
 import ExpressCheckoutButtonPreview from './express-checkout-button-preview';
-
-const FALLBACK_BUTTON_WAIT_TIME = 3000; // 3 seconds
 
 const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
 	const allDisabled = {
@@ -97,8 +94,6 @@ const ExpressCheckoutComponent = ( {
 		onClose,
 		setExpressPaymentError,
 	} );
-	const [ showFallbackButton, setShowFallbackButton ] = useState( false );
-	const onElementsReadyCalled = useRef( false );
 	const onClickHandler = ! isPreview ? onButtonClick : () => {};
 	const onShippingAddressChange = ( event ) =>
 		shippingAddressChangeHandler( event, elements );
@@ -107,7 +102,6 @@ const ExpressCheckoutComponent = ( {
 		shippingRateChangeHandler( event, elements );
 
 	const onElementsReady = ( event ) => {
-		onElementsReadyCalled.current = true;
 		const paymentMethodContainer = document.getElementById(
 			`express-payment-method-${ PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT }_${ expressPaymentMethod }`
 		);
@@ -124,20 +118,6 @@ const ExpressCheckoutComponent = ( {
 		// Any actions that WooPayments needs to perform.
 		onReady( event );
 	};
-
-	useEffect( () => {
-		if ( ! isPreview || onElementsReadyCalled.current ) {
-			return;
-		}
-
-		const handle = setTimeout( () => {
-			if ( ! onElementsReadyCalled.current ) {
-				setShowFallbackButton( true );
-			}
-		}, FALLBACK_BUTTON_WAIT_TIME );
-
-		return () => clearTimeout( handle );
-	}, [ isPreview ] );
 
 	// The Cart & Checkout blocks provide unified styles across all buttons,
 	// which should override the extension specific settings.
@@ -158,7 +138,7 @@ const ExpressCheckoutComponent = ( {
 		...getPaymentMethodsOverride( expressPaymentMethod ),
 	};
 
-	if ( showFallbackButton ) {
+	if ( isPreview ) {
 		return (
 			<ExpressCheckoutButtonPreview
 				expressPaymentMethod={ expressPaymentMethod }
