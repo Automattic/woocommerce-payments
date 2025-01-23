@@ -1784,6 +1784,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$processing    = [];
 		}
 
+		$is_offline_payment_method = $payment_information->is_offline_payment_method();
 		if ( ! empty( $intent ) ) {
 			if ( ! $intent->is_authorized() ) {
 				$intent_failed = true;
@@ -1860,7 +1861,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->order_service->attach_intent_info_to_order( $order, $intent );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
-		if ( Intent_Status::SUCCEEDED === $status ) {
+		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 		}
 		$this->order_service->update_order_status_from_intent( $order, $intent );
@@ -1868,7 +1869,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
-		if ( isset( $response ) ) {
+		if ( isset( $response ) && ! $is_offline_payment_method ) {
 			return $response;
 		}
 

@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -180,7 +181,11 @@ class WC_Payments_Order_Service {
 				break;
 			case Intent_Status::REQUIRES_ACTION:
 			case Intent_Status::REQUIRES_PAYMENT_METHOD:
-				$this->mark_payment_started( $order, $intent_data );
+				if ( in_array( $intent->get_payment_method_type(), Payment_Method::OFFLINE_PAYMENT_METHODS, true ) ) {
+					$this->mark_payment_on_hold( $order, $intent_data );
+				} else {
+					$this->mark_payment_started( $order, $intent_data );
+				}
 				break;
 			default:
 				Logger::error( 'Uncaught payment intent status of ' . $intent_data['intent_status'] . ' passed for order id: ' . $order->get_id() );
@@ -1108,6 +1113,28 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_ALLOW );
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::ALLOW );
 		}
+
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
+		$order->add_order_note( $note );
+		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Updates an order to on-hold status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param array    $intent_data   The intent data associated with this order.
+	 *
+	 * @return void
+	 */
+	private function mark_payment_on_hold( $order, $intent_data ) {
+		$note = $this->generate_payment_started_note( $order, $intent_data['intent_id'] );
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		$fraud_meta_box_type = $this->intent_has_card_payment_type( $intent_data ) ? Fraud_Meta_Box_Type::PAYMENT_STARTED : Fraud_Meta_Box_Type::NOT_CARD;
+		$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$order->add_order_note( $note );
