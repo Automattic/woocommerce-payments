@@ -343,3 +343,36 @@ export const deactivateWooPay = async ( page: Page ) => {
 	await page.getByTestId( 'woopay-toggle' ).uncheck();
 	await saveWooPaymentsSettings( page );
 };
+
+export const addWCBCheckoutPage = async ( page: Page ) => {
+	await page.goto( '/wp-admin/edit.php?post_type=page', {
+		waitUntil: 'load',
+	} );
+
+	await page
+		.locator( '#wpbody-content' )
+		.getByRole( 'link', { name: 'Add New Page' } )
+		.click();
+	await page.waitForLoadState( 'load' );
+
+	const welcomeGuide = await page.$( '.components-guide' );
+	if ( welcomeGuide ) {
+		await page.getByLabel( 'Close', { exact: true } ).click();
+		await page.waitForTimeout( 500 );
+	}
+
+	await page.getByLabel( 'Add title' ).fill( 'Checkout WCB' );
+	await page.getByLabel( 'Add block' ).click();
+	await page.getByPlaceholder( 'Search' ).fill( 'Checkout' );
+	await page.getByRole( 'option', { name: 'Checkout', exact: true } ).click();
+
+	// Dismiss dialog about potentially compatibility issues
+	await page.waitForTimeout( 500 );
+	await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
+
+	// Publish the page
+	await page.locator( 'button.editor-post-publish-panel__toggle' ).click();
+	await page.waitForTimeout( 500 );
+	await page.locator( 'button.editor-post-publish-button' ).click();
+	await expect( page.getByText( 'Checkout WCB is now live.' ) ).toBeVisible();
+};

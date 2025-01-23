@@ -92,6 +92,9 @@ test.describe( 'Shopper can save and delete cards', () => {
 		// cleanup for the next tests
 		await goToMyAccount( shopperPage, 'payment-methods' );
 		await deleteSavedCard( shopperPage, config.cards.basic );
+		await expect(
+			shopperPage.getByText( 'Payment method deleted.' )
+		).toBeVisible();
 	} );
 
 	Object.entries( cards ).forEach( ( [ cardName, card ] ) => {
