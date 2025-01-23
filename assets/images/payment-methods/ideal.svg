@@ -1,10 +1,6 @@
-<svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="18"
-    fill="none"
-    viewBox="-2 -2 24 22"
->
+<svg width="64" height="40" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="64" height="40" fill="white"/>
+<g transform="translate(18, 7) scale(1.4)">
     <g clipPath="url(#clip0_10440_1654)">
         <path
             fill="#fff"
@@ -32,4 +28,5 @@
             <path fill="#fff" d="M0 0h19.979v17.61H0z"></path>
         </clipPath>
     </defs>
+</g>
 </svg>

@@ -109,10 +109,10 @@ class LoggerContext {
 			return $entry;
 		}
 
-		$entry_number  = ++$this->entry_number;
-		$time_string   = gmdate( 'c', $context['timestamp'] );
-		$level_string  = strtoupper( $context['level'] );
-		$format_string = sprintf( '%s %s %s-%04d %%s', $time_string, $level_string, $this->request_id, $entry_number );
+		$entry_number = ++$this->entry_number;
+		$time_string  = gmdate( 'c', $context['timestamp'] );
+		$level_string = strtoupper( $context['level'] );
+		$line_prefix  = sprintf( '%s %s %s-%04d ', $time_string, $level_string, $this->request_id, $entry_number );
 
 		$entries = [ $context['message'] ];
 
@@ -124,23 +124,17 @@ class LoggerContext {
 			$this->context_updated = false;
 		}
 
-		return implode(
-			"\n",
-			array_map(
-				function ( $entry ) use ( $format_string ) {
-					return implode(
-						"\n",
-						array_map(
-							function ( $line ) use ( $format_string ) {
-								return sprintf( $format_string, $line );
-							},
-							explode( "\n", $entry )
-						)
-					);
-				},
-				$entries
-			)
-		);
+		$formatted_lines = [];
+		$log_entry       = array_shift( $entries );
+		while ( null !== $log_entry ) {
+			foreach ( explode( "\n", $log_entry ) as $line ) {
+				$formatted_lines[] = $line_prefix . $line;
+			}
+			unset( $log_entry );
+			$log_entry = array_shift( $entries );
+		}
+
+		return implode( "\n", $formatted_lines );
 	}
 
 	/**
