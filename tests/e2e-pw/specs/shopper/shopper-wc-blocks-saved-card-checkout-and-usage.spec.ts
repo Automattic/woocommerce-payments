@@ -48,7 +48,7 @@ describeif( shouldRunWCBlocksTests )(
 			}
 		} );
 
-		test.only( 'should be able to save basic card on Blocks checkout', async () => {
+		test( 'should be able to save basic card on Blocks checkout', async () => {
 			await emptyCart( shopperPage );
 			await goToShop( shopperPage );
 			await addCartProduct( shopperPage );
