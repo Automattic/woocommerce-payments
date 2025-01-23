@@ -36,6 +36,8 @@ test.describe( 'Shopper can save and delete cards', () => {
 		config.addresses[ 'subscriptions-customer' ].billing;
 
 	test.beforeAll( async ( { browser }, { project } ) => {
+		// Delete the user, if present, and create a new one with a new order.
+		// This is required to avoid running this test on a customer that already has a saved card.
 		const restApi = new RestAPI( project.use.baseURL );
 		await restApi.deleteCustomerByEmailAddress(
 			customerBillingConfig.email
@@ -104,8 +106,11 @@ test.describe( 'Shopper can save and delete cards', () => {
 
 				if ( cardName === '3ds' || cardName === '3ds2' ) {
 					await confirmCardAuthentication( shopperPage );
-					await shopperPage.waitForLoadState( 'networkidle' );
 				}
+
+				await shopperPage.waitForURL( /\/my-account\/payment-methods/, {
+					waitUntil: 'load',
+				} );
 
 				// Verify that the card was added
 				await expect(
@@ -138,7 +143,6 @@ test.describe( 'Shopper can save and delete cards', () => {
 						.getByRole( 'button', { name: 'Place order' } )
 						.click();
 					await confirmCardAuthentication( shopperPage );
-					await shopperPage.waitForLoadState( 'networkidle' );
 				}
 
 				await shopperPage.waitForURL( /\/order-received\//, {
