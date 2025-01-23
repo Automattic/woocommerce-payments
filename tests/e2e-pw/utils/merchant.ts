@@ -93,6 +93,7 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 export const addMulticurrencyWidget = async ( page: Page ) => {
 	await navigation.goToWidgets( page );
 	// Wait for all widgets to load. This is important to prevent flakiness.
+	await page.locator( '.components-spinner' ).first().waitFor();
 	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
 
 	if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
@@ -100,7 +101,8 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 	}
 
 	const isWidgetAdded = await page
-		.getByRole( 'heading', { name: 'Currency Switcher Widget' } )
+		.locator( 'iframe[srcdoc*=currency]' )
+		.first()
 		.isVisible();
 
 	if ( ! isWidgetAdded ) {
