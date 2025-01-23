@@ -23,6 +23,7 @@ import {
 	addToCartFromShopPage,
 	changeAccountCurrency,
 	emptyCart,
+	expectFraudPreventionToken,
 	fillBillingAddress,
 	focusPlaceOrderButton,
 	placeOrder,
@@ -74,16 +75,10 @@ test.describe( 'Enable UPE with deferred intent creation', () => {
 			config.addresses[ 'upe-customer' ].billing.be
 		);
 		await shopperPage.waitForLoadState( 'networkidle' );
-
-		const token = await shopperPage.evaluate( () => {
-			return ( window as any ).wcpayFraudPreventionToken;
-		} );
-		if ( cardTestingPreventionState ) {
-			expect( token ).toBeDefined();
-		} else {
-			expect( token ).toBeUndefined();
-		}
-
+		await expectFraudPreventionToken(
+			shopperPage,
+			cardTestingPreventionState
+		);
 		await shopperPage.getByText( 'Bancontact' ).click();
 		await focusPlaceOrderButton( shopperPage );
 		await placeOrder( shopperPage );

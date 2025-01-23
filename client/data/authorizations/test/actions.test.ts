@@ -18,6 +18,25 @@ import {
 import authorizationsFixture from './authorizations.fixture.json';
 import { STORE_NAME } from 'wcpay/data/constants';
 
+declare const global: {
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+		connect: {
+			country: string;
+		};
+		currencyData: {
+			[ key: string ]: {
+				code: string;
+				symbol: string;
+				symbolPosition: string;
+				thousandSeparator: string;
+				decimalSeparator: string;
+				precision: number;
+			};
+		};
+	};
+};
+
 describe( 'Authorizations actions', () => {
 	describe( 'submitCaptureAuthorization', () => {
 		const {
@@ -168,6 +187,25 @@ describe( 'Authorizations actions', () => {
 		} );
 
 		describe( 'error handling', () => {
+			beforeEach( () => {
+				global.wcpaySettings = {
+					zeroDecimalCurrencies: [],
+					connect: {
+						country: 'US',
+					},
+					currencyData: {
+						USD: {
+							code: 'USD',
+							symbol: '$',
+							symbolPosition: 'left',
+							thousandSeparator: ',',
+							decimalSeparator: '.',
+							precision: 2,
+						},
+					},
+				};
+			} );
+
 			it( 'should create error notice with API error message', () => {
 				const generator = submitCaptureAuthorization( 'pi_123', 123 );
 
@@ -221,6 +259,58 @@ describe( 'Authorizations actions', () => {
 						STORE_NAME,
 						'setIsRequestingAuthorization',
 						false
+					)
+				);
+			} );
+
+			it( 'should create error notice with amount too small error details', () => {
+				const generator = submitCaptureAuthorization( 'pi_123', 123 );
+
+				// Skip initial dispatch calls
+				generator.next();
+				generator.next();
+
+				// Mock API error for amount too small
+				const apiError = {
+					code: 'wcpay_capture_error_amount_too_small',
+					data: {
+						status: 400,
+						extra_details: {
+							minimum_amount: 50,
+							minimum_amount_currency: 'USD',
+						},
+					},
+				};
+
+				expect( generator.throw( apiError ).value ).toEqual(
+					controls.dispatch(
+						'core/notices',
+						'createErrorNotice',
+						'There has been an error capturing the payment for order #123. The minimum amount that can be processed is $0.50 USD.'
+					)
+				);
+			} );
+
+			it( 'should create error notice with amount too small when amount details are missing', () => {
+				const generator = submitCaptureAuthorization( 'pi_123', 123 );
+
+				// Skip initial dispatch calls
+				generator.next();
+				generator.next();
+
+				// Mock API error for amount too small
+				const apiError = {
+					code: 'wcpay_capture_error_amount_too_small',
+					data: {
+						status: 400,
+					},
+				};
+
+				expect( generator.throw( apiError ).value ).toEqual(
+					controls.dispatch(
+						'core/notices',
+						'createErrorNotice',
+						'There has been an error capturing the payment for order #123. The payment amount is too small to be processed.'
 					)
 				);
 			} );

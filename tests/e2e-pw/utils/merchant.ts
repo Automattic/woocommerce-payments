@@ -93,6 +93,7 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 export const addMulticurrencyWidget = async ( page: Page ) => {
 	await navigation.goToWidgets( page );
 	// Wait for all widgets to load. This is important to prevent flakiness.
+	await page.locator( '.components-spinner' ).first().waitFor();
 	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
 
 	if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
@@ -100,7 +101,8 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 	}
 
 	const isWidgetAdded = await page
-		.getByRole( 'heading', { name: 'Currency Switcher Widget' } )
+		.locator( 'iframe[srcdoc*=currency]' )
+		.first()
 		.isVisible();
 
 	if ( ! isWidgetAdded ) {
@@ -375,4 +377,35 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 	await page.waitForTimeout( 500 );
 	await page.locator( 'button.editor-post-publish-button' ).click();
 	await expect( page.getByText( 'Checkout WCB is now live.' ) ).toBeVisible();
+};
+
+export const isCaptureLaterEnabled = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
+
+	return isEnabled;
+};
+
+export const activateCaptureLater = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const wasInitiallyEnabled = await isCaptureLaterEnabled( page );
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).click();
+		await page
+			.getByRole( 'button', { name: 'Enable manual capture' } )
+			.click();
+		await saveWooPaymentsSettings( page );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const deactivateCaptureLater = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+	await page.getByTestId( 'capture-later-checkbox' ).uncheck();
+	await saveWooPaymentsSettings( page );
 };
