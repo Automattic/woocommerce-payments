@@ -103,6 +103,7 @@ test.describe( 'Shopper can save and delete cards', () => {
 
 			if ( cardName === '3ds' || cardName === '3ds2' ) {
 				await confirmCardAuthentication( shopperPage );
+				await shopperPage.waitForLoadState( 'networkidle' );
 			}
 
 			// Verify that the card was added
