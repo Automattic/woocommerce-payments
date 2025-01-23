@@ -70,7 +70,7 @@ test.describe( 'Saved cards', () => {
 					).toBeVisible();
 				} );
 
-				test( 'should process a pament with the saved card', async ( {} ) => {
+				test( 'should process a payment with the saved card', async ( {} ) => {
 					await goToShop( shopperPage );
 					await setupProductCheckout( shopperPage );
 					await selectSavedCardOnCheckout( shopperPage, card );
