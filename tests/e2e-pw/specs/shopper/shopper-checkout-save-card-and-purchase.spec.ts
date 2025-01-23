@@ -14,7 +14,7 @@ import {
 	fillCardDetails,
 	placeOrder,
 	placeOrderWithOptions,
-	selectSavedPaymentMethod,
+	selectSavedCardOnCheckout,
 	setSavePaymentMethod,
 	setupProductCheckout,
 } from '../../utils/shopper';
@@ -73,7 +73,7 @@ test.describe( 'Saved cards', () => {
 				test( 'should process a pament with the saved card', async ( {} ) => {
 					await goToShop( shopperPage );
 					await setupProductCheckout( shopperPage );
-					await selectSavedPaymentMethod( shopperPage, card );
+					await selectSavedCardOnCheckout( shopperPage, card );
 					await placeOrder( shopperPage );
 					if ( cardType === '3ds' ) {
 						await confirmCardAuthentication( shopperPage );

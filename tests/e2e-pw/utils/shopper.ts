@@ -358,35 +358,6 @@ export const setSavePaymentMethod = async ( page: Page, save = true ) => {
 	}
 };
 
-export const selectSavedPaymentMethod = async (
-	page: Page,
-	card: typeof config.cards.basic
-) => {
-	const savedCardOption = page
-		.getByLabel(
-			`Visa ending in ${ card.number.slice( -4 ) } (expires ${
-				card.expires.month
-			}/${ card.expires.year })`
-		)
-		.first();
-	if ( savedCardOption ) {
-		await savedCardOption.click();
-	}
-};
-
-export const deleteSavedCard = async (
-	page: Page,
-	card: typeof config.cards.basic
-) => {
-	await page
-		.getByRole( 'row', { name: card.label } )
-		.first()
-		.getByRole( 'link', { name: 'Delete' } )
-		.click();
-	await page.waitForTimeout( 1000 );
-	await expect( page.getByText( 'Payment method deleted.' ) ).toBeVisible();
-};
-
 export const emptyCart = async ( page: Page ) => {
 	await navigation.goToCart( page );
 
