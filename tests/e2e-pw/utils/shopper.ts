@@ -197,10 +197,10 @@ export const fillCardDetailsWCB = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	const newPaymentMethodRadioButton = await page.$(
+	const newPaymentMethodRadioButton = page.locator(
 		'#radio-control-wc-payment-method-options-woocommerce_payments'
 	);
-	if ( newPaymentMethodRadioButton ) {
+	if ( await newPaymentMethodRadioButton.isVisible() ) {
 		await newPaymentMethodRadioButton.click();
 	}
 	await page.waitForSelector( '.__PrivateStripeElement' );
