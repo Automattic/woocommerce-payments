@@ -429,11 +429,10 @@ class WC_Payments_Order_Service {
 	 * @param string   $intent_status The status of the intent related to this order.
 	 * @param string   $charge_id     The charge ID related to the intent/order.
 	 * @param string   $message       Optional message to add to the failed note.
-	 * @param int|null $created       Optional timestamp when the payment was created.
 	 *
 	 * @return void
 	 */
-	public function mark_terminal_payment_failed( $order, string $intent_id, string $intent_status, string $charge_id, string $message, ?int $created = null ) {
+	public function mark_terminal_payment_failed( $order, string $intent_id, string $intent_status, string $charge_id, string $message ) {
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
@@ -441,7 +440,7 @@ class WC_Payments_Order_Service {
 		$order_status_before_update = $order->get_status();
 		$this->update_order_status( $order, Order_Status::FAILED );
 
-		$note = $this->generate_terminal_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ), $created );
+		$note = $this->generate_terminal_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			$this->complete_order_processing( $order );
 			return;
@@ -1469,28 +1468,21 @@ class WC_Payments_Order_Service {
 	/**
 	 * Get content for the failure order note and additional message, if included.
 	 *
-	 * @param string   $intent_id        The ID of the intent associated with this order.
-	 * @param string   $charge_id        The charge ID related to the intent/order.
-	 * @param string   $message          Optional message to add to the note.
-	 * @param string   $formatted_amount The formatted order total.
-	 * @param int|null $created          Optional timestamp when the payment was created.
+	 * @param string $intent_id        The ID of the intent associated with this order.
+	 * @param string $charge_id        The charge ID related to the intent/order.
+	 * @param string $message          Optional message to add to the note.
+	 * @param string $formatted_amount The formatted order total.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_terminal_payment_failure_note( $intent_id, $charge_id, $message, $formatted_amount, ?int $created = null ) {
-		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
-		$timestamp       = $created ?? time();
-		$time_format     = get_option( 'time_format' );
-		if ( ! is_string( $time_format ) || empty( $time_format ) ) {
-			$time_format = 'H:i'; // Default time format if none exists.
-		}
-		$time_format    = strpos( $time_format, ':s' ) !== false ? $time_format : $time_format . ':s';
-		$formatted_time = date_i18n( get_option( 'date_format' ) . ' ' . $time_format, $timestamp );
+	private function generate_terminal_payment_failure_note( $intent_id, $charge_id, $message, $formatted_amount ) {
+		// Add charge_id to the transaction URL instead of intent_id for uniqueness.
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( '', $charge_id );
 
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: timestamp */
-				__( 'A terminal payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>) at %4$s.', 'woocommerce-payments' ),
+				__( 'A terminal payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>)', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
@@ -1498,8 +1490,7 @@ class WC_Payments_Order_Service {
 			),
 			$formatted_amount,
 			'WooPayments',
-			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id ),
-			$formatted_time
+			$intent_id ?? $charge_id
 		);
 
 		if ( ! empty( $message ) ) {

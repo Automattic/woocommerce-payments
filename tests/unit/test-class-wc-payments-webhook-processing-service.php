@@ -1857,8 +1857,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'pi_123',
 				'requires_payment_method',
 				'ch_123',
-				'With the following message: <code>Card declined</code>',
-				1706745600
+				'With the following message: <code>Card declined</code>'
 			);
 
 		$this->webhook_processing_service->process( $this->event_body );
