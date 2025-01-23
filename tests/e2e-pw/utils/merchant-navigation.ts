@@ -5,7 +5,12 @@ import { Page } from 'playwright/test';
 import { dataHasLoaded } from './merchant';
 
 export const goToOrder = async ( page: Page, orderId: string ) => {
-	await page.goto( `/wp-admin/post.php?post=${ orderId }&action=edit` );
+	await page.goto(
+		`/wp-admin/admin.php?page=wc-orders&action=edit&id=${ orderId }`,
+		{
+			waitUntil: 'load',
+		}
+	);
 };
 
 export const goToPaymentDetails = async (
@@ -55,6 +60,14 @@ export const goToActionScheduler = async (
 export const goToOrderAnalytics = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-admin&path=%2Fanalytics%2Forders',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
+export const goToTransactions = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions',
 		{ waitUntil: 'load' }
 	);
 	await dataHasLoaded( page );

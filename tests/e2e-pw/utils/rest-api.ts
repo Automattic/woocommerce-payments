@@ -9,6 +9,7 @@ import { HTTPClientFactory } from '@woocommerce/api';
 import { config } from '../config/default';
 
 const userEndpoint = '/wp/v2/users';
+const ordersEndpoint = '/wc/v3/orders';
 
 class RestAPI {
 	private baseUrl: string;
@@ -62,6 +63,21 @@ class RestAPI {
 				);
 			}
 		}
+	}
+
+	async createOrder(): Promise< string > {
+		const client = this.getAdminClient();
+
+		const order = await client.post( ordersEndpoint, {
+			line_items: [
+				{
+					product_id: 16,
+					quantity: 1,
+				},
+			],
+		} );
+
+		return `${ order.data.id }`;
 	}
 }
 

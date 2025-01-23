@@ -93,6 +93,7 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 export const addMulticurrencyWidget = async ( page: Page ) => {
 	await navigation.goToWidgets( page );
 	// Wait for all widgets to load. This is important to prevent flakiness.
+	await page.locator( '.components-spinner' ).first().waitFor();
 	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
 
 	if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
@@ -100,7 +101,8 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 	}
 
 	const isWidgetAdded = await page
-		.getByRole( 'heading', { name: 'Currency Switcher Widget' } )
+		.locator( 'iframe[srcdoc*=currency]' )
+		.first()
 		.isVisible();
 
 	if ( ! isWidgetAdded ) {
@@ -203,6 +205,13 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	).toBeVisible();
 };
 
+export const restoreCurrencies = async ( page: Page ) => {
+	await disableAllEnabledCurrencies( page );
+	await addCurrency( page, 'USD' );
+	await addCurrency( page, 'EUR' );
+	await addCurrency( page, 'GBP' );
+};
+
 export const removeCurrency = async ( page: Page, currencyCode: string ) => {
 	await navigation.goToMultiCurrencySettings( page );
 	await page
@@ -266,12 +275,17 @@ export const enablePaymentMethods = async (
 	paymentMethods: string[]
 ) => {
 	await navigation.goToWooPaymentsSettings( page );
-
+	let atLeastOnePaymentMethodEnabled = false;
 	for ( const paymentMethodName of paymentMethods ) {
-		await page.getByLabel( paymentMethodName ).check();
+		if ( ! ( await page.getByLabel( paymentMethodName ).isChecked() ) ) {
+			await page.getByLabel( paymentMethodName ).check();
+			atLeastOnePaymentMethodEnabled = true;
+		}
 	}
 
-	await saveWooPaymentsSettings( page );
+	if ( atLeastOnePaymentMethodEnabled ) {
+		await saveWooPaymentsSettings( page );
+	}
 };
 
 export const disablePaymentMethods = async (
@@ -279,17 +293,21 @@ export const disablePaymentMethods = async (
 	paymentMethods: string[]
 ) => {
 	await navigation.goToWooPaymentsSettings( page );
+	let atLeastOnePaymentMethodDisabled = false;
 
 	for ( const paymentMethodName of paymentMethods ) {
 		const checkbox = await page.getByLabel( paymentMethodName );
 
 		if ( await checkbox.isChecked() ) {
 			await checkbox.click();
+			atLeastOnePaymentMethodDisabled = true;
 			await page.getByRole( 'button', { name: 'Remove' } ).click();
 		}
 	}
 
-	await saveWooPaymentsSettings( page );
+	if ( atLeastOnePaymentMethodDisabled ) {
+		await saveWooPaymentsSettings( page );
+	}
 };
 
 export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
@@ -325,5 +343,36 @@ export const activateWooPay = async ( page: Page ) => {
 export const deactivateWooPay = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
 	await page.getByTestId( 'woopay-toggle' ).uncheck();
+	await saveWooPaymentsSettings( page );
+};
+
+export const isCaptureLaterEnabled = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
+
+	return isEnabled;
+};
+
+export const activateCaptureLater = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const wasInitiallyEnabled = await isCaptureLaterEnabled( page );
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).click();
+		await page
+			.getByRole( 'button', { name: 'Enable manual capture' } )
+			.click();
+		await saveWooPaymentsSettings( page );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const deactivateCaptureLater = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+	await page.getByTestId( 'capture-later-checkbox' ).uncheck();
 	await saveWooPaymentsSettings( page );
 };
