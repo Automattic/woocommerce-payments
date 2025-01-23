@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Migrate shopper subscription free-trial purchase E2E test to Playwright
