@@ -23,6 +23,7 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 		wasMulticurrencyEnabled = await merchant.activateMulticurrency(
 			merchantPage
 		);
+		await merchant.restoreCurrencies( merchantPage );
 	} );
 
 	test.afterAll( async () => {
