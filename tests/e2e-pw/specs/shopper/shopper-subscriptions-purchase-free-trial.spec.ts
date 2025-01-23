@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import test, { expect } from '@playwright/test';
+import test, { Page, expect } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -20,6 +20,11 @@ import {
 	goToProductPageBySlug,
 } from '../../utils/shopper-navigation';
 import { goToOrder, goToSubscriptions } from '../../utils/merchant-navigation';
+import {
+	activateMulticurrency,
+	deactivateMulticurrency,
+	isMulticurrencyEnabled,
+} from '../../utils/merchant';
 
 const nowLocal = new Date();
 const nowUTC = new Date(
@@ -40,6 +45,25 @@ let orderId: string, subscriptionId: string;
 describeif( shouldRunSubscriptionsTests )(
 	'Shopper: Subscriptions - Purchase Free Trial',
 	() => {
+		let wasMultiCurrencyEnabled = false;
+		let merchantPage: Page;
+
+		test.beforeAll( async ( { browser } ) => {
+			merchantPage = ( await getMerchant( browser ) ).merchantPage;
+			wasMultiCurrencyEnabled = await isMulticurrencyEnabled(
+				merchantPage
+			);
+			if ( wasMultiCurrencyEnabled ) {
+				await deactivateMulticurrency( merchantPage );
+			}
+		} );
+
+		test.afterAll( async () => {
+			if ( wasMultiCurrencyEnabled ) {
+				await activateMulticurrency( merchantPage );
+			}
+		} );
+
 		test( 'Merchant should be able to purchase a free trial', async ( {
 			browser,
 		} ) => {
@@ -124,10 +148,7 @@ describeif( shouldRunSubscriptionsTests )(
 				.replace( '#', '' );
 		} );
 
-		test( 'Merchant should be able to create an order with "Setup Intent"', async ( {
-			browser,
-		} ) => {
-			const { merchantPage } = await getMerchant( browser );
+		test( 'Merchant should be able to create an order with "Setup Intent"', async () => {
 			await goToOrder( merchantPage, orderId );
 			await expect(
 				merchantPage.getByText( 'Payment via Credit card /' )

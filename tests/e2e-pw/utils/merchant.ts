@@ -275,12 +275,17 @@ export const enablePaymentMethods = async (
 	paymentMethods: string[]
 ) => {
 	await navigation.goToWooPaymentsSettings( page );
-
+	let atLeastOnePaymentMethodEnabled = false;
 	for ( const paymentMethodName of paymentMethods ) {
-		await page.getByLabel( paymentMethodName ).check();
+		if ( ! ( await page.getByLabel( paymentMethodName ).isChecked() ) ) {
+			await page.getByLabel( paymentMethodName ).check();
+			atLeastOnePaymentMethodEnabled = true;
+		}
 	}
 
-	await saveWooPaymentsSettings( page );
+	if ( atLeastOnePaymentMethodEnabled ) {
+		await saveWooPaymentsSettings( page );
+	}
 };
 
 export const disablePaymentMethods = async (
@@ -288,17 +293,21 @@ export const disablePaymentMethods = async (
 	paymentMethods: string[]
 ) => {
 	await navigation.goToWooPaymentsSettings( page );
+	let atLeastOnePaymentMethodDisabled = false;
 
 	for ( const paymentMethodName of paymentMethods ) {
 		const checkbox = await page.getByLabel( paymentMethodName );
 
 		if ( await checkbox.isChecked() ) {
 			await checkbox.click();
+			atLeastOnePaymentMethodDisabled = true;
 			await page.getByRole( 'button', { name: 'Remove' } ).click();
 		}
 	}
 
-	await saveWooPaymentsSettings( page );
+	if ( atLeastOnePaymentMethodDisabled ) {
+		await saveWooPaymentsSettings( page );
+	}
 };
 
 export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
