@@ -4,15 +4,17 @@
  * External dependencies
  */
 import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import GridiconNotice from 'gridicons/dist/notice';
-import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
 import React from 'react';
 
 /**
  * Internal dependencies
  */
 import 'components/account-status/shared.scss';
+import { HoverTooltip } from 'wcpay/components/tooltip';
 import type { AccountStatus } from 'wcpay/types/account/account-status';
 
 type DepositsStatus = 'enabled' | 'disabled' | 'blocked';
@@ -62,31 +64,51 @@ const DepositsStatusDisabled: React.FC< DepositsStatusProps > = ( props ) => {
 const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 	const { iconSize } = props;
 
-	const learnMoreHref =
-		'https://woocommerce.com/document/woopayments/payouts/why-payouts-suspended/';
-
-	const description = createInterpolateElement(
+	const description =
 		/* translators: <a> - suspended accounts FAQ URL */
-		__(
-			'Temporarily suspended (<a>learn more</a>)',
-			'woocommerce-payments'
-		),
-		{
-			a: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href={ learnMoreHref }
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-		}
-	);
+		__( 'Temporarily suspended', 'woocommerce-payments' );
 
 	return (
 		<span className={ 'account-status__info__yellow' }>
 			<GridiconNotice size={ iconSize } />
 			{ description }
+			<HoverTooltip
+				className="wcpay-tooltip--click__tooltip"
+				maxWidth={ '300px' }
+				content={ interpolateComponents( {
+					mixedString: sprintf(
+						/* translators: 1: WooPayments */
+						__(
+							// eslint-disable-next-line max-len
+							'After the information review your account was temporarily suspended. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+							'woocommerce-payments'
+						),
+						'WooPayments'
+					),
+					components: {
+						learnMoreLink: (
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							<a
+								href={
+									// eslint-disable-next-line max-len
+									'https://woocommerce.com/document/woopayments/payouts/why-payouts-suspended/'
+								}
+								target="_blank"
+								rel="noreferrer"
+								type="external"
+							/>
+						),
+					},
+				} ) }
+			>
+				<div
+					tabIndex={ 0 }
+					role="button"
+					aria-label="Learn more about deposits suspended"
+				>
+					<HelpOutlineIcon />
+				</div>
+			</HoverTooltip>
 		</span>
 	);
 };
