@@ -48,7 +48,7 @@ describeif( shouldRunWCBlocksTests )(
 			}
 		} );
 
-		test( 'should be able to save basic card on Blocks checkout', async () => {
+		test.only( 'should be able to save basic card on Blocks checkout', async () => {
 			await emptyCart( shopperPage );
 			await goToShop( shopperPage );
 			await addCartProduct( shopperPage );
@@ -102,7 +102,9 @@ describeif( shouldRunWCBlocksTests )(
 				waitUntil: 'load',
 			} );
 			await expect(
-				shopperPage.getByRole( 'heading', { name: 'Order received' } )
+				shopperPage.getByRole( 'heading', {
+					name: 'Order received',
+				} )
 			).toBeVisible();
 		} );
 		test( 'should delete the card ', async () => {

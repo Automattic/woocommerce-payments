@@ -357,11 +357,13 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 		.click();
 	await page.waitForLoadState( 'load' );
 
-	const welcomeGuide = await page.$( '.components-guide' );
-	if ( welcomeGuide ) {
+	const welcomeGuide = page.locator( '.components-guide' );
+	if ( await welcomeGuide.isVisible() ) {
 		await page.getByLabel( 'Close', { exact: true } ).click();
 		await page.waitForTimeout( 500 );
 	}
+
+	await page.screenshot();
 
 	await page.getByLabel( 'Add title' ).fill( 'Checkout WCB' );
 	await page.getByLabel( 'Add block' ).click();
