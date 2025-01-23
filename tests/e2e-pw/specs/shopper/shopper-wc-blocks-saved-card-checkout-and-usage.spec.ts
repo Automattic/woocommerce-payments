@@ -69,8 +69,10 @@ describeif( shouldRunWCBlocksTests )(
 			await shopperPage.waitForURL( /\/order-received\//, {
 				waitUntil: 'load',
 			} );
-			expect(
-				shopperPage.getByRole( 'heading', { name: 'Order received' } )
+			await expect(
+				shopperPage.getByRole( 'heading', {
+					name: 'Order received',
+				} )
 			).toBeVisible();
 			await goToMyAccount( shopperPage, 'payment-methods' );
 			await expect(
@@ -99,7 +101,7 @@ describeif( shouldRunWCBlocksTests )(
 			await shopperPage.waitForURL( /\/order-received\//, {
 				waitUntil: 'load',
 			} );
-			expect(
+			await expect(
 				shopperPage.getByRole( 'heading', { name: 'Order received' } )
 			).toBeVisible();
 		} );
