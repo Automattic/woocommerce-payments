@@ -5,7 +5,12 @@ import { Page } from 'playwright/test';
 import { dataHasLoaded } from './merchant';
 
 export const goToOrder = async ( page: Page, orderId: string ) => {
-	await page.goto( `/wp-admin/post.php?post=${ orderId }&action=edit` );
+	await page.goto(
+		`/wp-admin/admin.php?page=wc-orders&action=edit&id=${ orderId }`,
+		{
+			waitUntil: 'load',
+		}
+	);
 };
 
 export const goToPaymentDetails = async (
