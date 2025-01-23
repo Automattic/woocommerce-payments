@@ -168,8 +168,9 @@ export const confirmCardAuthentication = async (
 		name: authorize ? 'Complete' : 'Fail',
 	} );
 
-	// Not ideal, but we need to wait for the loading animation to finish before we can click the button.
-	await page.waitForTimeout( 1000 );
+	await expect(
+		stripeFrame.locator( '.LightboxModalLoadingIndicator' )
+	).not.toBeVisible();
 
 	await button.click();
 };
