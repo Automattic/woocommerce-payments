@@ -18,16 +18,26 @@ const bnplProviders = [ 'Affirm', 'Afterpay' ];
 test.describe( 'BNPL checkout', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
+	let wasMulticurrencyEnabled: boolean;
 
 	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
+		wasMulticurrencyEnabled = await merchant.isMulticurrencyEnabled(
+			merchantPage
+		);
 
 		await merchant.enablePaymentMethods( merchantPage, bnplProviders );
+		if ( wasMulticurrencyEnabled ) {
+			await merchant.deactivateMulticurrency( merchantPage );
+		}
 	} );
 
 	test.afterAll( async () => {
 		await merchant.disablePaymentMethods( merchantPage, bnplProviders );
+		if ( wasMulticurrencyEnabled ) {
+			await merchant.activateMulticurrency( merchantPage );
+		}
 	} );
 
 	for ( const ctpEnabled of cardTestingProtectionStates ) {
