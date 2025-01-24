@@ -106,7 +106,7 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 					role="button"
 					aria-label="Learn more about deposits suspended"
 				>
-					<HelpOutlineIcon />
+					<HelpOutlineIcon size={ 16 } />
 				</div>
 			</HoverTooltip>
 		</span>
