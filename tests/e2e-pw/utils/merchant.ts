@@ -56,9 +56,8 @@ const ensureSupportPhoneIsFilled = async ( page: Page ) => {
 const expectSnackbarWithText = async (
 	page: Page,
 	expectedText: string,
-	timeout?: number
+	timeout = 10000
 ) => {
-	timeout = timeout ?? 10000;
 	await expect(
 		page.locator( '.components-snackbar__content', {
 			hasText: expectedText,
