@@ -238,11 +238,11 @@ const PaymentMethodInformationObject: Record<
 		id: 'grabpay',
 		label: __( 'GrabPay', 'woocommerce-payments' ),
 		description: __(
-			'Allow customers to pay using GrabPay.',
+			'Allow customers to pay using GrabPay.', // TODO: define description.
 			'woocommerce-payments'
 		),
 		icon: GrabPayIcon,
-		currencies: [ 'SGD' /* ...TODO: Add other currencies */ ],
+		currencies: [ 'SGD', 'MYR' ],
 		stripe_key: 'grabpay_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,

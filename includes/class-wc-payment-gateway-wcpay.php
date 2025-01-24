@@ -4004,11 +4004,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		$statuses['grabpay_payments'] = [
-			'status'       => 'active',
-			'requirements' => [],
-		];
-
 		return 0 === count( $statuses ) ? [
 			'card_payments' => [
 				'status'       => 'active',
@@ -4159,10 +4154,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$methods_with_fees = array_keys( $this->account->get_fees() );
 
-		return array_merge(
-			array_values( array_intersect( $available_methods, $methods_with_fees ) ),
-			[ Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] // TODO: add fees in backend.
-		);
+		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
 	}
 
 	/**

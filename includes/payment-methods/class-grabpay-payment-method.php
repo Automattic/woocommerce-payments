@@ -29,10 +29,9 @@ class Grabpay_Payment_Method extends UPE_Payment_Method {
 		$this->is_reusable                  = false;
 		$this->is_bnpl                      = false;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/grabpay.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies                   = [ Currency_Code::SINGAPORE_DOLLAR /** TODO: Add other currencies */ ];
+		$this->currencies                   = [ Currency_Code::SINGAPORE_DOLLAR, Currency_Code::MALAYSIAN_RINGGIT ];
 		$this->accept_only_domestic_payment = false;
-		$this->countries                    = [ Country_Code::SINGAPORE /** TODO: Add other countries */ ];
-		$this->limits_per_currency          = []; // TODO: Add limits per currency.
+		$this->countries                    = [ Country_Code::SINGAPORE, Country_Code::MALAYSIA ];
 	}
 
 	/**
