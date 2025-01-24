@@ -6,6 +6,9 @@ on:
             - develop
             - trunk
     workflow_dispatch:
+    pull_request_review:
+        types:
+            - submitted
     workflow_call:
         inputs:
             wcpay-use-build-artifact:
