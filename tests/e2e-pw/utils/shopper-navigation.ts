@@ -2,10 +2,11 @@
  * External dependencies
  */
 import { Page } from 'playwright/test';
+
 /**
  * Internal dependencies
  */
-import { isUIUnblocked } from './shopper';
+import { isUIUnblocked } from './helpers';
 
 export const goToShop = async ( page: Page, pageNumber?: number ) => {
 	if ( pageNumber ) {

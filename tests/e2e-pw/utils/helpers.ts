@@ -2,7 +2,7 @@
  * External dependencies
  */
 import path from 'path';
-import { test, Page, Browser, BrowserContext } from '@playwright/test';
+import { test, expect, Page, Browser, BrowserContext } from '@playwright/test';
 
 export const merchantStorageFile = path.resolve(
 	__dirname,
@@ -99,3 +99,7 @@ export const getAnonymousShopper = async (
  */
 export const describeif = ( condition: boolean ) =>
 	condition ? test.describe : test.describe.skip;
+
+export const isUIUnblocked = async ( page: Page ) => {
+	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
+};
