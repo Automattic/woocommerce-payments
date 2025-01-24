@@ -61,11 +61,11 @@ export const useExpressCheckout = ( {
 
 			const shippingAddressRequired = shippingData?.needsShipping;
 			const shippingRatesMap = shippingData?.shippingRates[ 0 ]?.shipping_rates?.map(
-				( r ) => {
+				( rate ) => {
 					return {
-						id: r.rate_id,
-						amount: parseInt( r.price, 10 ),
-						displayName: r.name,
+						id: rate.rate_id,
+						amount: parseInt( rate.price, 10 ),
+						displayName: rate.name,
 					};
 				}
 			);
