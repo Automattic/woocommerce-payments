@@ -166,7 +166,6 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 				[
 					[ Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders', false ],
 					[ Database_Cache::CONNECT_INCENTIVE_KEY, $this->mock_incentive_data ],
-					[ Database_Cache::ACCOUNT_KEY, [] ],
 				]
 			);
 
