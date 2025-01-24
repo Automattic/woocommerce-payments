@@ -160,8 +160,15 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_cached_connect_incentive_doesnt_refresh_cache_on_same_content_hash() {
 		$this->mock_database_cache
+			->expects( $this->atLeastOnce() )
 			->method( 'get' )
-			->willReturn( $this->mock_incentive_data );
+			->willReturnMap(
+				[
+					[ Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders', false ],
+					[ Database_Cache::CONNECT_INCENTIVE_KEY, $this->mock_incentive_data ],
+					[ Database_Cache::ACCOUNT_KEY, [] ],
+				]
+			);
 
 		$this->mock_database_cache
 			->expects( $this->never() )
@@ -175,8 +182,14 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_cached_connect_incentive_refreshes_cache_on_wrong_content_hash() {
 		$this->mock_database_cache
+			->expects( $this->atLeastOnce() )
 			->method( 'get' )
-			->willReturn( array_merge( $this->mock_incentive_data, [ 'context_hash' => 'wrong_hash' ] ) );
+			->willReturnMap(
+				[
+					[ Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders', false ],
+					[ Database_Cache::CONNECT_INCENTIVE_KEY, array_merge( $this->mock_incentive_data, [ 'context_hash' => 'wrong_hash' ] ) ],
+				]
+			);
 
 		$this->mock_database_cache
 			->expects( $this->atLeastOnce() )
@@ -190,9 +203,16 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_cached_connect_incentive_refreshes_cache_on_missing_content_hash() {
-		$this->mock_database_cache
-			->method( 'get' )
-			->willReturn( array_merge( $this->mock_incentive_data, [ 'context_hash' => null ] ) );
+			$this->mock_database_cache
+				->expects( $this->atLeastOnce() )
+				->method( 'get' )
+				->willReturnMap(
+					[
+						[ Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders', false ],
+
+						[ Database_Cache::CONNECT_INCENTIVE_KEY, array_merge( $this->mock_incentive_data, [ 'context_hash' => null ] ) ],
+					]
+				);
 
 		$this->mock_database_cache
 			->expects( $this->atLeastOnce() )
