@@ -60,30 +60,36 @@ export const useExpressCheckout = ( {
 			}
 
 			const shippingAddressRequired = shippingData?.needsShipping;
-			const shippingRatesMap = shippingData?.shippingRates[ 0 ]?.shipping_rates?.map(
-				( rate ) => {
-					return {
-						id: rate.rate_id,
-						amount: parseInt( rate.price, 10 ),
-						displayName: rate.name,
-					};
+
+			let shippingRates;
+			if ( shippingAddressRequired ) {
+				const hasValidRates =
+					shippingData?.shippingRates[ 0 ]?.shipping_rates?.length >
+					0;
+
+				if ( hasValidRates ) {
+					shippingRates = shippingData.shippingRates[ 0 ].shipping_rates.map(
+						( rate ) => {
+							return {
+								id: rate.rate_id,
+								amount: parseInt( rate.price, 10 ),
+								displayName: rate.name,
+							};
+						}
+					);
+				} else {
+					shippingRates = [
+						{
+							id: 'pending',
+							displayName: __(
+								'Pending',
+								'woocommerce-payments'
+							),
+							amount: 0,
+						},
+					];
 				}
-			);
-			const shippingRates =
-				shippingAddressRequired &&
-				( ! shippingRatesMap || shippingRatesMap.length === 0 )
-					? [
-							// fallback for initialization (and initialization _only_), before an address is provided by the ECE.
-							{
-								id: 'pending',
-								displayName: __(
-									'Pending',
-									'woocommerce-payments'
-								),
-								amount: 0,
-							},
-					  ]
-					: undefined;
+			}
 
 			const options = {
 				lineItems: normalizeLineItems( billing?.cartTotalItems ),
