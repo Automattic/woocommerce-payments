@@ -53,13 +53,30 @@ const ensureSupportPhoneIsFilled = async ( page: Page ) => {
 	}
 };
 
+const expectSnackbarWithText = async (
+	page: Page,
+	expectedText: string,
+	timeout = 10000
+) => {
+	await expect(
+		page.locator( '.components-snackbar__content', {
+			hasText: expectedText,
+		} )
+	).toBeVisible( {
+		timeout: timeout,
+	} );
+};
+
 export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await ensureSupportPhoneIsFilled( page );
 
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
-	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-		timeout: 10000,
-	} );
+	await expectSnackbarWithText( page, 'Settings saved.' );
+};
+
+export const saveMultiCurrencySettings = async ( page: Page ) => {
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	await expectSnackbarWithText( page, 'Currency settings updated.' );
 };
 
 export const isMulticurrencyEnabled = async ( page: Page ) => {
@@ -122,9 +139,7 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 			page.getByRole( 'button', { name: 'Update' } )
 		).toBeEnabled();
 		await page.getByRole( 'button', { name: 'Update' } ).click();
-		await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-			timeout: 10000,
-		} );
+		await expectSnackbarWithText( page, 'Widgets saved.' );
 	}
 };
 
@@ -171,7 +186,9 @@ export const disableAllEnabledCurrencies = async ( page: Page ) => {
 			.first()
 			.click();
 
-		const snackbar = await page.getByLabel( 'Dismiss this notice' );
+		const snackbar = await page.locator( '.components-snackbar__content', {
+			hasText: 'Enabled currencies updated.',
+		} );
 
 		await expect( snackbar ).toBeVisible( { timeout: 10000 } );
 		await snackbar.click();
@@ -197,9 +214,7 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	}
 
 	await page.getByRole( 'button', { name: 'Update selected' } ).click();
-	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-		timeout: 10000,
-	} );
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
 	await expect(
 		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
 	).toBeVisible();
@@ -219,9 +234,7 @@ export const removeCurrency = async ( page: Page, currencyCode: string ) => {
 			`li.enabled-currency.${ currencyCode.toLowerCase() } .enabled-currency__action.delete`
 		)
 		.click();
-	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-		timeout: 10000,
-	} );
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
 	await expect(
 		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
 	).toBeHidden();
@@ -247,7 +260,7 @@ export const setCurrencyRate = async (
 		.locator( '#single-currency-settings__manual_rate_radio' )
 		.click();
 	await page.getByTestId( 'manual_rate_input' ).fill( rate );
-	await saveWooPaymentsSettings( page );
+	await saveMultiCurrencySettings( page );
 };
 
 export const setCurrencyPriceRounding = async (
@@ -257,7 +270,7 @@ export const setCurrencyPriceRounding = async (
 ) => {
 	await editCurrency( page, currencyCode );
 	await page.getByTestId( 'price_rounding' ).selectOption( rounding );
-	await saveWooPaymentsSettings( page );
+	await saveMultiCurrencySettings( page );
 };
 
 export const setCurrencyCharmPricing = async (
@@ -267,7 +280,7 @@ export const setCurrencyCharmPricing = async (
 ) => {
 	await editCurrency( page, currencyCode );
 	await page.getByTestId( 'price_charm' ).selectOption( charmPricing );
-	await saveWooPaymentsSettings( page );
+	await saveMultiCurrencySettings( page );
 };
 
 export const enablePaymentMethods = async (
