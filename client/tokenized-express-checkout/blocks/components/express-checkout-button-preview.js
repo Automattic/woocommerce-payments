@@ -8,22 +8,15 @@ import { useEffect, useRef } from 'react';
  */
 import { getExpressCheckoutButtonAppearance } from '../../utils';
 
-const ExpressCheckoutButtonPreview = ( {
-	expressPaymentMethod,
-	options,
-	buttonAttributes,
-} ) => {
+const GooglePayButtonPreview = ( { options, buttonAttributes, theme } ) => {
 	const googlePlayContainerRef = useRef( null );
 	const hasStartedLoadingGooglePlayButton = useRef( null );
-
-	const theme = options.buttonTheme[ expressPaymentMethod ];
 	const appearance = getExpressCheckoutButtonAppearance( buttonAttributes );
 	const borderRadius = appearance.variables.borderRadius;
 
 	useEffect( () => {
 		if (
 			googlePlayContainerRef.current &&
-			expressPaymentMethod === 'googlePay' &&
 			! hasStartedLoadingGooglePlayButton.current
 		) {
 			hasStartedLoadingGooglePlayButton.current = true;
@@ -59,12 +52,7 @@ const ExpressCheckoutButtonPreview = ( {
 				googlePlayContainerRef.current.appendChild( button );
 			} )();
 		}
-	}, [
-		theme,
-		expressPaymentMethod,
-		borderRadius,
-		options.buttonType.googlePay,
-	] );
+	}, [ theme, borderRadius, options.buttonType.googlePay ] );
 
 	useEffect( () => {
 		googlePlayContainerRef.current
@@ -72,42 +60,72 @@ const ExpressCheckoutButtonPreview = ( {
 			?.style?.setProperty( 'border-radius', borderRadius );
 	}, [ borderRadius ] );
 
+	return (
+		<div
+			ref={ googlePlayContainerRef }
+			id="express-checkout-button-preview-googlePay"
+			style={ {
+				height: `${ options.buttonHeight }px`,
+				width: '100%',
+			} }
+		/>
+	);
+};
+
+const ApplePayButtonPreview = ( { options, buttonAttributes, theme } ) => {
+	const appearance = getExpressCheckoutButtonAppearance( buttonAttributes );
+	const borderRadius = appearance.variables.borderRadius;
+
+	const buttonStyle = {
+		height: `${ options.buttonHeight }px`,
+		borderRadius,
+		ApplePayButtonType: options.buttonType.applePay,
+		WebkitAppearance: '-apple-pay-button',
+		width: '100%',
+	};
+
+	if ( [ 'black', 'white', 'white-outline' ].includes( theme ) ) {
+		buttonStyle.ApplePayButtonStyle = theme;
+	} else {
+		buttonStyle.ApplePayButtonStyle = 'white';
+	}
+
+	return (
+		<div>
+			<button
+				type="button"
+				id="express-checkout-button-preview-applePay"
+				className="express-checkout-button-preview"
+				style={ buttonStyle }
+			/>
+		</div>
+	);
+};
+
+const ExpressCheckoutButtonPreview = ( {
+	expressPaymentMethod,
+	options,
+	buttonAttributes,
+} ) => {
+	const theme = options.buttonTheme[ expressPaymentMethod ];
+
 	if ( expressPaymentMethod === 'googlePay' ) {
 		return (
-			<div
-				ref={ googlePlayContainerRef }
-				style={ {
-					height: `${ options.buttonHeight }px`,
-					width: '100%',
-				} }
+			<GooglePayButtonPreview
+				options={ options }
+				buttonAttributes={ buttonAttributes }
+				theme={ theme }
 			/>
 		);
 	}
 
 	if ( expressPaymentMethod === 'applePay' ) {
-		const buttonStyle = {
-			height: `${ options.buttonHeight }px`,
-			borderRadius,
-			ApplePayButtonType: options.buttonType.applePay,
-			WebkitAppearance: '-apple-pay-button',
-			width: '100%',
-		};
-
-		if ( [ 'black', 'white', 'white-outline' ].includes( theme ) ) {
-			buttonStyle.ApplePayButtonStyle = theme;
-		} else {
-			buttonStyle.ApplePayButtonStyle = 'white';
-		}
-
 		return (
-			<div>
-				<button
-					type="button"
-					id={ `express-checkout-button-preview-${ expressPaymentMethod }` }
-					className="express-checkout-button-preview"
-					style={ buttonStyle }
-				/>
-			</div>
+			<ApplePayButtonPreview
+				options={ options }
+				buttonAttributes={ buttonAttributes }
+				theme={ theme }
+			/>
 		);
 	}
 
