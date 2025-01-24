@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Convert the shopper-myaccount-payment-methods-add-fail spec from Puppeteer to Playwright.
