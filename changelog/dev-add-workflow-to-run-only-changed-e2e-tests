@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add workflow that only runs changed E2E tests, and succeeds if nothing changed
