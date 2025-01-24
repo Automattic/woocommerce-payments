@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Convert shopper-checkout-purchase spec from Puppeteer to Playwright
