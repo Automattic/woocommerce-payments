@@ -347,6 +347,17 @@ export const placeOrderWithCurrency = async (
 	return placeOrderWithOptions( page );
 };
 
+export const setSavePaymentMethod = async ( page: Page, save = true ) => {
+	const checkbox = page.getByLabel(
+		'Save payment information to my account for future purchases.'
+	);
+	if ( save ) {
+		await checkbox.check();
+	} else {
+		await checkbox.uncheck();
+	}
+};
+
 export const emptyCart = async ( page: Page ) => {
 	await navigation.goToCart( page );
 
