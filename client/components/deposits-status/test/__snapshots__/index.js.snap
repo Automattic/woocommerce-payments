@@ -33,9 +33,9 @@ exports[`DepositsStatus renders blocked status 1`] = `
         >
           <svg
             class="gridicon gridicons-help-outline"
-            height="24"
+            height="16"
             viewBox="0 0 24 24"
-            width="24"
+            width="16"
             xmlns="http://www.w3.org/2000/svg"
           >
             <g>
@@ -84,9 +84,9 @@ exports[`DepositsStatus renders blocked status 2`] = `
         >
           <svg
             class="gridicon gridicons-help-outline"
-            height="24"
+            height="16"
             viewBox="0 0 24 24"
-            width="24"
+            width="16"
             xmlns="http://www.w3.org/2000/svg"
           >
             <g>
@@ -227,9 +227,9 @@ exports[`DepositsStatus renders pending verification status 1`] = `
         >
           <svg
             class="gridicon gridicons-help-outline"
-            height="24"
+            height="16"
             viewBox="0 0 24 24"
-            width="24"
+            width="16"
             xmlns="http://www.w3.org/2000/svg"
           >
             <g>
