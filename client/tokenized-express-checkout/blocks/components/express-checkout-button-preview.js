@@ -93,10 +93,8 @@ const ExpressCheckoutButtonPreview = ( {
 			width: '100%',
 		};
 
-		if ( theme === 'black' ) {
-			buttonStyle.ApplePayButtonStyle = 'black';
-		} else if ( theme === 'outline' ) {
-			buttonStyle.ApplePayButtonStyle = 'white-outline';
+		if ( [ 'black', 'white', 'white-outline' ].includes( theme ) ) {
+			buttonStyle.ApplePayButtonStyle = theme;
 		} else {
 			buttonStyle.ApplePayButtonStyle = 'white';
 		}
