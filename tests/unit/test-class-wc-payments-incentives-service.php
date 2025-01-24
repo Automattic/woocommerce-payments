@@ -272,7 +272,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get' )
 			->with( Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders' )
-			->willReturn( [ 'data' => true ] );
+			->willReturn( true );
 
 		$this->mock_database_cache
 			->expects( $this->never() )
