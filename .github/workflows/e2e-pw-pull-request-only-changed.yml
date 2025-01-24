@@ -55,6 +55,7 @@ jobs:
               uses: actions/checkout@v4
               with:
                   ref: ${{ inputs.repo-branch || github.ref }}
+                  fetch-depth: 0
 
             - name: 'Download WooCommerce Payments build file'
               if: ${{ inputs.wcpay-use-build-artifact }}
