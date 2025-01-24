@@ -43,7 +43,7 @@ concurrency:
 jobs:
     wcpay-e2e-tests:
         runs-on: ubuntu-latest
-
+        if: github.event.pull_request.draft == false
         name: WC - latest
 
         env:

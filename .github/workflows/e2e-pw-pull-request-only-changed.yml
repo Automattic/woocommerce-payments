@@ -41,9 +41,9 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    wcpay-e2e-tests:
+    wcpay-e2e-tests-only-changed:
         runs-on: ubuntu-latest
-
+        if: github.event.pull_request.draft == true
         name: WC - latest
 
         env:
