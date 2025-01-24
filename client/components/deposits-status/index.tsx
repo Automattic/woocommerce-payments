@@ -80,7 +80,7 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 						/* translators: 1: WooPayments */
 						__(
 							// eslint-disable-next-line max-len
-							'After the information review your account was temporarily suspended. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+							'After the information review, your account was temporarily suspended. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
 						),
 						'WooPayments'
