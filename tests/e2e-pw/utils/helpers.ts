@@ -91,6 +91,7 @@ export const getAnonymousShopper = async (
 } > => {
 	const shopperContext = await browser.newContext();
 	const shopperPage = await shopperContext.newPage();
+	await shopperPage.waitForTimeout( 200 );
 	return { shopperPage, shopperContext };
 };
 
