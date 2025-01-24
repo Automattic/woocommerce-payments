@@ -304,6 +304,8 @@ class WC_Payments_Incentives_Service {
 	 * @return array The store context.
 	 */
 	private function get_store_context(): array {
+		$has_orders = $this->get_cached_has_orders();
+
 		return [
 			// Store ISO-2 country code, e.g. `US`.
 			'country'      => WC()->countries->get_base_country(),
@@ -312,20 +314,45 @@ class WC_Payments_Incentives_Service {
 			// WooCommerce active for duration in seconds.
 			'active_for'   => time() - get_option( 'woocommerce_admin_install_timestamp', time() ),
 			// Whether the store has paid orders in the last 90 days.
-			'has_orders'   => ! empty(
-				wc_get_orders(
-					[
-						'status'       => [ 'wc-completed', 'wc-processing' ],
-						'date_created' => '>=' . strtotime( '-90 days' ),
-						'return'       => 'ids',
-						'limit'        => 1,
-					]
-				)
-			),
+			'has_orders'   => $has_orders,
 			// Whether the store has at least one payment gateway enabled.
 			'has_payments' => ! empty( WC()->payment_gateways()->get_available_payment_gateways() ),
 			'has_wcpay'    => $this->has_wcpay(),
 		];
+	}
+
+	/**
+	 * Get cached value of whether the store has orders.
+	 * If orders exist, cache for a week since it won't change.
+	 * If no orders, cache for an hour to check again soon.
+	 *
+	 * @return bool Whether the store has orders.
+	 */
+	private function get_cached_has_orders(): bool {
+		$cache_key    = Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders';
+		$cached_value = $this->database_cache->get( $cache_key );
+
+		if ( null !== $cached_value ) {
+			return $cached_value;
+		}
+
+		$has_orders = ! empty(
+			wc_get_orders(
+				[
+					'status'       => [ 'wc-completed', 'wc-processing' ],
+					'date_created' => '>=' . strtotime( '-90 days' ),
+					'return'       => 'ids',
+					'limit'        => 1,
+				]
+			)
+		);
+
+		// If has orders, cache for a week since it won't change.
+		// If no orders, cache for an hour to check again soon.
+		$cache_duration = $has_orders ? WEEK_IN_SECONDS : HOUR_IN_SECONDS;
+		$this->database_cache->add( $cache_key, $has_orders, $cache_duration );
+
+		return $has_orders;
 	}
 
 	/**
