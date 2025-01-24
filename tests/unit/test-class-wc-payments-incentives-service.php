@@ -160,13 +160,14 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_cached_connect_incentive_doesnt_refresh_cache_on_same_content_hash() {
 		$this->mock_database_cache
-			->expects( $this->atLeastOnce() )
 			->method( 'get' )
-			->willReturnMap(
-				[
-					[ Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders', false ],
-					[ Database_Cache::CONNECT_INCENTIVE_KEY, $this->mock_incentive_data ],
-				]
+			->willReturnCallback(
+				function ( $key ) {
+					if ( Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders' === $key ) {
+						return false;
+					}
+					return $this->mock_incentive_data;
+				}
 			);
 
 		$this->mock_database_cache
