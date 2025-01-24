@@ -11,6 +11,7 @@ interface ExportResponse {
 }
 
 interface ExportURLResponse {
+	status: string;
 	download_url?: string;
 }
 
@@ -74,7 +75,13 @@ export const useReportExport = () => {
 				}
 			);
 
-			if ( exportedFileURLResponse.download_url ) {
+			if (
+				'success' === exportedFileURLResponse.status &&
+				exportedFileURLResponse.download_url &&
+				exportedFileURLResponse.download_url.includes(
+					'exports.wordpress.com'
+				)
+			) {
 				// The file is available, so we can download it.
 				// Create a link element to trigger the download.
 				const link = document.createElement( 'a' );
