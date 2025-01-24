@@ -328,7 +328,7 @@ class WC_Payments_Incentives_Service {
 	 *
 	 * @return bool Whether the store has orders.
 	 */
-	private function get_cached_has_orders(): bool {
+	public function get_cached_has_orders(): bool {
 		$cache_key    = Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders';
 		$cached_value = $this->database_cache->get( $cache_key );
 
@@ -347,10 +347,7 @@ class WC_Payments_Incentives_Service {
 			)
 		);
 
-		// If has orders, cache for a week since it won't change.
-		// If no orders, cache for an hour to check again soon.
-		$cache_duration = $has_orders ? WEEK_IN_SECONDS : HOUR_IN_SECONDS;
-		$this->database_cache->add( $cache_key, $has_orders, $cache_duration );
+		$this->database_cache->add( $cache_key, $has_orders );
 
 		return $has_orders;
 	}
