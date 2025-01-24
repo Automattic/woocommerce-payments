@@ -20,14 +20,14 @@ exports[`DepositsStatus renders blocked status 1`] = `
     </svg>
     Temporarily suspended
     <button
-      class="wcpay-tooltip__content-wrapper"
+      class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
       type="button"
     >
       <div
         class="wcpay-tooltip__content-wrapper"
       >
         <div
-          aria-label="Learn more about deposits suspended"
+          aria-label="Learn more about payouts suspended"
           role="button"
           tabindex="0"
         >
@@ -71,14 +71,14 @@ exports[`DepositsStatus renders blocked status 2`] = `
     </svg>
     Temporarily suspended
     <button
-      class="wcpay-tooltip__content-wrapper"
+      class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
       type="button"
     >
       <div
         class="wcpay-tooltip__content-wrapper"
       >
         <div
-          aria-label="Learn more about deposits suspended"
+          aria-label="Learn more about payouts suspended"
           role="button"
           tabindex="0"
         >
@@ -214,14 +214,14 @@ exports[`DepositsStatus renders pending verification status 1`] = `
     </svg>
     Temporarily suspended
     <button
-      class="wcpay-tooltip__content-wrapper"
+      class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
       type="button"
     >
       <div
         class="wcpay-tooltip__content-wrapper"
       >
         <div
-          aria-label="Learn more about deposits suspended"
+          aria-label="Learn more about payouts suspended"
           role="button"
           tabindex="0"
         >
