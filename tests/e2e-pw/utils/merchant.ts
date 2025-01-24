@@ -376,10 +376,11 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 		await page.waitForTimeout( 1500 );
 	}
 
-	await expect( page.getByLabel( 'Add title' ) ).toBeVisible();
+	// Handle whether the editor uses iframe or not.
+	const editor = page.frame( 'editor-canvas' ) || page;
+	await editor.getByLabel( 'Add title' ).fill( 'Checkout WCB' );
+	await editor.getByLabel( 'Add block' ).click();
 
-	await page.getByLabel( 'Add title' ).fill( 'Checkout WCB' );
-	await page.getByLabel( 'Add block' ).click();
 	await page.getByPlaceholder( 'Search' ).fill( 'Checkout' );
 	await page.getByRole( 'option', { name: 'Checkout', exact: true } ).click();
 
