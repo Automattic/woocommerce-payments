@@ -267,6 +267,66 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, $result );
 	}
 
+	public function test_get_cached_has_orders_returns_cached_value() {
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get' )
+			->with( Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders' )
+			->willReturn( [ 'data' => true ] );
+
+		$this->mock_database_cache
+			->expects( $this->never() )
+			->method( 'add' );
+
+		$result = $this->incentives_service->get_cached_has_orders();
+		$this->assertTrue( $result );
+	}
+
+	public function test_get_cached_has_orders_caches_for_week_when_has_orders() {
+		$this->mock_database_cache
+			->method( 'get' )
+			->willReturn( null );
+
+		// Mock wc_get_orders to return a non-empty array.
+		$mock_orders = [ (object) [ 'id' => 1 ] ];
+		$this->mock_wc_get_orders( $mock_orders );
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'add' )
+			->with(
+				Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders',
+				true
+			);
+
+		$result = $this->incentives_service->get_cached_has_orders();
+		$this->assertTrue( $result );
+
+		remove_all_filters( 'woocommerce_order_query_results' );
+	}
+
+	public function test_get_cached_has_orders_caches_for_hour_when_no_orders() {
+		$this->mock_database_cache
+			->method( 'get' )
+			->willReturn( null );
+
+		// Mock wc_get_orders to return an empty array.
+		$this->mock_wc_get_orders( [] );
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'add' )
+			->with(
+				Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders',
+				false
+			);
+
+		$result = $this->incentives_service->get_cached_has_orders();
+		$this->assertFalse( $result );
+
+		remove_all_filters( 'woocommerce_order_query_results' );
+	}
+
 	private function mock_database_cache_with( $incentive = null ) {
 		$this->mock_database_cache
 			->method( 'get_or_add' )
@@ -278,6 +338,20 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			'pre_http_request',
 			function () use ( $response ) {
 				return $response;
+			}
+		);
+	}
+
+	/**
+	 * Helper method to mock wc_get_orders function
+	 *
+	 * @param array $orders The orders to return from the mock.
+	 */
+	private function mock_wc_get_orders( $orders ) {
+		add_filter(
+			'woocommerce_order_query_results',
+			function () use ( $orders ) {
+				return $orders;
 			}
 		);
 	}
