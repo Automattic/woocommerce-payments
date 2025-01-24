@@ -14,7 +14,7 @@ import React from 'react';
  * Internal dependencies
  */
 import 'components/account-status/shared.scss';
-import { HoverTooltip } from 'wcpay/components/tooltip';
+import { ClickTooltip } from 'wcpay/components/tooltip';
 import type { AccountStatus } from 'wcpay/types/account/account-status';
 
 type DepositsStatus = 'enabled' | 'disabled' | 'blocked';
@@ -72,9 +72,13 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 		<span className={ 'account-status__info__yellow' }>
 			<GridiconNotice size={ iconSize } />
 			{ description }
-			<HoverTooltip
-				className="wcpay-tooltip--click__tooltip"
+			<ClickTooltip
 				maxWidth={ '300px' }
+				buttonIcon={ <HelpOutlineIcon /> }
+				buttonLabel={ __(
+					'Learn more about payouts suspended',
+					'woocommerce-payments'
+				) }
 				content={ interpolateComponents( {
 					mixedString: sprintf(
 						/* translators: 1: WooPayments */
@@ -100,15 +104,7 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 						),
 					},
 				} ) }
-			>
-				<div
-					tabIndex={ 0 }
-					role="button"
-					aria-label="Learn more about deposits suspended"
-				>
-					<HelpOutlineIcon size={ 16 } />
-				</div>
-			</HoverTooltip>
+			/>
 		</span>
 	);
 };
