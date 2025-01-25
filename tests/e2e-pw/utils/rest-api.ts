@@ -8,8 +8,14 @@ import { HTTPClientFactory } from '@woocommerce/api';
  */
 import { config } from '../config/default';
 
-const userEndpoint = '/wp/v2/users';
+const userEndpoint = '/wc/v3/customers';
 const ordersEndpoint = '/wc/v3/orders';
+
+export type CustomerType = typeof config.users.customer;
+export type AddressType = Omit<
+	typeof config.addresses.customer.billing,
+	'state'
+> & { state?: string };
 
 class RestAPI {
 	private baseUrl: string;
@@ -46,23 +52,69 @@ class RestAPI {
 		const query = {
 			search: emailAddress,
 			context: 'edit',
+			role: 'all',
 		};
 		const customers = await client.get( userEndpoint, query );
-
 		if ( customers.data && customers.data.length ) {
 			for ( let c = 0; c < customers.data.length; c++ ) {
-				const deleteUser = {
-					id: customers.data[ c ].id,
+				const deleteUserPayload = {
 					force: true,
-					reassign: 1,
+					reassign: 0,
 				};
 
 				await client.delete(
-					`${ userEndpoint }/${ deleteUser.id }`,
-					deleteUser
+					`${ userEndpoint }/${ customers.data[ c ].id }`,
+					deleteUserPayload
 				);
 			}
 		}
+	}
+
+	async createCustomer(
+		customerData: CustomerType,
+		billingAddress: AddressType,
+		shippingAddress: AddressType
+	): Promise< number > {
+		const client = this.getAdminClient();
+		const customerCreationData = {
+			...customerData,
+			username: customerData.username,
+			firstname: billingAddress.firstname,
+			lastname: billingAddress.lastname,
+			password_confirm: customerData.password,
+			roles: [ 'customer' ],
+			billing: {
+				...billingAddress,
+				first_name: billingAddress.firstname,
+				last_name: billingAddress.lastname,
+				address_1: billingAddress.addressfirstline,
+				address_2: billingAddress.addresssecondline,
+				country: billingAddress.country_code,
+			},
+			shipping: {
+				...shippingAddress,
+				first_name: shippingAddress.firstname,
+				last_name: shippingAddress.lastname,
+				address_1: shippingAddress.addressfirstline,
+				address_2: shippingAddress.addresssecondline,
+				country: billingAddress.country_code,
+			},
+		};
+		const customer = await client.post(
+			userEndpoint,
+			customerCreationData
+		);
+		return customer.data.id;
+	}
+
+	async recreateCustomer(
+		customerData: CustomerType,
+		billing: AddressType,
+		shipping: AddressType
+	): Promise< number > {
+		await this.deleteCustomerByEmailAddress( customerData.email );
+		await new Promise( ( resolve ) => setTimeout( resolve, 1000 ) );
+		return this.createCustomer( customerData, billing, shipping );
 	}
 
 	async createOrder(): Promise< string > {

@@ -8,18 +8,16 @@ import test, { Page, expect } from '@playwright/test';
  */
 import { config } from '../../config/default';
 import { goToMyAccount, goToShop } from '../../utils/shopper-navigation';
-import { getAnonymousShopper } from '../../utils/helpers';
+import { getShopper } from '../../utils/helpers';
 import {
 	addSavedCard,
 	confirmCardAuthentication,
 	deleteSavedCard,
 	placeOrder,
-	placeOrderWithOptions,
 	selectSavedCardOnCheckout,
 	setDefaultPaymentMethod,
 	setupProductCheckout,
 } from '../../utils/shopper';
-import RestAPI from '../../utils/rest-api';
 
 type TestVariablesType = {
 	[ key: string ]: {
@@ -64,22 +62,10 @@ test.describe( 'Shopper can save and delete cards', () => {
 	// Use cards different than other tests to prevent conflicts.
 	const card2 = config.cards.basic3;
 	let shopperPage: Page = null;
-	const customerBillingConfig =
-		config.addresses[ 'subscriptions-customer' ].billing;
 
 	test.beforeAll( async ( { browser }, { project } ) => {
-		// Delete the user, if present, and create a new one with a new order.
-		// This is required to avoid running this test on a customer that already has a saved card.
-		const restApi = new RestAPI( project.use.baseURL );
-		await restApi.deleteCustomerByEmailAddress(
-			customerBillingConfig.email
-		);
-
-		shopperPage = ( await getAnonymousShopper( browser ) ).shopperPage;
-		await placeOrderWithOptions( shopperPage, {
-			billingAddress: customerBillingConfig,
-			createAccount: true,
-		} );
+		shopperPage = ( await getShopper( browser, true, project.use.baseURL ) )
+			.shopperPage;
 	} );
 
 	async function waitTwentySecondsSinceLastCardAdded( page: Page ) {
@@ -217,7 +203,10 @@ test.describe( 'Shopper can save and delete cards', () => {
 				} );
 
 				test.afterAll( async () => {
-					await waitTwentySecondsSinceLastCardAdded( shopperPage );
+					const cardKeys = Object.keys( cards );
+					if ( cardName !== cardKeys[ cardKeys.length - 1 ] ) {
+						waitTwentySecondsSinceLastCardAdded( shopperPage );
+					}
 				} );
 			} );
 		}
