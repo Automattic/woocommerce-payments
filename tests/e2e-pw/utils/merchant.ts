@@ -3,6 +3,7 @@
  */
 import { Page, expect } from 'playwright/test';
 import * as navigation from './merchant-navigation';
+import RestAPI from './rest-api';
 
 /**
  * Checks if the data has loaded on the page.
@@ -110,17 +111,26 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 export const addMulticurrencyWidget = async ( page: Page ) => {
 	await navigation.goToWidgets( page );
 	// Wait for all widgets to load. This is important to prevent flakiness.
-	await page.locator( '.components-spinner' ).first().waitFor();
-	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+	// Note that if the widget area is empty, the spinner will not be shown.
+	// Wrapping the check in a try-catch block to fail it soft.
+	try {
+		await page
+			.locator( '.components-spinner' )
+			.first()
+			.waitFor( { timeout: 2000 } );
+		await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+	} catch {}
 
 	if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
 		await page.getByRole( 'button', { name: 'Close' } ).click();
 	}
 
-	const isWidgetAdded = await page
-		.locator( 'iframe[srcdoc*=currency]' )
-		.first()
-		.isVisible();
+	const isWidgetAdded =
+		( await page
+			.getByRole( 'heading', {
+				name: 'Currency Switcher Widget',
+			} )
+			.count() ) > 0;
 
 	if ( ! isWidgetAdded ) {
 		await page.getByRole( 'button', { name: 'Add block' } ).click();
@@ -141,6 +151,11 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 		await page.getByRole( 'button', { name: 'Update' } ).click();
 		await expectSnackbarWithText( page, 'Widgets saved.' );
 	}
+};
+
+export const removeMultiCurrencyWidgets = async ( baseURL: string ) => {
+	const restApi = new RestAPI( baseURL );
+	await restApi.deleteWidgets( 'sidebar-1', 'currency_switcher_widget' );
 };
 
 export const getActiveThemeSlug = async ( page: Page ) => {

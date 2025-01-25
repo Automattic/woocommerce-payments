@@ -10,6 +10,7 @@ import { config } from '../config/default';
 
 const userEndpoint = '/wc/v3/customers';
 const ordersEndpoint = '/wc/v3/orders';
+const widgetEndpoint = '/wp/v2/widgets';
 
 export type CustomerType = typeof config.users.customer;
 export type AddressType = Omit<
@@ -66,6 +67,35 @@ class RestAPI {
 					`${ userEndpoint }/${ customers.data[ c ].id }`,
 					deleteUserPayload
 				);
+			}
+		}
+	}
+
+	async deleteWidgets(
+		widgetArea: string,
+		widgetName: string
+	): Promise< void > {
+		const client = this.getAdminClient();
+
+		const query = {
+			sidebar: widgetArea,
+			context: 'edit',
+		};
+		const widgets = await client.get( widgetEndpoint, query );
+
+		if ( widgets.data && widgets.data.length ) {
+			for ( let c = 0; c < widgets.data.length; c++ ) {
+				if ( widgets.data[ c ].id_base === widgetName ) {
+					const deleteWidgetPayload = {
+						force: true,
+						reassign: 0,
+					};
+
+					await client.delete(
+						`${ widgetEndpoint }/${ widgets.data[ c ].id }`,
+						deleteWidgetPayload
+					);
+				}
 			}
 		}
 	}
