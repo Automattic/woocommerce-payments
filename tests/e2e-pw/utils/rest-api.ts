@@ -88,7 +88,6 @@ class RestAPI {
 				if ( widgets.data[ c ].id_base === widgetName ) {
 					const deleteWidgetPayload = {
 						force: true,
-						reassign: 0,
 					};
 
 					await client.delete(
