@@ -945,12 +945,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		$woopay_enabled_locations = $request->get_param( 'woopay_enabled_locations' );
+		$wcpay_form_fields = $this->wcpay_gateway->get_form_fields();
 
-		$all_locations = $this->wcpay_gateway->form_fields['payment_request_button_locations']['options'];
-		WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $woopay_enabled_locations );
+		if ( isset( $wcpay_form_fields['payment_request_button_locations']['options'] ) ) {
+			$woopay_enabled_locations = $request->get_param( 'woopay_enabled_locations' );
+			$all_locations            = $wcpay_form_fields['payment_request_button_locations']['options'];
 
-		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $woopay_enabled_locations );
+			$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $woopay_enabled_locations );
+			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $woopay_enabled_locations );
+		}
 	}
 
 	/**
