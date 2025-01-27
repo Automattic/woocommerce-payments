@@ -333,7 +333,7 @@ class WC_Payments_Incentives_Service {
 		$cached_value = $this->database_cache->get( $cache_key );
 
 		if ( null !== $cached_value ) {
-			return $cached_value;
+			return $cached_value['data'];
 		}
 
 		$has_orders = ! empty(
@@ -347,7 +347,14 @@ class WC_Payments_Incentives_Service {
 			)
 		);
 
-		$this->database_cache->add( $cache_key, $has_orders );
+		$cache_contents = [
+			'data'    => $has_orders,
+			'fetched' => time(),
+			'errored' => false,
+			'ttl'     => $has_orders ? WEEK_IN_SECONDS : HOUR_IN_SECONDS,
+		];
+
+		$this->database_cache->add( $cache_key, $cache_contents );
 
 		return $has_orders;
 	}
