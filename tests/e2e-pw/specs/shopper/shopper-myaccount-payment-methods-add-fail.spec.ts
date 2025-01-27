@@ -9,7 +9,7 @@ import test, { Page, expect } from '@playwright/test';
 import { config } from '../../config/default';
 import { goToMyAccount } from '../../utils/shopper-navigation';
 import { getShopper } from '../../utils/helpers';
-import { confirmCardAuthentication } from '../../utils/shopper';
+import { addSavedCard, confirmCardAuthentication } from '../../utils/shopper';
 
 type CardType = [ string, typeof config.cards.declined, string ];
 
@@ -52,44 +52,13 @@ test.describe( 'Payment Methods', () => {
 	test.beforeEach( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		await goToMyAccount( shopperPage, 'payment-methods' );
-		await shopperPage
-			.getByRole( 'link', { name: 'Add payment method' } )
-			.click();
-		await shopperPage.waitForLoadState( 'networkidle' );
 	} );
 	cards.forEach( ( [ cardType, card, errorText ] ) => {
 		test.describe( `when attempting to add a ${ cardType } card`, () => {
 			test( 'it should not add the card', async () => {
 				const { label } = card;
 
-				// Fill the add payment method form.
-				await shopperPage
-					.frameLocator( 'iframe[name^="__privateStripeFrame"]' )
-					.first()
-					.getByPlaceholder( '1234 1234 1234' )
-					.fill( card.number );
-
-				await shopperPage
-					.frameLocator( 'iframe[name^="__privateStripeFrame"]' )
-					.first()
-					.getByPlaceholder( 'MM / YY' )
-					.fill( card.expires.month + card.expires.year );
-
-				await shopperPage
-					.frameLocator( 'iframe[name^="__privateStripeFrame"]' )
-					.first()
-					.getByPlaceholder( 'CVC' )
-					.fill( card.cvc );
-
-				await shopperPage
-					.frameLocator( 'iframe[name^="__privateStripeFrame"]' )
-					.first()
-					.getByPlaceholder( '12345' )
-					.fill( '90210' );
-
-				await shopperPage
-					.getByRole( 'button', { name: 'Add payment method' } )
-					.click();
+				await addSavedCard( shopperPage, card, 'US' );
 
 				if ( 'declined-3ds' === cardType ) {
 					await confirmCardAuthentication( shopperPage, false );
@@ -121,6 +90,12 @@ test.describe( 'Payment Methods', () => {
 	} );
 
 	test( 'it should not show error when adding payment method on another gateway', async () => {
+		await shopperPage
+			.getByRole( 'link', { name: 'Add payment method' } )
+			.click();
+
+		await shopperPage.waitForLoadState( 'networkidle' );
+
 		//This will simulate selecting another payment gateway
 		await shopperPage.$eval(
 			'input[name="payment_method"]:checked',
