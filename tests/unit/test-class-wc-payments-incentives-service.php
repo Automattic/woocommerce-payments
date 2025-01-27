@@ -164,7 +164,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			->willReturnCallback(
 				function ( $key ) {
 					if ( Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders' === $key ) {
-						return false;
+						return $this->mock_has_orders_cache_response( false );
 					}
 					return $this->mock_incentive_data;
 				}
@@ -178,6 +178,21 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_incentive_data['incentive'],
 			$this->incentives_service->get_cached_connect_incentive()
 		);
+	}
+
+	/**
+	 * Helper method to create a mock has_orders cache response.
+	 *
+	 * @param bool $has_orders Whether there are orders or not.
+	 * @return array The mock cache response.
+	 */
+	private function mock_has_orders_cache_response( $has_orders ) {
+		return [
+			'data'    => $has_orders,
+			'fetched' => time(),
+			'errored' => false,
+			'ttl'     => $has_orders ? WEEK_IN_SECONDS : HOUR_IN_SECONDS,
+		];
 	}
 
 	public function test_get_cached_connect_incentive_refreshes_cache_on_wrong_content_hash() {
@@ -272,7 +287,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get' )
 			->with( Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders' )
-			->willReturn( true );
+			->willReturn( $this->mock_has_orders_cache_response( true ) );
 
 		$this->mock_database_cache
 			->expects( $this->never() )
@@ -296,7 +311,14 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'add' )
 			->with(
 				Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders',
-				true
+				$this->callback(
+					function ( $value ) {
+						return true === $value['data'] &&
+						is_int( $value['fetched'] ) &&
+						false === $value['errored'] &&
+						WEEK_IN_SECONDS === $value['ttl'];
+					}
+				)
 			);
 
 		$result = $this->incentives_service->get_cached_has_orders();
@@ -318,7 +340,14 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'add' )
 			->with(
 				Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders',
-				false
+				$this->callback(
+					function ( $value ) {
+						return false === $value['data'] &&
+						is_int( $value['fetched'] ) &&
+						false === $value['errored'] &&
+						HOUR_IN_SECONDS === $value['ttl'];
+					}
+				)
 			);
 
 		$result = $this->incentives_service->get_cached_has_orders();
