@@ -70,6 +70,10 @@
 		&__value {
 			color: $wp-gray-50;
 			align-self: center;
+
+			@include breakpoint( '<660px' ) {
+				align-self: flex-start;
+			}
 		}
 
 		&__item {
