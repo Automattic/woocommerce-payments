@@ -271,7 +271,19 @@ jQuery( function ( $ ) {
 		];
 
 		function getMaxElements() {
-			return window.innerWidth <= 330 ? 2 : 4;
+			const paymentMethodElement = document.querySelector(
+				'.payment_method_woocommerce_payments'
+			);
+			if ( ! paymentMethodElement ) {
+				return 4; // Default fallback
+			}
+
+			const elementWidth = paymentMethodElement.offsetWidth;
+			if ( elementWidth <= 300 ) {
+				return 1;
+			} else if ( elementWidth <= 330 ) {
+				return 2;
+			}
 		}
 
 		function shouldHavePopover() {
@@ -296,6 +308,16 @@ jQuery( function ( $ ) {
 				popover.appendChild( img );
 			} );
 
+			// Calculate number of items per row (max 5)
+			const itemsPerRow = Math.min( remainingMethods.length, 5 );
+
+			// Set grid-template-columns based on number of items
+			popover.style.gridTemplateColumns = `repeat(${ itemsPerRow }, 38px)`;
+
+			// Calculate width: (items * width) + (gaps * gap-size) + (padding * 2)
+			const width = itemsPerRow * 38 + ( itemsPerRow - 1 ) * 8 + 16;
+			popover.style.width = `${ width }px`;
+
 			return popover;
 		}
 
@@ -304,31 +326,16 @@ jQuery( function ( $ ) {
 			if ( ! label ) return;
 
 			const labelRect = label.getBoundingClientRect();
-			const anchorRect = anchor.getBoundingClientRect();
-
-			if ( ! popover.dataset.labelOffset ) {
-				popover.style.visibility = 'hidden';
-				popover.style.display = 'block';
-				const popoverRect = popover.getBoundingClientRect();
-				popover.style.display = '';
-				popover.style.visibility = '';
-
-				const offset = 7;
-				const initialTop = labelRect.top - popoverRect.height - offset;
-
-				// Store the offset from the label
-				popover.dataset.labelOffset = (
-					labelRect.top - initialTop
-				).toString();
-			}
-
-			const labelOffset = parseFloat( popover.dataset.labelOffset );
+			const labelStyle = window.getComputedStyle( label );
+			const labelPaddingRight = parseInt( labelStyle.paddingRight, 10 );
 
 			popover.style.position = 'fixed';
-			popover.style.width = `${ anchorRect.width }px`;
-			popover.style.left = `${ anchorRect.left }px`; // Use anchor's left position
-			popover.style.top = `${ labelRect.top - labelOffset }px`;
+			popover.style.right = `${
+				window.innerWidth - ( labelRect.right - labelPaddingRight )
+			}px`;
+			popover.style.top = `${ labelRect.top - 25 }px`;
 			popover.style.zIndex = '1000';
+			popover.style.left = 'auto';
 		}
 
 		function updateLogos() {
@@ -352,6 +359,14 @@ jQuery( function ( $ ) {
 				const countDiv = document.createElement( 'div' );
 				countDiv.className = 'payment-methods--logos-count';
 				countDiv.textContent = `+ ${ remainingCount }`;
+
+				// Add click handler directly to the count div
+				countDiv.addEventListener( 'click', ( e ) => {
+					e.stopPropagation();
+					e.preventDefault();
+					togglePopover();
+				} );
+
 				innerContainer.appendChild( countDiv );
 			}
 
@@ -424,13 +439,12 @@ jQuery( function ( $ ) {
 			setupPopover();
 		}
 
-		// Click handler
-		innerContainer.addEventListener( 'click', togglePopover );
-
-		// Keyboard handler
+		// Remove the click handler from innerContainer since we're handling it on the count div
+		// Keep the keyboard handler for accessibility
 		innerContainer.addEventListener( 'keydown', ( e ) => {
 			if ( e.key === 'Enter' || e.key === ' ' ) {
 				e.preventDefault();
+				e.stopPropagation();
 				togglePopover();
 			}
 		} );

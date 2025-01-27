@@ -37,31 +37,19 @@ export const LogoPopover: React.FC< LogoPopoverProps > = ( {
 			return;
 		}
 
-		// Get the most up-to-date anchor rect
-		const anchorRect = anchor.getBoundingClientRect();
+		const label = anchor.closest( 'label' );
+		if ( ! label ) return;
 
-		// Temporarily make the popover visible to get correct dimensions
-		popover.style.visibility = 'hidden';
-		popover.style.display = 'block';
-		const popoverRect = popover.getBoundingClientRect();
-		popover.style.display = '';
-		popover.style.visibility = '';
-
-		const offset = 7;
-		const left = anchorRect.left;
-		// Position the popover above the anchor
-		const top = anchorRect.top - popoverRect.height - offset;
+		const labelRect = label.getBoundingClientRect();
+		const labelStyle = window.getComputedStyle( label );
+		const labelPaddingRight = parseInt( labelStyle.paddingRight, 10 );
 
 		popover.style.position = 'fixed';
-		popover.style.width = `${ anchorRect.width }px`;
-		popover.style.left = `${ left }px`;
-		popover.style.top = `${ top }px`;
-
-		// Adjust position if popover goes off-screen
-		if ( top < 0 ) {
-			// If there's not enough space above, position it below the anchor
-			popover.style.top = `${ anchorRect.bottom + offset }px`;
-		}
+		popover.style.right = `${
+			window.innerWidth - ( labelRect.right - labelPaddingRight )
+		}px`;
+		popover.style.top = `${ labelRect.top - 30 }px`;
+		popover.style.left = 'auto';
 
 		setIsPositioned( true );
 	}, [ anchor ] );
@@ -128,6 +116,12 @@ export const LogoPopover: React.FC< LogoPopoverProps > = ( {
 				zIndex: 1000,
 				opacity: isPositioned ? 1 : 0,
 				transition: 'opacity 0.2s',
+				gridTemplateColumns: `repeat(${
+					React.Children.count( children ) > 5
+						? 5
+						: React.Children.count( children )
+				}, 38px)`,
+				left: 'auto',
 			} }
 			role="dialog"
 			aria-label="Supported Credit Card Brands"

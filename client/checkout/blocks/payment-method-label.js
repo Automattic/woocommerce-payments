@@ -40,8 +40,7 @@ const paymentMethods = [
 ];
 const breakpointConfigs = [
 	{ breakpoint: 550, maxElements: 2 },
-	{ breakpoint: 833, maxElements: 4 },
-	{ breakpoint: 960, maxElements: 2 },
+	{ breakpoint: 330, maxElements: 1 },
 ];
 
 const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
