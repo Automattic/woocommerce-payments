@@ -107,26 +107,33 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 	await saveWooPaymentsSettings( page );
 };
 
-export const addMulticurrencyWidget = async ( page: Page ) => {
+export const addMulticurrencyWidget = async (
+	page: Page,
+	blocksVersion = false
+) => {
 	await navigation.goToWidgets( page );
 	// Wait for all widgets to load. This is important to prevent flakiness.
-	await page.locator( '.components-spinner' ).first().waitFor();
 	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
 
 	if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
 		await page.getByRole( 'button', { name: 'Close' } ).click();
 	}
 
-	const isWidgetAdded = await page
-		.locator( 'iframe[srcdoc*=currency]' )
-		.first()
-		.isVisible();
+	// At this point, widgets might still be loading individually.
+	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+
+	const widgetName = blocksVersion
+		? 'Currency Switcher Block'
+		: 'Currency Switcher Widget';
+	const isWidgetAdded = blocksVersion
+		? await page.locator( `[data-title="${ widgetName }"]` ).isVisible()
+		: await page.getByRole( 'heading', { name: widgetName } ).isVisible();
 
 	if ( ! isWidgetAdded ) {
 		await page.getByRole( 'button', { name: 'Add block' } ).click();
 		await page
 			.locator( 'input[placeholder="Search"]' )
-			.pressSequentially( 'switcher', { delay: 20 } );
+			.pressSequentially( widgetName, { delay: 20 } );
 		await expect(
 			page.locator( 'button.components-button[role="option"]' ).first()
 		).toBeVisible( { timeout: 5000 } );
@@ -140,6 +147,54 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 		).toBeEnabled();
 		await page.getByRole( 'button', { name: 'Update' } ).click();
 		await expectSnackbarWithText( page, 'Widgets saved.' );
+	}
+};
+
+export const removeMulticurrencyWidget = async (
+	page: Page,
+	blocksVersion = false
+) => {
+	await navigation.goToWidgets( page );
+	// Wait for all widgets to load. This is important to prevent flakiness.
+	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+
+	if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
+		await page.getByRole( 'button', { name: 'Close' } ).click();
+	}
+
+	// At this point, widgets might still be loading individually.
+	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+
+	const widgetName = blocksVersion
+		? 'Currency Switcher Block'
+		: 'Currency Switcher Widget';
+	const isWidgetAdded = blocksVersion
+		? await page.locator( `[data-title="${ widgetName }"]` ).isVisible()
+		: await page.getByRole( 'heading', { name: widgetName } ).isVisible();
+
+	if ( isWidgetAdded ) {
+		if ( blocksVersion ) {
+			await page.locator( `[data-title="${ widgetName }"]` ).click();
+		} else {
+			await page
+				.locator( '.wp-block.wp-block-legacy-widget' )
+				.filter( {
+					has: page.getByRole( 'heading', { name: widgetName } ),
+				} )
+				.click();
+		}
+
+		await page.getByLabel( 'Block tools' ).getByLabel( 'Options' ).click();
+		await page.getByRole( 'menuitem', { name: 'Delete' } ).click();
+		await page.waitForTimeout( 2000 );
+
+		await expect(
+			page.getByRole( 'button', { name: 'Update' } )
+		).toBeEnabled();
+		await page.getByRole( 'button', { name: 'Update' } ).click();
+		await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
+			timeout: 10000,
+		} );
 	}
 };
 
