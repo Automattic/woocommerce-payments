@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Refactoring of snackbar checks in Playwright e2e tests
