@@ -66,7 +66,7 @@ test.describe( 'Enable UPE with deferred intent creation', () => {
 
 	[ false, true ].forEach( ( ctpEnabled ) => {
 		test.describe(
-			`Card pesting protection enabled: ${ ctpEnabled }`,
+			`Card testing protection enabled: ${ ctpEnabled }`,
 			() => {
 				test.beforeAll( async () => {
 					if ( ctpEnabled ) {
