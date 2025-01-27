@@ -69,6 +69,7 @@
 
 		&__value {
 			color: $wp-gray-50;
+			align-self: center;
 		}
 
 		&__item {
@@ -85,7 +86,6 @@
 			color: $wp-gray-90;
 			min-width: 11rem;
 			text-transform: uppercase;
-			margin: unset;
 		}
 	}
 
