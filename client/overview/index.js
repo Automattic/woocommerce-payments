@@ -93,6 +93,8 @@ const OverviewPage = () => {
 	const accountRejected =
 		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 	const accountUnderReview = accountStatus.status === 'under_review';
+	const paymentsEnabled = accountStatus.paymentsEnabled;
+	const depositsEnabled = accountStatus.deposits?.status === 'enabled';
 
 	const showConnectionSuccess =
 		queryParams[ 'wcpay-connection-success' ] === '1';
@@ -119,6 +121,8 @@ const OverviewPage = () => {
 	const showConnectionSuccessModal =
 		showConnectionSuccess &&
 		! isTestModeOnboarding &&
+		paymentsEnabled &&
+		depositsEnabled &&
 		isPoDisabledOrCompleted;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )

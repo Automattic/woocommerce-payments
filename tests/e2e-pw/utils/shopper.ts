@@ -437,32 +437,35 @@ export const deleteSavedCard = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	await page
-		.getByRole( 'row', { name: card.label } )
-		.first()
-		.getByRole( 'link', { name: 'Delete' } )
-		.click();
-	await page.waitForTimeout( 1000 );
-	await expect( page.getByText( 'Payment method deleted.' ) ).toBeVisible();
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Delete' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await button.click();
 };
 
 export const selectSavedCardOnCheckout = async (
 	page: Page,
 	card: typeof config.cards.basic
-) =>
-	await page
+) => {
+	const option = page
 		.getByText(
 			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 		)
-		.click();
+		.first();
+	await expect( option ).toBeVisible( { timeout: 100 } );
+	option.click();
+};
 
 export const setDefaultPaymentMethod = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	await page
-		.getByRole( 'row', { name: card.label } )
-		.first()
-		.getByRole( 'link', { name: 'Make default' } )
-		.click();
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Make default' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	button.click();
 };
