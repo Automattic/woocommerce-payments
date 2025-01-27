@@ -125,8 +125,7 @@ class WC_Payments_WooPay_Button_Handler {
 
 		// Create WooPay button location option if it doesn't exist and enable all locations by default.
 		if ( ! array_key_exists( self::BUTTON_LOCATIONS, get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
-			if ( array_key_exists( self::BUTTON_LOCATIONS, $this->gateway->form_fields )
-				&& isset( $this->gateway->form_fields[ self::BUTTON_LOCATIONS ]['options'] ) ) {
+			if ( isset( $this->gateway->form_fields[ self::BUTTON_LOCATIONS ]['options'] ) ) {
 				$all_locations = $this->gateway->form_fields[ self::BUTTON_LOCATIONS ]['options'];
 
 				$this->gateway->update_option( self::BUTTON_LOCATIONS, array_keys( $all_locations ) );
