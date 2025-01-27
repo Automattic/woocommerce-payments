@@ -87,6 +87,58 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 8.9.0-test-2 - unreleased =
+* Add - Add a popover to WooPayments to present all possible payment methods
+* Add - Added persistent column visibility preferences for reporting tables, allowing merchants to customize and save their preferred table view layouts across sessions.
+* Add - Add wcpay_capture_error_amount_too_small error type and minimum amount details when capturing payments below the supported threshold.
+* Add - Admin analytics page E2E tests for Playwright
+* Fix - Add currency code to fee breakdown when multi-currency is enabled, and currencies share the same symbol.
+* Fix - Added timestamp to the order note when terminal payment fails.
+* Fix - fix: avoid ECE error when no address is provided on initialization
+* Fix - Fix cart subtotal amount when manually renewing a subscription.
+* Fix - Fixed fraud prevention token not available on blocks checkout
+* Fix - Fix global styling for popovers
+* Fix - Fix guest users being able to buy subscriptions with WooPay via Direct Checkout.
+* Fix - Fix incorrect payment method logos used on WooPayment Settings
+* Fix - Fix the amounts in the Filter by Price block to reflect the shopper's selected currency.
+* Fix - Pass theme editor footer and header styles to WooPay.
+* Fix - Set a default minimum height to the WooPay button.
+* Fix - Update set up live payments task list item copy
+* Update - Design improvements related to the overview page
+* Update - feat: GooglePay/ApplePay refactor to leverage Store API is enabled by default. Please contact us if you encounter new issues with these buttons.
+* Update - Improve loading experience in embedded KYC
+* Update - Remove date format notice across all admin pages.
+* Update - Replace payments overview page connection success notice with a modal for live accounts.
+* Update - Simplify localization of CSV exports to use user language settings from WP Admin, allowing the CSV export to match the localization of the data presented in the admin UI.
+* Update - Update the loader image for test account creation
+* Dev - Add E2E environment variables to Playwright config.
+* Dev - Converted E2E merchant-progressive-onboarding spec from Puppeteer to Playwright.
+* Dev - Convert merchant-orders-partial-refund spec from Puppeteer to Playwright.
+* Dev - Convert merchant admin transactions E2E test to Playwright
+* Dev - Convert shopper-checkout-purchase spec from Puppeteer to Playwright
+* Dev - Convert shopper-multi-currency-widget spec from Puppeteer to Playwright
+* Dev - Convert shopper checkout save card and purchase test to Playwright
+* Dev - Convert shopper checkout with UPE methods E2E test to Playwright, split saving card tests to separate file
+* Dev - Convert shopper free coupon checkout E2E test to Playwright
+* Dev - Convert shopper purchase multiple subscriptions E2E tests to Playwright
+* Dev - Convert the shopper-myaccount-payment-methods-add-fail spec from Puppeteer to Playwright.
+* Dev - E2E Playwright Migration: convert Admin Disputes spec
+* Dev - E2E Playwright Migration: convert Order Manual Capture spec
+* Dev - E2E Playwright Migration: convert shopper-checkout-failures spec to Playwright and remove Puppeteer spec.
+* Dev - Enhance log file format to provide more information about the request flow.
+* Dev - Fix flakiness in saved card tests caused by selling the same cart multiple times, triggering duplicate order protection
+* Dev - Migrate merchant subscription settings spec to Playwright
+* Dev - Migrate shopper subscription free-trial purchase E2E test to Playwright
+* Dev - Migrate shopper subscriptions - No signup fee E2E test to Playwright
+* Dev - Migrate the merchant subscriptions renew action scheduler spec from Puppeteer to Playwright.
+* Dev - Migrate the Shopper Renew Subscription spec to Playwright and remove the corresponding Puppeteer test.
+* Dev - Migrate the Shopper Subscriptions Manage Payments spec to Playwright and remove the corresponding Puppeteer test.
+* Dev - Optimise memory consumption when formatting log entries.
+* Dev - Port merchant subscription renewal E2E test to Playwright
+* Dev - Refactoring of snackbar checks in Playwright e2e tests
+* Dev - Removed unused get single transaction endpoint
+* Dev - Restore activated currencies after all tests that deactivate current ones.
+
 = 8.8.0 - 2025-01-15 =
 * Add - Allow transactions filtered by Payment Method.
 * Add - Falback terms and conditions for WooPay.
