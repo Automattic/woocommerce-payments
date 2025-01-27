@@ -2,10 +2,20 @@
 /**
  * External dependencies
  */
-import React, { useState, useLayoutEffect } from 'react';
-import { ExternalLink } from '@wordpress/components';
+import React, {
+	useState,
+	useLayoutEffect,
+	useCallback,
+	useEffect,
+} from 'react';
+import { Card, CardBody, ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
+import { loadConnectAndInitialize } from '@stripe/connect-js/pure';
+import {
+	ConnectAccountManagement,
+	ConnectComponentsProvider,
+} from '@stripe/react-connect-js';
 
 /**
  * Internal dependencies
@@ -29,6 +39,8 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import { createAccountSession } from 'wcpay/onboarding/utils';
+import appearance from 'wcpay/onboarding/kyc/appearance';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -98,6 +110,20 @@ const DepositsDescription = () => {
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
+		</>
+	);
+};
+
+const AccountDetailsDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Account details', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'View and edit your WooPayments account details like personal or business information and public information.',
+					'woocommerce-payments'
+				) }
+			</p>
 		</>
 	);
 };
@@ -179,6 +205,95 @@ const SettingsManager = () => {
 		setDismissedDuplicateNotices,
 	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
 
+	const [ locale, setLocale ] = useState( '' );
+	const [ publishableKey, setPublishableKey ] = useState( '' );
+	const [ clientSecret, setClientSecret ] = useState( null );
+	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
+	const [ stripeConnectInstance, setStripeConnectInstance ] = useState(
+		null
+	);
+
+	const fetchAccountSession = useCallback( async () => {
+		try {
+			const accountSession = await createAccountSession( null, false );
+			if ( accountSession && accountSession.clientSecret ) {
+				return accountSession; // Return the full account session object
+			}
+
+			setLoadErrorMessage(
+				__(
+					"Failed to create account session. Please check that you're using the latest version of WooPayments.",
+					'woocommerce-payments'
+				)
+			);
+		} catch ( error ) {
+			setLoadErrorMessage(
+				__(
+					'Failed to retrieve account session. Please try again later.',
+					'woocommerce-payments'
+				)
+			);
+		}
+
+		// Return null if an error occurred.
+		return null;
+	}, [] );
+
+	// Function to fetch clientSecret for use in Stripe auto-refresh or initialization
+	const fetchClientSecret = useCallback( async () => {
+		const accountSession = await fetchAccountSession();
+		if ( accountSession ) {
+			return accountSession.clientSecret; // Only return the clientSecret
+		}
+		throw new Error( 'Error fetching the client secret' );
+	}, [ fetchAccountSession ] );
+
+	// Effect to fetch the publishable key and clientSecret on initial render
+	useEffect( () => {
+		const fetchKeys = async () => {
+			try {
+				const accountSession = await fetchAccountSession();
+				if ( accountSession ) {
+					setLocale( accountSession.locale );
+					setPublishableKey( accountSession.publishableKey );
+					setClientSecret( () => fetchClientSecret );
+				}
+			} catch ( error ) {
+				setLoadErrorMessage(
+					__(
+						'Failed to create account session. Please check that you are using the latest version of WooPayments.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		};
+
+		fetchKeys();
+	}, [ fetchAccountSession, fetchClientSecret ] );
+
+	// Effect to initialize the Stripe Connect instance once publishableKey and clientSecret are ready.
+	useEffect( () => {
+		if ( publishableKey && clientSecret && ! stripeConnectInstance ) {
+			const stripeInstance = loadConnectAndInitialize( {
+				publishableKey,
+				fetchClientSecret,
+				appearance: {
+					overlays: 'drawer',
+					variables: appearance.variables,
+				},
+				locale: locale.replace( '_', '-' ),
+			} );
+
+			setStripeConnectInstance( stripeInstance );
+		}
+	}, [
+		publishableKey,
+		clientSecret,
+		stripeConnectInstance,
+		fetchClientSecret,
+		locale,
+	] );
+
 	return (
 		<SettingsLayout>
 			<SettingsSection
@@ -233,6 +348,38 @@ const SettingsManager = () => {
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</div>
+			</SettingsSection>
+			<SettingsSection
+				description={ AccountDetailsDescription }
+				id="account-details"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						{ loadErrorMessage ? (
+							<div>error</div>
+						) : (
+							stripeConnectInstance && (
+								<Card>
+									<CardBody>
+										<ConnectComponentsProvider
+											connectInstance={
+												stripeConnectInstance
+											}
+										>
+											<ConnectAccountManagement
+												collectionOptions={ {
+													fields: 'eventually_due',
+													futureRequirements:
+														'include',
+												} }
+											/>
+										</ConnectComponentsProvider>
+									</CardBody>
+								</Card>
+							)
+						) }
+					</ErrorBoundary>
+				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection
 				description={ FraudProtectionDescription }

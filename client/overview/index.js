@@ -3,11 +3,16 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
+import {
+	ConnectComponentsProvider,
+	ConnectNotificationBanner,
+} from '@stripe/react-connect-js';
+import { loadConnectAndInitialize } from '@stripe/connect-js/pure';
 
 /**
  * Internal dependencies.
@@ -32,6 +37,8 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
+import appearance from 'wcpay/onboarding/kyc/appearance';
+import { createAccountSession } from 'wcpay/onboarding/utils';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -74,6 +81,95 @@ const OverviewPage = () => {
 		setTestDriveSuccessDisplayed,
 	] = useState( false );
 	const settings = useGetSettings();
+
+	const [ locale, setLocale ] = useState( '' );
+	const [ publishableKey, setPublishableKey ] = useState( '' );
+	const [ clientSecret, setClientSecret ] = useState( null );
+	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
+	const [ stripeConnectInstance, setStripeConnectInstance ] = useState(
+		null
+	);
+
+	const fetchAccountSession = useCallback( async () => {
+		try {
+			const accountSession = await createAccountSession( null, false );
+			if ( accountSession && accountSession.clientSecret ) {
+				return accountSession; // Return the full account session object
+			}
+
+			setLoadErrorMessage(
+				__(
+					"Failed to create account session. Please check that you're using the latest version of WooPayments.",
+					'woocommerce-payments'
+				)
+			);
+		} catch ( error ) {
+			setLoadErrorMessage(
+				__(
+					'Failed to retrieve account session. Please try again later.',
+					'woocommerce-payments'
+				)
+			);
+		}
+
+		// Return null if an error occurred.
+		return null;
+	}, [] );
+
+	// Function to fetch clientSecret for use in Stripe auto-refresh or initialization
+	const fetchClientSecret = useCallback( async () => {
+		const accountSession = await fetchAccountSession();
+		if ( accountSession ) {
+			return accountSession.clientSecret; // Only return the clientSecret
+		}
+		throw new Error( 'Error fetching the client secret' );
+	}, [ fetchAccountSession ] );
+
+	// Effect to fetch the publishable key and clientSecret on initial render
+	useEffect( () => {
+		const fetchKeys = async () => {
+			try {
+				const accountSession = await fetchAccountSession();
+				if ( accountSession ) {
+					setLocale( accountSession.locale );
+					setPublishableKey( accountSession.publishableKey );
+					setClientSecret( () => fetchClientSecret );
+				}
+			} catch ( error ) {
+				setLoadErrorMessage(
+					__(
+						'Failed to create account session. Please check that you are using the latest version of WooPayments.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		};
+
+		fetchKeys();
+	}, [ fetchAccountSession, fetchClientSecret ] );
+
+	// Effect to initialize the Stripe Connect instance once publishableKey and clientSecret are ready.
+	useEffect( () => {
+		if ( publishableKey && clientSecret && ! stripeConnectInstance ) {
+			const stripeInstance = loadConnectAndInitialize( {
+				publishableKey,
+				fetchClientSecret,
+				appearance: {
+					overlays: 'drawer',
+					variables: appearance.variables,
+				},
+				locale: locale.replace( '_', '-' ),
+			} );
+
+			setStripeConnectInstance( stripeInstance );
+		}
+	}, [
+		publishableKey,
+		clientSecret,
+		stripeConnectInstance,
+		fetchClientSecret,
+		locale,
+	] );
 
 	const { disputes: activeDisputes } = useDisputes( {
 		filter: 'awaiting_response',
@@ -216,6 +312,29 @@ const OverviewPage = () => {
 								/>
 							</ErrorBoundary>
 						</Card>
+					) }
+
+					{ loadErrorMessage ? (
+						<div>error</div>
+					) : (
+						stripeConnectInstance && (
+							<ErrorBoundary>
+								<Card>
+									<ConnectComponentsProvider
+										connectInstance={
+											stripeConnectInstance
+										}
+									>
+										<ConnectNotificationBanner
+											collectionOptions={ {
+												fields: 'eventually_due',
+												futureRequirements: 'omit',
+											} }
+										/>
+									</ConnectComponentsProvider>
+								</Card>
+							</ErrorBoundary>
+						)
 					) }
 
 					<Card>
