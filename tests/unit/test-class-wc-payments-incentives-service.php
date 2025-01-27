@@ -316,7 +316,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 						return true === $value['data'] &&
 						is_int( $value['fetched'] ) &&
 						false === $value['errored'] &&
-						WEEK_IN_SECONDS === $value['ttl'];
+						DAY_IN_SECONDS * 90 === $value['ttl'];
 					}
 				)
 			);

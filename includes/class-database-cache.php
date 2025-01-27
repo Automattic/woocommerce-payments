@@ -406,9 +406,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
 				break;
 			case self::CONNECT_INCENTIVE_KEY . '_has_orders':
-				// If has orders, cache for a week since it won't change.
+				// If has orders, cache for 90 days since it won't change.
 				// If no orders, cache for an hour to check again soon.
-				$ttl = $cache_contents['data'] ? WEEK_IN_SECONDS : HOUR_IN_SECONDS;
+				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
 			case self::PAYMENT_PROCESS_FACTORS_KEY:
 				$ttl = 2 * HOUR_IN_SECONDS;
