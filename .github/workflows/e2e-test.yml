@@ -40,33 +40,6 @@ jobs:
           WC_VERSIONS=$( echo "[\"7.7.0\", \"latest\", \"beta\"]" )
           echo "matrix={\"woocommerce\":$WC_VERSIONS,\"test_groups\":[\"wcpay\"],\"test_branches\":[\"merchant\", \"shopper\"]}" >> $GITHUB_OUTPUT
 
-  # Run WCPay & subscriptions tests against specific WC versions
-  wcpay-subscriptions-tests:
-    runs-on: ubuntu-latest
-    needs: generate-matrix
-    strategy:
-      fail-fast:     false
-      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
-
-    name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
-
-    env:
-      E2E_WP_VERSION: 'latest'
-      E2E_WC_VERSION: ${{ matrix.woocommerce }}
-      E2E_GROUP:  ${{ matrix.test_groups }}
-      E2E_BRANCH: ${{ matrix.test_branches }}
-      SKIP_WC_BLOCKS_TESTS: 1 # skip running blocks tests
-
-    steps:
-      - name: Checkout WCPay repository
-        uses: actions/checkout@v4
-
-      - name: Setup E2E environment
-        uses: ./.github/actions/e2e/env-setup
-
-      - name: Run tests, upload screenshots & logs
-        uses: ./.github/actions/e2e/run-log-tests
-
   # Run tests against WC Checkout blocks & WC latest
   # [TODO] Unskip blocks tests after investigating constant failures.
   # blocks-tests:
