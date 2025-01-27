@@ -57,9 +57,9 @@ test.describe( 'Order > Status Change', () => {
 			);
 
 			// Verify the confirmation modal shows.
-			await merchantPage.waitForSelector( cancelModalSelector, {
-				state: 'visible',
-			} );
+			await merchantPage
+				.locator( cancelModalSelector )
+				.waitFor( { state: 'visible' } );
 
 			// Click on Do Nothing.
 			await merchantPage
@@ -84,9 +84,9 @@ test.describe( 'Order > Status Change', () => {
 			);
 
 			// Verify the confirmation modal shows.
-			await merchantPage.waitForSelector( cancelModalSelector, {
-				state: 'visible',
-			} );
+			await merchantPage
+				.locator( cancelModalSelector )
+				.waitFor( { state: 'visible' } );
 
 			// Click on Cancel order.
 			await merchantPage
@@ -119,9 +119,9 @@ test.describe( 'Order > Status Change', () => {
 			);
 
 			// Verify the confirmation modal shows.
-			await merchantPage.waitForSelector( refundModalSelector, {
-				state: 'visible',
-			} );
+			await merchantPage
+				.locator( refundModalSelector )
+				.waitFor( { state: 'visible' } );
 
 			// Click on Cancel.
 			await merchantPage.locator( refundCancelSelector ).click();
@@ -144,9 +144,9 @@ test.describe( 'Order > Status Change', () => {
 			);
 
 			// Verify the confirmation modal shows.
-			await merchantPage.waitForSelector( refundModalSelector, {
-				state: 'visible',
-			} );
+			await merchantPage
+				.locator( refundModalSelector )
+				.waitFor( { state: 'visible' } );
 
 			// Click on Refund order.
 			await merchantPage.locator( refundConfirmSelector ).click();
