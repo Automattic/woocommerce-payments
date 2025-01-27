@@ -339,7 +339,7 @@ class WC_Payments_Incentives_Service {
 		$has_orders = ! empty(
 			wc_get_orders(
 				[
-					'status'       => [ 'wc-completed', 'wc-processing' ],
+					'status'       => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
 					'date_created' => '>=' . strtotime( '-90 days' ),
 					'return'       => 'ids',
 					'limit'        => 1,
