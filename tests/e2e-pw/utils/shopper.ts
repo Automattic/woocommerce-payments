@@ -455,9 +455,9 @@ export const emptyCart = async ( page: Page ) => {
 		coupons = await page.locator( '.woocommerce-remove-coupon' ).all();
 	}
 
-	await expect( page.locator( '.cart-empty.woocommerce-info' ) ).toHaveText(
-		'Your cart is currently empty.'
-	);
+	await expect(
+		page.getByText( 'Your cart is currently empty.' )
+	).toBeVisible();
 };
 
 export const changeAccountCurrency = async (
@@ -511,31 +511,35 @@ export const deleteSavedCard = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	await page
-		.getByRole( 'row', { name: card.label } )
-		.first()
-		.getByRole( 'link', { name: 'Delete' } )
-		.click();
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Delete' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await button.click();
 };
 
 export const selectSavedCardOnCheckout = async (
 	page: Page,
 	card: typeof config.cards.basic
-) =>
-	await page
+) => {
+	const option = page
 		.getByText(
 			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 		)
-		.first()
-		.click();
+		.first();
+	await expect( option ).toBeVisible( { timeout: 100 } );
+	option.click();
+};
 
 export const setDefaultPaymentMethod = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	await page
-		.getByRole( 'row', { name: card.label } )
-		.first()
-		.getByRole( 'link', { name: 'Make default' } )
-		.click();
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Make default' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	button.click();
 };

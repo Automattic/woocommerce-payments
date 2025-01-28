@@ -2,7 +2,13 @@
  * External dependencies
  */
 import path from 'path';
-import { test, Page, Browser, BrowserContext } from '@playwright/test';
+import { test, Page, Browser, BrowserContext, expect } from '@playwright/test';
+
+/**
+ * Internal dependencies
+ */
+import { config } from '../config/default';
+import RestAPI from './rest-api';
 
 export const merchantStorageFile = path.resolve(
 	__dirname,
@@ -67,11 +73,41 @@ export const getMerchant = async (
  * Allows switching between merchant and shopper contexts within a single test.
  */
 export const getShopper = async (
-	browser: Browser
+	browser: Browser,
+	asNewCustomer = false,
+	baseURL = '' // Needed for recreating customer
 ): Promise< {
 	shopperPage: Page;
 	shopperContext: BrowserContext;
 } > => {
+	if ( asNewCustomer ) {
+		const restApi = new RestAPI( baseURL );
+		await restApi.recreateCustomer(
+			config.users.customer,
+			config.addresses.customer.billing,
+			config.addresses.customer.shipping
+		);
+
+		const shopperContext = await browser.newContext();
+		const shopperPage = await shopperContext.newPage();
+		await wpAdminLogin( shopperPage, config.users.customer );
+		await shopperPage.waitForLoadState( 'networkidle' );
+		await shopperPage.goto( '/my-account' );
+		expect(
+			shopperPage.locator(
+				'.woocommerce-MyAccount-navigation-link--customer-logout'
+			)
+		).toBeVisible( { timeout: 1000 } );
+		await expect(
+			shopperPage.locator(
+				'div.woocommerce-MyAccount-content > p >> nth=0'
+			)
+		).toContainText( 'Hello', { timeout: 1000 } );
+		await shopperPage
+			.context()
+			.storageState( { path: customerStorageFile } );
+		return { shopperPage, shopperContext };
+	}
 	const shopperContext = await browser.newContext( {
 		storageState: customerStorageFile,
 	} );
