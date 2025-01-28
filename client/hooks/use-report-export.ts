@@ -68,12 +68,16 @@ export const useReportExport = () => {
 	}: PollForFileProps ) {
 		timeoutIdRef.current = setTimeout( async () => {
 			retryCountRef.current++;
-			const exportedFileURLResponse = await apiFetch< ExportURLResponse >(
-				{
+			let exportedFileURLResponse;
+			try {
+				exportedFileURLResponse = await apiFetch< ExportURLResponse >( {
 					path: checkFileURL,
 					method: 'GET',
-				}
-			);
+				} );
+			} catch ( error ) {
+				// If there's an error (like 500), continue with retry logic
+				exportedFileURLResponse = { status: 'error' };
+			}
 
 			if (
 				'success' === exportedFileURLResponse.status &&
