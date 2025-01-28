@@ -66,9 +66,6 @@ describeif( shouldRunWCBlocksTests )(
 			await shopperPage
 				.getByRole( 'button', { name: 'Place Order' } )
 				.click();
-			await shopperPage.waitForURL( /\/order-received\//, {
-				waitUntil: 'load',
-			} );
 			await expect(
 				shopperPage.getByRole( 'heading', {
 					name: 'Order received',
@@ -99,9 +96,6 @@ describeif( shouldRunWCBlocksTests )(
 			await shopperPage
 				.getByRole( 'button', { name: 'Place Order' } )
 				.click();
-			await shopperPage.waitForURL( /\/order-received\//, {
-				waitUntil: 'load',
-			} );
 			await expect(
 				shopperPage.getByRole( 'heading', {
 					name: 'Order received',

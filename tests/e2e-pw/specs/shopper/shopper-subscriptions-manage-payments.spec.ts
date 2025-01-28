@@ -6,10 +6,9 @@ import test, { expect, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import RestAPI from '../../utils/rest-api';
 import { config } from '../../config/default';
 import { products, shouldRunSubscriptionsTests } from '../../utils/constants';
-import { describeif, getAnonymousShopper } from '../../utils/helpers';
+import { describeif, getShopper } from '../../utils/helpers';
 import * as shopper from '../../utils/shopper';
 import * as navigation from '../../utils/shopper-navigation';
 
@@ -43,13 +42,8 @@ describeif( shouldRunSubscriptionsTests )(
 			config.addresses[ 'subscriptions-customer' ].billing;
 
 		test.beforeAll( async ( { browser }, { project } ) => {
-			// Delete the user, if present.
-			const restApi = new RestAPI( project.use.baseURL );
-			await restApi.deleteCustomerByEmailAddress(
-				customerBillingAddress.email
-			);
-
-			page = ( await getAnonymousShopper( browser ) ).shopperPage;
+			page = ( await getShopper( browser, true, project.use.baseURL ) )
+				.shopperPage;
 
 			// Purchase a subscription.
 			await shopper.placeOrderWithOptions( page, {
