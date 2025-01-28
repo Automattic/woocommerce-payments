@@ -3,6 +3,7 @@
  */
 import { Page, expect } from 'playwright/test';
 import * as navigation from './merchant-navigation';
+import RestAPI from './rest-api';
 
 /**
  * Checks if the data has loaded on the page.
@@ -113,7 +114,15 @@ export const addMulticurrencyWidget = async (
 ) => {
 	await navigation.goToWidgets( page );
 	// Wait for all widgets to load. This is important to prevent flakiness.
-	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+	// Note that if the widget area is empty, the spinner will not be shown.
+	// Wrapping the check in a try-catch block to fail it soft.
+	try {
+		await page
+			.locator( '.components-spinner' )
+			.first()
+			.waitFor( { timeout: 2000 } );
+		await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+	} catch {}
 
 	if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
 		await page.getByRole( 'button', { name: 'Close' } ).click();
@@ -126,8 +135,9 @@ export const addMulticurrencyWidget = async (
 		? 'Currency Switcher Block'
 		: 'Currency Switcher Widget';
 	const isWidgetAdded = blocksVersion
-		? await page.locator( `[data-title="${ widgetName }"]` ).isVisible()
-		: await page.getByRole( 'heading', { name: widgetName } ).isVisible();
+		? ( await page.locator( `[data-title="${ widgetName }"]` ).count() ) > 0
+		: ( await page.getByRole( 'heading', { name: widgetName } ).count() ) >
+		  0;
 
 	if ( ! isWidgetAdded ) {
 		await page.getByRole( 'button', { name: 'Add block' } ).click();
@@ -150,52 +160,16 @@ export const addMulticurrencyWidget = async (
 	}
 };
 
-export const removeMulticurrencyWidget = async (
-	page: Page,
-	blocksVersion = false
-) => {
-	await navigation.goToWidgets( page );
-	// Wait for all widgets to load. This is important to prevent flakiness.
-	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
-
-	if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
-		await page.getByRole( 'button', { name: 'Close' } ).click();
-	}
-
-	// At this point, widgets might still be loading individually.
-	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
-
-	const widgetName = blocksVersion
-		? 'Currency Switcher Block'
-		: 'Currency Switcher Widget';
-	const isWidgetAdded = blocksVersion
-		? await page.locator( `[data-title="${ widgetName }"]` ).isVisible()
-		: await page.getByRole( 'heading', { name: widgetName } ).isVisible();
-
-	if ( isWidgetAdded ) {
-		if ( blocksVersion ) {
-			await page.locator( `[data-title="${ widgetName }"]` ).click();
-		} else {
-			await page
-				.locator( '.wp-block.wp-block-legacy-widget' )
-				.filter( {
-					has: page.getByRole( 'heading', { name: widgetName } ),
-				} )
-				.click();
-		}
-
-		await page.getByLabel( 'Block tools' ).getByLabel( 'Options' ).click();
-		await page.getByRole( 'menuitem', { name: 'Delete' } ).click();
-		await page.waitForTimeout( 2000 );
-
-		await expect(
-			page.getByRole( 'button', { name: 'Update' } )
-		).toBeEnabled();
-		await page.getByRole( 'button', { name: 'Update' } ).click();
-		await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-			timeout: 10000,
-		} );
-	}
+export const removeMultiCurrencyWidgets = async ( baseURL: string ) => {
+	const restApi = new RestAPI( baseURL );
+	// Delete classic version of the currency switcher widget.
+	await restApi.deleteWidgets( 'sidebar-1', 'currency_switcher_widget' );
+	// Delete block version of the currency switcher widget.
+	await restApi.deleteWidgets(
+		'sidebar-1',
+		'block',
+		'currency-switcher-holder'
+	);
 };
 
 export const getActiveThemeSlug = async ( page: Page ) => {
@@ -412,6 +386,42 @@ export const deactivateWooPay = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
 	await page.getByTestId( 'woopay-toggle' ).uncheck();
 	await saveWooPaymentsSettings( page );
+};
+
+export const addWCBCheckoutPage = async ( page: Page ) => {
+	await page.goto( '/wp-admin/edit.php?post_type=page', {
+		waitUntil: 'load',
+	} );
+
+	await page
+		.locator( '#wpbody-content' )
+		.getByRole( 'link', { name: 'Add New Page' } )
+		.click();
+	await page.waitForLoadState( 'load' );
+
+	const welcomeGuide = page.locator( '.components-guide' );
+	if ( await welcomeGuide.isVisible() ) {
+		await page.getByLabel( 'Close', { exact: true } ).click();
+		await page.waitForTimeout( 1500 );
+	}
+
+	// Handle whether the editor uses iframe or not.
+	const editor = page.frame( 'editor-canvas' ) || page;
+	await editor.getByLabel( 'Add title' ).fill( 'Checkout WCB' );
+	await editor.getByLabel( 'Add block' ).click();
+
+	await page.getByPlaceholder( 'Search' ).fill( 'Checkout' );
+	await page.getByRole( 'option', { name: 'Checkout', exact: true } ).click();
+
+	// Dismiss dialog about potentially compatibility issues
+	await page.waitForTimeout( 500 );
+	await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
+
+	// Publish the page
+	await page.locator( 'button.editor-post-publish-panel__toggle' ).click();
+	await page.waitForTimeout( 500 );
+	await page.locator( 'button.editor-post-publish-button' ).click();
+	await expect( page.getByText( 'Checkout WCB is now live.' ) ).toBeVisible();
 };
 
 export const isCaptureLaterEnabled = async ( page: Page ) => {
