@@ -381,9 +381,9 @@ export const emptyCart = async ( page: Page ) => {
 		coupons = await page.locator( '.woocommerce-remove-coupon' ).all();
 	}
 
-	await expect( page.locator( '.cart-empty.woocommerce-info' ) ).toHaveText(
-		'Your cart is currently empty.'
-	);
+	await expect(
+		page.getByText( 'Your cart is currently empty.' )
+	).toBeVisible();
 };
 
 export const changeAccountCurrency = async (
