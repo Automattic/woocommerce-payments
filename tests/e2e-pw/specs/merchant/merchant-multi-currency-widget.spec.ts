@@ -73,11 +73,17 @@ test.describe( 'Multi-currency widget setup', () => {
 
 	test( 'can update widget properties', async () => {
 		await test.step( 'opens widget settings', async () => {
-			await merchantPage
-				.locator(
-					'.interface-pinned-items > button[aria-label="Settings"]'
-				)
-				.click();
+			const settingsButton = merchantPage.locator(
+				'.interface-pinned-items > button[aria-label="Settings"]'
+			);
+			const isSettingsButtonPressed = await settingsButton.evaluate(
+				( node ) => node.getAttribute( 'aria-pressed' ) === 'true'
+			);
+
+			if ( ! isSettingsButtonPressed ) {
+				await settingsButton.click();
+			}
+
 			await merchantPage
 				.locator( '[data-title="Currency Switcher Block"]' )
 				.click();
