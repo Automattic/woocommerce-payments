@@ -74,6 +74,35 @@ export const config = {
 				email: 'e2e-wcpay-customer@woo.com',
 			},
 		},
+		'upe-customer': {
+			billing: {
+				be: {
+					firstname: 'I am',
+					lastname: 'Customer',
+					company: 'Automattic',
+					country: 'Belgium',
+					addressfirstline: 'Rue de l’Étuve, 1000',
+					addresssecondline: 'billing-be',
+					city: 'Bruxelles',
+					postcode: '1000',
+					phone: '123456789',
+					email: 'e2e-wcpay-customer@woocommerce.com',
+				},
+				de: {
+					firstname: 'I am',
+					lastname: 'Customer',
+					company: 'Automattic',
+					country: 'Germany',
+					addressfirstline: 'Petuelring 130',
+					addresssecondline: 'billing-de',
+					city: 'München',
+					postcode: '80809',
+					state: 'DE-BY',
+					phone: '123456789',
+					email: 'e2e-wcpay-customer@woocommerce.com',
+				},
+			},
+		},
 		'subscriptions-customer': {
 			billing: {
 				firstname: 'I am',
@@ -125,11 +154,11 @@ export const config = {
 		basic3: {
 			number: '378282246310005',
 			expires: {
-				month: '11',
+				month: '12',
 				year: '45',
 			},
 			cvc: '1234',
-			label: 'Amex ending in 0005',
+			label: 'American Express ending in 0005',
 		},
 		'3ds': {
 			number: '4000002760003184',
@@ -272,4 +301,9 @@ export const config = {
 	},
 };
 
-export type CustomerAddress = typeof config.addresses.customer.billing;
+export type CustomerAddress = Omit<
+	typeof config.addresses.customer.billing,
+	'state'
+> & {
+	state?: string;
+};
