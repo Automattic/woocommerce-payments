@@ -61,7 +61,7 @@ import { goToShop } from '../../utils/shopper-navigation';
 
 		const sharedTestMethod = async (
 			page: Page,
-			card: any,
+			card: typeof config.cards.basic,
 			threeDSenabled: boolean,
 			cardTestingFlag: boolean
 		) => {
@@ -71,6 +71,7 @@ import { goToShop } from '../../utils/shopper-navigation';
 			if ( threeDSenabled ) {
 				await confirmCardAuthentication( page );
 			}
+			// This is required because different themes have different strings than "Order received".
 			await page.waitForURL( /\/order-received\//, {
 				waitUntil: 'load',
 			} );
