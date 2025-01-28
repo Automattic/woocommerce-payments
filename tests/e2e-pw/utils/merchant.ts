@@ -108,7 +108,10 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 	await saveWooPaymentsSettings( page );
 };
 
-export const addMulticurrencyWidget = async ( page: Page ) => {
+export const addMulticurrencyWidget = async (
+	page: Page,
+	blocksVersion = false
+) => {
 	await navigation.goToWidgets( page );
 	// Wait for all widgets to load. This is important to prevent flakiness.
 	// Note that if the widget area is empty, the spinner will not be shown.
@@ -125,18 +128,22 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 		await page.getByRole( 'button', { name: 'Close' } ).click();
 	}
 
-	const isWidgetAdded =
-		( await page
-			.getByRole( 'heading', {
-				name: 'Currency Switcher Widget',
-			} )
-			.count() ) > 0;
+	// At this point, widgets might still be loading individually.
+	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+
+	const widgetName = blocksVersion
+		? 'Currency Switcher Block'
+		: 'Currency Switcher Widget';
+	const isWidgetAdded = blocksVersion
+		? ( await page.locator( `[data-title="${ widgetName }"]` ).count() ) > 0
+		: ( await page.getByRole( 'heading', { name: widgetName } ).count() ) >
+		  0;
 
 	if ( ! isWidgetAdded ) {
 		await page.getByRole( 'button', { name: 'Add block' } ).click();
 		await page
 			.locator( 'input[placeholder="Search"]' )
-			.pressSequentially( 'switcher', { delay: 20 } );
+			.pressSequentially( widgetName, { delay: 20 } );
 		await expect(
 			page.locator( 'button.components-button[role="option"]' ).first()
 		).toBeVisible( { timeout: 5000 } );
