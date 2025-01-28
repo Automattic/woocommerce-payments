@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update Playwright file structure and PR workflow to match the current behavior of the Puppeteer setup.
