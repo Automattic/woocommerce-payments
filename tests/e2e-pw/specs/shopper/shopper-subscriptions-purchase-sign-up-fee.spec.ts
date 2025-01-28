@@ -7,15 +7,10 @@ import { test, expect, Page } from '@playwright/test';
  * Internal dependencies
  */
 import { config } from '../../config/default';
-import {
-	describeif,
-	getAnonymousShopper,
-	getMerchant,
-} from '../../utils/helpers';
+import { describeif, getMerchant, getShopper } from '../../utils/helpers';
 import * as shopper from '../../utils/shopper';
 import * as navigation from '../../utils/merchant-navigation';
 import { shouldRunSubscriptionsTests, products } from '../../utils/constants';
-import RestAPI from '../../utils/rest-api';
 
 describeif( shouldRunSubscriptionsTests )(
 	'Subscriptions > Purchase subscription with signup fee',
@@ -28,14 +23,10 @@ describeif( shouldRunSubscriptionsTests )(
 			config.addresses[ 'subscriptions-customer' ].billing;
 
 		test.beforeAll( async ( { browser }, { project } ) => {
-			// Delete the user, if present
-			const restApi = new RestAPI( project.use.baseURL );
-			await restApi.deleteCustomerByEmailAddress(
-				customerBillingAddress.email
-			);
-
 			merchantPage = ( await getMerchant( browser ) ).merchantPage;
-			shopperPage = ( await getAnonymousShopper( browser ) ).shopperPage;
+			shopperPage = (
+				await getShopper( browser, true, project.use.baseURL )
+			 ).shopperPage;
 		} );
 
 		test( 'should be able to purchase a subscription with signup fee', async () => {

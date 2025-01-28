@@ -7,19 +7,17 @@ import test, { Page, expect } from '@playwright/test';
  * Internal dependencies
  */
 import { config } from '../../config/default';
-import { getAnonymousShopper } from '../../utils/helpers';
+import { getAnonymousShopper, getShopper } from '../../utils/helpers';
 import {
 	confirmCardAuthentication,
 	deleteSavedCard,
 	fillCardDetails,
 	placeOrder,
-	placeOrderWithOptions,
 	selectSavedCardOnCheckout,
 	setSavePaymentMethod,
 	setupProductCheckout,
 } from '../../utils/shopper';
 import { goToMyAccount, goToShop } from '../../utils/shopper-navigation';
-import RestAPI from '../../utils/rest-api';
 
 type CardType = [ string, typeof config.cards.basic ];
 
@@ -35,16 +33,9 @@ test.describe( 'Saved cards', () => {
 			() => {
 				let shopperPage: Page;
 				test.beforeAll( async ( { browser }, { project } ) => {
-					const restApi = new RestAPI( project.use.baseURL );
-					restApi.deleteCustomerByEmailAddress(
-						config.addresses.customer.billing.email
-					);
-					shopperPage = ( await getAnonymousShopper( browser ) )
-						.shopperPage;
-					await placeOrderWithOptions( shopperPage, {
-						billingAddress: config.addresses.customer.billing,
-						createAccount: true,
-					} );
+					shopperPage = (
+						await getShopper( browser, true, project.use.baseURL )
+					 ).shopperPage;
 				} );
 				test( 'should save the card', async ( {} ) => {
 					await goToShop( shopperPage );

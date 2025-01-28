@@ -10,7 +10,7 @@ import {
 	activateMulticurrency,
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
-	removeMulticurrencyWidget,
+	removeMultiCurrencyWidgets,
 } from '../../utils/merchant';
 import * as navigation from '../../utils/shopper-navigation';
 
@@ -35,8 +35,8 @@ test.describe( 'Multi-currency widget setup', () => {
 		await addMulticurrencyWidget( merchantPage, true );
 	} );
 
-	test.afterAll( async () => {
-		await removeMulticurrencyWidget( merchantPage, true );
+	test.afterAll( async ( {}, { project } ) => {
+		await removeMultiCurrencyWidgets( project.use.baseURL );
 
 		if ( ! wasMulticurrencyEnabled ) {
 			await deactivateMulticurrency( merchantPage );
