@@ -58,8 +58,8 @@ test.describe( 'Order > Refund Failure', () => {
 
 				// Sometimes the element is not clickable due to the header getting on the way. This seems to
 				// only happen in CI for WC 7.7.0 so the workaround is to remove those elements.
-				const hideElementIfExists = ( sel ) => {
-					const element = document.querySelector( sel );
+				const hideElementIfExists = ( selectorToHide: string ) => {
+					const element = document.querySelector( selectorToHide );
 					if ( element ) {
 						element.outerHTML = '';
 					}
@@ -74,7 +74,7 @@ test.describe( 'Order > Refund Failure', () => {
 				);
 
 				// Click the Refund button
-				const refundItemsButton = await merchantPage
+				const refundItemsButton = merchantPage
 					.getByRole( 'button', {
 						name: 'Refund',
 					} )
