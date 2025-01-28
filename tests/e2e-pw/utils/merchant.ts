@@ -162,7 +162,14 @@ export const addMulticurrencyWidget = async (
 
 export const removeMultiCurrencyWidgets = async ( baseURL: string ) => {
 	const restApi = new RestAPI( baseURL );
+	// Delete classic version of the currency switcher widget.
 	await restApi.deleteWidgets( 'sidebar-1', 'currency_switcher_widget' );
+	// Delete block version of the currency switcher widget.
+	await restApi.deleteWidgets(
+		'sidebar-1',
+		'block',
+		'currency-switcher-holder'
+	);
 };
 
 export const getActiveThemeSlug = async ( page: Page ) => {

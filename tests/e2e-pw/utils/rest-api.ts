@@ -73,7 +73,8 @@ class RestAPI {
 
 	async deleteWidgets(
 		widgetArea: string,
-		widgetName: string
+		widgetName: string,
+		blockFilter?: string
 	): Promise< void > {
 		const client = this.getAdminClient();
 
@@ -86,6 +87,13 @@ class RestAPI {
 		if ( widgets.data && widgets.data.length ) {
 			for ( let c = 0; c < widgets.data.length; c++ ) {
 				if ( widgets.data[ c ].id_base === widgetName ) {
+					// Skip if blockFilter is provided and the block is not found in the widget content.
+					if (
+						widgetName === 'block' &&
+						! widgets.data[ c ].rendered.includes( blockFilter )
+					) {
+						continue;
+					}
 					const deleteWidgetPayload = {
 						force: true,
 					};
