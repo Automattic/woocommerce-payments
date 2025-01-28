@@ -64,7 +64,7 @@ describeif( shouldRunSubscriptionsTests )(
 			}
 		} );
 
-		test( 'Merchant should be able to purchase a free trial', async ( {
+		test( 'Shopper should be able to purchase a free trial', async ( {
 			browser,
 		} ) => {
 			const { shopperPage } = await getShopper( browser );

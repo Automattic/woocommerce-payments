@@ -3,6 +3,7 @@
  */
 import { useCallback } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -58,22 +59,46 @@ export const useExpressCheckout = ( {
 				return;
 			}
 
+			const shippingAddressRequired = shippingData?.needsShipping;
+
+			let shippingRates;
+			if ( shippingAddressRequired ) {
+				const hasValidRates =
+					shippingData?.shippingRates[ 0 ]?.shipping_rates?.length >
+					0;
+
+				if ( hasValidRates ) {
+					shippingRates = shippingData.shippingRates[ 0 ].shipping_rates.map(
+						( rate ) => {
+							return {
+								id: rate.rate_id,
+								amount: parseInt( rate.price, 10 ),
+								displayName: rate.name,
+							};
+						}
+					);
+				} else {
+					shippingRates = [
+						{
+							id: 'pending',
+							displayName: __(
+								'Pending',
+								'woocommerce-payments'
+							),
+							amount: 0,
+						},
+					];
+				}
+			}
+
 			const options = {
 				lineItems: normalizeLineItems( billing?.cartTotalItems ),
 				emailRequired: true,
-				shippingAddressRequired: shippingData?.needsShipping,
+				shippingAddressRequired,
 				phoneNumberRequired:
 					getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
 					false,
-				shippingRates: shippingData?.shippingRates[ 0 ]?.shipping_rates?.map(
-					( r ) => {
-						return {
-							id: r.rate_id,
-							amount: parseInt( r.price, 10 ),
-							displayName: r.name,
-						};
-					}
-				),
+				shippingRates,
 				allowedShippingCountries: getExpressCheckoutData( 'checkout' )
 					.allowed_shipping_countries,
 			};
