@@ -9,7 +9,30 @@ import path from 'path';
 config( { path: path.resolve( __dirname, '../e2e/config', '.env' ) } );
 config( { path: path.resolve( __dirname, '../e2e/config', 'local.env' ) } );
 
-const { BASE_URL } = process.env;
+const { BASE_URL, E2E_GROUP, E2E_BRANCH } = process.env;
+
+const validGroups = [ 'wcpay', 'subscriptions' ];
+const validBranches = [ 'merchant', 'shopper' ];
+
+const buildTestDir = ( group: string, branch: string ) => {
+	const baseDir = `\/specs`;
+
+	if ( ! group || ! validGroups.includes( group ) ) {
+		return baseDir;
+	}
+
+	if ( ! branch || ! validBranches.includes( branch ) ) {
+		return `${ baseDir }\/${ group }`;
+	}
+
+	return `${ baseDir }\/${ group }\/${ branch }`;
+};
+
+const getTestMatch = ( group: string, branch: string ) => {
+	const testDir = buildTestDir( group, branch );
+
+	return new RegExp( `${ testDir }\/.*\.spec\.ts` );
+};
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -48,6 +71,7 @@ export default defineConfig( {
 		timeout: 20 * 1000,
 	},
 	snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{ext}',
+	testMatch: getTestMatch( E2E_GROUP, E2E_BRANCH ),
 
 	/* Configure projects for major browsers */
 	projects: [
@@ -58,15 +82,8 @@ export default defineConfig( {
 			dependencies: [ 'setup' ],
 		},
 		{
-			name: 'merchant',
+			name: 'chromium',
 			use: { ...devices[ 'Desktop Chrome' ] },
-			testDir: './specs/merchant',
-			dependencies: [ 'setup' ],
-		},
-		{
-			name: 'shopper',
-			use: { ...devices[ 'Desktop Chrome' ] },
-			testDir: './specs/shopper',
 			dependencies: [ 'setup' ],
 		},
 		// Setup project
