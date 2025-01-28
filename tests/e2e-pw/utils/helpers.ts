@@ -135,3 +135,23 @@ export const getAnonymousShopper = async (
  */
 export const describeif = ( condition: boolean ) =>
 	condition ? test.describe : test.describe.skip;
+
+export const checkPageExists = async (
+	page: Page,
+	pageUrl: string
+): Promise< boolean > => {
+	// Check whether specified page exists
+	return page
+		.goto( pageUrl, {
+			waitUntil: 'load',
+		} )
+		.then( ( response ) => {
+			if ( response.status() === 404 ) {
+				return false;
+			}
+			return true;
+		} )
+		.catch( () => {
+			return false;
+		} );
+};
