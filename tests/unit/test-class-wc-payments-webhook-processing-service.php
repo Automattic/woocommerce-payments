@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -97,7 +98,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods( [ 'get_wcpay_refund_id_for_order', 'add_note_and_metadata_for_refund', 'create_refund_for_order' ] )
+			->setMethods( [ 'get_wcpay_refund_id_for_order', 'add_note_and_metadata_for_refund', 'create_refund_for_order', 'mark_terminal_payment_failed' ] )
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
@@ -1810,6 +1811,54 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->expectException( WCPay\Exceptions\Invalid_Payment_Method_Exception::class );
 		$this->expectExceptionMessage( 'Could not find order via intent ID: intent_id' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_payment_intent_failed_handles_terminal_payment() {
+		$this->event_body = [
+			'type'     => 'payment_intent.payment_failed',
+			'livemode' => true,
+			'data'     => [
+				'object' => [
+					'id'                 => 'pi_123',
+					'status'             => 'requires_payment_method',
+					'created'            => 1706745600,
+					'charges'            => [
+						'data' => [
+							[
+								'id'                     => 'ch_123',
+								'created'                => 1706745600,
+								'payment_method_details' => [ 'type' => 'card_present' ],
+							],
+						],
+					],
+					'last_payment_error' => [
+						'message'        => 'Card declined',
+						'payment_method' => [
+							'id'   => 'pm_123',
+							'type' => Payment_Method::CARD_PRESENT,
+						],
+					],
+				],
+			],
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'mark_terminal_payment_failed' )
+			->with(
+				$this->mock_order,
+				'pi_123',
+				'requires_payment_method',
+				'ch_123',
+				'With the following message: <code>Card declined</code>'
+			);
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
