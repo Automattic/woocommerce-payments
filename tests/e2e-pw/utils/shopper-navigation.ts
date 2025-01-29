@@ -36,6 +36,12 @@ export const goToCheckout = async ( page: Page ) => {
 	await isUIUnblocked( page );
 };
 
+export const goToCheckoutWCB = async ( page: Page ) => {
+	await page.goto( '/checkout-wcb', {
+		waitUntil: 'load',
+	} );
+};
+
 export const goToOrders = async ( page: Page ) => {
 	await page.goto( '/my-account/orders/', {
 		waitUntil: 'load',
@@ -48,7 +54,11 @@ export const goToOrder = async ( page: Page, orderId: string ) => {
 	} );
 };
 
-export const goToSubscriptions = ( page: Page ) =>
-	page.goto( '/my-account/subscriptions/', {
+export const goToMyAccount = async ( page: Page, subPage?: string ) => {
+	await page.goto( '/my-account/' + ( subPage ?? '' ), {
 		waitUntil: 'load',
 	} );
+};
+
+export const goToSubscriptions = async ( page: Page ) =>
+	await goToMyAccount( page, 'subscriptions' );
