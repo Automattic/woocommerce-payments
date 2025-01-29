@@ -36,6 +36,12 @@ export const goToCheckout = async ( page: Page ) => {
 	await isUIUnblocked( page );
 };
 
+export const goToCheckoutWCB = async ( page: Page ) => {
+	await page.goto( '/checkout-wcb', {
+		waitUntil: 'load',
+	} );
+};
+
 export const goToOrders = async ( page: Page ) => {
 	await page.goto( '/my-account/orders/', {
 		waitUntil: 'load',
