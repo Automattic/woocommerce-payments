@@ -6,7 +6,6 @@ import {
 	ConnectAccountOnboarding,
 	ConnectComponentsProvider,
 } from '@stripe/react-connect-js';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
