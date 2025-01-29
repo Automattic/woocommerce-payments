@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Extract the Account Session logic from Embedded components onboarding into a reusable utility hook.
