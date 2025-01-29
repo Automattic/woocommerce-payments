@@ -14,22 +14,19 @@ interface UseAccountSessionProps {
 	isOnboarding: boolean;
 	data: Record< string, any >;
 	continueKyc: boolean;
+	setLoadErrorMessage: ( message: string ) => void;
 	appearance: {
 		variables: Record< string, any >;
 	};
-}
-
-interface UseAccountSessionReturn {
-	loadErrorMessage: string;
-	stripeConnectInstance: StripeConnectInstance | null;
 }
 
 const useAccountSession = ( {
 	isOnboarding,
 	data,
 	continueKyc,
+	setLoadErrorMessage,
 	appearance,
-}: UseAccountSessionProps ): UseAccountSessionReturn => {
+}: UseAccountSessionProps ): StripeConnectInstance | null => {
 	const [ locale, setLocale ] = useState( '' );
 	const [ publishableKey, setPublishableKey ] = useState( '' );
 	const [ clientSecret, setClientSecret ] = useState<
@@ -39,7 +36,6 @@ const useAccountSession = ( {
 		stripeConnectInstance,
 		setStripeConnectInstance,
 	] = useState< StripeConnectInstance | null >( null );
-	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
 
 	const fetchAccountSession = useCallback( async () => {
 		try {
@@ -74,7 +70,7 @@ const useAccountSession = ( {
 
 		// Return null if an error occurred.
 		return null;
-	}, [ isOnboarding, continueKyc, data ] );
+	}, [ isOnboarding, continueKyc, data, setLoadErrorMessage ] );
 
 	// Function to fetch clientSecret for use in Stripe auto-refresh or initialization
 	const fetchClientSecret = useCallback( async () => {
@@ -106,7 +102,13 @@ const useAccountSession = ( {
 		};
 
 		fetchKeys();
-	}, [ data, continueKyc, fetchAccountSession, fetchClientSecret ] );
+	}, [
+		data,
+		continueKyc,
+		fetchAccountSession,
+		fetchClientSecret,
+		setLoadErrorMessage,
+	] );
 
 	useEffect( () => {
 		if ( publishableKey && clientSecret && ! stripeConnectInstance ) {
@@ -131,10 +133,7 @@ const useAccountSession = ( {
 		appearance,
 	] );
 
-	return {
-		loadErrorMessage,
-		stripeConnectInstance,
-	};
+	return stripeConnectInstance;
 };
 
 export default useAccountSession;
