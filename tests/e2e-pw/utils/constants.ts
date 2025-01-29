@@ -6,4 +6,5 @@ export const shouldRunActionSchedulerTests =
 
 export const products = {
 	SUBSCRIPTION_SIGNUP_FEE: 70,
+	SUBSCRIPTION_NO_SIGNUP_FEE: 88,
 };
