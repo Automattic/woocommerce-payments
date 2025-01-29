@@ -520,6 +520,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$becs_details              = [
 			'type' => 'au_becs_debit',
 		];
+		$grabpay_details           = [
+			'type' => 'grabpay',
+		];
 
 		$charge_payment_method_details = [
 			$visa_credit_details,
@@ -533,6 +536,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$ideal_details,
 			$sepa_details,
 			$becs_details,
+			$grabpay_details,
 		];
 
 		$expected_payment_method_titles = [
@@ -547,6 +551,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'iDEAL',
 			'SEPA Direct Debit',
 			'BECS Direct Debit',
+			'GrabPay',
 		];
 
 		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
@@ -610,6 +615,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_afterpay_details   = [
 			'type' => 'afterpay_clearpay',
 		];
+		$mock_grabpay_details    = [
+			'type' => 'grabpay',
+		];
 
 		$card_method       = $this->payment_methods['card'];
 		$giropay_method    = $this->payment_methods['giropay'];
@@ -622,7 +630,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$becs_method       = $this->payment_methods['au_becs_debit'];
 		$affirm_method     = $this->payment_methods['affirm'];
 		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
-
+		$grabpay_method    = $this->payment_methods['grabpay'];
 		$this->assertEquals( 'card', $card_method->get_id() );
 		$this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
@@ -696,6 +704,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'Clearpay', $afterpay_method->get_title( 'GB', $mock_afterpay_details ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'GB' ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
+
+		$this->assertEquals( 'grabpay', $grabpay_method->get_id() );
+		$this->assertEquals( 'GrabPay', $grabpay_method->get_title() );
+		$this->assertEquals( 'GrabPay', $grabpay_method->get_title( 'SG', $mock_grabpay_details ) );
+		$this->assertTrue( $grabpay_method->is_enabled_at_checkout( 'SG' ) );
+		$this->assertFalse( $grabpay_method->is_reusable() );
 	}
 
 	public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
@@ -718,6 +732,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$becs_method       = $this->payment_methods['au_becs_debit'];
 		$affirm_method     = $this->payment_methods['affirm'];
 		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
+		$grabpay_method    = $this->payment_methods['grabpay'];
 
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $giropay_method->is_enabled_at_checkout( 'US' ) );
@@ -730,6 +745,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $becs_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $affirm_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $afterpay_method->is_enabled_at_checkout( 'US' ) );
+		$this->assertFalse( $grabpay_method->is_enabled_at_checkout( 'SG' ) );
 	}
 
 	public function test_payment_methods_enabled_based_on_currency_limits() {
@@ -815,6 +831,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$becs_method       = $this->payment_methods['au_becs_debit'];
 		$affirm_method     = $this->payment_methods['affirm'];
 		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
+		$grabpay_method    = $this->payment_methods['grabpay'];
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
 
@@ -828,6 +845,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $p24_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $ideal_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $grabpay_method->is_currency_valid( $account_domestic_currency ) );
 		// BNPLs can accept only domestic payments.
 		$this->assertFalse( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
@@ -843,11 +861,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $p24_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $ideal_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertFalse( $becs_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertFalse( $grabpay_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $affirm_method->is_currency_valid( $account_domestic_currency ) );
 		$this->assertTrue( $afterpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
 		$this->assertTrue( $becs_method->is_currency_valid( $account_domestic_currency ) );
+
+		WC_Helper_Site_Currency::$mock_site_currency = 'SGD';
+		$this->assertTrue( $card_method->is_currency_valid( $account_domestic_currency ) );
+		$this->assertTrue( $grabpay_method->is_currency_valid( $account_domestic_currency ) );
 
 		// BNPLs can accept only domestic payments.
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
