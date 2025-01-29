@@ -17,7 +17,7 @@ import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import { finalizeOnboarding } from 'wcpay/onboarding/utils';
 import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
-import useAccountSession from 'wcpay/utils/embedded/account-session';
+import useAccountSession from 'wcpay/utils/embedded-components/account-session';
 import { trackEmbeddedStepChange } from 'wcpay/onboarding/tracking';
 
 interface Props {
