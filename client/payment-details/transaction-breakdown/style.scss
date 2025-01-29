@@ -1,0 +1,35 @@
+/** @format */
+
+.wcpay-transaction-breakdown,
+.wcpay-transaction-breakdown__footer,
+.wcpay-transaction-breakdown div,
+.wcpay-transaction-breakdown__footer div {
+	font-size: 16px;
+}
+
+.wcpay-transaction-breakdown__conversion_rate {
+	margin-top: 0 !important;
+	font-size: 12px !important;
+	color: $wp-gray-40;
+	text-align: right;
+	line-height: 16px;
+}
+.wcpay-transaction-breakdown__fees {
+	margin-left: 5%;
+	color: $wp-gray-40;
+}
+.wcpay-transaction-breakdown__fees .wcpay-transaction-breakdown__fee_name {
+	width: 35%;
+}
+.wcpay-transaction-breakdown__fees .wcpay-transaction-breakdown__fee_amount,
+.wcpay-transaction-breakdown__fees .wcpay-transaction-breakdown__fee_rate {
+	width: 30%;
+	text-align: right;
+}
+.wcpay-transaction-breakdown__fees
+	.wcpay-transaction-breakdown__total_fee_info {
+	font-weight: 600;
+}
+.wcpay-transaction-breakdown__footer_amount {
+	font-weight: 600;
+}
