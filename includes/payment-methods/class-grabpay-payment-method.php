@@ -25,11 +25,13 @@ class Grabpay_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
+		// Note: If Malaysia support is added to WooPayments in the future, we'll need to not only add MYR here, but also implement
+		// logic to limit the currency based on the Stripe account country, so SG accounts only accept SGD, and MY accounts only accept MYR.
+		$this->currencies                   = [ Currency_Code::SINGAPORE_DOLLAR ];
 		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->is_reusable                  = false;
 		$this->is_bnpl                      = false;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/grabpay.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies                   = [ Currency_Code::SINGAPORE_DOLLAR, Currency_Code::MALAYSIAN_RINGGIT ];
 		$this->accept_only_domestic_payment = false;
 		$this->countries                    = [ Country_Code::SINGAPORE, Country_Code::MALAYSIA ];
 	}

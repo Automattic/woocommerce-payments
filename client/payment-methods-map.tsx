@@ -238,11 +238,11 @@ const PaymentMethodInformationObject: Record<
 		id: 'grabpay',
 		label: __( 'GrabPay', 'woocommerce-payments' ),
 		description: __(
-			'Allow customers to pay using GrabPay.', // TODO: define description.
+			'A popular digital wallet for cashless payments in Southeast Asia.',
 			'woocommerce-payments'
 		),
 		icon: GrabPayIcon,
-		currencies: [ 'SGD', 'MYR' ],
+		currencies: [ 'SGD' ],
 		stripe_key: 'grabpay_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
