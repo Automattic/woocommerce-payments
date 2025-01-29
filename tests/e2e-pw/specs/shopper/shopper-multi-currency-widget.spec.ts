@@ -121,5 +121,7 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 		await expect(
 			shopperPage.locator( '.widget select[name=currency]' )
 		).not.toBeVisible();
+
+		await merchant.activateMulticurrency( merchantPage );
 	} );
 } );
