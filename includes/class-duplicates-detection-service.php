@@ -20,7 +20,6 @@ use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 
 /**
@@ -94,8 +93,6 @@ class Duplicates_Detection_Service {
 		$keywords = [
 			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'p24'        => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'przelewy24' => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'ideal'      => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'becs'       => Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'eps'        => Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
