@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { test, expect, Page } from '@playwright/test';
+
 /**
  * Internal dependencies
  */
@@ -11,6 +12,7 @@ import {
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
 	removeMultiCurrencyWidgets,
+	restoreCurrencies,
 } from '../../utils/merchant';
 import * as navigation from '../../utils/shopper-navigation';
 
@@ -31,6 +33,7 @@ test.describe( 'Multi-currency widget setup', () => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
 		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
+		await restoreCurrencies( merchantPage );
 
 		await addMulticurrencyWidget( merchantPage, true );
 	} );
@@ -70,9 +73,17 @@ test.describe( 'Multi-currency widget setup', () => {
 
 	test( 'can update widget properties', async () => {
 		await test.step( 'opens widget settings', async () => {
-			await merchantPage
-				.getByRole( 'button', { name: 'Settings' } )
-				.click();
+			const settingsButton = merchantPage.locator(
+				'.interface-pinned-items > button[aria-label="Settings"]'
+			);
+			const isSettingsButtonPressed = await settingsButton.evaluate(
+				( node ) => node.getAttribute( 'aria-pressed' ) === 'true'
+			);
+
+			if ( ! isSettingsButtonPressed ) {
+				await settingsButton.click();
+			}
+
 			await merchantPage
 				.locator( '[data-title="Currency Switcher Block"]' )
 				.click();
@@ -82,7 +93,7 @@ test.describe( 'Multi-currency widget setup', () => {
 			await merchantPage
 				.getByRole( 'checkbox', { name: 'Display flags' } )
 				.check();
-			await expect(
+			expect(
 				await merchantPage
 					.getByRole( 'checkbox', { name: 'Display flags' } )
 					.isChecked()
@@ -93,7 +104,7 @@ test.describe( 'Multi-currency widget setup', () => {
 			await merchantPage
 				.getByRole( 'checkbox', { name: 'Display currency symbols' } )
 				.check();
-			await expect(
+			expect(
 				await merchantPage
 					.getByRole( 'checkbox', {
 						name: 'Display currency symbols',
@@ -106,7 +117,7 @@ test.describe( 'Multi-currency widget setup', () => {
 			await merchantPage
 				.getByRole( 'checkbox', { name: 'Border' } )
 				.check();
-			await expect(
+			expect(
 				await merchantPage
 					.getByRole( 'checkbox', { name: 'Border' } )
 					.isChecked()
@@ -166,7 +177,7 @@ test.describe( 'Multi-currency widget setup', () => {
 		await navigation.goToShop( shopperPage );
 
 		await expect(
-			await shopperPage.locator( '.currency-switcher-holder' )
+			shopperPage.locator( '.currency-switcher-holder' )
 		).toBeVisible();
 		await expect(
 			shopperPage
@@ -195,32 +206,32 @@ test.describe( 'Multi-currency widget setup', () => {
 
 		// Asserts flags are displayed.
 		await expect(
-			await shopperPage.locator( '.currency-switcher-holder select' )
+			shopperPage.locator( '.currency-switcher-holder select' )
 		).toContainText( '🇺🇸' );
 		// Asserts currency symbols are displayed.
 		await expect(
-			await shopperPage.locator( '.currency-switcher-holder select' )
+			shopperPage.locator( '.currency-switcher-holder select' )
 		).toContainText( '$' );
 		// Asserts border is set.
 		await expect(
-			await shopperPage.locator( '.currency-switcher-holder select' )
+			shopperPage.locator( '.currency-switcher-holder select' )
 		).toHaveCSS( 'border-top-width', '1px' );
 		// Asserts border radius is set.
 		await expect(
-			await shopperPage.locator( '.currency-switcher-holder select' )
+			shopperPage.locator( '.currency-switcher-holder select' )
 		).toHaveCSS( 'border-top-left-radius', `${ settings.borderRadius }px` );
 		await expect(
-			await shopperPage.locator( '.currency-switcher-holder select' )
+			shopperPage.locator( '.currency-switcher-holder select' )
 		).toHaveCSS( 'font-size', `${ settings.fontSize }px` );
 		await expect(
-			await shopperPage.locator( '.currency-switcher-holder' )
+			shopperPage.locator( '.currency-switcher-holder' )
 		).toHaveAttribute( 'style', `line-height: ${ settings.lineHeight }; ` ); // Trailing space is expected.
 		await expect(
-			await shopperPage.locator( '.currency-switcher-holder select' )
+			shopperPage.locator( '.currency-switcher-holder select' )
 		).toHaveCSS( 'color', settings.textColor );
 		// Asserts border color is set.
 		await expect(
-			await shopperPage.locator( '.currency-switcher-holder select' )
+			shopperPage.locator( '.currency-switcher-holder select' )
 		).toHaveCSS( 'border-top-color', settings.borderColor );
 	} );
 } );
