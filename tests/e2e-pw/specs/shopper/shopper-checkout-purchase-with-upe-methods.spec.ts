@@ -64,50 +64,42 @@ test.describe( 'Enable UPE with deferred intent creation', () => {
 		}
 	} );
 
-	const testBancontactOrder = async (
-		cardTestingPreventionState: boolean
-	) => {
-		await goToShop( shopperPage );
-		await addToCartFromShopPage( shopperPage, 'Beanie' );
-		await goToCheckout( shopperPage );
-		await fillBillingAddress(
-			shopperPage,
-			config.addresses[ 'upe-customer' ].billing.be
+	[ false, true ].forEach( ( ctpEnabled ) => {
+		test.describe(
+			`Card testing protection enabled: ${ ctpEnabled }`,
+			() => {
+				test.beforeAll( async () => {
+					if ( ctpEnabled ) {
+						await enableCardTestingProtection( merchantPage );
+					}
+				} );
+				test.afterAll( async () => {
+					if ( ctpEnabled ) {
+						await disableCardTestingProtection( merchantPage );
+					}
+				} );
+				test( 'should successfully place order with Bancontact', async () => {
+					await goToShop( shopperPage );
+					await addToCartFromShopPage( shopperPage, 'Beanie' );
+					await goToCheckout( shopperPage );
+					await fillBillingAddress(
+						shopperPage,
+						config.addresses[ 'upe-customer' ].billing.be
+					);
+					await expectFraudPreventionToken( shopperPage, ctpEnabled );
+					await shopperPage.getByText( 'Bancontact' ).click();
+					await focusPlaceOrderButton( shopperPage );
+					await placeOrder( shopperPage );
+					await shopperPage
+						.getByRole( 'link', {
+							name: 'Authorize Test Payment',
+						} )
+						.click();
+					await expect(
+						shopperPage.getByText( 'Order received' ).first()
+					).toBeVisible();
+				} );
+			}
 		);
-		await shopperPage.waitForLoadState( 'networkidle' );
-		await expectFraudPreventionToken(
-			shopperPage,
-			cardTestingPreventionState
-		);
-		await shopperPage.getByText( 'Bancontact' ).click();
-		await focusPlaceOrderButton( shopperPage );
-		await placeOrder( shopperPage );
-		await shopperPage.waitForLoadState( 'networkidle' );
-		await shopperPage
-			.getByRole( 'link', {
-				name: 'Authorize Test Payment',
-			} )
-			.click();
-		await expect(
-			shopperPage.getByText( 'Order received' ).first()
-		).toBeVisible();
-	};
-
-	test.describe( 'Card testing prevention enabled', () => {
-		test.beforeAll( async () => {
-			await enableCardTestingProtection( merchantPage );
-		} );
-		test.afterAll( async () => {
-			await disableCardTestingProtection( merchantPage );
-		} );
-		test( 'should successfully place order with Bancontact', async () => {
-			await testBancontactOrder( true );
-		} );
-	} );
-
-	test.describe( 'Card testing prevention disabled', () => {
-		test( 'should successfully place order with Bancontact', async () => {
-			await testBancontactOrder( false );
-		} );
 	} );
 } );

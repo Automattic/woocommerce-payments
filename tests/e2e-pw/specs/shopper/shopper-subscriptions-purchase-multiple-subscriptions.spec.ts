@@ -8,7 +8,6 @@ import test, { Page, expect } from '@playwright/test';
  */
 import { shouldRunSubscriptionsTests } from '../../utils/constants';
 import { describeif, getMerchant, getShopper } from '../../utils/helpers';
-import RestAPI from '../../utils/rest-api';
 import { config } from '../../config/default';
 import {
 	emptyCart,
@@ -39,12 +38,10 @@ describeif( shouldRunSubscriptionsTests )(
 	() => {
 		let merchantPage: Page, shopperPage: Page;
 		test.beforeAll( async ( { browser }, { project } ) => {
-			const restApi = new RestAPI( project.use.baseURL );
-			await restApi.deleteCustomerByEmailAddress(
-				configBillingAddress.email
-			);
 			merchantPage = ( await getMerchant( browser ) ).merchantPage;
-			shopperPage = ( await getShopper( browser ) ).shopperPage;
+			shopperPage = (
+				await getShopper( browser, true, project.use.baseURL )
+			 ).shopperPage;
 			wasMulticurrencyEnabled = await activateMulticurrency(
 				merchantPage
 			);

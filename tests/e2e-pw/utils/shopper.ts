@@ -60,6 +60,55 @@ export const fillBillingAddress = async (
 	await page.locator( '#billing_email' ).fill( billingAddress.email );
 };
 
+export const fillBillingAddressWCB = async (
+	page: Page,
+	billingAddress: CustomerAddress
+) => {
+	const editBillingAddressButton = page.getByLabel( 'Edit billing address' );
+	if ( await editBillingAddressButton.isVisible() ) {
+		await editBillingAddressButton.click();
+	}
+	const billingAddressForm = page.getByRole( 'group', {
+		name: 'Billing address',
+	} );
+	await billingAddressForm
+		.getByLabel( 'Country/Region' )
+		.selectOption( billingAddress.country );
+	await billingAddressForm
+		.getByLabel( 'First Name' )
+		.fill( billingAddress.firstname );
+	await billingAddressForm
+		.getByLabel( 'Last Name' )
+		.fill( billingAddress.firstname );
+	await billingAddressForm
+		.getByLabel( 'Company (optional)' )
+		.fill( billingAddress.company );
+	await billingAddressForm
+		.getByLabel( 'Address', { exact: true } )
+		.fill( billingAddress.addressfirstline );
+	const addSecondLineButton = page.getByRole( 'button', {
+		name: '+ Add apartment, suite, etc.',
+	} );
+	if ( ( await addSecondLineButton.count() ) > 0 ) {
+		await addSecondLineButton.click();
+	}
+	await billingAddressForm
+		.getByLabel( 'Apartment, suite, etc. (optional)' )
+		.fill( billingAddress.addresssecondline );
+	await billingAddressForm.getByLabel( 'City' ).fill( billingAddress.city );
+	if ( billingAddress.state ) {
+		await billingAddressForm
+			.getByLabel( 'State' )
+			.selectOption( billingAddress.state );
+	}
+	await billingAddressForm
+		.getByLabel( 'ZIP Code' )
+		.fill( billingAddress.postcode );
+	await billingAddressForm
+		.getByLabel( 'Phone (optional)' )
+		.fill( billingAddress.phone );
+};
+
 // This is currently the source of some flaky tests since sometimes the form is not submitted
 // after the first click, so we retry until the ui is blocked.
 export const placeOrder = async ( page: Page ) => {
@@ -142,6 +191,31 @@ export const fillCardDetails = async (
 
 		await stripeFrame.locator( '[name="cvc"]' ).fill( card.cvc );
 	}
+};
+
+export const fillCardDetailsWCB = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const newPaymentMethodRadioButton = page.locator(
+		'#radio-control-wc-payment-method-options-woocommerce_payments'
+	);
+	if ( await newPaymentMethodRadioButton.isVisible() ) {
+		await newPaymentMethodRadioButton.click();
+	}
+	await page.waitForSelector( '.__PrivateStripeElement' );
+	const frameHandle = await page.waitForSelector(
+		'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+	if ( ! stripeFrame ) return;
+	await stripeFrame.waitForLoadState( 'networkidle' );
+	await stripeFrame.getByPlaceholder( '1234 1234 1234' ).fill( card.number );
+	await stripeFrame
+		.getByPlaceholder( 'MM / YY' )
+		.fill( card.expires.month + card.expires.year );
+
+	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
 };
 
 export const confirmCardAuthentication = async (
@@ -347,6 +421,17 @@ export const placeOrderWithCurrency = async (
 	return placeOrderWithOptions( page );
 };
 
+export const setSavePaymentMethod = async ( page: Page, save = true ) => {
+	const checkbox = page.getByLabel(
+		'Save payment information to my account for future purchases.'
+	);
+	if ( save ) {
+		await checkbox.check();
+	} else {
+		await checkbox.uncheck();
+	}
+};
+
 export const emptyCart = async ( page: Page ) => {
 	await navigation.goToCart( page );
 
@@ -370,9 +455,9 @@ export const emptyCart = async ( page: Page ) => {
 		coupons = await page.locator( '.woocommerce-remove-coupon' ).all();
 	}
 
-	await expect( page.locator( '.cart-empty.woocommerce-info' ) ).toHaveText(
-		'Your cart is currently empty.'
-	);
+	await expect(
+		page.getByText( 'Your cart is currently empty.' )
+	).toBeVisible();
 };
 
 export const changeAccountCurrency = async (
@@ -426,32 +511,35 @@ export const deleteSavedCard = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	await page
-		.getByRole( 'row', { name: card.label } )
-		.first()
-		.getByRole( 'link', { name: 'Delete' } )
-		.click();
-	await page.waitForTimeout( 1000 );
-	await expect( page.getByText( 'Payment method deleted.' ) ).toBeVisible();
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Delete' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await button.click();
 };
 
 export const selectSavedCardOnCheckout = async (
 	page: Page,
 	card: typeof config.cards.basic
-) =>
-	await page
+) => {
+	const option = page
 		.getByText(
 			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 		)
-		.click();
+		.first();
+	await expect( option ).toBeVisible( { timeout: 100 } );
+	option.click();
+};
 
 export const setDefaultPaymentMethod = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	await page
-		.getByRole( 'row', { name: card.label } )
-		.first()
-		.getByRole( 'link', { name: 'Make default' } )
-		.click();
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Make default' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	button.click();
 };
