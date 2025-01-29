@@ -3889,8 +3889,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function create_setup_intent_ajax() {
 		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
+			$wc_add_payment_method_rate_limit_id = 'add_payment_method_' . get_current_user_id();
+			if ( ! check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false ) || WC_Rate_Limiter::retried_too_soon( $wc_add_payment_method_rate_limit_id ) ) {
 				throw new Add_Payment_Method_Exception(
 					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
 					'invalid_referrer'
