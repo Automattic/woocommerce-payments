@@ -115,9 +115,9 @@ test.describe( 'Shopper can save and delete cards', () => {
 
 		// TODO: The following test is failing because of a bug in WooPayments, even if WC is showing an exception
 		// that a second card is not allowed to be saved in 20 seconds, it is saved, and the list is not empty.
-		/*await expect(
+		await expect(
 			shopperPage.getByText( 'No saved methods found.' )
-		).toBeVisible();*/
+		).toBeVisible();
 
 		// Instead, continue the cleanup for the next tests
 		await deleteSavedCard( shopperPage, config.cards.basic2 );
