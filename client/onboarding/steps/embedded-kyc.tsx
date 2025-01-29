@@ -1,11 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-	loadConnectAndInitialize,
-	StripeConnectInstance,
-} from '@stripe/connect-js/pure';
+import React, { useState } from 'react';
 import {
 	ConnectAccountOnboarding,
 	ConnectComponentsProvider,
@@ -19,16 +15,10 @@ import appearance from '../kyc/appearance';
 import BannerNotice from 'wcpay/components/banner-notice';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
-import {
-	createAccountSession,
-	finalizeOnboarding,
-	isPoEligible,
-} from 'wcpay/onboarding/utils';
+import { finalizeOnboarding } from 'wcpay/onboarding/utils';
 import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
-import {
-	trackEmbeddedStepChange,
-	trackRedirected,
-} from 'wcpay/onboarding/tracking';
+import useAccountSession from 'wcpay/utils/embedded/account-session';
+import { trackEmbeddedStepChange } from 'wcpay/onboarding/tracking';
 
 interface Props {
 	continueKyc?: boolean;
@@ -41,104 +31,30 @@ const EmbeddedKyc: React.FC< Props > = ( {
 	collectPayoutRequirements = false,
 } ) => {
 	const { data } = useOnboardingContext();
-	const [ locale, setLocale ] = useState( '' );
-	const [ publishableKey, setPublishableKey ] = useState( '' );
-	const [ clientSecret, setClientSecret ] = useState<
-		( () => Promise< string > ) | null
-	>( null );
-	const [
-		stripeConnectInstance,
-		setStripeConnectInstance,
-	] = useState< StripeConnectInstance | null >( null );
 	const [ loading, setLoading ] = useState( true );
 	const [ finalizingAccount, setFinalizingAccount ] = useState( false );
 	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
 
-	const fetchAccountSession = useCallback( async () => {
-		try {
-			const isEligible = ! continueKyc && ( await isPoEligible( data ) );
-			const accountSession = await createAccountSession(
-				data,
-				isEligible
-			);
-			if ( accountSession && accountSession.clientSecret ) {
-				trackRedirected( isEligible, true );
-				return accountSession; // Return the full account session object
-			}
-
-			setLoadErrorMessage(
-				__(
-					"Failed to create account session. Please check that you're using the latest version of WooPayments.",
-					'woocommerce-payments'
-				)
-			);
-		} catch ( error ) {
-			setLoadErrorMessage(
-				__(
-					'Failed to retrieve account session. Please try again later.',
-					'woocommerce-payments'
-				)
-			);
-		}
-
-		// Return null if an error occurred.
-		return null;
-	}, [ continueKyc, data ] );
-
-	// Function to fetch clientSecret for use in Stripe auto-refresh or initialization
-	const fetchClientSecret = useCallback( async () => {
-		const accountSession = await fetchAccountSession();
-		if ( accountSession ) {
-			return accountSession.clientSecret; // Only return the clientSecret
-		}
-		throw new Error( 'Error fetching the client secret' );
-	}, [ fetchAccountSession ] );
-
-	// Effect to fetch the publishable key and clientSecret on initial render
-	useEffect( () => {
-		const fetchKeys = async () => {
-			try {
-				const accountSession = await fetchAccountSession();
-				if ( accountSession ) {
-					setLocale( accountSession.locale );
-					setPublishableKey( accountSession.publishableKey );
-					setClientSecret( () => fetchClientSecret );
-				}
-			} catch ( error ) {
-				setLoadErrorMessage(
-					__(
-						'Failed to create account session. Please check that you are using the latest version of WooPayments.',
-						'woocommerce-payments'
-					)
-				);
-			}
-		};
-
-		fetchKeys();
-	}, [ data, continueKyc, fetchAccountSession, fetchClientSecret ] );
-
-	// Effect to initialize the Stripe Connect instance once publishableKey and clientSecret are ready.
-	useEffect( () => {
-		if ( publishableKey && clientSecret && ! stripeConnectInstance ) {
-			const stripeInstance = loadConnectAndInitialize( {
-				publishableKey,
-				fetchClientSecret,
-				appearance: {
-					overlays: 'drawer',
-					variables: appearance.variables,
-				},
-				locale: locale.replace( '_', '-' ),
-			} );
-
-			setStripeConnectInstance( stripeInstance );
-		}
-	}, [
-		publishableKey,
-		clientSecret,
-		stripeConnectInstance,
-		fetchClientSecret,
-		locale,
-	] );
+	/**
+	 * This is a custom hook that retrieve the account session data.
+	 * It returns the StripeConnectInstance object that is used to render the embedded components.
+	 *
+	 * If the account session data is not available, it returns null.
+	 *
+	 * @param {Object} isOnboarding - Whether the user is onboarding, always true during onboarding.
+	 * @param {Object} data - The data object from the onboarding context.
+	 * @param {Object} continueKyc - Whether to continue the KYC process.
+	 * @param {Function} setLoadErrorMessage - Function to set the load error message.
+	 * @param {Object} appearance - The appearance object.
+	 * @return {Object} StripeConnectInstance | null
+	 */
+	const stripeConnectInstance = useAccountSession( {
+		isOnboarding: true,
+		data,
+		continueKyc,
+		setLoadErrorMessage,
+		appearance,
+	} );
 
 	const handleStepChange = ( step: string ) => {
 		trackEmbeddedStepChange( step );
