@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import appearance from '../kyc/appearance';
+import appearance from 'wcpay/utils/embedded-components/appearance';
 import BannerNotice from 'wcpay/components/banner-notice';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
