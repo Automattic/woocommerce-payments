@@ -218,7 +218,9 @@ test.describe( 'Shopper can save and delete cards', () => {
 				test.afterAll( async () => {
 					const cardKeys = Object.keys( cards );
 					if ( cardName !== cardKeys[ cardKeys.length - 1 ] ) {
-						waitTwentySecondsSinceLastCardAdded( shopperPage );
+						await waitTwentySecondsSinceLastCardAdded(
+							shopperPage
+						);
 					}
 				} );
 			} );
