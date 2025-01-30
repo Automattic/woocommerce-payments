@@ -59,13 +59,12 @@ const expectSnackbarWithText = async (
 	expectedText: string,
 	timeout = 10000
 ) => {
-	await expect(
-		page.locator( '.components-snackbar__content', {
-			hasText: expectedText,
-		} )
-	).toBeVisible( {
-		timeout: timeout,
+	const snackbar = page.locator( '.components-snackbar__content', {
+		hasText: expectedText,
 	} );
+
+	await expect( snackbar ).toBeVisible( { timeout } );
+	await page.waitForTimeout( 2000 );
 };
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
