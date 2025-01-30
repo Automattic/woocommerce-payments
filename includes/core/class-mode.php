@@ -70,7 +70,7 @@ class Mode {
 			|| in_array( $this->get_wp_environment_type(), self::DEV_MODE_ENVIRONMENTS, true )
 
 			// WordPress Development mode. If any development mode is enabled, we'll fall back to dev as well.
-			|| '' !== wp_get_development_mode()
+			|| '' !== $this->wp_get_development_mode()
 		);
 
 		/**
@@ -240,5 +240,14 @@ class Mode {
 		return function_exists( 'wp_get_environment_type' )
 			? wp_get_environment_type()
 			: null;
+	}
+
+	/**
+	 * Returns the WordPress development mode setting.
+	 *
+	 * @return string
+	 */
+	protected function wp_get_development_mode(): string {
+		return wp_get_development_mode();
 	}
 }
