@@ -231,10 +231,7 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 		return;
 	}
 
-	if ( ! page.url().includes( 'tab=wcpay_multi_currency' ) ) {
-		await navigation.goToMultiCurrencySettings( page );
-	}
-
+	await navigation.goToMultiCurrencySettings( page );
 	await page.getByTestId( 'enabled-currencies-add-button' ).click();
 
 	const checkbox = page.locator(
@@ -246,13 +243,7 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	}
 
 	await page.getByRole( 'button', { name: 'Update selected' } ).click();
-	const snackbar = page.locator( '.components-snackbar__content', {
-		hasText: 'Enabled currencies updated.',
-	} );
-
-	await expect( snackbar ).toBeVisible( { timeout: 10000 } );
-	await snackbar.click();
-	await expect( snackbar ).toBeHidden( { timeout: 10000 } );
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
 	await expect(
 		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
 	).toBeVisible();
@@ -260,9 +251,13 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 
 export const restoreCurrencies = async ( page: Page ) => {
 	await disableAllEnabledCurrencies( page );
-	await addCurrency( page, 'USD' );
-	await addCurrency( page, 'EUR' );
-	await addCurrency( page, 'GBP' );
+	await page.getByTestId( 'enabled-currencies-add-button' ).click();
+	await page.locator( `input[type="checkbox"][code="EUR"]` ).check();
+	await page.locator( `input[type="checkbox"][code="GBP"]` ).check();
+	await page.getByRole( 'button', { name: 'Update selected' } ).click();
+	await expect( page.locator( 'li.enabled-currency.gbp' ) ).toBeVisible();
+	await expect( page.locator( 'li.enabled-currency.eur' ) ).toBeVisible();
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
 };
 
 export const removeCurrency = async ( page: Page, currencyCode: string ) => {
