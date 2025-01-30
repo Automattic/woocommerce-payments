@@ -7,11 +7,11 @@ import { test, expect, Page } from '@playwright/test';
  */
 import { useMerchant } from '../../utils/helpers';
 import {
-	activateMulticurrency,
+	activateMulticurrencyWithAPI,
 	activateTheme,
 	addCurrency,
-	deactivateMulticurrency,
-	disableAllEnabledCurrencies,
+	deactivateMulticurrencyWithAPI,
+	disableAllEnabledCurrenciesWithAPI,
 	getActiveThemeSlug,
 	removeCurrency,
 	restoreCurrencies,
@@ -21,6 +21,7 @@ import * as navigation from '../../utils/merchant-navigation';
 test.describe( 'Multi-currency on-boarding', () => {
 	let page: Page;
 	let wasMulticurrencyEnabled: boolean;
+	let baseURL: string;
 	let activeThemeSlug: string;
 	const goToNextOnboardingStep = async ( currentPage: Page ) => {
 		await currentPage
@@ -30,18 +31,19 @@ test.describe( 'Multi-currency on-boarding', () => {
 
 	useMerchant();
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
+		baseURL = project.use.baseURL;
 		page = await browser.newPage();
-		wasMulticurrencyEnabled = await activateMulticurrency( page );
+		wasMulticurrencyEnabled = await activateMulticurrencyWithAPI( baseURL );
 		activeThemeSlug = await getActiveThemeSlug( page );
 	} );
 
 	test.afterAll( async () => {
 		// Restore original theme.
 		await activateTheme( page, activeThemeSlug );
-		await restoreCurrencies( page );
+		await restoreCurrencies( baseURL );
 		if ( ! wasMulticurrencyEnabled ) {
-			await deactivateMulticurrency( page );
+			await deactivateMulticurrencyWithAPI( baseURL );
 		}
 
 		await page.close();
@@ -49,7 +51,7 @@ test.describe( 'Multi-currency on-boarding', () => {
 
 	test.describe( 'Currency selection and management', () => {
 		test.beforeAll( async () => {
-			await disableAllEnabledCurrencies( page );
+			await disableAllEnabledCurrenciesWithAPI( baseURL );
 		} );
 
 		test.beforeEach( async () => {

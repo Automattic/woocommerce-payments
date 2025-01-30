@@ -7,7 +7,7 @@ import test, { Page, expect } from '@playwright/test';
  * Internal dependencies
  */
 import { shouldRunSubscriptionsTests } from '../../utils/constants';
-import { describeif, getMerchant, getShopper } from '../../utils/helpers';
+import { describeif, getShopper } from '../../utils/helpers';
 import { config } from '../../config/default';
 import {
 	emptyCart,
@@ -21,8 +21,8 @@ import {
 	goToSubscriptions,
 } from '../../utils/shopper-navigation';
 import {
-	activateMulticurrency,
-	deactivateMulticurrency,
+	activateMulticurrencyWithAPI,
+	deactivateMulticurrencyWithAPI,
 	restoreCurrencies,
 } from '../../utils/merchant';
 
@@ -36,21 +36,21 @@ let wasMulticurrencyEnabled = false;
 describeif( shouldRunSubscriptionsTests )(
 	'Subscriptions > Purchase multiple subscriptions',
 	() => {
-		let merchantPage: Page, shopperPage: Page;
+		let shopperPage: Page, baseURL: string;
 		test.beforeAll( async ( { browser }, { project } ) => {
-			merchantPage = ( await getMerchant( browser ) ).merchantPage;
+			baseURL = project.use.baseURL;
 			shopperPage = (
 				await getShopper( browser, true, project.use.baseURL )
 			 ).shopperPage;
-			wasMulticurrencyEnabled = await activateMulticurrency(
-				merchantPage
+			wasMulticurrencyEnabled = await activateMulticurrencyWithAPI(
+				baseURL
 			);
-			await restoreCurrencies( merchantPage );
+			await restoreCurrencies( baseURL );
 		} );
 
 		test.afterAll( async () => {
 			if ( ! wasMulticurrencyEnabled ) {
-				await deactivateMulticurrency( merchantPage );
+				await deactivateMulticurrencyWithAPI( baseURL );
 			}
 		} );
 

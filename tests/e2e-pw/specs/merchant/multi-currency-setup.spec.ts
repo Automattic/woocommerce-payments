@@ -8,9 +8,11 @@ import { test, expect, Page } from '@playwright/test';
 import { getMerchant, getShopper } from '../../utils/helpers';
 import {
 	activateMulticurrency,
+	activateMulticurrencyWithAPI,
 	addCurrency,
 	deactivateMulticurrency,
-	disableAllEnabledCurrencies,
+	deactivateMulticurrencyWithAPI,
+	disableAllEnabledCurrenciesWithAPI,
 	removeCurrency,
 	restoreCurrencies,
 	setCurrencyCharmPricing,
@@ -24,26 +26,30 @@ test.describe( 'Multi-currency setup', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
 	let wasMulticurrencyEnabled: boolean;
+	let baseURL: string;
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
+		baseURL = project.use.baseURL;
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
+		wasMulticurrencyEnabled = await activateMulticurrencyWithAPI( baseURL );
 	} );
 
 	test.afterAll( async () => {
-		await restoreCurrencies( merchantPage );
+		await restoreCurrencies( baseURL );
 
 		if ( ! wasMulticurrencyEnabled ) {
-			await deactivateMulticurrency( merchantPage );
+			await deactivateMulticurrencyWithAPI( baseURL );
 		}
 	} );
 
 	test( 'can disable the multi-currency feature', async () => {
+		await activateMulticurrencyWithAPI( baseURL );
 		await deactivateMulticurrency( merchantPage );
 	} );
 
 	test( 'can enable the multi-currency feature', async () => {
+		await deactivateMulticurrencyWithAPI( baseURL );
 		await activateMulticurrency( merchantPage );
 	} );
 
@@ -70,7 +76,8 @@ test.describe( 'Multi-currency setup', () => {
 		};
 
 		test.beforeAll( async () => {
-			await disableAllEnabledCurrencies( merchantPage );
+			await activateMulticurrencyWithAPI( baseURL );
+			await disableAllEnabledCurrenciesWithAPI( baseURL );
 			await navigation.goToShopWithCurrency( shopperPage, 'USD' );
 
 			beanieRegularPrice = await getPriceFromProduct(
@@ -88,6 +95,7 @@ test.describe( 'Multi-currency setup', () => {
 		} );
 
 		test( 'can change the currency rate manually', async () => {
+			await activateMulticurrencyWithAPI( baseURL );
 			await setCurrencyRate(
 				merchantPage,
 				testData.currencyCode,
@@ -121,6 +129,7 @@ test.describe( 'Multi-currency setup', () => {
 		} );
 
 		test( 'can change the charm price manually', async () => {
+			await activateMulticurrencyWithAPI( baseURL );
 			await setCurrencyRate(
 				merchantPage,
 				testData.currencyCode,
@@ -161,6 +170,7 @@ test.describe( 'Multi-currency setup', () => {
 		test( 'can change the rounding precision manually', async () => {
 			const rateForTest = '1.20';
 
+			await activateMulticurrencyWithAPI( baseURL );
 			await setCurrencyRate(
 				merchantPage,
 				testData.currencyCode,
@@ -200,6 +210,7 @@ test.describe( 'Multi-currency setup', () => {
 		};
 
 		test.beforeAll( async () => {
+			await activateMulticurrencyWithAPI( baseURL );
 			for ( const currency of Object.keys( currencyDecimalMap ) ) {
 				await addCurrency( merchantPage, currency );
 			}

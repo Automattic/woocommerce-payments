@@ -8,9 +8,9 @@ import { test, expect, Page } from '@playwright/test';
  */
 import { getMerchant, getShopper } from '../../utils/helpers';
 import {
-	activateMulticurrency,
+	activateMulticurrencyWithAPI,
 	addMulticurrencyWidget,
-	deactivateMulticurrency,
+	deactivateMulticurrencyWithAPI,
 	removeMultiCurrencyWidgets,
 	restoreCurrencies,
 } from '../../utils/merchant';
@@ -19,6 +19,7 @@ import * as navigation from '../../utils/shopper-navigation';
 test.describe( 'Multi-currency widget setup', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
+	let baseURL: string;
 	let wasMulticurrencyEnabled: boolean;
 	// Values to test against. Defining nonsense values to ensure they are applied correctly.
 	const settings = {
@@ -29,11 +30,12 @@ test.describe( 'Multi-currency widget setup', () => {
 		borderColor: 'rgb(252, 185, 0)',
 	};
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
+		baseURL = project.use.baseURL;
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
-		await restoreCurrencies( merchantPage );
+		wasMulticurrencyEnabled = await activateMulticurrencyWithAPI( baseURL );
+		await restoreCurrencies( project.use.baseURL );
 
 		await addMulticurrencyWidget( merchantPage, true );
 	} );
@@ -42,7 +44,7 @@ test.describe( 'Multi-currency widget setup', () => {
 		await removeMultiCurrencyWidgets( project.use.baseURL );
 
 		if ( ! wasMulticurrencyEnabled ) {
-			await deactivateMulticurrency( merchantPage );
+			await deactivateMulticurrencyWithAPI( baseURL );
 		}
 
 		await merchantPage.close();

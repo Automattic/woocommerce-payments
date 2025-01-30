@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Improve multicurrency e2e tests to reset currency states via API

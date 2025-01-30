@@ -37,6 +37,22 @@ class RestAPI {
 			.create();
 	}
 
+	async getOption( optionName: string ): Promise< string > {
+		const client = this.getAdminClient();
+		const settings = await client.get( '/wp/v2/settings' );
+		return settings.data[ optionName ];
+	}
+
+	async setOption(
+		optionName: string,
+		optionValue: string
+	): Promise< void > {
+		const client = this.getAdminClient();
+		await client.post( '/wp/v2/settings', {
+			[ optionName ]: optionValue,
+		} );
+	}
+
 	/**
 	 * Deletes a customer account by their email address if the user exists.
 	 *

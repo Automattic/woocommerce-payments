@@ -15,21 +15,23 @@ import { getMerchant, getShopper } from '../../utils/helpers';
 test.describe( 'Shopper Multi-Currency widget', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
+	let baseURL: string;
 	let wasMulticurrencyEnabled: boolean;
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
+		baseURL = project.use.baseURL;
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await merchant.activateMulticurrency(
-			merchantPage
+		wasMulticurrencyEnabled = await merchant.activateMulticurrencyWithAPI(
+			baseURL
 		);
-		await merchant.restoreCurrencies( merchantPage );
+		await merchant.restoreCurrencies( baseURL );
 	} );
 
 	test.afterAll( async ( {}, { project } ) => {
 		await merchant.removeMultiCurrencyWidgets( project.use.baseURL );
 		if ( ! wasMulticurrencyEnabled ) {
-			await merchant.deactivateMulticurrency( merchantPage );
+			await merchant.deactivateMulticurrencyWithAPI( baseURL );
 		}
 	} );
 
@@ -115,13 +117,13 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 	} );
 
 	test( 'should not display currency switcher widget if multi-currency is disabled', async () => {
-		await merchant.deactivateMulticurrency( merchantPage );
+		await merchant.deactivateMulticurrencyWithAPI( baseURL );
 
 		await navigation.goToShop( shopperPage );
 		await expect(
 			shopperPage.locator( '.widget select[name=currency]' )
 		).not.toBeVisible();
 
-		await merchant.activateMulticurrency( merchantPage );
+		await merchant.activateMulticurrencyWithAPI( baseURL );
 	} );
 } );

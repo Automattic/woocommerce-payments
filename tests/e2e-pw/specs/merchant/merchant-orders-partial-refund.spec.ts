@@ -16,8 +16,8 @@ import {
 import { goToShop } from '../../utils/shopper-navigation';
 import { goToOrder } from '../../utils/merchant-navigation';
 import {
-	activateMulticurrency,
-	deactivateMulticurrency,
+	activateMulticurrencyWithAPI,
+	deactivateMulticurrencyWithAPI,
 	restoreCurrencies,
 } from '../../utils/merchant';
 
@@ -68,6 +68,7 @@ test.describe( 'Order > Partial refund', () => {
 	let orderIds: string[];
 	let orderTotal: string;
 	let wasMulticurrencyEnabled = false;
+	let baseURL: string;
 	let merchantPage: Page, shopperPage: Page;
 
 	const orderProducts = async ( dataTableIndex: number ) => {
@@ -88,10 +89,11 @@ test.describe( 'Order > Partial refund', () => {
 		return orderId;
 	};
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
+		baseURL = project.use.baseURL;
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
-		wasMulticurrencyEnabled = await activateMulticurrency( merchantPage );
-		await restoreCurrencies( merchantPage );
+		wasMulticurrencyEnabled = await activateMulticurrencyWithAPI( baseURL );
+		await restoreCurrencies( baseURL );
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
 		const firstOrderId = await orderProducts( 0 );
 		const secondOrderId = await orderProducts( 1 );
@@ -100,7 +102,7 @@ test.describe( 'Order > Partial refund', () => {
 
 	test.afterAll( async () => {
 		if ( ! wasMulticurrencyEnabled ) {
-			await deactivateMulticurrency( merchantPage );
+			await deactivateMulticurrencyWithAPI( baseURL );
 		}
 	} );
 

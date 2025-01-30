@@ -7,10 +7,10 @@ import { test, expect, Page } from '@playwright/test';
  */
 import { useMerchant } from '../../utils/helpers';
 import {
-	activateMulticurrency,
+	activateMulticurrencyWithAPI,
 	addMulticurrencyWidget,
-	deactivateMulticurrency,
-	disableAllEnabledCurrencies,
+	deactivateMulticurrencyWithAPI,
+	disableAllEnabledCurrenciesWithAPI,
 	removeMultiCurrencyWidgets,
 	restoreCurrencies,
 } from '../../utils/merchant';
@@ -19,22 +19,24 @@ import * as navigation from '../../utils/merchant-navigation';
 test.describe( 'Multi-currency', () => {
 	let wasMulticurrencyEnabled: boolean;
 	let page: Page;
+	let baseURL: string;
 
 	// Use the merchant user for this test suite.
 	useMerchant();
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
+		baseURL = project.use.baseURL;
 		page = await browser.newPage();
-		wasMulticurrencyEnabled = await activateMulticurrency( page );
+		wasMulticurrencyEnabled = await activateMulticurrencyWithAPI( baseURL );
 
-		await disableAllEnabledCurrencies( page );
+		await disableAllEnabledCurrenciesWithAPI( baseURL );
 	} );
 
-	test.afterAll( async ( {}, { project } ) => {
-		await restoreCurrencies( page );
-		await removeMultiCurrencyWidgets( project.use.baseURL );
+	test.afterAll( async ( {} ) => {
+		await restoreCurrencies( baseURL );
+		await removeMultiCurrencyWidgets( baseURL );
 		if ( ! wasMulticurrencyEnabled ) {
-			await deactivateMulticurrency( page );
+			await deactivateMulticurrencyWithAPI( baseURL );
 		}
 		await page.close();
 	} );

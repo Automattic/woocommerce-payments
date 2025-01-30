@@ -108,6 +108,25 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 	await saveWooPaymentsSettings( page );
 };
 
+export const activateMulticurrencyWithAPI = async ( baseURL: string ) => {
+	const wasMulticurrencyEnabled =
+		( await new RestAPI( baseURL ).getOption(
+			'woocommerce_multi_currency_enabled'
+		) ) === '1';
+	await new RestAPI( baseURL ).setOption(
+		'woocommerce_multi_currency_enabled',
+		'1'
+	);
+	return wasMulticurrencyEnabled;
+};
+
+export const deactivateMulticurrencyWithAPI = async ( baseURL: string ) => {
+	await new RestAPI( baseURL ).setOption(
+		'woocommerce_multi_currency_enabled',
+		'0'
+	);
+};
+
 export const addMulticurrencyWidget = async (
 	page: Page,
 	blocksVersion = false
@@ -225,6 +244,13 @@ export const disableAllEnabledCurrencies = async ( page: Page ) => {
 	}
 };
 
+export const disableAllEnabledCurrenciesWithAPI = async ( baseURL: string ) => {
+	await new RestAPI( baseURL ).setOption(
+		'woocommerce_multi_currency_enabled_currencies',
+		'a:0:{}'
+	);
+};
+
 export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	// Default currency.
 	if ( currencyCode === 'USD' ) {
@@ -249,11 +275,11 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	).toBeVisible();
 };
 
-export const restoreCurrencies = async ( page: Page ) => {
-	await disableAllEnabledCurrencies( page );
-	await addCurrency( page, 'USD' );
-	await addCurrency( page, 'EUR' );
-	await addCurrency( page, 'GBP' );
+export const restoreCurrencies = async ( baseURL: string ) => {
+	await new RestAPI( baseURL ).setOption(
+		'woocommerce_multi_currency_enabled_currencies',
+		'a:3:{i:0;s:3:"EUR";i:1;s:3:"GBP";i:2;s:3:"USD";}'
+	);
 };
 
 export const removeCurrency = async ( page: Page, currencyCode: string ) => {
