@@ -7,6 +7,10 @@ import {
 	loadConnectAndInitialize,
 	StripeConnectInstance,
 } from '@stripe/connect-js/pure';
+
+/**
+ * Internal dependencies
+ */
 import { createAccountSession, isPoEligible } from 'wcpay/onboarding/utils';
 import { trackRedirected } from 'wcpay/onboarding/tracking';
 
@@ -20,6 +24,20 @@ interface UseAccountSessionProps {
 	};
 }
 
+/**
+ * This is a custom hook that retrieve the account session data.
+ * It returns the StripeConnectInstance object that is used to render the embedded components.
+ *
+ * If the account session data is not available, it returns null.
+ *
+ * @param boolean isOnboarding - Whether the user is onboarding, always true during onboarding.
+ * @param object data - The data object from the onboarding context.
+ * @param boolean continueKyc - Whether to continue the KYC process.
+ * @param function setLoadErrorMessage - Function to set the load error message.
+ * @param object appearance - The appearance object.
+ *
+ * @return StripeConnectInstance|null
+ */
 const useAccountSession = ( {
 	isOnboarding,
 	data,
