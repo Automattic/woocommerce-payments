@@ -8,7 +8,6 @@ import test, { expect } from '@playwright/test';
  */
 import { shouldRunSubscriptionsTests } from '../../utils/constants';
 import { describeif, getMerchant, getShopper } from '../../utils/helpers';
-import RestAPI from '../../utils/rest-api';
 import { config } from '../../config/default';
 import { goToSubscriptions, goToOrder } from '../../utils/merchant-navigation';
 import {
@@ -27,16 +26,14 @@ let orderId;
 describeif( shouldRunSubscriptionsTests )(
 	'Shopper Subscriptions Purchase No Signup Fee',
 	() => {
-		test.beforeAll( async ( {}, { project } ) => {
-			const restApi = new RestAPI( project.use.baseURL );
-			await restApi.deleteCustomerByEmailAddress(
-				customerBillingConfig.email
-			);
-		} );
 		test( 'It should be able to purchase a subscription without a signup fee', async ( {
 			browser,
-		} ) => {
-			const { shopperPage } = await getShopper( browser );
+		}, { project } ) => {
+			const { shopperPage } = await getShopper(
+				browser,
+				true,
+				project.use.baseURL
+			);
 			await goToProductPageBySlug( shopperPage, productSlug );
 			await shopperPage
 				.getByRole( 'button', { name: 'Sign up now' } )
