@@ -8,6 +8,8 @@ import { useEffect, useRef } from 'react';
  */
 import { getExpressCheckoutButtonAppearance } from '../../utils';
 
+export const SUPPORTED_PREVIEW_PAYMENT_METHODS = [ 'googlePay', 'applePay' ];
+
 const GooglePayButtonPreview = ( { options, buttonAttributes, theme } ) => {
 	const googlePlayContainerRef = useRef( null );
 	const hasStartedLoadingGooglePlayButton = useRef( null );
