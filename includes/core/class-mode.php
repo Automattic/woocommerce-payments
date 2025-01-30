@@ -248,6 +248,11 @@ class Mode {
 	 * @return string
 	 */
 	protected function wp_get_development_mode(): string {
+		/**
+		 * This is an external method that Psalm does not need to be aware of.
+		 *
+		 * @psalm-suppress UndefinedFunction
+		 */
 		return wp_get_development_mode();
 	}
 }
