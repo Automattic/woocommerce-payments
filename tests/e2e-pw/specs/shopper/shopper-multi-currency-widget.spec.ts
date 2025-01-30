@@ -24,6 +24,7 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 			merchantPage
 		);
 		await merchant.restoreCurrencies( merchantPage );
+		await merchant.addMulticurrencyWidget( merchantPage );
 	} );
 
 	test.afterAll( async ( {}, { project } ) => {
@@ -34,8 +35,6 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 	} );
 
 	test( 'should display currency switcher widget if multi-currency is enabled', async () => {
-		await merchant.addMulticurrencyWidget( merchantPage );
-
 		await navigation.goToShop( shopperPage );
 		await expect(
 			shopperPage.locator( '.widget select[name=currency]' )
@@ -114,7 +113,9 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 		).not.toBeVisible();
 	} );
 
-	test( 'should not display currency switcher widget if multi-currency is disabled', async () => {
+	test( 'should not display currency switcher widget if multi-currency is disabled', async ( {}, {
+		project,
+	} ) => {
 		await merchant.deactivateMulticurrency( merchantPage );
 
 		await navigation.goToShop( shopperPage );
@@ -123,5 +124,9 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 		).not.toBeVisible();
 
 		await merchant.activateMulticurrency( merchantPage );
+		// Just to make sure it's at the desired config after enabling and disabling MC.
+		await merchant.restoreCurrencies( merchantPage );
+		await merchant.removeMultiCurrencyWidgets( project.use.baseURL );
+		await merchant.addMulticurrencyWidget( merchantPage );
 	} );
 } );
