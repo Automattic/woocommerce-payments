@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Convert the merchant orders status change spec from Puppeteer to Playwright.
