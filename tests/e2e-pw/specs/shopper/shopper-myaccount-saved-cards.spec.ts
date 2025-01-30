@@ -106,7 +106,7 @@ test.describe( 'Shopper can save and delete cards', () => {
 		// Verify that the card was not added
 		await expect(
 			shopperPage.getByText(
-				'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+				"We're not able to add this payment method. Please refresh the page and try again."
 			)
 		).toBeVisible();
 
