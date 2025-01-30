@@ -26,6 +26,7 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 			baseURL
 		);
 		await merchant.restoreCurrencies( baseURL );
+		await merchant.addMulticurrencyWidget( merchantPage );
 	} );
 
 	test.afterAll( async ( {}, { project } ) => {
@@ -36,8 +37,6 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 	} );
 
 	test( 'should display currency switcher widget if multi-currency is enabled', async () => {
-		await merchant.addMulticurrencyWidget( merchantPage );
-
 		await navigation.goToShop( shopperPage );
 		await expect(
 			shopperPage.locator( '.widget select[name=currency]' )
