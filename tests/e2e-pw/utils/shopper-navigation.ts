@@ -2,10 +2,11 @@
  * External dependencies
  */
 import { Page } from 'playwright/test';
+
 /**
  * Internal dependencies
  */
-import { isUIUnblocked } from './shopper';
+import { isUIUnblocked } from './helpers';
 
 export const goToShop = async ( page: Page, pageNumber?: number ) => {
 	if ( pageNumber ) {
@@ -34,6 +35,12 @@ export const goToCart = async ( page: Page ) => {
 export const goToCheckout = async ( page: Page ) => {
 	await page.goto( '/checkout/', { waitUntil: 'load' } );
 	await isUIUnblocked( page );
+};
+
+export const goToCheckoutWCB = async ( page: Page ) => {
+	await page.goto( '/checkout-wcb', {
+		waitUntil: 'load',
+	} );
 };
 
 export const goToOrders = async ( page: Page ) => {

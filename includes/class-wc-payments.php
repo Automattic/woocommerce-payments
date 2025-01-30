@@ -830,29 +830,16 @@ class WC_Payments {
 	public static function register_gateway( $gateways ) {
 		$payment_methods = array_keys( self::get_payment_method_map() );
 
-		$gateways[]       = self::$card_gateway;
-		$all_gateways     = [];
-		$reusable_methods = [];
+		$gateways[] = self::$card_gateway;
 		foreach ( $payment_methods as $payment_method_id ) {
 			if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
 				continue;
 			}
-			$gateway        = self::get_payment_gateway_by_id( $payment_method_id );
-			$payment_method = self::get_payment_method_by_id( $payment_method_id );
 
-			if ( $payment_method->is_reusable() ) {
-				$reusable_methods[] = $gateway;
-			}
-
-			$all_gateways[] = $gateway;
-
+			$gateways[] = self::get_payment_gateway_by_id( $payment_method_id );
 		}
 
-		if ( is_add_payment_method_page() ) {
-			return array_merge( $gateways, $reusable_methods );
-		}
-
-		return array_merge( $gateways, $all_gateways );
+		return $gateways;
 	}
 
 	/**
