@@ -28,7 +28,7 @@ export default defineConfig( {
 	reporter: process.env.CI
 		? [
 				// If running on CI, also use the GitHub Actions reporter
-				[ 'list' ], // Temporarily for seeing the test order
+				[ 'github' ],
 				[ 'html' ],
 		  ]
 		: [ [ 'html', { open: 'never' } ] ],

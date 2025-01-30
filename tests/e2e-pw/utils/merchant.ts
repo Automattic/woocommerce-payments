@@ -175,7 +175,7 @@ export const removeMultiCurrencyWidgets = async ( baseURL: string ) => {
 export const getActiveThemeSlug = async ( page: Page ) => {
 	await navigation.goToThemes( page );
 
-	const activeTheme = page.locator( '.theme.active' );
+	const activeTheme = await page.locator( '.theme.active' );
 
 	return ( await activeTheme.getAttribute( 'data-slug' ) ) ?? '';
 };
@@ -189,20 +189,16 @@ export const activateTheme = async ( page: Page, slug: string ) => {
 		await page
 			.locator( `.theme[data-slug="${ slug }"] .button.activate` )
 			.click();
-		expect( await page.locator( '.notice.updated' ).innerText() ).toContain(
-			'New theme activated.'
-		);
+		await expect(
+			await page.locator( '.notice.updated' ).innerText()
+		).toContain( 'New theme activated.' );
 	}
 };
 
 export const disableAllEnabledCurrencies = async ( page: Page ) => {
-	if (
-		! page.url().includes( '?page=wc-settings&tab=wcpay_multi_currency' )
-	) {
-		await navigation.goToMultiCurrencySettings( page );
-	}
+	await navigation.goToMultiCurrencySettings( page );
 	await expect(
-		page.locator( '.enabled-currencies-list li' ).first()
+		await page.locator( '.enabled-currencies-list li' ).first()
 	).toBeVisible();
 
 	const deleteButtons = await page
@@ -219,7 +215,7 @@ export const disableAllEnabledCurrencies = async ( page: Page ) => {
 			.first()
 			.click();
 
-		const snackbar = page.locator( '.components-snackbar__content', {
+		const snackbar = await page.locator( '.components-snackbar__content', {
 			hasText: 'Enabled currencies updated.',
 		} );
 
@@ -234,15 +230,11 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	if ( currencyCode === 'USD' ) {
 		return;
 	}
-	if (
-		! page.url().includes( '?page=wc-settings&tab=wcpay_multi_currency' )
-	) {
-		await navigation.goToMultiCurrencySettings( page );
-	}
 
+	await navigation.goToMultiCurrencySettings( page );
 	await page.getByTestId( 'enabled-currencies-add-button' ).click();
 
-	const checkbox = page.locator(
+	const checkbox = await page.locator(
 		`input[type="checkbox"][code="${ currencyCode }"]`
 	);
 
