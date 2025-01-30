@@ -40,12 +40,12 @@ const EmbeddedKyc: React.FC< Props > = ( {
 	 *
 	 * If the account session data is not available, it returns null.
 	 *
-	 * @param {Object} isOnboarding - Whether the user is onboarding, always true during onboarding.
-	 * @param {Object} data - The data object from the onboarding context.
-	 * @param {Object} continueKyc - Whether to continue the KYC process.
-	 * @param {Function} setLoadErrorMessage - Function to set the load error message.
-	 * @param {Object} appearance - The appearance object.
-	 * @return {Object} StripeConnectInstance | null
+	 * @param boolean isOnboarding - Whether the user is onboarding, always true during onboarding.
+	 * @param object data - The data object from the onboarding context.
+	 * @param boolean continueKyc - Whether to continue the KYC process.
+	 * @param function setLoadErrorMessage - Function to set the load error message.
+	 * @param object appearance - The appearance object.
+	 * @return StripeConnectInstance|null
 	 */
 	const stripeConnectInstance = useAccountSession( {
 		isOnboarding: true,
