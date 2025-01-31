@@ -9,7 +9,7 @@ runs:
       # Use +e to trap errors when running E2E tests.
       shell: /bin/bash +e {0}
       run: |
-        PLAYWRIGHT_JSON_OUTPUT_FILE=results.json npm run test:e2e-ci
+        PLAYWRIGHT_JSON_OUTPUT_FILE="$E2E_RESULT_FILEPATH" npm run test:e2e-ci
         
         if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
           E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
