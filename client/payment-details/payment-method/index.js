@@ -23,6 +23,7 @@ import KlarnaDetails from './klarna';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
+import MultibancoDetails from './multibanco';
 
 const detailsComponentMap = {
 	affirm: AffirmDetails,
@@ -38,6 +39,7 @@ const detailsComponentMap = {
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
+	multibanco: MultibancoDetails,
 };
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
