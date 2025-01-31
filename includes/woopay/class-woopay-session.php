@@ -975,9 +975,11 @@ class WooPay_Session {
 				}
 			}
 
-			$fields_block        = self::get_inner_block( $checkout_page_blocks[ $checkout_block_index ], 'woocommerce/checkout-fields-block' );
-			$terms_block         = self::get_inner_block( $fields_block, 'woocommerce/checkout-terms-block' );
-			$show_terms_checkbox = isset( $terms_block['attrs']['checkbox'] ) && $terms_block['attrs']['checkbox'];
+			$fields_block                  = self::get_inner_block( $checkout_page_blocks[ $checkout_block_index ], 'woocommerce/checkout-fields-block' );
+			$terms_block                   = self::get_inner_block( $fields_block, 'woocommerce/checkout-terms-block' );
+			$show_terms_checkbox           = isset( $terms_block['attrs']['checkbox'] ) && $terms_block['attrs']['checkbox'];
+			$below_place_order_button_text = self::get_blocks_terms_and_conditions_text( $terms_block );
+
 		}
 
 		return [
@@ -987,6 +989,41 @@ class WooPay_Session {
 			'terms_checkbox' => $show_terms_checkbox,
 			'custom_terms'   => $below_place_order_button_text,
 		];
+	}
+
+	/**
+	 * Gets the blocks terms and conditions text.
+	 *
+	 * @param array $terms_block the terms block.
+	 * @return string
+	 */
+	private static function get_blocks_terms_and_conditions_text( $terms_block ) {
+
+		if ( isset( $terms_block['attrs']['text'] ) ) {
+			return $terms_block['attrs']['text'];
+		}
+
+		$privacy_page_link = get_privacy_policy_url();
+		$privacy_page_link = $privacy_page_link
+			? '<a href="' . $privacy_page_link . '" target="_blank">' . __( 'Privacy Policy', 'woocommerce-payments' ) . '</a>'
+			: __( 'Privacy Policy', 'woocommerce-payments' );
+
+		$terms_page_id   = wc_terms_and_conditions_page_id();
+		$terms_page_link = '';
+		if ( $terms_page_id ) {
+			$terms_page_link = get_permalink( $terms_page_id );
+		}
+
+		$terms_page_link = $terms_page_link
+			? '<a href="' . $terms_page_link . '" target="_blank">' . __( 'Terms and Conditions', 'woocommerce-payments' ) . '</a>'
+			: __( 'Terms and Conditions', 'woocommerce-payments' );
+
+		return sprintf(
+			/* translators: %1$s terms page link, %2$s privacy page link. */
+			__( 'You must accept our %1$s and %2$s to continue with your purchase.', 'woocommerce-payments' ),
+			$terms_page_link,
+			$privacy_page_link
+		);
 	}
 
 	/**
