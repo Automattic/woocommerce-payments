@@ -78,19 +78,19 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 		captureEvent.transaction_details.customer_currency;
 
 	const formattedAmount =
-		formattedStoreAmount +
-		( isMultiCurrency ? ` → ${ formattedCustomerAmount }` : '' );
+		formattedCustomerAmount +
+		( isMultiCurrency ? ` → ${ formattedStoreAmount }` : '' );
 
 	const feeExchangeRate = captureEvent.fee_rates.fee_exchange_rate?.rate || 1;
 
 	const conversionRate = isMultiCurrency ? (
 		<FlexItem className="wcpay-transaction-breakdown__conversion_rate">
 			{ ' @ 1 ' }
-			{ captureEvent.transaction_details.store_currency }
-			{ ' → ' }
-			{ Math.round( feeExchangeRate * 1000000 ) / 1000000 }
-			{ '	' }
 			{ captureEvent.transaction_details.customer_currency }
+			{ ' → ' }
+			{ Math.round( ( 1 / feeExchangeRate ) * 1000000 ) / 1000000 }
+			{ '	' }
+			{ captureEvent.transaction_details.store_currency }
 		</FlexItem>
 	) : (
 		''
@@ -150,7 +150,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 			storeCurrency
 		);
 		const formattedFeeAmount = amount
-			? ' - ' + formatCurrency( amount, currency, storeCurrency )
+			? ' - ' + formatCurrency( amount, storeCurrency, storeCurrency )
 			: '';
 
 		return [
@@ -223,8 +223,8 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 				'total',
 				'',
 				event.fee_rates.percentage,
-				event.fee_rates.fixed,
-				event.fee_rates.fixed_currency,
+				event.fee_rates.fixed / feeExchangeRate,
+				storeCurrency,
 				storeCurrency,
 				event.transaction_details.store_fee
 			)
@@ -247,12 +247,12 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 			<CardBody className="wcpay-transaction-breakdown">
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
 					{ timelineError instanceof Error ? (
-						<div>
-							{ __(
-								'Error while loading payment details',
+						[
+							__(
+								'Error while loading transaction breakdown',
 								'woocommerce-payments'
-							) }
-						</div>
+							),
+						]
 					) : (
 						<Flex direction="column">
 							<Flex align="top">
@@ -290,7 +290,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 			<CardFooter>
 				<LoadableBlock isLoading={ isLoading } numLines={ 1 }>
 					{ timelineError instanceof Error ? (
-						<div />
+						[]
 					) : (
 						<Flex className="wcpay-transaction-breakdown__footer">
 							<FlexItem>
