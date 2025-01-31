@@ -2,8 +2,13 @@
  * External dependencies
  */
 import path from 'path';
-import { test, Page, Browser, BrowserContext } from '@playwright/test';
+import { test, Page, Browser, BrowserContext, expect } from '@playwright/test';
 
+/**
+ * Internal dependencies
+ */
+import { config } from '../config/default';
+import RestAPI from './rest-api';
 export const merchantStorageFile = path.resolve(
 	__dirname,
 	'../.auth/merchant.json'
@@ -20,7 +25,7 @@ export const customerStorageFile = path.resolve(
 export const wpAdminLogin = async (
 	page: Page,
 	user: { username: string; password: string }
-): void => {
+): Promise< void > => {
 	await page.goto( `/wp-admin` );
 	await page.getByLabel( 'Username or Email Address' ).fill( user.username );
 	await page.getByLabel( 'Password', { exact: true } ).fill( user.password ); // Need exact match to avoid resolving "Show password" button.
@@ -67,11 +72,41 @@ export const getMerchant = async (
  * Allows switching between merchant and shopper contexts within a single test.
  */
 export const getShopper = async (
-	browser: Browser
+	browser: Browser,
+	asNewCustomer = false,
+	baseURL = '' // Needed for recreating customer
 ): Promise< {
 	shopperPage: Page;
 	shopperContext: BrowserContext;
 } > => {
+	if ( asNewCustomer ) {
+		const restApi = new RestAPI( baseURL );
+		await restApi.recreateCustomer(
+			config.users.customer,
+			config.addresses.customer.billing,
+			config.addresses.customer.shipping
+		);
+
+		const shopperContext = await browser.newContext();
+		const shopperPage = await shopperContext.newPage();
+		await wpAdminLogin( shopperPage, config.users.customer );
+		await shopperPage.waitForLoadState( 'networkidle' );
+		await shopperPage.goto( '/my-account' );
+		expect(
+			shopperPage.locator(
+				'.woocommerce-MyAccount-navigation-link--customer-logout'
+			)
+		).toBeVisible( { timeout: 1000 } );
+		await expect(
+			shopperPage.locator(
+				'div.woocommerce-MyAccount-content > p >> nth=0'
+			)
+		).toContainText( 'Hello', { timeout: 1000 } );
+		await shopperPage
+			.context()
+			.storageState( { path: customerStorageFile } );
+		return { shopperPage, shopperContext };
+	}
 	const shopperContext = await browser.newContext( {
 		storageState: customerStorageFile,
 	} );
@@ -92,4 +127,34 @@ export const getAnonymousShopper = async (
 	const shopperContext = await browser.newContext();
 	const shopperPage = await shopperContext.newPage();
 	return { shopperPage, shopperContext };
+};
+
+/**
+ * Conditionally determine whether or not to skip a test suite.
+ */
+export const describeif = ( condition: boolean ) =>
+	condition ? test.describe : test.describe.skip;
+
+export const isUIUnblocked = async ( page: Page ) => {
+	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
+};
+
+export const checkPageExists = async (
+	page: Page,
+	pageUrl: string
+): Promise< boolean > => {
+	// Check whether specified page exists
+	return page
+		.goto( pageUrl, {
+			waitUntil: 'load',
+		} )
+		.then( ( response ) => {
+			if ( response.status() === 404 ) {
+				return false;
+			}
+			return true;
+		} )
+		.catch( () => {
+			return false;
+		} );
 };

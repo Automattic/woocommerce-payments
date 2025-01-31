@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CopyButton renders the button correctly 1`] = `
+<div>
+  <button
+    aria-label="Copy bank reference ID to clipboard"
+    class="woopayments-copy-button"
+    title="Copy to clipboard"
+    type="button"
+  >
+    <i />
+  </button>
+</div>
+`;

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed fraud prevention token not available on blocks checkout

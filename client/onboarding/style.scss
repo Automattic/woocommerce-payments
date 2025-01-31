@@ -17,7 +17,7 @@ body.wcpay-onboarding__body {
 				padding-left: 8px;
 				padding-right: 8px;
 				display: grid;
-				grid-template-columns: 102px 1fr 102px;
+				grid-template-columns: 94px 1fr; // Sizing counted for the right padding inside 1st column (logo)
 				align-items: stretch;
 				background-color: #fff;
 				border-bottom: 1px solid $gray-300;
@@ -56,7 +56,7 @@ body.wcpay-onboarding__body {
 				&-logo {
 					justify-self: center;
 					align-self: center;
-					height: 28px;
+					height: 17px;
 				}
 			}
 
@@ -109,6 +109,42 @@ body.wcpay-onboarding__body {
 						$gutenberg-blueberry-focus
 					);
 				}
+				&.inline {
+					width: auto; // Adjust the button width not to take 100%.
+					margin-top: 0; // No need to have margin in this case.
+				}
+				// Support busy/disabled state for gutenberg blueberry MOX button.
+				&.components-button.is-primary.is-busy,
+				&.components-button.is-primary.is-busy:disabled,
+				&.components-button.is-primary.is-busy[aria-disabled='true'] {
+					background: linear-gradient(
+						-45deg,
+						var(
+								--wp-components-color-accent,
+								$gutenberg-blueberry
+							)
+							33%,
+						var(
+								--wp-components-color-accent-darker-20,
+								$gutenberg-blueberry-focus
+							)
+							33%,
+						var(
+								--wp-components-color-accent-darker-20,
+								$gutenberg-blueberry-focus
+							)
+							70%,
+						var(
+								--wp-components-color-accent,
+								var(
+									--wp-components-color-accent,
+									$gutenberg-blueberry
+								)
+							)
+							70%
+					);
+					background-size: 100px 100%;
+				}
 			}
 		}
 
@@ -140,14 +176,6 @@ body.wcpay-onboarding__body {
 			color: $gray-700;
 			line-height: 16px;
 			margin-top: 4px;
-		}
-
-		.loading-step {
-			max-width: 520px;
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate( -50%, -50% );
 		}
 
 		.onboarding-mode__note {
@@ -217,5 +245,14 @@ body.wcpay-onboarding__body {
 	// Hide Jetpack's JITM (Just in time messages) banners for onboarding.
 	.woocommerce-layout__jitm {
 		display: none;
+	}
+
+	// Wrap loader so it's centered and does not get cut.
+	.embedded-kyc-loader-wrapper {
+		text-align: center;
+		height: 35px;
+		&.padded {
+			padding-top: 61px; // Takes the same padding as Stripe embedded component.
+		}
 	}
 }

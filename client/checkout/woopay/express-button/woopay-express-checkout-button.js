@@ -364,40 +364,42 @@ export const WoopayExpressCheckoutButton = ( {
 	}, [] );
 
 	return (
-		<button
-			ref={ buttonRef }
-			key={ `${ buttonType }-${ theme }-${ buttonSize }` }
-			aria-label={ buttonText }
-			onClick={ ( e ) => onClickCallbackRef.current( e ) }
-			className={ classNames( 'woopay-express-button', {
-				'is-loading': isLoading,
-			} ) }
-			data-type={ buttonType }
-			data-size={ buttonSize }
-			data-theme={ theme }
-			data-width-type={ buttonWidthType }
-			style={ {
-				height: `${ buttonHeight }px`,
-				borderRadius: `${ borderRadius }px`,
-			} }
-			disabled={ isLoading }
-			type="button"
-		>
-			{ isLoading ? (
-				<span className="wc-block-components-spinner" />
-			) : (
-				<>
-					{ interpolateComponents( {
-						mixedString: buttonText.replace(
-							ButtonTypeTextMap.default,
-							'{{wooPayLogo /}}'
-						),
-						components: {
-							wooPayLogo: <ThemedWooPayIcon />,
-						},
-					} ) }
-				</>
-			) }
-		</button>
+		<div id="wcpay-woopay-button">
+			<button
+				ref={ buttonRef }
+				key={ `${ buttonType }-${ theme }-${ buttonSize }` }
+				aria-label={ buttonText }
+				onClick={ ( e ) => onClickCallbackRef.current( e ) }
+				className={ classNames( 'woopay-express-button', {
+					'is-loading': isLoading,
+				} ) }
+				data-type={ buttonType }
+				data-size={ buttonSize }
+				data-theme={ theme }
+				data-width-type={ buttonWidthType }
+				style={ {
+					height: `${ buttonHeight }px`,
+					borderRadius: `${ borderRadius }px`,
+				} }
+				disabled={ isLoading }
+				type="button"
+			>
+				{ isLoading ? (
+					<span className="wc-block-components-spinner" />
+				) : (
+					<div className="button-content">
+						{ interpolateComponents( {
+							mixedString: buttonText.replace(
+								ButtonTypeTextMap.default,
+								'{{wooPayLogo /}}'
+							),
+							components: {
+								wooPayLogo: <ThemedWooPayIcon />,
+							},
+						} ) }
+					</div>
+				) }
+			</button>
+		</div>
 	);
 };

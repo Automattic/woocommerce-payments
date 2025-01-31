@@ -31,7 +31,7 @@ import SetupImg from 'assets/images/illustrations/setup.svg?asset';
 import strings from './strings';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
-import { WooPaymentMethodsLogos } from 'components/payment-method-logos';
+import { WooPaymentsMethodsLogos } from 'components/payment-method-logos';
 import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInTestModeOnboarding } from 'wcpay/utils';
@@ -56,7 +56,11 @@ const TestDriveLoader: React.FunctionComponent< {
 		<img className="logo" src={ WooLogo } alt="" />
 		<Loader.Layout>
 			<Loader.Illustration>
-				<img src={ SetupImg } alt="setup" />
+				<img
+					src={ SetupImg }
+					alt="setup"
+					style={ { maxWidth: '223px' } }
+				/>
 			</Loader.Illustration>
 
 			<Loader.Title>
@@ -464,7 +468,11 @@ const ConnectAccountPage: React.FC = () => {
 	}
 
 	return (
-		<Page isNarrow className="connect-account-page">
+		<Page
+			isNarrow
+			id="connect-account-page"
+			className="connect-account-page"
+		>
 			{ errorMessage && (
 				<BannerNotice
 					status="error"
@@ -516,7 +524,12 @@ const ConnectAccountPage: React.FC = () => {
 							<InfoNotice />
 						</div>
 						<div className="connect-account-page__payment-methods">
-							<WooPaymentMethodsLogos maxElements={ 10 } />
+							<WooPaymentsMethodsLogos
+								maxElements={ 10 }
+								isWooPayEligible={
+									wcpaySettings.isWooPayStoreCountryAvailable
+								}
+							/>
 							<div className="connect-account-page__payment-methods__description">
 								<div>
 									<p>

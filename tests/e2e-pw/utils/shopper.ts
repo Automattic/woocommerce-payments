@@ -7,9 +7,24 @@ import { Page, expect } from 'playwright/test';
  */
 import * as navigation from './shopper-navigation';
 import { config, CustomerAddress } from '../config/default';
+import { isUIUnblocked } from './helpers';
 
-export const isUIUnblocked = async ( page: Page ) => {
-	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
+/**
+ * Waits for the UI to refresh after a user interaction.
+ *
+ * Woo core blocks and refreshes the UI after 1s after each key press
+ * in a text field or immediately after a select field changes.
+ * We need to wait to make sure that all key presses were processed by that mechanism.
+ */
+export const waitForUiRefresh = ( page: Page ) => page.waitForTimeout( 1000 );
+
+/**
+ * Takes off the focus out of the Stripe elements to let Stripe logic
+ * wrap up and make sure the Place Order button is clickable.
+ */
+export const focusPlaceOrderButton = async ( page: Page ) => {
+	await page.locator( '#place_order' ).focus();
+	await waitForUiRefresh( page );
 };
 
 export const fillBillingAddress = async (
@@ -31,10 +46,64 @@ export const fillBillingAddress = async (
 		.locator( '#billing_address_2' )
 		.fill( billingAddress.addresssecondline );
 	await page.locator( '#billing_city' ).fill( billingAddress.city );
-	await page.locator( '#billing_state' ).selectOption( billingAddress.state );
+	if ( billingAddress.state ) {
+		// Setting the state is optional, relative to the selected country. E.g Selecting Belgium hides the state input.
+		await page
+			.locator( '#billing_state' )
+			.selectOption( billingAddress.state );
+	}
 	await page.locator( '#billing_postcode' ).fill( billingAddress.postcode );
 	await page.locator( '#billing_phone' ).fill( billingAddress.phone );
 	await page.locator( '#billing_email' ).fill( billingAddress.email );
+};
+
+export const fillBillingAddressWCB = async (
+	page: Page,
+	billingAddress: CustomerAddress
+) => {
+	const editBillingAddressButton = page.getByLabel( 'Edit billing address' );
+	if ( await editBillingAddressButton.isVisible() ) {
+		await editBillingAddressButton.click();
+	}
+	const billingAddressForm = page.getByRole( 'group', {
+		name: 'Billing address',
+	} );
+	await billingAddressForm
+		.getByLabel( 'Country/Region' )
+		.selectOption( billingAddress.country );
+	await billingAddressForm
+		.getByLabel( 'First Name' )
+		.fill( billingAddress.firstname );
+	await billingAddressForm
+		.getByLabel( 'Last Name' )
+		.fill( billingAddress.firstname );
+	await billingAddressForm
+		.getByLabel( 'Company (optional)' )
+		.fill( billingAddress.company );
+	await billingAddressForm
+		.getByLabel( 'Address', { exact: true } )
+		.fill( billingAddress.addressfirstline );
+	const addSecondLineButton = page.getByRole( 'button', {
+		name: '+ Add apartment, suite, etc.',
+	} );
+	if ( ( await addSecondLineButton.count() ) > 0 ) {
+		await addSecondLineButton.click();
+	}
+	await billingAddressForm
+		.getByLabel( 'Apartment, suite, etc. (optional)' )
+		.fill( billingAddress.addresssecondline );
+	await billingAddressForm.getByLabel( 'City' ).fill( billingAddress.city );
+	if ( billingAddress.state ) {
+		await billingAddressForm
+			.getByLabel( 'State' )
+			.selectOption( billingAddress.state );
+	}
+	await billingAddressForm
+		.getByLabel( 'ZIP Code' )
+		.fill( billingAddress.postcode );
+	await billingAddressForm
+		.getByLabel( 'Phone (optional)' )
+		.fill( billingAddress.phone );
 };
 
 // This is currently the source of some flaky tests since sometimes the form is not submitted
@@ -57,10 +126,26 @@ export const addCartProduct = async (
 	await page.goto( `/shop/?add-to-cart=${ productId }` );
 };
 
+const ensureSavedCardNotSelected = async ( page: Page ) => {
+	if (
+		await page
+			.locator( '#wc-woocommerce_payments-payment-token-new' )
+			.isVisible()
+	) {
+		const newCardOption = await page.locator(
+			'#wc-woocommerce_payments-payment-token-new'
+		);
+		if ( newCardOption ) {
+			await newCardOption.click();
+		}
+	}
+};
+
 export const fillCardDetails = async (
 	page: Page,
 	card = config.cards.basic
 ) => {
+	await ensureSavedCardNotSelected( page );
 	if (
 		await page.$(
 			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
@@ -105,6 +190,31 @@ export const fillCardDetails = async (
 	}
 };
 
+export const fillCardDetailsWCB = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const newPaymentMethodRadioButton = page.locator(
+		'#radio-control-wc-payment-method-options-woocommerce_payments'
+	);
+	if ( await newPaymentMethodRadioButton.isVisible() ) {
+		await newPaymentMethodRadioButton.click();
+	}
+	await page.waitForSelector( '.__PrivateStripeElement' );
+	const frameHandle = await page.waitForSelector(
+		'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+	if ( ! stripeFrame ) return;
+	await stripeFrame.waitForLoadState( 'networkidle' );
+	await stripeFrame.getByPlaceholder( '1234 1234 1234' ).fill( card.number );
+	await stripeFrame
+		.getByPlaceholder( 'MM / YY' )
+		.fill( card.expires.month + card.expires.year );
+
+	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
+};
+
 export const confirmCardAuthentication = async (
 	page: Page,
 	authorize = true
@@ -129,8 +239,9 @@ export const confirmCardAuthentication = async (
 		name: authorize ? 'Complete' : 'Fail',
 	} );
 
-	// Not ideal, but we need to wait for the loading animation to finish before we can click the button.
-	await page.waitForTimeout( 1000 );
+	await expect(
+		stripeFrame.locator( '.LightboxModalLoadingIndicator' )
+	).not.toBeVisible();
 
 	await button.click();
 };
@@ -182,20 +293,21 @@ export const addToCartFromShopPage = async (
 	}
 };
 
+export const selectPaymentMethod = async (
+	page: Page,
+	paymentMethod = 'Credit card'
+) => {
+	await page.getByText( paymentMethod ).click();
+};
+
 export const setupCheckout = async (
 	page: Page,
-	billingAddress: CustomerAddress
+	billingAddress: CustomerAddress = config.addresses.customer.billing
 ) => {
 	await navigation.goToCheckout( page );
 	await fillBillingAddress( page, billingAddress );
-	// Woo core blocks and refreshes the UI after 1s after each key press
-	// in a text field or immediately after a select field changes.
-	// We need to wait to make sure that all key presses were processed by that mechanism.
-	await page.waitForTimeout( 1000 );
+	await waitForUiRefresh( page );
 	await isUIUnblocked( page );
-	await page
-		.locator( '.wc_payment_method.payment_method_woocommerce_payments' )
-		.click();
 };
 
 /**
@@ -238,6 +350,59 @@ export async function setupProductCheckout(
 	await setupCheckout( page, billingAddress );
 }
 
+export const expectFraudPreventionToken = async (
+	page: Page,
+	toBeDefined: boolean
+) => {
+	const token = await page.evaluate( () => {
+		return ( window as any ).wcpayFraudPreventionToken;
+	} );
+
+	if ( toBeDefined ) {
+		expect( token ).toBeDefined();
+	} else {
+		expect( token ).toBeUndefined();
+	}
+};
+
+/**
+ * Places an order with custom options.
+ *
+ * @param  page The Playwright page object.
+ * @param  options The custom options to use for the order.
+ * @return The order ID.
+ */
+export const placeOrderWithOptions = async (
+	page: Page,
+	options?: {
+		productId?: number;
+		billingAddress?: CustomerAddress;
+		createAccount?: boolean;
+	}
+) => {
+	await addCartProduct( page, options?.productId );
+	await setupCheckout( page, options?.billingAddress );
+	if (
+		options?.createAccount &&
+		( await page.getByLabel( 'Create an account?' ).isVisible() )
+	) {
+		await page.getByLabel( 'Create an account?' ).check();
+	}
+	await selectPaymentMethod( page );
+	await fillCardDetails( page, config.cards.basic );
+	await focusPlaceOrderButton( page );
+	await placeOrder( page );
+	await page.waitForURL( /\/order-received\//, {
+		waitUntil: 'load',
+	} );
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
+
+	const url = await page.url();
+	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+};
+
 /**
  * Places an order with a specified currency.
  *
@@ -250,20 +415,18 @@ export const placeOrderWithCurrency = async (
 	currency: string
 ) => {
 	await navigation.goToShopWithCurrency( page, currency );
-	await setupProductCheckout( page, [ [ config.products.simple.name, 1 ] ] );
-	await fillCardDetails( page, config.cards.basic );
-	// Takes off the focus out of the Stripe elements to let Stripe logic
-	// wrap up and make sure the Place Order button is clickable.
-	await page.locator( '#place_order' ).focus();
-	await page.waitForTimeout( 1000 );
-	await placeOrder( page );
-	await page.waitForURL( /\/order-received\//, { waitUntil: 'load' } );
-	await expect(
-		page.getByRole( 'heading', { name: 'Order received' } )
-	).toBeVisible();
+	return placeOrderWithOptions( page );
+};
 
-	const url = await page.url();
-	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+export const setSavePaymentMethod = async ( page: Page, save = true ) => {
+	const checkbox = page.getByLabel(
+		'Save payment information to my account for future purchases.'
+	);
+	if ( save ) {
+		await checkbox.check();
+	} else {
+		await checkbox.uncheck();
+	}
 };
 
 export const emptyCart = async ( page: Page ) => {
@@ -289,7 +452,91 @@ export const emptyCart = async ( page: Page ) => {
 		coupons = await page.locator( '.woocommerce-remove-coupon' ).all();
 	}
 
-	await expect( page.locator( '.cart-empty.woocommerce-info' ) ).toHaveText(
-		'Your cart is currently empty.'
-	);
+	await expect(
+		page.getByText( 'Your cart is currently empty.' )
+	).toBeVisible();
+};
+
+export const changeAccountCurrency = async (
+	page: Page,
+	customerDetails: any,
+	currency: string
+) => {
+	await navigation.goToMyAccount( page, 'edit-account' );
+	await page.getByLabel( 'First name *' ).fill( customerDetails.firstname );
+	await page.getByLabel( 'Last name *' ).fill( customerDetails.lastname );
+	await page.getByLabel( 'Default currency' ).selectOption( currency );
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	await expect(
+		page.getByText( 'Account details changed successfully.' )
+	).toBeVisible();
+};
+
+export const addSavedCard = async (
+	page: Page,
+	card: typeof config.cards.basic,
+	country: string,
+	zipCode?: string
+) => {
+	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
+	await page.waitForLoadState( 'networkidle' );
+	await page.getByText( 'Credit card / debit card' ).click();
+	const frameHandle = page.getByTitle( 'Secure payment input frame' );
+	const stripeFrame = frameHandle.contentFrame();
+
+	if ( ! stripeFrame ) return;
+
+	await stripeFrame
+		.getByPlaceholder( '1234 1234 1234 1234' )
+		.fill( card.number );
+
+	await stripeFrame
+		.getByPlaceholder( 'MM / YY' )
+		.fill( card.expires.month + card.expires.year );
+
+	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
+	await stripeFrame
+		.getByRole( 'combobox', { name: 'country' } )
+		.selectOption( country );
+	const zip = stripeFrame.getByLabel( 'ZIP Code' );
+	if ( zip ) await zip.fill( zipCode ?? '90210' );
+
+	await page.getByRole( 'button', { name: 'Add payment method' } ).click();
+};
+
+export const deleteSavedCard = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Delete' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await button.click();
+};
+
+export const selectSavedCardOnCheckout = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const option = page
+		.getByText(
+			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
+		)
+		.first();
+	await expect( option ).toBeVisible( { timeout: 100 } );
+	option.click();
+};
+
+export const setDefaultPaymentMethod = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Make default' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	button.click();
 };
