@@ -860,6 +860,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) ) {
 			return false;
 		}
+
+		if ( ! $this->payment_method->is_reusable() && is_add_payment_method_page() ) {
+			return false;
+		}
+
 		// Disable the gateway if using live mode without HTTPS set up or the currency is not
 		// available in the country of the account.
 		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() ) {

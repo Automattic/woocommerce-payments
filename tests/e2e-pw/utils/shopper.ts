@@ -7,10 +7,7 @@ import { Page, expect } from 'playwright/test';
  */
 import * as navigation from './shopper-navigation';
 import { config, CustomerAddress } from '../config/default';
-
-export const isUIUnblocked = async ( page: Page ) => {
-	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
-};
+import { isUIUnblocked } from './helpers';
 
 /**
  * Waits for the UI to refresh after a user interaction.
