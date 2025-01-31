@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Convert merchant-orders-partial-refund spec from Puppeteer to Playwright.
