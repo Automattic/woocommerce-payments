@@ -480,7 +480,7 @@ export const addSavedCard = async (
 ) => {
 	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
 	await page.waitForLoadState( 'networkidle' );
-	await page.getByText( 'Credit card / debit card' ).click();
+	await page.getByText( 'Cards' ).click();
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
 	const stripeFrame = frameHandle.contentFrame();
 
