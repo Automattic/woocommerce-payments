@@ -12,7 +12,7 @@ runs:
         npm run test:e2e-ci
         
         if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
-          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
+          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.stats["unexpected"]')
           echo "FIRST_RUN_FAILED_TEST_SUITES=$(echo $E2E_NUM_FAILED_TEST_SUITES)" >> $GITHUB_OUTPUT
           if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
             echo "::notice::${E2E_NUM_FAILED_TEST_SUITES} test suite(s) failed in the first run but we will try (it) them again in the second run."
@@ -30,7 +30,7 @@ runs:
       shell: bash
       # Filter failed E2E files from the result JSON file, and re-run them.
       run: |
-        cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e-ci
+        npm run test:e2e-ci $(cat $E2E_RESULT_FILEPATH | jq -r '[.suites[] | (if has("suites") then .suites[] | .specs[] else .specs[] end) | select(.tests[].status == "unexpected") | .file] | unique | .[]')
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs
