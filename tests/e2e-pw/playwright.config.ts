@@ -84,27 +84,8 @@ export default defineConfig( {
 			dependencies: [ 'setup' ],
 		},
 		{
-			name: 'wcpay - merchant',
+			name: 'chromium',
 			use: { ...devices[ 'Desktop Chrome' ] },
-			testMatch: getTestMatch( 'wcpay', 'merchant' ),
-			dependencies: [ 'setup' ],
-		},
-		{
-			name: 'wcpay - shopper',
-			use: { ...devices[ 'Desktop Chrome' ] },
-			testMatch: getTestMatch( 'wcpay', 'shopper' ),
-			dependencies: [ 'setup' ],
-		},
-		{
-			name: 'subscriptions - merchant',
-			use: { ...devices[ 'Desktop Chrome' ] },
-			testMatch: getTestMatch( 'subscriptions', 'merchant' ),
-			dependencies: [ 'setup' ],
-		},
-		{
-			name: 'subscriptions - shopper',
-			use: { ...devices[ 'Desktop Chrome' ] },
-			testMatch: getTestMatch( 'subscriptions', 'shopper' ),
 			dependencies: [ 'setup' ],
 		},
 		// Setup project
