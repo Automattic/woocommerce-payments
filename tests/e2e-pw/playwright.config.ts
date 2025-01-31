@@ -9,7 +9,7 @@ import path from 'path';
 config( { path: path.resolve( __dirname, '../e2e/config', '.env' ) } );
 config( { path: path.resolve( __dirname, '../e2e/config', 'local.env' ) } );
 
-const { BASE_URL, E2E_GROUP, E2E_BRANCH, E2E_RESULT_FILEPATH } = process.env;
+const { BASE_URL, E2E_GROUP, E2E_BRANCH } = process.env;
 
 const validGroups = [ 'wcpay', 'subscriptions' ];
 const validBranches = [ 'merchant', 'shopper' ];
@@ -52,7 +52,7 @@ export default defineConfig( {
 		? [
 				// If running on CI, also use the GitHub Actions reporter
 				[ 'github' ],
-				[ 'json', { outputFile: E2E_RESULT_FILEPATH } ],
+				[ 'json', { outputFile: 'results.json' } ],
 				[ 'html' ],
 		  ]
 		: [ [ 'html', { open: 'never' } ] ],
