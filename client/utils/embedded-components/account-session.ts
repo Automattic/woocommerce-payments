@@ -15,10 +15,25 @@ import { createAccountSession, isPoEligible } from 'wcpay/onboarding/utils';
 import { trackRedirected } from 'wcpay/onboarding/tracking';
 
 interface UseAccountSessionProps {
+	/**
+	 * Indicates whether the AccountSession is created for onboarding. Needs to be set to true during onboarding.
+	 */
 	isOnboarding: boolean;
+	/**
+	 * The data object from the onboarding context.
+	 */
 	data: Record< string, any >;
+	/**
+	 * Set it to true whenever KYC needs to be resumed.
+	 */
 	continueKyc: boolean;
+	/**
+	 * Function to set the load error message.
+	 */
 	setLoadErrorMessage: ( message: string ) => void;
+	/**
+	 * The appearance object.
+	 */
 	appearance: {
 		variables: Record< string, any >;
 	};
