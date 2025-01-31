@@ -56,7 +56,11 @@ const TestDriveLoader: React.FunctionComponent< {
 		<img className="logo" src={ WooLogo } alt="" />
 		<Loader.Layout>
 			<Loader.Illustration>
-				<img src={ SetupImg } alt="setup" />
+				<img
+					src={ SetupImg }
+					alt="setup"
+					style={ { maxWidth: '223px' } }
+				/>
 			</Loader.Illustration>
 
 			<Loader.Title>
@@ -464,7 +468,11 @@ const ConnectAccountPage: React.FC = () => {
 	}
 
 	return (
-		<Page isNarrow className="connect-account-page">
+		<Page
+			isNarrow
+			id="connect-account-page"
+			className="connect-account-page"
+		>
 			{ errorMessage && (
 				<BannerNotice
 					status="error"

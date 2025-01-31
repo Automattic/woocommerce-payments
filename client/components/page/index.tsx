@@ -12,6 +12,7 @@ import ErrorBoundary from '../error-boundary';
 import './style.scss';
 
 interface PageProps {
+	id?: string;
 	isNarrow?: boolean;
 	maxWidth?: string | number;
 	className?: string;
@@ -21,6 +22,7 @@ interface PageProps {
 // more concise; we get the `children` prop for free.
 const Page: React.FC< PageProps > = ( {
 	children,
+	id = '',
 	maxWidth,
 	isNarrow,
 	className = '',
@@ -40,7 +42,11 @@ const Page: React.FC< PageProps > = ( {
 	}, [] );
 
 	return (
-		<div className={ classNames.join( ' ' ) } style={ customStyle }>
+		<div
+			id={ id }
+			className={ classNames.join( ' ' ) }
+			style={ customStyle }
+		>
 			<ErrorBoundary>{ children }</ErrorBoundary>
 		</div>
 	);
