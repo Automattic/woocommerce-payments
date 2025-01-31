@@ -3,9 +3,13 @@
  * External dependencies
  */
 import React, { useState, useLayoutEffect } from 'react';
-import { ExternalLink } from '@wordpress/components';
+import { Card, CardBody, ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
+import {
+	ConnectAccountManagement,
+	ConnectComponentsProvider,
+} from '@stripe/react-connect-js';
 
 /**
  * Internal dependencies
@@ -29,6 +33,8 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import appearance from 'wcpay/utils/embedded-components/appearance';
+import useAccountSession from 'wcpay/utils/embedded-components/account-session';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -102,6 +108,20 @@ const DepositsDescription = () => {
 	);
 };
 
+const AccountDetailsDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Account details', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'View and edit your WooPayments account details like personal or business information and public information.',
+					'woocommerce-payments'
+				) }
+			</p>
+		</>
+	);
+};
+
 const FraudProtectionDescription = () => {
 	return (
 		<>
@@ -143,8 +163,15 @@ const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
-
 	const { isLoading } = useSettings();
+	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
+	const stripeConnectInstance = useAccountSession( {
+		isOnboarding: false,
+		data: null,
+		continueKyc: false,
+		setLoadErrorMessage,
+		appearance,
+	} );
 
 	useLayoutEffect( () => {
 		const { anchor } = getQuery();
@@ -233,6 +260,38 @@ const SettingsManager = () => {
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</div>
+			</SettingsSection>
+			<SettingsSection
+				description={ AccountDetailsDescription }
+				id="account-details"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						{ loadErrorMessage ? (
+							<div>error</div>
+						) : (
+							stripeConnectInstance && (
+								<Card>
+									<CardBody>
+										<ConnectComponentsProvider
+											connectInstance={
+												stripeConnectInstance
+											}
+										>
+											<ConnectAccountManagement
+												collectionOptions={ {
+													fields: 'eventually_due',
+													futureRequirements:
+														'include',
+												} }
+											/>
+										</ConnectComponentsProvider>
+									</CardBody>
+								</Card>
+							)
+						) }
+					</ErrorBoundary>
+				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection
 				description={ FraudProtectionDescription }
