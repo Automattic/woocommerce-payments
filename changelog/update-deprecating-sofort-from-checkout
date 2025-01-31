@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Removes Sofort payment method from settings and checkout, permanently deprecates Sofort from settings.

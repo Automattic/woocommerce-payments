@@ -21,16 +21,7 @@ jest.mock( '../../../data', () => ( {
 describe( 'SetupComplete', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[
-				'card',
-				'bancontact',
-				'eps',
-				'giropay',
-				'sofort',
-				'ideal',
-				'p24',
-				'sepa_debit',
-			],
+			[ 'card', 'bancontact', 'eps', 'ideal', 'p24', 'sepa_debit' ],
 			() => null,
 		] );
 	} );
@@ -75,10 +66,8 @@ describe( 'SetupComplete', () => {
 								'card',
 								'bancontact',
 								'eps',
-								'giropay',
 								'ideal',
 								'p24',
-								'sofort',
 								'sepa_debit',
 							],
 						},
@@ -98,7 +87,7 @@ describe( 'SetupComplete', () => {
 
 	it( 'renders setup complete messaging when context value says that one payment method has been removed', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'sofort' ],
+			[ 'card', 'ideal' ],
 			() => null,
 		] );
 		render(
@@ -110,10 +99,8 @@ describe( 'SetupComplete', () => {
 								'card',
 								'bancontact',
 								'eps',
-								'giropay',
 								'ideal',
 								'p24',
-								'sofort',
 								'sepa_debit',
 							],
 						},
@@ -133,7 +120,7 @@ describe( 'SetupComplete', () => {
 
 	it( 'renders setup complete messaging when context value says that one payment method has been added', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
-			[ 'card', 'giropay' ],
+			[ 'card', 'ideal' ],
 			() => null,
 		] );
 		render(
@@ -161,10 +148,8 @@ describe( 'SetupComplete', () => {
 		const additionalMethods = [
 			'bancontact',
 			'eps',
-			'giropay',
 			'ideal',
 			'p24',
-			'sofort',
 			'sepa_debit',
 		];
 		useEnabledPaymentMethodIds.mockReturnValue( [
