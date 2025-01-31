@@ -4,6 +4,7 @@ exports[`Authorizations list renders correctly 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="components-surface components-card woocommerce-table authorizations-list woocommerce-report-table has-search has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
