@@ -29,6 +29,7 @@ export default defineConfig( {
 		? [
 				// If running on CI, also use the GitHub Actions reporter
 				[ 'github' ],
+				[ 'json' ],
 				[ 'html' ],
 		  ]
 		: [ [ 'html', { open: 'never' } ] ],
