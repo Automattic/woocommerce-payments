@@ -7,10 +7,7 @@ import { Page, expect } from 'playwright/test';
  */
 import * as navigation from './shopper-navigation';
 import { config, CustomerAddress } from '../config/default';
-
-export const isUIUnblocked = async ( page: Page ) => {
-	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
-};
+import { isUIUnblocked } from './helpers';
 
 /**
  * Waits for the UI to refresh after a user interaction.
@@ -58,6 +55,55 @@ export const fillBillingAddress = async (
 	await page.locator( '#billing_postcode' ).fill( billingAddress.postcode );
 	await page.locator( '#billing_phone' ).fill( billingAddress.phone );
 	await page.locator( '#billing_email' ).fill( billingAddress.email );
+};
+
+export const fillBillingAddressWCB = async (
+	page: Page,
+	billingAddress: CustomerAddress
+) => {
+	const editBillingAddressButton = page.getByLabel( 'Edit billing address' );
+	if ( await editBillingAddressButton.isVisible() ) {
+		await editBillingAddressButton.click();
+	}
+	const billingAddressForm = page.getByRole( 'group', {
+		name: 'Billing address',
+	} );
+	await billingAddressForm
+		.getByLabel( 'Country/Region' )
+		.selectOption( billingAddress.country );
+	await billingAddressForm
+		.getByLabel( 'First Name' )
+		.fill( billingAddress.firstname );
+	await billingAddressForm
+		.getByLabel( 'Last Name' )
+		.fill( billingAddress.firstname );
+	await billingAddressForm
+		.getByLabel( 'Company (optional)' )
+		.fill( billingAddress.company );
+	await billingAddressForm
+		.getByLabel( 'Address', { exact: true } )
+		.fill( billingAddress.addressfirstline );
+	const addSecondLineButton = page.getByRole( 'button', {
+		name: '+ Add apartment, suite, etc.',
+	} );
+	if ( ( await addSecondLineButton.count() ) > 0 ) {
+		await addSecondLineButton.click();
+	}
+	await billingAddressForm
+		.getByLabel( 'Apartment, suite, etc. (optional)' )
+		.fill( billingAddress.addresssecondline );
+	await billingAddressForm.getByLabel( 'City' ).fill( billingAddress.city );
+	if ( billingAddress.state ) {
+		await billingAddressForm
+			.getByLabel( 'State' )
+			.selectOption( billingAddress.state );
+	}
+	await billingAddressForm
+		.getByLabel( 'ZIP Code' )
+		.fill( billingAddress.postcode );
+	await billingAddressForm
+		.getByLabel( 'Phone (optional)' )
+		.fill( billingAddress.phone );
 };
 
 // This is currently the source of some flaky tests since sometimes the form is not submitted
@@ -142,6 +188,31 @@ export const fillCardDetails = async (
 
 		await stripeFrame.locator( '[name="cvc"]' ).fill( card.cvc );
 	}
+};
+
+export const fillCardDetailsWCB = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const newPaymentMethodRadioButton = page.locator(
+		'#radio-control-wc-payment-method-options-woocommerce_payments'
+	);
+	if ( await newPaymentMethodRadioButton.isVisible() ) {
+		await newPaymentMethodRadioButton.click();
+	}
+	await page.waitForSelector( '.__PrivateStripeElement' );
+	const frameHandle = await page.waitForSelector(
+		'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+	if ( ! stripeFrame ) return;
+	await stripeFrame.waitForLoadState( 'networkidle' );
+	await stripeFrame.getByPlaceholder( '1234 1234 1234' ).fill( card.number );
+	await stripeFrame
+		.getByPlaceholder( 'MM / YY' )
+		.fill( card.expires.month + card.expires.year );
+
+	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
 };
 
 export const confirmCardAuthentication = async (
