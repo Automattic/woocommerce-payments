@@ -595,7 +595,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$status       = $this->read_webhook_property( $event_object, 'status' );
-		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		if ( ! $order ) {
@@ -608,12 +607,6 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$currency      = $order->get_currency();
-		$amount_string = \wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
-
-		// Explicitly add currency info if needed (multi-currency stores).
-		$amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $amount_string, $currency );
-
 		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
 
 		// Clear dispute caches to trigger a fetch of new data.
@@ -624,10 +617,7 @@ class WC_Payments_Webhook_Processing_Service {
 		do_action(
 			'log_stripe_charge_dispute_closed_event',
 			[
-				'amount_raw' => $amount_raw,
-				'amount'     => $amount,
 				'charge_id'  => $charge_id,
-				'currency'   => $currency,
 				'event_data' => $event_data,
 				'order'      => $order,
 				'status'     => $status,
