@@ -70,16 +70,12 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider provider_init_enters_dev_mode_for_WP_DEVELOPMENT_MODE
 	 */
-	public function test_init_enters_dev_mode_for_WP_DEVELOPMENT_MODE( ?string $constant_value, bool $is_dev ) {
+	public function test_init_enters_dev_mode_for_WP_DEVELOPMENT_MODE( ?string $constant_value, bool $should_init_in_dev_mode ) {
 		$this->mode->expects( $this->once() )
 			->method( 'wp_get_development_mode' )
 			->willReturn( $constant_value );
 
-		if ( $is_dev ) {
-			$this->assertTrue( $this->mode->is_dev() );
-		} else {
-			$this->assertFalse( $this->mode->is_dev() );
-		}
+		$this->assertSame( $should_init_in_dev_mode, $this->mode->is_dev() );
 	}
 
 	public function test_init_enters_dev_mode_through_filter() {

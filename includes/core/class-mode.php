@@ -250,6 +250,6 @@ class Mode {
 	protected function wp_get_development_mode(): string {
 		return function_exists( 'wp_get_development_mode' )
 			? wp_get_development_mode()
-			: ''; // Support for older PHP versions.
+			: ''; // Support for older WordPress versions.
 	}
 }
