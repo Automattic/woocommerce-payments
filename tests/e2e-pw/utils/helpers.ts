@@ -96,12 +96,12 @@ export const getShopper = async (
 			shopperPage.locator(
 				'.woocommerce-MyAccount-navigation-link--customer-logout'
 			)
-		).toBeVisible( { timeout: 1000 } );
+		).toBeVisible();
 		await expect(
 			shopperPage.locator(
 				'div.woocommerce-MyAccount-content > p >> nth=0'
 			)
-		).toContainText( 'Hello', { timeout: 1000 } );
+		).toContainText( 'Hello' );
 		await shopperPage
 			.context()
 			.storageState( { path: customerStorageFile } );
