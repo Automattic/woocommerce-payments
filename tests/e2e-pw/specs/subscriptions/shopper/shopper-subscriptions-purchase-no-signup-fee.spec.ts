@@ -19,6 +19,11 @@ import {
 	setupCheckout,
 } from '../../../utils/shopper';
 import { goToProductPageBySlug } from '../../../utils/shopper-navigation';
+import {
+	activateMulticurrency,
+	deactivateMulticurrency,
+	isMulticurrencyEnabled,
+} from '../../../utils/merchant';
 
 const productName = 'Subscription no signup fee product';
 const productSlug = 'subscription-no-signup-fee-product';
@@ -58,10 +63,21 @@ describeif( shouldRunSubscriptionsTests )(
 			);
 			orderId = await orderIdField.textContent();
 		} );
+
 		test( 'It should have a charge for subscription cost without fee & an active subscription', async ( {
 			browser,
 		} ) => {
 			const { merchantPage } = await getMerchant( browser );
+
+			// Disable multi-currency in the merchant settings.
+			// This step is important because local environment setups might have multi-currency enabled.
+			const wasMultiCurrencyEnabled = await isMulticurrencyEnabled(
+				merchantPage
+			);
+			if ( wasMultiCurrencyEnabled ) {
+				await deactivateMulticurrency( merchantPage );
+			}
+
 			await goToOrder( merchantPage, orderId );
 
 			// Verify we have an active subscription
@@ -105,6 +121,11 @@ describeif( shouldRunSubscriptionsTests )(
 			await expect(
 				subscriptionsRow.locator( '.recurring_total' )
 			).toHaveText( /\$9\.99 \/ month/i );
+
+			// Enable multicurrency if it was enabled before.
+			if ( wasMultiCurrencyEnabled ) {
+				await activateMulticurrency( merchantPage );
+			}
 		} );
 	}
 );
