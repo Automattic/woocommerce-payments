@@ -8,7 +8,7 @@ import test, { Page, expect } from '@playwright/test';
  */
 import { config } from '../../../config/default';
 import { goToMyAccount } from '../../../utils/shopper-navigation';
-import { getShopper } from '../../../utils/helpers';
+import { getShopper, isUIUnblocked } from '../../../utils/helpers';
 import {
 	addSavedCard,
 	confirmCardAuthentication,
@@ -65,6 +65,7 @@ test.describe( 'Payment Methods', () => {
 
 				if ( 'declined-3ds' === cardType ) {
 					await confirmCardAuthentication( shopperPage, false );
+					await isUIUnblocked( shopperPage );
 				}
 
 				// Verify that we get the expected error message.
