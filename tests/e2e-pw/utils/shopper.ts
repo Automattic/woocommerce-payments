@@ -206,7 +206,6 @@ export const fillCardDetailsWCB = async (
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 	if ( ! stripeFrame ) return;
-	await stripeFrame.waitForLoadState( 'networkidle' );
 	await stripeFrame.getByPlaceholder( '1234 1234 1234' ).fill( card.number );
 	await stripeFrame
 		.getByPlaceholder( 'MM / YY' )
