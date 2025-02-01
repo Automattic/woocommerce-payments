@@ -42,6 +42,7 @@ runs:
             screenshots
             tests/e2e/screenshots
             tests/e2e/docker/wordpress/wp-content/debug.log
+            tests/e2e-pw/test-results
             ${{ env.E2E_RESULT_FILEPATH }}
           if-no-files-found: ignore
           retention-days: 14
