@@ -151,7 +151,7 @@ describeif( shouldRunSubscriptionsTests )(
 		test( 'Merchant should be able to create an order with "Setup Intent"', async () => {
 			await goToOrder( merchantPage, orderId );
 			await expect(
-				merchantPage.getByText( 'Payment via Credit card /' )
+				merchantPage.getByText( 'Payment via Cards /' )
 			).toHaveText( /\(seti_.*\)/ );
 
 			await goToSubscriptions( merchantPage );

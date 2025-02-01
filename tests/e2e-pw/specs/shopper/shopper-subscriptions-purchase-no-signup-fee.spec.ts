@@ -71,7 +71,7 @@ describeif( shouldRunSubscriptionsTests )(
 				.replace( '#', '' );
 
 			const transactionPageLink = await merchantPage
-				.getByText( 'Payment via Credit card /' )
+				.getByText( 'Payment via Cards /' )
 				.getByRole( 'link', { name: /pi_.+/ } )
 				.getAttribute( 'href' );
 

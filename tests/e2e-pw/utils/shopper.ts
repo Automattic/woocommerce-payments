@@ -295,7 +295,7 @@ export const addToCartFromShopPage = async (
 
 export const selectPaymentMethod = async (
 	page: Page,
-	paymentMethod = 'Credit card'
+	paymentMethod = 'Cards'
 ) => {
 	await page.getByText( paymentMethod ).click();
 };
