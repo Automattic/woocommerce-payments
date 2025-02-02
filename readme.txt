@@ -87,7 +87,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
-= 8.9.0 - 2025-02-05 =
+= 8.9.0-test-3 - unreleased =
 * Add - Add a popover to WooPayments to present all possible payment methods
 * Add - Added persistent column visibility preferences for reporting tables, allowing merchants to customize and save their preferred table view layouts across sessions.
 * Add - Add support for `WP_DEVELOPMENT_MODE`. Any non-empty setting will force the plugin into development mode.
