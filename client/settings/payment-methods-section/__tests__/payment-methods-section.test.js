@@ -70,22 +70,18 @@ describe( 'PaymentMethodsSection', () => {
 			'au_becs_debit',
 			'bancontact',
 			'eps',
-			'giropay',
 			'ideal',
 			'p24',
 			'sepa_debit',
-			'sofort',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: upeCapabilityStatuses.ACTIVE,
 			au_becs_debit: upeCapabilityStatuses.ACTIVE,
 			bancontact_payments: upeCapabilityStatuses.ACTIVE,
 			eps_payments: upeCapabilityStatuses.ACTIVE,
-			giropay_payments: upeCapabilityStatuses.ACTIVE,
 			ideal_payments: upeCapabilityStatuses.ACTIVE,
 			p24_payments: upeCapabilityStatuses.ACTIVE,
 			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
-			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		global.wcpaySettings = {
@@ -135,11 +131,9 @@ describe( 'PaymentMethodsSection', () => {
 				'BECS Direct Debit',
 				'Bancontact',
 				'EPS',
-				'giropay',
 				'iDEAL',
 				'Przelewy24 (P24)',
 				'SEPA Direct Debit',
-				'Sofort',
 			],
 			updateEnabledMethodsMock,
 		] );
@@ -157,10 +151,6 @@ describe( 'PaymentMethodsSection', () => {
 				requirements: [],
 			},
 			eps_payments: {
-				status: upeCapabilityStatuses.INACTIVE,
-				requirements: [],
-			},
-			giropay_payments: {
 				status: upeCapabilityStatuses.PENDING_APPROVAL,
 				requirements: [],
 			},
@@ -173,10 +163,6 @@ describe( 'PaymentMethodsSection', () => {
 				requirements: [],
 			},
 			sepa_debit_payments: {
-				status: upeCapabilityStatuses.ACTIVE,
-				requirements: [],
-			},
-			sofort_payments: {
 				status: upeCapabilityStatuses.PENDING_VERIFICATION,
 				requirements: [ 'individual.identification_number' ],
 			},
