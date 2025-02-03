@@ -11,10 +11,10 @@ import {
 /**
  * Internal dependencies
  */
-import { createKYCAccountSession, isPoEligible } from 'wcpay/onboarding/utils';
+import { createKycAccountSession, isPoEligible } from 'wcpay/onboarding/utils';
 import { trackRedirected } from 'wcpay/onboarding/tracking';
 
-interface UseKYCAccountSessionProps {
+interface UseKycAccountSessionProps {
 	/**
 	 * The data object from the onboarding context.
 	 */
@@ -48,12 +48,12 @@ interface UseKYCAccountSessionProps {
  *
  * @return StripeConnectInstance|null
  */
-const useKYCAccountSession = ( {
+const useKycAccountSession = ( {
 	data,
 	continueKyc,
 	setLoadErrorMessage,
 	appearance,
-}: UseKYCAccountSessionProps ): StripeConnectInstance | null => {
+}: UseKycAccountSessionProps ): StripeConnectInstance | null => {
 	const [ locale, setLocale ] = useState( '' );
 	const [ publishableKey, setPublishableKey ] = useState( '' );
 	const [ clientSecret, setClientSecret ] = useState<
@@ -67,7 +67,7 @@ const useKYCAccountSession = ( {
 	const fetchAccountSession = useCallback( async () => {
 		try {
 			const isEligible = ! continueKyc && ( await isPoEligible( data ) );
-			const accountSession = await createKYCAccountSession(
+			const accountSession = await createKycAccountSession(
 				data,
 				isEligible
 			);
@@ -160,4 +160,4 @@ const useKYCAccountSession = ( {
 	return stripeConnectInstance;
 };
 
-export default useKYCAccountSession;
+export default useKycAccountSession;

@@ -61,7 +61,7 @@ export const getBusinessTypes = (): Country[] => {
  * @param data The form data.
  * @param isPoEligible Whether the user is eligible for a PO account.
  */
-export const createKYCAccountSession = async (
+export const createKycAccountSession = async (
 	data: OnboardingFields,
 	isPoEligible: boolean
 ): Promise< AccountKycSession > => {
