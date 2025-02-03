@@ -8,23 +8,18 @@
 namespace WCPay\PaymentMethods\Configs\Interfaces;
 
 /**
- * Interface for defining payment method configurations.
- * Provides a single source of truth for both backend and frontend payment method properties.
+ * Interface for payment method definitions.
+ * Provides a single source of truth for payment method properties.
+ * Only includes getters - no calculations or complex logic.
  */
 interface PaymentMethodDefinition {
 	/**
-	 * Get the internal ID for the payment method (e.g. 'card', 'klarna')
+	 * Get the payment method ID (e.g. 'affirm', 'card')
+	 * This is used for internal identification and frontend usage.
 	 *
 	 * @return string
 	 */
-	public function get_id(): string;
-
-	/**
-	 * Get the Stripe payment method ID (e.g. 'card_payments', 'klarna_payments')
-	 *
-	 * @return string
-	 */
-	public function get_stripe_id(): string;
+	public static function get_id(): string;
 
 	/**
 	 * Get the customer-facing title of the payment method
@@ -59,23 +54,26 @@ interface PaymentMethodDefinition {
 
 	/**
 	 * Get the payment method capabilities
-	 * Examples: tokenization, refunds, capture_later
 	 *
 	 * @return string[]
 	 */
 	public function get_capabilities(): array;
 
 	/**
-	 * Get the payment method icons configuration
+	 * Get the URL for the payment method's icon
 	 *
-	 * @return array{
-	 *     default: array{
-	 *         path: string,
-	 *         dark_path?: string
-	 *     }
-	 * }
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @return string
 	 */
-	public function get_icons(): array;
+	public function get_icon_url( ?string $account_country = null ): string;
+
+	/**
+	 * Get the URL for the payment method's dark mode icon
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @return string|null
+	 */
+	public function get_dark_icon_url( ?string $account_country = null ): ?string;
 
 	/**
 	 * Get the testing instructions for the payment method
@@ -85,13 +83,12 @@ interface PaymentMethodDefinition {
 	public function get_testing_instructions(): string;
 
 	/**
-	 * Whether this payment method is available for the given currency and country
+	 * Get the currency limits for the payment method
+	 * Returns raw limits without any calculations
 	 *
-	 * @param string $currency        The currency code to check.
-	 * @param string $account_country The merchant's account country.
-	 * @return bool
+	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
-	public function is_available_for( string $currency, string $account_country ): bool;
+	public function get_currency_limits(): array;
 
 	/**
 	 * Whether this payment method is enabled by default
@@ -99,4 +96,13 @@ interface PaymentMethodDefinition {
 	 * @return bool
 	 */
 	public function is_enabled_by_default(): bool;
+
+	/**
+	 * Get the mapping of currencies to their domestic countries.
+	 * Only relevant for payment methods with DOMESTIC_TRANSACTIONS_ONLY capability.
+	 * Returns empty array if all currency/country combinations are allowed.
+	 *
+	 * @return array<string,string> Map of currency codes to their domestic country codes
+	 */
+	public function get_domestic_currency_mapping(): array;
 }
