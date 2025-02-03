@@ -68,15 +68,11 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 
 	test.describe( 'Should not affect prices', () => {
 		let orderId: string;
+		let orderPrice: string;
 
 		test.afterEach( async () => {
-			await shopperPage.selectOption(
-				'.widget select[name=currency]',
-				'EUR'
-			);
-
 			await expect(
-				shopperPage.getByText( '$18.00 USD' ).first()
+				shopperPage.getByText( `${ orderPrice } USD` ).first()
 			).toBeVisible();
 
 			await navigation.goToShopWithCurrency( shopperPage, 'USD' );
@@ -87,12 +83,17 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 				shopperPage,
 				'USD'
 			);
+			orderPrice = await shopperPage
+				.locator( '.woocommerce-order-overview__total bdi' )
+				.textContent();
 		} );
 
 		test( 'at My account > Orders', async () => {
 			await navigation.goToOrders( shopperPage );
 			await expect(
-				shopperPage.getByLabel( `View order number ${ orderId }` )
+				shopperPage
+					.locator( '.woocommerce-orders-table__cell-order-number' )
+					.getByRole( 'link', { name: `#${ orderId }` } )
 			).toBeVisible();
 		} );
 	} );
