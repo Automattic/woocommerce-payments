@@ -134,9 +134,6 @@ export const goToSubscriptionPage = async (
 	subscriptionId: number
 ) => {
 	await goToSubscriptions( page );
-	const orderRow = page.locator(
-		'tr#order-' + subscriptionId + ' .order_title a:nth-child(1)'
-	);
-	orderRow.evaluate( ( el: HTMLLinkElement ) => el.click() );
+	await page.getByRole( 'link', { name: `#${ subscriptionId }` } ).click();
 	await dataHasLoaded( page );
 };

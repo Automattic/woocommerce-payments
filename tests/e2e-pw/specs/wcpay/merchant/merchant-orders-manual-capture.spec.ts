@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -17,8 +17,8 @@ import { placeOrderWithOptions } from '../../../utils/shopper';
 /**
  * Local variables.
  */
-let orderId;
-let merchantPage;
+let orderId: string;
+let merchantPage: Page;
 
 test.describe( 'Order > Manual Capture', () => {
 	test.beforeAll( async ( { browser } ) => {
@@ -40,11 +40,16 @@ test.describe( 'Order > Manual Capture', () => {
 		// Merchant go to the order.
 		await goToOrder( merchantPage, orderId );
 
+		const orderTotal = await merchantPage
+			.getByRole( 'row', { name: 'Order Total: $' } )
+			.locator( 'bdi' )
+			.textContent();
+
 		// Confirm order status is 'On hold', and that there's an 'authorized' note.
 		await expect( merchantPage.getByTitle( 'On hold' ) ).toBeVisible();
 		await expect(
 			merchantPage.getByText(
-				'A payment of $18.00 was authorized using WooPayments'
+				`A payment of ${ orderTotal } was authorized using WooPayments`
 			)
 		).toBeVisible();
 
@@ -60,7 +65,7 @@ test.describe( 'Order > Manual Capture', () => {
 		await expect( merchantPage.getByTitle( 'Processing' ) ).toBeVisible();
 		await expect(
 			merchantPage.getByText(
-				'A payment of $18.00 was successfully captured using WooPayments'
+				`A payment of ${ orderTotal } was successfully captured using WooPayments`
 			)
 		).toBeVisible();
 	} );
