@@ -115,6 +115,7 @@ const PaymentMethodsList = ( { methodIds } ) => {
 						allows_manual_capture: isAllowingManualCapture,
 						setup_required: isSetupRequired,
 						setup_tooltip: setupTooltip,
+						// TODO ~FR: Alipay & currency configuration
 						currencies,
 					} ) => {
 						if (

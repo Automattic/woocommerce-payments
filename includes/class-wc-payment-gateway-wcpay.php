@@ -3998,8 +3998,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$statuses     = [];
 
 		if ( $capabilities ) {
-			// TODO: Alipay isn't returned here because we need to enable it on the main platform account.
-			$capabilities['alipay_payments'] = 'active';
+			// TODO ~FR: Alipay isn't returned here because we need to enable it on the main platform account.
+			// $capabilities['alipay_payments'] = 'active'; //TEMP!
 			foreach ( $capabilities as $capability_id => $status ) {
 				$statuses[ $capability_id ] = [
 					'status'       => $status,

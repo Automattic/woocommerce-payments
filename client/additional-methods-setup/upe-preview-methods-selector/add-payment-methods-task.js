@@ -214,6 +214,7 @@ const AddPaymentMethodsTask = () => {
 
 	const prepareUpePaymentMethods = ( upeMethodIds ) => {
 		return upeMethodIds.map( ( key ) => {
+			// TODO ~FR: Alipay & currency configuration
 			const { label, currencies } = paymentMethodsMap[ key ];
 
 			if ( availablePaymentMethods.includes( key ) ) {
