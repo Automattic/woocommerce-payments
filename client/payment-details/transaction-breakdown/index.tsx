@@ -49,7 +49,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 		! captureEvent?.fee_rates ||
 		! transactionAmounts
 	) {
-		return <div />;
+		return null;
 	}
 
 	const { formattedAmount, isMultiCurrency } = transactionAmounts;
