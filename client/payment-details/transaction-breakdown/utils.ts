@@ -1,0 +1,59 @@
+/**
+ * External dependencies
+ */
+import { filter, join } from 'lodash';
+
+/**
+ * Internal dependencies
+ */
+import { __ } from '@wordpress/i18n';
+import { formatCurrency } from 'multi-currency/interface/functions';
+
+export const formatFeeType = (
+	type: string,
+	additionalType?: string
+): string => {
+	const feeTypes: Record< string, string | Record< string, string > > = {
+		total: __( 'Total transaction fee', 'woocommerce-payments' ),
+		base: __( 'Base fee', 'woocommerce-payments' ),
+		additional: {
+			international: __(
+				'International card fee',
+				'woocommerce-payments'
+			),
+			fx: __( 'Currency conversion fee', 'woocommerce-payments' ),
+		},
+	};
+
+	if ( type === 'additional' && additionalType ) {
+		const additionalFees = feeTypes.additional as Record< string, string >;
+		return (
+			additionalFees[ additionalType ] ||
+			__( 'Fee', 'woocommerce-payments' )
+		);
+	}
+
+	const baseType = feeTypes[ type ];
+	return typeof baseType === 'string'
+		? baseType
+		: __( 'Fee', 'woocommerce-payments' );
+};
+
+export const formatFeeRate = (
+	percentage: number,
+	fixed: number,
+	currency: string,
+	storeCurrency: string
+): string => {
+	const formattedPercentage = percentage
+		? `${ ( percentage * 100 ).toFixed( 2 ) }%`
+		: '';
+	const formattedFixed = fixed
+		? formatCurrency( fixed, currency, storeCurrency )
+		: '';
+
+	return join(
+		filter( [ formattedPercentage, formattedFixed ], Boolean ),
+		' + '
+	);
+};

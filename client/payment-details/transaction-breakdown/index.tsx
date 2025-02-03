@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { filter, flatten, join } from 'lodash';
+import { find } from 'lodash';
 
 /**
  * Internal dependencies
@@ -22,6 +22,8 @@ import {
 import { TimelineItem, TimelineFeeRate } from 'wcpay/data/timeline/types';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { formatCurrency } from 'multi-currency/interface/functions';
+import { formatFeeType, formatFeeRate } from './utils';
+import { useTransactionAmounts } from './hooks';
 import './style.scss';
 
 interface PaymentTransactionBreakdownProps {
@@ -35,51 +37,22 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 		paymentIntentId
 	);
 
-	let captureEvents: TimelineItem[] = [];
+	const captureEvent: TimelineItem | undefined = find(
+		timeline,
+		( item: TimelineItem ) => item.type === 'captured'
+	);
 
-	if ( timeline ) {
-		captureEvents = filter( timeline, function ( item: TimelineItem ) {
-			return item.type === 'captured';
-		} );
-	}
-
-	let captureEvent: TimelineItem | undefined;
-	if ( captureEvents.length > 0 ) {
-		captureEvent = captureEvents[ 0 ];
-	}
+	const transactionAmounts = useTransactionAmounts( captureEvent );
 
 	if (
-		undefined === captureEvent ||
-		undefined === captureEvent.transaction_details ||
-		undefined === captureEvent.fee_rates
+		! captureEvent?.transaction_details ||
+		! captureEvent?.fee_rates ||
+		! transactionAmounts
 	) {
 		return <div />;
 	}
 
-	const formattedStoreAmount =
-		formatCurrency(
-			captureEvent.transaction_details.store_amount,
-			captureEvent.transaction_details.store_currency
-		) +
-		' ' +
-		captureEvent.transaction_details.store_currency;
-
-	const formattedCustomerAmount =
-		formatCurrency(
-			captureEvent.transaction_details.customer_amount,
-			captureEvent.transaction_details.customer_currency,
-			captureEvent.transaction_details.store_currency
-		) +
-		' ' +
-		captureEvent.transaction_details.customer_currency;
-
-	const isMultiCurrency =
-		captureEvent.transaction_details.store_currency !==
-		captureEvent.transaction_details.customer_currency;
-
-	const formattedAmount =
-		formattedCustomerAmount +
-		( isMultiCurrency ? ` → ${ formattedStoreAmount }` : '' );
+	const { formattedAmount, isMultiCurrency } = transactionAmounts;
 
 	const feeExchangeRate = captureEvent.fee_rates.fee_exchange_rate?.rate || 1;
 
@@ -96,52 +69,23 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 		''
 	);
 
-	function formatFeeType(
-		type: string,
-		additionalType: string | undefined
-	): string {
-		if ( 'total' === type ) {
-			return __( 'Total transaction fee', 'woocommerce-payments' );
-		}
-		if ( 'base' === type ) {
-			return __( 'Base fee', 'woocommerce-payments' );
-		}
-		if ( 'additional' === type && 'international' === additionalType ) {
-			return __( 'International card fee', 'woocommerce-payments' );
-		}
-		if ( 'additional' === type && 'fx' === additionalType ) {
-			return __( 'Currency conversion fee', 'woocommerce-payments' );
-		}
-		return __( 'Fee', 'woocommerce-payments' );
-	}
-
-	function formatFeeRate(
-		percentage: number,
-		fixed: number,
-		currency: string,
-		storeCurrency: string
-	): string {
-		const formattedPercentage = percentage
-			? Math.round( percentage * 10000 ) / 100 + '%'
-			: '';
-		const formattedFixed = fixed
-			? formatCurrency( fixed, currency, storeCurrency )
-			: '';
-		return join(
-			filter( [ formattedPercentage, formattedFixed ], Boolean ),
-			' + '
-		);
-	}
-
-	function formatFee(
-		type: string,
-		additionalType: string | undefined,
-		percentage: number,
-		fixed: number,
-		currency: string,
-		storeCurrency: string,
-		amount?: number
-	): JSX.Element[] {
+	const FeeRow: React.FC< {
+		type: string;
+		additionalType?: string;
+		percentage: number;
+		fixed: number;
+		currency: string;
+		storeCurrency: string;
+		amount?: number;
+	} > = ( {
+		type,
+		additionalType,
+		percentage,
+		fixed,
+		currency,
+		storeCurrency,
+		amount,
+	} ) => {
 		const formattedFeeType = formatFeeType( type, additionalType );
 		const formattedFeeRate = formatFeeRate(
 			percentage,
@@ -150,35 +94,25 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 			storeCurrency
 		);
 		const formattedFeeAmount = amount
-			? ' - ' + formatCurrency( amount, storeCurrency, storeCurrency )
+			? ` - ${ formatCurrency( amount, storeCurrency, storeCurrency ) }`
 			: '';
 
-		return [
+		return (
 			<Flex
-				key="{ type }_fee_info"
-				className={ `wcpay-transaction-breakdown__fee_info wcpay-transaction-breakdown__${ type }_fee_info ` }
+				className={ `wcpay-transaction-breakdown__fee_info wcpay-transaction-breakdown__${ type }_fee_info` }
 			>
-				<FlexItem
-					key="{ type }"
-					className="wcpay-transaction-breakdown__fee_name"
-				>
+				<FlexItem className="wcpay-transaction-breakdown__fee_name">
 					{ formattedFeeType }
 				</FlexItem>
-				<FlexItem
-					key="{ type }_fee"
-					className="wcpay-transaction-breakdown__fee_rate"
-				>
+				<FlexItem className="wcpay-transaction-breakdown__fee_rate">
 					{ formattedFeeRate }
 				</FlexItem>
-				<FlexItem
-					key="{ type }_amount"
-					className="wcpay-transaction-breakdown__fee_amount"
-				>
+				<FlexItem className="wcpay-transaction-breakdown__fee_amount">
 					{ formattedFeeAmount }
 				</FlexItem>
-			</Flex>,
-		];
-	}
+			</Flex>
+		);
+	};
 
 	function formatFees( event: TimelineItem ): JSX.Element[] {
 		if (
@@ -194,43 +128,44 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 
 		if ( undefined === event.fee_rates.history ) {
 			fees.push(
-				formatFee(
-					'base',
-					'',
-					event.fee_rates.percentage,
-					event.fee_rates.fixed,
-					event.fee_rates.fixed_currency,
-					storeCurrency
-				)
+				<FeeRow
+					key="base"
+					type="base"
+					percentage={ event.fee_rates.percentage }
+					fixed={ event.fee_rates.fixed }
+					currency={ event.fee_rates.fixed_currency }
+					storeCurrency={ storeCurrency }
+				/>
 			);
 		} else {
 			event.fee_rates.history.map( ( fee: TimelineFeeRate ) =>
 				fees.push(
-					formatFee(
-						fee.type,
-						fee.additional_type,
-						fee.percentage_rate,
-						fee.fixed_rate,
-						fee.currency,
-						storeCurrency
-					)
+					<FeeRow
+						key={ fee.type }
+						type={ fee.type }
+						percentage={ fee.percentage_rate }
+						fixed={ fee.fixed_rate }
+						currency={ fee.currency }
+						storeCurrency={ storeCurrency }
+						additionalType={ fee.additional_type }
+					/>
 				)
 			);
 		}
 
 		fees.push(
-			formatFee(
-				'total',
-				'',
-				event.fee_rates.percentage,
-				event.fee_rates.fixed / feeExchangeRate,
-				storeCurrency,
-				storeCurrency,
-				event.transaction_details.store_fee
-			)
+			<FeeRow
+				key="total"
+				type="total"
+				percentage={ event.fee_rates.percentage }
+				fixed={ event.fee_rates.fixed / feeExchangeRate }
+				currency={ storeCurrency }
+				storeCurrency={ storeCurrency }
+				amount={ event.transaction_details.store_fee }
+			/>
 		);
 
-		return flatten( fees );
+		return fees;
 	}
 
 	return captureEvent ? (
