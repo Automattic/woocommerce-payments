@@ -21,9 +21,11 @@ describeif( shouldRunSubscriptionsTests )(
 			await expect( menuItem ).toBeVisible();
 
 			// An alternative way to verify the subscriptions menu page is active, avoiding the active tab classname.
-			const heading = await page.getByRole( 'heading', {
-				name: 'Subscriptions',
-			} );
+			const heading = await page
+				.getByRole( 'heading', {
+					name: 'Subscriptions',
+				} )
+				.first();
 			await expect( heading ).toBeVisible();
 		} );
 	}
