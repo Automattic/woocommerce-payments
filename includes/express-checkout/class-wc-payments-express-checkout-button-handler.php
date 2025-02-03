@@ -260,6 +260,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->express_checkout_helper->get_product_data(),
 			'total_label'        => $this->express_checkout_helper->get_total_label(),
+			'store_name'         => get_bloginfo( 'name' ),
 		];
 
 		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {

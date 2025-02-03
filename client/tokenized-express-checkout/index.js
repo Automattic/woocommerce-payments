@@ -269,6 +269,9 @@ jQuery( ( $ ) => {
 					// The "real" values will be updated once the button loads.
 					// They are preemptively initialized because the `event.resolve({})`
 					// needs to be called within 1 second of the `click` event.
+					business: {
+						name: getExpressCheckoutData( 'store_name' ),
+					},
 					lineItems: options.displayItems,
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,
