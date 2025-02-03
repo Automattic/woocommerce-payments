@@ -155,9 +155,6 @@ const AdvancedDescription = () => {
 };
 
 const SettingsManager = () => {
-	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
-		true
-	);
 	const { isLoading } = useSettings();
 
 	useLayoutEffect( () => {
@@ -226,16 +223,22 @@ const SettingsManager = () => {
 				</SettingsSection>
 			</DuplicatedPaymentMethodsContext.Provider>
 			<SettingsSection
+				description={ AccountDetailsDescription }
+				id="account-details"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<AccountManagement />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
 				description={ TransactionsDescription }
 				id="transactions"
 			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<Transactions
-							setTransactionInputsValid={
-								setTransactionInputsValid
-							}
-						/>
+						<Transactions />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
@@ -247,16 +250,6 @@ const SettingsManager = () => {
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</div>
-			</SettingsSection>
-			<SettingsSection
-				description={ AccountDetailsDescription }
-				id="account-details"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<AccountManagement />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection
 				description={ FraudProtectionDescription }
@@ -278,7 +271,7 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
+			<SaveSettingsSection />
 		</SettingsLayout>
 	);
 };

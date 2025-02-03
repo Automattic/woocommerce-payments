@@ -22,9 +22,7 @@ import {
 } from '../../data';
 import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
-import SupportPhoneInput from 'wcpay/settings/support-phone-input';
-import SupportEmailInput from 'wcpay/settings/support-email-input';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { select } from '@wordpress/data';
 import { STORE_NAME } from 'wcpay/data/constants';
 
@@ -32,7 +30,7 @@ const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 const ACCOUNT_STATEMENT_MAX_LENGTH_KANJI = 17;
 const ACCOUNT_STATEMENT_MAX_LENGTH_KANA = 22;
 
-const Transactions = ( { setTransactionInputsValid } ) => {
+const Transactions = () => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
 	const [
 		accountStatementDescriptor,
@@ -49,15 +47,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
 
-	const [ isEmailInputValid, setEmailInputValid ] = useState( true );
-	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );
 	const settings = select( STORE_NAME ).getSettings();
-
-	useEffect( () => {
-		if ( setTransactionInputsValid ) {
-			setTransactionInputsValid( isEmailInputValid && isPhoneInputValid );
-		}
-	}, [ isEmailInputValid, isPhoneInputValid, setTransactionInputsValid ] );
 
 	return (
 		<Card className="transactions">
@@ -180,19 +170,6 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 							</div>
 						</>
 					) }
-				</div>
-
-				<h4>{ __( 'Customer support', 'woocommerce-payments' ) }</h4>
-
-				<p className="transactions-customer-details">
-					{ __(
-						'Provide contact information where customers can reach you for support.',
-						'woocommerce-payments'
-					) }
-				</p>
-				<div className="transactions__customer-support">
-					<SupportEmailInput setInputVallid={ setEmailInputValid } />
-					<SupportPhoneInput setInputVallid={ setPhoneInputValid } />
 				</div>
 			</CardBody>
 		</Card>
