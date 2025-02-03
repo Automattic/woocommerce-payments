@@ -106,9 +106,16 @@ describeif( shouldRunSubscriptionsTests )(
 
 			await goToSubscriptions( merchantPage );
 
-			const subscriptionsRow = merchantPage.locator(
+			let subscriptionsRow = merchantPage.locator(
 				'#order-' + relatedSubscriptionId
 			);
+
+			// Fallback for WC 7.7.0.
+			if ( ( await subscriptionsRow.count() ) === 0 ) {
+				subscriptionsRow = merchantPage.locator(
+					'#post-' + relatedSubscriptionId
+				);
+			}
 
 			await expect(
 				subscriptionsRow.locator( '.subscription-status' )
