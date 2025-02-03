@@ -577,7 +577,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
 
 			add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-			add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
 			// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 			add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
@@ -3892,8 +3891,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function create_setup_intent_ajax() {
 		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
+			$wc_add_payment_method_rate_limit_id = 'add_payment_method_' . get_current_user_id();
+			if ( ! check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false ) || WC_Rate_Limiter::retried_too_soon( $wc_add_payment_method_rate_limit_id ) ) {
 				throw new Add_Payment_Method_Exception(
 					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
 					'invalid_referrer'
