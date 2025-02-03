@@ -51,6 +51,7 @@ const addSupportSessionDetectedCookie = async (
 		{
 			value: 'true',
 			name: '_wpcomsh_support_session_detected',
+			path: '/',
 			domain,
 		},
 	] );
