@@ -3,13 +3,9 @@
  * External dependencies
  */
 import React, { useState, useLayoutEffect } from 'react';
-import { Card, CardBody, ExternalLink } from '@wordpress/components';
+import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
-import {
-	ConnectAccountManagement,
-	ConnectComponentsProvider,
-} from '@stripe/react-connect-js';
 
 /**
  * Internal dependencies
@@ -22,6 +18,7 @@ import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
+import AccountManagement from '../account-management';
 import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
@@ -33,8 +30,6 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
-import appearance from 'wcpay/utils/embedded-components/appearance';
-import useAccountSession from 'wcpay/utils/embedded-components/account-session';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -164,14 +159,6 @@ const SettingsManager = () => {
 		true
 	);
 	const { isLoading } = useSettings();
-	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
-	const stripeConnectInstance = useAccountSession( {
-		isOnboarding: false,
-		data: null,
-		continueKyc: false,
-		setLoadErrorMessage,
-		appearance,
-	} );
 
 	useLayoutEffect( () => {
 		const { anchor } = getQuery();
@@ -267,29 +254,7 @@ const SettingsManager = () => {
 			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						{ loadErrorMessage ? (
-							<div>error</div>
-						) : (
-							stripeConnectInstance && (
-								<Card>
-									<CardBody>
-										<ConnectComponentsProvider
-											connectInstance={
-												stripeConnectInstance
-											}
-										>
-											<ConnectAccountManagement
-												collectionOptions={ {
-													fields: 'eventually_due',
-													futureRequirements:
-														'include',
-												} }
-											/>
-										</ConnectComponentsProvider>
-									</CardBody>
-								</Card>
-							)
-						) }
+						<AccountManagement />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
