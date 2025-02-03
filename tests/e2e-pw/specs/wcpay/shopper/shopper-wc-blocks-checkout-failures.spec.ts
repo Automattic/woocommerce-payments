@@ -99,7 +99,9 @@ describeif( shouldRunWCBlocksTests )(
 					await shopper.confirmCardAuthentication( shopperPage );
 				}
 				await expect(
-					shopperPage.getByLabel( 'Checkout' ).getByText( error )
+					shopperPage
+						.locator( '.wc-block-checkout__form' )
+						.getByText( error )
 				).toBeVisible();
 			} );
 		}
