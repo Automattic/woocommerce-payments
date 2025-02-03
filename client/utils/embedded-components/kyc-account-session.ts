@@ -11,9 +11,18 @@ import {
 /**
  * Internal dependencies
  */
-import { createAccountSession } from 'wcpay/utils/embedded-components/utils';
+import { createKYCAccountSession, isPoEligible } from 'wcpay/onboarding/utils';
+import { trackRedirected } from 'wcpay/onboarding/tracking';
 
-interface UseAccountSessionProps {
+interface UseKYCAccountSessionProps {
+	/**
+	 * The data object from the onboarding context.
+	 */
+	data: Record< string, any >;
+	/**
+	 * Set it to true whenever KYC needs to be resumed.
+	 */
+	continueKyc: boolean;
 	/**
 	 * Function to set the load error message.
 	 */
@@ -32,15 +41,19 @@ interface UseAccountSessionProps {
  *
  * If the account session data is not available, it returns null.
  *
+ * @param object data - The data object from the onboarding context.
+ * @param boolean continueKyc - Whether to continue the KYC process.
  * @param function setLoadErrorMessage - Function to set the load error message.
  * @param object appearance - The appearance object.
  *
  * @return StripeConnectInstance|null
  */
-const useAccountSession = ( {
+const useKYCAccountSession = ( {
+	data,
+	continueKyc,
 	setLoadErrorMessage,
 	appearance,
-}: UseAccountSessionProps ): StripeConnectInstance | null => {
+}: UseKYCAccountSessionProps ): StripeConnectInstance | null => {
 	const [ locale, setLocale ] = useState( '' );
 	const [ publishableKey, setPublishableKey ] = useState( '' );
 	const [ clientSecret, setClientSecret ] = useState<
@@ -53,8 +66,14 @@ const useAccountSession = ( {
 
 	const fetchAccountSession = useCallback( async () => {
 		try {
-			const accountSession = await createAccountSession();
+			const isEligible = ! continueKyc && ( await isPoEligible( data ) );
+			const accountSession = await createKYCAccountSession(
+				data,
+				isEligible
+			);
 			if ( accountSession && accountSession.clientSecret ) {
+				trackRedirected( isEligible, true );
+
 				return accountSession; // Return the full account session object
 			}
 
@@ -75,7 +94,7 @@ const useAccountSession = ( {
 
 		// Return null if an error occurred.
 		return null;
-	}, [ setLoadErrorMessage ] );
+	}, [ continueKyc, data, setLoadErrorMessage ] );
 
 	// Function to fetch clientSecret for use in Stripe auto-refresh or initialization
 	const fetchClientSecret = useCallback( async () => {
@@ -107,7 +126,13 @@ const useAccountSession = ( {
 		};
 
 		fetchKeys();
-	}, [ fetchAccountSession, fetchClientSecret, setLoadErrorMessage ] );
+	}, [
+		data,
+		continueKyc,
+		fetchAccountSession,
+		fetchClientSecret,
+		setLoadErrorMessage,
+	] );
 
 	useEffect( () => {
 		if ( publishableKey && clientSecret && ! stripeConnectInstance ) {
@@ -135,4 +160,4 @@ const useAccountSession = ( {
 	return stripeConnectInstance;
 };
 
-export default useAccountSession;
+export default useKYCAccountSession;
