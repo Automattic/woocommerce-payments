@@ -67,6 +67,10 @@
 	background-image: url( '../images/cards/visa.svg' );
 }
 
+.payment-method__brand--alipay {
+	background-image: url( '../images/payment-methods/alipay-logo.svg' );
+}
+
 .payment-method__brand--cartes_bancaires {
 	background-image: url( '../images/cards/cartes_bancaires.svg' );
 }

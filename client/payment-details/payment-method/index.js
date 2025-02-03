@@ -26,6 +26,7 @@ import SofortDetails from './sofort';
 
 const detailsComponentMap = {
 	affirm: AffirmDetails,
+	alipay: AffirmDetails,
 	afterpay_clearpay: AfterpayClearpayDetails,
 	au_becs_debit: BecsDetails,
 	bancontact: BancontactDetails,

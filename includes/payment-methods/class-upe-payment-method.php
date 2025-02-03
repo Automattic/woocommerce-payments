@@ -252,7 +252,9 @@ abstract class UPE_Payment_Method {
 			}
 		}
 
-		return empty( $this->currencies ) || in_array( $current_store_currency, $this->currencies, true );
+		$supported_currencies = $this->get_currencies();
+
+		return empty( $supported_currencies ) || in_array( $current_store_currency, $supported_currencies, true );
 	}
 
 	/**
