@@ -19,7 +19,7 @@ export interface TimelineFeeRates {
 	percentage: number;
 	fixed: number;
 	fixed_currency: string;
-	history: Array< TimelineFeeRate >;
+	history?: Array< TimelineFeeRate >;
 	fee_exchange_rate?: TimelineFeeExchangeRate;
 }
 

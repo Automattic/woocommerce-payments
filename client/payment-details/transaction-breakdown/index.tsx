@@ -33,9 +33,7 @@ interface PaymentTransactionBreakdownProps {
 const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > = ( {
 	paymentIntentId,
 } ) => {
-	const { timeline, timelineError, isLoading } = useTimeline(
-		paymentIntentId
-	);
+	const { timeline, isLoading } = useTimeline( paymentIntentId );
 
 	/**
 	 * Right now there is now support for multi-capture in the WooPayments and
@@ -101,10 +99,11 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 		const formattedFeeAmount = amount
 			? ` - ${ formatCurrency( amount, storeCurrency, storeCurrency ) }`
 			: '';
+		const feeType = type + ( additionalType ? `_${ additionalType }` : '' );
 
 		return (
 			<Flex
-				className={ `wcpay-transaction-breakdown__fee_info wcpay-transaction-breakdown__${ type }_fee_info` }
+				className={ `wcpay-transaction-breakdown__fee_info wcpay-transaction-breakdown__${ feeType }_fee_info` }
 			>
 				<FlexItem className="wcpay-transaction-breakdown__fee_name">
 					{ formattedFeeType }
@@ -120,10 +119,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 	};
 
 	function formatFees( event: TimelineItem ): JSX.Element[] {
-		if (
-			undefined === event.fee_rates ||
-			undefined === event.transaction_details
-		) {
+		if ( ! event.fee_rates || ! event.transaction_details ) {
 			return [];
 		}
 
@@ -131,7 +127,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 
 		const fees = [];
 
-		if ( undefined === event.fee_rates.history ) {
+		if ( ! event.fee_rates.history ) {
 			fees.push(
 				<FeeRow
 					key="base"
@@ -143,19 +139,23 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 				/>
 			);
 		} else {
-			event.fee_rates.history.map( ( fee: TimelineFeeRate ) =>
+			event.fee_rates.history.map( ( fee: TimelineFeeRate ) => {
+				const feeType =
+					fee.type +
+					( fee.additional_type ? `_${ fee.additional_type }` : '' );
 				fees.push(
 					<FeeRow
-						key={ fee.type }
+						key={ feeType }
 						type={ fee.type }
+						additionalType={ fee.additional_type }
 						percentage={ fee.percentage_rate }
 						fixed={ fee.fixed_rate }
 						currency={ fee.currency }
 						storeCurrency={ storeCurrency }
-						additionalType={ fee.additional_type }
 					/>
-				)
-			);
+				);
+				return null;
+			} );
 		}
 
 		fees.push(
@@ -186,68 +186,53 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 			</CardHeader>
 			<CardBody className="wcpay-transaction-breakdown">
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
-					{ timelineError instanceof Error ? (
-						[
-							__(
-								'Error while loading transaction breakdown',
-								'woocommerce-payments'
-							),
-						]
-					) : (
-						<Flex direction="column">
-							<Flex align="top">
-								<FlexItem>
-									{ __(
-										'Authorized payment',
-										'woocommerce-payments'
-									) }
-								</FlexItem>
-								<FlexItem>
-									<Flex direction="column">
-										<FlexItem>{ formattedAmount }</FlexItem>
-										{ conversionRate }
-									</Flex>
-								</FlexItem>
-							</Flex>
-							<Flex>
-								<FlexItem>
-									{ __(
-										'Transaction fee',
-										'woocommerce-payments'
-									) }
-								</FlexItem>
-							</Flex>
-							<Flex
-								className="wcpay-transaction-breakdown__fees"
-								direction="column"
-							>
-								{ formatFees( captureEvent ) }
-							</Flex>
+					<Flex direction="column">
+						<Flex align="top">
+							<FlexItem>
+								{ __(
+									'Authorized payment',
+									'woocommerce-payments'
+								) }
+							</FlexItem>
+							<FlexItem>
+								<Flex direction="column">
+									<FlexItem>{ formattedAmount }</FlexItem>
+									{ conversionRate }
+								</Flex>
+							</FlexItem>
 						</Flex>
-					) }
+						<Flex>
+							<FlexItem>
+								{ __(
+									'Transaction fee',
+									'woocommerce-payments'
+								) }
+							</FlexItem>
+						</Flex>
+						<Flex
+							className="wcpay-transaction-breakdown__fees"
+							direction="column"
+						>
+							{ formatFees( captureEvent ) }
+						</Flex>
+					</Flex>
 				</LoadableBlock>
 			</CardBody>
 			<CardFooter>
 				<LoadableBlock isLoading={ isLoading } numLines={ 1 }>
-					{ timelineError instanceof Error ? (
-						[]
-					) : (
-						<Flex className="wcpay-transaction-breakdown__footer">
-							<FlexItem>
-								{ __( 'Net deposit', 'woocommerce-payments' ) }
-							</FlexItem>
-							<FlexItem className="wcpay-transaction-breakdown__footer_amount">
-								{ formatCurrency(
-									captureEvent.transaction_details
-										.store_amount_captured -
-										captureEvent.transaction_details
-											.store_fee,
-									captureEvent.transaction_details
-										.store_currency
-								) }
-							</FlexItem>
-						</Flex>
-					) }
+					<Flex className="wcpay-transaction-breakdown__footer">
+						<FlexItem>
+							{ __( 'Net deposit', 'woocommerce-payments' ) }
+						</FlexItem>
+						<FlexItem className="wcpay-transaction-breakdown__footer_amount">
+							{ formatCurrency(
+								captureEvent.transaction_details
+									.store_amount_captured -
+									captureEvent.transaction_details.store_fee,
+								captureEvent.transaction_details.store_currency
+							) }
+						</FlexItem>
+					</Flex>
 				</LoadableBlock>
 			</CardFooter>
 		</Card>
