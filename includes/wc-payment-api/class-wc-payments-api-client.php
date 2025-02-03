@@ -1075,7 +1075,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 *
 	 * @throws API_Exception
 	 */
-	public function retrieve_embedded_account_session(): array {
+	public function create_embedded_account_session(): array {
 		$session = $this->request( [], self::ACCOUNTS_API . '/embedded/session', self::POST, true, true );
 
 		if ( ! is_array( $session ) ) {

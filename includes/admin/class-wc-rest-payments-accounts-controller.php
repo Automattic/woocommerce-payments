@@ -96,7 +96,7 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_Error|WP_REST_Response
 	 */
 	public function get_embedded_session( WP_REST_Request $request ) {
-		$account_session = WC_Payments::get_account_service()->create_embedded_session();
+		$account_session = WC_Payments::get_account_service()->create_embedded_account_session();
 
 		if ( $account_session ) {
 			$account_session['locale'] = get_user_locale();
