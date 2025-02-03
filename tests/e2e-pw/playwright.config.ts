@@ -9,7 +9,7 @@ import path from 'path';
 config( { path: path.resolve( __dirname, '../e2e/config', '.env' ) } );
 config( { path: path.resolve( __dirname, '../e2e/config', 'local.env' ) } );
 
-const { BASE_URL, E2E_GROUP, E2E_BRANCH } = process.env;
+const { BASE_URL, NODE_ENV, E2E_GROUP, E2E_BRANCH } = process.env;
 
 const validGroups = [ 'wcpay', 'subscriptions' ];
 const validBranches = [ 'merchant', 'shopper' ];
@@ -32,6 +32,14 @@ const getTestMatch = ( group: string, branch: string ) => {
 	const testDir = buildTestDir( group, branch );
 
 	return new RegExp( `${ testDir }\/.*\.spec\.ts` );
+};
+
+const getBaseUrl = () => {
+	if ( NODE_ENV === 'atomic' ) {
+		return 'https://wcpaytestecomm.wpcomstaging.com/';
+	}
+
+	return BASE_URL ?? 'http://localhost:8084';
 };
 
 /**
@@ -59,7 +67,7 @@ export default defineConfig( {
 	outputDir: './test-results',
 	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
 	use: {
-		baseURL: BASE_URL ?? 'http://localhost:8084',
+		baseURL: getBaseUrl(),
 		screenshot: 'only-on-failure',
 		trace: 'retain-on-failure',
 		video: 'on-first-retry',
