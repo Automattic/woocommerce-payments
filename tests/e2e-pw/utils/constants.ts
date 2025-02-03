@@ -10,3 +10,5 @@ export const products = {
 	SUBSCRIPTION_SIGNUP_FEE: 70,
 	SUBSCRIPTION_NO_SIGNUP_FEE: 88,
 };
+
+export const wooCoreVersion = process.env.E2E_WC_VERSION;

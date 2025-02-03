@@ -22,7 +22,7 @@ env:
   E2E_SLACK_CHANNEL:             ${{ secrets.E2E_SLACK_CHANNEL }}
   E2E_SLACK_TOKEN:               ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_USE_LOCAL_SERVER:          false
-  E2E_RESULT_FILEPATH:           'tests/e2e/results.json'
+  E2E_RESULT_FILEPATH:           'tests/e2e-pw/results.json'
   WC_MIN_SUPPORTED_VERSION:      '7.6.0'
   NODE_ENV:                      'test'
   FORCE_E2E_DEPS_SETUP:          true
@@ -63,6 +63,10 @@ jobs:
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
+
+      - name: Install Playwright
+        shell: bash
+        run: npx playwright install chromium
 
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests
@@ -115,6 +119,10 @@ jobs:
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
+
+      - name: Install Playwright
+        shell: bash
+        run: npx playwright install chromium
 
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests

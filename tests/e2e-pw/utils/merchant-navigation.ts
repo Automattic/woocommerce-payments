@@ -4,6 +4,11 @@
 import { Page } from 'playwright/test';
 import { dataHasLoaded } from './merchant';
 
+/**
+ * Internal dependencies
+ */
+import { wooCoreVersion } from './constants';
+
 export const goToOrder = async ( page: Page, orderId: string ) => {
 	await page.goto(
 		`/wp-admin/admin.php?page=wc-orders&action=edit&id=${ orderId }`,
@@ -114,19 +119,21 @@ export const goToConnect = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
-export const goToSubscriptions = async ( page: Page ) =>
-	await page.goto( '/wp-admin/admin.php?page=wc-orders--shop_subscription', {
+export const goToSubscriptions = async ( page: Page ) => {
+	const subscriptionsUrl =
+		wooCoreVersion === '7.7.0'
+			? '/wp-admin/edit.php?post_type=shop_subscription'
+			: '/wp-admin/admin.php?page=wc-orders--shop_subscription';
+	await page.goto( subscriptionsUrl, {
 		waitUntil: 'load',
 	} );
+};
 
 export const goToSubscriptionPage = async (
 	page: Page,
 	subscriptionId: number
 ) => {
 	await goToSubscriptions( page );
-	const orderRow = page.locator(
-		'tr#order-' + subscriptionId + ' .order_title a:nth-child(1)'
-	);
-	orderRow.evaluate( ( el: HTMLLinkElement ) => el.click() );
+	await page.getByRole( 'link', { name: `#${ subscriptionId }` } ).click();
 	await dataHasLoaded( page );
 };

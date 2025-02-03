@@ -68,9 +68,22 @@ export const fillBillingAddressWCB = async (
 	const billingAddressForm = page.getByRole( 'group', {
 		name: 'Billing address',
 	} );
-	await billingAddressForm
-		.getByLabel( 'Country/Region' )
-		.selectOption( billingAddress.country );
+
+	const countryField = billingAddressForm.getByLabel( 'Country/Region' );
+
+	try {
+		await countryField.selectOption( billingAddress.country );
+	} catch ( error ) {
+		// Fallback for WC 7.7.0.
+		await countryField.focus();
+		await countryField.fill( billingAddress.country );
+
+		await page
+			.locator( '.components-form-token-field__suggestion' )
+			.first()
+			.click();
+	}
+
 	await billingAddressForm
 		.getByLabel( 'First Name' )
 		.fill( billingAddress.firstname );
@@ -93,10 +106,17 @@ export const fillBillingAddressWCB = async (
 		.getByLabel( 'Apartment, suite, etc. (optional)' )
 		.fill( billingAddress.addresssecondline );
 	await billingAddressForm.getByLabel( 'City' ).fill( billingAddress.city );
+
+	const stateInput = billingAddressForm.getByLabel( 'State', {
+		exact: true,
+	} );
 	if ( billingAddress.state ) {
-		await billingAddressForm
-			.getByLabel( 'State' )
-			.selectOption( billingAddress.state );
+		try {
+			await stateInput.selectOption( billingAddress.state );
+		} catch ( error ) {
+			// Fallback for WC 7.7.0.
+			await stateInput.fill( billingAddress.state );
+		}
 	}
 	await billingAddressForm
 		.getByLabel( 'ZIP Code' )
@@ -206,7 +226,6 @@ export const fillCardDetailsWCB = async (
 	);
 	const stripeFrame = await frameHandle.contentFrame();
 	if ( ! stripeFrame ) return;
-	await stripeFrame.waitForLoadState( 'networkidle' );
 	await stripeFrame.getByPlaceholder( '1234 1234 1234' ).fill( card.number );
 	await stripeFrame
 		.getByPlaceholder( 'MM / YY' )
@@ -280,9 +299,11 @@ export const addToCartFromShopPage = async (
 			page.locator( `${ addToCartSelector }.added` )
 		).toBeVisible();
 	} else {
+		// This generic regex will match the aria-label for the "Add to cart" button for any product.
+		// It should work for WC 7.7.0 and later.
 		// These unicode characters are the smart (or curly) quotes: “ ”.
 		const addToCartRegex = new RegExp(
-			`Add to cart: \u201C${ product }\u201D`
+			`Add\\s+(?:to\\s+cart:\\s*)?\u201C${ product }\u201D(?:\\s+to\\s+your\\s+cart)?`
 		);
 
 		await page.getByLabel( addToCartRegex ).click();

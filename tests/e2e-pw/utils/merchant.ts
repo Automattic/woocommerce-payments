@@ -420,6 +420,17 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 	await page.waitForTimeout( 500 );
 	await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
 
+	// Enable the "Company" field if it's not already enabled.
+	await page.getByLabel( 'Block: Shipping Address' ).click();
+
+	const companyCheckbox = page
+		.locator( '.components-toggle-control' )
+		.getByLabel( 'Company' );
+
+	if ( ! ( await companyCheckbox.isChecked() ) ) {
+		await companyCheckbox.check();
+	}
+
 	// Publish the page
 	await page.locator( 'button.editor-post-publish-panel__toggle' ).click();
 	await page.waitForTimeout( 500 );

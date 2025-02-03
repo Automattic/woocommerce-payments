@@ -9,7 +9,30 @@ import path from 'path';
 config( { path: path.resolve( __dirname, '../e2e/config', '.env' ) } );
 config( { path: path.resolve( __dirname, '../e2e/config', 'local.env' ) } );
 
-const { BASE_URL } = process.env;
+const { BASE_URL, E2E_GROUP, E2E_BRANCH } = process.env;
+
+const validGroups = [ 'wcpay', 'subscriptions' ];
+const validBranches = [ 'merchant', 'shopper' ];
+
+const buildTestDir = ( group: string, branch: string ) => {
+	const baseDir = `\/specs`;
+
+	if ( ! group || ! validGroups.includes( group ) ) {
+		return baseDir;
+	}
+
+	if ( ! branch || ! validBranches.includes( branch ) ) {
+		return `${ baseDir }\/${ group }`;
+	}
+
+	return `${ baseDir }\/${ group }\/${ branch }`;
+};
+
+const getTestMatch = ( group: string, branch: string ) => {
+	const testDir = buildTestDir( group, branch );
+
+	return new RegExp( `${ testDir }\/.*\.spec\.ts` );
+};
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -29,6 +52,7 @@ export default defineConfig( {
 		? [
 				// If running on CI, also use the GitHub Actions reporter
 				[ 'github' ],
+				[ 'json', { outputFile: 'results.json' } ],
 				[ 'html' ],
 		  ]
 		: [ [ 'html', { open: 'never' } ] ],
@@ -43,11 +67,16 @@ export default defineConfig( {
 	},
 	timeout: 120 * 1000, // Default is 30s, somteimes it is not enough for local tests due to long setup.
 	expect: {
-		toHaveScreenshot: { maxDiffPixelRatio: 0.025 },
+		toHaveScreenshot: {
+			maxDiffPixelRatio:
+				process.env.E2E_WC_VERSION === '7.7.0' ? 0.035 : 0.025,
+		},
 		//=* Increase expect timeout to 10 seconds. See https://playwright.dev/docs/test-timeouts#set-expect-timeout-in-the-config.*/
 		timeout: 20 * 1000,
 	},
 	snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{ext}',
+
+	testMatch: getTestMatch( E2E_GROUP, E2E_BRANCH ),
 
 	/* Configure projects for major browsers */
 	projects: [
@@ -58,15 +87,8 @@ export default defineConfig( {
 			dependencies: [ 'setup' ],
 		},
 		{
-			name: 'merchant',
+			name: 'chromium',
 			use: { ...devices[ 'Desktop Chrome' ] },
-			testDir: './specs/merchant',
-			dependencies: [ 'setup' ],
-		},
-		{
-			name: 'shopper',
-			use: { ...devices[ 'Desktop Chrome' ] },
-			testDir: './specs/shopper',
 			dependencies: [ 'setup' ],
 		},
 		// Setup project
