@@ -69,12 +69,10 @@ use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 
 /**
@@ -860,6 +858,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) ) {
 			return false;
 		}
+
+		if ( ! $this->payment_method->is_reusable() && is_add_payment_method_page() ) {
+			return false;
+		}
+
 		// Disable the gateway if using live mode without HTTPS set up or the currency is not
 		// available in the country of the account.
 		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() ) {
@@ -3355,6 +3358,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$status                   = null;
 		$error_message            = null;
 		$http_code                = null;
+		$error_code               = null;
 
 		try {
 			$intent_id           = $order->get_transaction_id();
@@ -3377,6 +3381,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			try {
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
+				$error_code    = $e->get_error_code();
+				$extra_details = [];
+
+				if ( $e instanceof Amount_Too_Small_Exception ) {
+					$extra_details          = [
+						'minimum_amount'          => $e->get_minimum_amount(),
+						'minimum_amount_currency' => strtoupper( $e->get_currency() ),
+					];
+					$minimum_amount_details = sprintf(
+						/* translators: %1$s: minimum amount, %2$s: currency */
+						__( 'The minimum amount to capture is %1$s %2$s.', 'woocommerce-payments' ),
+						WC_Payments_Utils::interpret_stripe_amount( $e->get_minimum_amount(), $e->get_currency() ),
+						strtoupper( $e->get_currency() )
+					);
+					$error_message = $error_message . ' ' . $minimum_amount_details;
+				}
 
 				$request = Get_Intention::create( $intent_id );
 				$request->set_hook_args( $order );
@@ -3392,6 +3412,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$status        = null;
 				$error_message = $e->getMessage();
 				$http_code     = $e->get_http_code();
+				$error_code    = $e->get_error_code();
 			}
 		}
 
@@ -3418,10 +3439,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return [
-			'status'    => $status ?? 'failed',
-			'id'        => ! empty( $intent ) ? $intent->get_id() : null,
-			'message'   => $error_message,
-			'http_code' => $http_code,
+			'status'        => $status ?? 'failed',
+			'id'            => ! empty( $intent ) ? $intent->get_id() : null,
+			'message'       => $error_message,
+			'http_code'     => $http_code,
+			'error_code'    => $error_code,
+			'extra_details' => $extra_details ?? [],
 		];
 	}
 
@@ -4114,7 +4137,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;

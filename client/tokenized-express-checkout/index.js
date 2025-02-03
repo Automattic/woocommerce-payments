@@ -65,29 +65,18 @@ const fetchNewCartData = async () => {
 };
 
 const getServerSideExpressCheckoutProductData = () => {
-	const requestShipping =
-		getExpressCheckoutData( 'product' )?.needs_shipping ?? false;
 	const displayItems = (
 		getExpressCheckoutData( 'product' )?.displayItems ?? []
 	).map( ( { label, amount } ) => ( {
 		name: label,
 		amount,
 	} ) );
-	const shippingRates = requestShipping
-		? [
-				{
-					id: 'pending',
-					displayName: __( 'Pending', 'woocommerce-payments' ),
-					amount: 0,
-				},
-		  ]
-		: undefined;
 
 	return {
 		total: getExpressCheckoutData( 'product' )?.total.amount,
 		currency: getExpressCheckoutData( 'product' )?.currency,
-		requestShipping,
-		shippingRates,
+		requestShipping:
+			getExpressCheckoutData( 'product' )?.needs_shipping ?? false,
 		requestPhone:
 			getExpressCheckoutData( 'checkout' )?.needs_payer_phone ?? false,
 		displayItems,
@@ -258,6 +247,22 @@ jQuery( ( $ ) => {
 					} );
 				}
 
+				const shippingOptionsWithFallback =
+					! options.shippingRates || // server-side data on the product page initialization doesn't provide any shipping rates.
+					options.shippingRates.length === 0 // but it can also happen that there are no rates in the array.
+						? [
+								// fallback for initialization (and initialization _only_), before an address is provided by the ECE.
+								{
+									id: 'pending',
+									displayName: __(
+										'Pending',
+										'woocommerce-payments'
+									),
+									amount: 0,
+								},
+						  ]
+						: options.shippingRates;
+
 				const clickOptions = {
 					// `options.displayItems`, `options.requestShipping`, `options.requestPhone`, `options.shippingRates`,
 					// are all coming from prior of the initialization.
@@ -268,7 +273,9 @@ jQuery( ( $ ) => {
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,
 					phoneNumberRequired: options.requestPhone,
-					shippingRates: options.shippingRates,
+					shippingRates: options.requestShipping
+						? shippingOptionsWithFallback
+						: undefined,
 					allowedShippingCountries: getExpressCheckoutData(
 						'checkout'
 					).allowed_shipping_countries,

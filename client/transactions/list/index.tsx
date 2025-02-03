@@ -425,6 +425,8 @@ export const TransactionsList = (
 			-1 !==
 			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
 
+		const isReaderFee = dataType === 'card_reader_fee';
+
 		const deposit = ! isFinancingType && (
 			<Deposit
 				depositId={ txn.deposit_id }
@@ -467,26 +469,29 @@ export const TransactionsList = (
 			},
 			source: {
 				value: txn.source,
-				display: ! isFinancingType ? (
-					clickable(
-						<span className="payment-method-details-list-item">
-							<HoverTooltip
-								isVisible={ false }
-								content={ PAYMENT_METHOD_TITLES[ txn.source ] }
-							>
-								<span
-									className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-									aria-label={
+				display:
+					! isFinancingType && ! isReaderFee ? (
+						clickable(
+							<span className="payment-method-details-list-item">
+								<HoverTooltip
+									isVisible={ false }
+									content={
 										PAYMENT_METHOD_TITLES[ txn.source ]
 									}
-								/>
-							</HoverTooltip>
-							{ getPaymentSourceDetails( txn ) }
-						</span>
-					)
-				) : (
-					<span className={ 'payment-method__brand' }>—</span>
-				),
+								>
+									<span
+										className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+										aria-label={
+											PAYMENT_METHOD_TITLES[ txn.source ]
+										}
+									/>
+								</HoverTooltip>
+								{ getPaymentSourceDetails( txn ) }
+							</span>
+						)
+					) : (
+						<span className={ 'payment-method__brand' }>—</span>
+					),
 			},
 			order: {
 				value: txn.order && txn.order.number,
@@ -498,15 +503,17 @@ export const TransactionsList = (
 			},
 			customer_name: {
 				value: txn.customer_name,
-				display: ! isFinancingType
-					? customerName
-					: __( 'N/A', 'woocommerce-payments' ),
+				display:
+					! isFinancingType && ! isReaderFee
+						? customerName
+						: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_email: {
 				value: txn.customer_email,
-				display: ! isFinancingType
-					? customerEmail
-					: __( 'N/A', 'woocommerce-payments' ),
+				display:
+					! isFinancingType && ! isReaderFee
+						? customerEmail
+						: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_country: {
 				value: txn.customer_country,

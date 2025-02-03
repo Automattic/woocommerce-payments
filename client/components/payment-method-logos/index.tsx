@@ -221,6 +221,7 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 					{ isPopoverVisible && (
 						<Popover
 							position="bottom left"
+							className="connect-account-page__payment-methods--logos-popover"
 							noArrow={ true }
 							onClose={ () => setIsPopoverVisible( false ) }
 							onMouseEnter={ showPopover }

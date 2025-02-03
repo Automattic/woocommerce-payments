@@ -2,10 +2,11 @@
  * External dependencies
  */
 import { Page } from 'playwright/test';
+
 /**
  * Internal dependencies
  */
-import { isUIUnblocked } from './shopper';
+import { isUIUnblocked } from './helpers';
 
 export const goToShop = async ( page: Page, pageNumber?: number ) => {
 	if ( pageNumber ) {
@@ -28,12 +29,18 @@ export const goToProductPageBySlug = async (
 
 export const goToCart = async ( page: Page ) => {
 	await page.goto( '/cart/', { waitUntil: 'load' } );
-	isUIUnblocked( page );
+	await isUIUnblocked( page );
 };
 
 export const goToCheckout = async ( page: Page ) => {
 	await page.goto( '/checkout/', { waitUntil: 'load' } );
-	isUIUnblocked( page );
+	await isUIUnblocked( page );
+};
+
+export const goToCheckoutWCB = async ( page: Page ) => {
+	await page.goto( '/checkout-wcb', {
+		waitUntil: 'load',
+	} );
 };
 
 export const goToOrders = async ( page: Page ) => {
@@ -48,7 +55,11 @@ export const goToOrder = async ( page: Page, orderId: string ) => {
 	} );
 };
 
-export const goToSubscriptions = ( page: Page ) =>
-	page.goto( '/my-account/subscriptions/', {
+export const goToMyAccount = async ( page: Page, subPage?: string ) => {
+	await page.goto( '/my-account/' + ( subPage ?? '' ), {
 		waitUntil: 'load',
 	} );
+};
+
+export const goToSubscriptions = async ( page: Page ) =>
+	await goToMyAccount( page, 'subscriptions' );

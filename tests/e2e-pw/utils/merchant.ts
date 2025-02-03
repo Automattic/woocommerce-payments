@@ -3,6 +3,7 @@
  */
 import { Page, expect } from 'playwright/test';
 import * as navigation from './merchant-navigation';
+import RestAPI from './rest-api';
 
 /**
  * Checks if the data has loaded on the page.
@@ -53,13 +54,30 @@ const ensureSupportPhoneIsFilled = async ( page: Page ) => {
 	}
 };
 
+const expectSnackbarWithText = async (
+	page: Page,
+	expectedText: string,
+	timeout = 10000
+) => {
+	await expect(
+		page.locator( '.components-snackbar__content', {
+			hasText: expectedText,
+		} )
+	).toBeVisible( {
+		timeout: timeout,
+	} );
+};
+
 export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await ensureSupportPhoneIsFilled( page );
 
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
-	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-		timeout: 10000,
-	} );
+	await expectSnackbarWithText( page, 'Settings saved.' );
+};
+
+export const saveMultiCurrencySettings = async ( page: Page ) => {
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	await expectSnackbarWithText( page, 'Currency settings updated.' );
 };
 
 export const isMulticurrencyEnabled = async ( page: Page ) => {
@@ -90,24 +108,42 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 	await saveWooPaymentsSettings( page );
 };
 
-export const addMulticurrencyWidget = async ( page: Page ) => {
+export const addMulticurrencyWidget = async (
+	page: Page,
+	blocksVersion = false
+) => {
 	await navigation.goToWidgets( page );
 	// Wait for all widgets to load. This is important to prevent flakiness.
-	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+	// Note that if the widget area is empty, the spinner will not be shown.
+	// Wrapping the check in a try-catch block to fail it soft.
+	try {
+		await page
+			.locator( '.components-spinner' )
+			.first()
+			.waitFor( { timeout: 2000 } );
+		await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+	} catch {}
 
 	if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
 		await page.getByRole( 'button', { name: 'Close' } ).click();
 	}
 
-	const isWidgetAdded = await page
-		.getByRole( 'heading', { name: 'Currency Switcher Widget' } )
-		.isVisible();
+	// At this point, widgets might still be loading individually.
+	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+
+	const widgetName = blocksVersion
+		? 'Currency Switcher Block'
+		: 'Currency Switcher Widget';
+	const isWidgetAdded = blocksVersion
+		? ( await page.locator( `[data-title="${ widgetName }"]` ).count() ) > 0
+		: ( await page.getByRole( 'heading', { name: widgetName } ).count() ) >
+		  0;
 
 	if ( ! isWidgetAdded ) {
 		await page.getByRole( 'button', { name: 'Add block' } ).click();
 		await page
 			.locator( 'input[placeholder="Search"]' )
-			.pressSequentially( 'switcher', { delay: 20 } );
+			.pressSequentially( widgetName, { delay: 20 } );
 		await expect(
 			page.locator( 'button.components-button[role="option"]' ).first()
 		).toBeVisible( { timeout: 5000 } );
@@ -120,16 +156,26 @@ export const addMulticurrencyWidget = async ( page: Page ) => {
 			page.getByRole( 'button', { name: 'Update' } )
 		).toBeEnabled();
 		await page.getByRole( 'button', { name: 'Update' } ).click();
-		await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-			timeout: 10000,
-		} );
+		await expectSnackbarWithText( page, 'Widgets saved.' );
 	}
+};
+
+export const removeMultiCurrencyWidgets = async ( baseURL: string ) => {
+	const restApi = new RestAPI( baseURL );
+	// Delete classic version of the currency switcher widget.
+	await restApi.deleteWidgets( 'sidebar-1', 'currency_switcher_widget' );
+	// Delete block version of the currency switcher widget.
+	await restApi.deleteWidgets(
+		'sidebar-1',
+		'block',
+		'currency-switcher-holder'
+	);
 };
 
 export const getActiveThemeSlug = async ( page: Page ) => {
 	await navigation.goToThemes( page );
 
-	const activeTheme = await page.locator( '.theme.active' );
+	const activeTheme = page.locator( '.theme.active' );
 
 	return ( await activeTheme.getAttribute( 'data-slug' ) ) ?? '';
 };
@@ -143,16 +189,16 @@ export const activateTheme = async ( page: Page, slug: string ) => {
 		await page
 			.locator( `.theme[data-slug="${ slug }"] .button.activate` )
 			.click();
-		await expect(
-			await page.locator( '.notice.updated' ).innerText()
-		).toContain( 'New theme activated.' );
+		expect( await page.locator( '.notice.updated' ).innerText() ).toContain(
+			'New theme activated.'
+		);
 	}
 };
 
 export const disableAllEnabledCurrencies = async ( page: Page ) => {
 	await navigation.goToMultiCurrencySettings( page );
 	await expect(
-		await page.locator( '.enabled-currencies-list li' ).first()
+		page.locator( '.enabled-currencies-list li' ).first()
 	).toBeVisible();
 
 	const deleteButtons = await page
@@ -169,7 +215,9 @@ export const disableAllEnabledCurrencies = async ( page: Page ) => {
 			.first()
 			.click();
 
-		const snackbar = await page.getByLabel( 'Dismiss this notice' );
+		const snackbar = page.locator( '.components-snackbar__content', {
+			hasText: 'Enabled currencies updated.',
+		} );
 
 		await expect( snackbar ).toBeVisible( { timeout: 10000 } );
 		await snackbar.click();
@@ -186,7 +234,7 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	await navigation.goToMultiCurrencySettings( page );
 	await page.getByTestId( 'enabled-currencies-add-button' ).click();
 
-	const checkbox = await page.locator(
+	const checkbox = page.locator(
 		`input[type="checkbox"][code="${ currencyCode }"]`
 	);
 
@@ -195,9 +243,7 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	}
 
 	await page.getByRole( 'button', { name: 'Update selected' } ).click();
-	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-		timeout: 10000,
-	} );
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
 	await expect(
 		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
 	).toBeVisible();
@@ -205,9 +251,13 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 
 export const restoreCurrencies = async ( page: Page ) => {
 	await disableAllEnabledCurrencies( page );
-	await addCurrency( page, 'USD' );
-	await addCurrency( page, 'EUR' );
-	await addCurrency( page, 'GBP' );
+	await page.getByTestId( 'enabled-currencies-add-button' ).click();
+	await page.locator( `input[type="checkbox"][code="EUR"]` ).check();
+	await page.locator( `input[type="checkbox"][code="GBP"]` ).check();
+	await page.getByRole( 'button', { name: 'Update selected' } ).click();
+	await expect( page.locator( 'li.enabled-currency.gbp' ) ).toBeVisible();
+	await expect( page.locator( 'li.enabled-currency.eur' ) ).toBeVisible();
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
 };
 
 export const removeCurrency = async ( page: Page, currencyCode: string ) => {
@@ -217,9 +267,7 @@ export const removeCurrency = async ( page: Page, currencyCode: string ) => {
 			`li.enabled-currency.${ currencyCode.toLowerCase() } .enabled-currency__action.delete`
 		)
 		.click();
-	await expect( page.getByLabel( 'Dismiss this notice' ) ).toBeVisible( {
-		timeout: 10000,
-	} );
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
 	await expect(
 		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
 	).toBeHidden();
@@ -245,7 +293,7 @@ export const setCurrencyRate = async (
 		.locator( '#single-currency-settings__manual_rate_radio' )
 		.click();
 	await page.getByTestId( 'manual_rate_input' ).fill( rate );
-	await saveWooPaymentsSettings( page );
+	await saveMultiCurrencySettings( page );
 };
 
 export const setCurrencyPriceRounding = async (
@@ -255,7 +303,7 @@ export const setCurrencyPriceRounding = async (
 ) => {
 	await editCurrency( page, currencyCode );
 	await page.getByTestId( 'price_rounding' ).selectOption( rounding );
-	await saveWooPaymentsSettings( page );
+	await saveMultiCurrencySettings( page );
 };
 
 export const setCurrencyCharmPricing = async (
@@ -265,7 +313,7 @@ export const setCurrencyCharmPricing = async (
 ) => {
 	await editCurrency( page, currencyCode );
 	await page.getByTestId( 'price_charm' ).selectOption( charmPricing );
-	await saveWooPaymentsSettings( page );
+	await saveMultiCurrencySettings( page );
 };
 
 export const enablePaymentMethods = async (
@@ -273,12 +321,17 @@ export const enablePaymentMethods = async (
 	paymentMethods: string[]
 ) => {
 	await navigation.goToWooPaymentsSettings( page );
-
+	let atLeastOnePaymentMethodEnabled = false;
 	for ( const paymentMethodName of paymentMethods ) {
-		await page.getByLabel( paymentMethodName ).check();
+		if ( ! ( await page.getByLabel( paymentMethodName ).isChecked() ) ) {
+			await page.getByLabel( paymentMethodName ).check();
+			atLeastOnePaymentMethodEnabled = true;
+		}
 	}
 
-	await saveWooPaymentsSettings( page );
+	if ( atLeastOnePaymentMethodEnabled ) {
+		await saveWooPaymentsSettings( page );
+	}
 };
 
 export const disablePaymentMethods = async (
@@ -286,17 +339,21 @@ export const disablePaymentMethods = async (
 	paymentMethods: string[]
 ) => {
 	await navigation.goToWooPaymentsSettings( page );
+	let atLeastOnePaymentMethodDisabled = false;
 
 	for ( const paymentMethodName of paymentMethods ) {
-		const checkbox = await page.getByLabel( paymentMethodName );
+		const checkbox = page.getByLabel( paymentMethodName );
 
 		if ( await checkbox.isChecked() ) {
 			await checkbox.click();
+			atLeastOnePaymentMethodDisabled = true;
 			await page.getByRole( 'button', { name: 'Remove' } ).click();
 		}
 	}
 
-	await saveWooPaymentsSettings( page );
+	if ( atLeastOnePaymentMethodDisabled ) {
+		await saveWooPaymentsSettings( page );
+	}
 };
 
 export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
@@ -332,5 +389,72 @@ export const activateWooPay = async ( page: Page ) => {
 export const deactivateWooPay = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
 	await page.getByTestId( 'woopay-toggle' ).uncheck();
+	await saveWooPaymentsSettings( page );
+};
+
+export const addWCBCheckoutPage = async ( page: Page ) => {
+	await page.goto( '/wp-admin/edit.php?post_type=page', {
+		waitUntil: 'load',
+	} );
+
+	await page
+		.locator( '#wpbody-content' )
+		.getByRole( 'link', { name: 'Add New Page' } )
+		.click();
+	await page.waitForLoadState( 'load' );
+
+	const welcomeGuide = page.locator( '.components-guide' );
+	if ( await welcomeGuide.isVisible() ) {
+		await page.getByLabel( 'Close', { exact: true } ).click();
+		await page.waitForTimeout( 1500 );
+	}
+
+	// Handle whether the editor uses iframe or not.
+	const editor = page.frame( 'editor-canvas' ) || page;
+	await editor.getByLabel( 'Add title' ).fill( 'Checkout WCB' );
+	await editor.getByLabel( 'Add block' ).click();
+
+	await page.getByPlaceholder( 'Search' ).fill( 'Checkout' );
+	await page.getByRole( 'option', { name: 'Checkout', exact: true } ).click();
+
+	// Dismiss dialog about potentially compatibility issues
+	await page.waitForTimeout( 500 );
+	await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
+
+	// Publish the page
+	await page.locator( 'button.editor-post-publish-panel__toggle' ).click();
+	await page.waitForTimeout( 500 );
+	await page.locator( 'button.editor-post-publish-button' ).click();
+	await expect( page.getByText( 'Checkout WCB is now live.' ) ).toBeVisible();
+};
+
+export const isCaptureLaterEnabled = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
+
+	return isEnabled;
+};
+
+export const activateCaptureLater = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const wasInitiallyEnabled = await isCaptureLaterEnabled( page );
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).click();
+		await page
+			.getByRole( 'button', { name: 'Enable manual capture' } )
+			.click();
+		await saveWooPaymentsSettings( page );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const deactivateCaptureLater = async ( page: Page ) => {
+	await navigation.goToWooPaymentsSettings( page );
+	await page.getByTestId( 'capture-later-checkbox' ).uncheck();
 	await saveWooPaymentsSettings( page );
 };
