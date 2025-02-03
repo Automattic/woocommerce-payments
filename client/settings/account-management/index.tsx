@@ -21,9 +21,6 @@ const AccountManagement = () => {
 	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
 	const [ loading, setLoading ] = useState( true );
 	const stripeConnectInstance = useAccountSession( {
-		isOnboarding: false,
-		data: null,
-		continueKyc: false,
 		setLoadErrorMessage,
 		appearance,
 	} );
