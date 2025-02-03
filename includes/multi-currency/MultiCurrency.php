@@ -522,8 +522,15 @@ class MultiCurrency {
 		 * call the_widget, you need to have the name of the widget, so we get the instance and hash to use.
 		 */
 		ob_start();
+
+		$currency_switcher_widget = $this->get_currency_switcher_widget();
+
+		if ( ! is_object( $currency_switcher_widget ) ) {
+			return ob_get_clean();
+		}
+
 		the_widget(
-			spl_object_hash( $this->get_currency_switcher_widget() ),
+			spl_object_hash( $currency_switcher_widget ),
 			apply_filters( self::FILTER_PREFIX . 'theme_widget_instance', $instance ),
 			apply_filters( self::FILTER_PREFIX . 'theme_widget_args', $args )
 		);
