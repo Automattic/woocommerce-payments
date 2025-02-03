@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { test as setup, expect } from '@playwright/test';
+import { test as setup, expect, Page, FullProject } from '@playwright/test';
 import fs from 'fs';
 
 /**
@@ -34,7 +34,29 @@ const isAuthStateStale = ( authStateFile: string ) => {
 	return isStale;
 };
 
-setup( 'authenticate as admin', async ( { page } ) => {
+/**
+ * Adds a special cookie during the session to avoid the support session detection page.
+ * This is temporarily displayed when navigating to the login page while Jetpack SSO and protect modules are disabled.
+ * Relevant for Atomic sites only.
+ */
+const addSupportSessionDetectedCookie = async (
+	page: Page,
+	project: FullProject
+) => {
+	if ( process.env.NODE_ENV !== 'atomic' ) return;
+
+	const domain = new URL( project.use.baseURL ).hostname;
+
+	await page.context().addCookies( [
+		{
+			value: 'true',
+			name: '_wpcomsh_support_session_detected',
+			domain,
+		},
+	] );
+};
+
+setup( 'authenticate as admin', async ( { page }, { project } ) => {
 	// For local development, use existing state if it exists and isn't stale.
 	if ( ! process.env.CI ) {
 		if ( ! isAuthStateStale( merchantStorageFile ) ) {
@@ -77,10 +99,11 @@ setup( 'authenticate as admin', async ( { page } ) => {
 
 	// End of authentication steps.
 
+	await addSupportSessionDetectedCookie( page, project );
 	await page.context().storageState( { path: merchantStorageFile } );
 } );
 
-setup( 'authenticate as customer', async ( { page } ) => {
+setup( 'authenticate as customer', async ( { page }, { project } ) => {
 	// For local development, use existing state if it exists and isn't stale.
 	if ( ! process.env.CI ) {
 		if ( ! isAuthStateStale( customerStorageFile ) ) {
@@ -125,5 +148,6 @@ setup( 'authenticate as customer', async ( { page } ) => {
 	}
 	// End of authentication steps.
 
+	await addSupportSessionDetectedCookie( page, project );
 	await page.context().storageState( { path: customerStorageFile } );
 } );
