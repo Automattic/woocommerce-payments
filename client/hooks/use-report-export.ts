@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
+import { recordEvent } from 'wcpay/tracks';
 
 interface ExportResponse {
 	export_id?: string;
@@ -94,6 +95,8 @@ export const useReportExport = () => {
 					exportedFileURLResponse.download_url +
 					'?force_download=true';
 				link.click();
+
+				recordEvent( 'wcpay_transactions_download_csv_in_browser' );
 
 				createNotice(
 					'success',
