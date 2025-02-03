@@ -71,7 +71,7 @@ describeif( shouldRunSubscriptionsTests )(
 				.replace( '#', '' );
 
 			const transactionPageLink = await merchantPage
-				.getByText( 'Payment via Cards /' )
+				.getByText( 'Payment via Cards', { exact: false } )
 				.getByRole( 'link', { name: /pi_.+/ } )
 				.getAttribute( 'href' );
 
@@ -81,7 +81,7 @@ describeif( shouldRunSubscriptionsTests )(
 
 			await expect(
 				merchantPage.getByText(
-					'A payment of $9.99 was successfully charged.'
+					'A payment of $9.99 USD was successfully charged.'
 				)
 			).toBeVisible();
 
