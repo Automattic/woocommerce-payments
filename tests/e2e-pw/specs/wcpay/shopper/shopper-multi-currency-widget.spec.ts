@@ -84,7 +84,9 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 				'USD'
 			);
 			orderPrice = await shopperPage
-				.locator( '.woocommerce-order-overview__total bdi' )
+				.getByRole( 'row', { name: 'Total: $' } )
+				.locator( '.amount' )
+				.nth( 1 )
 				.textContent();
 		} );
 
@@ -93,7 +95,7 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 			await expect(
 				shopperPage
 					.locator( '.woocommerce-orders-table__cell-order-number' )
-					.getByRole( 'link', { name: `#${ orderId }` } )
+					.getByRole( 'link', { name: orderId } )
 			).toBeVisible();
 		} );
 	} );
