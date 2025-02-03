@@ -79,7 +79,6 @@ interface Column extends TableCardColumn {
 		| 'deposit';
 	visible?: boolean;
 	cellClassName?: string;
-	labelInCsv?: string;
 }
 
 const getPaymentSourceDetails = ( txn: Transaction ) => {
@@ -144,7 +143,6 @@ const getColumns = (
 			key: 'date',
 			label: __( 'Date / Time', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
-			labelInCsv: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',
