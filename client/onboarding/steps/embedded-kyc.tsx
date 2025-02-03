@@ -16,7 +16,7 @@ import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
 import { finalizeOnboarding } from 'wcpay/onboarding/utils';
 import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
-import useKYCAccountSession from 'wcpay/utils/embedded-components/kyc-account-session';
+import useKycAccountSession from 'wcpay/utils/embedded-components/kyc-account-session';
 import { trackEmbeddedStepChange } from 'wcpay/onboarding/tracking';
 
 interface Props {
@@ -33,7 +33,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 	const [ loading, setLoading ] = useState( true );
 	const [ finalizingAccount, setFinalizingAccount ] = useState( false );
 	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
-	const stripeConnectInstance = useKYCAccountSession( {
+	const stripeConnectInstance = useKycAccountSession( {
 		data,
 		continueKyc,
 		setLoadErrorMessage,
