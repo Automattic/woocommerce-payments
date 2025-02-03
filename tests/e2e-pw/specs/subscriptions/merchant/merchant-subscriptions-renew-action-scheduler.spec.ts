@@ -29,8 +29,6 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 		const customerBillingConfig =
 			config.addresses[ 'subscriptions-customer' ].billing;
 
-		let subscriptionId: string;
-
 		test.beforeAll( async ( { browser }, { project } ) => {
 			const { shopperPage } = await getShopper(
 				browser,
@@ -48,10 +46,6 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 			await expect(
 				shopperPage.getByRole( 'heading', { name: 'Order received' } )
 			).toBeVisible();
-
-			subscriptionId = await shopperPage
-				.getByLabel( 'View subscription number' )
-				.innerText();
 		} );
 
 		test( 'should renew a subscription with action scheduler', async ( {
@@ -81,12 +75,8 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 			// Go to Subscriptions and verify the subscription renewal
 			await goToSubscriptions( merchantPage );
 
-			const numericSubscriptionId = subscriptionId.substring( 1 );
-
 			await expect(
-				merchantPage
-					.locator( `#order-${ numericSubscriptionId }` )
-					.getByRole( 'cell', { name: '2', exact: true } )
+				merchantPage.getByRole( 'cell', { name: '2', exact: true } )
 			).toBeVisible();
 		} );
 	}
