@@ -173,7 +173,7 @@ const PaymentMethodInformationObject: Record<
 		id: 'multibanco',
 		label: __( 'Multibanco', 'woocommerce-payments' ),
 		description: __(
-			'Allow customers to pay with Multibanco, a popular payment method in Portugal.', // TODO: Get the correct description.
+			'A voucher based payment method for your customers in Portugal.',
 			'woocommerce-payments'
 		),
 		icon: MultibancoIcon,
