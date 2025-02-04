@@ -298,10 +298,17 @@ export const addToCartFromShopPage = async (
 	);
 
 	await page.getByLabel( addToCartRegex ).click();
-	await expect( page.getByLabel( addToCartRegex ) ).toHaveAttribute(
-		'class',
-		/added/
-	);
+
+	try {
+		await expect(
+			page.getByLabel( addToCartRegex )
+		).toHaveAttribute( 'class', /added/, { timeout: 5000 } );
+	} catch ( error ) {
+		// fallback for a different theme.
+		await expect(
+			page.getByLabel( addToCartRegex ).getByText( 'in cart' )
+		).toBeVisible();
+	}
 };
 
 export const selectPaymentMethod = async (
