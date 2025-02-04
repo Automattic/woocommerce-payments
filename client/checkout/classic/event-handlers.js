@@ -250,6 +250,8 @@ jQuery( function ( $ ) {
 		);
 		if ( ! cardLabel ) return;
 
+		if ( cardLabel.querySelector( '.payment-methods--logos' ) ) return;
+
 		const target = cardLabel.querySelector( 'img' );
 		if ( ! target ) return;
 
