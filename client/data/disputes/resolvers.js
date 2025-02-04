@@ -41,11 +41,13 @@ const formatQueryFilters = ( query ) => ( {
 	locale: query.userLocale,
 } );
 
-export function getDisputesCSV( query ) {
+export const disputesDownloadEndpoint = `${ NAMESPACE }/disputes/download`;
+export function getDisputesCSVRequestURL( query ) {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/disputes/download`,
+		disputesDownloadEndpoint,
 		formatQueryFilters( query )
 	);
+
 	return path;
 }
 
