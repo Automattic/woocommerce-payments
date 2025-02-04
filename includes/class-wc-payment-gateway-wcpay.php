@@ -69,12 +69,10 @@ use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Multibanco_Payment_Method;
 
@@ -581,7 +579,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
 
 			add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
-			add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
 			// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 			add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
@@ -3897,8 +3894,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function create_setup_intent_ajax() {
 		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
+			$wc_add_payment_method_rate_limit_id = 'add_payment_method_' . get_current_user_id();
+			if ( ! check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false ) || WC_Rate_Limiter::retried_too_soon( $wc_add_payment_method_rate_limit_id ) ) {
 				throw new Add_Payment_Method_Exception(
 					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
 					'invalid_referrer'
@@ -4142,7 +4139,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
