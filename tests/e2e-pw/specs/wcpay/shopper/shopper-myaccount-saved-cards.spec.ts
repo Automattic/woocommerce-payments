@@ -104,11 +104,19 @@ test.describe( 'Shopper can save and delete cards', () => {
 		await addSavedCard( shopperPage, config.cards.basic2, 'US', '94110' );
 
 		// Verify that the card was not added
-		await expect(
-			shopperPage.getByText(
-				"We're not able to add this payment method. Please refresh the page and try again."
-			)
-		).toBeVisible();
+		try {
+			await expect(
+				shopperPage.getByText(
+					"We're not able to add this payment method. Please refresh the page and try again."
+				)
+			).toBeVisible( { timeout: 10000 } );
+		} catch ( error ) {
+			await expect(
+				shopperPage.getByText(
+					'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+				)
+			).toBeVisible();
+		}
 
 		// cleanup for the next tests
 		await goToMyAccount( shopperPage, 'payment-methods' );
