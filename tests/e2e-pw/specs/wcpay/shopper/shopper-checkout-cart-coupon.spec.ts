@@ -29,6 +29,9 @@ test.describe(
 			await goToCart( page );
 			await page.getByPlaceholder( 'Coupon code' ).fill( 'free' );
 			await page.getByRole( 'button', { name: 'Apply coupon' } ).click();
+			await expect(
+				page.getByText( 'Coupon code applied successfully' )
+			).toBeVisible();
 		} );
 
 		test.afterEach( async ( { page } ) => {
