@@ -185,22 +185,22 @@ export default class ExpressCheckoutCartApi {
 	async emptyCart() {
 		try {
 			// TODO: this could be optimized, if we could cache the previous request of cart data for later reference.
-			const cartData = await this._request( {
+			let cartData = await this._request( {
 				method: 'GET',
 				path: '/wc/store/v1/cart',
 			} );
 
-			const removeItemsPromises = cartData.items.map( ( item ) => {
-				return this._request( {
+			// in the case for product bundles removing one item from the cart might remove additional items,
+			// so we need to remove one item at a time.
+			while ( cartData.items.length > 0 ) {
+				cartData = await this._request( {
 					method: 'POST',
 					path: '/wc/store/v1/cart/remove-item',
 					data: {
-						key: item.key,
+						key: cartData.items[ 0 ].key,
 					},
 				} );
-			} );
-
-			await Promise.all( removeItemsPromises );
+			}
 		} catch ( e ) {
 			// let's ignore the error, it's likely not going to be relevant.
 		}

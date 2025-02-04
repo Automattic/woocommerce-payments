@@ -53,11 +53,22 @@ export const transformCartDataForDisplayItems = ( rawCartData ) => {
 		name: [
 			item.name,
 			item.quantity > 1 && `(x${ item.quantity })`,
+			item.variation && item.variation.length > 0 && '-',
 			item.variation &&
 				item.variation
 					.map(
 						( variation ) =>
 							`${ variation.attribute }: ${ variation.value }`
+					)
+					.join( ', ' ),
+			item.item_data && item.item_data.length > 0 && '-',
+			item.item_data &&
+				item.item_data
+					.map(
+						( itemData ) =>
+							`${ itemData.name || itemData.key }: ${
+								itemData.value
+							}`
 					)
 					.join( ', ' ),
 		]
