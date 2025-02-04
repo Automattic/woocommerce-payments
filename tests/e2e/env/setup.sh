@@ -345,8 +345,8 @@ cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m
 echo "Setting up a coupon for E2E tests"
 cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
 
-echo "Syncing COT data"
-cli wp wc cot sync
+echo "Syncing HPOS data"
+cli wp wc hpos sync
 
 # Log test configuration for visibility
 echo

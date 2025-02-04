@@ -6,11 +6,7 @@ import { test, expect } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import {
-	describeif,
-	getAnonymousShopper,
-	getMerchant,
-} from '../../utils/helpers';
+import { describeif, getMerchant, getShopper } from '../../utils/helpers';
 import * as shopper from '../../utils/shopper';
 import { config } from '../../config/default';
 import {
@@ -18,7 +14,6 @@ import {
 	shouldRunActionSchedulerTests,
 	shouldRunSubscriptionsTests,
 } from '../../utils/constants';
-import RestAPI from '../../utils/rest-api';
 import {
 	goToActionScheduler,
 	goToSubscriptions,
@@ -37,12 +32,11 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 		let subscriptionId: string;
 
 		test.beforeAll( async ( { browser }, { project } ) => {
-			const restApi = new RestAPI( project.use.baseURL );
-			await restApi.deleteCustomerByEmailAddress(
-				customerBillingConfig.email
+			const { shopperPage } = await getShopper(
+				browser,
+				true,
+				project.use.baseURL
 			);
-
-			const { shopperPage } = await getAnonymousShopper( browser );
 
 			await shopper.addCartProduct(
 				shopperPage,

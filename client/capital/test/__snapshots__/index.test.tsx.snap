@@ -4,6 +4,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="wcpay-banner-notice is-warning"

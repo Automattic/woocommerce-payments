@@ -155,11 +155,93 @@
 	padding-top: 2px;
 }
 
+/* WCPay Fraud Risk Level meta box */
+.wcpay-fraud-risk-level {
+	border-bottom: 1px solid #ddd;
+	padding: 8px 12px;
+}
+
+.wcpay-fraud-risk-level > p {
+	margin: 0;
+}
+
+.wcpay-fraud-risk-level__title {
+	font-weight: 600;
+}
+
+.wcpay-fraud-risk-level__bar {
+	display: grid;
+	gap: 4px;
+	grid-template-columns: 50% auto;
+	margin: 6px 0 8px;
+}
+
+.wcpay-fraud-risk-level__bar::after,
+.wcpay-fraud-risk-level__bar::before {
+	background-color: #bbb;
+	content: '';
+	border-radius: 4px;
+	height: 4px;
+}
+
+.wcpay-fraud-risk-level--normal .wcpay-fraud-risk-level__title {
+	color: #008a20;
+}
+
+.wcpay-fraud-risk-level--normal .wcpay-fraud-risk-level__bar {
+	grid-template-columns: 15% auto;
+}
+
+.wcpay-fraud-risk-level--normal .wcpay-fraud-risk-level__bar::before {
+	background-color: #008a20;
+}
+
+.wcpay-fraud-risk-level--elevated .wcpay-fraud-risk-level__title {
+	color: #b16202;
+}
+
+.wcpay-fraud-risk-level--elevated .wcpay-fraud-risk-level__bar {
+	grid-template-columns: 60% auto;
+}
+
+.wcpay-fraud-risk-level--elevated .wcpay-fraud-risk-level__bar::before {
+	background-color: #b16202;
+}
+
+.wcpay-fraud-risk-level--highest .wcpay-fraud-risk-level__bar::before {
+	background-color: #b32d2e;
+}
+
+.wcpay-fraud-risk-level--highest .wcpay-fraud-risk-level__bar {
+	grid-template-columns: 100% auto;
+}
+
+.wcpay-fraud-risk-level--highest .wcpay-fraud-risk-level__bar::before {
+	background-color: #b32d2e;
+}
+
+/* WCPay Fraud Risk Action meta box */
+#wcpay-order-fraud-and-risk-meta-box div.inside {
+	margin-top: 0;
+	padding: 0;
+}
+
+.wcpay-fraud-risk-action {
+	padding: 8px 12px 12px;
+}
+
+.wcpay-fraud-risk-action > p {
+	margin: 0 0 6px;
+}
+
+.wcpay-fraud-risk-action > p:last-child {
+	margin-bottom: 0;
+}
+
 .wcpay-fraud-risk-meta-allow,
 .wcpay-fraud-risk-meta-review,
 .wcpay-fraud-risk-meta-blocked {
 	font-weight: 600;
-	font-size: 14px;
 }
 
 .wcpay-fraud-risk-meta-allow img {
