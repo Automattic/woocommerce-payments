@@ -353,7 +353,7 @@ class WC_Payments_Incentives_Service {
 			'data'    => $has_orders,
 			'fetched' => time(),
 			'errored' => false,
-			'ttl'     => $has_orders ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS,
+			'ttl'     => $has_orders ? DAY_IN_SECONDS * 90 : 6 * HOUR_IN_SECONDS,
 		];
 
 		$this->database_cache->add( $cache_key, $cache_contents );

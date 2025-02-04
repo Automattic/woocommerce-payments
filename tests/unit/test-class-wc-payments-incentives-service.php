@@ -297,7 +297,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $result );
 	}
 
-	public function test_get_cached_has_orders_caches_for_week_when_has_orders() {
+	public function test_get_cached_has_orders_caches_for_longer_when_has_orders() {
 		$this->mock_database_cache
 			->method( 'get' )
 			->willReturn( null );
@@ -327,7 +327,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		remove_all_filters( 'woocommerce_order_query' );
 	}
 
-	public function test_get_cached_has_orders_caches_for_hour_when_no_orders() {
+	public function test_get_cached_has_orders_caches_when_no_orders() {
 		$this->mock_database_cache
 			->method( 'get' )
 			->willReturn( null );
@@ -345,7 +345,7 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 						return false === $value['data'] &&
 						is_int( $value['fetched'] ) &&
 						false === $value['errored'] &&
-						HOUR_IN_SECONDS === $value['ttl'];
+						6 * HOUR_IN_SECONDS === $value['ttl'];
 					}
 				)
 			);
