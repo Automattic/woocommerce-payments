@@ -16,11 +16,9 @@ import {
 	placeOrder,
 	setupProductCheckout,
 } from '../../../utils/shopper';
-import { goToShop } from '../../../utils/shopper-navigation';
 import { goToSubscriptionPage } from '../../../utils/merchant-navigation';
 import { shouldRunSubscriptionsTests } from '../../../utils/constants';
 
-const productName = 'Subscription signup fee product';
 const customerBillingConfig =
 	config.addresses[ 'subscriptions-customer' ].billing;
 let subscriptionId = null;
@@ -34,10 +32,9 @@ describeif( shouldRunSubscriptionsTests )(
 
 			const { shopperPage } = await getShopper( browser );
 			await emptyCart( shopperPage );
-			await goToShop( shopperPage, 2 );
 			await setupProductCheckout(
 				shopperPage,
-				[ [ productName, 1 ] ],
+				[ [ config.products.subscription_signup_fee, 1 ] ],
 				customerBillingConfig
 			);
 			await fillCardDetails( shopperPage, config.cards.basic );

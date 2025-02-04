@@ -50,7 +50,7 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 			await expect( shopperPage ).toHaveURL( /.*currency=EUR/ );
 
 			// Change it back to USD for the other tests.
-			await navigation.goToShopWithCurrency( shopperPage, 'USD' );
+			await navigation.goToShop( shopperPage, { currency: 'USD' } );
 		} );
 
 		test( 'at the product page', async () => {
@@ -75,7 +75,7 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 				shopperPage.getByText( `${ orderPrice } USD` ).first()
 			).toBeVisible();
 
-			await navigation.goToShopWithCurrency( shopperPage, 'USD' );
+			await navigation.goToShop( shopperPage, { currency: 'USD' } );
 		} );
 
 		test( 'at the order received page', async () => {

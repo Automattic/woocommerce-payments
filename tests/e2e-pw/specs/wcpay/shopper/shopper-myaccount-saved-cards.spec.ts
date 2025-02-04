@@ -6,8 +6,8 @@ import test, { Page, expect } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { config } from '../../../config/default';
-import { goToMyAccount, goToShop } from '../../../utils/shopper-navigation';
+import { config, Product } from '../../../config/default';
+import { goToMyAccount } from '../../../utils/shopper-navigation';
 import { getShopper } from '../../../utils/helpers';
 import {
 	addSavedCard,
@@ -26,7 +26,7 @@ type TestVariablesType = {
 			country: string;
 			postalCode: string;
 		};
-		products: [ string, number ][];
+		products: [ Product, number ][];
 	};
 };
 
@@ -37,7 +37,7 @@ const cards = {
 			country: 'US',
 			postalCode: '94110',
 		},
-		products: [ [ 'Beanie', 1 ] ],
+		products: [ [ config.products.simple, 1 ] ],
 	},
 	'3ds': {
 		card: config.cards[ '3ds' ],
@@ -45,7 +45,7 @@ const cards = {
 			country: 'US',
 			postalCode: '94110',
 		},
-		products: [ [ 'Belt', 1 ] ],
+		products: [ [ config.products.belt, 1 ] ],
 	},
 	'3ds2': {
 		card: config.cards[ '3ds2' ],
@@ -53,7 +53,7 @@ const cards = {
 			country: 'US',
 			postalCode: '94110',
 		},
-		products: [ [ 'Cap', 1 ] ],
+		products: [ [ config.products.cap, 1 ] ],
 	},
 } as TestVariablesType;
 
@@ -166,7 +166,6 @@ test.describe( 'Shopper can save and delete cards', () => {
 				} );
 
 				test( `should be able to purchase with the saved ${ cardName } card`, async () => {
-					await goToShop( shopperPage );
 					await setupProductCheckout( shopperPage, products );
 					await selectSavedCardOnCheckout( shopperPage, card );
 					await placeOrder( shopperPage );

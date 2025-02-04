@@ -71,7 +71,7 @@ test.describe( 'Multi-currency setup', () => {
 
 		test.beforeAll( async () => {
 			await disableAllEnabledCurrencies( merchantPage );
-			await navigation.goToShopWithCurrency( shopperPage, 'USD' );
+			await navigation.goToShop( shopperPage, { currency: 'USD' } );
 
 			beanieRegularPrice = await getPriceFromProduct(
 				shopperPage,
@@ -98,10 +98,9 @@ test.describe( 'Multi-currency setup', () => {
 				testData.currencyCode,
 				'0'
 			);
-			await navigation.goToShopWithCurrency(
-				shopperPage,
-				testData.currencyCode
-			);
+			await navigation.goToShop( shopperPage, {
+				currency: testData.currencyCode,
+			} );
 
 			const beaniePriceOnCurrency = await getPriceFromProduct(
 				shopperPage,
@@ -136,10 +135,9 @@ test.describe( 'Multi-currency setup', () => {
 				testData.currencyCode,
 				testData.charmPricing
 			);
-			await navigation.goToShopWithCurrency(
-				shopperPage,
-				testData.currencyCode
-			);
+			await navigation.goToShop( shopperPage, {
+				currency: testData.currencyCode,
+			} );
 
 			const beaniePriceOnCurrency = await getPriceFromProduct(
 				shopperPage,
@@ -207,7 +205,7 @@ test.describe( 'Multi-currency setup', () => {
 
 		Object.keys( currencyDecimalMap ).forEach( ( currency: string ) => {
 			test( `the decimal points for ${ currency } are displayed correctly`, async () => {
-				await navigation.goToShopWithCurrency( shopperPage, currency );
+				await navigation.goToShop( shopperPage, { currency } );
 
 				const beaniePriceOnCurrency = await getPriceFromProduct(
 					shopperPage,

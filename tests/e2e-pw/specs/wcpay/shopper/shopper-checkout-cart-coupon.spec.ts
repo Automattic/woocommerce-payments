@@ -7,11 +7,7 @@ import test, { expect } from '@playwright/test';
  * Internal dependencies
  */
 import { config } from '../../../config/default';
-import {
-	goToCart,
-	goToCheckout,
-	goToShop,
-} from '../../../utils/shopper-navigation';
+import { goToCart, goToCheckout } from '../../../utils/shopper-navigation';
 import { useShopper } from '../../../utils/helpers';
 import {
 	addToCartFromShopPage,
@@ -22,8 +18,6 @@ import {
 	setupCheckout,
 } from '../../../utils/shopper';
 
-const productName = config.products.simple.name;
-
 test.describe(
 	'Checkout with free coupon & after modifying cart on Checkout page',
 	() => {
@@ -31,8 +25,7 @@ test.describe(
 		useShopper();
 
 		test.beforeEach( async ( { page } ) => {
-			await goToShop( page );
-			await addToCartFromShopPage( page, productName );
+			await addToCartFromShopPage( page );
 			await goToCart( page );
 			await page.getByPlaceholder( 'Coupon code' ).fill( 'free' );
 			await page.getByRole( 'button', { name: 'Apply coupon' } ).click();

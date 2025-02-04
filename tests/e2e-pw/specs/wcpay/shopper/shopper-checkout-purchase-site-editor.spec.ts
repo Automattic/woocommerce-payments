@@ -14,7 +14,7 @@ import { getMerchant, getShopper } from '../../../utils/helpers';
 import { activateTheme } from '../../../utils/merchant';
 import { config } from '../../../config/default';
 import {
-	addCartProduct,
+	addToCartFromShopPage,
 	confirmCardAuthentication,
 	emptyCart,
 	expectFraudPreventionToken,
@@ -22,7 +22,6 @@ import {
 	placeOrder,
 	setupCheckout,
 } from '../../../utils/shopper';
-import { goToShop } from '../../../utils/shopper-navigation';
 
 /**
  * Tests for successful purchases with both card testing prevention enabled
@@ -51,8 +50,7 @@ import { goToShop } from '../../../utils/shopper-navigation';
 
 		test.beforeEach( async () => {
 			await emptyCart( shopperPage );
-			await goToShop( shopperPage );
-			await addCartProduct( shopperPage );
+			await addToCartFromShopPage( shopperPage );
 			await setupCheckout(
 				shopperPage,
 				config.addresses.customer.billing

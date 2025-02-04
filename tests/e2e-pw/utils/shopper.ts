@@ -6,7 +6,7 @@ import { Page, expect } from 'playwright/test';
  * Internal dependencies
  */
 import * as navigation from './shopper-navigation';
-import { config, CustomerAddress } from '../config/default';
+import { config, CustomerAddress, Product } from '../config/default';
 import { isUIUnblocked } from './helpers';
 
 /**
@@ -137,13 +137,6 @@ export const placeOrder = async ( page: Page ) => {
 			orderPlaced = true;
 		}
 	}
-};
-
-export const addCartProduct = async (
-	page: Page,
-	productId = 16 // Beanie
-) => {
-	await page.goto( `/shop/?add-to-cart=${ productId }` );
 };
 
 const ensureSavedCardNotSelected = async ( page: Page ) => {
@@ -285,33 +278,30 @@ export const getPriceFromProduct = async ( page: Page, slug: string ) => {
  * Adds a product to the cart from the shop page.
  *
  * @param {Page} page The Playwright page object.
- * @param {string|number} product The product ID or title to add to the cart.
+ * @param {Product} product The product add to the cart.
  */
 export const addToCartFromShopPage = async (
 	page: Page,
-	product: string | number
+	product: Product = config.products.simple,
+	currency?: string
 ) => {
-	if ( Number.isInteger( product ) ) {
-		const addToCartSelector = `a[data-product_id="${ product }"]`;
+	await navigation.goToShop( page, {
+		pageNumber: product.pageNumber,
+		currency,
+	} );
 
-		await page.locator( addToCartSelector ).click();
-		await expect(
-			page.locator( `${ addToCartSelector }.added` )
-		).toBeVisible();
-	} else {
-		// This generic regex will match the aria-label for the "Add to cart" button for any product.
-		// It should work for WC 7.7.0 and later.
-		// These unicode characters are the smart (or curly) quotes: “ ”.
-		const addToCartRegex = new RegExp(
-			`Add\\s+(?:to\\s+cart:\\s*)?\u201C${ product }\u201D(?:\\s+to\\s+your\\s+cart)?`
-		);
+	// This generic regex will match the aria-label for the "Add to cart" button for any product.
+	// It should work for WC 7.7.0 and later.
+	// These unicode characters are the smart (or curly) quotes: “ ”.
+	const addToCartRegex = new RegExp(
+		`Add\\s+(?:to\\s+cart:\\s*)?\u201C${ product.name }\u201D(?:\\s+to\\s+your\\s+cart)?`
+	);
 
-		await page.getByLabel( addToCartRegex ).click();
-		await expect( page.getByLabel( addToCartRegex ) ).toHaveAttribute(
-			'class',
-			/added/
-		);
-	}
+	await page.getByLabel( addToCartRegex ).click();
+	await expect( page.getByLabel( addToCartRegex ) ).toHaveAttribute(
+		'class',
+		/added/
+	);
 };
 
 export const selectPaymentMethod = async (
@@ -343,21 +333,22 @@ export const setupCheckout = async (
  */
 export async function setupProductCheckout(
 	page: Page,
-	lineItems: Array< [ string, number ] > = [
-		[ config.products.simple.name, 1 ],
-	],
-	billingAddress: CustomerAddress = config.addresses.customer.billing
+	lineItems: Array< [ Product, number ] > = [ [ config.products.simple, 1 ] ],
+	billingAddress: CustomerAddress = config.addresses.customer.billing,
+	currency?: string
 ) {
+	await navigation.goToShop( page );
+
 	const cartSizeText = await page
 		.locator( '.cart-contents .count' )
 		.textContent();
 	let cartSize = Number( cartSizeText?.replace( /\D/g, '' ) ?? '0' );
 
 	for ( const line of lineItems ) {
-		let [ productTitle, qty ] = line;
+		let [ product, qty ] = line;
 
 		while ( qty-- ) {
-			await addToCartFromShopPage( page, productTitle );
+			await addToCartFromShopPage( page, product, currency );
 			// Make sure the number of items in the cart is incremented before adding another item.
 			await expect( page.locator( '.cart-contents .count' ) ).toHaveText(
 				new RegExp( `${ ++cartSize } items?` ),
@@ -396,12 +387,13 @@ export const expectFraudPreventionToken = async (
 export const placeOrderWithOptions = async (
 	page: Page,
 	options?: {
-		productId?: number;
+		product?: Product;
 		billingAddress?: CustomerAddress;
 		createAccount?: boolean;
 	}
 ) => {
-	await addCartProduct( page, options?.productId );
+	await navigation.goToShop( page );
+	await addToCartFromShopPage( page, options?.product );
 	await setupCheckout( page, options?.billingAddress );
 	if (
 		options?.createAccount &&
@@ -435,7 +427,7 @@ export const placeOrderWithCurrency = async (
 	page: Page,
 	currency: string
 ) => {
-	await navigation.goToShopWithCurrency( page, currency );
+	await navigation.goToShop( page, { currency } );
 	return placeOrderWithOptions( page );
 };
 

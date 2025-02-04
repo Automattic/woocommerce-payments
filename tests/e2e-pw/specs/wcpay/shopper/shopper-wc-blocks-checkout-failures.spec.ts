@@ -77,7 +77,7 @@ describeif( shouldRunWCBlocksTests )(
 				await addWCBCheckoutPage( merchantPage );
 			}
 
-			await shopper.addCartProduct( shopperPage );
+			await shopper.addToCartFromShopPage( shopperPage );
 			await navigation.goToCheckoutWCB( shopperPage );
 			await shopper.fillBillingAddressWCB(
 				shopperPage,

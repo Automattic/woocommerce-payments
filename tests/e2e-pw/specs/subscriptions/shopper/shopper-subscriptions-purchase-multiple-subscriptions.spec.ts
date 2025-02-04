@@ -15,11 +15,7 @@ import {
 	placeOrder,
 	setupProductCheckout,
 } from '../../../utils/shopper';
-import {
-	goToShop,
-	goToShopWithCurrency,
-	goToSubscriptions,
-} from '../../../utils/shopper-navigation';
+import { goToSubscriptions } from '../../../utils/shopper-navigation';
 import {
 	activateMulticurrency,
 	deactivateMulticurrency,
@@ -57,15 +53,14 @@ describeif( shouldRunSubscriptionsTests )(
 		test( ' should be able to purchase multiple subscriptions', async () => {
 			// As a Shopper, purchase the subscription products.
 			await emptyCart( shopperPage );
-			await goToShopWithCurrency( shopperPage, 'USD' );
-			await goToShop( shopperPage, 2 );
 			await setupProductCheckout(
 				shopperPage,
-				Object.keys( products ).map( ( productName: string ) => [
-					productName,
-					1,
-				] ),
-				configBillingAddress
+				[
+					[ config.products.subscription_no_signup_fee, 1 ],
+					[ config.products.subscription_signup_fee, 1 ],
+				],
+				configBillingAddress,
+				'USD'
 			);
 			await fillCardDetails( shopperPage, config.cards.basic );
 			await placeOrder( shopperPage );

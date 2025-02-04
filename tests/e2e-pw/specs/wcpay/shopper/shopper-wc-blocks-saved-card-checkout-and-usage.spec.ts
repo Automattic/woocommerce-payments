@@ -15,11 +15,10 @@ import {
 import { shouldRunWCBlocksTests } from '../../../utils/constants';
 import {
 	goToMyAccount,
-	goToShop,
 	goToCheckoutWCB,
 } from '../../../utils/shopper-navigation';
 import {
-	addCartProduct,
+	addToCartFromShopPage,
 	deleteSavedCard,
 	emptyCart,
 	fillBillingAddressWCB,
@@ -50,8 +49,7 @@ describeif( shouldRunWCBlocksTests )(
 
 		test( 'should be able to save basic card on Blocks checkout', async () => {
 			await emptyCart( shopperPage );
-			await goToShop( shopperPage );
-			await addCartProduct( shopperPage );
+			await addToCartFromShopPage( shopperPage );
 			await goToCheckoutWCB( shopperPage );
 			await fillBillingAddressWCB(
 				shopperPage,
@@ -85,8 +83,7 @@ describeif( shouldRunWCBlocksTests )(
 		} );
 
 		test( 'should process a payment with the saved card from Blocks checkout', async () => {
-			await goToShop( shopperPage );
-			await addCartProduct( shopperPage );
+			await addToCartFromShopPage( shopperPage );
 			await goToCheckoutWCB( shopperPage );
 			await fillBillingAddressWCB(
 				shopperPage,

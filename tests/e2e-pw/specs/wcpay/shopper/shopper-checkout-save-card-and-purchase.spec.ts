@@ -17,7 +17,7 @@ import {
 	setSavePaymentMethod,
 	setupProductCheckout,
 } from '../../../utils/shopper';
-import { goToMyAccount, goToShop } from '../../../utils/shopper-navigation';
+import { goToMyAccount } from '../../../utils/shopper-navigation';
 
 type CardType = [ string, typeof config.cards.basic ];
 
@@ -38,7 +38,6 @@ test.describe( 'Saved cards', () => {
 					 ).shopperPage;
 				} );
 				test( 'should save the card', async ( {} ) => {
-					await goToShop( shopperPage );
 					await setupProductCheckout( shopperPage );
 					await fillCardDetails( shopperPage, card );
 					await setSavePaymentMethod( shopperPage, true );
@@ -62,7 +61,6 @@ test.describe( 'Saved cards', () => {
 				} );
 
 				test( 'should process a payment with the saved card', async ( {} ) => {
-					await goToShop( shopperPage );
 					await setupProductCheckout( shopperPage );
 					await selectSavedCardOnCheckout( shopperPage, card );
 					await placeOrder( shopperPage );
@@ -88,7 +86,6 @@ test.describe( 'Saved cards', () => {
 				} ) => {
 					const page: Page = ( await getAnonymousShopper( browser ) )
 						.shopperPage;
-					await goToShop( page );
 					await setupProductCheckout( page );
 					await expect(
 						page.getByLabel(

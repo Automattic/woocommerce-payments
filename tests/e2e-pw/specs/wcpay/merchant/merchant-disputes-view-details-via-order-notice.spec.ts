@@ -19,8 +19,7 @@ test.describe(
 		test.beforeEach( async ( { browser } ) => {
 			const { shopperPage } = await getShopper( browser );
 			// Place an order to dispute later
-			await shopperPage.goto( '/cart/' );
-			await shopper.addCartProduct( shopperPage );
+			await shopper.addToCartFromShopPage( shopperPage );
 
 			await shopperPage.goto( '/checkout/' );
 			await shopper.fillBillingAddress(

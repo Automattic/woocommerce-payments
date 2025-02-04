@@ -11,6 +11,7 @@ import { getMerchant, getShopper } from '../../../utils/helpers';
 import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import * as devtools from '../../../utils/devtools';
+import { config } from '../../../config/default';
 
 const cardTestingProtectionStates = [ false, true ];
 const bnplProviders = [ 'Affirm', 'Afterpay' ];
@@ -56,7 +57,11 @@ test.describe( 'BNPL checkout', () => {
 
 			for ( const provider of bnplProviders ) {
 				test( `Checkout with ${ provider }`, async () => {
-					await shopper.addCartProduct( shopperPage, 17 ); // Belt
+					await shopper.addToCartFromShopPage(
+						shopperPage,
+						config.products.belt
+					);
+
 					await shopper.setupCheckout( shopperPage );
 					await shopper.selectPaymentMethod( shopperPage, provider );
 					await shopper.expectFraudPreventionToken(
