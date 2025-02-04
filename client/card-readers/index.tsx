@@ -11,7 +11,6 @@ import { __ } from '@wordpress/i18n';
  */
 import Page from 'components/page';
 import ReadersList from './list';
-import ReceiptSettings from './settings';
 import { TabPanel } from '@wordpress/components';
 
 import './style.scss';
@@ -31,20 +30,9 @@ export const ConnectedReaders = (): JSX.Element => {
 						),
 						className: 'connected-readers-list',
 					},
-					{
-						name: 'receipt-details',
-						title: __( 'Receipt details', 'woocommerce-payments' ),
-						className: 'connected-readers-receipt-details',
-					},
 				] }
 			>
-				{ ( tab ) => {
-					if ( 'receipt-details' === tab.name ) {
-						return <ReceiptSettings />;
-					}
-
-					return <ReadersList />;
-				} }
+				{ () => <ReadersList /> }
 			</TabPanel>
 		</Page>
 	);
