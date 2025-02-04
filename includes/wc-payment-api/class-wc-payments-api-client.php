@@ -2119,6 +2119,11 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
 	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false ) {
+		if ( ! $this->is_api_request_allowed( $api ) ) {
+			Logger::error( "API request '$api' is not allowed" );
+			return [];
+		}
+
 		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
@@ -2881,5 +2886,26 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			true,
 			true
 		);
+	}
+
+	/**
+	 * Check if is allowed to perform API request.
+	 *
+	 * @param string $api - The API endpoint to call.
+	 *
+	 * @return bool
+	 */
+	private function is_api_request_allowed( $api ): bool {
+		// whitelist API endpoints that are allowed to be called without an account.
+		if ( str_starts_with( $api, self::ONBOARDING_API ) || in_array( $api, [ self::ACCOUNTS_API ], true ) ) {
+			return true;
+		}
+
+		$account = WC_Payments::get_account_service()->get_cached_account_data();
+		if ( ! is_array( $account ) || empty( $account ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }

@@ -45,6 +45,17 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_product_service = $this->createMock( WC_Payments_Product_Service::class );
 		$this->mock_order_service   = $this->createMock( WC_Payments_Order_Service::class );
 		$this->invoice_service      = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->mock_product_service, $this->mock_order_service );
+
+		$this->account_service = WC_Payments::get_account_service();
+		$mock_account_service  = $this
+			->getMockBuilder( 'WC_Payments_Account' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_cached_account_data' ] )
+			->getMock();
+		$mock_account_service
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'id' => 1 ] );
+		WC_Payments::set_account_service( $mock_account_service );
 	}
 
 	/**
@@ -357,5 +368,10 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 				return $value;
 			}
 		);
+	}
+
+	public function tear_down() {
+		WC_Payments::set_account_service( $this->account_service );
+		parent::tear_down();
 	}
 }

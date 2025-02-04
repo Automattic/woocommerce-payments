@@ -64,6 +64,17 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->mock_http_client,
 			$this->mock_db_wrapper
 		);
+
+		$this->account_service = WC_Payments::get_account_service();
+		$mock_account_service  = $this
+			->getMockBuilder( 'WC_Payments_Account' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_cached_account_data' ] )
+			->getMock();
+		$mock_account_service
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'id' => 1 ] );
+		WC_Payments::set_account_service( $mock_account_service );
 	}
 
 	/**
@@ -1193,6 +1204,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->assertSame( 'card_declined', $e->get_error_code() );
 			$this->assertSame( 'Bank declined', $e->get_merchant_message() );
 		}
+	}
+
+	/**
+	 * Post-test teardown
+	 */
+	public function tear_down() {
+		WC_Payments::set_account_service( $this->account_service );
+		parent::tear_down();
 	}
 
 	/**

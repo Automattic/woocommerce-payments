@@ -68,6 +68,17 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 		);
 		$this->customer_service     = new WC_Payments_Customer_Service( WC_Payments::create_api_client(), WC_Payments::get_account_service(), WC_Payments::get_database_cache(), WC_Payments::get_session_service(), WC_Payments::get_order_service() );
 		$this->customer_service_api = new WC_Payments_Customer_Service_API( $this->customer_service );
+
+		$this->account_service = WC_Payments::get_account_service();
+		$mock_account_service  = $this
+			->getMockBuilder( 'WC_Payments_Account' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_cached_account_data' ] )
+			->getMock();
+		$mock_account_service
+			->method( 'get_cached_account_data' )
+			->willReturn( [ 'id' => 1 ] );
+		WC_Payments::set_account_service( $mock_account_service );
 	}
 
 	/**
@@ -81,7 +92,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 
 		// Clear the cache after each test.
 		$this->customer_service->delete_cached_payment_methods();
-
+		WC_Payments::set_account_service( $this->account_service );
 		parent::tear_down();
 	}
 
@@ -448,6 +459,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				]
 			);
 		$response = $this->customer_service_api->get_payment_methods_for_customer( 'cus_123' );
+
 		$this->assertEquals( $mock_payment_methods, $response );
 
 		// check if we can retrieve from cache.
