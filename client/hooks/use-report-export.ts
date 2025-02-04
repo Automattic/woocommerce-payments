@@ -82,10 +82,7 @@ export const useReportExport = () => {
 
 			if (
 				'success' === exportedFileURLResponse.status &&
-				exportedFileURLResponse.download_url &&
-				exportedFileURLResponse.download_url.includes(
-					'exports.wordpress.com'
-				)
+				exportedFileURLResponse.download_url
 			) {
 				// The file is available, so we can download it.
 				// Create a link element to trigger the download.
