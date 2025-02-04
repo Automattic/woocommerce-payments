@@ -302,9 +302,12 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get' )
 			->willReturn( null );
 
-		// Mock wc_get_orders to return a non-empty array.
-		$mock_orders = [ (object) [ 'id' => 1 ] ];
-		$this->mock_wc_get_orders( $mock_orders );
+		// Mock wc_get_orders to return a mocked order.
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order->method( 'get_id' )->willReturn( 1 );
+		$date_created = new WC_DateTime( 'now - 30 day' );
+		$mock_order->method( 'get_date_created' )->willReturn( $date_created );
+		$this->mock_wc_get_orders( [ $mock_order ] );
 
 		$this->mock_database_cache
 			->expects( $this->once() )
@@ -312,11 +315,12 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			->with(
 				Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders',
 				$this->callback(
-					function ( $value ) {
+					function ( $value ) use ( $date_created ) {
 						return true === $value['data'] &&
-						is_int( $value['fetched'] ) &&
-						false === $value['errored'] &&
-						DAY_IN_SECONDS * 90 === $value['ttl'];
+							is_int( $value['fetched'] ) &&
+							false === $value['errored'] &&
+							// 90 days - 30 days = 60 days.
+							60 * DAY_IN_SECONDS === $value['ttl'];
 					}
 				)
 			);
