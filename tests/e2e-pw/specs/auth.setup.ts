@@ -66,6 +66,8 @@ setup( 'authenticate as admin', async ( { page }, { project } ) => {
 		}
 	}
 
+	await addSupportSessionDetectedCookie( page, project );
+
 	// Sign in as admin user and save state
 	let adminLoggedIn = false;
 	const adminRetries = 5;
@@ -99,8 +101,6 @@ setup( 'authenticate as admin', async ( { page }, { project } ) => {
 	}
 
 	// End of authentication steps.
-
-	await addSupportSessionDetectedCookie( page, project );
 	await page.context().storageState( { path: merchantStorageFile } );
 } );
 
