@@ -73,10 +73,6 @@ const expectSnackbarWithText = async (
 };
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
-	if ( isAtomicSite ) {
-		page.on( 'dialog', async ( dialog ) => dialog.accept() );
-	}
-
 	await ensureSupportPhoneIsFilled( page );
 
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
@@ -400,6 +396,19 @@ export const deactivateWooPay = async ( page: Page ) => {
 	await saveWooPaymentsSettings( page );
 };
 
+export const ensureBlockSettingsPanelIsOpen = async ( page: Page ) => {
+	const settingsButton = page.locator(
+		'.interface-pinned-items > button[aria-label="Settings"]'
+	);
+	const isSettingsButtonPressed = await settingsButton.evaluate(
+		( node ) => node.getAttribute( 'aria-pressed' ) === 'true'
+	);
+
+	if ( ! isSettingsButtonPressed ) {
+		await settingsButton.click();
+	}
+};
+
 export const addWCBCheckoutPage = async ( page: Page ) => {
 	await page.goto( '/wp-admin/edit.php?post_type=page', {
 		waitUntil: 'load',
@@ -421,6 +430,8 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 	const editor = page.frame( 'editor-canvas' ) || page;
 	await editor.getByLabel( 'Add title' ).fill( 'Checkout WCB' );
 	await editor.getByLabel( 'Add block' ).click();
+
+	await ensureBlockSettingsPanelIsOpen( page );
 
 	await page.getByPlaceholder( 'Search' ).fill( 'Checkout' );
 	await page.getByRole( 'option', { name: 'Checkout', exact: true } ).click();
