@@ -68,6 +68,10 @@ const expectSnackbarWithText = async (
 };
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
+	page.on( 'dialog', async ( dialog ) => {
+		await dialog.accept();
+	} );
+
 	await ensureSupportPhoneIsFilled( page );
 
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
