@@ -337,23 +337,41 @@ class WC_Payments_Incentives_Service {
 			return filter_var( $cached_value['data'], FILTER_VALIDATE_BOOLEAN );
 		}
 
-		$has_orders = ! empty(
-			wc_get_orders(
-				[
-					'status'       => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
-					'date_created' => '>=' . strtotime( '-90 days' ),
-					'return'       => 'ids',
-					'limit'        => 1,
-					'orderby'      => 'none',
-				]
-			)
+		// We need to determine the value.
+		// Start with the assumption that the store doesn't have orders in the timeframe we look at.
+		$has_orders = false;
+		// By default, we will check for new orders every 6 hours.
+		$expiration = 6 * HOUR_IN_SECONDS;
+
+		// Get the latest completed, processing, or refunded order.
+		$latest_order = wc_get_orders(
+			[
+				'status'  => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
+				'limit'   => 1,
+				'orderby' => 'date',
+				'order'   => 'DESC',
+			]
 		);
+		if ( ! empty( $latest_order ) ) {
+			$latest_order = reset( $latest_order );
+			// If the latest order is within the timeframe we look at, we consider the store to have orders.
+			// Otherwise, it clearly doesn't have orders.
+			if ( $latest_order instanceof WC_Abstract_Order
+				&& strtotime( (string) $latest_order->get_date_created() ) >= strtotime( '-90 days' ) ) {
+
+				$has_orders = true;
+
+				// For ultimate efficiency, we will check again after 90 days from the latest order
+				// because in all that time we will consider the store to have orders regardless of new orders.
+				$expiration = strtotime( (string) $latest_order->get_date_created() ) + 90 * DAY_IN_SECONDS - time();
+			}
+		}
 
 		$cache_contents = [
 			'data'    => $has_orders,
 			'fetched' => time(),
 			'errored' => false,
-			'ttl'     => $has_orders ? DAY_IN_SECONDS * 90 : 6 * HOUR_IN_SECONDS,
+			'ttl'     => $expiration,
 		];
 
 		$this->database_cache->add( $cache_key, $cache_contents );
