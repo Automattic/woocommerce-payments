@@ -334,7 +334,7 @@ class WC_Payments_Incentives_Service {
 		$cached_value = $this->database_cache->get( $cache_key );
 
 		if ( null !== $cached_value ) {
-			return $cached_value['data'];
+			return filter_var( $cached_value['data'], FILTER_VALIDATE_BOOLEAN );
 		}
 
 		$has_orders = ! empty(
