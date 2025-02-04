@@ -81,7 +81,7 @@ describeif( shouldRunSubscriptionsTests )(
 
 			await expect(
 				merchantPage.getByText(
-					'A payment of $9.99 USD was successfully charged.'
+					'A payment of $9.99 was successfully charged.'
 				)
 			).toBeVisible();
 
