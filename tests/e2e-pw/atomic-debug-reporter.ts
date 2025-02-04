@@ -27,12 +27,9 @@ class AtomicDebugReporter implements Reporter {
 
 		if ( result.status === 'failed' || result.status === 'timedOut' ) {
 			console.log( 'First error thrown during test execution:' );
-			console.log( result.error );
-
-			if ( result.errors ) {
-				console.log( 'All errors thrown during test execution:' );
-				console.log( result.errors );
-			}
+			console.log( result.error.message );
+			console.log( result.error.snippet );
+			console.log( result.error.stack );
 		}
 	}
 
