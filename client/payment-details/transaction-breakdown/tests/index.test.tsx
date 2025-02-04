@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { __ } from '@wordpress/i18n';
+import { jest } from '@jest/globals';
 
 /**
  * Internal dependencies
