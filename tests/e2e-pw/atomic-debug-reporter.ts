@@ -24,6 +24,16 @@ class AtomicDebugReporter implements Reporter {
 
 	onTestEnd( test: TestCase, result: TestResult ) {
 		console.log( `Finished test ${ test.title }: ${ result.status }` );
+
+		if ( result.status === 'failed' || result.status === 'timedOut' ) {
+			console.log( 'First error thrown during test execution:' );
+			console.log( result.error );
+
+			if ( result.errors ) {
+				console.log( 'All errors thrown during test execution:' );
+				console.log( result.errors );
+			}
+		}
 	}
 
 	onEnd( result: FullResult ) {
