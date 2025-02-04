@@ -898,7 +898,7 @@ class WC_Payments_Admin {
 		}
 
 		$connect_url       = WC_Payments_Account::get_connect_url();
-		$connect_incentive = $this->incentives_service->get_cached_connect_incentive();
+		$connect_incentive = $this->incentives_service->get_connect_incentive();
 		// If we have an incentive ID, attach it to the connect URL.
 		if ( ! empty( $connect_incentive['id'] ) ) {
 			$connect_url = add_query_arg( [ 'promo' => sanitize_text_field( $connect_incentive['id'] ) ], $connect_url );
