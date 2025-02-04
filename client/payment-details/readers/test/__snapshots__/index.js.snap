@@ -4,6 +4,7 @@ exports[`RenderPaymentCardReaderChargeDetails renders reader charges 1`] = `
 <div>
   <div
     class="wcpay-payment-details woocommerce-payments-page"
+    id=""
     style="max-width: 1032px;"
   >
     <div
@@ -224,6 +225,7 @@ exports[`RenderPaymentCardReaderChargeDetails renders without reader charges 1`]
 <div>
   <div
     class="wcpay-payment-details woocommerce-payments-page"
+    id=""
     style="max-width: 1032px;"
   >
     <div
