@@ -359,12 +359,8 @@ jQuery( ( $ ) => {
 
 						cachedCartData = await fetchNewCartData();
 
-						/**
-						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
-						 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
-						 * consistent, we can simply update the payment request button with the new total and display items.
-						 */
-						// the cachedCartData from the Store API will be used from now on,
+						// We need to re init the payment request button to ensure the shipping options & taxes are re-fetched.
+						// The cachedCartData from the Store API will be used from now on,
 						// instead of the `product` attributes.
 						wcpayExpressCheckoutParams.product = null;
 
