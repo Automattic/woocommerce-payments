@@ -62,6 +62,7 @@ export default defineConfig( {
 				[ 'github' ],
 				[ 'json', { outputFile: 'results.json' } ],
 				[ 'html' ],
+				[ './atomic-debug-reporter.ts' ],
 		  ]
 		: [ [ 'html', { open: 'never' } ] ],
 	outputDir: './test-results',
