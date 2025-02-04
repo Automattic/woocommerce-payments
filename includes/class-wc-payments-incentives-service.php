@@ -344,6 +344,7 @@ class WC_Payments_Incentives_Service {
 					'date_created' => '>=' . strtotime( '-90 days' ),
 					'return'       => 'ids',
 					'limit'        => 1,
+					'orderby'      => 'none',
 				]
 			)
 		);
