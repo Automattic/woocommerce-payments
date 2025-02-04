@@ -8,16 +8,21 @@ import { Page } from 'playwright/test';
  */
 import { isUIUnblocked } from './helpers';
 
-export const goToShop = async ( page: Page, pageNumber?: number ) => {
-	if ( pageNumber ) {
-		await page.goto( `/shop/page/` + pageNumber, { waitUntil: 'load' } );
-	} else {
-		await page.goto( `/shop/`, { waitUntil: 'load' } );
-	}
-};
+export const goToShop = async (
+	page: Page,
+	{ pageNumber, currency }: { pageNumber?: number; currency?: string } = {}
+) => {
+	let url = '/shop/';
 
-export const goToShopWithCurrency = async ( page: Page, currency: string ) => {
-	await page.goto( `/shop/?currency=${ currency }`, { waitUntil: 'load' } );
+	if ( pageNumber ) {
+		url += `page/${ pageNumber }/`;
+	}
+
+	if ( currency ) {
+		url += `?currency=${ currency }`;
+	}
+
+	await page.goto( url, { waitUntil: 'load' } );
 };
 
 export const goToProductPageBySlug = async (
