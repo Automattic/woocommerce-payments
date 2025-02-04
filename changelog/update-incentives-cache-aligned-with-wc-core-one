@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Refactored the Incentives service to align it with the WC core incentives logic and caching.
+
+
