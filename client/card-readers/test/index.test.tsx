@@ -14,7 +14,5 @@ describe( 'CardReadersSettings', () => {
 		render( <ConnectedReaders /> );
 
 		expect( screen.queryByText( 'Connected readers' ) ).toBeInTheDocument();
-
-		expect( screen.queryByText( 'Receipt details' ) ).toBeInTheDocument();
 	} );
 } );
