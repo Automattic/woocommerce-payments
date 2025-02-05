@@ -79,9 +79,6 @@ export const getShopper = async (
 	shopperPage: Page;
 	shopperContext: BrowserContext;
 } > => {
-	// eslint-disable-next-line no-console
-	console.log( `baseURL: ${ baseURL }` );
-
 	if ( asNewCustomer ) {
 		const restApi = new RestAPI( baseURL );
 		await restApi.recreateCustomer(

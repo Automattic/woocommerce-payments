@@ -42,9 +42,6 @@ const getBaseUrl = () => {
 	return BASE_URL ?? 'http://localhost:8084';
 };
 
-// eslint-disable-next-line no-console
-console.log( `Playwright baseURL: ${ getBaseUrl() }` );
-
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
