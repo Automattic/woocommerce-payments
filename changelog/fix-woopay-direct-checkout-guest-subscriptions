@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix guest users being able to buy subscriptions with WooPay via Direct Checkout.

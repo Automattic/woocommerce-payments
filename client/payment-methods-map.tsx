@@ -44,7 +44,7 @@ const PaymentMethodInformationObject: Record<
 > = {
 	card: {
 		id: 'card',
-		label: __( 'Credit / Debit card', 'woocommerce-payments' ),
+		label: __( 'Credit / Debit Cards', 'woocommerce-payments' ),
 		description: __(
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
