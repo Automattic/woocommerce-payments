@@ -124,7 +124,12 @@ export const useExpressCheckout = ( {
 			elements,
 			completePayment,
 			abortPayment,
-			event
+			{
+				...event,
+				order_comments: wp?.data
+					?.select( 'wc/store/checkout' )
+					?.getOrderNotes(),
+			}
 		);
 	};
 
