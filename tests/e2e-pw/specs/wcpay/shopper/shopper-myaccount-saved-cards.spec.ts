@@ -8,7 +8,7 @@ import test, { Page, expect } from '@playwright/test';
  */
 import { config, Product } from '../../../config/default';
 import { goToMyAccount } from '../../../utils/shopper-navigation';
-import { getShopper } from '../../../utils/helpers';
+import { ensureCustomerIsLoggedIn, getShopper } from '../../../utils/helpers';
 import {
 	addSavedCard,
 	confirmCardAuthentication,
@@ -66,6 +66,8 @@ test.describe( 'Shopper can save and delete cards', () => {
 	test.beforeAll( async ( { browser }, { project } ) => {
 		shopperPage = ( await getShopper( browser, true, project.use.baseURL ) )
 			.shopperPage;
+
+		await ensureCustomerIsLoggedIn( shopperPage );
 	} );
 
 	async function waitTwentySecondsSinceLastCardAdded( page: Page ) {
@@ -130,6 +132,10 @@ test.describe( 'Shopper can save and delete cards', () => {
 	Object.entries( cards ).forEach(
 		( [ cardName, { card, address, products } ] ) => {
 			test.describe( 'Testing card: ' + cardName, () => {
+				test.beforeAll( async () => {
+					await ensureCustomerIsLoggedIn( shopperPage );
+				} );
+
 				test( `should add the ${ cardName } card as a new payment method`, async () => {
 					await goToMyAccount( shopperPage, 'payment-methods' );
 					// Make sure that at least 20s had already elapsed since the last card was added.

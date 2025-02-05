@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * External dependencies
  */
@@ -157,4 +158,62 @@ export const checkPageExists = async (
 		.catch( () => {
 			return false;
 		} );
+};
+
+export const isCustomerLoggedIn = async ( page: Page ) => {
+	await page.goto( '/my-account' );
+	const logoutLink = page.locator(
+		'.woocommerce-MyAccount-navigation-link--customer-logout'
+	);
+
+	return await logoutLink.isVisible();
+};
+
+export const loginAsCustomer = async (
+	page: Page,
+	customer: { username: string; password: string }
+) => {
+	let customerLoggedIn = false;
+	const customerRetries = 5;
+
+	for ( let i = 0; i < customerRetries; i++ ) {
+		try {
+			// eslint-disable-next-line no-console
+			console.log( 'Trying to log-in as customer...' );
+			await wpAdminLogin( page, customer );
+
+			await page.goto( '/my-account' );
+			await expect(
+				page.locator(
+					'.woocommerce-MyAccount-navigation-link--customer-logout'
+				)
+			).toBeVisible();
+			await expect(
+				page.locator( 'div.woocommerce-MyAccount-content > p >> nth=0' )
+			).toContainText( 'Hello' );
+
+			console.log( 'Logged-in as customer successfully.' );
+			customerLoggedIn = true;
+			break;
+		} catch ( e ) {
+			console.log(
+				`Customer log-in failed. Retrying... ${ i }/${ customerRetries }`
+			);
+			console.log( e );
+		}
+	}
+
+	if ( ! customerLoggedIn ) {
+		throw new Error(
+			'Cannot proceed e2e test, as customer login failed. Please check if the test site has been setup correctly.'
+		);
+	}
+
+	await page.context().storageState( { path: customerStorageFile } );
+};
+
+export const ensureCustomerIsLoggedIn = async ( page: Page ) => {
+	if ( ! ( await isCustomerLoggedIn( page ) ) ) {
+		await loginAsCustomer( page, config.users.customer );
+	}
 };

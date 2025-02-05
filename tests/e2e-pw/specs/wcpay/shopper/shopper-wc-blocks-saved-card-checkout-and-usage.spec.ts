@@ -9,6 +9,7 @@ import test, { Page, expect } from '@playwright/test';
 import {
 	checkPageExists,
 	describeif,
+	ensureCustomerIsLoggedIn,
 	getMerchant,
 	getShopper,
 } from '../../../utils/helpers';
@@ -36,6 +37,7 @@ describeif( shouldRunWCBlocksTests )(
 
 		test.beforeAll( async ( { browser }, { project } ) => {
 			shopperPage = ( await getShopper( browser ) ).shopperPage;
+
 			if (
 				! ( await checkPageExists(
 					shopperPage,
@@ -45,6 +47,8 @@ describeif( shouldRunWCBlocksTests )(
 				const { merchantPage } = await getMerchant( browser );
 				await addWCBCheckoutPage( merchantPage );
 			}
+
+			await ensureCustomerIsLoggedIn( shopperPage );
 		} );
 
 		test( 'should be able to save basic card on Blocks checkout', async () => {
@@ -99,6 +103,7 @@ describeif( shouldRunWCBlocksTests )(
 				} )
 			).toBeVisible();
 		} );
+
 		test( 'should delete the card ', async () => {
 			await goToMyAccount( shopperPage, 'payment-methods' );
 			await deleteSavedCard( shopperPage, card );

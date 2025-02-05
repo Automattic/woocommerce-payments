@@ -7,7 +7,11 @@ import test, { Page, expect } from '@playwright/test';
  * Internal dependencies
  */
 import { config } from '../../../config/default';
-import { getAnonymousShopper, getShopper } from '../../../utils/helpers';
+import {
+	ensureCustomerIsLoggedIn,
+	getAnonymousShopper,
+	getShopper,
+} from '../../../utils/helpers';
 import {
 	confirmCardAuthentication,
 	deleteSavedCard,
@@ -32,11 +36,15 @@ test.describe( 'Saved cards', () => {
 			`When using a ${ cardType } card added on checkout`,
 			() => {
 				let shopperPage: Page;
+
 				test.beforeAll( async ( { browser }, { project } ) => {
 					shopperPage = (
 						await getShopper( browser, true, project.use.baseURL )
 					 ).shopperPage;
+
+					await ensureCustomerIsLoggedIn( shopperPage );
 				} );
+
 				test( 'should save the card', async ( {} ) => {
 					await setupProductCheckout( shopperPage );
 					await fillCardDetails( shopperPage, card );

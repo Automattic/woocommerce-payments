@@ -65,9 +65,9 @@ describeif( shouldRunSubscriptionsTests )(
 				.click();
 
 			await page.getByText( 'Renew now' ).click();
-			await page
-				.getByText( 'Complete checkout to renew now.' )
-				.isVisible();
+			await expect(
+				page.getByText( 'Complete checkout to renew now.' )
+			).toBeVisible();
 			await shopper.focusPlaceOrderButton( page );
 			await shopper.placeOrder( page );
 			await expect(
