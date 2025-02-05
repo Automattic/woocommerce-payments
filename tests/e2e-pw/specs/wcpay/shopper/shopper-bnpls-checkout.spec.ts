@@ -69,6 +69,9 @@ test.describe( 'BNPL checkout', () => {
 						ctpEnabled
 					);
 					await shopper.placeOrder( shopperPage );
+					await expect(
+						shopperPage.getByText( 'test payment page' )
+					).toBeVisible();
 					await shopperPage
 						.getByText( 'Authorize Test Payment' )
 						.click();
