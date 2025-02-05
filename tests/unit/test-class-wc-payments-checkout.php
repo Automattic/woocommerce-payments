@@ -373,7 +373,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			[
 				'card' => [
 					'isReusable'             => true,
-					'title'                  => 'Credit card / debit card',
+					'title'                  => 'Cards',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,
 					'showSaveOption'         => true,
