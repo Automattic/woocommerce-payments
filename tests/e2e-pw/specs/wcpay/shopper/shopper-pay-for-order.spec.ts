@@ -56,6 +56,12 @@ test.describe( 'Shopper > Pay for Order', () => {
 					} )
 					.first();
 				await payForOrderButton.click();
+
+				await expect(
+					shopperPage.getByRole( 'heading', {
+						name: 'Pay for order',
+					} )
+				).toBeVisible();
 				await shopper.fillCardDetails(
 					shopperPage,
 					config.cards.basic
