@@ -528,9 +528,8 @@ class MultiCurrency {
 		if ( ! is_object( $currency_switcher_widget ) ) {
 			Logger::notice(
 				sprintf(
-					'Invalid widget markup. Widget instance must be type object, %s given with value: "%s".',
-					gettype( $currency_switcher_widget ),
-					$currency_switcher_widget
+					'Invalid widget markup. Widget instance must be type object, %s given.',
+					gettype( $currency_switcher_widget )
 				)
 			);
 
