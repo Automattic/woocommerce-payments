@@ -39,7 +39,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
 		if ( ! $payment_details ) {
-			return __( 'Credit card / debit card', 'woocommerce-payments' );
+			return __( 'Cards', 'woocommerce-payments' );
 		}
 
 		$details       = $payment_details[ $this->stripe_id ];

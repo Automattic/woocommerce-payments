@@ -305,6 +305,8 @@ class WC_Payments_Incentives_Service {
 	 * @return array The store context.
 	 */
 	private function get_store_context(): array {
+		$has_orders = $this->get_cached_has_orders();
+
 		return [
 			// Store ISO-2 country code, e.g. `US`.
 			'country'      => WC()->countries->get_base_country(),
@@ -313,21 +315,68 @@ class WC_Payments_Incentives_Service {
 			// WooCommerce active for duration in seconds.
 			'active_for'   => time() - get_option( 'woocommerce_admin_install_timestamp', time() ),
 			// Whether the store has paid orders in the last 90 days.
-			'has_orders'   => ! empty(
-				wc_get_orders(
-					[
-						'status'       => [ 'wc-completed', 'wc-processing' ],
-						'date_created' => '>=' . strtotime( '-90 days' ),
-						'return'       => 'ids',
-						'limit'        => 1,
-						'orderby'      => 'none',
-					]
-				)
-			),
+			'has_orders'   => $has_orders,
 			// Whether the store has at least one payment gateway enabled.
 			'has_payments' => ! empty( WC()->payment_gateways()->get_available_payment_gateways() ),
 			'has_wcpay'    => $this->has_wcpay(),
 		];
+	}
+
+	/**
+	 * Get cached value of whether the store has orders.
+	 * If orders exist, cache for a week since it won't change.
+	 * If no orders, cache for an hour to check again soon.
+	 *
+	 * @return bool Whether the store has orders.
+	 */
+	public function get_cached_has_orders(): bool {
+		$cache_key    = Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders';
+		$cached_value = $this->database_cache->get( $cache_key );
+
+		if ( null !== $cached_value ) {
+			return filter_var( $cached_value['data'], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// We need to determine the value.
+		// Start with the assumption that the store doesn't have orders in the timeframe we look at.
+		$has_orders = false;
+		// By default, we will check for new orders every 6 hours.
+		$expiration = 6 * HOUR_IN_SECONDS;
+
+		// Get the latest completed, processing, or refunded order.
+		$latest_order = wc_get_orders(
+			[
+				'status'  => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
+				'limit'   => 1,
+				'orderby' => 'date',
+				'order'   => 'DESC',
+			]
+		);
+		if ( ! empty( $latest_order ) ) {
+			$latest_order = reset( $latest_order );
+			// If the latest order is within the timeframe we look at, we consider the store to have orders.
+			// Otherwise, it clearly doesn't have orders.
+			if ( $latest_order instanceof WC_Abstract_Order
+				&& strtotime( (string) $latest_order->get_date_created() ) >= strtotime( '-90 days' ) ) {
+
+				$has_orders = true;
+
+				// For ultimate efficiency, we will check again after 90 days from the latest order
+				// because in all that time we will consider the store to have orders regardless of new orders.
+				$expiration = strtotime( (string) $latest_order->get_date_created() ) + 90 * DAY_IN_SECONDS - time();
+			}
+		}
+
+		$cache_contents = [
+			'data'    => $has_orders,
+			'fetched' => time(),
+			'errored' => false,
+			'ttl'     => $expiration,
+		];
+
+		$this->database_cache->add( $cache_key, $cache_contents );
+
+		return $has_orders;
 	}
 
 	/**

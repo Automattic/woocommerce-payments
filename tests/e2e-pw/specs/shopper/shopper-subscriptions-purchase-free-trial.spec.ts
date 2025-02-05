@@ -151,8 +151,8 @@ describeif( shouldRunSubscriptionsTests )(
 		test( 'Merchant should be able to create an order with "Setup Intent"', async () => {
 			await goToOrder( merchantPage, orderId );
 			await expect(
-				merchantPage.getByText( 'Payment via Credit card /' )
-			).toHaveText( /\(seti_.*\)/ );
+				merchantPage.locator( '.woocommerce-order-data__meta' )
+			).toContainText( 'seti_' );
 
 			await goToSubscriptions( merchantPage );
 			const subscriptionRow = merchantPage.getByRole( 'row', {

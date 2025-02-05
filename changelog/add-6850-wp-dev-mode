@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Add support for `WP_DEVELOPMENT_MODE`. Any non-empty setting will force the plugin into development mode.
