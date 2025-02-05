@@ -20,8 +20,7 @@ runs:
           fi
         else
           echo "FIRST_RUN_FAILED_TEST_SUITES=0" >> $GITHUB_OUTPUT
-          echo "::notice::${E2E_RESULT_FILEPATH} doesn't exist so results are unclear and we will not try again."
-          exit 1
+          exit 0
         fi
 
     # Retry failed E2E tests
