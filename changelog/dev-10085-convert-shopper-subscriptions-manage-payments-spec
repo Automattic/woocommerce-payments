@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Migrate the Shopper Subscriptions Manage Payments spec to Playwright and remove the corresponding Puppeteer test.
