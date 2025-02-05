@@ -298,7 +298,7 @@ export const TransactionsList = (
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
-	const { requestReportExport, isDownloading } = useReportExport();
+	const { requestReportExport, isExportInProgress } = useReportExport();
 
 	const { onColumnsChange, columnsToDisplay } = usePersistedColumnVisibility<
 		Column
@@ -763,7 +763,7 @@ export const TransactionsList = (
 					transactionSources={ transactionSources }
 				/>
 			) }
-			{ isDownloading && (
+			{ isExportInProgress && (
 				<Notice status="warning" isDismissible={ false }>
 					{ __(
 						'Your download is being prepared.',
@@ -802,7 +802,7 @@ export const TransactionsList = (
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading || isDownloading }
+							isDisabled={ isLoading || isExportInProgress }
 							onClick={ onDownload }
 						/>
 					),

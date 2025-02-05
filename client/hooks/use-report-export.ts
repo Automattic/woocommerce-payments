@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
-import { recordEvent } from 'wcpay/tracks';
 
 interface ExportResponse {
 	export_id?: string;
@@ -22,7 +21,7 @@ const maxRetries = 5;
  * Hook for requesting and polling for a CSV export. E.g. Transactions, Payouts, Disputes.
  *
  * @example
- * const { requestReportExport, isDownloading } = useReportExport();
+ * const { requestReportExport, isExportInProgress } = useReportExport();
  * requestReportExport( {
  * 	exportRequestURL: '/wc/v3/payments/transactions/download?queryParam=value',
  * 	exportFileAvailabilityEndpoint: '/wc/v3/payments/transactions/download',
@@ -30,7 +29,7 @@ const maxRetries = 5;
  * } );
  */
 export const useReportExport = () => {
-	const [ isDownloading, setIsDownloading ] = useState( false );
+	const [ isExportInProgress, setIsExportInProgress ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const timeoutIdRef = useRef< NodeJS.Timeout | null >( null );
 	const retryCountRef = useRef( 0 );
@@ -82,10 +81,7 @@ export const useReportExport = () => {
 
 			if (
 				'success' === exportedFileURLResponse.status &&
-				exportedFileURLResponse.download_url &&
-				exportedFileURLResponse.download_url.includes(
-					'exports.wordpress.com'
-				)
+				exportedFileURLResponse.download_url
 			) {
 				// The file is available, so we can download it.
 				// Create a link element to trigger the download.
@@ -95,8 +91,6 @@ export const useReportExport = () => {
 					exportedFileURLResponse.download_url +
 					'?force_download=true';
 				link.click();
-
-				recordEvent( 'wcpay_transactions_download_csv_in_browser' );
 
 				createNotice(
 					'success',
@@ -109,7 +103,7 @@ export const useReportExport = () => {
 					)
 				);
 
-				setIsDownloading( false );
+				setIsExportInProgress( false );
 
 				return;
 			}
@@ -122,7 +116,7 @@ export const useReportExport = () => {
 				} );
 			} else {
 				// If the file is not available after the maximum number of retries, show that it will be emailed.
-				setIsDownloading( false );
+				setIsExportInProgress( false );
 				createNotice(
 					'success',
 					sprintf(
@@ -161,7 +155,7 @@ export const useReportExport = () => {
 		userEmail,
 	}: RequestReportExportProps ) {
 		try {
-			setIsDownloading( true );
+			setIsExportInProgress( true );
 
 			// Request the report download.
 			const response = await apiFetch< ExportResponse >( {
@@ -178,7 +172,7 @@ export const useReportExport = () => {
 				} );
 			}
 		} catch ( error ) {
-			setIsDownloading( false );
+			setIsExportInProgress( false );
 			createNotice(
 				'error',
 				__(
@@ -197,6 +191,6 @@ export const useReportExport = () => {
 		/**
 		 * Whether a report download request has been made and polling is in progress.
 		 */
-		isDownloading,
+		isExportInProgress,
 	};
 };
