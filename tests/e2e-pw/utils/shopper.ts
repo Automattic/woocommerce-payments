@@ -560,3 +560,16 @@ export const setDefaultPaymentMethod = async (
 	await expect( button ).toBeEnabled( { timeout: 100 } );
 	button.click();
 };
+
+export const removeCoupon = async ( page: Page ) => {
+	const couponRemovalLink = page.getByRole( 'link', {
+		name: '[Remove]',
+	} );
+
+	if ( await couponRemovalLink.isVisible() ) {
+		await couponRemovalLink.click();
+		await expect(
+			page.getByText( 'Coupon has been removed.' )
+		).toBeVisible();
+	}
+};

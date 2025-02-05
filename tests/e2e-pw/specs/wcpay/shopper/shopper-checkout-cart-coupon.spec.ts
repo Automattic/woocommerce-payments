@@ -15,6 +15,7 @@ import {
 	fillBillingAddress,
 	fillCardDetails,
 	placeOrder,
+	removeCoupon,
 	setupCheckout,
 } from '../../../utils/shopper';
 
@@ -47,17 +48,7 @@ test.describe(
 			const cleanupPage = await browser.newPage();
 			await addToCartFromShopPage( cleanupPage );
 			await goToCart( cleanupPage );
-			const couponRemovalLink = cleanupPage.getByRole( 'link', {
-				name: '[Remove]',
-			} );
-
-			if ( await couponRemovalLink.isVisible() ) {
-				await couponRemovalLink.click();
-				await expect(
-					cleanupPage.getByText( 'Coupon has been removed.' )
-				).toBeVisible();
-			}
-
+			await removeCoupon( cleanupPage );
 			await emptyCart( cleanupPage );
 		} );
 
@@ -77,7 +68,7 @@ test.describe(
 
 		test( 'Remove free coupon, then checkout', async ( { page } ) => {
 			await goToCheckout( page );
-			await page.getByRole( 'link', { name: '[Remove]' } ).click();
+			await removeCoupon( page );
 			await setupCheckout( page, config.addresses.customer.billing );
 			await fillCardDetails( page, config.cards.basic );
 			await placeOrder( page );
