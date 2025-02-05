@@ -9,7 +9,6 @@ import { test, Page, Browser, BrowserContext, expect } from '@playwright/test';
  */
 import { config } from '../config/default';
 import RestAPI from './rest-api';
-
 export const merchantStorageFile = path.resolve(
 	__dirname,
 	'../.auth/merchant.json'
@@ -135,6 +134,10 @@ export const getAnonymousShopper = async (
  */
 export const describeif = ( condition: boolean ) =>
 	condition ? test.describe : test.describe.skip;
+
+export const isUIUnblocked = async ( page: Page ) => {
+	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
+};
 
 export const checkPageExists = async (
 	page: Page,

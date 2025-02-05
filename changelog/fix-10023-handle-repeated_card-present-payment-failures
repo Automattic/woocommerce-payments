@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Added timestamp to the order note when terminal payment fails.

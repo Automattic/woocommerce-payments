@@ -30,10 +30,6 @@ export interface TransactionsFilterType {
 
 const transactionTypesOptions = Object.entries( displayType )
 	.map( ( [ type, label ] ) => {
-		//@TODO - implement filter transactions by card reader fee
-		if ( type === 'card_reader_fee' ) {
-			return null;
-		}
 		return { label, value: type };
 	} )
 	.filter( function ( el ) {

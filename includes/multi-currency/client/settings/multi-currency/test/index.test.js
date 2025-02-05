@@ -16,7 +16,7 @@ jest.mock( '../store-settings', () => jest.fn() );
 
 const getContainer = () => {
 	return render(
-		<SettingsLayout displayBanner={ false }>
+		<SettingsLayout>
 			<EnabledCurrenciesList />
 			<StoreSettings />
 		</SettingsLayout>

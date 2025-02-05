@@ -7,10 +7,7 @@ import { Page, expect } from 'playwright/test';
  */
 import * as navigation from './shopper-navigation';
 import { config, CustomerAddress } from '../config/default';
-
-export const isUIUnblocked = async ( page: Page ) => {
-	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
-};
+import { isUIUnblocked } from './helpers';
 
 /**
  * Waits for the UI to refresh after a user interaction.
@@ -298,7 +295,7 @@ export const addToCartFromShopPage = async (
 
 export const selectPaymentMethod = async (
 	page: Page,
-	paymentMethod = 'Credit card'
+	paymentMethod = 'Cards'
 ) => {
 	await page.getByText( paymentMethod ).click();
 };
@@ -483,7 +480,7 @@ export const addSavedCard = async (
 ) => {
 	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
 	await page.waitForLoadState( 'networkidle' );
-	await page.getByText( 'Credit card / debit card' ).click();
+	await page.getByText( 'Cards' ).click();
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
 	const stripeFrame = frameHandle.contentFrame();
 

@@ -73,19 +73,27 @@ test.describe( 'Shopper can save and delete cards', () => {
 		// Otherwise, you will get the error message,
 		// "You cannot add a new payment method so soon after the previous one."
 		// Source: /docker/wordpress/wp-content/plugins/woocommerce/includes/class-wc-form-handler.php#L509-L521
+
+		// Be careful that this is only needed for a successful card addition, so call it only where it's needed the most, to prevent unnecessary delays.
 		const timeTestFinished = Date.now();
 		const elapsedWaitTime = timeTestFinished - timeAdded;
 		const remainingWaitTime =
 			20000 > elapsedWaitTime ? 20000 - elapsedWaitTime : 0;
 
-		await page.waitForTimeout( remainingWaitTime );
+		if ( remainingWaitTime > 0 ) {
+			await page.waitForTimeout( remainingWaitTime );
+		}
 	}
 
 	// No need to run this test for all card types.
 	test( 'prevents adding another card for 20 seconds after a card is added', async () => {
 		await goToMyAccount( shopperPage, 'payment-methods' );
-		// Take note of the time when we added this card
+
+		// Make sure that at least 20s had already elapsed since the last card was added.
+		await waitTwentySecondsSinceLastCardAdded( shopperPage );
+
 		await addSavedCard( shopperPage, config.cards.basic, 'US', '94110' );
+		// Take note of the time when we added this card
 		timeAdded = +Date.now();
 
 		await expect(
@@ -98,29 +106,17 @@ test.describe( 'Shopper can save and delete cards', () => {
 		// Verify that the card was not added
 		await expect(
 			shopperPage.getByText(
-				'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+				"We're not able to add this payment method. Please refresh the page and try again."
 			)
 		).toBeVisible();
 
-		await expect(
-			shopperPage.getByText(
-				`${ config.cards.basic2.expires.month }/${ config.cards.basic2.expires.year }`
-			)
-		).not.toBeVisible();
-
-		await waitTwentySecondsSinceLastCardAdded( shopperPage );
 		// cleanup for the next tests
 		await goToMyAccount( shopperPage, 'payment-methods' );
 		await deleteSavedCard( shopperPage, config.cards.basic );
 
-		// TODO: The following test is failing because of a bug in WooPayments, even if WC is showing an exception
-		// that a second card is not allowed to be saved in 20 seconds, it is saved, and the list is not empty.
-		/*await expect(
+		await expect(
 			shopperPage.getByText( 'No saved methods found.' )
-		).toBeVisible();*/
-
-		// Instead, continue the cleanup for the next tests
-		await deleteSavedCard( shopperPage, config.cards.basic2 );
+		).toBeVisible();
 	} );
 
 	Object.entries( cards ).forEach(
@@ -128,6 +124,9 @@ test.describe( 'Shopper can save and delete cards', () => {
 			test.describe( 'Testing card: ' + cardName, () => {
 				test( `should add the ${ cardName } card as a new payment method`, async () => {
 					await goToMyAccount( shopperPage, 'payment-methods' );
+					// Make sure that at least 20s had already elapsed since the last card was added.
+					await waitTwentySecondsSinceLastCardAdded( shopperPage );
+
 					await addSavedCard(
 						shopperPage,
 						card,
@@ -153,14 +152,17 @@ test.describe( 'Shopper can save and delete cards', () => {
 							'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
 						)
 					).not.toBeVisible();
+					await expect(
+						shopperPage.getByText(
+							"We're not able to add this payment method. Please refresh the page and try again."
+						)
+					).not.toBeVisible();
 
 					await expect(
 						shopperPage.getByText(
 							`${ card.expires.month }/${ card.expires.year }`
 						)
 					).toBeVisible();
-
-					await waitTwentySecondsSinceLastCardAdded( shopperPage );
 				} );
 
 				test( `should be able to purchase with the saved ${ cardName } card`, async () => {
@@ -180,6 +182,9 @@ test.describe( 'Shopper can save and delete cards', () => {
 
 				test( `should be able to set the ${ cardName } card as default payment method`, async () => {
 					await goToMyAccount( shopperPage, 'payment-methods' );
+					// Make sure that at least 20s had already elapsed since the last card was added.
+					await waitTwentySecondsSinceLastCardAdded( shopperPage );
+
 					await addSavedCard( shopperPage, card2, 'US', '94110' );
 					// Take note of the time when we added this card
 					timeAdded = +Date.now();
@@ -213,13 +218,6 @@ test.describe( 'Shopper can save and delete cards', () => {
 					await expect(
 						shopperPage.getByText( 'No saved methods found.' )
 					).toBeVisible();
-				} );
-
-				test.afterAll( async () => {
-					const cardKeys = Object.keys( cards );
-					if ( cardName !== cardKeys[ cardKeys.length - 1 ] ) {
-						waitTwentySecondsSinceLastCardAdded( shopperPage );
-					}
 				} );
 			} );
 		}
