@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Restrict API requests if the account is not connected or if the account is rejected
