@@ -92,17 +92,6 @@ export const useReportExport = () => {
 					'?force_download=true';
 				link.click();
 
-				createNotice(
-					'success',
-					sprintf(
-						__(
-							'Your CSV export is ready to download. It will also be emailed to %s',
-							'woocommerce-payments'
-						),
-						userEmail
-					)
-				);
-
 				setIsExportInProgress( false );
 
 				return;
@@ -117,16 +106,6 @@ export const useReportExport = () => {
 			} else {
 				// If the file is not available after the maximum number of retries, show that it will be emailed.
 				setIsExportInProgress( false );
-				createNotice(
-					'success',
-					sprintf(
-						__(
-							'Your export will be emailed to %s',
-							'woocommerce-payments'
-						),
-						userEmail
-					)
-				);
 			}
 		}, interval );
 	}

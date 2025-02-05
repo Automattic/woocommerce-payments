@@ -6,7 +6,7 @@
 import React, { Fragment } from 'react';
 import { uniq } from 'lodash';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
 import {
 	TableCard,
 	Search,
@@ -299,6 +299,8 @@ export const TransactionsList = (
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
 	const { requestReportExport, isExportInProgress } = useReportExport();
+
+	const { createNotice } = useDispatch( 'core/notices' );
 
 	const { onColumnsChange, columnsToDisplay } = usePersistedColumnVisibility<
 		Column
@@ -675,6 +677,17 @@ export const TransactionsList = (
 				exportFileAvailabilityEndpoint: transactionsDownloadEndpoint,
 				userEmail,
 			} );
+
+			createNotice(
+				'success',
+				sprintf(
+					__(
+						'Processing your export. The file will download automatically and will be emailed to %s',
+						'woocommerce-payments'
+					),
+					userEmail
+				)
+			);
 		}
 	};
 
@@ -760,14 +773,6 @@ export const TransactionsList = (
 					customerCurrencies={ customerCurrencies }
 					transactionSources={ transactionSources }
 				/>
-			) }
-			{ isExportInProgress && (
-				<Notice status="warning" isDismissible={ false }>
-					{ __(
-						'Your download is being prepared.',
-						'woocommerce-payments'
-					) }
-				</Notice>
 			) }
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
