@@ -132,7 +132,7 @@ test.describe( 'Shopper can save and delete cards', () => {
 	Object.entries( cards ).forEach(
 		( [ cardName, { card, address, products } ] ) => {
 			test.describe( 'Testing card: ' + cardName, () => {
-				test.beforeAll( async ( args, { project } ) => {
+				test.beforeAll( async ( {}, { project } ) => {
 					await ensureCustomerIsLoggedIn( shopperPage, project );
 				} );
 
