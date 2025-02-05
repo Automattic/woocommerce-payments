@@ -4,6 +4,7 @@ exports[`Documents list renders correctly 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-documents"
@@ -319,6 +320,7 @@ exports[`Documents list renders table summary only when the documents summary da
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-documents"

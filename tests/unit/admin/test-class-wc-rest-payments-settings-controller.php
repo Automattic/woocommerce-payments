@@ -253,7 +253,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				Payment_Method::BANCONTACT,
 				Payment_Method::EPS,
 				Payment_Method::IDEAL,
-				Payment_Method::SOFORT,
 				Payment_Method::SEPA,
 				Payment_Method::P24,
 				Payment_Method::LINK,

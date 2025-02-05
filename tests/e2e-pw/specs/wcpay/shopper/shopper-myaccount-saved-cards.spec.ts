@@ -106,28 +106,17 @@ test.describe( 'Shopper can save and delete cards', () => {
 		// Verify that the card was not added
 		await expect(
 			shopperPage.getByText(
-				'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+				"We're not able to add this payment method. Please refresh the page and try again."
 			)
 		).toBeVisible();
-
-		await expect(
-			shopperPage.getByText(
-				`${ config.cards.basic2.expires.month }/${ config.cards.basic2.expires.year }`
-			)
-		).not.toBeVisible();
 
 		// cleanup for the next tests
 		await goToMyAccount( shopperPage, 'payment-methods' );
 		await deleteSavedCard( shopperPage, config.cards.basic );
 
-		// TODO: The following test is failing because of a bug in WooPayments, even if WC is showing an exception
-		// that a second card is not allowed to be saved in 20 seconds, it is saved, and the list is not empty.
-		/*await expect(
+		await expect(
 			shopperPage.getByText( 'No saved methods found.' )
-		).toBeVisible();*/
-
-		// Instead, continue the cleanup for the next tests
-		await deleteSavedCard( shopperPage, config.cards.basic2 );
+		).toBeVisible();
 	} );
 
 	Object.entries( cards ).forEach(
@@ -161,6 +150,11 @@ test.describe( 'Shopper can save and delete cards', () => {
 					await expect(
 						shopperPage.getByText(
 							'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+						)
+					).not.toBeVisible();
+					await expect(
+						shopperPage.getByText(
+							"We're not able to add this payment method. Please refresh the page and try again."
 						)
 					).not.toBeVisible();
 
