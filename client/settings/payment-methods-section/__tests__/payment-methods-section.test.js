@@ -106,7 +106,7 @@ describe( 'PaymentMethodsSection', () => {
 		render( <PaymentMethodsSection /> );
 
 		const card = screen.getByRole( 'checkbox', {
-			name: 'Credit / Debit card',
+			name: 'Credit / Debit Cards',
 		} );
 		const becs = screen.getByRole( 'checkbox', {
 			name: 'BECS Direct Debit',

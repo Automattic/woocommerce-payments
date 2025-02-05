@@ -1584,7 +1584,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_token );
 			}
 
-			$order->set_payment_method_title( __( 'Credit / Debit Card', 'woocommerce-payments' ) );
+			$order->set_payment_method_title( __( 'Credit / Debit Cards', 'woocommerce-payments' ) );
 			$order->save();
 
 			return [
