@@ -2896,13 +2896,19 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @return bool
 	 */
 	private function is_api_request_allowed( $api ): bool {
-		// whitelist API endpoints that are allowed to be called without an account.
+		// Whitelist API endpoints that are allowed to be called without an account.
 		if ( str_starts_with( $api, self::ONBOARDING_API ) || in_array( $api, [ self::ACCOUNTS_API ], true ) ) {
 			return true;
 		}
 
 		$account = WC_Payments::get_account_service()->get_cached_account_data();
+		// If the account is not set, we should not allow any API requests.
 		if ( ! is_array( $account ) || empty( $account ) ) {
+			return false;
+		}
+
+		// If the account is unlinked or rejected, we should not allow any API requests.
+		if ( isset( $account['status'] ) && ( 'unlinked' === $account['status'] || strpos( $account['status'], 'rejected.' ) === 0 ) ) {
 			return false;
 		}
 
