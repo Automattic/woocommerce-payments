@@ -300,17 +300,16 @@ export const addToCartFromShopPage = async (
 		`Add\\s+(?:to\\s+cart:\\s*)?\u201C${ product.name }\u201D(?:\\s+to\\s+your\\s+cart)?`
 	);
 
-	await page.getByLabel( addToCartRegex ).click();
+	const addToCartButton = page.getByLabel( addToCartRegex );
+	await addToCartButton.click();
 
 	try {
-		await expect(
-			page.getByLabel( addToCartRegex )
-		).toHaveAttribute( 'class', /added/, { timeout: 5000 } );
+		await expect( addToCartButton ).toHaveAttribute( 'class', /added/, {
+			timeout: 5000,
+		} );
 	} catch ( error ) {
 		// fallback for a different theme.
-		await expect(
-			page.getByLabel( addToCartRegex ).getByText( 'in cart' )
-		).toBeVisible();
+		await expect( addToCartButton ).toHaveText( /in cart/ );
 	}
 };
 
