@@ -19,7 +19,7 @@ import { Charge } from 'wcpay/types/charges';
  * @param {Charge} charge The charge object.
  * @return {PaymentMethodDetails} A flat hash of all necessary values.
  */
-const formatPaymentMethodDetails = ( charge: Charge ): PaymentMethodDetails => {
+const formatPaymentMethodDetails = ( charge: Charge ) => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 
@@ -34,7 +34,7 @@ const formatPaymentMethodDetails = ( charge: Charge ): PaymentMethodDetails => {
 /**
  * Placeholders to display while loading.
  */
-const paymentMethodPlaceholders: PaymentMethodDetails = {
+const paymentMethodPlaceholders = {
 	id: 'id placeholder',
 	name: 'name placeholder',
 	email: 'email placeholder',
@@ -53,17 +53,10 @@ const MultibancoDetails: React.FC< MultibancoDetailsProps > = ( {
 	charge,
 	isLoading,
 } ) => {
-	const details: PaymentMethodDetails | typeof paymentMethodPlaceholders =
+	const { id, name, email, formattedAddress } =
 		charge && charge.payment_method_details
 			? formatPaymentMethodDetails( charge )
 			: paymentMethodPlaceholders;
-
-	const {
-		id,
-		name,
-		email,
-		formattedAddress,
-	}: PaymentMethodDetails | typeof paymentMethodPlaceholders = details;
 
 	return (
 		<div className="payment-method-details">
