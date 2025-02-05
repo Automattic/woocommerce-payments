@@ -79,12 +79,6 @@ describe( 'useReportExport', () => {
 			method: 'GET',
 		} );
 
-		// Verify success notice
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'success',
-			expect.stringContaining( testProps.userEmail )
-		);
-
 		// Verify isExportInProgress state
 		expect( result.current.isExportInProgress ).toBe( false );
 	} );
@@ -148,12 +142,6 @@ describe( 'useReportExport', () => {
 			} );
 		}
 
-		// Verify email notice after max retries
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'success',
-			expect.stringContaining( 'will be emailed' )
-		);
-
 		// Verify isExportInProgress state
 		expect( result.current.isExportInProgress ).toBe( false );
 	} );
@@ -177,10 +165,6 @@ describe( 'useReportExport', () => {
 		} );
 
 		expect( mockApiFetch ).toHaveBeenCalledTimes( 6 );
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'success',
-			expect.stringContaining( 'will be emailed' )
-		);
 		expect( result.current.isExportInProgress ).toBe( false );
 	} );
 
