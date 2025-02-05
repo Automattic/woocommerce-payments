@@ -66,7 +66,7 @@ jobs:
 
       - name: Install Playwright
         shell: bash
-        run: npx playwright install chromium
+        run: npx playwright install chromium --with-deps
 
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests
@@ -122,7 +122,7 @@ jobs:
 
       - name: Install Playwright
         shell: bash
-        run: npx playwright install chromium
+        run: npx playwright install chromium --with-deps
 
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests
