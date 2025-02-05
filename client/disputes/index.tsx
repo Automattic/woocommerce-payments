@@ -7,7 +7,7 @@ import React from 'react';
 import { recordEvent } from 'tracks';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
-import { Button } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
 import classNames from 'classnames';
@@ -201,7 +201,7 @@ export const DisputesList = (): JSX.Element => {
 		getQuery()
 	);
 
-	const { requestReportExport, isDownloading } = useReportExport();
+	const { requestReportExport, isExportInProgress } = useReportExport();
 
 	const headers = getHeaders( getQuery().orderby );
 	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
@@ -433,6 +433,14 @@ export const DisputesList = (): JSX.Element => {
 		<Page>
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
+			{ isExportInProgress && (
+				<Notice status="warning" isDismissible={ false }>
+					{ __(
+						'Your download is being prepared.',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
 			<TableCard
 				className="wcpay-disputes-list"
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
@@ -449,7 +457,7 @@ export const DisputesList = (): JSX.Element => {
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading || isDownloading }
+							isDisabled={ isLoading || isExportInProgress }
 							onClick={ onDownload }
 						/>
 					),
