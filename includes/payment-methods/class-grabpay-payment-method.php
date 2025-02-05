@@ -32,8 +32,8 @@ class Grabpay_Payment_Method extends UPE_Payment_Method {
 		$this->is_reusable                  = false;
 		$this->is_bnpl                      = false;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/grabpay.svg', WCPAY_PLUGIN_FILE );
-		$this->accept_only_domestic_payment = false;
-		$this->countries                    = [ Country_Code::SINGAPORE, Country_Code::MALAYSIA ];
+		$this->accept_only_domestic_payment = true;
+		$this->countries                    = [ Country_Code::SINGAPORE ];
 	}
 
 	/**

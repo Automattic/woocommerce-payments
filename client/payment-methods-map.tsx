@@ -238,7 +238,7 @@ const PaymentMethodInformationObject: Record<
 		id: 'grabpay',
 		label: __( 'GrabPay', 'woocommerce-payments' ),
 		description: __(
-			'A popular digital wallet for cashless payments in Southeast Asia.',
+			'A popular digital wallet for cashless payments in Singapore.',
 			'woocommerce-payments'
 		),
 		icon: GrabPayIcon,
