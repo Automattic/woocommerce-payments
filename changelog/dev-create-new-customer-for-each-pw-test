@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Refresh customer instance with REST API, replace customer creation by new order with anonymous customer

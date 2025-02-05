@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Optimise memory consumption when formatting log entries.
