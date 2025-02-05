@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: avoid ECE error when no address is provided on initialization

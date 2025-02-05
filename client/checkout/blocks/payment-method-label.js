@@ -5,6 +5,11 @@ import {
 	Elements,
 	PaymentMethodMessagingElement,
 } from '@stripe/react-stripe-js';
+import { PaymentMethodsLogos } from './payment-methods-logos';
+import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
+import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
+import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
+import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
 import { normalizeCurrencyToMinorUnit } from '../utils';
 import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -12,6 +17,31 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+
+const paymentMethods = [
+	{
+		name: 'visa',
+		component: Visa,
+	},
+	{
+		name: 'mastercard',
+		component: Mastercard,
+	},
+	{
+		name: 'amex',
+		component: Amex,
+	},
+	{
+		name: 'discover',
+		component: Discover,
+	},
+	// TODO: Missing Diners Club
+	// TODO: What other card payment methods should be here?
+];
+const breakpointConfigs = [
+	{ breakpoint: 550, maxElements: 2 },
+	{ breakpoint: 330, maxElements: 1 },
+];
 
 const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
 const PaymentMethodMessageWrapper = ( {
@@ -53,6 +83,7 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 	const [ appearance, setAppearance ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearance' )
 	);
+
 	const [ upeAppearanceTheme, setUpeAppearanceTheme ] = useState(
 		getUPEConfig( 'wcBlocksUPEAppearanceTheme' )
 	);
@@ -106,13 +137,23 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 						{ __( 'Test Mode', 'woocommerce-payments' ) }
 					</span>
 				) }
-				<img
-					className="payment-methods--logos"
-					src={
-						upeAppearanceTheme === 'night' ? iconDark : iconLight
-					}
-					alt={ title }
-				/>
+				{ upeName === 'card' ? (
+					<PaymentMethodsLogos
+						maxElements={ 4 }
+						paymentMethods={ paymentMethods }
+						breakpointConfigs={ breakpointConfigs }
+					/>
+				) : (
+					<img
+						className="payment-methods--logos"
+						src={
+							upeAppearanceTheme === 'night'
+								? iconDark
+								: iconLight
+						}
+						alt={ title }
+					/>
+				) }
 			</div>
 			<PaymentMethodMessageWrapper
 				upeName={ upeName }
