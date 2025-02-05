@@ -85,8 +85,8 @@ describe( 'useReportExport', () => {
 			expect.stringContaining( testProps.userEmail )
 		);
 
-		// Verify isDownloading state
-		expect( result.current.isDownloading ).toBe( false );
+		// Verify isExportInProgress state
+		expect( result.current.isExportInProgress ).toBe( false );
 	} );
 
 	it( 'should handle failed export request', async () => {
@@ -105,8 +105,8 @@ describe( 'useReportExport', () => {
 			expect.stringContaining( 'problem generating' )
 		);
 
-		// Verify isDownloading state
-		expect( result.current.isDownloading ).toBe( false );
+		// Verify isExportInProgress state
+		expect( result.current.isExportInProgress ).toBe( false );
 	} );
 
 	it( 'should handle maximum retries scenario', async () => {
@@ -154,8 +154,8 @@ describe( 'useReportExport', () => {
 			expect.stringContaining( 'will be emailed' )
 		);
 
-		// Verify isDownloading state
-		expect( result.current.isDownloading ).toBe( false );
+		// Verify isExportInProgress state
+		expect( result.current.isExportInProgress ).toBe( false );
 	} );
 
 	it( 'should handle polling errors gracefully', async () => {
@@ -181,7 +181,7 @@ describe( 'useReportExport', () => {
 			'success',
 			expect.stringContaining( 'will be emailed' )
 		);
-		expect( result.current.isDownloading ).toBe( false );
+		expect( result.current.isExportInProgress ).toBe( false );
 	} );
 
 	it( 'should cleanup timeout on unmount', async () => {
