@@ -56,16 +56,18 @@ const cards: Array< CardType > = [
 
 test.describe( 'Payment Methods', () => {
 	let shopperPage: Page;
-	test.beforeEach( async ( { browser } ) => {
+
+	test.beforeAll( async ( { browser } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
+		await ensureCustomerIsLoggedIn( shopperPage );
+	} );
+
+	test.beforeEach( async () => {
 		await goToMyAccount( shopperPage, 'payment-methods' );
 	} );
+
 	cards.forEach( ( [ cardType, card, errorText ] ) => {
 		test.describe( `when attempting to add a ${ cardType } card`, () => {
-			test.beforeAll( async () => {
-				await ensureCustomerIsLoggedIn( shopperPage );
-			} );
-
 			test( 'it should not add the card', async () => {
 				const { label } = card;
 
