@@ -13,8 +13,7 @@ test.describe( 'payment gateways disable confirmation', () => {
 
 	const getToggle = ( page: Page ) =>
 		page.getByRole( 'link', {
-			name:
-				'"WooPayments (Credit card / debit card)" payment method is currently',
+			name: '"WooPayments (Cards)" payment method is currently',
 		} );
 
 	const getModalHeading = ( page: Page ) =>
