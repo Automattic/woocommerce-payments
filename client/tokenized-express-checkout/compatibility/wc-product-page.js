@@ -73,12 +73,14 @@ addFilter(
 				// The Store API accepts the variable attribute's label, rather than an internal identifier:
 				// https://github.com/woocommerce/woocommerce-blocks/blob/trunk/src/StoreApi/docs/cart.md#add-item
 				// It's an unfortunate hack that doesn't work when labels have special characters in them.
-				attribute: document.querySelector(
-					`label[for="${ attributeName.replace(
-						'attribute_',
-						''
-					) }"]`
-				).innerHTML,
+				attribute: Array.from(
+					document.querySelector(
+						`label[for="${ attributeName.replace(
+							'attribute_',
+							''
+						) }"]`
+					).childNodes
+				)[ 0 ],
 				value: $select.val() || '',
 			} );
 		} );
