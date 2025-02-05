@@ -38,6 +38,29 @@ test.describe(
 			await emptyCart( page );
 		} );
 
+		/**
+		 * This afterAll step is to ensure that there is no coupon stored in the customer session.
+		 * This is done in cases where a test may be interrupted causing the coupon state to persist
+		 * in the next Atomic workflow run.
+		 */
+		test.afterAll( async ( { browser } ) => {
+			const cleanupPage = await browser.newPage();
+			await addToCartFromShopPage( cleanupPage );
+			await goToCart( cleanupPage );
+			const couponRemovalLink = cleanupPage.getByRole( 'link', {
+				name: '[Remove]',
+			} );
+
+			if ( await couponRemovalLink.isVisible() ) {
+				await couponRemovalLink.click();
+				await expect(
+					cleanupPage.getByText( 'Coupon has been removed.' )
+				).toBeVisible();
+			}
+
+			await emptyCart( cleanupPage );
+		} );
+
 		test( 'Checkout with a free coupon', async ( { page } ) => {
 			await goToCheckout( page );
 			await fillBillingAddress( page, config.addresses.customer.billing );
