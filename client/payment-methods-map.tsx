@@ -22,6 +22,7 @@ import {
 	P24Icon,
 	SepaIcon,
 	SofortIcon,
+	MultibancoIcon,
 } from 'wcpay/payment-methods-icons';
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
@@ -164,6 +165,20 @@ const PaymentMethodInformationObject: Record<
 		icon: SofortIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
+	},
+	multibanco: {
+		id: 'multibanco',
+		label: __( 'Multibanco', 'woocommerce-payments' ),
+		description: __(
+			'A voucher based payment method for your customers in Portugal.',
+			'woocommerce-payments'
+		),
+		icon: MultibancoIcon,
+		currencies: [ 'EUR' ],
+		stripe_key: 'multibanco_payments',
 		allows_manual_capture: false,
 		allows_pay_later: false,
 		accepts_only_domestic_payment: false,

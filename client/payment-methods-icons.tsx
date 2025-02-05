@@ -23,6 +23,7 @@ import JCBAsset from 'assets/images/payment-methods/jcb.svg?asset';
 import KlarnaAsset from 'assets/images/payment-methods/klarna.svg?asset';
 import VisaAsset from 'assets/images/cards/visa.svg?asset';
 import MasterCardAsset from 'assets/images/cards/mastercard.svg?asset';
+import MultibancoAsset from 'assets/images/payment-methods/multibanco.svg?asset';
 import AmexAsset from 'assets/images/cards/amex.svg?asset';
 import WooAsset from 'assets/images/payment-methods/woo.svg?asset';
 import WooAssetShort from 'assets/images/payment-methods/woo-short.svg?asset';
@@ -129,6 +130,10 @@ export const LinkIcon = iconComponent(
 export const MastercardIcon = iconComponent(
 	MasterCardAsset,
 	__( 'Mastercard', 'woocommerce-payments' )
+);
+export const MultibancoIcon = iconComponent(
+	MultibancoAsset,
+	__( 'Multibanco', 'woocommerce-payments' )
 );
 export const P24Icon = iconComponent(
 	P24Asset,

@@ -46,6 +46,7 @@ const formatDetails = ( payment ) => {
 		case 'affirm':
 		case 'afterpay_clearpay':
 		case 'klarna':
+		case 'multibanco':
 		default:
 			return <Fragment />;
 	}

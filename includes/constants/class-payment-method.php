@@ -35,6 +35,7 @@ class Payment_Method extends Base_Constant {
 	const AFFIRM          = 'affirm';
 	const AFTERPAY        = 'afterpay_clearpay';
 	const KLARNA          = 'klarna';
+	const MULTIBANCO      = 'multibanco';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,
@@ -48,6 +49,6 @@ class Payment_Method extends Base_Constant {
 	];
 
 	const OFFLINE_PAYMENT_METHODS = [
-		'offline_test_payment_method', // TODO: Remove this once we have a real offline payment method.
+		self::MULTIBANCO,
 	];
 }

@@ -74,6 +74,7 @@ use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\Payment_Methods\Multibanco_Payment_Method;
 
 /**
  * Gateway class for WooPayments
@@ -352,6 +353,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'afterpay_clearpay' => 'afterpay_clearpay_payments',
 			'klarna'            => 'klarna_payments',
 			'jcb'               => 'jcb_payments',
+			'multibanco'        => 'multibanco_payments',
 		];
 
 		// WooPay utilities.
@@ -4143,6 +4145,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Multibanco_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(
