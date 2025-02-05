@@ -33,6 +33,10 @@ import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from '../constants';
+import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
+import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
+import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
+import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -73,6 +77,7 @@ jQuery( function ( $ ) {
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
 		injectStripePMMEContainers();
+		injectPaymentMethodLogos();
 	} );
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
@@ -237,6 +242,222 @@ jQuery( function ( $ ) {
 				}
 			}
 		}
+	}
+
+	async function injectPaymentMethodLogos() {
+		const cardLabel = document.querySelector(
+			'label[for="payment_method_woocommerce_payments"]'
+		);
+		if ( ! cardLabel ) return;
+
+		if ( cardLabel.querySelector( '.payment-methods--logos' ) ) return;
+
+		const target = cardLabel.querySelector( 'img' );
+		if ( ! target ) return;
+
+		// Create container div
+		const logosContainer = document.createElement( 'div' );
+		logosContainer.className = 'payment-methods--logos';
+
+		// Create inner div for flex layout
+		const innerContainer = document.createElement( 'div' );
+		innerContainer.setAttribute( 'role', 'button' );
+		innerContainer.setAttribute( 'tabindex', '0' );
+		innerContainer.setAttribute( 'data-testid', 'payment-methods-logos' );
+
+		const paymentMethods = [
+			{ name: 'visa', component: Visa },
+			{ name: 'mastercard', component: Mastercard },
+			{ name: 'amex', component: Amex },
+			{ name: 'discover', component: Discover },
+		];
+
+		function getMaxElements() {
+			const paymentMethodElement = document.querySelector(
+				'.payment_method_woocommerce_payments'
+			);
+			if ( ! paymentMethodElement ) {
+				return 4; // Default fallback
+			}
+
+			const elementWidth = paymentMethodElement.offsetWidth;
+			if ( elementWidth <= 300 ) {
+				return 1;
+			} else if ( elementWidth <= 330 ) {
+				return 2;
+			}
+		}
+
+		function shouldHavePopover() {
+			return paymentMethods.length > getMaxElements();
+		}
+
+		function createPopover( remainingMethods ) {
+			const popover = document.createElement( 'div' );
+			popover.className = 'logo-popover';
+			popover.setAttribute( 'role', 'dialog' );
+			popover.setAttribute(
+				'aria-label',
+				'Supported Credit Card Brands'
+			);
+
+			remainingMethods.forEach( ( pm ) => {
+				const img = document.createElement( 'img' );
+				img.src = pm.component;
+				img.alt = pm.name;
+				img.width = 38;
+				img.height = 24;
+				popover.appendChild( img );
+			} );
+
+			// Calculate number of items per row (max 5)
+			const itemsPerRow = Math.min( remainingMethods.length, 5 );
+
+			// Set grid-template-columns based on number of items
+			popover.style.gridTemplateColumns = `repeat(${ itemsPerRow }, 38px)`;
+
+			// Calculate width: (items * width) + (gaps * gap-size) + (padding * 2)
+			const width = itemsPerRow * 38 + ( itemsPerRow - 1 ) * 8 + 16;
+			popover.style.width = `${ width }px`;
+
+			return popover;
+		}
+
+		function positionPopover( popover, anchor ) {
+			const label = anchor.closest( 'label' );
+			if ( ! label ) return;
+
+			const labelRect = label.getBoundingClientRect();
+			const labelStyle = window.getComputedStyle( label );
+			const labelPaddingRight = parseInt( labelStyle.paddingRight, 10 );
+
+			popover.style.position = 'fixed';
+			popover.style.right = `${
+				window.innerWidth - ( labelRect.right - labelPaddingRight )
+			}px`;
+			popover.style.top = `${ labelRect.top - 25 }px`;
+			popover.style.zIndex = '1000';
+			popover.style.left = 'auto';
+		}
+
+		function updateLogos() {
+			innerContainer.innerHTML = ''; // Clear existing logos
+			const maxElements = getMaxElements();
+			const visibleMethods = paymentMethods.slice( 0, maxElements );
+			const remainingCount = paymentMethods.length - maxElements;
+
+			// Add visible logos
+			visibleMethods.forEach( ( pm ) => {
+				const brandImg = document.createElement( 'img' );
+				brandImg.src = pm.component;
+				brandImg.alt = pm.name;
+				brandImg.width = 38;
+				brandImg.height = 24;
+				innerContainer.appendChild( brandImg );
+			} );
+
+			// Add count indicator if we should have a popover
+			if ( shouldHavePopover() ) {
+				const countDiv = document.createElement( 'div' );
+				countDiv.className = 'payment-methods--logos-count';
+				countDiv.textContent = `+ ${ remainingCount }`;
+
+				// Add click handler directly to the count div
+				countDiv.addEventListener( 'click', ( e ) => {
+					e.stopPropagation();
+					e.preventDefault();
+					togglePopover();
+				} );
+
+				innerContainer.appendChild( countDiv );
+			}
+
+			// Remove existing popover if we no longer need it
+			const existingPopover = cardLabel.querySelector( '.logo-popover' );
+			if ( existingPopover && ! shouldHavePopover() ) {
+				existingPopover.remove();
+			}
+		}
+
+		function setupPopover() {
+			const popover = createPopover(
+				paymentMethods.slice( getMaxElements() )
+			);
+			cardLabel.appendChild( popover );
+			positionPopover( popover, innerContainer );
+
+			const handleResize = () =>
+				positionPopover( popover, innerContainer );
+			window.addEventListener( 'resize', handleResize );
+			window.addEventListener( 'scroll', handleResize );
+
+			const handlers = {};
+
+			const cleanup = () => {
+				popover.remove();
+				window.removeEventListener( 'resize', handleResize );
+				window.removeEventListener( 'scroll', handleResize );
+				document.removeEventListener(
+					'mousedown',
+					handlers.handleOutsideClick
+				);
+				document.removeEventListener(
+					'keydown',
+					handlers.handleEscapeKey
+				);
+			};
+
+			handlers.handleOutsideClick = ( e ) => {
+				if (
+					! popover.contains( e.target ) &&
+					! innerContainer.contains( e.target )
+				) {
+					cleanup();
+				}
+			};
+
+			handlers.handleEscapeKey = ( e ) => {
+				if ( e.key === 'Escape' ) {
+					cleanup();
+				}
+			};
+
+			document.addEventListener(
+				'mousedown',
+				handlers.handleOutsideClick
+			);
+			document.addEventListener( 'keydown', handlers.handleEscapeKey );
+		}
+
+		function togglePopover() {
+			if ( ! shouldHavePopover() ) return;
+
+			const existingPopover = cardLabel.querySelector( '.logo-popover' );
+			if ( existingPopover ) {
+				existingPopover.remove();
+				return;
+			}
+
+			setupPopover();
+		}
+
+		// Remove the click handler from innerContainer since we're handling it on the count div
+		// Keep the keyboard handler for accessibility
+		innerContainer.addEventListener( 'keydown', ( e ) => {
+			if ( e.key === 'Enter' || e.key === ' ' ) {
+				e.preventDefault();
+				e.stopPropagation();
+				togglePopover();
+			}
+		} );
+
+		// Initial setup
+		logosContainer.appendChild( innerContainer );
+		target.replaceWith( logosContainer );
+		updateLogos();
+
+		// Update on window resize
+		window.addEventListener( 'resize', updateLogos );
 	}
 
 	function processPaymentIfNotUsingSavedMethod( $form ) {

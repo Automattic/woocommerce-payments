@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Port merchant subscription renewal E2E test to Playwright

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent potential fatal when initializing the WooPay express checkout button.
