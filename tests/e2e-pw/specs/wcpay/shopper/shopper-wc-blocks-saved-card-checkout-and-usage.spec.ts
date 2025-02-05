@@ -48,7 +48,7 @@ describeif( shouldRunWCBlocksTests )(
 				await addWCBCheckoutPage( merchantPage );
 			}
 
-			await ensureCustomerIsLoggedIn( shopperPage );
+			await ensureCustomerIsLoggedIn( shopperPage, project );
 		} );
 
 		test( 'should be able to save basic card on Blocks checkout', async () => {

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { test as setup, expect, Page, FullProject } from '@playwright/test';
+import { test as setup, expect } from '@playwright/test';
 import fs from 'fs';
 
 /**
@@ -14,6 +14,7 @@ import {
 	customerStorageFile,
 	wpAdminLogin,
 	loginAsCustomer,
+	addSupportSessionDetectedCookie,
 } from '../utils/helpers';
 
 // See https://playwright.dev/docs/auth#multiple-signed-in-roles
@@ -33,29 +34,6 @@ const isAuthStateStale = ( authStateFile: string ) => {
 	// Invalidate auth state if it's older than a 3 hours.
 	const isStale = Date.now() - authStateMtimeMs > hourInMs * 3;
 	return isStale;
-};
-
-/**
- * Adds a special cookie during the session to avoid the support session detection page.
- * This is temporarily displayed when navigating to the login page while Jetpack SSO and protect modules are disabled.
- * Relevant for Atomic sites only.
- */
-const addSupportSessionDetectedCookie = async (
-	page: Page,
-	project: FullProject
-) => {
-	if ( process.env.NODE_ENV !== 'atomic' ) return;
-
-	const domain = new URL( project.use.baseURL ).hostname;
-
-	await page.context().addCookies( [
-		{
-			value: 'true',
-			name: '_wpcomsh_support_session_detected',
-			path: '/',
-			domain,
-		},
-	] );
 };
 
 setup( 'authenticate as admin', async ( { page }, { project } ) => {

@@ -3,7 +3,14 @@
  * External dependencies
  */
 import path from 'path';
-import { test, Page, Browser, BrowserContext, expect } from '@playwright/test';
+import {
+	test,
+	Page,
+	Browser,
+	BrowserContext,
+	expect,
+	FullProject,
+} from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -212,8 +219,35 @@ export const loginAsCustomer = async (
 	await page.context().storageState( { path: customerStorageFile } );
 };
 
-export const ensureCustomerIsLoggedIn = async ( page: Page ) => {
+/**
+ * Adds a special cookie during the session to avoid the support session detection page.
+ * This is temporarily displayed when navigating to the login page while Jetpack SSO and protect modules are disabled.
+ * Relevant for Atomic sites only.
+ */
+export const addSupportSessionDetectedCookie = async (
+	page: Page,
+	project: FullProject
+) => {
+	if ( process.env.NODE_ENV !== 'atomic' ) return;
+
+	const domain = new URL( project.use.baseURL ).hostname;
+
+	await page.context().addCookies( [
+		{
+			value: 'true',
+			name: '_wpcomsh_support_session_detected',
+			path: '/',
+			domain,
+		},
+	] );
+};
+
+export const ensureCustomerIsLoggedIn = async (
+	page: Page,
+	project: FullProject
+) => {
 	if ( ! ( await isCustomerLoggedIn( page ) ) ) {
+		await addSupportSessionDetectedCookie( page, project );
 		await loginAsCustomer( page, config.users.customer );
 	}
 };

@@ -67,7 +67,7 @@ test.describe( 'Shopper can save and delete cards', () => {
 		shopperPage = ( await getShopper( browser, true, project.use.baseURL ) )
 			.shopperPage;
 
-		await ensureCustomerIsLoggedIn( shopperPage );
+		await ensureCustomerIsLoggedIn( shopperPage, project );
 	} );
 
 	async function waitTwentySecondsSinceLastCardAdded( page: Page ) {
@@ -132,8 +132,8 @@ test.describe( 'Shopper can save and delete cards', () => {
 	Object.entries( cards ).forEach(
 		( [ cardName, { card, address, products } ] ) => {
 			test.describe( 'Testing card: ' + cardName, () => {
-				test.beforeAll( async () => {
-					await ensureCustomerIsLoggedIn( shopperPage );
+				test.beforeAll( async ( args, { project } ) => {
+					await ensureCustomerIsLoggedIn( shopperPage, project );
 				} );
 
 				test( `should add the ${ cardName } card as a new payment method`, async () => {

@@ -42,7 +42,7 @@ test.describe( 'Saved cards', () => {
 						await getShopper( browser, true, project.use.baseURL )
 					 ).shopperPage;
 
-					await ensureCustomerIsLoggedIn( shopperPage );
+					await ensureCustomerIsLoggedIn( shopperPage, project );
 				} );
 
 				test( 'should save the card', async ( {} ) => {

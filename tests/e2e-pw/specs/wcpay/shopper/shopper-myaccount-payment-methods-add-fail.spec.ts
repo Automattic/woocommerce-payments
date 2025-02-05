@@ -57,9 +57,9 @@ const cards: Array< CardType > = [
 test.describe( 'Payment Methods', () => {
 	let shopperPage: Page;
 
-	test.beforeAll( async ( { browser } ) => {
+	test.beforeAll( async ( { browser }, { project } ) => {
 		shopperPage = ( await getShopper( browser ) ).shopperPage;
-		await ensureCustomerIsLoggedIn( shopperPage );
+		await ensureCustomerIsLoggedIn( shopperPage, project );
 	} );
 
 	test.beforeEach( async () => {
