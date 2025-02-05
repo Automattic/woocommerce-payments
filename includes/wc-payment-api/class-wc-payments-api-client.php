@@ -2895,9 +2895,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 *
 	 * @return bool
 	 */
-	private function is_api_request_allowed( $api ): bool {
+	private function is_api_request_allowed( string $api ): bool {
 		// Whitelist API endpoints that are allowed to be called without an account.
-		if ( str_starts_with( $api, self::ONBOARDING_API ) || in_array( $api, [ self::ACCOUNTS_API ], true ) ) {
+		if ( substr( $api, 0, strlen( self::ONBOARDING_API ) ) === self::ONBOARDING_API || self::ACCOUNTS_API === $api ) {
 			return true;
 		}
 
