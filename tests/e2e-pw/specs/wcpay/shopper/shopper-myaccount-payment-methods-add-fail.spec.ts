@@ -8,7 +8,11 @@ import test, { Page, expect } from '@playwright/test';
  */
 import { config } from '../../../config/default';
 import { goToMyAccount } from '../../../utils/shopper-navigation';
-import { getShopper, isUIUnblocked } from '../../../utils/helpers';
+import {
+	ensureCustomerIsLoggedIn,
+	getShopper,
+	isUIUnblocked,
+} from '../../../utils/helpers';
 import {
 	addSavedCard,
 	confirmCardAuthentication,
@@ -58,6 +62,10 @@ test.describe( 'Payment Methods', () => {
 	} );
 	cards.forEach( ( [ cardType, card, errorText ] ) => {
 		test.describe( `when attempting to add a ${ cardType } card`, () => {
+			test.beforeAll( async () => {
+				await ensureCustomerIsLoggedIn( shopperPage );
+			} );
+
 			test( 'it should not add the card', async () => {
 				const { label } = card;
 
