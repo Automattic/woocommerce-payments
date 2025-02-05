@@ -231,6 +231,9 @@ export const confirmCardAuthentication = async (
 	page: Page,
 	authorize = true
 ) => {
+	// Wait for the Stripe modal to appear.
+	await page.waitForTimeout( 3000 );
+
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
 	// appears at the top of the DOM.
 	await page.waitForSelector(
@@ -546,7 +549,7 @@ export const selectSavedCardOnCheckout = async (
 		)
 		.first();
 	await expect( option ).toBeVisible( { timeout: 100 } );
-	option.click();
+	await option.click();
 };
 
 export const setDefaultPaymentMethod = async (
@@ -558,7 +561,7 @@ export const setDefaultPaymentMethod = async (
 	const button = row.getByRole( 'link', { name: 'Make default' } );
 	await expect( button ).toBeVisible( { timeout: 100 } );
 	await expect( button ).toBeEnabled( { timeout: 100 } );
-	button.click();
+	await button.click();
 };
 
 export const removeCoupon = async ( page: Page ) => {

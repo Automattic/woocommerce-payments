@@ -56,7 +56,7 @@ export const config = {
 			name: 'Subscription free trial product',
 			pageNumber: 2,
 		},
-	} as Products,
+	} as Record< string, Product >,
 	addresses: {
 		admin: {
 			store: {
@@ -343,5 +343,3 @@ export type CustomerAddress = Omit<
 };
 
 export type Product = { name: string; pageNumber: number };
-
-export type Products = Record< string, Product >;
