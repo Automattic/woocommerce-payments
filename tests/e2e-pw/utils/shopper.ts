@@ -481,9 +481,12 @@ export const setSavePaymentMethod = async ( page: Page, save = true ) => {
 	const checkbox = page.getByLabel(
 		'Save payment information to my account for future purchases.'
 	);
-	if ( save ) {
+
+	const isChecked = await checkbox.isChecked();
+
+	if ( save && ! isChecked ) {
 		await checkbox.check();
-	} else {
+	} else if ( ! save && isChecked ) {
 		await checkbox.uncheck();
 	}
 };
