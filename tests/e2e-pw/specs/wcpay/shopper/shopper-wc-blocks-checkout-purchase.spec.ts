@@ -42,7 +42,7 @@ describeif( shouldRunWCBlocksTests )(
 		} );
 
 		test( 'using a basic card', async () => {
-			await addToCartFromShopPage( shopperPage );
+			await addToCartFromShopPage( shopperPage, config.products.belt );
 			await goToCheckoutWCB( shopperPage );
 			await fillBillingAddressWCB(
 				shopperPage,
@@ -60,7 +60,10 @@ describeif( shouldRunWCBlocksTests )(
 		} );
 
 		test( 'using a 3DS card', async () => {
-			await addToCartFromShopPage( shopperPage );
+			await addToCartFromShopPage(
+				shopperPage,
+				config.products.sunglasses
+			);
 			await goToCheckoutWCB( shopperPage );
 			await fillBillingAddressWCB(
 				shopperPage,

@@ -15,6 +15,7 @@ import { config } from '../../../config/default';
 
 const cardTestingProtectionStates = [ false, true ];
 const bnplProviders = [ 'Affirm', 'Afterpay' ];
+const products = [ config.products.belt, config.products.sunglasses ];
 
 test.describe( 'BNPL checkout', () => {
 	let merchantPage: Page;
@@ -55,11 +56,13 @@ test.describe( 'BNPL checkout', () => {
 				}
 			} );
 
-			for ( const provider of bnplProviders ) {
+			for ( let i = 0; i < bnplProviders.length; i++ ) {
+				const provider = bnplProviders[ i ];
+
 				test( `Checkout with ${ provider }`, async () => {
 					await shopper.addToCartFromShopPage(
 						shopperPage,
-						config.products.belt
+						products[ i % 2 ]
 					);
 
 					await shopper.setupCheckout( shopperPage );

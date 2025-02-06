@@ -53,7 +53,7 @@ describeif( shouldRunWCBlocksTests )(
 
 		test( 'should be able to save basic card on Blocks checkout', async () => {
 			await emptyCart( shopperPage );
-			await addToCartFromShopPage( shopperPage );
+			await addToCartFromShopPage( shopperPage, config.products.belt );
 			await goToCheckoutWCB( shopperPage );
 			await fillBillingAddressWCB(
 				shopperPage,
@@ -87,7 +87,7 @@ describeif( shouldRunWCBlocksTests )(
 		} );
 
 		test( 'should process a payment with the saved card from Blocks checkout', async () => {
-			await addToCartFromShopPage( shopperPage );
+			await addToCartFromShopPage( shopperPage, config.products.cap );
 			await goToCheckoutWCB( shopperPage );
 			await fillBillingAddressWCB(
 				shopperPage,

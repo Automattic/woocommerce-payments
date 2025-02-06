@@ -32,6 +32,10 @@ export const config = {
 			name: 'Beanie',
 			pageNumber: 1,
 		},
+		sunglasses: {
+			name: 'Sunglasses',
+			pageNumber: 2,
+		},
 		variable: {
 			name: 'Variable Product with Three Variations',
 			pageNumber: 1,
