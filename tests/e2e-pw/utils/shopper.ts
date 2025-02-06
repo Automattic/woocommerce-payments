@@ -358,6 +358,7 @@ export async function setupProductCheckout(
 
 		while ( qty-- ) {
 			await addToCartFromShopPage( page, product, currency );
+
 			// Make sure the number of items in the cart is incremented before adding another item.
 			await expect( page.locator( '.cart-contents .count' ) ).toHaveText(
 				new RegExp( `${ ++cartSize } items?` ),
@@ -365,6 +366,9 @@ export async function setupProductCheckout(
 					timeout: 30000,
 				}
 			);
+
+			// Wait for the cart to update before adding another item.
+			await page.waitForTimeout( 500 );
 		}
 	}
 
