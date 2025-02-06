@@ -98,7 +98,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods( [ 'get_wcpay_refund_id_for_order', 'add_note_and_metadata_for_refund', 'create_refund_for_order', 'mark_terminal_payment_failed' ] )
+			->setMethods( [ 'get_wcpay_refund_id_for_order', 'add_note_and_metadata_for_refund', 'create_refund_for_order', 'mark_terminal_payment_failed', 'handle_insufficient_balance_for_refund' ] )
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
@@ -116,7 +116,17 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $this->mock_api_client, $this->mock_db_wrapper, $mock_wcpay_account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway, $this->mock_customer_service, $this->mock_database_cache );
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
+			$this->mock_api_client,
+			$this->mock_db_wrapper,
+			$this->createMock( WC_Payments_Account::class ),
+			$this->mock_remote_note_service,
+			$this->order_service,
+			$this->mock_receipt_service,
+			$this->mock_wcpay_gateway,
+			$this->mock_customer_service,
+			$this->mock_database_cache
+		);
 
 		// Build the event body data.
 		$event_object = [];
@@ -492,6 +502,37 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
+
+	/**
+	 * Test a valid failed refund update webhook with insufficient funds.
+	 */
+	public function test_valid_failed_refund_update_webhook_with_insufficient_funds() {
+		// Setup test request data.
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'status'         => 'failed',
+			'charge'         => 'charge_id',
+			'id'             => 'test_refund_id',
+			'amount'         => 999,
+			'currency'       => 'gbp',
+			'failure_reason' => 'insufficient_funds',
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'handle_insufficient_balance_for_refund' )
+			->with( $this->mock_order, 999 );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
 
 	/**
 	 * Test a valid non-failed refund update webhook

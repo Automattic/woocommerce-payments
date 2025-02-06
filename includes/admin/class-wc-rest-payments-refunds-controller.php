@@ -49,6 +49,7 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @internal Not intended for usage in integrations or outside of WooCommerce Payments.
 	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function process_refund( $request ) {
 		$order_id  = $request->get_param( 'order_id' );
@@ -59,7 +60,6 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 		$order = null;
 		if ( $order_id ) {
 			$order = wc_get_order( $order_id );
-
 			if ( false !== $order && $order instanceof WC_Order ) {
 				$result = $this->process_order_refund( $order, $amount, $reason );
 				if ( is_wp_error( $result ) || false === $result ) {
@@ -78,7 +78,7 @@ class WC_REST_Payments_Refunds_Controller extends WC_Payments_REST_Controller {
 			return rest_ensure_response( $this->process_charge_refund( $charge_id, $amount, $reason ) );
 		} catch ( API_Exception $e ) {
 			if ( 'insufficient_balance_for_refund' === $e->get_error_code() && $order instanceof WC_Order ) {
-				$this->handle_insufficient_balance_error( $order, $amount );
+				WC_Payments::get_order_service()->handle_insufficient_balance_for_refund( $order, $amount );
 			}
 			return rest_ensure_response( new WP_Error( 'wcpay_refund_payment', $e->getMessage() ) );
 		}
