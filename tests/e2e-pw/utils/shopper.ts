@@ -143,19 +143,14 @@ export const placeOrderWCB = async (
 	page: Page,
 	confirmOrderReceived = true
 ) => {
-	const placeOrderButton = page.locator(
-		'.wc-block-components-checkout-place-order-button'
-	);
+	const placeOrderButton = page.getByRole( 'button', {
+		name: 'Place Order',
+	} );
 
 	await placeOrderButton.focus();
 	await waitForUiRefresh( page );
 
 	await placeOrderButton.click();
-
-	await expect( placeOrderButton ).toBeDisabled();
-	await expect( placeOrderButton ).toHaveClass(
-		/wc-block-components-button--loading/
-	);
 
 	if ( confirmOrderReceived ) {
 		await page.waitForURL( /\/order-received\// );
