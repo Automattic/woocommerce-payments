@@ -59,6 +59,11 @@ const failures = [
 	},
 ];
 
+const errorsInsideStripeFrame = [
+	config.cards[ 'invalid-cvv-number' ],
+	config.cards[ 'declined-incorrect' ],
+];
+
 describeif( shouldRunWCBlocksTests )(
 	'WooCommerce Blocks > Checkout failures',
 	() => {
@@ -98,11 +103,26 @@ describeif( shouldRunWCBlocksTests )(
 				if ( auth ) {
 					await shopper.confirmCardAuthentication( shopperPage );
 				}
-				await expect(
-					shopperPage
-						.locator( '.wc-block-checkout__form' )
-						.getByText( error )
-				).toBeVisible();
+
+				if ( errorsInsideStripeFrame.includes( card ) ) {
+					await shopperPage.waitForSelector(
+						'.__PrivateStripeElement'
+					);
+					const frameHandle = await shopperPage.waitForSelector(
+						'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
+					);
+					const stripeFrame = await frameHandle.contentFrame();
+
+					await expect(
+						stripeFrame.getByText( error )
+					).toBeVisible();
+				} else {
+					await expect(
+						shopperPage
+							.locator( '.wc-block-checkout__form' )
+							.getByText( error )
+					).toBeVisible();
+				}
 			} );
 		}
 	}

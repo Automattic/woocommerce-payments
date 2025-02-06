@@ -456,7 +456,7 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 		.locator( 'iframe[name="editor-canvas"]' )
 		.contentFrame()
 		.getByRole( 'document', { name: 'Block: Shipping Address' } )
-		.click();
+		.click( { force: true } );
 
 	const companyCheckbox = page
 		.locator( '.components-toggle-control' )
