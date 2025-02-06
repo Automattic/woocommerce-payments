@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+feat: add order notes to tokenized ECE GooglePay/ApplePay on blocks checkout

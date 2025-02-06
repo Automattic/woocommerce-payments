@@ -133,4 +133,20 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 		remove_filter( 'woocommerce_shipping_method_count', '__return_zero' );
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 	}
+
+	public function test_get_express_checkout_params() {
+		$this->mock_ece_button_helper
+			->method( 'get_common_button_settings' )
+			->willReturn(
+				[
+					'type'   => 'buy',
+					'theme'  => 'white',
+					'height' => '30',
+					'radius' => '10',
+				]
+			);
+		$params = $this->system_under_test->get_express_checkout_params();
+		$this->assertArrayHasKey( 'store_name', $params );
+		$this->assertEquals( get_bloginfo( 'name' ), $params['store_name'] );
+	}
 }
