@@ -116,10 +116,10 @@ const PaymentMethods = [
 		name: 'grabpay',
 		component: GrabPay,
 	},
-  {
+	{
 		name: 'wechat_pay',
 		component: WeChatPay,
-  },
+	},
 ];
 
 export const WooPaymentsMethodsLogos: React.VFC< {

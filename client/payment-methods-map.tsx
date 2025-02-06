@@ -23,7 +23,7 @@ import {
 	SepaIcon,
 	SofortIcon,
 	GrabPayIcon,
-  WeChatPayIcon,
+	WeChatPayIcon,
 } from 'wcpay/payment-methods-icons';
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';

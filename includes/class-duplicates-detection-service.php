@@ -106,7 +106,7 @@ class Duplicates_Detection_Service {
 			'clearpay'   => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'grabpay'    => Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-      'wechatpay'  => WeChatPay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'wechatpay'  => WeChatPay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
 		foreach ( $this->get_enabled_gateways() as $gateway ) {
