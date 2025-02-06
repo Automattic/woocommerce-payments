@@ -452,11 +452,12 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 	await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
 
 	// Enable the "Company" field if it's not already enabled.
-	await page
-		.locator( 'iframe[name="editor-canvas"]' )
-		.contentFrame()
-		.getByRole( 'document', { name: 'Block: Shipping Address' } )
-		.click( { force: true } );
+	await page.getByLabel( 'Document Overview' ).click();
+	await page.waitForTimeout( 1000 );
+	await expect( page.locator( '.editor-list-view-sidebar' ) ).toBeVisible();
+	await expect( page.getByText( 'List View' ) ).toBeVisible();
+	await page.locator( '.block-editor-list-view__expander > svg' ).click();
+	await page.getByText( 'Checkout Fields' ).click();
 
 	const companyCheckbox = page
 		.locator( '.components-toggle-control' )
@@ -468,8 +469,14 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 
 	// Publish the page
 	await page.locator( 'button.editor-post-publish-panel__toggle' ).click();
-	await page.waitForTimeout( 500 );
-	await page.locator( 'button.editor-post-publish-button' ).click();
+
+	const publishButton = page.locator( 'button.editor-post-publish-button' );
+	await publishButton.click();
+
+	if ( await page.getByText( 'Are you ready to publish?' ).isVisible() ) {
+		await publishButton.nth( 1 ).click();
+	}
+
 	await expect( page.getByText( 'Checkout WCB is now live.' ) ).toBeVisible();
 };
 
