@@ -34,9 +34,17 @@ export const wpAdminLogin = async (
 	page: Page,
 	user: { username: string; password: string }
 ): Promise< void > => {
-	await page.goto( `/wp-admin` );
+	await page.goto( '/wp-admin' );
+
 	await page.getByLabel( 'Username or Email Address' ).fill( user.username );
-	await page.getByLabel( 'Password', { exact: true } ).fill( user.password ); // Need exact match to avoid resolving "Show password" button.
+
+	// Need exact match to avoid resolving "Show password" button.
+	const passwordInput = page.getByLabel( 'Password', { exact: true } );
+
+	// The focus is used to avoid the password being filled in the username field.
+	await passwordInput.focus();
+	await passwordInput.fill( user.password );
+
 	await page.getByRole( 'button', { name: 'Log In' } ).click();
 };
 
