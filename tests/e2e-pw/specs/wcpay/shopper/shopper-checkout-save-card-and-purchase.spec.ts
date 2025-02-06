@@ -15,6 +15,7 @@ import {
 import {
 	confirmCardAuthentication,
 	deleteSavedCard,
+	emptyCart,
 	fillCardDetails,
 	placeOrder,
 	selectSavedCardOnCheckout,
@@ -23,15 +24,27 @@ import {
 } from '../../../utils/shopper';
 import { goToMyAccount } from '../../../utils/shopper-navigation';
 
-type CardType = [ string, typeof config.cards.basic ];
+type CardType = [
+	string,
+	typeof config.cards.basic,
+	typeof config.products.simple[]
+];
 
 const cards: Array< CardType > = [
-	[ 'basic', config.cards.basic ],
-	[ '3ds', config.cards[ '3ds' ] ],
+	[
+		'basic',
+		config.cards.basic,
+		[ config.products.belt, config.products.cap ],
+	],
+	[
+		'3ds',
+		config.cards[ '3ds' ],
+		[ config.products.sunglasses, config.products.hoodie_with_logo ],
+	],
 ];
 
 test.describe( 'Saved cards', () => {
-	cards.forEach( ( [ cardType, card ] ) => {
+	cards.forEach( ( [ cardType, card, products ] ) => {
 		test.describe(
 			`When using a ${ cardType } card added on checkout`,
 			() => {
@@ -46,7 +59,9 @@ test.describe( 'Saved cards', () => {
 				} );
 
 				test( 'should save the card', async ( {} ) => {
-					await setupProductCheckout( shopperPage );
+					await setupProductCheckout( shopperPage, [
+						[ products[ 0 ], 1 ],
+					] );
 					await fillCardDetails( shopperPage, card );
 					await setSavePaymentMethod( shopperPage, true );
 					await placeOrder( shopperPage );
@@ -69,7 +84,9 @@ test.describe( 'Saved cards', () => {
 				} );
 
 				test( 'should process a payment with the saved card', async ( {} ) => {
-					await setupProductCheckout( shopperPage );
+					await setupProductCheckout( shopperPage, [
+						[ products[ 1 ], 1 ],
+					] );
 					await selectSavedCardOnCheckout( shopperPage, card );
 					await placeOrder( shopperPage );
 					if ( cardType === '3ds' ) {
@@ -100,6 +117,7 @@ test.describe( 'Saved cards', () => {
 							'Save payment information to my account for future purchases.'
 						)
 					).not.toBeVisible();
+					await emptyCart( page );
 				} );
 			}
 		);
