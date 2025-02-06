@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 interface ExportResponse {
 	export_id?: string;
