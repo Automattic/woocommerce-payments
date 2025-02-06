@@ -58,6 +58,10 @@ test.describe( 'Saved cards', () => {
 					await ensureCustomerIsLoggedIn( shopperPage, project );
 				} );
 
+				test.afterAll( async () => {
+					await emptyCart( shopperPage );
+				} );
+
 				test( 'should save the card', async ( {} ) => {
 					await setupProductCheckout( shopperPage, [
 						[ products[ 0 ], 1 ],
