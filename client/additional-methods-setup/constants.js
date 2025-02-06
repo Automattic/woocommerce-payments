@@ -11,7 +11,8 @@ export const upeMethods = [
 	'afterpay_clearpay',
 	'jcb',
 	'klarna',
-	'wechat_pay',
+	'grabpay',
+  'wechat_pay',
 ];
 
 export const upeCapabilityStatuses = {
