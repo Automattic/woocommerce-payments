@@ -139,6 +139,22 @@ export const placeOrder = async ( page: Page ) => {
 	}
 };
 
+export const placeOrderWCB = async ( page: Page ) => {
+	const placeOrderButton = page.getByRole( 'button', {
+		name: 'Place Order',
+	} );
+
+	await placeOrderButton.focus();
+	await waitForUiRefresh( page );
+
+	await placeOrderButton.click();
+
+	await page.waitForURL( /\/order-received\// );
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
+};
+
 const ensureSavedCardNotSelected = async ( page: Page ) => {
 	if (
 		await page

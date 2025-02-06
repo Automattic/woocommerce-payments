@@ -24,7 +24,9 @@ import {
 	emptyCart,
 	fillBillingAddressWCB,
 	fillCardDetailsWCB,
+	placeOrderWCB,
 	selectSavedCardOnCheckout,
+	setSavePaymentMethod,
 } from '../../../utils/shopper';
 import { addWCBCheckoutPage } from '../../../utils/merchant';
 import { config } from '../../../config/default';
@@ -62,19 +64,9 @@ describeif( shouldRunWCBlocksTests )(
 				config.addresses.customer.billing
 			);
 			await fillCardDetailsWCB( shopperPage, config.cards.basic );
-			await shopperPage
-				.getByLabel(
-					'Save payment information to my account for future purchases.'
-				)
-				.click();
-			await shopperPage
-				.getByRole( 'button', { name: 'Place Order' } )
-				.click();
-			await expect(
-				shopperPage.getByRole( 'heading', {
-					name: 'Order received',
-				} )
-			).toBeVisible();
+			await setSavePaymentMethod( shopperPage, true );
+			await placeOrderWCB( shopperPage );
+
 			await goToMyAccount( shopperPage, 'payment-methods' );
 			await expect(
 				shopperPage.getByText( card.label ).first()
@@ -96,14 +88,7 @@ describeif( shouldRunWCBlocksTests )(
 				config.addresses.customer.billing
 			);
 			await selectSavedCardOnCheckout( shopperPage, card );
-			await shopperPage
-				.getByRole( 'button', { name: 'Place Order' } )
-				.click();
-			await expect(
-				shopperPage.getByRole( 'heading', {
-					name: 'Order received',
-				} )
-			).toBeVisible();
+			await placeOrderWCB( shopperPage );
 		} );
 
 		test( 'should delete the card ', async () => {
