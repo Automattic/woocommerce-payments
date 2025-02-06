@@ -139,20 +139,30 @@ export const placeOrder = async ( page: Page ) => {
 	}
 };
 
-export const placeOrderWCB = async ( page: Page ) => {
-	const placeOrderButton = page.getByRole( 'button', {
-		name: 'Place Order',
-	} );
+export const placeOrderWCB = async (
+	page: Page,
+	confirmOrderReceived = true
+) => {
+	const placeOrderButton = page.locator(
+		'.wc-block-components-checkout-place-order-button'
+	);
 
 	await placeOrderButton.focus();
 	await waitForUiRefresh( page );
 
 	await placeOrderButton.click();
 
-	await page.waitForURL( /\/order-received\// );
-	await expect(
-		page.getByRole( 'heading', { name: 'Order received' } )
-	).toBeVisible();
+	await expect( placeOrderButton ).toBeDisabled();
+	await expect( placeOrderButton ).toHaveClass(
+		/wc-block-components-button--loading/
+	);
+
+	if ( confirmOrderReceived ) {
+		await page.waitForURL( /\/order-received\// );
+		await expect(
+			page.getByRole( 'heading', { name: 'Order received' } )
+		).toBeVisible();
+	}
 };
 
 const ensureSavedCardNotSelected = async ( page: Page ) => {
@@ -248,7 +258,7 @@ export const confirmCardAuthentication = async (
 	authorize = true
 ) => {
 	// Wait for the Stripe modal to appear.
-	await page.waitForTimeout( 3000 );
+	await page.waitForTimeout( 5000 );
 
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
 	// appears at the top of the DOM.

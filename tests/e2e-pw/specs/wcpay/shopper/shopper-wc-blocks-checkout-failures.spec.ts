@@ -97,9 +97,8 @@ describeif( shouldRunWCBlocksTests )(
 		for ( const { card, error, auth } of failures ) {
 			test( `Should show error – ${ error }`, async () => {
 				await shopper.fillCardDetailsWCB( shopperPage, card );
-				await shopperPage
-					.getByRole( 'button', { name: 'Place Order' } )
-					.click();
+				await shopper.placeOrderWCB( shopperPage, false );
+
 				if ( auth ) {
 					await shopper.confirmCardAuthentication( shopperPage );
 				}
