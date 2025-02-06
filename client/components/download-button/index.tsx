@@ -15,17 +15,20 @@ import './style.scss';
 
 interface DownloadButtonProps {
 	isDisabled: boolean;
+	isBusy?: boolean;
 	onClick: ( event: any ) => void;
 }
 
 const DownloadButton: React.FunctionComponent< DownloadButtonProps > = ( {
 	isDisabled,
+	isBusy,
 	onClick,
 } ) => (
 	<Button
 		className="woocommerce-table__download-button"
 		disabled={ isDisabled }
 		onClick={ onClick }
+		isBusy={ isBusy }
 	>
 		<CloudDownloadIcon />
 		<span className="woocommerce-table__download-button__label">

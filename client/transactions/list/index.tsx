@@ -806,6 +806,7 @@ export const TransactionsList = (
 						<DownloadButton
 							key="download"
 							isDisabled={ isLoading || isExportInProgress }
+							isBusy={ isExportInProgress }
 							onClick={ onDownload }
 						/>
 					),
