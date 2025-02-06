@@ -90,6 +90,14 @@ describeif( shouldRunWCBlocksTests )(
 			);
 		} );
 
+		/**
+		 * Reload the page after each test to ensure a clean state.
+		 * Otherwise we get flaky results.
+		 */
+		test.afterEach( async () => {
+			await shopperPage.reload();
+		} );
+
 		test.afterAll( async () => {
 			await shopper.emptyCart( shopperPage );
 		} );
