@@ -6,10 +6,19 @@ import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
+/**
+ * The response from the export POST request, which returns an export ID.
+ */
 interface ExportResponse {
+	/**
+	 * The export ID, used to check if the export is ready to be downloaded when polling.
+	 */
 	export_id?: string;
 }
 
+/**
+ * The response from the export URL GET request, which returns the URL to download the file.
+ */
 interface ExportURLResponse {
 	status: string;
 	download_url?: string;
