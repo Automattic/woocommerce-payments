@@ -331,8 +331,7 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	unzip -qq woocommerce-subscriptions.zip -d woocommerce-subscriptions-source
 
 	echo "Moving the unzipped plugin files..."
-	handle_permissions "woocommerce-subscriptions-source/woocommerce-subscriptions"
-	mv woocommerce-subscriptions-source/woocommerce-subscriptions/* woocommerce-subscriptions
+	sudo mv woocommerce-subscriptions-source/woocommerce-subscriptions/* woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
 
