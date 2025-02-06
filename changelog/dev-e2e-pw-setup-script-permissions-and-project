@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update E2E setup scripts to avoid conflicts with other containers and permissions.
