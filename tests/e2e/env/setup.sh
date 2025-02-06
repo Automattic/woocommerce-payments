@@ -17,6 +17,23 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	. "$E2E_ROOT/config/local.env"
 fi
 
+# Function to handle permissions in a cross-platform way
+handle_permissions() {
+    local path=$1
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # For MacOS environments, use less strict permissions
+        echo "Setting MacOS compatible permissions for $path"
+        chmod -R 755 "$path"
+    else
+        # For Linux/CI environments
+        echo "Setting Linux/CI permissions for $path"
+        if ! sudo chown www-data:www-data -R "$path"; then
+            echo "Failed to set permissions on $path"
+            exit 1
+        fi
+    fi
+}
+
 # Variables
 BLOG_ID=${E2E_BLOG_ID-111}
 WC_GUEST_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.guest.email')
@@ -67,7 +84,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Secrets created"
 
 	step "Starting SERVER containers"
-	redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
+	redirect_output docker compose -p transact-platform-server-e2e -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
 	WP_LISTEN_PORT=$(docker ps | grep "$SERVER_CONTAINER" | sed -En "s/.*0:([0-9]+).*/\1/p")
@@ -75,19 +92,21 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	if [[ -n $CI ]]; then
 		echo "Setting docker folder permissions"
-		redirect_output sudo chown www-data:www-data -R ./docker/wordpress
-		redirect_output ls -al ./docker
+		handle_permissions "$SERVER_PATH/docker/wordpress"
+		redirect_output ls -al "$SERVER_PATH/docker"
+		touch "$SERVER_PATH/logstash.log"
+		handle_permissions "$SERVER_PATH/logstash.log"
 	fi
 
 	step "Setting up SERVER containers"
-	"$SERVER_PATH"/local/bin/docker-setup.sh
+	COMPOSE_PROJECT_NAME=transact-platform-server-e2e "$SERVER_PATH"/local/bin/docker-setup.sh
 
 	step "Configuring server with stripe account"
-	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
+	COMPOSE_PROJECT_NAME=transact-platform-server-e2e "$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
 
 	if [[ -n $CI ]]; then
 		step "Disable Xdebug on server container"
-		docker exec "$SERVER_CONTAINER" \
+		COMPOSE_PROJECT_NAME=transact-platform-server-e2e docker exec "$SERVER_CONTAINER" \
 		sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
 	fi
 fi
@@ -138,7 +157,7 @@ echo
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
-	redirect_output sudo chown www-data:www-data -R "$E2E_ROOT"/docker/wordpress/wp-content
+	handle_permissions "$E2E_ROOT/docker/wordpress/wp-content"
 	redirect_output ls -al "$E2E_ROOT"/docker/wordpress
 fi
 
@@ -311,8 +330,9 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 
 	unzip -qq woocommerce-subscriptions.zip -d woocommerce-subscriptions-source
 
-	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woocommerce-subscriptions-source/woocommerce-subscriptions/* woocommerce-subscriptions
+	echo "Moving the unzipped plugin files..."
+	handle_permissions "woocommerce-subscriptions-source/woocommerce-subscriptions"
+	mv woocommerce-subscriptions-source/woocommerce-subscriptions/* woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
 
@@ -335,6 +355,7 @@ fi
 
 echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots
+handle_permissions $WCP_ROOT/screenshots
 
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes

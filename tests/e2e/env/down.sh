@@ -13,7 +13,7 @@ docker compose -f $E2E_ROOT/env/docker-compose.yml down
 
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	step "Stopping server containers"
-	docker compose -f $E2E_ROOT/deps/transact-platform-server/docker-compose.yml down
+	docker compose -p transact-platform-server-e2e -f $E2E_ROOT/deps/transact-platform-server/docker-compose.yml -f $E2E_ROOT/deps/transact-platform-server/docker-compose.e2e.yml down
 fi
 
 # Remove auth credentials from the Playwright config.
