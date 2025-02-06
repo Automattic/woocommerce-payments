@@ -341,11 +341,23 @@ export const selectPaymentMethod = async (
 	await page.getByText( paymentMethod ).click();
 };
 
+/**
+ * The checkout page can sometimes be blank, so we need to reload it.
+ *
+ * @param page Page
+ */
+export const ensureCheckoutIsLoaded = async ( page: Page ) => {
+	if ( ! ( await page.locator( '#billing_first_name' ).isVisible() ) ) {
+		await page.reload();
+	}
+};
+
 export const setupCheckout = async (
 	page: Page,
 	billingAddress: CustomerAddress = config.addresses.customer.billing
 ) => {
 	await navigation.goToCheckout( page );
+	await ensureCheckoutIsLoaded( page );
 	await fillBillingAddress( page, billingAddress );
 	await waitForUiRefresh( page );
 	await isUIUnblocked( page );
