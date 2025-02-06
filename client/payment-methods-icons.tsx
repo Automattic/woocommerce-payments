@@ -34,6 +34,7 @@ import CBAsset from 'assets/images/cards/cb.svg?asset';
 import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
 import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
+import WeChatPayAsset from 'assets/images/payment-methods/wechat_pay.svg?asset';
 import './style.scss';
 
 const iconComponent = (
@@ -149,6 +150,10 @@ export const UnionPayIcon = iconComponent(
 export const VisaIcon = iconComponent(
 	VisaAsset,
 	__( 'Visa', 'woocommerce-payments' )
+);
+export const WeChatPayIcon = iconComponent(
+	WeChatPayAsset,
+	__( 'WeChat Pay', 'woocommerce-payments' )
 );
 export const WooIcon = iconComponent(
 	WooAsset,

@@ -27,6 +27,7 @@ import Bancontact from 'assets/images/payment-methods/bancontact.svg?asset';
 import Eps from 'assets/images/payment-methods/eps.svg?asset';
 import Becs from 'assets/images/payment-methods/becs.svg?asset';
 import Przelewy24 from 'assets/images/payment-methods/przelewy24.svg?asset';
+import WeChatPay from 'assets/images/payment-method-icons/wechat_pay.svg?asset';
 import './style.scss';
 
 const PaymentMethods = [
@@ -109,6 +110,10 @@ const PaymentMethods = [
 	{
 		name: 'przelewy24',
 		component: Przelewy24,
+	},
+	{
+		name: 'wechat_pay',
+		component: WeChatPay,
 	},
 ];
 
