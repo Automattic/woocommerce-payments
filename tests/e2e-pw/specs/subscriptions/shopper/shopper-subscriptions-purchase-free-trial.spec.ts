@@ -103,7 +103,12 @@ describeif( shouldRunSubscriptionsTests )(
 
 			// Verify that the order total is $0.00
 			await expect(
-				shopperPage.getByRole( 'cell', { name: /^Total: \$0\.00/ } )
+				shopperPage
+					.getByRole( 'row', {
+						name: 'Total $0.00',
+						exact: true,
+					} )
+					.locator( 'td' )
 			).toBeVisible();
 
 			// Proceed to the checkout page and verify that the 14-day free trial is shown in the product line item,

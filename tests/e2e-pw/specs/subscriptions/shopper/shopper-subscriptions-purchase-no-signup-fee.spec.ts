@@ -83,7 +83,7 @@ describeif( shouldRunSubscriptionsTests )(
 			// Verify we have an active subscription
 			const relatedSubscriptionId = (
 				await merchantPage
-					.getByRole( 'cell', { name: 'Edit order number' } )
+					.getByRole( 'link', { name: 'Edit order number' } )
 					.textContent()
 			 )
 				.trim()

@@ -36,7 +36,9 @@ describeif( shouldRunWCBlocksTests )(
 		const card = config.cards.basic;
 
 		test.beforeAll( async ( { browser }, { project } ) => {
-			shopperPage = ( await getShopper( browser ) ).shopperPage;
+			shopperPage = (
+				await getShopper( browser, true, project.use.baseURL )
+			 ).shopperPage;
 
 			if (
 				! ( await checkPageExists(

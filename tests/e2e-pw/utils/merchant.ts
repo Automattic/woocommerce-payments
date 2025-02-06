@@ -452,7 +452,11 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 	await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
 
 	// Enable the "Company" field if it's not already enabled.
-	await page.getByLabel( 'Block: Shipping Address' ).click();
+	await page
+		.locator( 'iframe[name="editor-canvas"]' )
+		.contentFrame()
+		.getByRole( 'document', { name: 'Block: Shipping Address' } )
+		.click();
 
 	const companyCheckbox = page
 		.locator( '.components-toggle-control' )

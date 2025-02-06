@@ -50,9 +50,7 @@ describeif( shouldRunSubscriptionsTests )(
 			// Get the subscription ID
 			subscriptionId = (
 				await shopperPage
-					.getByRole( 'cell', {
-						name: 'ID: View subscription number',
-					} )
+					.getByRole( 'link', { name: 'View subscription number' } )
 					.textContent()
 			 )
 				.trim()
