@@ -14,6 +14,7 @@ import { shouldRunSubscriptionsTests } from '../../../utils/constants';
 
 describeif( shouldRunSubscriptionsTests )(
 	'Subscriptions > Renew a subscription in my account',
+	{ tag: '@critical' },
 	() => {
 		const customerBillingConfig =
 			config.addresses[ 'subscriptions-customer' ].billing;

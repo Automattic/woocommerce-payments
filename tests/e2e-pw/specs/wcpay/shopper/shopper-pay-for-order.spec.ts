@@ -17,7 +17,7 @@ const cardTestingPreventionStates = [
 	{ cardTestingPreventionEnabled: true },
 ];
 
-test.describe( 'Shopper > Pay for Order', () => {
+test.describe( 'Shopper > Pay for Order', { tag: '@critical' }, () => {
 	cardTestingPreventionStates.forEach(
 		( { cardTestingPreventionEnabled } ) => {
 			test( `should be able to pay for a failed order with card testing protection ${ cardTestingPreventionEnabled }`, async ( {

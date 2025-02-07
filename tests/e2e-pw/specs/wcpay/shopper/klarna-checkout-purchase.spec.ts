@@ -50,31 +50,35 @@ test.describe( 'Klarna Checkout', () => {
 		).not.toBeEmpty();
 	} );
 
-	test( 'allows to use Klarna as a payment method', async () => {
-		await shopper.setupProductCheckout(
-			shopperPage,
-			[ [ config.products.belt, 1 ] ],
-			{
-				...config.addresses.customer.billing,
-				// these are Klarna-specific values:
-				// https://docs.klarna.com/resources/test-environment/sample-customer-data/#united-states-of-america
-				email: 'customer@email.us',
-				phone: '+13106683312',
-				firstname: 'Test',
-				lastname: 'Person-us',
-			}
-		);
+	test(
+		'allows to use Klarna as a payment method',
+		{ tag: '@critical' },
+		async () => {
+			await shopper.setupProductCheckout(
+				shopperPage,
+				[ [ config.products.belt, 1 ] ],
+				{
+					...config.addresses.customer.billing,
+					// these are Klarna-specific values:
+					// https://docs.klarna.com/resources/test-environment/sample-customer-data/#united-states-of-america
+					email: 'customer@email.us',
+					phone: '+13106683312',
+					firstname: 'Test',
+					lastname: 'Person-us',
+				}
+			);
 
-		await shopperPage
-			.locator( '.wc_payment_methods' )
-			.getByText( 'Klarna' )
-			.click();
+			await shopperPage
+				.locator( '.wc_payment_methods' )
+				.getByText( 'Klarna' )
+				.click();
 
-		await shopper.placeOrder( shopperPage );
+			await shopper.placeOrder( shopperPage );
 
-		// Since we don't have control over the html in the Klarna playground page,
-		// verifying the redirect is all we can do consistently without introducing a
-		// flaky test.
-		await expect( shopperPage ).toHaveURL( /.*klarna\.com/ );
-	} );
+			// Since we don't have control over the html in the Klarna playground page,
+			// verifying the redirect is all we can do consistently without introducing a
+			// flaky test.
+			await expect( shopperPage ).toHaveURL( /.*klarna\.com/ );
+		}
+	);
 } );
