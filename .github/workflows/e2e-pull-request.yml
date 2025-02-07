@@ -3,9 +3,8 @@ name: E2E Tests - Pull Request
 on:
   pull_request:
     branches:
-      # - develop
-      # - trunk
-      - dev/10240-update-npm-scripts # [TODO] Remove this line after the branch is merged.
+      - develop
+      - trunk
   workflow_dispatch:
   workflow_call:
     inputs:
