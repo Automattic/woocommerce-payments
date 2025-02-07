@@ -17,6 +17,23 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	. "$E2E_ROOT/config/local.env"
 fi
 
+# Function to handle permissions in a cross-platform way
+handle_permissions() {
+    local path=$1
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # For MacOS environments, use less strict permissions
+        echo "Setting MacOS compatible permissions for $path"
+        chmod -R 755 "$path"
+    else
+        # For Linux/CI environments
+        echo "Setting Linux/CI permissions for $path"
+        if ! sudo chown www-data:www-data -R "$path"; then
+            echo "Failed to set permissions on $path"
+            exit 1
+        fi
+    fi
+}
+
 # Variables
 BLOG_ID=${E2E_BLOG_ID-111}
 WC_GUEST_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.guest.email')
@@ -75,8 +92,9 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	if [[ -n $CI ]]; then
 		echo "Setting docker folder permissions"
-		redirect_output sudo chown www-data:www-data -R ./docker/wordpress
-		redirect_output ls -al ./docker
+		handle_permissions "$SERVER_PATH/docker/wordpress"
+		touch "$SERVER_PATH/logstash.log"
+		handle_permissions "$SERVER_PATH/logstash.log"
 	fi
 
 	step "Setting up SERVER containers"
@@ -138,7 +156,7 @@ echo
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
-	redirect_output sudo chown www-data:www-data -R "$E2E_ROOT"/docker/wordpress/wp-content
+	handle_permissions "$E2E_ROOT/docker/wordpress/wp-content"
 	redirect_output ls -al "$E2E_ROOT"/docker/wordpress
 fi
 
@@ -311,7 +329,7 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 
 	unzip -qq woocommerce-subscriptions.zip -d woocommerce-subscriptions-source
 
-	echo "Moving the unzipped plugin files. This may require your admin password"
+	echo "Moving the unzipped plugin files..."
 	sudo mv woocommerce-subscriptions-source/woocommerce-subscriptions/* woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
@@ -335,6 +353,7 @@ fi
 
 echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots
+handle_permissions $WCP_ROOT/screenshots
 
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
