@@ -2181,9 +2181,10 @@ class WC_Payments_Order_Service {
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %s: Formatted refund amount */
-				__( 'Refund of %s failed due to insufficient funds in your WooPayments balance. To prevent delays in refunding customers, please consider adding funds to your Future Refunds or Disputes (FROD) balance. <a>Learn more</a>.', 'woocommerce-payments' ),
+				__( 'Refund of %s <strong>failed</strong> due to insufficient funds in your WooPayments balance. To prevent delays in refunding customers, please consider adding funds to your Future Refunds or Disputes (FROD) balance. <a>Learn more</a>.', 'woocommerce-payments' ),
 				[
-					'a' => '<a href="' . $learn_more_url . '" target="_blank" rel="noopener noreferrer">',
+					'strong' => '<strong>',
+					'a'      => '<a href="' . $learn_more_url . '" target="_blank" rel="noopener noreferrer">',
 				]
 			),
 			$formatted_amount
@@ -2198,8 +2199,13 @@ class WC_Payments_Order_Service {
 	 */
 	private function get_insufficient_balance_note( $formatted_amount ) {
 		return sprintf(
-			/* translators: %1$s: Formatted refund amount */
-			__( 'Refund of %1$s failed due to insufficient funds in your WooPayments balance.', 'woocommerce-payments' ),
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1$s: Formatted refund amount */
+				__( 'Refund of %1$s <strong>failed</strong> due to insufficient funds in your WooPayments balance.', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+				]
+			),
 			$formatted_amount
 		);
 	}
