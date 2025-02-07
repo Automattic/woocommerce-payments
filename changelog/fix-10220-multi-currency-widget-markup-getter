@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure multi-currency widget markup getter don't throw errors.

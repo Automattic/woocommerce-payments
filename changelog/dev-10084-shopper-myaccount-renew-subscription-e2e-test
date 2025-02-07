@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Migrate the Shopper Renew Subscription spec to Playwright and remove the corresponding Puppeteer test.

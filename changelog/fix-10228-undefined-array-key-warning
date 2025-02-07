@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fixes thrown PHP warning in checkout config.
