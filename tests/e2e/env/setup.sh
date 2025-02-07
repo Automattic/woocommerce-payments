@@ -93,7 +93,6 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	if [[ -n $CI ]]; then
 		echo "Setting docker folder permissions"
 		handle_permissions "$SERVER_PATH/docker/wordpress"
-		redirect_output ls -al "$SERVER_PATH/docker"
 		touch "$SERVER_PATH/logstash.log"
 		handle_permissions "$SERVER_PATH/logstash.log"
 	fi
