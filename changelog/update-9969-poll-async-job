@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-Replaced JS export with downloading Transactions CSV from service.
+Improve CSV export experience and deliver consistent reports via async transact platform service-based CSV exports.
