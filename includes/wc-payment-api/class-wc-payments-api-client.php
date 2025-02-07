@@ -2775,7 +2775,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 *
 	 * @return array reader objects.
 	 */
-	public function get_readers_charge_summary( string $charge_date, string $transaction_id = null ): array {
+	public function get_readers_charge_summary( string $charge_date, ?string $transaction_id = null ): array {
 		$params = [ 'charge_date' => $charge_date ];
 		if ( $transaction_id ) {
 			$params['transaction_id'] = $transaction_id;
