@@ -33,7 +33,7 @@ const verifyOrderStatus = async ( page: Page, status: string ) => {
 	).resolves.toBe( status );
 };
 
-test.describe( 'Order > Status Change', () => {
+test.describe( 'Order > Status Change', { tag: '@critical' }, () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
 	let orderId: string;
