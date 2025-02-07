@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Include transaction ID when requesting card reader fee charges summary.
