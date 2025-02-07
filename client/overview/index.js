@@ -73,10 +73,14 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 	} = wcpaySettings;
 
-	// Don't show the update details task by default.
+	// Don't show the update details and verify business tasks by default due to embedded component.
 	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
 		false
 	);
+	const [
+		showGetVerifyBankAccountTask,
+		setShowGetVerifyBankAccountTask,
+	] = useState( false );
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -109,6 +113,7 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 		activeDisputes,
 		enabledPaymentMethods,
+		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -181,10 +186,11 @@ const OverviewPage = () => {
 		setTestDriveSuccessDisplayed( true );
 	}
 
-	// Show update details task if we fail to show embedded component.
+	// Show old tasks if the embedded component fails to load.
 	useEffect( () => {
 		if ( stripeNotificationsBannerErrorMessage ) {
 			setShowUpdateDetailsTask( true );
+			setShowGetVerifyBankAccountTask( true );
 		}
 	}, [ stripeNotificationsBannerErrorMessage ] );
 
