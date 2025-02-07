@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
@@ -70,9 +70,13 @@ const OverviewPage = () => {
 		enabledPaymentMethods,
 		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
-		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 	} = wcpaySettings;
+
+	// Don't show the update details task by default.
+	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
+		false
+	);
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -83,7 +87,7 @@ const OverviewPage = () => {
 		setNotificationsBannerMessage,
 	] = React.useState( '' );
 	const stripeConnectInstance = useAccountSession( {
-		setStripeNotificationsBannerErrorMessage,
+		setLoadErrorMessage: setStripeNotificationsBannerErrorMessage,
 		appearance,
 	} );
 
@@ -177,6 +181,13 @@ const OverviewPage = () => {
 		setTestDriveSuccessDisplayed( true );
 	}
 
+	// Show update details task if we fail to show embedded component.
+	useEffect( () => {
+		if ( stripeNotificationsBannerErrorMessage ) {
+			setShowUpdateDetailsTask( true );
+		}
+	}, [ stripeNotificationsBannerErrorMessage ] );
+
 	// eslint-disable-next-line valid-jsdoc
 	/**
 	 * Configure custom banner behaviour so the banner isn't shown when there are no action items.
@@ -198,9 +209,9 @@ const OverviewPage = () => {
 		}
 		if ( response.actionRequired > 0 || response.total > 0 ) {
 			// Record the event indicating user got the notifications banner with some actionRequired or total items.
-			recordEvent( 'wcpay_overview_stripe_notifications_banner_init', {
-				actionRequired: response.actionRequired,
-				total: response.total,
+			recordEvent( 'wcpay_overview_stripe_notifications_banner_update', {
+				action_required_count: response.actionRequired,
+				total_count: response.total,
 			} );
 		}
 	};
