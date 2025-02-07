@@ -214,15 +214,12 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	}
 
 	/**
-	 * Load public scripts and styles.
+	 * Gets the parameters needed for Express Checkout functionality.
+	 *
+	 * @return array Parameters for Express Checkout.
 	 */
-	public function scripts() {
-		// Don't load scripts if page is not supported.
-		if ( ! $this->express_checkout_helper->should_show_express_checkout_button() ) {
-			return;
-		}
-
-		$express_checkout_params = [
+	public function get_express_checkout_params() {
+		return [
 			'ajax_url'           => admin_url( 'admin-ajax.php' ),
 			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'             => [
@@ -260,7 +257,20 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->express_checkout_helper->get_product_data(),
 			'total_label'        => $this->express_checkout_helper->get_total_label(),
+			'store_name'         => get_bloginfo( 'name' ),
 		];
+	}
+
+	/**
+	 * Load public scripts and styles.
+	 */
+	public function scripts() {
+		// Don't load scripts if page is not supported.
+		if ( ! $this->express_checkout_helper->should_show_express_checkout_button() ) {
+			return;
+		}
+
+		$express_checkout_params = $this->get_express_checkout_params();
 
 		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
 			WC_Payments::register_script_with_dependencies(

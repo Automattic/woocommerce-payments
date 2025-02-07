@@ -927,6 +927,18 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, $this->multi_currency->get_switcher_widget_markup() );
 	}
 
+	public function test_get_switcher_widget_markup_when_widget_instance_is_null() {
+		$mock_multi_currency = $this
+			->getMockBuilder( WCPay\MultiCurrency\MultiCurrency::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_currency_switcher_widget' ] )
+			->getMock();
+
+		$mock_multi_currency->method( 'get_currency_switcher_widget' )->willReturn( null );
+
+		$this->assertEquals( '', $mock_multi_currency->get_switcher_widget_markup() );
+	}
+
 	public function test_validate_currency_code_returns_existing_currency_code() {
 		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'CAD' ) );
 		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'cAd' ) );
