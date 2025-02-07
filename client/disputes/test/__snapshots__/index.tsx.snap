@@ -94,7 +94,7 @@ exports[`Disputes list renders correctly 1`] = `
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>

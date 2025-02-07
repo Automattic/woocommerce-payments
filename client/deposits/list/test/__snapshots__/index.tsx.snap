@@ -122,7 +122,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>
@@ -811,7 +811,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>

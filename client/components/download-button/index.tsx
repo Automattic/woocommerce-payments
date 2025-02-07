@@ -32,7 +32,7 @@ const DownloadButton: React.FunctionComponent< DownloadButtonProps > = ( {
 	>
 		<CloudDownloadIcon />
 		<span className="woocommerce-table__download-button__label">
-			{ __( 'Download', 'woocommerce-payments' ) }
+			{ __( 'Export', 'woocommerce-payments' ) }
 		</span>
 	</Button>
 );

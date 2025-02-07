@@ -23,7 +23,7 @@ exports[`DownloadButton renders a disabled button 1`] = `
     <span
       class="woocommerce-table__download-button__label"
     >
-      Download
+      Export
     </span>
   </button>
 </div>
@@ -51,7 +51,7 @@ exports[`DownloadButton renders an active button 1`] = `
     <span
       class="woocommerce-table__download-button__label"
     >
-      Download
+      Export
     </span>
   </button>
 </div>

@@ -278,7 +278,7 @@ describe( 'Disputes list', () => {
 			} );
 
 			const { queryByRole } = render( <DisputesList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).not.toBeNull();
 		} );
@@ -290,7 +290,7 @@ describe( 'Disputes list', () => {
 			} );
 
 			const { queryByRole } = render( <DisputesList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).toBeNull();
 		} );
@@ -323,7 +323,7 @@ describe( 'Disputes list', () => {
 
 			const { getByRole } = render( <DisputesList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -342,7 +342,7 @@ describe( 'Disputes list', () => {
 
 		test( 'should render expected columns in CSV when the download button is clicked ', () => {
 			const { getByRole } = render( <DisputesList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			const expected = [
 				'"Dispute Id"',
@@ -366,7 +366,7 @@ describe( 'Disputes list', () => {
 
 		test( 'should match the visible rows', () => {
 			const { getByRole, getAllByRole } = render( <DisputesList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 			const csvRows = csvContent.split( os.EOL );
