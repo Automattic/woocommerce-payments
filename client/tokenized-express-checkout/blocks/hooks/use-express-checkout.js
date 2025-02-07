@@ -92,6 +92,9 @@ export const useExpressCheckout = ( {
 			}
 
 			const options = {
+				business: {
+					name: getExpressCheckoutData( 'store_name' ),
+				},
 				lineItems: normalizeLineItems( billing?.cartTotalItems ),
 				emailRequired: true,
 				shippingAddressRequired,
