@@ -13,5 +13,5 @@ docker compose -f "$E2E_ROOT/env/docker-compose.yml" up -d
 
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	step "Starting server containers"
-	docker compose -p transact-platform-server-e2e -f "$E2E_ROOT/deps/transact-platform-server/docker-compose.yml" -f "$E2E_ROOT/deps/transact-platform-server/docker-compose.e2e.yml" up -d
+	docker compose -f "$E2E_ROOT/deps/transact-platform-server-e2e/docker-compose.yml" -f "$E2E_ROOT/deps/transact-platform-server-e2e/docker-compose.e2e.yml" up -d
 fi

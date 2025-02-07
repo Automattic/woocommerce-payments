@@ -84,7 +84,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Secrets created"
 
 	step "Starting SERVER containers"
-	redirect_output docker compose -p transact-platform-server-e2e -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
+	redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
 	WP_LISTEN_PORT=$(docker ps | grep "$SERVER_CONTAINER" | sed -En "s/.*0:([0-9]+).*/\1/p")
@@ -99,14 +99,14 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	fi
 
 	step "Setting up SERVER containers"
-	COMPOSE_PROJECT_NAME=transact-platform-server-e2e "$SERVER_PATH"/local/bin/docker-setup.sh
+	"$SERVER_PATH"/local/bin/docker-setup.sh
 
 	step "Configuring server with stripe account"
-	COMPOSE_PROJECT_NAME=transact-platform-server-e2e "$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
+	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
 
 	if [[ -n $CI ]]; then
 		step "Disable Xdebug on server container"
-		COMPOSE_PROJECT_NAME=transact-platform-server-e2e docker exec "$SERVER_CONTAINER" \
+		docker exec "$SERVER_CONTAINER" \
 		sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
 	fi
 fi
