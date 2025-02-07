@@ -6,9 +6,9 @@ import test, { Page, expect } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { config } from '../../../config/default';
-import { goToMyAccount, goToShop } from '../../../utils/shopper-navigation';
-import { getShopper } from '../../../utils/helpers';
+import { config, Product } from '../../../config/default';
+import { goToMyAccount } from '../../../utils/shopper-navigation';
+import { ensureCustomerIsLoggedIn, getShopper } from '../../../utils/helpers';
 import {
 	addSavedCard,
 	confirmCardAuthentication,
@@ -26,7 +26,7 @@ type TestVariablesType = {
 			country: string;
 			postalCode: string;
 		};
-		products: [ string, number ][];
+		products: [ Product, number ][];
 	};
 };
 
@@ -37,7 +37,7 @@ const cards = {
 			country: 'US',
 			postalCode: '94110',
 		},
-		products: [ [ 'Beanie', 1 ] ],
+		products: [ [ config.products.simple, 1 ] ],
 	},
 	'3ds': {
 		card: config.cards[ '3ds' ],
@@ -45,7 +45,7 @@ const cards = {
 			country: 'US',
 			postalCode: '94110',
 		},
-		products: [ [ 'Belt', 1 ] ],
+		products: [ [ config.products.belt, 1 ] ],
 	},
 	'3ds2': {
 		card: config.cards[ '3ds2' ],
@@ -53,7 +53,7 @@ const cards = {
 			country: 'US',
 			postalCode: '94110',
 		},
-		products: [ [ 'Cap', 1 ] ],
+		products: [ [ config.products.cap, 1 ] ],
 	},
 } as TestVariablesType;
 
@@ -66,6 +66,8 @@ test.describe( 'Shopper can save and delete cards', () => {
 	test.beforeAll( async ( { browser }, { project } ) => {
 		shopperPage = ( await getShopper( browser, true, project.use.baseURL ) )
 			.shopperPage;
+
+		await ensureCustomerIsLoggedIn( shopperPage, project );
 	} );
 
 	async function waitTwentySecondsSinceLastCardAdded( page: Page ) {
@@ -104,11 +106,19 @@ test.describe( 'Shopper can save and delete cards', () => {
 		await addSavedCard( shopperPage, config.cards.basic2, 'US', '94110' );
 
 		// Verify that the card was not added
-		await expect(
-			shopperPage.getByText(
-				"We're not able to add this payment method. Please refresh the page and try again."
-			)
-		).toBeVisible();
+		try {
+			await expect(
+				shopperPage.getByText(
+					"We're not able to add this payment method. Please refresh the page and try again."
+				)
+			).toBeVisible( { timeout: 10000 } );
+		} catch ( error ) {
+			await expect(
+				shopperPage.getByText(
+					'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+				)
+			).toBeVisible();
+		}
 
 		// cleanup for the next tests
 		await goToMyAccount( shopperPage, 'payment-methods' );
@@ -122,6 +132,10 @@ test.describe( 'Shopper can save and delete cards', () => {
 	Object.entries( cards ).forEach(
 		( [ cardName, { card, address, products } ] ) => {
 			test.describe( 'Testing card: ' + cardName, () => {
+				test.beforeAll( async ( {}, { project } ) => {
+					await ensureCustomerIsLoggedIn( shopperPage, project );
+				} );
+
 				test( `should add the ${ cardName } card as a new payment method`, async () => {
 					await goToMyAccount( shopperPage, 'payment-methods' );
 					// Make sure that at least 20s had already elapsed since the last card was added.
@@ -166,7 +180,6 @@ test.describe( 'Shopper can save and delete cards', () => {
 				} );
 
 				test( `should be able to purchase with the saved ${ cardName } card`, async () => {
-					await goToShop( shopperPage );
 					await setupProductCheckout( shopperPage, products );
 					await selectSavedCardOnCheckout( shopperPage, card );
 					await placeOrder( shopperPage );

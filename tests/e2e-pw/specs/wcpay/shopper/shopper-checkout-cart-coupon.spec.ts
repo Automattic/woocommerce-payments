@@ -7,11 +7,7 @@ import test, { expect } from '@playwright/test';
  * Internal dependencies
  */
 import { config } from '../../../config/default';
-import {
-	goToCart,
-	goToCheckout,
-	goToShop,
-} from '../../../utils/shopper-navigation';
+import { goToCart, goToCheckout } from '../../../utils/shopper-navigation';
 import { useShopper } from '../../../utils/helpers';
 import {
 	addToCartFromShopPage,
@@ -19,10 +15,9 @@ import {
 	fillBillingAddress,
 	fillCardDetails,
 	placeOrder,
+	removeCoupon,
 	setupCheckout,
 } from '../../../utils/shopper';
-
-const productName = config.products.simple.name;
 
 test.describe(
 	'Checkout with free coupon & after modifying cart on Checkout page',
@@ -31,15 +26,30 @@ test.describe(
 		useShopper();
 
 		test.beforeEach( async ( { page } ) => {
-			await goToShop( page );
-			await addToCartFromShopPage( page, productName );
+			await addToCartFromShopPage( page );
 			await goToCart( page );
 			await page.getByPlaceholder( 'Coupon code' ).fill( 'free' );
 			await page.getByRole( 'button', { name: 'Apply coupon' } ).click();
+			await expect(
+				page.getByText( 'Coupon code applied successfully' )
+			).toBeVisible();
 		} );
 
 		test.afterEach( async ( { page } ) => {
 			await emptyCart( page );
+		} );
+
+		/**
+		 * This afterAll step is to ensure that there is no coupon stored in the customer session.
+		 * This is done in cases where a test may be interrupted causing the coupon state to persist
+		 * in the next Atomic workflow run.
+		 */
+		test.afterAll( async ( { browser } ) => {
+			const cleanupPage = await browser.newPage();
+			await addToCartFromShopPage( cleanupPage );
+			await goToCart( cleanupPage );
+			await removeCoupon( cleanupPage );
+			await emptyCart( cleanupPage );
 		} );
 
 		test( 'Checkout with a free coupon', async ( { page } ) => {
@@ -58,7 +68,7 @@ test.describe(
 
 		test( 'Remove free coupon, then checkout', async ( { page } ) => {
 			await goToCheckout( page );
-			await page.getByRole( 'link', { name: '[Remove]' } ).click();
+			await removeCoupon( page );
 			await setupCheckout( page, config.addresses.customer.billing );
 			await fillCardDetails( page, config.cards.basic );
 			await placeOrder( page );

@@ -10,10 +10,7 @@ import * as shopper from '../../../utils/shopper';
 import { getMerchant, getShopper } from '../../../utils/helpers';
 import * as merchant from '../../../utils/merchant';
 import { config } from '../../../config/default';
-import {
-	goToProductPageBySlug,
-	goToShop,
-} from '../../../utils/shopper-navigation';
+import { goToProductPageBySlug } from '../../../utils/shopper-navigation';
 
 test.describe( 'Klarna Checkout', () => {
 	let merchantPage: Page;
@@ -54,16 +51,19 @@ test.describe( 'Klarna Checkout', () => {
 	} );
 
 	test( 'allows to use Klarna as a payment method', async () => {
-		await goToShop( shopperPage );
-		await shopper.setupProductCheckout( shopperPage, [ [ 'Belt', 1 ] ], {
-			...config.addresses.customer.billing,
-			// these are Klarna-specific values:
-			// https://docs.klarna.com/resources/test-environment/sample-customer-data/#united-states-of-america
-			email: 'customer@email.us',
-			phone: '+13106683312',
-			firstname: 'Test',
-			lastname: 'Person-us',
-		} );
+		await shopper.setupProductCheckout(
+			shopperPage,
+			[ [ config.products.belt, 1 ] ],
+			{
+				...config.addresses.customer.billing,
+				// these are Klarna-specific values:
+				// https://docs.klarna.com/resources/test-environment/sample-customer-data/#united-states-of-america
+				email: 'customer@email.us',
+				phone: '+13106683312',
+				firstname: 'Test',
+				lastname: 'Person-us',
+			}
+		);
 
 		await shopperPage
 			.locator( '.wc_payment_methods' )

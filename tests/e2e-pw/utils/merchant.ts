@@ -2,8 +2,13 @@
  * External dependencies
  */
 import { Page, expect } from 'playwright/test';
+
+/**
+ * Internal dependencies
+ */
 import * as navigation from './merchant-navigation';
 import RestAPI from './rest-api';
+import { isAtomicSite } from './constants';
 
 /**
  * Checks if the data has loaded on the page.
@@ -69,6 +74,17 @@ const expectSnackbarWithText = async (
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await ensureSupportPhoneIsFilled( page );
+
+	if ( isAtomicSite ) {
+		page.on( 'dialog', async ( dialog ) => {
+			try {
+				await dialog.accept();
+			} catch ( error ) {
+				/* eslint-disable no-console */
+				console.log( 'Error while accepting dialog', error );
+			}
+		} );
+	}
 
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expectSnackbarWithText( page, 'Settings saved.' );
@@ -391,6 +407,19 @@ export const deactivateWooPay = async ( page: Page ) => {
 	await saveWooPaymentsSettings( page );
 };
 
+export const ensureBlockSettingsPanelIsOpen = async ( page: Page ) => {
+	const settingsButton = page.locator(
+		'.interface-pinned-items > button[aria-label="Settings"]'
+	);
+	const isSettingsButtonPressed = await settingsButton.evaluate(
+		( node ) => node.getAttribute( 'aria-pressed' ) === 'true'
+	);
+
+	if ( ! isSettingsButtonPressed ) {
+		await settingsButton.click();
+	}
+};
+
 export const addWCBCheckoutPage = async ( page: Page ) => {
 	await page.goto( '/wp-admin/edit.php?post_type=page', {
 		waitUntil: 'load',
@@ -413,6 +442,8 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 	await editor.getByLabel( 'Add title' ).fill( 'Checkout WCB' );
 	await editor.getByLabel( 'Add block' ).click();
 
+	await ensureBlockSettingsPanelIsOpen( page );
+
 	await page.getByPlaceholder( 'Search' ).fill( 'Checkout' );
 	await page.getByRole( 'option', { name: 'Checkout', exact: true } ).click();
 
@@ -421,7 +452,12 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 	await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
 
 	// Enable the "Company" field if it's not already enabled.
-	await page.getByLabel( 'Block: Shipping Address' ).click();
+	await page.getByLabel( 'Document Overview' ).click();
+	await page.waitForTimeout( 1000 );
+	await expect( page.locator( '.editor-list-view-sidebar' ) ).toBeVisible();
+	await expect( page.getByText( 'List View' ) ).toBeVisible();
+	await page.locator( '.block-editor-list-view__expander > svg' ).click();
+	await page.getByText( 'Checkout Fields' ).click();
 
 	const companyCheckbox = page
 		.locator( '.components-toggle-control' )
@@ -433,8 +469,14 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 
 	// Publish the page
 	await page.locator( 'button.editor-post-publish-panel__toggle' ).click();
-	await page.waitForTimeout( 500 );
-	await page.locator( 'button.editor-post-publish-button' ).click();
+
+	const publishButton = page.locator( 'button.editor-post-publish-button' );
+	await publishButton.click();
+
+	if ( await page.getByText( 'Are you ready to publish?' ).isVisible() ) {
+		await publishButton.nth( 1 ).click();
+	}
+
 	await expect( page.getByText( 'Checkout WCB is now live.' ) ).toBeVisible();
 };
 

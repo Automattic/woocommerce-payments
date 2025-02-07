@@ -6,7 +6,7 @@ import { Page, expect } from 'playwright/test';
  * Internal dependencies
  */
 import * as navigation from './shopper-navigation';
-import { config, CustomerAddress } from '../config/default';
+import { config, CustomerAddress, Product } from '../config/default';
 import { isUIUnblocked } from './helpers';
 
 /**
@@ -139,11 +139,25 @@ export const placeOrder = async ( page: Page ) => {
 	}
 };
 
-export const addCartProduct = async (
+export const placeOrderWCB = async (
 	page: Page,
-	productId = 16 // Beanie
+	confirmOrderReceived = true
 ) => {
-	await page.goto( `/shop/?add-to-cart=${ productId }` );
+	const placeOrderButton = page.getByRole( 'button', {
+		name: 'Place Order',
+	} );
+
+	await placeOrderButton.focus();
+	await waitForUiRefresh( page );
+
+	await placeOrderButton.click();
+
+	if ( confirmOrderReceived ) {
+		await page.waitForURL( /\/order-received\// );
+		await expect(
+			page.getByRole( 'heading', { name: 'Order received' } )
+		).toBeVisible();
+	}
 };
 
 const ensureSavedCardNotSelected = async ( page: Page ) => {
@@ -238,6 +252,9 @@ export const confirmCardAuthentication = async (
 	page: Page,
 	authorize = true
 ) => {
+	// Wait for the Stripe modal to appear.
+	await page.waitForTimeout( 5000 );
+
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
 	// appears at the top of the DOM.
 	await page.waitForSelector(
@@ -285,32 +302,35 @@ export const getPriceFromProduct = async ( page: Page, slug: string ) => {
  * Adds a product to the cart from the shop page.
  *
  * @param {Page} page The Playwright page object.
- * @param {string|number} product The product ID or title to add to the cart.
+ * @param {Product} product The product add to the cart.
  */
 export const addToCartFromShopPage = async (
 	page: Page,
-	product: string | number
+	product: Product = config.products.simple,
+	currency?: string
 ) => {
-	if ( Number.isInteger( product ) ) {
-		const addToCartSelector = `a[data-product_id="${ product }"]`;
+	await navigation.goToShop( page, {
+		pageNumber: product.pageNumber,
+		currency,
+	} );
 
-		await page.locator( addToCartSelector ).click();
-		await expect(
-			page.locator( `${ addToCartSelector }.added` )
-		).toBeVisible();
-	} else {
-		// This generic regex will match the aria-label for the "Add to cart" button for any product.
-		// It should work for WC 7.7.0 and later.
-		// These unicode characters are the smart (or curly) quotes: “ ”.
-		const addToCartRegex = new RegExp(
-			`Add\\s+(?:to\\s+cart:\\s*)?\u201C${ product }\u201D(?:\\s+to\\s+your\\s+cart)?`
-		);
+	// This generic regex will match the aria-label for the "Add to cart" button for any product.
+	// It should work for WC 7.7.0 and later.
+	// These unicode characters are the smart (or curly) quotes: “ ”.
+	const addToCartRegex = new RegExp(
+		`Add\\s+(?:to\\s+cart:\\s*)?\u201C${ product.name }\u201D(?:\\s+to\\s+your\\s+cart)?`
+	);
 
-		await page.getByLabel( addToCartRegex ).click();
-		await expect( page.getByLabel( addToCartRegex ) ).toHaveAttribute(
-			'class',
-			/added/
-		);
+	const addToCartButton = page.getByLabel( addToCartRegex );
+	await addToCartButton.click();
+
+	try {
+		await expect( addToCartButton ).toHaveAttribute( 'class', /added/, {
+			timeout: 5000,
+		} );
+	} catch ( error ) {
+		// fallback for a different theme.
+		await expect( addToCartButton ).toHaveText( /in cart/ );
 	}
 };
 
@@ -321,11 +341,23 @@ export const selectPaymentMethod = async (
 	await page.getByText( paymentMethod ).click();
 };
 
+/**
+ * The checkout page can sometimes be blank, so we need to reload it.
+ *
+ * @param page Page
+ */
+export const ensureCheckoutIsLoaded = async ( page: Page ) => {
+	if ( ! ( await page.locator( '#billing_first_name' ).isVisible() ) ) {
+		await page.reload();
+	}
+};
+
 export const setupCheckout = async (
 	page: Page,
 	billingAddress: CustomerAddress = config.addresses.customer.billing
 ) => {
 	await navigation.goToCheckout( page );
+	await ensureCheckoutIsLoaded( page );
 	await fillBillingAddress( page, billingAddress );
 	await waitForUiRefresh( page );
 	await isUIUnblocked( page );
@@ -343,21 +375,23 @@ export const setupCheckout = async (
  */
 export async function setupProductCheckout(
 	page: Page,
-	lineItems: Array< [ string, number ] > = [
-		[ config.products.simple.name, 1 ],
-	],
-	billingAddress: CustomerAddress = config.addresses.customer.billing
+	lineItems: Array< [ Product, number ] > = [ [ config.products.simple, 1 ] ],
+	billingAddress: CustomerAddress = config.addresses.customer.billing,
+	currency?: string
 ) {
+	await navigation.goToShop( page );
+
 	const cartSizeText = await page
 		.locator( '.cart-contents .count' )
 		.textContent();
 	let cartSize = Number( cartSizeText?.replace( /\D/g, '' ) ?? '0' );
 
 	for ( const line of lineItems ) {
-		let [ productTitle, qty ] = line;
+		let [ product, qty ] = line;
 
 		while ( qty-- ) {
-			await addToCartFromShopPage( page, productTitle );
+			await addToCartFromShopPage( page, product, currency );
+
 			// Make sure the number of items in the cart is incremented before adding another item.
 			await expect( page.locator( '.cart-contents .count' ) ).toHaveText(
 				new RegExp( `${ ++cartSize } items?` ),
@@ -365,6 +399,9 @@ export async function setupProductCheckout(
 					timeout: 30000,
 				}
 			);
+
+			// Wait for the cart to update before adding another item.
+			await page.waitForTimeout( 500 );
 		}
 	}
 
@@ -396,12 +433,13 @@ export const expectFraudPreventionToken = async (
 export const placeOrderWithOptions = async (
 	page: Page,
 	options?: {
-		productId?: number;
+		product?: Product;
 		billingAddress?: CustomerAddress;
 		createAccount?: boolean;
 	}
 ) => {
-	await addCartProduct( page, options?.productId );
+	await navigation.goToShop( page );
+	await addToCartFromShopPage( page, options?.product );
 	await setupCheckout( page, options?.billingAddress );
 	if (
 		options?.createAccount &&
@@ -435,7 +473,7 @@ export const placeOrderWithCurrency = async (
 	page: Page,
 	currency: string
 ) => {
-	await navigation.goToShopWithCurrency( page, currency );
+	await navigation.goToShop( page, { currency } );
 	return placeOrderWithOptions( page );
 };
 
@@ -443,9 +481,12 @@ export const setSavePaymentMethod = async ( page: Page, save = true ) => {
 	const checkbox = page.getByLabel(
 		'Save payment information to my account for future purchases.'
 	);
-	if ( save ) {
+
+	const isChecked = await checkbox.isChecked();
+
+	if ( save && ! isChecked ) {
 		await checkbox.check();
-	} else {
+	} else if ( ! save && isChecked ) {
 		await checkbox.uncheck();
 	}
 };
@@ -501,7 +542,7 @@ export const addSavedCard = async (
 ) => {
 	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
 	await page.waitForLoadState( 'networkidle' );
-	await page.getByText( 'Cards' ).click();
+	await page.getByText( 'Cards', { exact: true } ).click();
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
 	const stripeFrame = frameHandle.contentFrame();
 
@@ -547,7 +588,7 @@ export const selectSavedCardOnCheckout = async (
 		)
 		.first();
 	await expect( option ).toBeVisible( { timeout: 100 } );
-	option.click();
+	await option.click();
 };
 
 export const setDefaultPaymentMethod = async (
@@ -559,5 +600,18 @@ export const setDefaultPaymentMethod = async (
 	const button = row.getByRole( 'link', { name: 'Make default' } );
 	await expect( button ).toBeVisible( { timeout: 100 } );
 	await expect( button ).toBeEnabled( { timeout: 100 } );
-	button.click();
+	await button.click();
+};
+
+export const removeCoupon = async ( page: Page ) => {
+	const couponRemovalLink = page.getByRole( 'link', {
+		name: '[Remove]',
+	} );
+
+	if ( await couponRemovalLink.isVisible() ) {
+		await couponRemovalLink.click();
+		await expect(
+			page.getByText( 'Coupon has been removed.' )
+		).toBeVisible();
+	}
 };

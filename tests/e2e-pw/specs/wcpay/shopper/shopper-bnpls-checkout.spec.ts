@@ -11,9 +11,11 @@ import { getMerchant, getShopper } from '../../../utils/helpers';
 import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import * as devtools from '../../../utils/devtools';
+import { config } from '../../../config/default';
 
 const cardTestingProtectionStates = [ false, true ];
 const bnplProviders = [ 'Affirm', 'Afterpay' ];
+const products = [ config.products.belt, config.products.sunglasses ];
 
 test.describe( 'BNPL checkout', () => {
 	let merchantPage: Page;
@@ -54,9 +56,15 @@ test.describe( 'BNPL checkout', () => {
 				}
 			} );
 
-			for ( const provider of bnplProviders ) {
+			for ( let i = 0; i < bnplProviders.length; i++ ) {
+				const provider = bnplProviders[ i ];
+
 				test( `Checkout with ${ provider }`, async () => {
-					await shopper.addCartProduct( shopperPage, 17 ); // Belt
+					await shopper.addToCartFromShopPage(
+						shopperPage,
+						products[ i % 2 ]
+					);
+
 					await shopper.setupCheckout( shopperPage );
 					await shopper.selectPaymentMethod( shopperPage, provider );
 					await shopper.expectFraudPreventionToken(
@@ -64,6 +72,9 @@ test.describe( 'BNPL checkout', () => {
 						ctpEnabled
 					);
 					await shopper.placeOrder( shopperPage );
+					await expect(
+						shopperPage.getByText( 'test payment page' )
+					).toBeVisible();
 					await shopperPage
 						.getByText( 'Authorize Test Payment' )
 						.click();

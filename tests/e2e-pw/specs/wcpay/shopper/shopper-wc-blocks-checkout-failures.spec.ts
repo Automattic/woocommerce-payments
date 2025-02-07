@@ -59,6 +59,11 @@ const failures = [
 	},
 ];
 
+const errorsInsideStripeFrame = [
+	config.cards[ 'invalid-cvv-number' ],
+	config.cards[ 'declined-incorrect' ],
+];
+
 describeif( shouldRunWCBlocksTests )(
 	'WooCommerce Blocks > Checkout failures',
 	() => {
@@ -77,12 +82,20 @@ describeif( shouldRunWCBlocksTests )(
 				await addWCBCheckoutPage( merchantPage );
 			}
 
-			await shopper.addCartProduct( shopperPage );
+			await shopper.addToCartFromShopPage( shopperPage );
 			await navigation.goToCheckoutWCB( shopperPage );
 			await shopper.fillBillingAddressWCB(
 				shopperPage,
 				config.addresses.customer.billing
 			);
+		} );
+
+		/**
+		 * Reload the page after each test to ensure a clean state.
+		 * Otherwise we get flaky results.
+		 */
+		test.afterEach( async () => {
+			await shopperPage.reload();
 		} );
 
 		test.afterAll( async () => {
@@ -92,17 +105,38 @@ describeif( shouldRunWCBlocksTests )(
 		for ( const { card, error, auth } of failures ) {
 			test( `Should show error – ${ error }`, async () => {
 				await shopper.fillCardDetailsWCB( shopperPage, card );
-				await shopperPage
-					.getByRole( 'button', { name: 'Place Order' } )
-					.click();
+				await shopper.placeOrderWCB( shopperPage, false );
+
 				if ( auth ) {
+					const placeOrderButton = shopperPage.locator(
+						'.wc-block-components-checkout-place-order-button'
+					);
+					await expect( placeOrderButton ).toBeDisabled();
+					await expect( placeOrderButton ).toHaveClass(
+						/wc-block-components-button--loading/
+					);
 					await shopper.confirmCardAuthentication( shopperPage );
 				}
-				await expect(
-					shopperPage
-						.locator( '.wc-block-checkout__form' )
-						.getByText( error )
-				).toBeVisible();
+
+				if ( errorsInsideStripeFrame.includes( card ) ) {
+					await shopperPage.waitForSelector(
+						'.__PrivateStripeElement'
+					);
+					const frameHandle = await shopperPage.waitForSelector(
+						'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
+					);
+					const stripeFrame = await frameHandle.contentFrame();
+
+					await expect(
+						stripeFrame.getByText( error )
+					).toBeVisible();
+				} else {
+					await expect(
+						shopperPage
+							.locator( '.wc-block-checkout__form' )
+							.getByText( error )
+					).toBeVisible();
+				}
 			} );
 		}
 	}

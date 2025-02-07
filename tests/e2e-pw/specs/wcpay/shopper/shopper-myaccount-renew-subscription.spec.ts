@@ -10,10 +10,7 @@ import { config } from '../../../config/default';
 import { describeif, getShopper } from '../../../utils/helpers';
 import * as shopper from '../../../utils/shopper';
 import * as navigation from '../../../utils/shopper-navigation';
-import {
-	products,
-	shouldRunSubscriptionsTests,
-} from '../../../utils/constants';
+import { shouldRunSubscriptionsTests } from '../../../utils/constants';
 
 describeif( shouldRunSubscriptionsTests )(
 	'Subscriptions > Renew a subscription in my account',
@@ -34,10 +31,11 @@ describeif( shouldRunSubscriptionsTests )(
 		} );
 
 		test( 'should be able to purchase a subscription', async () => {
-			await shopper.addCartProduct(
+			await shopper.addToCartFromShopPage(
 				page,
-				products.SUBSCRIPTION_SIGNUP_FEE
+				config.products.subscription_signup_fee
 			);
+
 			await shopper.setupCheckout( page, customerBillingConfig );
 			await shopper.selectPaymentMethod( page );
 			await shopper.fillCardDetails( page, config.cards.basic );
@@ -67,9 +65,9 @@ describeif( shouldRunSubscriptionsTests )(
 				.click();
 
 			await page.getByText( 'Renew now' ).click();
-			await page
-				.getByText( 'Complete checkout to renew now.' )
-				.isVisible();
+			await expect(
+				page.getByText( 'Complete checkout to renew now.' )
+			).toBeVisible();
 			await shopper.focusPlaceOrderButton( page );
 			await shopper.placeOrder( page );
 			await expect(

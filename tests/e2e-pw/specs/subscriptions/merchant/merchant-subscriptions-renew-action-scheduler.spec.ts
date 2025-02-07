@@ -10,7 +10,6 @@ import { describeif, getMerchant, getShopper } from '../../../utils/helpers';
 import * as shopper from '../../../utils/shopper';
 import { config } from '../../../config/default';
 import {
-	products,
 	shouldRunActionSchedulerTests,
 	shouldRunSubscriptionsTests,
 } from '../../../utils/constants';
@@ -36,9 +35,9 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 				project.use.baseURL
 			);
 
-			await shopper.addCartProduct(
+			await shopper.addToCartFromShopPage(
 				shopperPage,
-				products.SUBSCRIPTION_SIGNUP_FEE
+				config.products.subscription_signup_fee
 			);
 			await shopper.setupCheckout( shopperPage, customerBillingConfig );
 			await shopper.fillCardDetails( shopperPage, config.cards.basic );

@@ -53,8 +53,7 @@ async function createDisputedOrder( browser: Browser ) {
 	const orderId = await test.step(
 		'Place an order as shopper, to be automatically disputed',
 		async () => {
-			await shopperPage.goto( '/cart/' );
-			await shopper.addCartProduct( shopperPage );
+			await shopper.addToCartFromShopPage( shopperPage );
 
 			await shopperPage.goto( '/checkout/' );
 			await shopper.fillBillingAddress(

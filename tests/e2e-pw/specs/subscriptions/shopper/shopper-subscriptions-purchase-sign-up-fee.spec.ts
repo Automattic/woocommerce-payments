@@ -10,10 +10,7 @@ import { config } from '../../../config/default';
 import { describeif, getMerchant, getShopper } from '../../../utils/helpers';
 import * as shopper from '../../../utils/shopper';
 import * as navigation from '../../../utils/merchant-navigation';
-import {
-	shouldRunSubscriptionsTests,
-	products,
-} from '../../../utils/constants';
+import { shouldRunSubscriptionsTests } from '../../../utils/constants';
 
 describeif( shouldRunSubscriptionsTests )(
 	'Subscriptions > Purchase subscription with signup fee',
@@ -34,7 +31,7 @@ describeif( shouldRunSubscriptionsTests )(
 
 		test( 'should be able to purchase a subscription with signup fee', async () => {
 			orderId = await shopper.placeOrderWithOptions( shopperPage, {
-				productId: products.SUBSCRIPTION_SIGNUP_FEE,
+				product: config.products.subscription_signup_fee,
 				billingAddress: customerBillingAddress,
 			} );
 		} );

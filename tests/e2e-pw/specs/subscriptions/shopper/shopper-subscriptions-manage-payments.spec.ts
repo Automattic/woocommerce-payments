@@ -7,10 +7,7 @@ import test, { expect, Page } from '@playwright/test';
  * Internal dependencies
  */
 import { config } from '../../../config/default';
-import {
-	products,
-	shouldRunSubscriptionsTests,
-} from '../../../utils/constants';
+import { shouldRunSubscriptionsTests } from '../../../utils/constants';
 import { describeif, getShopper } from '../../../utils/helpers';
 import * as shopper from '../../../utils/shopper';
 import * as navigation from '../../../utils/shopper-navigation';
@@ -50,7 +47,7 @@ describeif( shouldRunSubscriptionsTests )(
 
 			// Purchase a subscription.
 			await shopper.placeOrderWithOptions( page, {
-				productId: products.SUBSCRIPTION_NO_SIGNUP_FEE,
+				product: config.products.subscription_no_signup_fee,
 				billingAddress: customerBillingAddress,
 			} );
 

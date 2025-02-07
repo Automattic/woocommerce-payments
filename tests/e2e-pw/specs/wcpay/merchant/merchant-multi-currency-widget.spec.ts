@@ -11,6 +11,7 @@ import {
 	activateMulticurrency,
 	addMulticurrencyWidget,
 	deactivateMulticurrency,
+	ensureBlockSettingsPanelIsOpen,
 	removeMultiCurrencyWidgets,
 	restoreCurrencies,
 } from '../../../utils/merchant';
@@ -73,16 +74,7 @@ test.describe( 'Multi-currency widget setup', () => {
 
 	test( 'can update widget properties', async () => {
 		await test.step( 'opens widget settings', async () => {
-			const settingsButton = merchantPage.locator(
-				'.interface-pinned-items > button[aria-label="Settings"]'
-			);
-			const isSettingsButtonPressed = await settingsButton.evaluate(
-				( node ) => node.getAttribute( 'aria-pressed' ) === 'true'
-			);
-
-			if ( ! isSettingsButtonPressed ) {
-				await settingsButton.click();
-			}
+			await ensureBlockSettingsPanelIsOpen( merchantPage );
 
 			await merchantPage
 				.locator( '[data-title="Currency Switcher Block"]' )

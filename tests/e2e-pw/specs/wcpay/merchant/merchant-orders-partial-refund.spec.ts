@@ -6,14 +6,13 @@ import { test, expect, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { config } from '../../../config/default';
+import { config, Product } from '../../../config/default';
 import { getMerchant, getShopper } from '../../../utils/helpers';
 import {
 	fillCardDetails,
 	placeOrder,
 	setupProductCheckout,
 } from '../../../utils/shopper';
-import { goToShop } from '../../../utils/shopper-navigation';
 import { goToOrder } from '../../../utils/merchant-navigation';
 import {
 	activateMulticurrency,
@@ -23,9 +22,21 @@ import {
 
 // Needs to be finished.
 test.describe( 'Order > Partial refund', () => {
-	const product1 = config.products.simple.name;
-	const product2 = 'Belt';
-	const product3 = 'Hoodie with Logo';
+	const product1 = config.products.simple;
+	const product2 = config.products.belt;
+	const product3 = config.products.hoodie_with_logo;
+
+	const lineItems: [ Product, number ][][] = [
+		[
+			[ product1, 1 ],
+			[ product2, 1 ],
+		],
+		[
+			[ product1, 1 ],
+			[ product2, 2 ],
+			[ product3, 1 ],
+		],
+	];
 
 	/**
 	 * Elements:
@@ -42,21 +53,20 @@ test.describe( 'Order > Partial refund', () => {
 		[
 			'Partially refund one product of two product order',
 			{
-				lineItems: [
-					[ product1, 1 ],
-					[ product2, 1 ],
-				],
+				lineItems: lineItems[ 0 ].map( ( [ item, quantity ] ) => [
+					item.name,
+					quantity,
+				] ),
 				refundInputs: [ { refundQty: 0, refundAmount: 5 } ],
 			},
 		],
 		[
 			'Refund two products of three product order',
 			{
-				lineItems: [
-					[ product1, 1 ],
-					[ product2, 2 ],
-					[ product3, 1 ],
-				],
+				lineItems: lineItems[ 1 ].map( ( [ item, quantity ] ) => [
+					item.name,
+					quantity,
+				] ),
 				refundInputs: [
 					{ refundQty: 1, refundAmount: 18 },
 					{ refundQty: 1, refundAmount: 55 },
@@ -71,9 +81,7 @@ test.describe( 'Order > Partial refund', () => {
 	let merchantPage: Page, shopperPage: Page;
 
 	const orderProducts = async ( dataTableIndex: number ) => {
-		const lineItems = dataTable[ dataTableIndex ][ 1 ].lineItems;
-		await goToShop( shopperPage );
-		await setupProductCheckout( shopperPage, lineItems );
+		await setupProductCheckout( shopperPage, lineItems[ dataTableIndex ] );
 		await fillCardDetails( shopperPage );
 		await placeOrder( shopperPage );
 		await expect(

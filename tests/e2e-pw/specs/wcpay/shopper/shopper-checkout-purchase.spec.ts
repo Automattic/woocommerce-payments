@@ -33,7 +33,7 @@ test.describe( 'Successful purchase', () => {
 			} );
 
 			test.beforeEach( async () => {
-				await shopper.addCartProduct( shopperPage );
+				await shopper.addToCartFromShopPage( shopperPage );
 				await shopper.setupCheckout(
 					shopperPage,
 					config.addresses.customer.billing

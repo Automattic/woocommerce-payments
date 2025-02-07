@@ -29,7 +29,7 @@ import {
 	placeOrder,
 } from '../../../utils/shopper';
 import { config } from '../../../config/default';
-import { goToCheckout, goToShop } from '../../../utils/shopper-navigation';
+import { goToCheckout } from '../../../utils/shopper-navigation';
 
 test.describe( 'Enable UPE with deferred intent creation', () => {
 	let wasMultiCurrencyEnabled = false;
@@ -79,8 +79,7 @@ test.describe( 'Enable UPE with deferred intent creation', () => {
 					}
 				} );
 				test( 'should successfully place order with Bancontact', async () => {
-					await goToShop( shopperPage );
-					await addToCartFromShopPage( shopperPage, 'Beanie' );
+					await addToCartFromShopPage( shopperPage );
 					await goToCheckout( shopperPage );
 					await fillBillingAddress(
 						shopperPage,

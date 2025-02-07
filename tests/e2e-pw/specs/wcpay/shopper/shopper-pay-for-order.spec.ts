@@ -34,7 +34,7 @@ test.describe( 'Shopper > Pay for Order', () => {
 				}
 
 				// Attempt to pay with a declined card.
-				await shopper.addCartProduct( shopperPage );
+				await shopper.addToCartFromShopPage( shopperPage );
 				await shopper.setupCheckout( shopperPage );
 				await shopper.selectPaymentMethod( shopperPage );
 				await shopper.fillCardDetails(
@@ -56,6 +56,12 @@ test.describe( 'Shopper > Pay for Order', () => {
 					} )
 					.first();
 				await payForOrderButton.click();
+
+				await expect(
+					shopperPage.getByRole( 'heading', {
+						name: 'Pay for order',
+					} )
+				).toBeVisible();
 				await shopper.fillCardDetails(
 					shopperPage,
 					config.cards.basic
