@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WeChatpay_Payment_Method
+ * Class Wechatpay_Payment_Method
  *
  * @package WCPay\Payment_Methods
  */
@@ -14,7 +14,7 @@ use WCPay\Constants\Currency_Code;
 /**
  * WeChatPay Payment Method class extending UPE base class
  */
-class WeChatpay_Payment_Method extends UPE_Payment_Method {
+class Wechatpay_Payment_Method extends UPE_Payment_Method {
 
 	const PAYMENT_METHOD_STRIPE_ID = 'wechat_pay';
 

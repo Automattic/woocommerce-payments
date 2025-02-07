@@ -22,7 +22,7 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\WeChatpay_Payment_Method;
+use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
@@ -580,7 +580,7 @@ class WC_Payments {
 			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
 			Grabpay_Payment_Method::class,
-			WeChatPay_Payment_Method::class,
+			Wechatpay_Payment_Method::class,
 		];
 
 		$payment_methods = [];
