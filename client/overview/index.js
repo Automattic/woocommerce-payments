@@ -264,45 +264,37 @@ const OverviewPage = () => {
 				<ErrorBoundary>
 					<Welcome />
 
-					{ stripeNotificationsBannerErrorMessage ? (
-						<BannerNotice status="error">
-							{ stripeNotificationsBannerErrorMessage }
-						</BannerNotice>
-					) : (
-						stripeConnectInstance && (
-							<div
-								className="stripe-notifications-banner-wrapper"
-								style={ {
-									display: notificationsBannerMessage
-										? 'block'
-										: 'none',
-								} }
-							>
-								<ErrorBoundary>
-									<ConnectComponentsProvider
-										connectInstance={
-											stripeConnectInstance
+					{ stripeConnectInstance && (
+						<div
+							className="stripe-notifications-banner-wrapper"
+							style={ {
+								display: notificationsBannerMessage
+									? 'block'
+									: 'none',
+							} }
+						>
+							<ErrorBoundary>
+								<ConnectComponentsProvider
+									connectInstance={ stripeConnectInstance }
+								>
+									<ConnectNotificationBanner
+										onLoadError={ ( loadError ) =>
+											setStripeNotificationsBannerErrorMessage(
+												loadError.error.message ||
+													'Unknown error'
+											)
 										}
-									>
-										<ConnectNotificationBanner
-											onLoadError={ ( loadError ) =>
-												setStripeNotificationsBannerErrorMessage(
-													loadError.error.message ||
-														'Unknown error'
-												)
-											}
-											collectionOptions={ {
-												fields: 'eventually_due',
-												futureRequirements: 'omit',
-											} }
-											onNotificationsChange={
-												handleNotificationsChange
-											}
-										/>
-									</ConnectComponentsProvider>
-								</ErrorBoundary>
-							</div>
-						)
+										collectionOptions={ {
+											fields: 'eventually_due',
+											futureRequirements: 'omit',
+										} }
+										onNotificationsChange={
+											handleNotificationsChange
+										}
+									/>
+								</ConnectComponentsProvider>
+							</ErrorBoundary>
+						</div>
 					) }
 
 					{ showTaskList && (
