@@ -2178,12 +2178,15 @@ class WC_Payments_Order_Service {
 	 */
 	private function get_frod_support_note( $formatted_amount ) {
 		$learn_more_url = 'https://woocommerce.com/document/woopayments/fees-and-debits/preventing-negative-balances/#adding-funds';
-		return WC_Payments_Utils::esc_interpolated_html(
-			__( 'Refund of {amount} failed due to insufficient funds in your WooPayments balance. To prevent delays in refunding customers, please consider adding funds to your Future Refunds or Disputes (FROD) balance. {link}.', 'woocommerce-payments' ),
-			[
-				'amount' => $formatted_amount,
-				'link'   => '<a href="' . $learn_more_url . '" target="_blank">' . __( 'Learn more', 'woocommerce-payments' ) . '</a>',
-			]
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %s: Formatted refund amount */
+				__( 'Refund of %s failed due to insufficient funds in your WooPayments balance. To prevent delays in refunding customers, please consider adding funds to your Future Refunds or Disputes (FROD) balance. <a>Learn more</a>.', 'woocommerce-payments' ),
+				[
+					'a' => '<a href="' . $learn_more_url . '" target="_blank" rel="noopener noreferrer">',
+				]
+			),
+			$formatted_amount
 		);
 	}
 
