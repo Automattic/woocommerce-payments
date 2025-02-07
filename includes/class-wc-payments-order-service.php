@@ -2127,4 +2127,86 @@ class WC_Payments_Order_Service {
 	private function intent_has_card_payment_type( $intent_data ): bool {
 		return isset( $intent_data['payment_method_type'] ) && 'card' === $intent_data['payment_method_type'];
 	}
+
+	/**
+	 * Countries where FROD balance is not supported.
+	 *
+	 * @var array
+	 */
+	const FROD_UNSUPPORTED_COUNTRIES = [ 'HK', 'SG', 'AE' ];
+
+	/**
+	 * Handle insufficient balance for refund.
+	 *
+	 * @param WC_Order $order  The order being refunded.
+	 * @param int      $amount The refund amount.
+	 */
+	public function handle_insufficient_balance_for_refund( WC_Order $order, $amount ) {
+		$account_country = WC_Payments::get_account_service()->get_account_country();
+
+		$formatted_amount = wc_price(
+			WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
+			[ 'currency' => $order->get_currency() ]
+		);
+
+		if ( $this->is_frod_supported( $account_country ) ) {
+			$order->add_order_note( $this->get_frod_support_note( $formatted_amount ) );
+		} else {
+			$order->add_order_note( $this->get_insufficient_balance_note( $formatted_amount ) );
+		}
+	}
+
+	/**
+	 * Check if FROD is supported for the given country.
+	 *
+	 * @param string $country_code Two-letter country code.
+	 * @return bool
+	 */
+	private function is_frod_supported( $country_code ) {
+		return ! in_array(
+			$country_code,
+			self::FROD_UNSUPPORTED_COUNTRIES,
+			true
+		);
+	}
+
+	/**
+	 * Get the order note for FROD supported countries.
+	 *
+	 * @param string $formatted_amount The formatted refund amount.
+	 * @return string
+	 */
+	private function get_frod_support_note( $formatted_amount ) {
+		$learn_more_url = 'https://woocommerce.com/document/woopayments/fees-and-debits/preventing-negative-balances/#adding-funds';
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %s: Formatted refund amount */
+				__( 'Refund of %s <strong>failed</strong> due to insufficient funds in your WooPayments balance. To prevent delays in refunding customers, please consider adding funds to your Future Refunds or Disputes (FROD) balance. <a>Learn more</a>.', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => '<a href="' . $learn_more_url . '" target="_blank" rel="noopener noreferrer">',
+				]
+			),
+			$formatted_amount
+		);
+	}
+
+	/**
+	 * Get the order note for countries without FROD support.
+	 *
+	 * @param string $formatted_amount The formatted refund amount.
+	 * @return string
+	 */
+	private function get_insufficient_balance_note( $formatted_amount ) {
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1$s: Formatted refund amount */
+				__( 'Refund of %1$s <strong>failed</strong> due to insufficient funds in your WooPayments balance.', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+				]
+			),
+			$formatted_amount
+		);
+	}
 }
