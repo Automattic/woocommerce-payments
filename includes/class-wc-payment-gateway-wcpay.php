@@ -75,6 +75,7 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
+use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 
 /**
  * Gateway class for WooPayments
@@ -354,6 +355,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'klarna'            => 'klarna_payments',
 			'grabpay'           => 'grabpay_payments',
 			'jcb'               => 'jcb_payments',
+			'wechat_pay'        => 'wechat_pay_payments',
 		];
 
 		// WooPay utilities.
@@ -4145,6 +4147,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(
