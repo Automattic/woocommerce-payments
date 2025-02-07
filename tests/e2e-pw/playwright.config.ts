@@ -58,8 +58,8 @@ export default defineConfig( {
 	/* Reporters to use. See https://playwright.dev/docs/test-reporters */
 	reporter: process.env.CI
 		? [
-				// If running on CI, also use the GitHub Actions reporter
-				[ 'github' ],
+				/* If running on CI, include the dot reporter and JSON reporter. */
+				[ 'dot' ],
 				[ 'json', { outputFile: 'results.json' } ],
 				[ 'html' ],
 		  ]
