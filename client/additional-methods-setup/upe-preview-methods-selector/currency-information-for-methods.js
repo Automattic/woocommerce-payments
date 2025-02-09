@@ -44,7 +44,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		const paymentMethodInformation = PaymentMethodsMap[ paymentMethod ];
 		if ( ! paymentMethodInformation ) return;
 
-		// TODO ~FR: Alipay & currency configuration
+		// TODO : fix in https://github.com/Automattic/woocommerce-payments/issues/10182 to remove duplicated logic
 		let currencies = paymentMethodInformation.currencies || [];
 		if ( paymentMethodInformation.accepts_only_domestic_payment ) {
 			currencies = [ stripeAccountDomesticCurrency ];
