@@ -40,7 +40,7 @@ class Alipay_Payment_Method extends UPE_Payment_Method {
 			Currency_Code::EURO,
 			Currency_Code::CHINESE_YUAN,
 		];
-		$this->icon_url    = plugins_url( 'assets/images/payment-methods/alipay-checkout-logo.svg', WCPAY_PLUGIN_FILE );
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/alipay-logo.svg', WCPAY_PLUGIN_FILE );
 		$this->countries   = [];
 	}
 

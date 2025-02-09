@@ -8,7 +8,7 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import AlipayAsset from 'assets/images/payment-methods/alipay-checkout-logo.svg';
+import AlipayAsset from 'assets/images/payment-methods/alipay-logo.svg';
 import BancontactAsset from 'assets/images/payment-methods/bancontact.svg?asset';
 import EpsAsset from 'assets/images/payment-methods/eps.svg?asset';
 import GiropayAsset from 'assets/images/payment-methods/giropay.svg?asset';
