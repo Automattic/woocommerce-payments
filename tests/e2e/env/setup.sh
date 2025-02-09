@@ -237,9 +237,10 @@ cli wp option set woocommerce_checkout_company_field "optional"
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
 
+INSTALLED_WC_VERSION=$(cli_debug wp plugin get woocommerce --field=version)
+
 # Start - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
 # To be removed when WooPayments L-2 support is >= WC 8.3
-INSTALLED_WC_VERSION=$(cli_debug wp plugin get woocommerce --field=version)
 IS_WORKAROUND_REQUIRED=$(cli_debug wp eval "echo version_compare(\"$INSTALLED_WC_VERSION\", \"8.3\", \">=\");")
 
 if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
@@ -364,8 +365,16 @@ cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m
 echo "Setting up a coupon for E2E tests"
 cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
 
-echo "Syncing HPOS data"
-cli wp wc hpos sync
+# HPOS was officially released in WooCommerce 8.2.0, so we need to check if we should sync COT or HPOS data.
+IS_HPOS_AVAILABLE=$(cli_debug wp eval "echo version_compare(\"$INSTALLED_WC_VERSION\", \"8.2\", \">=\");")
+
+if [[ ${IS_HPOS_AVAILABLE} ]]; then
+	echo "Syncing HPOS data"
+	cli wp wc hpos sync
+else
+	echo "Syncing COT data"
+	cli wp wc cot sync
+fi
 
 # Log test configuration for visibility
 echo
