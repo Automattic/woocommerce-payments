@@ -1,13 +1,13 @@
 .payment-delete-illustration {
 	&__wrapper {
-		margin: 80px auto 24px auto;
+		margin: 59px auto 24px auto;
 		width: 35%;
 	}
 
 	&__illustrations {
 		position: relative;
 		margin: 0 auto;
-		width: 122px;
+		width: 100px;
 
 		&::before {
 			content: ' ';
@@ -18,8 +18,9 @@
 			right: 0;
 			background: no-repeat url( 'assets/images/cards/unknown.svg?asset' );
 			transform: translate( -22%, -50% );
-			width: 135px;
-			height: 105px;
+			height: 78px;
+			width: 110px;
+			background-size: 110px 78px;
 		}
 	}
 
@@ -38,11 +39,11 @@
 	&__payment-cross-icon {
 		position: absolute;
 		top: -24px;
-		right: -24px;
-		width: 45px;
+		right: -16px;
+		width: 35px;
 		height: auto;
 		fill: #cc1818;
-		background: $white;
+		background: #fff;
 		border-radius: 999px;
 	}
 }

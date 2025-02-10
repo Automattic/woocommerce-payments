@@ -39,6 +39,144 @@ describe( 'useExpressCheckout', () => {
 		global.jQuery = jQueryMock;
 	} );
 
+	it( 'should provide the line items', () => {
+		const onClickMock = jest.fn();
+		const event = { resolve: jest.fn() };
+		const { result } = renderHook( () =>
+			useExpressCheckout( {
+				billing: {
+					cartTotalItems: [
+						{
+							key: 'total_items',
+							label: 'Subtotal:',
+							value: 4000,
+							valueWithTax: 4330,
+						},
+						{
+							key: 'total_fees',
+							label: 'Fees:',
+							value: 0,
+							valueWithTax: 0,
+						},
+						{
+							key: 'total_discount',
+							label: 'Discount:',
+							value: 0,
+							valueWithTax: 0,
+						},
+						{
+							key: 'total_tax',
+							label: 'Taxes:',
+							value: 330,
+							valueWithTax: 330,
+						},
+						{
+							key: 'total_shipping',
+							label: 'Shipping:',
+							value: 0,
+							valueWithTax: 0,
+						},
+					],
+					cartTotal: {
+						label: 'Total',
+						value: 4330,
+					},
+				},
+				shippingData: {
+					needsShipping: false,
+					shippingRates: [],
+				},
+				onClick: onClickMock,
+				onClose: {},
+				setExpressPaymentError: {},
+			} )
+		);
+
+		expect( onClickMock ).not.toHaveBeenCalled();
+
+		result.current.onButtonClick( event );
+
+		expect( event.resolve ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				lineItems: [
+					{ amount: 4000, name: 'Subtotal:' },
+					{ amount: 0, name: 'Fees:' },
+					{ amount: -0, name: 'Discount:' },
+					{ amount: 330, name: 'Taxes:' },
+					{ amount: 0, name: 'Shipping:' },
+				],
+			} )
+		);
+		expect( onClickMock ).toHaveBeenCalled();
+	} );
+
+	it( "should not provide the line items if the totals don't match", () => {
+		const onClickMock = jest.fn();
+		const event = { resolve: jest.fn() };
+		const { result } = renderHook( () =>
+			useExpressCheckout( {
+				billing: {
+					cartTotalItems: [
+						{
+							key: 'total_items',
+							label: 'Subtotal:',
+							value: 4000,
+							valueWithTax: 4330,
+						},
+						{
+							key: 'total_fees',
+							label: 'Fees:',
+							value: 0,
+							valueWithTax: 0,
+						},
+						{
+							key: 'total_discount',
+							label: 'Discount:',
+							value: 0,
+							valueWithTax: 0,
+						},
+						{
+							key: 'total_tax',
+							label: 'Taxes:',
+							value: 330,
+							valueWithTax: 330,
+						},
+						{
+							key: 'total_shipping',
+							label: 'Shipping:',
+							value: 0,
+							valueWithTax: 0,
+						},
+					],
+					cartTotal: {
+						label: 'Total',
+						// simulating a total amount that is lower than the sum of the values of `cartTotalItems`
+						// this scenario happens with the Gift Cards plugin.
+						value: 400,
+					},
+				},
+				shippingData: {
+					needsShipping: false,
+					shippingRates: [],
+				},
+				onClick: onClickMock,
+				onClose: {},
+				setExpressPaymentError: {},
+			} )
+		);
+
+		expect( onClickMock ).not.toHaveBeenCalled();
+
+		result.current.onButtonClick( event );
+
+		expect( event.resolve ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				lineItems: [],
+			} )
+		);
+		expect( onClickMock ).toHaveBeenCalled();
+	} );
+
 	it( 'should provide no shipping rates when not required on click', () => {
 		const onClickMock = jest.fn();
 		const event = { resolve: jest.fn() };
@@ -46,6 +184,10 @@ describe( 'useExpressCheckout', () => {
 			useExpressCheckout( {
 				billing: {
 					cartTotalItems: [],
+					cartTotal: {
+						label: 'Total',
+						value: 448,
+					},
 				},
 				shippingData: {
 					needsShipping: false,
@@ -76,6 +218,10 @@ describe( 'useExpressCheckout', () => {
 			useExpressCheckout( {
 				billing: {
 					cartTotalItems: [],
+					cartTotal: {
+						label: 'Total',
+						value: 448,
+					},
 				},
 				shippingData: {
 					needsShipping: true,
@@ -119,6 +265,10 @@ describe( 'useExpressCheckout', () => {
 			useExpressCheckout( {
 				billing: {
 					cartTotalItems: [],
+					cartTotal: {
+						label: 'Total',
+						value: 448,
+					},
 				},
 				shippingData: {
 					needsShipping: true,

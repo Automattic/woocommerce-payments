@@ -55,7 +55,7 @@ exports[`Activation Modal matches the snapshot 1`] = `
               class="components-modal__header-heading"
               id="components-modal-header-0"
             >
-              One more step to enable Credit / Debit card
+              One more step to enable Credit / Debit Cards
             </h1>
           </div>
           <button
@@ -85,7 +85,7 @@ exports[`Activation Modal matches the snapshot 1`] = `
           >
             <img
               alt="Credit card / Debit card"
-              class="payment-method__icon no-outline payment-confirm-illustration__payment-icon"
+              class="payment-method__icon no-border payment-confirm-illustration__payment-icon"
               src="assets/images/payment-methods/cc.svg"
             />
             <svg
@@ -104,7 +104,7 @@ exports[`Activation Modal matches the snapshot 1`] = `
           </div>
         </div>
         <p>
-          You need to provide more information to enable Credit / Debit card on your checkout:
+          You need to provide more information to enable Credit / Debit Cards on your checkout:
         </p>
         <ul
           class="payment-method-requirements-list"

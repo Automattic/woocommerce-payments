@@ -153,6 +153,11 @@ HTMLOptionsCollection [
     Dispute reversal
   </option>,
   <option
+    value="card_reader_fee"
+  >
+    Reader fee
+  </option>,
+  <option
     value="financing_payout"
   >
     Loan disbursement

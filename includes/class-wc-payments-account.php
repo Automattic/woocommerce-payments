@@ -2654,13 +2654,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_session(): array {
+	public function create_embedded_account_session(): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
 
 		try {
-			$account_session = $this->payments_api_client->retrieve_embedded_account_session();
+			$account_session = $this->payments_api_client->create_embedded_account_session();
 		} catch ( API_Exception $e ) {
 			// If we fail to create the session, return an empty array.
 			return [];

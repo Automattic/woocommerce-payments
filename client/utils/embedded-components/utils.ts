@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
+import { addQueryArgs } from '@wordpress/url';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import { NAMESPACE } from 'data/constants';
-import { addQueryArgs } from '@wordpress/url';
 import { AccountKycSession } from '../../onboarding/types';
 
 /**

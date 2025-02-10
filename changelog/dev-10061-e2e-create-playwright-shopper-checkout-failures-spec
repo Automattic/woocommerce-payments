@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-E2E Playwright Migration: convert shopper-checkout-failures spec to Playwright and remove Puppeteer spec.

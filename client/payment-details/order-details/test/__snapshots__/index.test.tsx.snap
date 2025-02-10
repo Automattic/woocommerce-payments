@@ -4,6 +4,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
 <div>
   <div
     class="wcpay-payment-details woocommerce-payments-page"
+    id=""
     style="max-width: 1032px;"
   >
     <div

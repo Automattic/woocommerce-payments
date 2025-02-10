@@ -21,6 +21,17 @@ See [tests/e2e/README.md](/tests/e2e/README.md) for detailed e2e environment set
 
 ## FAQs
 
+**I'm getting errors that host.docker.internal is not found.**
+
+This is because the `host.docker.internal` alias is not available on Linux. You can use the `localhost` alias instead. To apply it, create a file called `docker-compose.override.yml` in the `tests/e2e-pw` directory and add the following content:
+
+```yaml
+services:
+  playwright:
+    environment:
+      - BASE_URL=http://localhost:8084
+```
+
 **How do I wait for a page or element to load?**
 
 Since [Playwright automatically waits](https://playwright.dev/docs/actionability) for elements to be present in the page before interacting with them, you probably don't need to explicitly wait for elements to load. For example, all of the following locators will automatically wait for the element to be present and stable before asserting or interacting with it:

@@ -11,6 +11,7 @@ import { config } from '../config/default';
 const userEndpoint = '/wc/v3/customers';
 const ordersEndpoint = '/wc/v3/orders';
 const widgetEndpoint = '/wp/v2/widgets';
+const productsEndpoint = '/wc/v3/products';
 
 export type CustomerType = typeof config.users.customer;
 export type AddressType = Omit<
@@ -157,10 +158,20 @@ class RestAPI {
 	async createOrder(): Promise< string > {
 		const client = this.getAdminClient();
 
+		const products = await client.get(
+			`${ productsEndpoint }?search=${ config.products.simple.name }`
+		);
+
+		if ( ! products.data || ! products.data.length ) {
+			throw new Error( 'No products found.' );
+		}
+
+		const [ product ] = products.data;
+
 		const order = await client.post( ordersEndpoint, {
 			line_items: [
 				{
-					product_id: 16,
+					product_id: product.id,
 					quantity: 1,
 				},
 			],

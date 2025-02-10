@@ -38,7 +38,7 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 			'/' . $this->rest_base . '/session',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_embedded_session' ],
+				'callback'            => [ $this, 'create_embedded_account_session' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -95,8 +95,8 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_Error|WP_REST_Response
 	 */
-	public function get_embedded_session( WP_REST_Request $request ) {
-		$account_session = WC_Payments::get_account_service()->create_embedded_session();
+	public function create_embedded_account_session( WP_REST_Request $request ) {
+		$account_session = WC_Payments::get_account_service()->create_embedded_account_session();
 
 		if ( $account_session ) {
 			$account_session['locale'] = get_user_locale();
