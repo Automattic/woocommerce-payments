@@ -12,6 +12,13 @@ import type { Query } from '@woocommerce/navigation';
 import { STORE_NAME } from '../constants';
 import type { DepositStatus } from 'wcpay/types/deposits';
 
+export type TransactionType =
+	| 'charge'
+	| 'refund'
+	| 'card_reader_fee'
+	| 'financing_payout'
+	| 'financing_paydown';
+
 // TODO: refine this type with more detailed information.
 export interface Transaction {
 	amount: number;
@@ -31,7 +38,7 @@ export interface Transaction {
 	currency: string;
 	transaction_id: string;
 	date: string;
-	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
+	type: TransactionType;
 	channel: 'in_person' | 'in_person_pos' | 'online';
 	// A field to identify the payment's source.
 	// Usually last 4 digits for card payments, bank name for bank transfers...
@@ -54,6 +61,7 @@ export interface Transaction {
 		| 'ideal'
 		| 'jcb'
 		| 'klarna'
+		| 'grabpay'
 		| 'link'
 		| 'mastercard'
 		| 'multibanco'
@@ -63,7 +71,7 @@ export interface Transaction {
 		| 'stripe_account'
 		| 'unionpay'
 		| 'visa'
-		| 'wechat';
+		| 'wechat_pay';
 	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';

@@ -161,7 +161,14 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 	public function test_get_cached_connect_incentive_doesnt_refresh_cache_on_same_content_hash() {
 		$this->mock_database_cache
 			->method( 'get' )
-			->willReturn( $this->mock_incentive_data );
+			->willReturnCallback(
+				function ( $key ) {
+					if ( Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders' === $key ) {
+						return $this->mock_has_orders_cache_response( false );
+					}
+					return $this->mock_incentive_data;
+				}
+			);
 
 		$this->mock_database_cache
 			->expects( $this->never() )
@@ -173,10 +180,31 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	/**
+	 * Helper method to create a mock has_orders cache response.
+	 *
+	 * @param bool $has_orders Whether there are orders or not.
+	 * @return array The mock cache response.
+	 */
+	private function mock_has_orders_cache_response( $has_orders ) {
+		return [
+			'data'    => $has_orders,
+			'fetched' => time(),
+			'errored' => false,
+			'ttl'     => $has_orders ? WEEK_IN_SECONDS : HOUR_IN_SECONDS,
+		];
+	}
+
 	public function test_get_cached_connect_incentive_refreshes_cache_on_wrong_content_hash() {
 		$this->mock_database_cache
+			->expects( $this->atLeastOnce() )
 			->method( 'get' )
-			->willReturn( array_merge( $this->mock_incentive_data, [ 'context_hash' => 'wrong_hash' ] ) );
+			->willReturnMap(
+				[
+					[ Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders', false ],
+					[ Database_Cache::CONNECT_INCENTIVE_KEY, array_merge( $this->mock_incentive_data, [ 'context_hash' => 'wrong_hash' ] ) ],
+				]
+			);
 
 		$this->mock_database_cache
 			->expects( $this->atLeastOnce() )
@@ -190,9 +218,16 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_cached_connect_incentive_refreshes_cache_on_missing_content_hash() {
-		$this->mock_database_cache
-			->method( 'get' )
-			->willReturn( array_merge( $this->mock_incentive_data, [ 'context_hash' => null ] ) );
+			$this->mock_database_cache
+				->expects( $this->atLeastOnce() )
+				->method( 'get' )
+				->willReturnMap(
+					[
+						[ Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders', false ],
+
+						[ Database_Cache::CONNECT_INCENTIVE_KEY, array_merge( $this->mock_incentive_data, [ 'context_hash' => null ] ) ],
+					]
+				);
 
 		$this->mock_database_cache
 			->expects( $this->atLeastOnce() )
@@ -247,6 +282,84 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, $result );
 	}
 
+	public function test_get_cached_has_orders_returns_cached_value() {
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get' )
+			->with( Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders' )
+			->willReturn( $this->mock_has_orders_cache_response( true ) );
+
+		$this->mock_database_cache
+			->expects( $this->never() )
+			->method( 'add' );
+
+		$result = $this->incentives_service->get_cached_has_orders();
+		$this->assertTrue( $result );
+	}
+
+	public function test_get_cached_has_orders_caches_for_longer_when_has_orders() {
+		$this->mock_database_cache
+			->method( 'get' )
+			->willReturn( null );
+
+		// Mock wc_get_orders to return a mocked order.
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order->method( 'get_id' )->willReturn( 1 );
+		$date_created = new WC_DateTime( 'now - 30 day' );
+		$mock_order->method( 'get_date_created' )->willReturn( $date_created );
+		$this->mock_wc_get_orders( [ $mock_order ] );
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'add' )
+			->with(
+				Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders',
+				$this->callback(
+					function ( $value ) use ( $date_created ) {
+						return true === $value['data'] &&
+							is_int( $value['fetched'] ) &&
+							false === $value['errored'] &&
+							// 90 days - 30 days = 60 days.
+							60 * DAY_IN_SECONDS === $value['ttl'];
+					}
+				)
+			);
+
+		$result = $this->incentives_service->get_cached_has_orders();
+		$this->assertTrue( $result );
+
+		remove_all_filters( 'woocommerce_order_query' );
+	}
+
+	public function test_get_cached_has_orders_caches_when_no_orders() {
+		$this->mock_database_cache
+			->method( 'get' )
+			->willReturn( null );
+
+		// Mock wc_get_orders to return an empty array.
+		$this->mock_wc_get_orders( [] );
+
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'add' )
+			->with(
+				Database_Cache::CONNECT_INCENTIVE_KEY . '_has_orders',
+				$this->callback(
+					function ( $value ) {
+						return false === $value['data'] &&
+						is_int( $value['fetched'] ) &&
+						false === $value['errored'] &&
+						6 * HOUR_IN_SECONDS === $value['ttl'];
+					}
+				)
+			);
+
+		$result = $this->incentives_service->get_cached_has_orders();
+		$this->assertFalse( $result );
+
+		remove_all_filters( 'woocommerce_order_query' );
+	}
+
 	private function mock_database_cache_with( $incentive = null ) {
 		$this->mock_database_cache
 			->method( 'get_or_add' )
@@ -258,6 +371,20 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 			'pre_http_request',
 			function () use ( $response ) {
 				return $response;
+			}
+		);
+	}
+
+	/**
+	 * Helper method to mock wc_get_orders function
+	 *
+	 * @param array $orders The orders to return from the mock.
+	 */
+	private function mock_wc_get_orders( $orders ) {
+		add_filter(
+			'woocommerce_order_query',
+			function () use ( $orders ) {
+				return $orders;
 			}
 		);
 	}

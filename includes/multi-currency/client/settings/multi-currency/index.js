@@ -14,7 +14,7 @@ import './style.scss';
 const MultiCurrencySettings = () => {
 	return (
 		<div className="multi-currency-settings">
-			<SettingsLayout displayBanner={ false }>
+			<SettingsLayout>
 				<EnabledCurrenciesList />
 				<StoreSettings />
 			</SettingsLayout>

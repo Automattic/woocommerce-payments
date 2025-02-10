@@ -245,7 +245,7 @@ describe( 'Deposits list', () => {
 		expect( tableSummary ).toHaveLength( 1 );
 	} );
 
-	describe( 'Download button', () => {
+	describe( 'Export button', () => {
 		test( 'renders when there are one or more deposits', () => {
 			mockUseDeposits.mockReturnValue( {
 				deposits: mockDeposits,
@@ -253,7 +253,7 @@ describe( 'Deposits list', () => {
 			} as CachedDeposits );
 
 			const { queryByRole } = render( <DepositsList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).not.toBeNull();
 		} );
@@ -266,7 +266,7 @@ describe( 'Deposits list', () => {
 			} as CachedDeposits );
 
 			const { queryByRole } = render( <DepositsList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).toBeNull();
 		} );
@@ -291,7 +291,7 @@ describe( 'Deposits list', () => {
 
 		test( 'should render expected columns in CSV when the download button is clicked', () => {
 			const { getByRole } = render( <DepositsList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			const expected = [
 				'"Payout Id"',
@@ -310,7 +310,7 @@ describe( 'Deposits list', () => {
 
 		test( 'should match the visible rows', () => {
 			const { getByRole, getAllByRole } = render( <DepositsList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 			const csvRows = csvContent.split( os.EOL );
@@ -363,7 +363,7 @@ describe( 'Deposits list', () => {
 
 			const { getByRole } = render( <DepositsList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -392,7 +392,7 @@ describe( 'Deposits list', () => {
 
 			const { getByRole } = render( <DepositsList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(

@@ -7,7 +7,7 @@
 
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
+use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 
 /**
@@ -78,12 +78,12 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_two_apms_enabled() {
-		$this->set_duplicates( Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
+		$this->set_duplicates( Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
 
 		$result = $this->service->find_duplicates();
 
 		$this->assertCount( 1, $result );
-		$this->assertEquals( Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID, array_keys( $result )[0] );
+		$this->assertEquals( Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID, array_keys( $result )[0] );
 	}
 
 	public function test_two_bnpls_enabled() {

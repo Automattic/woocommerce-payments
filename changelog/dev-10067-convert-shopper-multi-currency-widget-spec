@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Convert shopper-multi-currency-widget spec from Puppeteer to Playwright

@@ -4,6 +4,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
 <div>
   <div
     class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
   >
     <div
       class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
@@ -233,6 +234,7 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
 <div>
   <div
     class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
   >
     <div
       class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
@@ -271,6 +273,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
 <div>
   <div
     class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
   >
     <div
       class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
@@ -500,6 +503,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
 <div>
   <div
     class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
   >
     <div
       class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"

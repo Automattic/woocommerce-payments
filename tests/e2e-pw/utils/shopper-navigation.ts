@@ -2,21 +2,27 @@
  * External dependencies
  */
 import { Page } from 'playwright/test';
+
 /**
  * Internal dependencies
  */
-import { isUIUnblocked } from './shopper';
+import { isUIUnblocked } from './helpers';
 
-export const goToShop = async ( page: Page, pageNumber?: number ) => {
+export const goToShop = async (
+	page: Page,
+	{ pageNumber, currency }: { pageNumber?: number; currency?: string } = {}
+) => {
+	let url = '/shop/';
+
 	if ( pageNumber ) {
-		await page.goto( `/shop/page/` + pageNumber, { waitUntil: 'load' } );
-	} else {
-		await page.goto( `/shop/`, { waitUntil: 'load' } );
+		url += `page/${ pageNumber }/`;
 	}
-};
 
-export const goToShopWithCurrency = async ( page: Page, currency: string ) => {
-	await page.goto( `/shop/?currency=${ currency }`, { waitUntil: 'load' } );
+	if ( currency ) {
+		url += `?currency=${ currency }`;
+	}
+
+	await page.goto( url, { waitUntil: 'load' } );
 };
 
 export const goToProductPageBySlug = async (

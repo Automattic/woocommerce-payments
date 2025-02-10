@@ -859,7 +859,7 @@ describe( 'isUsingSavedPaymentMethod', () => {
 	} );
 
 	test( 'non-tokenized payment gateway is selected', () => {
-		const paymentMethodType = 'sofort';
+		const paymentMethodType = 'ideal';
 
 		expect( isUsingSavedPaymentMethod( paymentMethodType ) ).toBe( false );
 	} );
