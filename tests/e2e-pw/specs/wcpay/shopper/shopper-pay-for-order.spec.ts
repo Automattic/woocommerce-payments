@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -18,14 +18,21 @@ const cardTestingPreventionStates = [
 ];
 
 test.describe( 'Shopper > Pay for Order', () => {
+	let merchantPage: Page;
+	let shopperPage: Page;
+
+	test.beforeAll( async ( { browser } ) => {
+		merchantPage = ( await getMerchant( browser ) ).merchantPage;
+		shopperPage = ( await getShopper( browser ) ).shopperPage;
+	} );
+
+	test.afterAll( async () => {
+		await devtools.disableCardTestingProtection( merchantPage );
+	} );
+
 	cardTestingPreventionStates.forEach(
 		( { cardTestingPreventionEnabled } ) => {
-			test( `should be able to pay for a failed order with card testing protection ${ cardTestingPreventionEnabled }`, async ( {
-				browser,
-			} ) => {
-				const { merchantPage } = await getMerchant( browser );
-				const { shopperPage } = await getShopper( browser );
-
+			test( `should be able to pay for a failed order with card testing protection ${ cardTestingPreventionEnabled }`, async () => {
 				// Enable or disable card testing protection.
 				if ( ! cardTestingPreventionEnabled ) {
 					await devtools.disableCardTestingProtection( merchantPage );
@@ -67,7 +74,7 @@ test.describe( 'Shopper > Pay for Order', () => {
 					config.cards.basic
 				);
 
-				// Check for the fraud prevenction token presence.
+				// Check for the fraud prevention token presence.
 				const token = await shopperPage.evaluate( () => {
 					return ( window as any ).wcpayFraudPreventionToken;
 				} );
@@ -84,11 +91,6 @@ test.describe( 'Shopper > Pay for Order', () => {
 				await expect(
 					shopperPage.getByText( 'Order received' ).first()
 				).toBeVisible();
-
-				// Disable card testing protection if necessary.
-				if ( cardTestingPreventionEnabled ) {
-					await devtools.disableCardTestingProtection( merchantPage );
-				}
 			} );
 		}
 	);

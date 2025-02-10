@@ -31,18 +31,10 @@ describeif( shouldRunSubscriptionsTests )(
 		} );
 
 		test( 'should be able to purchase a subscription', async () => {
-			await shopper.addToCartFromShopPage(
-				page,
-				config.products.subscription_signup_fee
-			);
-
-			await shopper.setupCheckout( page, customerBillingConfig );
-			await shopper.selectPaymentMethod( page );
-			await shopper.fillCardDetails( page, config.cards.basic );
-			await shopper.placeOrder( page );
-			await expect(
-				page.getByRole( 'heading', { name: 'Order received' } )
-			).toBeVisible();
+			await shopper.placeOrderWithOptions( page, {
+				product: config.products.subscription_signup_fee,
+				billingAddress: customerBillingConfig,
+			} );
 
 			subscriptionId = await page
 				.getByLabel( 'View subscription number' )
@@ -70,6 +62,7 @@ describeif( shouldRunSubscriptionsTests )(
 			).toBeVisible();
 			await shopper.focusPlaceOrderButton( page );
 			await shopper.placeOrder( page );
+			await page.waitForURL( /\/order-received\// );
 			await expect(
 				page.getByRole( 'heading', { name: 'Order received' } )
 			).toBeVisible();
