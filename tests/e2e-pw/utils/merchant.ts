@@ -427,7 +427,7 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 
 	await page
 		.locator( '#wpbody-content' )
-		.getByRole( 'link', { name: 'Add New Page' } )
+		.getByRole( 'link', { name: /^Add( New)? Page$/ } )
 		.click();
 	await page.waitForLoadState( 'load' );
 
