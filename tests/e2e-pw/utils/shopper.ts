@@ -621,10 +621,12 @@ export const removeCoupon = async ( page: Page ) => {
  * to confirm the card authentication.
  *
  * @param  {Page}          page The Shopper page object.
+ * @param  {boolean}       authorize Whether to authorize the transaction or not.
  * @return {Promise<void>}      Void.
  */
 export const confirmCardAuthenticationWCB = async (
-	page: Page
+	page: Page,
+	authorize = true
 ): Promise< void > => {
 	const placeOrderButton = page.locator(
 		'.wc-block-components-checkout-place-order-button'
@@ -633,5 +635,5 @@ export const confirmCardAuthenticationWCB = async (
 	await expect( placeOrderButton ).toHaveClass(
 		/wc-block-components-button--loading/
 	);
-	await confirmCardAuthentication( page );
+	await confirmCardAuthentication( page, authorize );
 };
