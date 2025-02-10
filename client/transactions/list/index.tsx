@@ -682,11 +682,14 @@ export const TransactionsList = (
 				'success',
 				sprintf(
 					__(
-						'Processing your export. The file will download automatically and will be emailed to %s',
+						'Now processing your export. The file will download automatically and will be emailed to %s.',
 						'woocommerce-payments'
 					),
 					userEmail
-				)
+				),
+				{
+					icon: '✅',
+				}
 			);
 		}
 	};
@@ -806,6 +809,7 @@ export const TransactionsList = (
 						<DownloadButton
 							key="download"
 							isDisabled={ isLoading || isExportInProgress }
+							isBusy={ isExportInProgress }
 							onClick={ onDownload }
 						/>
 					),

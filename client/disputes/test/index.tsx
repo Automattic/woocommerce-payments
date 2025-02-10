@@ -275,7 +275,7 @@ describe( 'Disputes list', () => {
 			} );
 
 			const { queryByRole } = render( <DisputesList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).not.toBeNull();
 		} );
@@ -287,7 +287,7 @@ describe( 'Disputes list', () => {
 			} );
 
 			const { queryByRole } = render( <DisputesList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).toBeNull();
 		} );
@@ -320,7 +320,7 @@ describe( 'Disputes list', () => {
 
 			const { getByRole } = render( <DisputesList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(

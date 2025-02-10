@@ -180,7 +180,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	}
 
 	/**
-	 * Get the transactions export URL for a given export ID, if available.
+	 * Get the export URL for a given export ID, if available.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */

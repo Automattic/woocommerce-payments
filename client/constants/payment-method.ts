@@ -12,12 +12,14 @@ enum PAYMENT_METHOD_IDS {
 	CARD_PRESENT = 'card_present',
 	EPS = 'eps',
 	KLARNA = 'klarna',
+	GRABPAY = 'grabpay',
 	GIROPAY = 'giropay',
 	IDEAL = 'ideal',
 	LINK = 'link',
 	P24 = 'p24',
 	SEPA_DEBIT = 'sepa_debit',
 	SOFORT = 'sofort',
+	WECHAT_PAY = 'wechat_pay',
 }
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
@@ -46,6 +48,7 @@ export const PAYMENT_METHOD_TITLES = {
 	ideal: __( 'iDEAL', 'woocommerce-payments' ),
 	jcb: __( 'JCB', 'woocommerce-payments' ),
 	klarna: __( 'Klarna', 'woocommerce-payments' ),
+	grabpay: __( 'GrabPay', 'woocommerce-payments' ),
 	link: __( 'Link', 'woocommerce-payments' ),
 	mastercard: __( 'Mastercard', 'woocommerce-payments' ),
 	multibanco: __( 'Multibanco', 'woocommerce-payments' ),
@@ -56,6 +59,7 @@ export const PAYMENT_METHOD_TITLES = {
 	unionpay: __( 'Union Pay', 'woocommerce-payments' ),
 	visa: __( 'Visa', 'woocommerce-payments' ),
 	wechat: __( 'WeChat', 'woocommerce-payments' ),
+	wechat_pay: __( 'WeChat Pay', 'woocommerce-payments' ),
 };
 
 export default PAYMENT_METHOD_IDS;

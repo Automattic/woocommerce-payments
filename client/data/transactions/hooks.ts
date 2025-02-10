@@ -61,6 +61,7 @@ export interface Transaction {
 		| 'ideal'
 		| 'jcb'
 		| 'klarna'
+		| 'grabpay'
 		| 'link'
 		| 'mastercard'
 		| 'multibanco'
@@ -70,7 +71,7 @@ export interface Transaction {
 		| 'stripe_account'
 		| 'unionpay'
 		| 'visa'
-		| 'wechat';
+		| 'wechat_pay';
 	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';

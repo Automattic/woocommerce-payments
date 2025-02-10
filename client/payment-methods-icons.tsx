@@ -21,6 +21,7 @@ import AfterpayAsset from 'assets/images/payment-methods/afterpay-logo.svg?asset
 import ClearpayAsset from 'assets/images/payment-methods/clearpay.svg?asset';
 import JCBAsset from 'assets/images/payment-methods/jcb.svg?asset';
 import KlarnaAsset from 'assets/images/payment-methods/klarna.svg?asset';
+import GrabPayAsset from 'assets/images/payment-methods/grabpay.svg?asset';
 import VisaAsset from 'assets/images/cards/visa.svg?asset';
 import MasterCardAsset from 'assets/images/cards/mastercard.svg?asset';
 import AmexAsset from 'assets/images/cards/amex.svg?asset';
@@ -34,6 +35,7 @@ import CBAsset from 'assets/images/cards/cb.svg?asset';
 import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
 import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
+import WeChatPayAsset from 'assets/images/payment-methods/wechat_pay.svg?asset';
 import './style.scss';
 
 const iconComponent = (
@@ -149,6 +151,14 @@ export const UnionPayIcon = iconComponent(
 export const VisaIcon = iconComponent(
 	VisaAsset,
 	__( 'Visa', 'woocommerce-payments' )
+);
+export const GrabPayIcon = iconComponent(
+	GrabPayAsset,
+	__( 'GrabPay', 'woocommerce-payments' )
+);
+export const WeChatPayIcon = iconComponent(
+	WeChatPayAsset,
+	__( 'WeChat Pay', 'woocommerce-payments' )
 );
 export const WooIcon = iconComponent(
 	WooAsset,

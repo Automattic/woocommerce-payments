@@ -22,6 +22,8 @@ import {
 	P24Icon,
 	SepaIcon,
 	SofortIcon,
+	GrabPayIcon,
+	WeChatPayIcon,
 } from 'wcpay/payment-methods-icons';
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
@@ -232,6 +234,48 @@ const PaymentMethodInformationObject: Record<
 		allows_manual_capture: false,
 		allows_pay_later: true,
 		accepts_only_domestic_payment: true,
+	},
+	grabpay: {
+		id: 'grabpay',
+		label: __( 'GrabPay', 'woocommerce-payments' ),
+		description: __(
+			'A popular digital wallet for cashless payments in Singapore.',
+			'woocommerce-payments'
+		),
+		icon: GrabPayIcon,
+		currencies: [ 'SGD' ],
+		stripe_key: 'grabpay_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
+	},
+	wechat_pay: {
+		id: 'wechat_pay',
+		label: __( 'WeChat Pay', 'woocommerce-payments' ),
+		description: __(
+			'A digital wallet popular with customers from China.',
+			'woocommerce-payments'
+		),
+		icon: WeChatPayIcon,
+		currencies: [
+			'USD',
+			'CNY',
+			'AUD',
+			'CAD',
+			'EUR',
+			'GBP',
+			'HKD',
+			'JPY',
+			'SGD',
+			'DKK',
+			'NOK',
+			'SEK',
+			'CHF',
+		],
+		stripe_key: 'wechat_pay_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 };
 
