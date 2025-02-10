@@ -84,6 +84,11 @@ class WC_Payments_Order_Success_Page {
 			return $this->show_card_payment_method_name( $order, $payment_method );
 		}
 
+		if ( $payment_method->get_id() === Payment_Method::GRABPAY ) {
+			$output = $this->show_payment_method_name_with_logo( $gateway, $payment_method );
+			return false !== $output ? $output : $payment_method_title;
+		}
+
 		// If this is an LPM (BNPL or local payment method) order, return the html for the payment method name.
 		$name_output = $this->show_lpm_payment_method_name( $gateway, $payment_method );
 
@@ -182,6 +187,36 @@ class WC_Payments_Order_Success_Page {
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-lpm-logo wc-payment-lpm-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
 			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Add the logo to the payment method name on the order received page.
+	 *
+	 * @param WC_Payment_Gateway_WCPay                 $gateway the gateway being shown.
+	 * @param WCPay\Payment_Methods\UPE_Payment_Method $payment_method the payment method being shown.
+	 *
+	 * @return string|false
+	 */
+	public function show_payment_method_name_with_logo( $gateway, $payment_method ) {
+		$method_logo_url = $payment_method->get_payment_method_icon_for_location( 'checkout', false, $gateway->get_account_country() );
+		$method_logo_url = apply_filters(
+			'wc_payments_thank_you_page_payment_method_logo_url',
+			$method_logo_url,
+			$payment_method->get_id()
+		);
+
+		if ( ! $method_logo_url ) {
+			return false;
+		}
+
+		ob_start();
+		?>
+		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-gateway-method-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
+			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
+			<?php echo esc_html( $payment_method->get_title() ); ?>
 		</div>
 		<?php
 		return ob_get_clean();
