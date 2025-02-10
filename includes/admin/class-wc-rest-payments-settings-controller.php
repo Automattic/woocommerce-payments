@@ -162,6 +162,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'object',
 						'validate_callback' => [ $this, 'validate_business_support_address' ],
 					],
+					'account_business_support_email'       => [
+						'description'       => __( 'A publicly available email address for sending support issues to.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => [ $this, 'validate_business_support_email_address' ],
+					],
+					'account_business_support_phone'       => [
+						'description'       => __( 'A publicly available phone number to call with support issues.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => [ $this, 'validate_business_support_phone' ],
+					],
 					'account_branding_logo'                => [
 						'description' => __( 'A logo id for the account that will be used in Checkout', 'woocommerce-payments' ),
 						'type'        => 'string',
@@ -332,6 +342,64 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'rest_invalid_pattern',
 				$exception->getMessage()
 			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validate the business support email.
+	 *
+	 * @param string          $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_business_support_email_address( string $value, WP_REST_Request $request, string $param ) {
+		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $string_validation_result ) {
+			return $string_validation_result;
+		}
+
+		if ( '' !== $value && ! is_email( $value ) ) {
+			return new WP_Error(
+				'rest_invalid_pattern',
+				__( 'Error: Invalid email address: ', 'woocommerce-payments' ) . $value
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Validate the business support phone.
+	 *
+	 * @param string          $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_business_support_phone( string $value, WP_REST_Request $request, string $param ) {
+		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $string_validation_result ) {
+			return $string_validation_result;
+		}
+
+		if ( '' !== $value && ! WC_Validation::is_phone( $value ) ) {
+			return new WP_Error(
+				'rest_invalid_pattern',
+				__( 'Error: Invalid phone number: ', 'woocommerce-payments' ) . $value
+			);
+		}
+
+		// Japan accounts require Japanese phone numbers.
+		if ( Country_Code::JAPAN === $this->account->get_account_country() ) {
+			if ( '+81' !== substr( $value, 0, 3 ) ) {
+				return new WP_Error(
+					'rest_invalid_pattern',
+					__( 'Error: Invalid Japanese phone number: ', 'woocommerce-payments' ) . $value
+				);
+			}
 		}
 
 		return true;

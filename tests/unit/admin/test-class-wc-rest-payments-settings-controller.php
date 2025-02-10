@@ -813,4 +813,80 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			],
 		];
 	}
+
+	/**
+	 * Tests account business support email validator
+	 *
+	 * @dataProvider account_business_support_email_validation_provider
+	 */
+	public function test_validate_business_support_email( $value, $request, $param, $expected ) {
+		$return = $this->controller->validate_business_support_email_address( $value, $request, $param );
+		$this->assertEquals( $return, $expected );
+	}
+
+	/**
+	 * Provider for test_validate_business_support_email.
+	 * @return array[] test method params.
+	 */
+	public function account_business_support_email_validation_provider() {
+		$request = new WP_REST_Request();
+		return [
+			[
+				'test@test.com',
+				$request,
+				'account_business_support_email',
+				true,
+			],
+			[
+				'', // Empty value should trigger error.
+				$request,
+				'account_business_support_email',
+				true,
+			],
+			[
+				'test@test',
+				$request,
+				'account_business_support_email',
+				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid email address: test@test' ),
+			],
+		];
+	}
+
+	/**
+	 * Tests account business support phone validator
+	 *
+	 * @dataProvider account_business_support_phone_validation_provider
+	 */
+	public function test_validate_business_support_phone( $value, $request, $param, $expected ) {
+		$return = $this->controller->validate_business_support_phone( $value, $request, $param );
+		$this->assertEquals( $return, $expected );
+	}
+
+	/**
+	 * Provider for test_validate_business_support_phone.
+	 * @return array[] test method params.
+	 */
+	public function account_business_support_phone_validation_provider() {
+		$request = new WP_REST_Request();
+		return [
+			[
+				'123-123456',
+				$request,
+				'account_business_support_phone',
+				true,
+			],
+			[
+				'', // Empty value should be allowed.
+				$request,
+				'account_business_support_phone',
+				true,
+			],
+			[
+				'123test',
+				$request,
+				'account_business_support_phone',
+				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid phone number: 123test' ),
+			],
+		];
+	}
 }
