@@ -6,7 +6,6 @@ export const shouldRunActionSchedulerTests =
 
 export const shouldRunWCBlocksTests = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
 
-export const products = {
-	SUBSCRIPTION_SIGNUP_FEE: 70,
-	SUBSCRIPTION_NO_SIGNUP_FEE: 88,
-};
+export const wooCoreVersion = process.env.E2E_WC_VERSION;
+
+export const isAtomicSite = process.env.NODE_ENV === 'atomic';
