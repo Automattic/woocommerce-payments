@@ -43,6 +43,7 @@ import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
+import { useDispatch } from '@wordpress/data';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -202,6 +203,8 @@ export const DisputesList = (): JSX.Element => {
 	);
 
 	const { requestReportExport, isExportInProgress } = useReportExport();
+
+	const { createNotice } = useDispatch( 'core/notices' );
 
 	const headers = getHeaders( getQuery().orderby );
 	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
@@ -401,6 +404,20 @@ export const DisputesList = (): JSX.Element => {
 				exportFileAvailabilityEndpoint: disputesDownloadEndpoint,
 				userEmail,
 			} );
+
+			createNotice(
+				'success',
+				sprintf(
+					__(
+						'Now processing your export. The file will download automatically and will be emailed to %s.',
+						'woocommerce-payments'
+					),
+					userEmail
+				),
+				{
+					icon: '✅',
+				}
+			);
 		}
 	};
 
@@ -433,14 +450,6 @@ export const DisputesList = (): JSX.Element => {
 		<Page>
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
-			{ isExportInProgress && (
-				<Notice status="warning" isDismissible={ false }>
-					{ __(
-						'Your download is being prepared.',
-						'woocommerce-payments'
-					) }
-				</Notice>
-			) }
 			<TableCard
 				className="wcpay-disputes-list"
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
@@ -458,6 +467,7 @@ export const DisputesList = (): JSX.Element => {
 						<DownloadButton
 							key="download"
 							isDisabled={ isLoading || isExportInProgress }
+							isBusy={ isExportInProgress }
 							onClick={ onDownload }
 						/>
 					),
