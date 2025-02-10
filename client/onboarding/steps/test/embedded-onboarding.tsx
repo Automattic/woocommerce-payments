@@ -58,7 +58,9 @@ describe( 'EmbeddedOnboarding', () => {
 
 		await waitFor( () =>
 			expect(
-				screen.getByText( /Failed to create account session/i )
+				screen.getByText(
+					/Failed to retrieve account session. Please try again later./i
+				)
 			).toBeInTheDocument()
 		);
 	} );
