@@ -53,7 +53,7 @@ const useKycAccountSession = ( {
 		stripeConnectInstance,
 		setStripeConnectInstance,
 	] = useState< StripeConnectInstance | null >( null );
-  
+
 	useEffect( () => {
 		const initializeStripe = async () => {
 			try {
