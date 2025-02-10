@@ -226,6 +226,16 @@ const SettingsManager = () => {
 				</SettingsSection>
 			</DuplicatedPaymentMethodsContext.Provider>
 			<SettingsSection
+				description={ AccountDetailsDescription }
+				id="account-details"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<AccountManagement />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
 				description={ TransactionsDescription }
 				id="transactions"
 			>
@@ -247,16 +257,6 @@ const SettingsManager = () => {
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</div>
-			</SettingsSection>
-			<SettingsSection
-				description={ AccountDetailsDescription }
-				id="account-details"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<AccountManagement />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection
 				description={ FraudProtectionDescription }
