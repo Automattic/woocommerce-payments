@@ -14,7 +14,7 @@ const saveDevToolsSettings = async ( page: Page ) => {
 };
 
 const getIsCardTestingProtectionEnabled = ( page: Page ) =>
-	page.getByLabel( 'Card testing mitigations enabled' ).isChecked();
+	page.getByLabel( /Card testing mitigations enabled/ ).isChecked();
 
 const setCardTestingProtection = ( page: Page, enabled: boolean ) =>
 	page
