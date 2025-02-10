@@ -288,6 +288,30 @@ export const removeCurrency = async ( page: Page, currencyCode: string ) => {
 	).toBeHidden();
 };
 
+export const setDefaultCurrency = async (
+	page: Page,
+	currencyCode: string
+) => {
+	await navigation.goToWooCommerceSettings( page );
+
+	// Determine if the currency is already set as default.
+	const currentCurrencyCode = await page
+		.locator( '#woocommerce_currency' )
+		.inputValue();
+	if ( currentCurrencyCode === currencyCode ) {
+		return false;
+	}
+
+	// Set default currency.
+	await page.locator( '#woocommerce_currency' ).selectOption( currencyCode );
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	await expect(
+		page.getByText( 'Your settings have been saved.' )
+	).toBeVisible();
+
+	return true;
+};
+
 export const editCurrency = async ( page: Page, currencyCode: string ) => {
 	await navigation.goToMultiCurrencySettings( page );
 	await page
