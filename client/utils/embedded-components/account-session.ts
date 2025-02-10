@@ -32,9 +32,6 @@ interface UseAccountSessionProps {
  *
  * If the account session data is not available, it returns null.
  *
- * @param function setLoadErrorMessage - Function to set the load error message.
- * @param object appearance - The appearance object.
- *
  * @return StripeConnectInstance|null
  */
 const useAccountSession = ( {
@@ -53,9 +50,13 @@ const useAccountSession = ( {
 				const accountSession = await createAccountSession();
 
 				if ( ! accountSession?.clientSecret ) {
-					throw new Error(
-						"Failed to create account session. Please check that you're using the latest version of WooPayments."
+					setLoadErrorMessage(
+						__(
+							"Failed to create account session. Please check that you're using the latest version of WooPayments.",
+							'woocommerce-payments'
+						)
 					);
+					return;
 				}
 
 				// Initialize Stripe Connect

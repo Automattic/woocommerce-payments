@@ -59,7 +59,7 @@ describe( 'EmbeddedOnboarding', () => {
 		await waitFor( () =>
 			expect(
 				screen.getByText(
-					/Failed to retrieve account session. Please try again later./i
+					/Failed to create account session. Please check that you're using the latest version of WooPayments./i
 				)
 			).toBeInTheDocument()
 		);

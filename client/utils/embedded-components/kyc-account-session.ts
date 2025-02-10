@@ -41,11 +41,6 @@ interface UseKycAccountSessionProps {
  *
  * If the account session data is not available, it returns null.
  *
- * @param object data - The data object from the onboarding context.
- * @param boolean continueKyc - Whether to continue the KYC process.
- * @param function setLoadErrorMessage - Function to set the load error message.
- * @param object appearance - The appearance object.
- *
  * @return StripeConnectInstance|null
  */
 const useKycAccountSession = ( {
@@ -71,9 +66,13 @@ const useKycAccountSession = ( {
 				);
 
 				if ( ! accountSession?.clientSecret ) {
-					throw new Error(
-						"Failed to create account session. Please check that you're using the latest version of WooPayments."
+					setLoadErrorMessage(
+						__(
+							"Failed to create account session. Please check that you're using the latest version of WooPayments.",
+							'woocommerce-payments'
+						)
 					);
+					return;
 				}
 
 				trackRedirected( isEligible, true );
