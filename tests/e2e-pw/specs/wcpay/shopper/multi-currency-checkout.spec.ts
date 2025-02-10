@@ -102,115 +102,107 @@ test.describe( 'Multi-currency checkout', () => {
 					).toHaveText( new RegExp( currency ) );
 				}
 			}
+		} );
+	} );
 
-			test.describe( 'Available payment methods', () => {
-				let originalCurrency = 'USD';
+	test.describe( 'Available payment methods', () => {
+		let originalCurrency = 'USD';
 
-				test.beforeAll( async () => {
-					await goToWooCommerceSettings( merchantPage, 'general' );
-					originalCurrency = await merchantPage
-						.locator( '#woocommerce_currency' )
-						.inputValue();
+		test.beforeAll( async () => {
+			await goToWooCommerceSettings( merchantPage, 'general' );
+			originalCurrency = await merchantPage
+				.locator( '#woocommerce_currency' )
+				.inputValue();
 
-					await enablePaymentMethods( merchantPage, [
-						'bancontact',
-					] );
-				} );
+			await enablePaymentMethods( merchantPage, [ 'bancontact' ] );
+		} );
 
-				test.afterAll( async () => {
-					await disablePaymentMethods( merchantPage, [
-						'bancontact',
-					] );
-					await setDefaultCurrency( merchantPage, originalCurrency );
-				} );
+		test.afterAll( async () => {
+			await disablePaymentMethods( merchantPage, [ 'bancontact' ] );
+			await setDefaultCurrency( merchantPage, originalCurrency );
+		} );
 
-				test.beforeEach( async () => {
-					await shopper.emptyCart( shopperPage );
-				} );
+		test.beforeEach( async () => {
+			await shopper.emptyCart( shopperPage );
+		} );
 
-				test( 'should display EUR payment methods when switching to EUR and default is USD', async () => {
-					await setDefaultCurrency( merchantPage, 'USD' );
+		test( 'should display EUR payment methods when switching to EUR and default is USD', async () => {
+			await setDefaultCurrency( merchantPage, 'USD' );
 
-					// Shopper switch to USD.
-					await shopper.addToCartFromShopPage(
-						shopperPage,
-						config.products.simple,
-						'USD'
-					);
-					await navigation.goToCheckout( shopperPage );
-					await shopper.fillBillingAddress(
-						shopperPage,
-						config.addresses[ 'upe-customer' ].billing.be
-					);
-					await expect(
-						shopperPage.getByText( 'Bancontact' )
-					).not.toBeVisible();
+			// Shopper switch to USD.
+			await shopper.addToCartFromShopPage(
+				shopperPage,
+				config.products.simple,
+				'USD'
+			);
+			await navigation.goToCheckout( shopperPage );
+			await shopper.fillBillingAddress(
+				shopperPage,
+				config.addresses[ 'upe-customer' ].billing.be
+			);
+			await expect(
+				shopperPage.getByText( 'Bancontact' )
+			).not.toBeVisible();
 
-					// Shopper switch to EUR.
-					await navigation.goToCheckout( shopperPage, {
-						currency: 'EUR',
-					} );
-					await shopper.fillBillingAddress(
-						shopperPage,
-						config.addresses[ 'upe-customer' ].billing.be
-					);
-					await expect(
-						shopperPage.getByText( 'Bancontact' )
-					).toBeVisible();
-
-					// Shopper checkout with Bancontact.
-					await shopperPage.getByText( 'Bancontact' ).click();
-					await shopper.focusPlaceOrderButton( shopperPage );
-					await shopper.placeOrder( shopperPage );
-					await shopperPage
-						.getByRole( 'link', {
-							name: 'Authorize Test Payment',
-						} )
-						.click();
-					await expect(
-						shopperPage.getByText( 'Order received' ).first()
-					).toBeVisible();
-				} );
-
-				test( 'should display USD payment methods when switching to USD and default is EUR', async () => {
-					await setDefaultCurrency( merchantPage, 'EUR' );
-
-					// Shopper switch to EUR.
-					await shopper.addToCartFromShopPage(
-						shopperPage,
-						config.products.simple,
-						'EUR'
-					);
-					await navigation.goToCheckout( shopperPage );
-					await shopper.fillBillingAddress(
-						shopperPage,
-						config.addresses[ 'upe-customer' ].billing.be
-					);
-					await expect(
-						shopperPage.getByText( 'Bancontact' )
-					).toBeVisible();
-
-					// Shopper switch to USD.
-					await navigation.goToCheckout( shopperPage, {
-						currency: 'USD',
-					} );
-					await shopper.fillBillingAddress(
-						shopperPage,
-						config.addresses[ 'upe-customer' ].billing.be
-					);
-					await expect(
-						shopperPage.getByText( 'Bancontact' )
-					).not.toBeVisible();
-
-					// Shopper checkout with CC.
-					await shopper.fillCardDetails( shopperPage );
-					await shopper.focusPlaceOrderButton( shopperPage );
-					await shopper.placeOrder( shopperPage );
-					await expect(
-						shopperPage.getByText( 'Order received' ).first()
-					).toBeVisible();
-				} );
+			// Shopper switch to EUR.
+			await navigation.goToCheckout( shopperPage, {
+				currency: 'EUR',
 			} );
+			await shopper.fillBillingAddress(
+				shopperPage,
+				config.addresses[ 'upe-customer' ].billing.be
+			);
+			await expect( shopperPage.getByText( 'Bancontact' ) ).toBeVisible();
+
+			// Shopper checkout with Bancontact.
+			await shopperPage.getByText( 'Bancontact' ).click();
+			await shopper.focusPlaceOrderButton( shopperPage );
+			await shopper.placeOrder( shopperPage );
+			await shopperPage
+				.getByRole( 'link', {
+					name: 'Authorize Test Payment',
+				} )
+				.click();
+			await expect(
+				shopperPage.getByText( 'Order received' ).first()
+			).toBeVisible();
+		} );
+
+		test( 'should display USD payment methods when switching to USD and default is EUR', async () => {
+			await setDefaultCurrency( merchantPage, 'EUR' );
+
+			// Shopper switch to EUR.
+			await shopper.addToCartFromShopPage(
+				shopperPage,
+				config.products.simple,
+				'EUR'
+			);
+			await navigation.goToCheckout( shopperPage );
+			await shopper.fillBillingAddress(
+				shopperPage,
+				config.addresses[ 'upe-customer' ].billing.be
+			);
+			await expect( shopperPage.getByText( 'Bancontact' ) ).toBeVisible();
+
+			// Shopper switch to USD.
+			await navigation.goToCheckout( shopperPage, {
+				currency: 'USD',
+			} );
+			await shopper.fillBillingAddress(
+				shopperPage,
+				config.addresses[ 'upe-customer' ].billing.be
+			);
+			await expect(
+				shopperPage.getByText( 'Bancontact' )
+			).not.toBeVisible();
+
+			// Shopper checkout with CC.
+			await shopper.fillCardDetails( shopperPage );
+			await shopper.focusPlaceOrderButton( shopperPage );
+			await shopper.placeOrder( shopperPage );
+			await expect(
+				shopperPage.getByText( 'Order received' ).first()
+			).toBeVisible();
 		} );
 	} );
 } );
