@@ -108,14 +108,7 @@ describeif( shouldRunWCBlocksTests )(
 				await shopper.placeOrderWCB( shopperPage, false );
 
 				if ( auth ) {
-					const placeOrderButton = shopperPage.locator(
-						'.wc-block-components-checkout-place-order-button'
-					);
-					await expect( placeOrderButton ).toBeDisabled();
-					await expect( placeOrderButton ).toHaveClass(
-						/wc-block-components-button--loading/
-					);
-					await shopper.confirmCardAuthentication( shopperPage );
+					await shopper.confirmCardAuthenticationWCB( shopperPage );
 				}
 
 				if ( errorsInsideStripeFrame.includes( card ) ) {

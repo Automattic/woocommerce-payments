@@ -451,7 +451,7 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 
 	await page
 		.locator( '#wpbody-content' )
-		.getByRole( 'link', { name: 'Add New Page' } )
+		.getByRole( 'link', { name: /^Add( New)? Page$/ } )
 		.click();
 	await page.waitForLoadState( 'load' );
 
@@ -466,8 +466,6 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 	await editor.getByLabel( 'Add title' ).fill( 'Checkout WCB' );
 	await editor.getByLabel( 'Add block' ).click();
 
-	await ensureBlockSettingsPanelIsOpen( page );
-
 	await page.getByPlaceholder( 'Search' ).fill( 'Checkout' );
 	await page.getByRole( 'option', { name: 'Checkout', exact: true } ).click();
 
@@ -476,6 +474,8 @@ export const addWCBCheckoutPage = async ( page: Page ) => {
 	await page.keyboard.press( 'Escape' ); // to dismiss a dialog if present
 
 	// Enable the "Company" field if it's not already enabled.
+	await ensureBlockSettingsPanelIsOpen( page );
+
 	await page.getByLabel( 'Document Overview' ).click();
 	await page.waitForTimeout( 1000 );
 	await expect( page.locator( '.editor-list-view-sidebar' ) ).toBeVisible();
