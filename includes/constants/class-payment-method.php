@@ -36,6 +36,7 @@ class Payment_Method extends Base_Constant {
 	const AFTERPAY        = 'afterpay_clearpay';
 	const KLARNA          = 'klarna';
 	const GRABPAY         = 'grabpay';
+	const WECHAT_PAY      = 'wechat_pay';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,

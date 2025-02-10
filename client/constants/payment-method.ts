@@ -19,6 +19,7 @@ enum PAYMENT_METHOD_IDS {
 	P24 = 'p24',
 	SEPA_DEBIT = 'sepa_debit',
 	SOFORT = 'sofort',
+	WECHAT_PAY = 'wechat_pay',
 }
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
@@ -58,6 +59,7 @@ export const PAYMENT_METHOD_TITLES = {
 	unionpay: __( 'Union Pay', 'woocommerce-payments' ),
 	visa: __( 'Visa', 'woocommerce-payments' ),
 	wechat: __( 'WeChat', 'woocommerce-payments' ),
+	wechat_pay: __( 'WeChat Pay', 'woocommerce-payments' ),
 };
 
 export default PAYMENT_METHOD_IDS;
