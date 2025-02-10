@@ -12,7 +12,7 @@ import {
 	deactivateMulticurrency,
 	restoreCurrencies,
 } from '../../../utils/merchant';
-import { emptyCart, placeOrderWithCurrency } from '../../../utils/shopper';
+import * as shopper from '../../../utils/shopper';
 import * as navigation from '../../../utils/shopper-navigation';
 
 test.describe( 'Multi-currency checkout', () => {
@@ -34,7 +34,7 @@ test.describe( 'Multi-currency checkout', () => {
 
 	test.afterAll( async () => {
 		await restoreCurrencies( merchantPage );
-		await emptyCart( shopperPage );
+		await shopper.emptyCart( shopperPage );
 
 		if ( ! wasMulticurrencyEnabled ) {
 			await deactivateMulticurrency( merchantPage );
@@ -45,7 +45,9 @@ test.describe( 'Multi-currency checkout', () => {
 		Object.keys( currenciesOrders ).forEach( ( currency: string ) => {
 			test( `checkout with ${ currency }`, async () => {
 				await test.step( `pay with ${ currency }`, async () => {
-					currenciesOrders[ currency ] = await placeOrderWithCurrency(
+					currenciesOrders[
+						currency
+					] = await shopper.placeOrderWithCurrency(
 						shopperPage,
 						currency
 					);
