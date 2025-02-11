@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 
 enum PAYMENT_METHOD_IDS {
 	AFFIRM = 'affirm',
+	ALIPAY = 'alipay',
 	AFTERPAY_CLEARPAY = 'afterpay_clearpay',
 	AU_BECS_DEBIT = 'au_becs_debit',
 	BANCONTACT = 'bancontact',
@@ -19,6 +20,7 @@ enum PAYMENT_METHOD_IDS {
 	P24 = 'p24',
 	SEPA_DEBIT = 'sepa_debit',
 	SOFORT = 'sofort',
+	WECHAT_PAY = 'wechat_pay',
 }
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
@@ -28,12 +30,12 @@ export const PAYMENT_METHOD_TITLES = {
 	ach_credit_transfer: __( 'ACH Credit Transfer', 'woocommerce-payments' ),
 	ach_debit: __( 'ACH Debit', 'woocommerce-payments' ),
 	acss_debit: __( 'ACSS Debit', 'woocommerce-payments' ),
+	alipay: __( 'Alipay', 'woocommerce-payments' ),
 	affirm: __( 'Affirm', 'woocommerce-payments' ),
 	afterpay_clearpay:
 		'GB' === accountCountry
 			? __( 'Clearpay', 'woocommerce-payments' )
 			: __( 'Afterpay', 'woocommerce-payments' ),
-	alipay: __( 'Alipay', 'woocommerce-payments' ),
 	amex: __( 'American Express', 'woocommerce-payments' ),
 	au_becs_debit: __( 'AU BECS Debit', 'woocommerce-payments' ),
 	bancontact: __( 'Bancontact', 'woocommerce-payments' ),
@@ -58,6 +60,7 @@ export const PAYMENT_METHOD_TITLES = {
 	unionpay: __( 'Union Pay', 'woocommerce-payments' ),
 	visa: __( 'Visa', 'woocommerce-payments' ),
 	wechat: __( 'WeChat', 'woocommerce-payments' ),
+	wechat_pay: __( 'WeChat Pay', 'woocommerce-payments' ),
 };
 
 export default PAYMENT_METHOD_IDS;

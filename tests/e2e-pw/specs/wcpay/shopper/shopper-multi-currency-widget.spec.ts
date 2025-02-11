@@ -78,7 +78,7 @@ test.describe( 'Shopper Multi-Currency widget', () => {
 			await navigation.goToShop( shopperPage, { currency: 'USD' } );
 		} );
 
-		test( 'at the order received page', async () => {
+		test( 'at the order received page', { tag: '@critical' }, async () => {
 			orderId = await shopper.placeOrderWithCurrency(
 				shopperPage,
 				'USD'

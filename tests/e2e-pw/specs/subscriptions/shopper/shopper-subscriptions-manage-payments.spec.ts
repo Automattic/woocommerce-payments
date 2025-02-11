@@ -34,6 +34,7 @@ const navigateToSubscriptionDetails = async (
 
 describeif( shouldRunSubscriptionsTests )(
 	'Shopper > Subscriptions > Manage Payment Methods',
+	{ tag: '@critical' },
 	() => {
 		let page: Page;
 		let subscriptionId: string;
