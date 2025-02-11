@@ -36,37 +36,43 @@ test.describe( 'Order > Manual Capture', () => {
 		await deactivateCaptureLater( merchantPage );
 	} );
 
-	test( 'should create an "On hold" order then capture the charge', async () => {
-		// Merchant go to the order.
-		await goToOrder( merchantPage, orderId );
+	test(
+		'should create an "On hold" order then capture the charge',
+		{ tag: '@critical' },
+		async () => {
+			// Merchant go to the order.
+			await goToOrder( merchantPage, orderId );
 
-		const orderTotal = await merchantPage
-			.getByRole( 'row', { name: 'Order Total: $' } )
-			.locator( 'bdi' )
-			.textContent();
+			const orderTotal = await merchantPage
+				.getByRole( 'row', { name: 'Order Total: $' } )
+				.locator( 'bdi' )
+				.textContent();
 
-		// Confirm order status is 'On hold', and that there's an 'authorized' note.
-		await expect( merchantPage.getByTitle( 'On hold' ) ).toBeVisible();
-		await expect(
-			merchantPage.getByText(
-				`A payment of ${ orderTotal } was authorized using WooPayments`
-			)
-		).toBeVisible();
+			// Confirm order status is 'On hold', and that there's an 'authorized' note.
+			await expect( merchantPage.getByTitle( 'On hold' ) ).toBeVisible();
+			await expect(
+				merchantPage.getByText(
+					`A payment of ${ orderTotal } was authorized using WooPayments`
+				)
+			).toBeVisible();
 
-		// Set select to 'capture_charge' and submit.
-		await merchantPage
-			.locator( '#woocommerce-order-actions select' )
-			.selectOption( 'capture_charge' );
-		await merchantPage
-			.locator( '#woocommerce-order-actions li#actions button' ) // Using locator due to there are several buttons "named" Update.
-			.click();
+			// Set select to 'capture_charge' and submit.
+			await merchantPage
+				.locator( '#woocommerce-order-actions select' )
+				.selectOption( 'capture_charge' );
+			await merchantPage
+				.locator( '#woocommerce-order-actions li#actions button' ) // Using locator due to there are several buttons "named" Update.
+				.click();
 
-		// After the page reloads, confirm the order is processing and we have a 'captured' order note.
-		await expect( merchantPage.getByTitle( 'Processing' ) ).toBeVisible();
-		await expect(
-			merchantPage.getByText(
-				`A payment of ${ orderTotal } was successfully captured using WooPayments`
-			)
-		).toBeVisible();
-	} );
+			// After the page reloads, confirm the order is processing and we have a 'captured' order note.
+			await expect(
+				merchantPage.getByTitle( 'Processing' )
+			).toBeVisible();
+			await expect(
+				merchantPage.getByText(
+					`A payment of ${ orderTotal } was successfully captured using WooPayments`
+				)
+			).toBeVisible();
+		}
+	);
 } );

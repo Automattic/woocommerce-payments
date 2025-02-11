@@ -44,7 +44,7 @@ test.describe( 'Successful purchase', () => {
 				);
 			} );
 
-			test( 'using a basic card', async () => {
+			test( 'using a basic card', { tag: '@critical' }, async () => {
 				await shopper.fillCardDetails( shopperPage );
 				await shopper.placeOrder( shopperPage );
 
@@ -55,7 +55,7 @@ test.describe( 'Successful purchase', () => {
 				).toBeVisible();
 			} );
 
-			test( 'using a 3DS card', async () => {
+			test( 'using a 3DS card', { tag: '@critical' }, async () => {
 				await shopper.fillCardDetails(
 					shopperPage,
 					config.cards[ '3ds' ]
