@@ -1,5 +1,6 @@
 export const upeMethods = [
 	'au_becs_debit',
+	'alipay',
 	'bancontact',
 	'eps',
 	'giropay',
