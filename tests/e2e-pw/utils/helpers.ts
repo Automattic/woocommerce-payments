@@ -1,8 +1,16 @@
+/* eslint-disable no-console */
 /**
  * External dependencies
  */
 import path from 'path';
-import { test, Page, Browser, BrowserContext, expect } from '@playwright/test';
+import {
+	test,
+	Page,
+	Browser,
+	BrowserContext,
+	expect,
+	FullProject,
+} from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -26,9 +34,17 @@ export const wpAdminLogin = async (
 	page: Page,
 	user: { username: string; password: string }
 ): Promise< void > => {
-	await page.goto( `/wp-admin` );
+	await page.goto( '/wp-admin' );
+
 	await page.getByLabel( 'Username or Email Address' ).fill( user.username );
-	await page.getByLabel( 'Password', { exact: true } ).fill( user.password ); // Need exact match to avoid resolving "Show password" button.
+
+	// Need exact match to avoid resolving "Show password" button.
+	const passwordInput = page.getByLabel( 'Password', { exact: true } );
+
+	// The focus is used to avoid the password being filled in the username field.
+	await passwordInput.focus();
+	await passwordInput.fill( user.password );
+
 	await page.getByRole( 'button', { name: 'Log In' } ).click();
 };
 
@@ -96,12 +112,12 @@ export const getShopper = async (
 			shopperPage.locator(
 				'.woocommerce-MyAccount-navigation-link--customer-logout'
 			)
-		).toBeVisible( { timeout: 1000 } );
+		).toBeVisible();
 		await expect(
 			shopperPage.locator(
 				'div.woocommerce-MyAccount-content > p >> nth=0'
 			)
-		).toContainText( 'Hello', { timeout: 1000 } );
+		).toContainText( 'Hello' );
 		await shopperPage
 			.context()
 			.storageState( { path: customerStorageFile } );
@@ -157,4 +173,89 @@ export const checkPageExists = async (
 		.catch( () => {
 			return false;
 		} );
+};
+
+export const isCustomerLoggedIn = async ( page: Page ) => {
+	await page.goto( '/my-account' );
+	const logoutLink = page.locator(
+		'.woocommerce-MyAccount-navigation-link--customer-logout'
+	);
+
+	return await logoutLink.isVisible();
+};
+
+export const loginAsCustomer = async (
+	page: Page,
+	customer: { username: string; password: string }
+) => {
+	let customerLoggedIn = false;
+	const customerRetries = 5;
+
+	for ( let i = 0; i < customerRetries; i++ ) {
+		try {
+			// eslint-disable-next-line no-console
+			console.log( 'Trying to log-in as customer...' );
+			await wpAdminLogin( page, customer );
+
+			await page.goto( '/my-account' );
+			await expect(
+				page.locator(
+					'.woocommerce-MyAccount-navigation-link--customer-logout'
+				)
+			).toBeVisible();
+			await expect(
+				page.locator( 'div.woocommerce-MyAccount-content > p >> nth=0' )
+			).toContainText( 'Hello' );
+
+			console.log( 'Logged-in as customer successfully.' );
+			customerLoggedIn = true;
+			break;
+		} catch ( e ) {
+			console.log(
+				`Customer log-in failed. Retrying... ${ i }/${ customerRetries }`
+			);
+			console.log( e );
+		}
+	}
+
+	if ( ! customerLoggedIn ) {
+		throw new Error(
+			'Cannot proceed e2e test, as customer login failed. Please check if the test site has been setup correctly.'
+		);
+	}
+
+	await page.context().storageState( { path: customerStorageFile } );
+};
+
+/**
+ * Adds a special cookie during the session to avoid the support session detection page.
+ * This is temporarily displayed when navigating to the login page while Jetpack SSO and protect modules are disabled.
+ * Relevant for Atomic sites only.
+ */
+export const addSupportSessionDetectedCookie = async (
+	page: Page,
+	project: FullProject
+) => {
+	if ( process.env.NODE_ENV !== 'atomic' ) return;
+
+	const domain = new URL( project.use.baseURL ).hostname;
+
+	await page.context().addCookies( [
+		{
+			value: 'true',
+			name: '_wpcomsh_support_session_detected',
+			path: '/',
+			domain,
+		},
+	] );
+};
+
+export const ensureCustomerIsLoggedIn = async (
+	page: Page,
+	project: FullProject
+) => {
+	if ( ! ( await isCustomerLoggedIn( page ) ) ) {
+		await addSupportSessionDetectedCookie( page, project );
+		await loginAsCustomer( page, config.users.customer );
+	}
 };

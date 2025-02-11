@@ -20,16 +20,47 @@ export const config = {
 		},
 	},
 	products: {
+		cap: {
+			name: 'Cap',
+			pageNumber: 1,
+		},
+		belt: {
+			name: 'Belt',
+			pageNumber: 1,
+		},
 		simple: {
 			name: 'Beanie',
+			pageNumber: 1,
+		},
+		sunglasses: {
+			name: 'Sunglasses',
+			pageNumber: 2,
 		},
 		variable: {
 			name: 'Variable Product with Three Variations',
+			pageNumber: 1,
 		},
 		grouped: {
 			name: 'Grouped Product with Three Children',
+			pageNumber: 1,
 		},
-	},
+		hoodie_with_logo: {
+			name: 'Hoodie with Logo',
+			pageNumber: 1,
+		},
+		subscription_signup_fee: {
+			name: 'Subscription signup fee product',
+			pageNumber: 2,
+		},
+		subscription_no_signup_fee: {
+			name: 'Subscription no signup fee product',
+			pageNumber: 2,
+		},
+		subscription_free_trial: {
+			name: 'Subscription free trial product',
+			pageNumber: 2,
+		},
+	} as Record< string, Product >,
 	addresses: {
 		admin: {
 			store: {
@@ -314,3 +345,5 @@ export type CustomerAddress = Omit<
 > & {
 	state?: string;
 };
+
+export type Product = { name: string; pageNumber: number };
