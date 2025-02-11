@@ -1,211 +1,116 @@
-# WooCommerce Payments End-to-end tests
+# Playwright end-to-end tests 🎭
 
-E2E tests can be run locally or in GitHub Actions. Github Actions are already configured and doesn't require any changes to run the tests.
+Playwright e2e tests can be found in the `./tests/e2e/specs` directory. These will run in parallel with the existing Puppeteer e2e tests and are intended to replace them as they are migrated.
 
-## Setting up & running E2E tests
+## Setup local e2e environment
 
-For running E2E tests locally, create a new file named `local.env` under `tests/e2e/config` folder with the following env variables (replace values as required).
+See [tests/e2e/README.md](/tests/e2e/README.md) for detailed e2e environment setup instructions.
 
-<details>
-<summary>Required env variables</summary>
-<p>
+1. `npm run test:e2e-setup`
+1. `npm run test:e2e-up`
 
-```
-# WooCommerce Payments Dev Tools Repo
-WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
+> [!TIP]
+> In case some tests fail due to the lack of `data-test-id` attributes, you'll need to run `npm start` or `NODE_ENV=test npm run build:client` to re-build the assets.
 
-# Optional to see additional verbose output. Default false.
-DEBUG=false
-```
+## Running Playwright e2e tests
 
-</p>
-</details>
+-   `npm run test:e2e` headless run from within a linux docker container.
+-   `npm run test:e2e-ui` runs tests in interactive UI mode from within a linux docker container – recommended for authoring tests and re-running failed tests.
+-   `npm run test:e2e keyword` runs tests only with a specific keyword in the file name, e.g. `dispute` or `checkout`.
+-   `npm run test:e2e -- --update-snapshots` updates snapshots. This can be combined with a keyword to update a specific set of snapshots, e.g. `npm run test:e2e -- --update-snapshots deposits`.
 
----
+## FAQs
 
-<details>
-<summary>Choose Transact Platform Server instance</summary>
-<p>
+**I'm getting errors that host.docker.internal is not found.**
 
-It is possible to use the live server or a local docker instance of Transact Platform Server locally. On Github Actions, live server is used for tests. Add the following env variables to your `local.env` based on your preference (replace values as required).
+This is because the `host.docker.internal` alias is not available on Linux. You can use the `localhost` alias instead. To apply it, create a file called `docker-compose.override.yml` in the `tests/e2e` directory and add the following content:
 
-**Using Local Server on Docker**
-
-By default, the local E2E environment is configured to use Transact Platform local server instance. Add the following env variables to configure the local server instance.
-
-```
-# Transact Platform Server Repo
-TRANSACT_PLATFORM_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
-
-# Stripe account data. Need to support level 3 data to run tests successfully.
-# These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys
-E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
-E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
-# This value can be obtained by running `npm run listen` in your local server, which should print your webhook signature key.
-E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
-# This should be the Stripe Account ID of a connected merchant account. For example, after onboarding an account, you can obtain the ID from WCPay Dev Tools.
-E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
-E2E_WOOPAY_BLOG_ID=<WPCOM Site ID for https://pay.woo.com>
+```yaml
+services:
+  playwright:
+    environment:
+      - BASE_URL=http://localhost:8084
 ```
 
-**Using Live Server**
+**How do I wait for a page or element to load?**
 
-For using a live server, you'll need to add Jetpack blog token, user token & blog id from one of your test sites connected to WooCommerce Payments live account. On a connected test site, you can use the code below to extract the blog id & tokens.
-```
-Jetpack_Options::get_option( 'id' );
-Jetpack_Options::get_option( 'blog_token' );
-Jetpack_Options::get_option( 'user_tokens' );
-```
+Since [Playwright automatically waits](https://playwright.dev/docs/actionability) for elements to be present in the page before interacting with them, you probably don't need to explicitly wait for elements to load. For example, all of the following locators will automatically wait for the element to be present and stable before asserting or interacting with it:
 
-Set the value of `E2E_USE_LOCAL_SERVER` to `false` to enable live server.
-
-Once you have the blog id & tokens, add the following ev variables to your `local.env`.
-```
-# Set local server to false for using live server. Default: true.
-E2E_USE_LOCAL_SERVER=false
-
-E2E_BLOG_TOKEN='<jetpack_blog_token>'
-E2E_USER_TOKEN='<jetpack_user_token>'
-E2E_BLOG_ID='<blog_id>'
+```ts
+await expect( page.getByRole( 'heading', { name: 'Sign up' } ) ).toBeVisible();
+await page.getByRole( 'checkbox', { name: 'Subscribe' } ).check();
+await page.getByRole( 'button', { name: /submit/i } ).click();
 ```
 
-</p>
-</details>
+In some cases, you may need to wait for the page to reach a certain load state before interacting with it. You can use `await page.waitForLoadState( 'domcontentloaded' );` to wait for the page to finish loading.
 
----
+**What is the best way to target elements in the page?**
 
-<details>
-<summary>Installing Plugins</summary>
-<p>
+Prefer the use of [user-facing attribute or test-id locators](https://playwright.dev/docs/locators#locating-elements) to target elements in the page. This will make the tests more resilient to changes to implementation details, such as class names.
 
-If you wish to run E2E test for WC Subscriptions, the following env variables needs to be added to your `local.env` (replace values as required).
+```ts
+// Prefer locating by role, label, text, or test id when possible. See https://playwright.dev/docs/locators
+await page.getByRole( 'button', { name: 'All payouts' } ).click();
+await page.getByLabel( 'Select a deposit status' ).selectOption( 'Pending' );
+await expect( page.getByText( 'Order received' ) ).toBeVisible();
+await page.getByTestId( 'accept-dispute-button' ).click();
 
-For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) and assign the `repo` scope to it.
-
-```
-E2E_GH_TOKEN='githubPersonalAccessToken'
-WC_SUBSCRIPTIONS_REPO='{owner}/{repo}'
-```
-
-</p>
-</details>
-
----
-
-<details>
-<summary>Skipping Plugins</summary>
-<p>
-
-If you wish to skip E2E tests for WC Subscriptions, Action Scheduler or WC Gutenberg Products Blocks, the following env variables needs to be added to your `local.env`.
-```
-SKIP_WC_SUBSCRIPTIONS_TESTS=1
-SKIP_WC_ACTION_SCHEDULER_TESTS=1
-SKIP_WC_BLOCKS_TESTS=1
+// Use CSS selectors as a last resort
+await page.locator( 'button.components-button.is-secondary' );
 ```
 
-</p>
-</details>
+**How do I create a visual regression test?**
 
----
+Visual regression tests are captured by the [`toHaveScreenshot()` function](https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-2). This function takes a screenshot of a page or element and compares it to a reference image. If the images are different, the test will fail.
 
-<details>
-<summary>Using specific version of WordPress / WooCommerce</summary>
-<p>
+```ts
+await expect( page ).toHaveScreenshot();
 
-To use a specific version of WordPress or WooCommerce for testing, the following env variables needs to be added to your `local.env`.
-```
-E2E_WP_VERSION='<wordpress_version>'
-E2E_WC_VERSION='<woocommerce_version>'
+await expect(
+	page.getByRole( 'button', { name: 'All payouts' } )
+).toHaveScreenshot();
 ```
 
-</p>
-</details>
+**How can I act as shopper or merchant in a test?**
 
----
+1. To switch between `shopper` and `merchant` role in a test, use the `getShopper` and `getMerchant` function:
 
-<details>
-<summary>Initialize E2E docker environment</summary>
-<p>
+```ts
+import { getShopper, getMerchant } from './utils/helpers';
 
-  1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
-  2. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+test( 'should do things as shopper and merchant', async ( { browser } ) => {
+	const { shopperPage } = await getShopper( browser );
+	const { merchantPage } = await getMerchant( browser );
 
-  After the E2E environment is up, you can access the containers on:
+	// do things as shopper
+	await shopperPage.goto( '/cart/' );
 
-  - WC E2E Client: http://localhost:8084
-  - WC E2E Server: http://localhost:8088 (Available only when using local server)
-
-  **Note:** Be aware that the server port may change in the `docker-compose.e2e.yml` configuration, so when you can't access the server, try running `docker port transact_platform_server_wordpress_e2e 80` to find out the bound port of the E2E server container.
-
-</p>
-</details>
-
----
-
-<details>
-<summary>Running tests</summary>
-<p>
-
-There are two modes for running tests:
-1. **Headless mode**: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching Chromium interface. This mode is used in CI environment.
-2. **Dev mode**: `npm run test:e2e-dev`. Dev mode is interactive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeteer` to run tests in dev mode.
-
-**Running only a single test suite**
-
-If you would like to run only one test suite, you can pass the relative path to the test file along with any of the modes mentioned above. e.g. `npm run test:e2e-dev path/to/test`.
-
-**Running tests in group**
-
-By adding additional env variables, it is possible to run a group of tests. e.g.
-
-* `E2E_GROUP='wcpay' E2E_BRANCH='merchant' npm run test:e2e-dev` runs merchant tests for WCPay.
-* `E2E_GROUP='wcpay' E2E_BRANCH='shopper' npm run test:e2e-dev` runs shopper tests for WCPay.
-* `E2E_GROUP='wcpay' npm run test:e2e-dev` runs merchant & shopper tests for WCPay.
-
-Handy utility scripts for managing environment:
-
-* `npm run test:e2e-down` Stops E2E environment containers.
-* `npm run test:e2e-cleanup` Removes fetched dependencies and docker volumes.
-* `npm run test:e2e-reset` Stops containers and performs cleanup.
-* `npm run test:e2e-up` Starts containers without setting up again.
-
-</p>
-</details>
-
-<br>
-
-For running E2E tests on an Atomic site, follow the same guidelines mentioned above, and specify `NODE_ENV=atomic`, such as this:
-
-`npm run test:e2e-dev -- --NODE_ENV=atomic`
-
-Note that, at the moment, we are only able to run a subset of the regular E2E tests.
-
-## Writing tests
-
-Package `@woocommerce/e2e-environment` overrides `it` method to attach custom reporter for failed tests.
-It is important to write test cases within `it()` rather than `test()` function to make sure failed tests are reported to Slack channel.
-
-## Debugging tests
-
-Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true` env variable to pause test runner when test fails.
-
-## Slack integration
-
-Slack reporter requires custom jest config provided by `@woocommerce/e2e-environment` package. This config is only applied with `npm run test:e2e` command.
-
-**Configuration steps:**
-
-1. Create public Slack channel for reporting.
-2. [Create Slack app.](https://api.slack.com/apps/)
-3. Add OAuth permissions to the app:
-    * `chat:write`
-    * `files:write`
-4. Install app into channel. `Settings > Install App` page.
-5. Go to slack channel and manually invite created slack app by mentioning app bot username. User name can be found and configured on app config page `Features > App Home` page.
-6. Set following env variables either locally or in CI:
+	// do things as merchant
+	await merchantPage.goto( '/wp-admin/admin.php?page=wc-settings' );
+} );
 ```
-CI=true
-E2E_SLACK_TOKEN='<bot token, starts with xoxb- >'
-E2E_CHANNEL_NAME='<public slack channel name>'
-E2E_SLACKBOT_USER='<bot user name>'
+
+2. To act as `shopper` or `merchant` for an entire test suite (`describe`), use the helper function `useShopper` or `useMerchant` from `tests/e2e/utils/helpers.ts`:
+
+```ts
+import { useShopper } from '../utils/helpers';
+
+test.describe( 'Sign in as customer', () => {
+	useShopper();
+	test( 'Load customer my account page', async ( { page } ) => {
+		// do things as shopper
+		await page.goto( '/my-account' );
+	} );
+} );
 ```
+
+**How can I investigate and interact with a test failures?**
+
+-   **Github Action test runs**
+    -   View GitHub checks in the "Checks" tab of a PR
+    -   Click on the "E2E Playwright Tests" job to see the job summary
+    -   Download the `playwright-report.zip` artifact, extract and copy the `playwright-report` directory to the root of the WooPayments repository
+    -   Run `npx playwright show-report` to open the report in a browser
+-   **Local test runs**:
+    -   Local test reports will output in the `playwright-report` directory
+    -   Run `npx playwright show-report` to open the report in a browser
