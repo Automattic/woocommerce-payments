@@ -465,7 +465,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		// Setup the request.
 		$request = new WP_REST_Request(
 			'GET',
-			'/wc/v3/payments/terminal/locations'
+			'/wc/v3/payments/terminal/locations/store'
 		);
 		$request->set_header( 'Content-Type', 'application/json' );
 
