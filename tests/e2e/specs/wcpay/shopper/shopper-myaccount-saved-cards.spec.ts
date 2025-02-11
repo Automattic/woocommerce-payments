@@ -185,42 +185,52 @@ test.describe( 'Shopper can save and delete cards', () => {
 					}
 				);
 
-				test( `should be able to purchase with the saved ${ cardName } card`, async () => {
-					await setupProductCheckout( shopperPage, products );
-					await selectSavedCardOnCheckout( shopperPage, card );
-					await placeOrder( shopperPage );
-					if ( cardName !== 'basic' ) {
-						await confirmCardAuthentication( shopperPage );
+				test(
+					`should be able to purchase with the saved ${ cardName } card`,
+					{ tag: '@critical' },
+					async () => {
+						await setupProductCheckout( shopperPage, products );
+						await selectSavedCardOnCheckout( shopperPage, card );
+						await placeOrder( shopperPage );
+						if ( cardName !== 'basic' ) {
+							await confirmCardAuthentication( shopperPage );
+						}
+						await expect(
+							shopperPage.getByRole( 'heading', {
+								name: 'Order received',
+							} )
+						).toBeVisible();
 					}
-					await expect(
-						shopperPage.getByRole( 'heading', {
-							name: 'Order received',
-						} )
-					).toBeVisible();
-				} );
+				);
 
-				test( `should be able to set the ${ cardName } card as default payment method`, async () => {
-					await goToMyAccount( shopperPage, 'payment-methods' );
-					// Make sure that at least 20s had already elapsed since the last card was added.
-					await waitTwentySecondsSinceLastCardAdded( shopperPage );
+				test(
+					`should be able to set the ${ cardName } card as default payment method`,
+					{ tag: '@critical' },
+					async () => {
+						await goToMyAccount( shopperPage, 'payment-methods' );
+						// Make sure that at least 20s had already elapsed since the last card was added.
+						await waitTwentySecondsSinceLastCardAdded(
+							shopperPage
+						);
 
-					await addSavedCard( shopperPage, card2, 'US', '94110' );
-					// Take note of the time when we added this card
-					timeAdded = +Date.now();
+						await addSavedCard( shopperPage, card2, 'US', '94110' );
+						// Take note of the time when we added this card
+						timeAdded = +Date.now();
 
-					await expect(
-						shopperPage.getByText(
-							`${ card2.expires.month }/${ card2.expires.year }`
-						)
-					).toBeVisible();
-					await setDefaultPaymentMethod( shopperPage, card2 );
-					// Verify that the card was set as default
-					await expect(
-						shopperPage.getByText(
-							'This payment method was successfully set as your default.'
-						)
-					).toBeVisible();
-				} );
+						await expect(
+							shopperPage.getByText(
+								`${ card2.expires.month }/${ card2.expires.year }`
+							)
+						).toBeVisible();
+						await setDefaultPaymentMethod( shopperPage, card2 );
+						// Verify that the card was set as default
+						await expect(
+							shopperPage.getByText(
+								'This payment method was successfully set as your default.'
+							)
+						).toBeVisible();
+					}
+				);
 
 				test(
 					`should be able to delete ${ cardName } card`,
