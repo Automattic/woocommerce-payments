@@ -13,6 +13,9 @@ import {
 	performanceNumberOfTrials,
 } from './constants';
 
+type Metrics = Record< string, number[] >;
+type AverageMetrics = Record< string, number >;
+
 async function getLoadingDurations( page: Page ) {
 	return await page.evaluate( () => {
 		const navigation = performance.getEntriesByType(
@@ -51,7 +54,7 @@ async function getLoadingDurations( page: Page ) {
 			loaded: loadEventEnd - responseEnd,
 			firstContentfulPaint:
 				firstContentfulPaintTimings.startTime - responseEnd,
-			// This is evaluated right after found the block selector.
+			// This is evaluated right after we find the block selector.
 			firstBlock: performance.now() - responseEnd,
 		};
 	} );
@@ -59,11 +62,11 @@ async function getLoadingDurations( page: Page ) {
 
 /**
  * Writes a line to the e2e performance result.
- *
- * @param {string} description A title that describe this metric
- * @param {Object} metrics array of metrics to record.
  */
-export const logPerformanceResult = ( description, metrics ) => {
+export const logPerformanceResult = (
+	description: string,
+	metrics: AverageMetrics
+) => {
 	appendFileSync(
 		performanceReportfilename,
 		JSON.stringify( { description, ...metrics } ) + '\n'
@@ -85,11 +88,8 @@ export const recreatePerformanceFile = () => {
 
 /**
  * Takes the metric object and for each of the property, reduce to the average.
- *
- * @param {Object} metrics An object containing multiple trials' data.
- * @return {Object} The averaged results.
  */
-export const averageMetrics = ( metrics: Record< string, number[] > ) => {
+export const averageMetrics = ( metrics: Metrics ): AverageMetrics => {
 	const results = {};
 	for ( const [ key, value ] of Object.entries( metrics ) ) {
 		results[ key ] =
@@ -107,7 +107,7 @@ export const averageMetrics = ( metrics: Record< string, number[] > ) => {
 export const measureCheckoutMetrics = async (
 	page: Page,
 	selector: string
-): Promise< Record< string, number[] > > => {
+): Promise< Metrics > => {
 	await expect( page.getByText( 'Checkout' ).first() ).toBeVisible();
 
 	// Run performance tests a few times, then take the average.
