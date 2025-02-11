@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 
 import {
+	AlipayIcon,
 	AffirmIcon,
 	AfterpayIcon,
 	ClearpayIcon,
@@ -55,6 +56,20 @@ const PaymentMethodInformationObject: Record<
 		currencies: [],
 		stripe_key: 'card_payments',
 		allows_manual_capture: true,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
+	},
+	alipay: {
+		id: 'alipay',
+		label: __( 'Alipay', 'woocommerce-payments' ),
+		description: __(
+			'Alipay is a popular wallet in China, operated by Ant Financial Services Group, a financial services provider affiliated with Alibaba.',
+			'woocommerce-payments'
+		),
+		icon: AlipayIcon,
+		currencies: [],
+		stripe_key: 'alipay_payments',
+		allows_manual_capture: false,
 		allows_pay_later: false,
 		accepts_only_domestic_payment: false,
 	},
