@@ -17,7 +17,7 @@ use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Subscriptions_Utilities;
 use WCPay\Logger;
-use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinition;
+use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
 /**
  * Extendable abstract class for payment methods.
@@ -29,7 +29,7 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Payment method definition.
 	 *
-	 * @var PaymentMethodDefinition
+	 * @var PaymentMethodDefinitionInterface
 	 */
 	protected $definition;
 

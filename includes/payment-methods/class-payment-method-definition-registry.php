@@ -7,7 +7,7 @@
 
 namespace WCPay\PaymentMethods;
 
-use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinition;
+use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
 /**
  * Registry for payment method definitions.
@@ -24,7 +24,7 @@ class Payment_Method_Definition_Registry {
 	/**
 	 * Payment method definitions.
 	 *
-	 * @var PaymentMethodDefinition[]
+	 * @var PaymentMethodDefinitionInterface[]
 	 */
 	private $payment_methods = [];
 
@@ -43,9 +43,9 @@ class Payment_Method_Definition_Registry {
 	/**
 	 * Register a payment method definition.
 	 *
-	 * @param PaymentMethodDefinition $payment_method The payment method definition to register.
+	 * @param PaymentMethodDefinitionInterface $payment_method The payment method definition to register.
 	 */
-	public function register_payment_method( PaymentMethodDefinition $payment_method ): void {
+	public function register_payment_method( PaymentMethodDefinitionInterface $payment_method ): void {
 		$this->payment_methods[ $payment_method->get_id() ] = $payment_method;
 	}
 
@@ -53,16 +53,16 @@ class Payment_Method_Definition_Registry {
 	 * Get a payment method definition by its ID.
 	 *
 	 * @param string $id The ID of the payment method definition to get.
-	 * @return PaymentMethodDefinition|null The payment method definition, or null if it doesn't exist.
+	 * @return PaymentMethodDefinitionInterface|null The payment method definition, or null if it doesn't exist.
 	 */
-	public function get_payment_method_definition( string $id ): ?PaymentMethodDefinition {
+	public function get_payment_method_definition( string $id ): ?PaymentMethodDefinitionInterface {
 		return $this->payment_methods[ $id ] ?? null;
 	}
 
 	/**
 	 * Get all registered payment method definitions.
 	 *
-	 * @return PaymentMethodDefinition[] All registered payment method definitions.
+	 * @return PaymentMethodDefinitionInterface[] All registered payment method definitions.
 	 */
 	public function get_all_payment_method_definitions(): array {
 		return $this->payment_methods;
@@ -73,7 +73,7 @@ class Payment_Method_Definition_Registry {
 	 *
 	 * @param string $account_country The account country.
 	 * @param string $currency The currency.
-	 * @return PaymentMethodDefinition[] All available payment method definitions.
+	 * @return PaymentMethodDefinitionInterface[] All available payment method definitions.
 	 */
 	public function get_available_payment_method_definitions( string $account_country, string $currency ): array {
 		return array_filter(

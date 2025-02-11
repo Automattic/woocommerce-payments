@@ -8,9 +8,9 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
-use WCPay\PaymentMethods\Configs\Definitions\Afterpay as AfterpayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
-use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinition;
+use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Interfaces\BNPLPaymentMethodDefinition;
 use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
 
@@ -57,9 +57,9 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Register the payment method definition.
 	 *
-	 * @param PaymentMethodDefinition $definition The payment method definition to register.
+	 * @param PaymentMethodDefinitionInterface $definition The payment method definition to register.
 	 */
-	public function register_payment_method( PaymentMethodDefinition $definition ): void {
+	public function register_payment_method( PaymentMethodDefinitionInterface $definition ): void {
 		$registry = Payment_Method_Definition_Registry::instance();
 		$registry->register_payment_method( $definition );
 	}

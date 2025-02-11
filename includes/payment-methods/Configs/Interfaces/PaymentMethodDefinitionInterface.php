@@ -11,7 +11,7 @@ namespace WCPay\PaymentMethods\Configs\Interfaces;
  * Interface for defining payment method configurations.
  * Provides a single source of truth for both backend and frontend payment method properties.
  */
-interface PaymentMethodDefinition {
+interface PaymentMethodDefinitionInterface {
 	/**
 	 * Get the internal ID for the payment method (e.g. 'card', 'klarna')
 	 *

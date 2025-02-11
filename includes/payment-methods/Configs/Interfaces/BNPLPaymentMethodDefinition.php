@@ -10,7 +10,7 @@ namespace WCPay\PaymentMethods\Configs\Interfaces;
 /**
  * Interface for BNPL payment method definitions.
  */
-interface BNPLPaymentMethodDefinition extends PaymentMethodDefinition {
+interface BNPLPaymentMethodDefinition extends PaymentMethodDefinitionInterface {
 	/**
 	 * Get the currency limits for the payment method
 	 *
