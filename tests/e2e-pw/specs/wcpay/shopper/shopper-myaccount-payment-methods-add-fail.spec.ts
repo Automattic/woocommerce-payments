@@ -103,25 +103,29 @@ test.describe( 'Payment Methods', () => {
 		} );
 	} );
 
-	test( 'it should not show error when adding payment method on another gateway', async () => {
-		await shopperPage
-			.getByRole( 'link', { name: 'Add payment method' } )
-			.click();
+	test(
+		'it should not show error when adding payment method on another gateway',
+		{ tag: '@critical' },
+		async () => {
+			await shopperPage
+				.getByRole( 'link', { name: 'Add payment method' } )
+				.click();
 
-		await shopperPage.waitForLoadState( 'networkidle' );
+			await shopperPage.waitForLoadState( 'networkidle' );
 
-		//This will simulate selecting another payment gateway
-		await shopperPage.$eval(
-			'input[name="payment_method"]:checked',
-			( input ) => {
-				( input as HTMLInputElement ).checked = false;
-			}
-		);
+			//This will simulate selecting another payment gateway
+			await shopperPage.$eval(
+				'input[name="payment_method"]:checked',
+				( input ) => {
+					( input as HTMLInputElement ).checked = false;
+				}
+			);
 
-		await shopperPage
-			.getByRole( 'button', { name: 'Add payment method' } )
-			.click();
+			await shopperPage
+				.getByRole( 'button', { name: 'Add payment method' } )
+				.click();
 
-		await expect( shopperPage.getByRole( 'alert' ) ).not.toBeVisible();
-	} );
+			await expect( shopperPage.getByRole( 'alert' ) ).not.toBeVisible();
+		}
+	);
 } );
