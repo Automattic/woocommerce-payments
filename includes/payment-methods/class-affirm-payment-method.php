@@ -40,13 +40,12 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 		$this->register_payment_method( $this->definition );
 
 		$capabilities = $this->definition->get_capabilities();
-		$icons        = $this->definition->get_icons();
 
 		$this->stripe_id                    = $this->definition->get_id();
 		$this->is_reusable                  = in_array( Payment_Method_Capability::TOKENIZATION, $capabilities, true );
 		$this->is_bnpl                      = in_array( Payment_Method_Capability::BUY_NOW_PAY_LATER, $capabilities, true );
-		$this->icon_url                     = $icons['default']['path'];
-		$this->dark_icon_url                = $icons['dark']['path'];
+		$this->icon_url                     = $this->definition->get_icon_url();
+		$this->dark_icon_url                = $this->definition->get_dark_icon_url();
 		$this->currencies                   = $this->definition->get_supported_currencies();
 		$this->accept_only_domestic_payment = in_array( Payment_Method_Capability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
 		$this->limits_per_currency          = $this->definition->get_limits_per_currency();

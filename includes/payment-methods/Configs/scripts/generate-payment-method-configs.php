@@ -46,7 +46,14 @@ function get_payment_method_definitions(): array {
 			'capabilities' => $definition->get_capabilities(),
 			'currencies'   => $definition->get_supported_currencies(),
 			'countries'    => $definition->get_supported_countries(),
-			'icons'        => $definition->get_relative_icon_paths(),
+			'icons'        => [
+				'default' => [
+					'path' => str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), '', $definition->get_icon_url() ),
+				],
+				'dark'    => [
+					'path' => str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), '', $definition->get_dark_icon_url() ),
+				],
+			],
 		];
 	}
 

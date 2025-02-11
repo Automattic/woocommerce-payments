@@ -66,16 +66,20 @@ interface PaymentMethodDefinitionInterface {
 	public function get_capabilities(): array;
 
 	/**
-	 * Get the payment method icons configuration
+	 * Get the URL for the payment method's icon
 	 *
-	 * @return array{
-	 *     default: array{
-	 *         path: string,
-	 *         dark_path?: string
-	 *     }
-	 * }
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @return string
 	 */
-	public function get_icons(): array;
+	public function get_icon_url( ?string $account_country = null ): string;
+
+	/**
+	 * Get the URL for the payment method's dark mode icon
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @return string Returns regular icon URL if no dark mode icon exists
+	 */
+	public function get_dark_icon_url( ?string $account_country = null ): string;
 
 	/**
 	 * Get the testing instructions for the payment method

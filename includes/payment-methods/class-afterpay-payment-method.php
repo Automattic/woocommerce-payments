@@ -42,12 +42,12 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->register_payment_method( $this->definition );
 
 		$capabilities = $this->definition->get_capabilities();
-		$icons        = $this->definition->get_icons();
 
 		$this->stripe_id                    = $this->definition->get_id();
 		$this->is_reusable                  = in_array( Payment_Method_Capability::TOKENIZATION, $capabilities, true );
 		$this->is_bnpl                      = in_array( Payment_Method_Capability::BUY_NOW_PAY_LATER, $capabilities, true );
-		$this->icon_url                     = $icons['default']['path'];
+		$this->icon_url                     = $this->definition->get_icon_url();
+		$this->dark_icon_url                = $this->definition->get_dark_icon_url();
 		$this->currencies                   = $this->definition->get_supported_currencies();
 		$this->countries                    = $this->definition->get_supported_countries();
 		$this->accept_only_domestic_payment = in_array( Payment_Method_Capability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
@@ -84,8 +84,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * @return string|null
 	 */
 	public function get_icon( ?string $account_country = null ) {
-		$filename_base = $this->definition->get_icon_filename_base( $account_country );
-		return plugins_url( 'assets/images/payment-methods/' . $filename_base . '.svg', WCPAY_PLUGIN_FILE );
+		return $this->definition->get_icon_url( $account_country );
 	}
 
 	/**

@@ -54,10 +54,10 @@ export const PaymentMethodDefinitions: PaymentMethodConfigurations = {
 		countries: [ 'US', 'CA' ],
 		icons: {
 			default: {
-				path: '/assets/images/payment-methods/affirm-logo.svg',
+				path: 'assets/images/payment-methods/affirm-logo.svg',
 			},
 			dark: {
-				path: '/assets/images/payment-methods/affirm-logo-dark.svg',
+				path: 'assets/images/payment-methods/affirm-logo-dark.svg',
 			},
 		},
 	},
@@ -76,7 +76,10 @@ export const PaymentMethodDefinitions: PaymentMethodConfigurations = {
 		countries: [ 'US', 'CA', 'AU', 'NZ', 'GB' ],
 		icons: {
 			default: {
-				path: '/assets/images/payment-methods/afterpay-badge.svg',
+				path: 'assets/images/payment-methods/afterpay-badge.svg',
+			},
+			dark: {
+				path: 'assets/images/payment-methods/afterpay-badge.svg',
 			},
 		},
 	},

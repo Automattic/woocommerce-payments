@@ -9,7 +9,6 @@ namespace WCPay\PaymentMethods\Configs\Definitions;
 
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Traits\Base_Payment_Method;
-use WCPay\PaymentMethods\Configs\Traits\Payment_Method_Icons;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
@@ -19,7 +18,6 @@ use WCPay\Constants\Payment_Method;
  */
 class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	use Base_Payment_Method;
-	use Payment_Method_Icons;
 
 	/**
 	 * Get the internal ID for the payment method
@@ -88,12 +86,36 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Override the icon filename base to match the actual icon filenames.
+	 * Get the base filename for the payment method's icons.
 	 *
 	 * @return string
 	 */
-	protected function get_icon_filename_base(): string {
+	private function get_icon_filename_base(): string {
 		return $this->get_id() . '-logo';
+	}
+
+	/**
+	 * Get the URL for the payment method's icon
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @return string
+	 */
+	public function get_icon_url( ?string $account_country = null ): string {
+		return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . $this->get_icon_filename_base() . '.svg';
+	}
+
+	/**
+	 * Get the URL for the payment method's dark mode icon
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @return string Returns regular icon URL if no dark mode icon exists
+	 */
+	public function get_dark_icon_url( ?string $account_country = null ): string {
+		$dark_icon_path = dirname( WCPAY_PLUGIN_FILE ) . '/assets/images/payment-methods/' . $this->get_icon_filename_base() . '-dark.svg';
+		if ( file_exists( $dark_icon_path ) ) {
+			return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . $this->get_icon_filename_base() . '-dark.svg';
+		}
+		return $this->get_icon_url( $account_country );
 	}
 
 	/**
