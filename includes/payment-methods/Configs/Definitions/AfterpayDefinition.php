@@ -8,17 +8,16 @@
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
-use WCPay\PaymentMethods\Configs\Traits\Base_Payment_Method;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Payment_Method;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
  * Class implementing the Afterpay payment method definition.
  */
 class AfterpayDefinition implements PaymentMethodDefinitionInterface {
-	use Base_Payment_Method;
 
 	/**
 	 * Get the internal ID for the payment method
@@ -27,6 +26,15 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public function get_id(): string {
 		return Payment_Method::AFTERPAY;
+	}
+
+	/**
+	 * Get the Stripe payment method ID
+	 *
+	 * @return string
+	 */
+	public function get_stripe_id(): string {
+		return PaymentMethodUtils::get_stripe_id( $this->get_id() );
 	}
 
 	/**
@@ -214,5 +222,16 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public function get_maximum_amount( string $currency, string $country ): ?int {
 		return $this->get_limits_per_currency()[ $currency ][ $country ]['max'] ?? null;
+	}
+
+	/**
+	 * Whether this payment method is available for the given currency and country
+	 *
+	 * @param string $currency        The currency code to check.
+	 * @param string $account_country The merchant's account country.
+	 * @return bool
+	 */
+	public function is_available_for( string $currency, string $account_country ): bool {
+		return PaymentMethodUtils::is_available_for( $this, $currency, $account_country );
 	}
 }

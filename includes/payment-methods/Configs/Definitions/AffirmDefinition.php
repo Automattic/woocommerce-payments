@@ -8,16 +8,16 @@
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
-use WCPay\PaymentMethods\Configs\Traits\Base_Payment_Method;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Constants\Payment_Method;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
+
 /**
  * Class implementing the Affirm payment method definition.
  */
 class AffirmDefinition implements PaymentMethodDefinitionInterface {
-	use Base_Payment_Method;
 
 	/**
 	 * Get the internal ID for the payment method
@@ -26,6 +26,15 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public function get_id(): string {
 		return Payment_Method::AFFIRM;
+	}
+
+	/**
+	 * Get the Stripe payment method ID
+	 *
+	 * @return string
+	 */
+	public function get_stripe_id(): string {
+		return PaymentMethodUtils::get_stripe_id( $this->get_id() );
 	}
 
 	/**
@@ -154,6 +163,21 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
+	 * Whether this payment method is available for the given currency and country
+	 *
+	 * @param string $currency        The currency code to check.
+	 * @param string $account_country The merchant's account country.
+	 * @return bool
+	 */
+	public function is_available_for( string $currency, string $account_country ): bool {
+		if ( ! PaymentMethodUtils::is_available_for( $this, $currency, $account_country ) ) {
+			return false;
+		}
+
+		return $this->meets_availability_constraints( $currency, $account_country );
+	}
+
+	/**
 	 * Check if the payment method meets additional availability constraints beyond currency and country support.
 	 * For Affirm, the currency must match the country (USD for US, CAD for Canada).
 	 *
@@ -161,7 +185,7 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	 * @param string $account_country The merchant's account country.
 	 * @return bool True if the payment method meets all additional availability constraints.
 	 */
-	protected function meets_availability_constraints( string $currency, string $account_country ): bool {
+	private function meets_availability_constraints( string $currency, string $account_country ): bool {
 		return ( Currency_Code::UNITED_STATES_DOLLAR === $currency && Country_Code::UNITED_STATES === $account_country ) ||
 				( Currency_Code::CANADIAN_DOLLAR === $currency && Country_Code::CANADA === $account_country );
 	}
