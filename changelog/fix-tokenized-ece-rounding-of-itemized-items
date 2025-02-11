@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: tokenized ECE to exclude itemized items on rounding discrepancies of totals.

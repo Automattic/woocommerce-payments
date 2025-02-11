@@ -12,10 +12,11 @@
 	font-weight: normal;
 	display: inline-flex;
 	cursor: pointer;
-	color: inherit;
+	color: inherit !important;
 	font-size: initial;
-	padding: 2px 1px;
+	padding: 2px 1px !important;
 	align-items: center;
+	box-shadow: none !important;
 
 	span {
 		margin-right: 4px;
