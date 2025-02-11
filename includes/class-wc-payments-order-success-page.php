@@ -197,10 +197,11 @@ class WC_Payments_Order_Success_Page {
 	 *
 	 * @param WC_Payment_Gateway_WCPay                 $gateway the gateway being shown.
 	 * @param WCPay\Payment_Methods\UPE_Payment_Method $payment_method the payment method being shown.
+	 * @param bool                                     $show_payment_method_name whether to render the payment method name.
 	 *
 	 * @return string|false
 	 */
-	public function show_payment_method_name_with_logo( $gateway, $payment_method ) {
+	public function show_payment_method_name_with_logo( $gateway, $payment_method, $show_payment_method_name = false ) {
 		$method_logo_url = $payment_method->get_payment_method_icon_for_location( 'checkout', false, $gateway->get_account_country() );
 		$method_logo_url = apply_filters(
 			'wc_payments_thank_you_page_payment_method_logo_url',
@@ -215,8 +216,10 @@ class WC_Payments_Order_Success_Page {
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-gateway-method-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
-			<?php echo esc_html( $payment_method->get_title() ); ?>
+			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" title="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
+			<?php if ( $show_payment_method_name ) { ?>
+				<span class="wc-payment-gateway-method-logo-name"><?php echo esc_html( $payment_method->get_title() ); ?></span>
+			<?php } ?>
 		</div>
 		<?php
 		return ob_get_clean();
