@@ -2120,8 +2120,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 */
 	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false ) {
 		if ( ! $this->is_api_request_allowed( $api ) ) {
-			Logger::error( "API request '$api' is not allowed" );
-			return [];
+			Logger::info( "Platform API request '$api' wasn't executed. API requests are only performed if the account is connected." );
+			return []; // this will result as 200 OK with empty array response.
 		}
 
 		// Apply the default params that can be overridden by the calling method.
@@ -2889,7 +2889,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Check if is allowed to perform API request.
+	 * Check if the site is allowed to perform API request.
+	 * Sites that don't have an account connected or are rejected/unlinked are able only to perform onboarding and account fetch requests.
 	 *
 	 * @param string $api - The API endpoint to call.
 	 *
@@ -2897,7 +2898,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 */
 	private function is_api_request_allowed( string $api ): bool {
 		// Whitelist API endpoints that are allowed to be called without an account.
-		if ( substr( $api, 0, strlen( self::ONBOARDING_API ) ) === self::ONBOARDING_API || self::ACCOUNTS_API === $api ) {
+		if (
+			substr( $api, 0, strlen( self::ONBOARDING_API ) ) === self::ONBOARDING_API ||
+			substr( $api, 0, strlen( self::ACCOUNTS_API ) ) === self::ACCOUNTS_API
+		) {
 			return true;
 		}
 

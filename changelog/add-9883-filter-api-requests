@@ -1,4 +1,4 @@
 Significance: minor
 Type: add
 
-Restrict API requests if the account is not connected or if the account is rejected
+Do not perform API requests to the platform if the account is not connected or if the account is rejected
