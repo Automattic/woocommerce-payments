@@ -85,7 +85,7 @@ local.env
 # Screenshots created locally when running e2e tests
 tests/e2e/screenshots
 
-# E2E Performance test results
+# E2E test results
 tests/e2e/reports
 /playwright-report/
 /blob-report/

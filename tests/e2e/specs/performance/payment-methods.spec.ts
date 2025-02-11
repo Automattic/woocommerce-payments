@@ -64,7 +64,7 @@ test.describe( 'Checkout page performance', () => {
 			// Clear the cart at the end so it's ready for another test
 			await emptyCart( shopperPage );
 
-			// Deactivate UPE
+			// Deactivate WooPay
 			await deactivateWooPay( merchantPage );
 		} );
 
