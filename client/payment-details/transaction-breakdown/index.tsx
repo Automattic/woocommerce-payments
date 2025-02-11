@@ -55,8 +55,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 		return null;
 	}
 
-	const { formattedAmount, isMultiCurrency } =  useTransactionAmounts( captureEvent );
-
+	const { formattedAmount, isMultiCurrency } = transactionAmounts;
 	const feeExchangeRate = captureEvent.fee_rates.fee_exchange_rate?.rate || 1;
 
 	const conversionRate = isMultiCurrency ? (
