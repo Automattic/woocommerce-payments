@@ -36,7 +36,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 	const { timeline, isLoading } = useTimeline( paymentIntentId );
 
 	/**
-	 * Right now there is now support for multi-capture in the WooPayments and
+	 * Right now there is no support for multi-capture in the WooPayments and
 	 * we retrieve information about fees from the first available capture
 	 * event. This should be updated if multi capture becomes reality.
 	 */
@@ -55,7 +55,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 		return null;
 	}
 
-	const { formattedAmount, isMultiCurrency } = transactionAmounts;
+	const { formattedAmount, isMultiCurrency } =  useTransactionAmounts( captureEvent );
 
 	const feeExchangeRate = captureEvent.fee_rates.fee_exchange_rate?.rate || 1;
 
