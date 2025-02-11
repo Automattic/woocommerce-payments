@@ -13,13 +13,12 @@ use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinition;
 use WCPay\PaymentMethods\Configs\Interfaces\BNPLPaymentMethodDefinition;
 use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
-use WCPay\Constants\Currency_Code;
-use WCPay\Constants\Country_Code;
-
 /**
  * Affirm Payment Method class extending UPE base class
  */
 class Affirm_Payment_Method extends UPE_Payment_Method {
+
+	const PAYMENT_METHOD_STRIPE_ID = 'affirm';
 
 	/**
 	 * The payment method definition.
@@ -41,16 +40,17 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 		$this->register_payment_method( $this->definition );
 
 		$capabilities = $this->definition->get_capabilities();
+		$icons        = $this->definition->get_icons();
 
-		$this->stripe_id                    = $this->get_stripe_id();
+		$this->stripe_id                    = $this->definition->get_id();
 		$this->is_reusable                  = in_array( Payment_Method_Capability::TOKENIZATION, $capabilities, true );
 		$this->is_bnpl                      = in_array( Payment_Method_Capability::BUY_NOW_PAY_LATER, $capabilities, true );
-		$this->icon_url                     = $this->definition->get_icon_url();
-		$this->dark_icon_url                = $this->definition->get_dark_icon_url();
+		$this->icon_url                     = $icons['default']['path'];
+		$this->dark_icon_url                = $icons['dark']['path'];
 		$this->currencies                   = $this->definition->get_supported_currencies();
-		$this->countries                    = $this->definition->get_supported_countries();
 		$this->accept_only_domestic_payment = in_array( Payment_Method_Capability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
-		$this->limits_per_currency          = $this->definition->get_currency_limits();
+		$this->limits_per_currency          = $this->definition->get_limits_per_currency();
+		$this->countries                    = $this->definition->get_supported_countries();
 	}
 
 	/**
@@ -83,72 +83,5 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function get_testing_instructions( string $account_country ) {
 		return $this->definition->get_testing_instructions();
-	}
-
-	/**
-	 * Get the Stripe payment method ID (e.g. 'affirm_payments')
-	 * By default, this appends '_payments' to the payment method ID.
-	 *
-	 * @return string
-	 */
-	protected function get_stripe_id(): string {
-		return AffirmDefinition::get_id() . '_payments';
-	}
-
-	/**
-	 * Check if the payment method is available for the given currency and country.
-	 *
-	 * @todo This method is not currently being used. It will be integrated when implementing the full payment method availability checks and may be moved to the UPE_Payment_Method class.
-	 *
-	 * @param string $currency        The currency code to check.
-	 * @param string $account_country The merchant's account country.
-	 * @return bool
-	 */
-	public function is_available_for( string $currency, string $account_country ): bool {
-		// Check if currency is supported.
-		$supported_currencies = $this->definition->get_supported_currencies();
-		if ( ! empty( $supported_currencies ) && ! in_array( $currency, $supported_currencies, true ) ) {
-			return false;
-		}
-
-		// Check if country is supported.
-		$supported_countries = $this->definition->get_supported_countries();
-		if ( ! empty( $supported_countries ) && ! in_array( $account_country, $supported_countries, true ) ) {
-			return false;
-		}
-
-		// Check domestic transaction requirement.
-		if ( in_array( Payment_Method_Capability::DOMESTIC_TRANSACTIONS_ONLY, $this->definition->get_capabilities(), true ) ) {
-			$mapping = $this->definition->get_domestic_currency_mapping();
-			return isset( $mapping[ $currency ] ) && $mapping[ $currency ] === $account_country;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Check if the payment amount is within the allowed limits for the currency and country.
-	 *
-	 * @todo This method is not currently being used. It will be integrated when implementing the full payment method amount validation and may be moved to the UPE_Payment_Method class.
-	 *
-	 * @param int    $amount          The payment amount in cents.
-	 * @param string $currency        The currency code.
-	 * @param string $account_country The merchant's account country.
-	 * @return bool
-	 */
-	public function is_amount_within_limits( int $amount, string $currency, string $account_country ): bool {
-		// First check if this currency/country combination is valid.
-		if ( ! $this->is_available_for( $currency, $account_country ) ) {
-			return false;
-		}
-
-		$limits = $this->definition->get_currency_limits();
-
-		if ( ! isset( $limits[ $currency ][ $account_country ] ) ) {
-			return false;
-		}
-
-		$currency_limits = $limits[ $currency ][ $account_country ];
-		return $amount >= $currency_limits['min'] && $amount <= $currency_limits['max'];
 	}
 }

@@ -7,22 +7,30 @@
 
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
-use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinition;
+use WCPay\PaymentMethods\Configs\Interfaces\BNPLPaymentMethodDefinition;
+use WCPay\PaymentMethods\Configs\Traits\Base_Payment_Method;
+use WCPay\PaymentMethods\Configs\Traits\BNPL_Payment_Method;
+use WCPay\PaymentMethods\Configs\Traits\Payment_Method_Icons;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Class implementing the Afterpay payment method definition.
  */
-class Afterpay implements PaymentMethodDefinition {
+class Afterpay implements BNPLPaymentMethodDefinition {
+	use Base_Payment_Method;
+	use BNPL_Payment_Method;
+	use Payment_Method_Icons;
+
 	/**
-	 * Get the payment method ID
+	 * Get the internal ID for the payment method
 	 *
 	 * @return string
 	 */
-	public static function get_id(): string {
-		return 'afterpay_clearpay';
+	public function get_id(): string {
+		return Payment_Method::AFTERPAY;
 	}
 
 	/**
@@ -32,7 +40,7 @@ class Afterpay implements PaymentMethodDefinition {
 	 * @return string
 	 */
 	public function get_title( ?string $account_country = null ): string {
-		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+		if ( 'GB' === $account_country ) {
 			return __( 'Clearpay', 'woocommerce-payments' );
 		}
 
@@ -51,9 +59,23 @@ class Afterpay implements PaymentMethodDefinition {
 	}
 
 	/**
+	 * Override the icon filename base to match the actual icon filenames.
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @return string
+	 */
+	public function get_icon_filename_base( ?string $account_country = null ): string {
+		if ( 'GB' === $account_country ) {
+			return 'clearpay';
+		}
+
+		return 'afterpay-badge';
+	}
+
+	/**
 	 * Get the list of supported currencies
 	 *
-	 * @return string[]
+	 * @return string[] Array of currency codes
 	 */
 	public function get_supported_currencies(): array {
 		return [
@@ -68,7 +90,7 @@ class Afterpay implements PaymentMethodDefinition {
 	/**
 	 * Get the list of supported countries
 	 *
-	 * @return string[]
+	 * @return string[] Array of country codes
 	 */
 	public function get_supported_countries(): array {
 		return [
@@ -95,32 +117,9 @@ class Afterpay implements PaymentMethodDefinition {
 	}
 
 	/**
-	 * Get the URL for the payment method's icon
-	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
-	 * @return string
-	 */
-	public function get_icon_url( ?string $account_country = null ): string {
-		$filename = Country_Code::UNITED_KINGDOM === $account_country ? 'clearpay' : 'afterpay-badge';
-		return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . $filename . '.svg';
-	}
-
-	/**
-	 * Get the URL for the payment method's dark mode icon
-	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
-	 * @return string|null
-	 */
-	public function get_dark_icon_url( ?string $account_country = null ): ?string {
-		$filename       = Country_Code::UNITED_KINGDOM === $account_country ? 'clearpay' : 'afterpay-badge';
-		$dark_icon_path = plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . $filename . '-dark.svg';
-		return file_exists( str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), plugin_dir_path( WCPAY_PLUGIN_FILE ), $dark_icon_path ) ) ? $dark_icon_path : null;
-	}
-
-	/**
 	 * Get the testing instructions for the payment method
 	 *
-	 * @return string
+	 * @return string HTML string containing testing instructions
 	 */
 	public function get_testing_instructions(): string {
 		return '';
@@ -131,37 +130,37 @@ class Afterpay implements PaymentMethodDefinition {
 	 *
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
-	public function get_currency_limits(): array {
+	public function get_limits_per_currency(): array {
 		return [
 			Currency_Code::AUSTRALIAN_DOLLAR    => [
 				Country_Code::AUSTRALIA => [
 					'min' => 100,
 					'max' => 200000,
-				],
+				], // Represents AUD 1 - 2,000 AUD.
 			],
 			Currency_Code::CANADIAN_DOLLAR      => [
 				Country_Code::CANADA => [
 					'min' => 100,
 					'max' => 200000,
-				],
+				], // Represents CAD 1 - 2,000 CAD.
 			],
 			Currency_Code::NEW_ZEALAND_DOLLAR   => [
 				Country_Code::NEW_ZEALAND => [
 					'min' => 100,
 					'max' => 200000,
-				],
+				], // Represents NZD 1 - 2,000 NZD.
 			],
 			Currency_Code::POUND_STERLING       => [
 				Country_Code::UNITED_KINGDOM => [
 					'min' => 100,
 					'max' => 120000,
-				],
+				], // Represents GBP 1 - 1,200 GBP.
 			],
 			Currency_Code::UNITED_STATES_DOLLAR => [
 				Country_Code::UNITED_STATES => [
 					'min' => 100,
 					'max' => 400000,
-				],
+				], // Represents USD 1 - 4,000 USD.
 			],
 		];
 	}
@@ -173,20 +172,5 @@ class Afterpay implements PaymentMethodDefinition {
 	 */
 	public function is_enabled_by_default(): bool {
 		return false;
-	}
-
-	/**
-	 * Get the mapping of currencies to their domestic countries.
-	 *
-	 * @return array<string,string>
-	 */
-	public function get_domestic_currency_mapping(): array {
-		return [
-			Currency_Code::AUSTRALIAN_DOLLAR    => Country_Code::AUSTRALIA,
-			Currency_Code::CANADIAN_DOLLAR      => Country_Code::CANADA,
-			Currency_Code::NEW_ZEALAND_DOLLAR   => Country_Code::NEW_ZEALAND,
-			Currency_Code::POUND_STERLING       => Country_Code::UNITED_KINGDOM,
-			Currency_Code::UNITED_STATES_DOLLAR => Country_Code::UNITED_STATES,
-		];
 	}
 }

@@ -7,22 +7,29 @@
 
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
-use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinition;
+use WCPay\PaymentMethods\Configs\Interfaces\BNPLPaymentMethodDefinition;
+use WCPay\PaymentMethods\Configs\Traits\Base_Payment_Method;
+use WCPay\PaymentMethods\Configs\Traits\BNPL_Payment_Method;
+use WCPay\PaymentMethods\Configs\Traits\Payment_Method_Icons;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
-
+use WCPay\Constants\Payment_Method;
 /**
  * Class implementing the Affirm payment method definition.
  */
-class Affirm implements PaymentMethodDefinition {
+class Affirm implements BNPLPaymentMethodDefinition {
+	use Base_Payment_Method;
+	use BNPL_Payment_Method;
+	use Payment_Method_Icons;
+
 	/**
-	 * Get the payment method ID
+	 * Get the internal ID for the payment method
 	 *
 	 * @return string
 	 */
-	public static function get_id(): string {
-		return 'affirm';
+	public function get_id(): string {
+		return Payment_Method::AFFIRM;
 	}
 
 	/**
@@ -47,7 +54,7 @@ class Affirm implements PaymentMethodDefinition {
 	/**
 	 * Get the list of supported currencies
 	 *
-	 * @return string[]
+	 * @return string[] Array of currency codes
 	 */
 	public function get_supported_currencies(): array {
 		return [
@@ -59,7 +66,7 @@ class Affirm implements PaymentMethodDefinition {
 	/**
 	 * Get the list of supported countries
 	 *
-	 * @return string[]
+	 * @return string[] Array of country codes
 	 */
 	public function get_supported_countries(): array {
 		return [
@@ -83,30 +90,18 @@ class Affirm implements PaymentMethodDefinition {
 	}
 
 	/**
-	 * Get the URL for the payment method's icon
+	 * Override the icon filename base to match the actual icon filenames.
 	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	public function get_icon_url( ?string $account_country = null ): string {
-		return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . self::get_id() . '-logo.svg';
-	}
-
-	/**
-	 * Get the URL for the payment method's dark mode icon
-	 *
-	 * @param string|null $account_country Optional. The merchant's account country.
-	 * @return string|null
-	 */
-	public function get_dark_icon_url( ?string $account_country = null ): ?string {
-		$dark_icon_path = plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . self::get_id() . '-logo-dark.svg';
-		return file_exists( str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), plugin_dir_path( WCPAY_PLUGIN_FILE ), $dark_icon_path ) ) ? $dark_icon_path : null;
+	protected function get_icon_filename_base(): string {
+		return $this->get_id() . '-logo';
 	}
 
 	/**
 	 * Get the testing instructions for the payment method
 	 *
-	 * @return string
+	 * @return string HTML string containing testing instructions
 	 */
 	public function get_testing_instructions(): string {
 		return '';
@@ -117,7 +112,7 @@ class Affirm implements PaymentMethodDefinition {
 	 *
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
-	public function get_currency_limits(): array {
+	public function get_limits_per_currency(): array {
 		return [
 			Currency_Code::CANADIAN_DOLLAR      => [
 				Country_Code::CANADA => [
@@ -139,23 +134,24 @@ class Affirm implements PaymentMethodDefinition {
 	}
 
 	/**
+	 * Check if the payment method meets additional availability constraints beyond currency and country support.
+	 * For Affirm, the currency must match the country (USD for US, CAD for Canada).
+	 *
+	 * @param string $currency        The currency code to check.
+	 * @param string $account_country The merchant's account country.
+	 * @return bool True if the payment method meets all additional availability constraints.
+	 */
+	protected function meets_availability_constraints( string $currency, string $account_country ): bool {
+		return ( Currency_Code::UNITED_STATES_DOLLAR === $currency && Country_Code::UNITED_STATES === $account_country ) ||
+				( Currency_Code::CANADIAN_DOLLAR === $currency && Country_Code::CANADA === $account_country );
+	}
+
+	/**
 	 * Whether this payment method is enabled by default
 	 *
 	 * @return bool
 	 */
 	public function is_enabled_by_default(): bool {
 		return false;
-	}
-
-	/**
-	 * Get the mapping of currencies to their domestic countries.
-	 *
-	 * @return array<string,string>
-	 */
-	public function get_domestic_currency_mapping(): array {
-		return [
-			Currency_Code::UNITED_STATES_DOLLAR => Country_Code::UNITED_STATES,
-			Currency_Code::CANADIAN_DOLLAR      => Country_Code::CANADA,
-		];
 	}
 }
