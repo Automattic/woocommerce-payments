@@ -99,4 +99,29 @@ interface PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public function is_enabled_by_default(): bool;
+
+	/**
+	 * Get the currency limits for the payment method
+	 *
+	 * @return array<string,array<string,array{min:int,max:int}>>
+	 */
+	public function get_limits_per_currency(): array;
+
+	/**
+	 * Get minimum amount for a currency and country
+	 *
+	 * @param string $currency The currency code.
+	 * @param string $country  The country code.
+	 * @return int|null Returns null if no limit is set
+	 */
+	public function get_minimum_amount( string $currency, string $country ): ?int;
+
+	/**
+	 * Get maximum amount for a currency and country
+	 *
+	 * @param string $currency The currency code.
+	 * @param string $country  The country code.
+	 * @return int|null Returns null if no limit is set
+	 */
+	public function get_maximum_amount( string $currency, string $country ): ?int;
 }

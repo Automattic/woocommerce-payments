@@ -7,9 +7,8 @@
 
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
-use WCPay\PaymentMethods\Configs\Interfaces\BNPLPaymentMethodDefinition;
+use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Traits\Base_Payment_Method;
-use WCPay\PaymentMethods\Configs\Traits\BNPL_Payment_Method;
 use WCPay\PaymentMethods\Configs\Traits\Payment_Method_Icons;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\Constants\Country_Code;
@@ -19,9 +18,8 @@ use WCPay\Constants\Payment_Method;
 /**
  * Class implementing the Afterpay payment method definition.
  */
-class AfterpayDefinition implements BNPLPaymentMethodDefinition {
+class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	use Base_Payment_Method;
-	use BNPL_Payment_Method;
 	use Payment_Method_Icons;
 
 	/**
@@ -172,5 +170,27 @@ class AfterpayDefinition implements BNPLPaymentMethodDefinition {
 	 */
 	public function is_enabled_by_default(): bool {
 		return false;
+	}
+
+	/**
+	 * Get minimum amount for a currency and country
+	 *
+	 * @param string $currency The currency code.
+	 * @param string $country  The country code.
+	 * @return int|null
+	 */
+	public function get_minimum_amount( string $currency, string $country ): ?int {
+		return $this->get_limits_per_currency()[ $currency ][ $country ]['min'] ?? null;
+	}
+
+	/**
+	 * Get maximum amount for a currency and country
+	 *
+	 * @param string $currency The currency code.
+	 * @param string $country  The country code.
+	 * @return int|null
+	 */
+	public function get_maximum_amount( string $currency, string $country ): ?int {
+		return $this->get_limits_per_currency()[ $currency ][ $country ]['max'] ?? null;
 	}
 }
