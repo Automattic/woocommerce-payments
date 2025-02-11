@@ -1,6 +1,8 @@
-# WooCommerce Payments End-to-end tests
+# WooPayments end-to-end tests 🎭
 
-E2E tests can be run locally or in GitHub Actions. Github Actions are already configured and doesn't require any changes to run the tests.
+WooPayments e2e tests can be found in the `./tests/e2e/specs` directory. These tests run with Playwright and replaced the Puppeteer e2e tests when we completed the migration to Playwright in early 2025.
+
+E2E tests can be run locally or in GitHub Actions. Github Actions are already configured and don't require any changes to run the tests.
 
 ## Setting up & running E2E tests
 
@@ -11,8 +13,8 @@ For running E2E tests locally, create a new file named `local.env` under `tests/
 <p>
 
 ```
-# WooCommerce Payments Dev Tools Repo
-WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
+# WooPayments Dev Tools Repo
+WCP_DEV_TOOLS_REPO='git@github.com:org/dev-tools-repo.git'
 
 # Optional to see additional verbose output. Default false.
 DEBUG=false
@@ -27,15 +29,15 @@ DEBUG=false
 <summary>Choose Transact Platform Server instance</summary>
 <p>
 
-It is possible to use the live server or a local docker instance of Transact Platform Server locally. On Github Actions, live server is used for tests. Add the following env variables to your `local.env` based on your preference (replace values as required).
+It is possible to use the live server or a local docker instance of the Transact Platform Server when testing locally. On Github Actions, the live server is used for tests. Add the following env variables to your `local.env` based on your preference (replace values as required).
 
 **Using Local Server on Docker**
 
-By default, the local E2E environment is configured to use Transact Platform local server instance. Add the following env variables to configure the local server instance.
+By default, the local E2E environment is configured to use the Transact Platform local server instance. Add the following env variables to configure the local server instance.
 
 ```
 # Transact Platform Server Repo
-TRANSACT_PLATFORM_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+TRANSACT_PLATFORM_SERVER_REPO='git@github.com:org/server-repo.git'
 
 # Stripe account data. Need to support level 3 data to run tests successfully.
 # These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys
@@ -50,7 +52,7 @@ E2E_WOOPAY_BLOG_ID=<WPCOM Site ID for https://pay.woo.com>
 
 **Using Live Server**
 
-For using a live server, you'll need to add Jetpack blog token, user token & blog id from one of your test sites connected to WooCommerce Payments live account. On a connected test site, you can use the code below to extract the blog id & tokens.
+For using the live server, you'll need to add a Jetpack blog token, user token, & blog id from one of your test sites connected to a WooPayments live account. On a connected test site, you can use the code below to extract the blog id & tokens.
 ```
 Jetpack_Options::get_option( 'id' );
 Jetpack_Options::get_option( 'blog_token' );
@@ -59,7 +61,7 @@ Jetpack_Options::get_option( 'user_tokens' );
 
 Set the value of `E2E_USE_LOCAL_SERVER` to `false` to enable live server.
 
-Once you have the blog id & tokens, add the following ev variables to your `local.env`.
+Once you have the blog id & tokens, add the following env variables to your `local.env`.
 ```
 # Set local server to false for using live server. Default: true.
 E2E_USE_LOCAL_SERVER=false
@@ -78,7 +80,7 @@ E2E_BLOG_ID='<blog_id>'
 <summary>Installing Plugins</summary>
 <p>
 
-If you wish to run E2E test for WC Subscriptions, the following env variables needs to be added to your `local.env` (replace values as required).
+If you wish to run E2E tests for WC Subscriptions, the following env variables need to be added to your `local.env` (replace values as required).
 
 For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) and assign the `repo` scope to it.
 
@@ -96,7 +98,7 @@ WC_SUBSCRIPTIONS_REPO='{owner}/{repo}'
 <summary>Skipping Plugins</summary>
 <p>
 
-If you wish to skip E2E tests for WC Subscriptions, Action Scheduler or WC Gutenberg Products Blocks, the following env variables needs to be added to your `local.env`.
+If you wish to skip E2E tests for WC Subscriptions, Action Scheduler, or WC Gutenberg Products Blocks, the following env variables need to be added to your `local.env`.
 ```
 SKIP_WC_SUBSCRIPTIONS_TESTS=1
 SKIP_WC_ACTION_SCHEDULER_TESTS=1
@@ -109,10 +111,10 @@ SKIP_WC_BLOCKS_TESTS=1
 ---
 
 <details>
-<summary>Using specific version of WordPress / WooCommerce</summary>
+<summary>Using a specific version of WordPress or WooCommerce</summary>
 <p>
 
-To use a specific version of WordPress or WooCommerce for testing, the following env variables needs to be added to your `local.env`.
+To use a specific version of WordPress or WooCommerce for testing, the following env variables need to be added to your `local.env`.
 ```
 E2E_WP_VERSION='<wordpress_version>'
 E2E_WC_VERSION='<woocommerce_version>'
@@ -127,8 +129,8 @@ E2E_WC_VERSION='<woocommerce_version>'
 <summary>Initialize E2E docker environment</summary>
 <p>
 
-  1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running setup script.
-  2. Run setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+  1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running the setup script.
+  2. Run the setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
 
   After the E2E environment is up, you can access the containers on:
 
@@ -147,47 +149,50 @@ E2E_WC_VERSION='<woocommerce_version>'
 <p>
 
 There are two modes for running tests:
-1. **Headless mode**: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching Chromium interface. This mode is used in CI environment.
-2. **Dev mode**: `npm run test:e2e-dev`. Dev mode is interactive and launches Chromium UI. It's useful for developing, debugging and troubleshooting failing tests. There is a custom config used for `jest-puppeteer` to run tests in dev mode.
 
-**Running only a single test suite**
+1. **Headless mode**: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching a Chromium user interface.
+2. **UI mode**: `npm run test:e2e-ui`. UI mode is interactive and launches a Chromium user interface. It's useful for developing, debugging, and troubleshooting failing tests. For more information about Playwright UI mode, see [Playwright UI Mode docs](https://playwright.dev/docs/test-ui-mode#introduction).
 
-If you would like to run only one test suite, you can pass the relative path to the test file along with any of the modes mentioned above. e.g. `npm run test:e2e-dev path/to/test`.
+#### Running only a single test suite
 
-**Running tests in group**
+If you would like to run only one test suite, you can pass the relative path to the test file along with any of the modes mentioned above. e.g. `npm run test:e2e-ui path/to/test`.
+
+#### Running tests in group
 
 By adding additional env variables, it is possible to run a group of tests. e.g.
 
-* `E2E_GROUP='wcpay' E2E_BRANCH='merchant' npm run test:e2e-dev` runs merchant tests for WCPay.
-* `E2E_GROUP='wcpay' E2E_BRANCH='shopper' npm run test:e2e-dev` runs shopper tests for WCPay.
-* `E2E_GROUP='wcpay' npm run test:e2e-dev` runs merchant & shopper tests for WCPay.
+- `E2E_GROUP='wcpay' E2E_BRANCH='merchant' npm run test:e2e-ui` runs merchant tests for WCPay in UI mode.
+- `E2E_GROUP='wcpay' E2E_BRANCH='shopper' npm run test:e2e-ui` runs shopper tests for WCPay in UI mode.
+- `E2E_GROUP='wcpay' npm run test:e2e-ui` runs merchant & shopper tests for WCPay in UI mode.
 
-Handy utility scripts for managing environment:
+Handy utility scripts for managing your E2E environment:
 
-* `npm run test:e2e-down` Stops E2E environment containers.
-* `npm run test:e2e-cleanup` Removes fetched dependencies and docker volumes.
-* `npm run test:e2e-reset` Stops containers and performs cleanup.
-* `npm run test:e2e-up` Starts containers without setting up again.
+- `npm run test:e2e-down` Stops E2E environment containers.
+- `npm run test:e2e-cleanup` Removes fetched dependencies and docker volumes.
+- `npm run test:e2e-reset` Stops containers and performs cleanup.
+- `npm run test:e2e-up` Starts containers without setting up again.
 
 </p>
 </details>
 
 <br>
 
-For running E2E tests on an Atomic site, follow the same guidelines mentioned above, and specify `NODE_ENV=atomic`, such as this:
+#### Running on Atomic site
 
-`npm run test:e2e-dev -- --NODE_ENV=atomic`
-
-Note that, at the moment, we are only able to run a subset of the regular E2E tests.
+For running E2E tests on the Atomic site, follow the same guidelines mentioned above, and add `NODE_ENV=atomic` to your `local.env` file. Then run bring up your E2E environment. Lastly, run tests using `npm run test:e2e` or `npm run test:e2e-ui`.
 
 ## Writing tests
 
-Package `@woocommerce/e2e-environment` overrides `it` method to attach custom reporter for failed tests.
-It is important to write test cases within `it()` rather than `test()` function to make sure failed tests are reported to Slack channel.
+Place new spec files in the appropriate directory under `tests/e2e/specs`. The directory structure is as follows:
+
+- **Subscriptions Merchant**: `tests/e2e/specs/subscriptions/merchant` - Subscription related tests for the merchant role.
+- **Subscriptions Shopper**: `tests/e2e/specs/subscriptions/shopper` - Subscription related tests for the shopper role.
+- **WooPayments Merchant**: `tests/e2e/specs/wcpay/merchant` - Tests for the merchant role in WooPayments.
+- **WooPayments Shopper**: `tests/e2e/specs/wcpay/shopper` - Tests for the shopper role in WooPayments, including Blocks E2E tests.
 
 ## Debugging tests
 
-Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true` env variable to pause test runner when test fails.
+Set `E2E_DEBUG=true` env variable in your `local.env` file inside the `tests/e2e/config` directory to pause the test runner when test fails.
 
 ## Slack integration
 
