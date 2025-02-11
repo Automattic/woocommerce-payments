@@ -49,7 +49,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_tokenized_cart_ece_enabled(): bool {
-		return '1' === get_option( self::TOKENIZED_CART_ECE_FLAG_NAME, '1' );
+		return '1' === get_option( self::TOKENIZED_CART_ECE_FLAG_NAME, '0' );
 	}
 
 	/**

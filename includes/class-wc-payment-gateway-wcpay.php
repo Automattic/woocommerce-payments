@@ -69,11 +69,14 @@ use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Payment_Methods\Alipay_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\Payment_Methods\Grabpay_Payment_Method;
+use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 
 /**
  * Gateway class for WooPayments
@@ -338,6 +341,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// so instead of appending '_payments' to the end of the ID, it'll be better
 		// to have a map for it instead, just in case the pattern changes.
 		$this->payment_method_capability_key_map = [
+			'alipay'            => 'alipay_payments',
 			'sofort'            => 'sofort_payments',
 			'giropay'           => 'giropay_payments',
 			'bancontact'        => 'bancontact_payments',
@@ -351,7 +355,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'affirm'            => 'affirm_payments',
 			'afterpay_clearpay' => 'afterpay_clearpay_payments',
 			'klarna'            => 'klarna_payments',
+			'grabpay'           => 'grabpay_payments',
 			'jcb'               => 'jcb_payments',
+			'wechat_pay'        => 'wechat_pay_payments',
 		];
 
 		// WooPay utilities.
@@ -4133,6 +4139,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods = [ 'card' ];
 
 		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Alipay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
@@ -4142,6 +4149,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$available_methods = array_values(
 			apply_filters(

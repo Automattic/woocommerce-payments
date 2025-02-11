@@ -313,6 +313,9 @@ jQuery( ( $ ) => {
 				}
 
 				const clickOptions = {
+					business: {
+						name: getExpressCheckoutData( 'store_name' ),
+					},
 					lineItems: normalizeLineItems( options.displayItems ),
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,

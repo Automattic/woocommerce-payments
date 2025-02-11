@@ -2646,6 +2646,36 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Retrieve the embedded account session.
+	 *
+	 * Will return the session key used to initialise the embedded session.
+	 *
+	 * @return array Session data.
+	 *
+	 * @throws API_Exception|Exception
+	 */
+	public function create_embedded_account_session(): array {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return [];
+		}
+
+		try {
+			$account_session = $this->payments_api_client->create_embedded_account_session();
+		} catch ( API_Exception $e ) {
+			// If we fail to create the session, return an empty array.
+			return [];
+		}
+
+		return [
+			'clientSecret'   => $account_session['client_secret'] ?? '',
+			'expiresAt'      => $account_session['expires_at'] ?? 0,
+			'accountId'      => $account_session['account_id'] ?? '',
+			'isLive'         => $account_session['is_live'] ?? false,
+			'publishableKey' => $account_session['publishable_key'] ?? '',
+		];
+	}
+
+	/**
 	 * Extract the useful test drive settings from the account data.
 	 *
 	 * We will use this data to migrate the test drive settings when onboarding the live account.
