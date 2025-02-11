@@ -615,3 +615,25 @@ export const removeCoupon = async ( page: Page ) => {
 		).toBeVisible();
 	}
 };
+
+/**
+ * When using a 3DS card, call this function after clicking the 'Place order' button
+ * to confirm the card authentication.
+ *
+ * @param  {Page}          page The Shopper page object.
+ * @param  {boolean}       authorize Whether to authorize the transaction or not.
+ * @return {Promise<void>}      Void.
+ */
+export const confirmCardAuthenticationWCB = async (
+	page: Page,
+	authorize = true
+): Promise< void > => {
+	const placeOrderButton = page.locator(
+		'.wc-block-components-checkout-place-order-button'
+	);
+	await expect( placeOrderButton ).toBeDisabled();
+	await expect( placeOrderButton ).toHaveClass(
+		/wc-block-components-button--loading/
+	);
+	await confirmCardAuthentication( page, authorize );
+};

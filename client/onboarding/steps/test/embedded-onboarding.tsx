@@ -58,7 +58,9 @@ describe( 'EmbeddedOnboarding', () => {
 
 		await waitFor( () =>
 			expect(
-				screen.getByText( /Failed to create account session/i )
+				screen.getByText(
+					/Failed to create account session. Please check that you're using the latest version of WooPayments./i
+				)
 			).toBeInTheDocument()
 		);
 	} );

@@ -17,9 +17,10 @@ import { addWCBCheckoutPage } from '../../../utils/merchant';
 import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
 import {
 	addToCartFromShopPage,
-	confirmCardAuthentication,
+	confirmCardAuthenticationWCB,
 	fillBillingAddressWCB,
 	fillCardDetailsWCB,
+	placeOrderWCB,
 } from '../../../utils/shopper';
 import { config } from '../../../config/default';
 
@@ -50,14 +51,7 @@ describeif( shouldRunWCBlocksTests )(
 				config.addresses.customer.billing
 			);
 			await fillCardDetailsWCB( shopperPage, config.cards.basic );
-			await shopperPage
-				.getByRole( 'button', { name: 'Place Order' } )
-				.click();
-			await expect(
-				shopperPage.getByRole( 'heading', {
-					name: 'Order received',
-				} )
-			).toBeVisible();
+			await placeOrderWCB( shopperPage );
 		} );
 
 		test( 'using a 3DS card', async () => {
@@ -71,10 +65,8 @@ describeif( shouldRunWCBlocksTests )(
 				config.addresses.customer.billing
 			);
 			await fillCardDetailsWCB( shopperPage, config.cards[ '3ds' ] );
-			await shopperPage
-				.getByRole( 'button', { name: 'Place Order' } )
-				.click();
-			await confirmCardAuthentication( shopperPage );
+			await placeOrderWCB( shopperPage, false );
+			await confirmCardAuthenticationWCB( shopperPage );
 			await expect(
 				shopperPage.getByRole( 'heading', {
 					name: 'Order received',
