@@ -85,7 +85,7 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		if ( $payment_method->get_id() === Payment_Method::GRABPAY ) {
-			$output = $this->show_payment_method_name_with_logo( $gateway, $payment_method );
+			$output = $this->show_payment_method_logo( $gateway, $payment_method );
 			return false !== $output ? $output : $payment_method_title;
 		}
 
@@ -201,7 +201,7 @@ class WC_Payments_Order_Success_Page {
 	 *
 	 * @return string|false
 	 */
-	public function show_payment_method_name_with_logo( $gateway, $payment_method, $show_payment_method_name = false ) {
+	public function show_payment_method_logo( $gateway, $payment_method, $show_payment_method_name = false ) {
 		$method_logo_url = $payment_method->get_payment_method_icon_for_location( 'checkout', false, $gateway->get_account_country() );
 		$method_logo_url = apply_filters(
 			'wc_payments_thank_you_page_payment_method_logo_url',
