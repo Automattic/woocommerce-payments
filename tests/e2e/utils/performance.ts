@@ -51,7 +51,7 @@ async function getLoadingDurations( page: Page ) {
 			loaded: loadEventEnd - responseEnd,
 			firstContentfulPaint:
 				firstContentfulPaintTimings.startTime - responseEnd,
-			// This is evaluated right after Puppeteer found the block selector.
+			// This is evaluated right after found the block selector.
 			firstBlock: performance.now() - responseEnd,
 		};
 	} );
