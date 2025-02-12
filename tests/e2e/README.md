@@ -153,6 +153,11 @@ There are two modes for running tests:
 1. **Headless mode**: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching a Chromium user interface.
 2. **UI mode**: `npm run test:e2e-ui`. UI mode is interactive and launches a Chromium user interface. It's useful for developing, debugging, and troubleshooting failing tests. For more information about Playwright UI mode, see [Playwright UI Mode docs](https://playwright.dev/docs/test-ui-mode#introduction).
 
+**Additional options:**
+
+- `npm run test:e2e keyword` runs tests only with a specific keyword in the file name, e.g. `dispute` or `checkout`.
+- `npm run test:e2e -- --update-snapshots` updates snapshots. This can be combined with a keyword to update a specific set of snapshots, e.g. `npm run test:e2e-pw -- --update-snapshots deposits`.
+
 #### Running only a single test suite
 
 If you would like to run only one test suite, you can pass the relative path to the test file along with any of the modes mentioned above. e.g. `npm run test:e2e-ui path/to/test`.
@@ -192,11 +197,13 @@ Place new spec files in the appropriate directory under `tests/e2e/specs`. The d
 
 ## Debugging tests
 
-Set `E2E_DEBUG=true` env variable in your `local.env` file inside the `tests/e2e/config` directory to pause the test runner when test fails.
+Currently, the best way to debug tests is to use the Playwright UI mode. This mode allows you to see the browser and interact with it after the test runs.
+You can use the locator functionality to help correctly determine the locator syntax to correctly target the HTML element you need. Lastly, you can also use
+`console.log()` to assist with debugging tests in UI mode. To run tests in UI mode, use the `npm run test:e2e-ui path/to/test.spec` command.
 
 ## Slack integration
 
-Slack reporter requires custom jest config provided by `@woocommerce/e2e-environment` package. This config is only applied with `npm run test:e2e` command.
+Slack reporter requires a custom jest config provided by `@woocommerce/e2e-environment` package. This integration is currently disabled.
 
 **Configuration steps:**
 
@@ -214,3 +221,106 @@ E2E_SLACK_TOKEN='<bot token, starts with xoxb- >'
 E2E_CHANNEL_NAME='<public slack channel name>'
 E2E_SLACKBOT_USER='<bot user name>'
 ```
+
+## FAQs
+
+**I'm getting errors that host.docker.internal is not found.**
+
+This is because the `host.docker.internal` alias is not available on Linux. You can use the `localhost` alias instead. To apply it, create a file called `docker-compose.override.yml` in the `tests/e2e` directory and add the following content:
+
+```yaml
+services:
+  playwright:
+    environment:
+      - BASE_URL=http://localhost:8084
+```
+
+**How do I wait for a page or element to load?**
+
+Since [Playwright automatically waits](https://playwright.dev/docs/actionability) for elements to be present in the page before interacting with them, you probably don't need to explicitly wait for elements to load. For example, all of the following locators will automatically wait for the element to be present and stable before asserting or interacting with it:
+
+```ts
+await expect( page.getByRole( 'heading', { name: 'Sign up' } ) ).toBeVisible();
+await page.getByRole( 'checkbox', { name: 'Subscribe' } ).check();
+await page.getByRole( 'button', { name: /submit/i } ).click();
+```
+
+In some cases, you may need to wait for the page to reach a certain load state before interacting with it. You can use `await page.waitForLoadState( 'domcontentloaded' );` to wait for the page to finish loading.
+
+**What is the best way to target elements in the page?**
+
+Prefer the use of [user-facing attribute or test-id locators](https://playwright.dev/docs/locators#locating-elements) to target elements in the page. This will make the tests more resilient to changes to implementation details, such as class names.
+
+```ts
+// Prefer locating by role, label, text, or test id when possible. See https://playwright.dev/docs/locators
+await page.getByRole( 'button', { name: 'All payouts' } ).click();
+await page.getByLabel( 'Select a deposit status' ).selectOption( 'Pending' );
+await expect( page.getByText( 'Order received' ) ).toBeVisible();
+await page.getByTestId( 'accept-dispute-button' ).click();
+
+// Use CSS selectors as a last resort
+await page.locator( 'button.components-button.is-secondary' );
+```
+
+**How do I create a visual regression test?**
+
+Visual regression tests are captured by the [`toHaveScreenshot()` function](https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-2). This function takes a screenshot of a page or element and compares it to a reference image. If the images are different, the test will fail.
+
+```ts
+await expect( page ).toHaveScreenshot();
+
+await expect(
+  page.getByRole( 'button', { name: 'All payouts' } )
+).toHaveScreenshot();
+```
+
+**How can I act as shopper or merchant in a test?**
+
+1. To switch between `shopper` and `merchant` role in a test, use the `getShopper` and `getMerchant` function:
+
+```ts
+import { getShopper, getMerchant } from './utils/helpers';
+
+test( 'should do things as shopper and merchant', async ( { browser } ) => {
+  const { shopperPage } = await getShopper( browser );
+  const { merchantPage } = await getMerchant( browser );
+
+  // do things as shopper
+  await shopperPage.goto( '/cart/' );
+
+  // do things as merchant
+  await merchantPage.goto( '/wp-admin/admin.php?page=wc-settings' );
+} );
+```
+
+1. To act as `shopper` **or** `merchant` for an entire test suite (`describe`), use the helper function `useShopper` or `useMerchant` from `tests/e2e-pw/utils/helpers.ts`:
+
+```ts
+import { useShopper } from '../utils/helpers';
+
+test.describe( 'Sign in as customer', () => {
+  useShopper();
+  test( 'Load customer my account page', async ( { page } ) => {
+    // do things as shopper
+    await page.goto( '/my-account' );
+  } );
+} );
+```
+
+**How can I investigate and interact with a test failures?**
+
+- **Github Action test runs**
+  - View GitHub checks in the "Checks" tab of a PR
+  - There are currently four E2E test workflows:
+    - E2E Tests - Pull Request / WC - latest | wcpay - merchant (pull_request)
+    - E2E Tests - Pull Request / WC - latest | wcpay - shopper (pull_request)
+    - E2E Tests - Pull Request / WC - latest | subscriptions - merchant (pull_request)
+    - E2E Tests - Pull Request / WC - latest | subscriptions - shopper (pull_request)
+  - Click on the details link to the right of the failed job to see the summary
+  - In the job summary, click on the "Run tests, upload screenshots & logs" section.
+  - Click on the artifact download link at the end of the section, then extract and copy the `playwright-report` directory to the root of the WooPayments repository
+  - Run `npx playwright show-report` to open the report in a browser
+  - Alternatively, after extracting the artifact you can open the `playwright-report/index.html` file in a browser.
+- **Local test runs**:
+  - Local test reports will output in the `playwright-report` directory
+  - Run `npx playwright show-report` to open the report in a browser
