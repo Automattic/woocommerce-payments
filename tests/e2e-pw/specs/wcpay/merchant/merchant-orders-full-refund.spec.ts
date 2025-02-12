@@ -34,65 +34,74 @@ test.describe( 'WooCommerce Payments - Full Refund', () => {
 		}
 	} );
 
-	test( 'should process a full refund for an order', async () => {
-		// Place an order to refund later and get the order ID so we can open it in the merchant view
-		orderId = await shopper.placeOrderWithCurrency( shopperPage, 'USD' );
+	test(
+		'should process a full refund for an order',
+		{ tag: '@critical' },
+		async () => {
+			// Place an order to refund later and get the order ID so we can open it in the merchant view
+			orderId = await shopper.placeOrderWithCurrency(
+				shopperPage,
+				'USD'
+			);
 
-		// Get the order total so we can verify the refund amount
-		orderAmount = await shopperPage
-			.locator(
-				'.woocommerce-order-overview__total .woocommerce-Price-amount'
-			)
-			.textContent();
+			// Get the order total so we can verify the refund amount
+			orderAmount = await shopperPage
+				.locator(
+					'.woocommerce-order-overview__total .woocommerce-Price-amount'
+				)
+				.textContent();
 
-		// Open the order
-		await goToOrder( merchantPage, orderId );
+			// Open the order
+			await goToOrder( merchantPage, orderId );
 
-		// Click refund button
-		await merchantPage
-			.getByRole( 'button', {
-				name: 'Refund',
-			} )
-			.click();
+			// Click refund button
+			await merchantPage
+				.getByRole( 'button', {
+					name: 'Refund',
+				} )
+				.click();
 
-		// Fill refund details
-		await merchantPage.getByLabel( 'Refund amount' ).fill( orderAmount );
-		// await merchantPage.fill( '.refund_line_total', orderAmount );
-		await merchantPage
-			.getByLabel( 'Reason for refund' )
-			.fill( 'No longer wanted' );
+			// Fill refund details
+			await merchantPage
+				.getByLabel( 'Refund amount' )
+				.fill( orderAmount );
+			// await merchantPage.fill( '.refund_line_total', orderAmount );
+			await merchantPage
+				.getByLabel( 'Reason for refund' )
+				.fill( 'No longer wanted' );
 
-		const refundButton = await merchantPage.getByRole( 'button', {
-			name: `Refund ${ orderAmount } via WooPayments`,
-		} );
+			const refundButton = await merchantPage.getByRole( 'button', {
+				name: `Refund ${ orderAmount } via WooPayments`,
+			} );
 
-		await expect( refundButton ).toBeVisible();
+			await expect( refundButton ).toBeVisible();
 
-		// TODO: This visual regression test is not flaky, but we should revisit the approach.
-		// await expect( merchantPage ).toHaveScreenshot();
+			// TODO: This visual regression test is not flaky, but we should revisit the approach.
+			// await expect( merchantPage ).toHaveScreenshot();
 
-		// Click refund and handle confirmation dialog
-		merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
-		await refundButton.click();
+			// Click refund and handle confirmation dialog
+			merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
+			await refundButton.click();
 
-		// Wait for refund to process
-		await merchantPage.waitForLoadState( 'networkidle' );
+			// Wait for refund to process
+			await merchantPage.waitForLoadState( 'networkidle' );
 
-		// Verify refund details
-		await expect(
-			merchantPage.getByRole( 'cell', {
-				name: `-${ orderAmount }`,
-			} )
-		).toHaveCount( 2 );
-		await expect(
-			merchantPage.getByText(
-				`A refund of ${ orderAmount } was successfully processed using WooPayments. Reason: No longer wanted`
-			)
-		).toBeVisible();
+			// Verify refund details
+			await expect(
+				merchantPage.getByRole( 'cell', {
+					name: `-${ orderAmount }`,
+				} )
+			).toHaveCount( 2 );
+			await expect(
+				merchantPage.getByText(
+					`A refund of ${ orderAmount } was successfully processed using WooPayments. Reason: No longer wanted`
+				)
+			).toBeVisible();
 
-		// TODO: This visual regression test is not flaky, but we should revisit the approach.
-		// await expect( merchantPage ).toHaveScreenshot();
-	} );
+			// TODO: This visual regression test is not flaky, but we should revisit the approach.
+			// await expect( merchantPage ).toHaveScreenshot();
+		}
+	);
 
 	test( 'should be able to view a refunded transaction', async () => {
 		// Get and navigate to payment details
