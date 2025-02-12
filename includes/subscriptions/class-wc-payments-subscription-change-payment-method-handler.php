@@ -16,6 +16,10 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 * Constructor.
 	 */
 	public function __construct() {
+		if ( ! WC_Payments_Features::should_use_stripe_billing() ) {
+			return;
+		}
+
 		// Add an "Update card" action to all WCPay billing subscriptions with a failed renewal order.
 		add_filter( 'wcs_view_subscription_actions', [ $this, 'update_subscription_change_payment_button' ], 15, 2 );
 		add_filter( 'woocommerce_can_subscription_be_updated_to_new-payment-method', [ $this, 'can_update_payment_method' ], 15, 2 );

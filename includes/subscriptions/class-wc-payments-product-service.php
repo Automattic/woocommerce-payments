@@ -96,11 +96,11 @@ class WC_Payments_Product_Service {
 		if ( WC_Payments_Features::should_use_stripe_billing() ) {
 			add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 			add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
+			add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 
 			$this->add_product_update_listeners();
 		}
 
-		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 		add_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this, 'exclude_meta_wcpay_product' ] );
 	}
 
