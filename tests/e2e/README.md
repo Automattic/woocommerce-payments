@@ -9,7 +9,7 @@ E2E tests can be run locally or in GitHub Actions. Github Actions are already co
 For running E2E tests locally, create a new file named `local.env` under `tests/e2e/config` folder with the following env variables (replace values as required).
 
 <details>
-<summary><h3>Required env variables</h3></summary>
+<summary><strong>Required env variables</strong></summary>
 <p>
 
 ```
@@ -26,7 +26,7 @@ DEBUG=false
 ---
 
 <details>
-<summary><h3>Choose Transact Platform Server instance</h3></summary>
+<summary><strong>Choose Transact Platform Server instance</strong></summary>
 <p>
 
 It is possible to use the live server or a local docker instance of the Transact Platform Server when testing locally. On Github Actions, the live server is used for tests. Add the following env variables to your `local.env` based on your preference (replace values as required).
@@ -77,7 +77,7 @@ E2E_BLOG_ID='<blog_id>'
 ---
 
 <details>
-<summary><h3>Installing Plugins</h3></summary>
+<summary><strong>Installing Plugins</strong></summary>
 <p>
 
 If you wish to run E2E tests for WC Subscriptions, the following env variables need to be added to your `local.env` (replace values as required).
@@ -95,7 +95,7 @@ WC_SUBSCRIPTIONS_REPO='{owner}/{repo}'
 ---
 
 <details>
-<summary><h3>Skipping Plugins</h3></summary>
+<summary><strong>Skipping Plugins</strong></summary>
 <p>
 
 If you wish to skip E2E tests for WC Subscriptions, Action Scheduler, or WC Gutenberg Products Blocks, the following env variables need to be added to your `local.env`.
@@ -111,7 +111,7 @@ SKIP_WC_BLOCKS_TESTS=1
 ---
 
 <details>
-<summary><h3>Using a specific version of WordPress or WooCommerce</h3></summary>
+<summary><strong>Using a specific version of WordPress or WooCommerce</strong></summary>
 <p>
 
 To use a specific version of WordPress or WooCommerce for testing, the following env variables need to be added to your `local.env`.
@@ -126,7 +126,7 @@ E2E_WC_VERSION='<woocommerce_version>'
 ---
 
 <details>
-<summary><h3>Initialize E2E docker environment</h3></summary>
+<summary><strong>Initialize E2E docker environment</strong></summary>
 <p>
 
   1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running the setup script.
@@ -145,7 +145,7 @@ E2E_WC_VERSION='<woocommerce_version>'
 ---
 
 <details>
-<summary><h3>Running tests</h3></summary>
+<summary><strong>Running tests</strong></summary>
 <p>
 
 There are two modes for running tests:
