@@ -9,7 +9,7 @@ E2E tests can be run locally or in GitHub Actions. Github Actions are already co
 For running E2E tests locally, create a new file named `local.env` under `tests/e2e/config` folder with the following env variables (replace values as required).
 
 <details>
-<summary>Required env variables</summary>
+<summary><h3>Required env variables</h3></summary>
 <p>
 
 ```
@@ -26,7 +26,7 @@ DEBUG=false
 ---
 
 <details>
-<summary>Choose Transact Platform Server instance</summary>
+<summary><h3>Choose Transact Platform Server instance</h3></summary>
 <p>
 
 It is possible to use the live server or a local docker instance of the Transact Platform Server when testing locally. On Github Actions, the live server is used for tests. Add the following env variables to your `local.env` based on your preference (replace values as required).
@@ -52,7 +52,7 @@ E2E_WOOPAY_BLOG_ID=<WPCOM Site ID for https://pay.woo.com>
 
 **Using Live Server**
 
-For using the live server, you'll need to add a Jetpack blog token, user token, & blog id from one of your test sites connected to a WooPayments live account. On a connected test site, you can use the code below to extract the blog id & tokens.
+For using the live server, you'll need to add a Jetpack blog token, user token, & blog id from one of your test sites connected to a WooPayments test account. On a connected test site, you can use the code below to extract the blog id & tokens.
 ```
 Jetpack_Options::get_option( 'id' );
 Jetpack_Options::get_option( 'blog_token' );
@@ -77,7 +77,7 @@ E2E_BLOG_ID='<blog_id>'
 ---
 
 <details>
-<summary>Installing Plugins</summary>
+<summary><h3>Installing Plugins</h3></summary>
 <p>
 
 If you wish to run E2E tests for WC Subscriptions, the following env variables need to be added to your `local.env` (replace values as required).
@@ -95,7 +95,7 @@ WC_SUBSCRIPTIONS_REPO='{owner}/{repo}'
 ---
 
 <details>
-<summary>Skipping Plugins</summary>
+<summary><h3>Skipping Plugins</h3></summary>
 <p>
 
 If you wish to skip E2E tests for WC Subscriptions, Action Scheduler, or WC Gutenberg Products Blocks, the following env variables need to be added to your `local.env`.
@@ -111,7 +111,7 @@ SKIP_WC_BLOCKS_TESTS=1
 ---
 
 <details>
-<summary>Using a specific version of WordPress or WooCommerce</summary>
+<summary><h3>Using a specific version of WordPress or WooCommerce</h3></summary>
 <p>
 
 To use a specific version of WordPress or WooCommerce for testing, the following env variables need to be added to your `local.env`.
@@ -126,7 +126,7 @@ E2E_WC_VERSION='<woocommerce_version>'
 ---
 
 <details>
-<summary>Initialize E2E docker environment</summary>
+<summary><h3>Initialize E2E docker environment</h3></summary>
 <p>
 
   1. Make sure to run `npm install`,  `composer install` and `npm run build:client` before running the setup script.
@@ -145,22 +145,22 @@ E2E_WC_VERSION='<woocommerce_version>'
 ---
 
 <details>
-<summary>Running tests</summary>
+<summary><h3>Running tests</h3></summary>
 <p>
 
 There are two modes for running tests:
 
-1. **Headless mode**: `npm run test:e2e`. In headless mode test runner executes all or specified specs without launching a Chromium user interface.
-2. **UI mode**: `npm run test:e2e-ui`. UI mode is interactive and launches a Chromium user interface. It's useful for developing, debugging, and troubleshooting failing tests. For more information about Playwright UI mode, see [Playwright UI Mode docs](https://playwright.dev/docs/test-ui-mode#introduction).
+1. **Headless mode**: `npm run test:e2e`. In headless mode the test runner executes all or specified specs without launching a Chromium user interface.
+2. **UI mode**: `npm run test:e2e-ui`. UI mode is interactive and launches a Chromium user interface. It's useful for developing, debugging, and troubleshooting failing tests. For more information about Playwright UI mode, see the [Playwright UI Mode docs](https://playwright.dev/docs/test-ui-mode#introduction).
 
-**Additional options:**
+**Additional options**
 
 - `npm run test:e2e keyword` runs tests only with a specific keyword in the file name, e.g. `dispute` or `checkout`.
-- `npm run test:e2e -- --update-snapshots` updates snapshots. This can be combined with a keyword to update a specific set of snapshots, e.g. `npm run test:e2e-pw -- --update-snapshots deposits`.
+- `npm run test:e2e -- --update-snapshots` updates snapshots. This can be combined with a keyword to update a specific set of snapshots, e.g. `npm run test:e2e -- --update-snapshots deposits`.
 
 #### Running only a single test suite
 
-If you would like to run only one test suite, you can pass the relative path to the test file along with any of the modes mentioned above. e.g. `npm run test:e2e-ui path/to/test`.
+If you would like to run only one test suite, you can pass the relative path to the test file along with any of the modes mentioned above. e.g. `npm run test:e2e-ui path/to/test.spec.ts`.
 
 #### Running tests in group
 
@@ -169,6 +169,12 @@ By adding additional env variables, it is possible to run a group of tests. e.g.
 - `E2E_GROUP='wcpay' E2E_BRANCH='merchant' npm run test:e2e-ui` runs merchant tests for WCPay in UI mode.
 - `E2E_GROUP='wcpay' E2E_BRANCH='shopper' npm run test:e2e-ui` runs shopper tests for WCPay in UI mode.
 - `E2E_GROUP='wcpay' npm run test:e2e-ui` runs merchant & shopper tests for WCPay in UI mode.
+
+It is also possible to run the groups using the relative path to the tests. e.g.
+
+- `npm run test:e2e-ui tests/e2e/specs/wcpay/merchant` runs merchant tests for WCPay in UI mode.
+- `npm run test:e2e-ui tests/e2e/specs/wcpay/shopper` runs shopper tests for WCPay in UI mode.
+- `npm run test:e2e-ui tests/e2e/specs/wcpay` runs merchant & shopper tests for WCPay in UI mode.
 
 Handy utility scripts for managing your E2E environment:
 
@@ -180,11 +186,9 @@ Handy utility scripts for managing your E2E environment:
 </p>
 </details>
 
-<br>
+### Running on Atomic site
 
-#### Running on Atomic site
-
-For running E2E tests on the Atomic site, follow the same guidelines mentioned above, and add `NODE_ENV=atomic` to your `local.env` file. Then run bring up your E2E environment. Lastly, run tests using `npm run test:e2e` or `npm run test:e2e-ui`.
+For running E2E tests on the Atomic site, follow the same guidelines mentioned above, and add `NODE_ENV=atomic` to your `local.env` file. Then bring up your E2E environment. Lastly, run tests using `npm run test:e2e` or `npm run test:e2e-ui`.
 
 ## Writing tests
 
