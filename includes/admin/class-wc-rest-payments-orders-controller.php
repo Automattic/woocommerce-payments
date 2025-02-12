@@ -209,7 +209,12 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$error_type    = $result['error_code'] ?? null;
 				$error_code    = 'wcpay_capture_error';
 
-				$message = $result['message'] ?? __( 'Unknown error', 'woocommerce-payments' );
+				$message = sprintf(
+					// translators: %s: the error message.
+					__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
+					$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+				);
+
 				if ( 'amount_too_small' === $error_type && ! empty( $extra_details ) ) {
 					// Make it easier to parse the error metadata for the mobile apps.
 					$error_code = 'wcpay_capture_error_amount_too_small';
