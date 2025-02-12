@@ -174,6 +174,10 @@ class WC_Payments_Subscription_Service {
 		$trial_end = $subscription->get_time( 'trial_end' );
 		$has_sync  = false;
 
+		if ( ! class_exists( 'WC_Subscriptions_Synchroniser' ) ) {
+			return $has_sync;
+		}
+
 		if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 			$has_sync = true;
 
@@ -199,6 +203,10 @@ class WC_Payments_Subscription_Service {
 	 * @return WC_Subscription|bool The WC subscription or false if it can't be found.
 	 */
 	public static function get_subscription_from_wcpay_subscription_id( string $wcpay_subscription_id ) {
+		if ( ! function_exists( 'wcs_get_subscriptions' ) ) {
+			return false;
+		}
+
 		$subscriptions = wcs_get_subscriptions(
 			[
 				'subscriptions_per_page' => 1,
@@ -577,6 +585,10 @@ class WC_Payments_Subscription_Service {
 	 * @param WC_Payment_Token $token           Payment Token object.
 	 */
 	public function update_wcpay_subscription_payment_method( int $subscription_id, int $token_id, WC_Payment_Token $token ) {
+		if ( ! function_exists( 'wcs_get_subscription' ) ) {
+			return;
+		}
+
 		$subscription = wcs_get_subscription( $subscription_id );
 
 		if ( $subscription && self::is_wcpay_subscription( $subscription ) ) {
@@ -604,7 +616,7 @@ class WC_Payments_Subscription_Service {
 	 */
 	public function maybe_attempt_payment_for_subscription( $subscription, WC_Payment_Token $token ) {
 
-		if ( ! wcs_is_subscription( $subscription ) ) {
+		if ( ! function_exists( 'wcs_is_subscription' ) || ! wcs_is_subscription( $subscription ) ) {
 			return;
 		}
 
@@ -678,6 +690,10 @@ class WC_Payments_Subscription_Service {
 	public function prevent_wcpay_manual_renewal( array $actions ) {
 		global $theorder;
 
+		if ( ! function_exists( 'wcs_is_subscription' ) || ! $theorder ) {
+			return $actions;
+		}
+
 		if ( wcs_is_subscription( $theorder ) && self::is_wcpay_subscription( $theorder ) ) {
 			unset(
 				$actions['wcs_create_pending_parent'],
@@ -694,7 +710,7 @@ class WC_Payments_Subscription_Service {
 	 * @param WC_Order|WC_Subscription $order The order object.
 	 */
 	public function show_wcpay_subscription_id( WC_Order $order ) {
-		if ( ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {
+		if ( ! function_exists( 'wcs_is_subscription' ) || ! wcs_is_subscription( $order ) || ! self::is_wcpay_subscription( $order ) ) {
 			return;
 		}
 

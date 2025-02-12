@@ -191,6 +191,10 @@ class WC_Payments_Invoice_Service {
 	 * @throws API_Exception If the request to mark the invoice as paid fails.
 	 */
 	public function maybe_record_invoice_payment( int $order_id ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			return;
+		}
+
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order || self::get_order_invoice_id( $order ) ) {

@@ -343,6 +343,10 @@ class WC_Payments_Product_Service {
 	 * @param int $post_id The ID of the post to handle. Only subscription product IDs will be archived in WC Pay.
 	 */
 	public function maybe_archive_product( int $post_id ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return;
+		}
+
 		$product = wc_get_product( $post_id );
 
 		if ( $product && WC_Subscriptions_Product::is_subscription( $product ) ) {
@@ -360,6 +364,10 @@ class WC_Payments_Product_Service {
 	 * @param int $post_id The ID of the post to handle. Only Subscription product post IDs will be unarchived in WC Pay.
 	 */
 	public function maybe_unarchive_product( int $post_id ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return;
+		}
+
 		$product = wc_get_product( $post_id );
 
 		if ( $product && WC_Subscriptions_Product::is_subscription( $product ) ) {
