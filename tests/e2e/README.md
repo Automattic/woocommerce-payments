@@ -14,7 +14,7 @@ For running E2E tests locally, create a new file named `local.env` under `tests/
 
 ```
 # WooPayments Dev Tools Repo
-WCP_DEV_TOOLS_REPO='git@github.com:org/dev-tools-repo.git'
+WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
 
 # Optional to see additional verbose output. Default false.
 DEBUG=false
@@ -37,7 +37,7 @@ By default, the local E2E environment is configured to use the Transact Platform
 
 ```
 # Transact Platform Server Repo
-TRANSACT_PLATFORM_SERVER_REPO='git@github.com:org/server-repo.git'
+TRANSACT_PLATFORM_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
 
 # Stripe account data. Need to support level 3 data to run tests successfully.
 # These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys
