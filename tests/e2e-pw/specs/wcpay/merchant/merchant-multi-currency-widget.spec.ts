@@ -49,30 +49,34 @@ test.describe( 'Multi-currency widget setup', () => {
 		await merchantPage.close();
 	} );
 
-	test( 'displays enabled currencies correctly in the admin', async () => {
-		await expect(
-			merchantPage
-				.locator( 'select[name="currency"]' )
-				.getByRole( 'option' )
-		).toHaveCount( 3 );
-		await expect(
-			merchantPage
-				.locator( 'select[name="currency"]' )
-				.getByRole( 'option', { name: 'USD' } )
-		).toBeAttached();
-		await expect(
-			merchantPage
-				.locator( 'select[name="currency"]' )
-				.getByRole( 'option', { name: 'EUR' } )
-		).toBeAttached();
-		await expect(
-			merchantPage
-				.locator( 'select[name="currency"]' )
-				.getByRole( 'option', { name: 'GBP' } )
-		).toBeAttached();
-	} );
+	test(
+		'displays enabled currencies correctly in the admin',
+		{ tag: '@critical' },
+		async () => {
+			await expect(
+				merchantPage
+					.locator( 'select[name="currency"]' )
+					.getByRole( 'option' )
+			).toHaveCount( 3 );
+			await expect(
+				merchantPage
+					.locator( 'select[name="currency"]' )
+					.getByRole( 'option', { name: 'USD' } )
+			).toBeAttached();
+			await expect(
+				merchantPage
+					.locator( 'select[name="currency"]' )
+					.getByRole( 'option', { name: 'EUR' } )
+			).toBeAttached();
+			await expect(
+				merchantPage
+					.locator( 'select[name="currency"]' )
+					.getByRole( 'option', { name: 'GBP' } )
+			).toBeAttached();
+		}
+	);
 
-	test( 'can update widget properties', async () => {
+	test( 'can update widget properties', { tag: '@critical' }, async () => {
 		await test.step( 'opens widget settings', async () => {
 			await ensureBlockSettingsPanelIsOpen( merchantPage );
 
@@ -165,65 +169,79 @@ test.describe( 'Multi-currency widget setup', () => {
 		} );
 	} );
 
-	test( 'displays enabled currencies correctly in the frontend', async () => {
-		await navigation.goToShop( shopperPage );
+	test(
+		'displays enabled currencies correctly in the frontend',
+		{ tag: '@critical' },
+		async () => {
+			await navigation.goToShop( shopperPage );
 
-		await expect(
-			shopperPage.locator( '.currency-switcher-holder' )
-		).toBeVisible();
-		await expect(
-			shopperPage
-				.locator( '.currency-switcher-holder' )
-				.getByRole( 'option' )
-		).toHaveCount( 3 );
-		await expect(
-			shopperPage
-				.locator( '.currency-switcher-holder' )
-				.getByRole( 'option', { name: 'USD' } )
-		).toBeAttached();
-		await expect(
-			shopperPage
-				.locator( '.currency-switcher-holder' )
-				.getByRole( 'option', { name: 'EUR' } )
-		).toBeAttached();
-		await expect(
-			shopperPage
-				.locator( '.currency-switcher-holder' )
-				.getByRole( 'option', { name: 'GBP' } )
-		).toBeAttached();
-	} );
+			await expect(
+				shopperPage.locator( '.currency-switcher-holder' )
+			).toBeVisible();
+			await expect(
+				shopperPage
+					.locator( '.currency-switcher-holder' )
+					.getByRole( 'option' )
+			).toHaveCount( 3 );
+			await expect(
+				shopperPage
+					.locator( '.currency-switcher-holder' )
+					.getByRole( 'option', { name: 'USD' } )
+			).toBeAttached();
+			await expect(
+				shopperPage
+					.locator( '.currency-switcher-holder' )
+					.getByRole( 'option', { name: 'EUR' } )
+			).toBeAttached();
+			await expect(
+				shopperPage
+					.locator( '.currency-switcher-holder' )
+					.getByRole( 'option', { name: 'GBP' } )
+			).toBeAttached();
+		}
+	);
 
-	test( 'widget settings are applied in the frontend', async () => {
-		await navigation.goToShop( shopperPage );
+	test(
+		'widget settings are applied in the frontend',
+		{ tag: '@critical' },
+		async () => {
+			await navigation.goToShop( shopperPage );
 
-		// Asserts flags are displayed.
-		await expect(
-			shopperPage.locator( '.currency-switcher-holder select' )
-		).toContainText( '🇺🇸' );
-		// Asserts currency symbols are displayed.
-		await expect(
-			shopperPage.locator( '.currency-switcher-holder select' )
-		).toContainText( '$' );
-		// Asserts border is set.
-		await expect(
-			shopperPage.locator( '.currency-switcher-holder select' )
-		).toHaveCSS( 'border-top-width', '1px' );
-		// Asserts border radius is set.
-		await expect(
-			shopperPage.locator( '.currency-switcher-holder select' )
-		).toHaveCSS( 'border-top-left-radius', `${ settings.borderRadius }px` );
-		await expect(
-			shopperPage.locator( '.currency-switcher-holder select' )
-		).toHaveCSS( 'font-size', `${ settings.fontSize }px` );
-		await expect(
-			shopperPage.locator( '.currency-switcher-holder' )
-		).toHaveAttribute( 'style', `line-height: ${ settings.lineHeight }; ` ); // Trailing space is expected.
-		await expect(
-			shopperPage.locator( '.currency-switcher-holder select' )
-		).toHaveCSS( 'color', settings.textColor );
-		// Asserts border color is set.
-		await expect(
-			shopperPage.locator( '.currency-switcher-holder select' )
-		).toHaveCSS( 'border-top-color', settings.borderColor );
-	} );
+			// Asserts flags are displayed.
+			await expect(
+				shopperPage.locator( '.currency-switcher-holder select' )
+			).toContainText( '🇺🇸' );
+			// Asserts currency symbols are displayed.
+			await expect(
+				shopperPage.locator( '.currency-switcher-holder select' )
+			).toContainText( '$' );
+			// Asserts border is set.
+			await expect(
+				shopperPage.locator( '.currency-switcher-holder select' )
+			).toHaveCSS( 'border-top-width', '1px' );
+			// Asserts border radius is set.
+			await expect(
+				shopperPage.locator( '.currency-switcher-holder select' )
+			).toHaveCSS(
+				'border-top-left-radius',
+				`${ settings.borderRadius }px`
+			);
+			await expect(
+				shopperPage.locator( '.currency-switcher-holder select' )
+			).toHaveCSS( 'font-size', `${ settings.fontSize }px` );
+			await expect(
+				shopperPage.locator( '.currency-switcher-holder' )
+			).toHaveAttribute(
+				'style',
+				`line-height: ${ settings.lineHeight }; `
+			); // Trailing space is expected.
+			await expect(
+				shopperPage.locator( '.currency-switcher-holder select' )
+			).toHaveCSS( 'color', settings.textColor );
+			// Asserts border color is set.
+			await expect(
+				shopperPage.locator( '.currency-switcher-holder select' )
+			).toHaveCSS( 'border-top-color', settings.borderColor );
+		}
+	);
 } );

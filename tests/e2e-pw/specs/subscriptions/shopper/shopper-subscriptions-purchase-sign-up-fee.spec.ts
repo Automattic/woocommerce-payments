@@ -29,12 +29,16 @@ describeif( shouldRunSubscriptionsTests )(
 			 ).shopperPage;
 		} );
 
-		test( 'should be able to purchase a subscription with signup fee', async () => {
-			orderId = await shopper.placeOrderWithOptions( shopperPage, {
-				product: config.products.subscription_signup_fee,
-				billingAddress: customerBillingAddress,
-			} );
-		} );
+		test(
+			'should be able to purchase a subscription with signup fee',
+			{ tag: '@critical' },
+			async () => {
+				orderId = await shopper.placeOrderWithOptions( shopperPage, {
+					product: config.products.subscription_signup_fee,
+					billingAddress: customerBillingAddress,
+				} );
+			}
+		);
 
 		test( 'should have a charge for subscription cost with fee & an active subscription', async () => {
 			await navigation.goToOrder( merchantPage, orderId );
