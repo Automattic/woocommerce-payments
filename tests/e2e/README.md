@@ -164,11 +164,13 @@ If you would like to run only one test suite, you can pass the relative path to 
 
 #### Running tests in group
 
-By adding additional env variables, it is possible to run a group of tests. e.g.
+By adding additional env variables to your `local.env` file, it is possible to run a group of tests. e.g.
 
-- `E2E_GROUP='wcpay' E2E_BRANCH='merchant' npm run test:e2e-ui` runs merchant tests for WCPay in UI mode.
-- `E2E_GROUP='wcpay' E2E_BRANCH='shopper' npm run test:e2e-ui` runs shopper tests for WCPay in UI mode.
-- `E2E_GROUP='wcpay' npm run test:e2e-ui` runs merchant & shopper tests for WCPay in UI mode.
+- Adding `E2E_GROUP='wcpay'` and `E2E_BRANCH='merchant'` to your `local.env` file, then running `npm run test:e2e-ui` runs the WooPayments merchant tests for WCPay in UI mode.
+- Adding `E2E_GROUP='wcpay'` and `E2E_BRANCH='shopper'` to your `local.env` file, then running `npm run test:e2e-ui` runs WooPayments shopper tests for WCPay in UI mode.
+- Adding just `E2E_GROUP='wcpay'` to your `local.env` file, then running `npm run test:e2e-ui` runs WooPayments merchant & shopper tests for WCPay in UI mode.
+- Available groups are `wcpay` and `subscriptions`.
+- Available branches are `merchant` and `shopper`.
 
 It is also possible to run the groups using the relative path to the tests. e.g.
 
