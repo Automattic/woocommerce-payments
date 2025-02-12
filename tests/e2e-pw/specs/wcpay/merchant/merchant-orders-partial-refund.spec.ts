@@ -113,7 +113,7 @@ test.describe( 'Order > Partial refund', () => {
 	} );
 
 	dataTable.forEach( ( [ title, { refundInputs } ], i ) => {
-		test( title, async ( { browser } ) => {
+		test( title, { tag: '@critical' }, async ( { browser } ) => {
 			merchantPage = ( await getMerchant( browser ) ).merchantPage;
 			await goToOrder( merchantPage, orderIds[ i ] );
 

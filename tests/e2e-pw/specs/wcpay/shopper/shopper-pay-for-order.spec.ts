@@ -17,7 +17,7 @@ const cardTestingPreventionStates = [
 	{ cardTestingPreventionEnabled: true },
 ];
 
-test.describe( 'Shopper > Pay for Order', () => {
+test.describe( 'Shopper > Pay for Order', { tag: '@critical' }, () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
 

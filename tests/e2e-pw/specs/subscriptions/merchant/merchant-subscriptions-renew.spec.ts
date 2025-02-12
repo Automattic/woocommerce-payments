@@ -25,6 +25,7 @@ let subscriptionId = null;
 
 describeif( shouldRunSubscriptionsTests )(
 	'Subscriptions > Renew a subscription as a merchant',
+	{ tag: '@critical' },
 	() => {
 		test.beforeAll( async ( { browser }, { project } ) => {
 			const restApi = new RestAPI( project.use.baseURL );

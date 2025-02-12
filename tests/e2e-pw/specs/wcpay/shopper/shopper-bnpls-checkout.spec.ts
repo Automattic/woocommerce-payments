@@ -17,7 +17,7 @@ const cardTestingProtectionStates = [ false, true ];
 const bnplProviders = [ 'Affirm', 'Afterpay' ];
 const products = [ config.products.belt, config.products.sunglasses ];
 
-test.describe( 'BNPL checkout', () => {
+test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
 	let wasMulticurrencyEnabled: boolean;

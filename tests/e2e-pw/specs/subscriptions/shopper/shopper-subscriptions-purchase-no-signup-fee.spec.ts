@@ -34,35 +34,39 @@ let orderId;
 describeif( shouldRunSubscriptionsTests )(
 	'Shopper Subscriptions Purchase No Signup Fee',
 	() => {
-		test( 'It should be able to purchase a subscription without a signup fee', async ( {
-			browser,
-		}, { project } ) => {
-			const { shopperPage } = await getShopper(
-				browser,
-				true,
-				project.use.baseURL
-			);
-			await goToProductPageBySlug( shopperPage, productSlug );
-			await shopperPage
-				.getByRole( 'button', { name: 'Sign up now' } )
-				.click();
-			await shopperPage.waitForLoadState( 'networkidle' );
-			await expect(
-				shopperPage.getByText( /has been added to your cart\./ )
-			).toBeVisible();
-			await setupCheckout( shopperPage, customerBillingConfig );
-			const card = config.cards.basic;
-			await fillCardDetails( shopperPage, card );
-			await placeOrder( shopperPage );
-			expect(
-				shopperPage.getByRole( 'heading', { name: 'Order received' } )
-			).toBeVisible();
+		test(
+			'It should be able to purchase a subscription without a signup fee',
+			{ tag: '@critical' },
+			async ( { browser }, { project } ) => {
+				const { shopperPage } = await getShopper(
+					browser,
+					true,
+					project.use.baseURL
+				);
+				await goToProductPageBySlug( shopperPage, productSlug );
+				await shopperPage
+					.getByRole( 'button', { name: 'Sign up now' } )
+					.click();
+				await shopperPage.waitForLoadState( 'networkidle' );
+				await expect(
+					shopperPage.getByText( /has been added to your cart\./ )
+				).toBeVisible();
+				await setupCheckout( shopperPage, customerBillingConfig );
+				const card = config.cards.basic;
+				await fillCardDetails( shopperPage, card );
+				await placeOrder( shopperPage );
+				expect(
+					shopperPage.getByRole( 'heading', {
+						name: 'Order received',
+					} )
+				).toBeVisible();
 
-			const orderIdField = shopperPage.locator(
-				'.woocommerce-order-overview__order.order > strong'
-			);
-			orderId = await orderIdField.textContent();
-		} );
+				const orderIdField = shopperPage.locator(
+					'.woocommerce-order-overview__order.order > strong'
+				);
+				orderId = await orderIdField.textContent();
+			}
+		);
 
 		test( 'It should have a charge for subscription cost without fee & an active subscription', async ( {
 			browser,
