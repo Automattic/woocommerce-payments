@@ -272,7 +272,7 @@ export const DepositsList = (): JSX.Element => {
 				'success',
 				sprintf(
 					__(
-						'Processing your export. The file will download automatically and will be emailed to %s',
+						'We’re processing your export. 🎉 The file will download automatically and be emailed to %s.',
 						'woocommerce-payments'
 					),
 					userEmail
