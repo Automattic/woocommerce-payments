@@ -149,13 +149,13 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Get the deposits export URL for a given export ID, if available.
+	 * Get the payouts export URL for a given export ID, if available.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_export_url( $request ) {
 		$export_id = $request->get_param( 'export_id' );
-		return $this->forward_request( 'get_deposits_export_url', [ $export_id ] );
+		return $this->forward_request( 'get_payouts_export_url', [ $export_id ] );
 	}
 
 	/**

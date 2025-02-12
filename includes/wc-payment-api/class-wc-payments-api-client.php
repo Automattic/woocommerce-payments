@@ -480,14 +480,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Get the deposits export URL for a given export ID, if available.
+	 * Get the payouts export URL for a given export ID, if available.
 	 *
 	 * @param string $export_id The export ID.
 	 *
 	 * @return array The export URL response.
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function get_deposits_export_url( string $export_id ): array {
+	public function get_payouts_export_url( string $export_id ): array {
 		return $this->request( [], self::DEPOSITS_API . "/download/{$export_id}", self::GET );
 	}
 
