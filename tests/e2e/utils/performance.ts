@@ -2,28 +2,37 @@
  * External dependencies
  */
 import { appendFileSync, existsSync, mkdirSync, truncateSync } from 'fs';
+import { expect, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
  */
 import {
-	PERFORMANCE_REPORT_DIR,
-	PERFORMANCE_REPORT_FILENAME,
-	NUMBER_OF_TRIALS,
+	performanceReportDir,
+	performanceReportfilename,
+	performanceNumberOfTrials,
 } from './constants';
 
-async function getLoadingDurations() {
+type Metrics = Record< string, number[] >;
+type AverageMetrics = Record< string, number >;
+
+async function getLoadingDurations( page: Page ) {
 	return await page.evaluate( () => {
+		const navigation = performance.getEntriesByType(
+			'navigation'
+		)[ 0 ] as PerformanceNavigationTiming;
+
 		const {
 			requestStart,
 			responseStart,
 			responseEnd,
 			domContentLoadedEventEnd,
 			loadEventEnd,
-		} = performance.getEntriesByType( 'navigation' )[ 0 ];
+		} = navigation;
 		const paintTimings = performance.getEntriesByType( 'paint' );
 
-		let firstPaintTimings, firstContentfulPaintTimings;
+		let firstPaintTimings: PerformanceEntry,
+			firstContentfulPaintTimings: PerformanceEntry;
 
 		paintTimings.forEach( ( item ) => {
 			if ( item.name === 'first-paint' ) {
@@ -45,7 +54,7 @@ async function getLoadingDurations() {
 			loaded: loadEventEnd - responseEnd,
 			firstContentfulPaint:
 				firstContentfulPaintTimings.startTime - responseEnd,
-			// This is evaluated right after Puppeteer found the block selector.
+			// This is evaluated right after we find the block selector.
 			firstBlock: performance.now() - responseEnd,
 		};
 	} );
@@ -53,13 +62,13 @@ async function getLoadingDurations() {
 
 /**
  * Writes a line to the e2e performance result.
- *
- * @param {string} description A title that describe this metric
- * @param {Object} metrics array of metrics to record.
  */
-export const logPerformanceResult = ( description, metrics ) => {
+export const logPerformanceResult = (
+	description: string,
+	metrics: AverageMetrics
+) => {
 	appendFileSync(
-		PERFORMANCE_REPORT_FILENAME,
+		performanceReportfilename,
 		JSON.stringify( { description, ...metrics } ) + '\n'
 	);
 };
@@ -68,26 +77,24 @@ export const logPerformanceResult = ( description, metrics ) => {
  * Wipe the existing performance file. Also make sure the "report" folder exists.
  */
 export const recreatePerformanceFile = () => {
-	if ( ! existsSync( PERFORMANCE_REPORT_DIR ) ) {
-		mkdirSync( PERFORMANCE_REPORT_DIR );
+	if ( ! existsSync( performanceReportDir ) ) {
+		mkdirSync( performanceReportDir );
 	}
 
-	if ( existsSync( PERFORMANCE_REPORT_FILENAME ) ) {
-		truncateSync( PERFORMANCE_REPORT_FILENAME );
+	if ( existsSync( performanceReportfilename ) ) {
+		truncateSync( performanceReportfilename );
 	}
 };
 
 /**
  * Takes the metric object and for each of the property, reduce to the average.
- *
- * @param {Object} metrics An object containing multiple trials' data.
- * @return {Object} The averaged results.
  */
-export const averageMetrics = ( metrics ) => {
+export const averageMetrics = ( metrics: Metrics ): AverageMetrics => {
 	const results = {};
 	for ( const [ key, value ] of Object.entries( metrics ) ) {
 		results[ key ] =
-			value.reduce( ( prev, curr ) => prev + curr ) / NUMBER_OF_TRIALS;
+			value.reduce( ( prev, curr ) => prev + curr ) /
+			performanceNumberOfTrials;
 	}
 	return results;
 };
@@ -96,13 +103,12 @@ export const averageMetrics = ( metrics ) => {
  * This helper function goes to checkout page *i* times. Wait
  * for the given card selector to load, retrieve all the metrics
  * and find the average.
- *
- * @param {string} selector CSS selector.
- * @param {number} numberOfTrials The number of trials we would like to do.
- * @return {Object} The averaged results.
  */
-export const measureCheckoutMetrics = async ( selector ) => {
-	await expect( page ).toMatchTextContent( 'Checkout' );
+export const measureCheckoutMetrics = async (
+	page: Page,
+	selector: string
+): Promise< Metrics > => {
+	await expect( page.getByText( 'Checkout' ).first() ).toBeVisible();
 
 	// Run performance tests a few times, then take the average.
 	const results = {
@@ -114,7 +120,7 @@ export const measureCheckoutMetrics = async ( selector ) => {
 		firstBlock: [],
 	};
 
-	let i = NUMBER_OF_TRIALS;
+	let i = performanceNumberOfTrials;
 	while ( i-- ) {
 		await page.reload();
 		await page.waitForSelector( selector );
@@ -125,7 +131,7 @@ export const measureCheckoutMetrics = async ( selector ) => {
 			loaded,
 			firstContentfulPaint,
 			firstBlock,
-		} = await getLoadingDurations();
+		} = await getLoadingDurations( page );
 
 		results.serverResponse.push( serverResponse );
 		results.firstPaint.push( firstPaint );
