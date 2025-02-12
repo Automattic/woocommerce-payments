@@ -24,7 +24,7 @@ class Payment_Method_Definition_Registry {
 	/**
 	 * Payment method definitions.
 	 *
-	 * @var PaymentMethodDefinitionInterface[]
+	 * @var class-string<PaymentMethodDefinitionInterface>[]
 	 */
 	private $payment_methods = [];
 
@@ -43,26 +43,37 @@ class Payment_Method_Definition_Registry {
 	/**
 	 * Register a payment method definition.
 	 *
-	 * @param PaymentMethodDefinitionInterface $payment_method The payment method definition to register.
+	 * @param string $definition_class The payment method definition class to register.
+	 * @throws \InvalidArgumentException If the class does not exist or does not implement PaymentMethodDefinitionInterface.
 	 */
-	public function register_payment_method( PaymentMethodDefinitionInterface $payment_method ): void {
-		$this->payment_methods[ $payment_method->get_id() ] = $payment_method;
-	}
+	public function register_payment_method( string $definition_class ): void {
+		if ( ! class_exists( $definition_class ) ) {
+			throw new \InvalidArgumentException(
+				sprintf(
+					'Payment method definition class "%s" does not exist.',
+					$definition_class
+				)
+			);
+		}
 
-	/**
-	 * Get a payment method definition by its ID.
-	 *
-	 * @param string $id The ID of the payment method definition to get.
-	 * @return PaymentMethodDefinitionInterface|null The payment method definition, or null if it doesn't exist.
-	 */
-	public function get_payment_method_definition( string $id ): ?PaymentMethodDefinitionInterface {
-		return $this->payment_methods[ $id ] ?? null;
+		$interfaces = class_implements( $definition_class );
+		if ( ! isset( $interfaces[ PaymentMethodDefinitionInterface::class ] ) ) {
+			throw new \InvalidArgumentException(
+				sprintf(
+					'Payment method definition class "%s" must implement %s.',
+					$definition_class,
+					PaymentMethodDefinitionInterface::class
+				)
+			);
+		}
+
+		$this->payment_methods[ $definition_class::get_id() ] = $definition_class;
 	}
 
 	/**
 	 * Get all registered payment method definitions.
 	 *
-	 * @return PaymentMethodDefinitionInterface[] All registered payment method definitions.
+	 * @return class-string<PaymentMethodDefinitionInterface>[] All registered payment method definition classes.
 	 */
 	public function get_all_payment_method_definitions(): array {
 		return $this->payment_methods;
@@ -73,19 +84,13 @@ class Payment_Method_Definition_Registry {
 	 *
 	 * @param string $account_country The account country.
 	 * @param string $currency The currency.
-	 * @return PaymentMethodDefinitionInterface[] All available payment method definitions.
+	 * @return string[] All available payment method definition classes.
 	 */
 	public function get_available_payment_method_definitions( string $account_country, string $currency ): array {
 		return array_filter(
 			$this->payment_methods,
-			function ( $method ) use ( $account_country, $currency ) {
-				$supported_currencies = $method->get_supported_currencies();
-				$supported_countries  = $method->get_supported_countries();
-
-				return (
-					( empty( $supported_currencies ) || in_array( $currency, $supported_currencies, true ) ) &&
-					( empty( $supported_countries ) || in_array( $account_country, $supported_countries, true ) )
-				);
+			function ( $definition_class ) use ( $account_country, $currency ) {
+				return $definition_class::is_available_for( $currency, $account_country );
 			}
 		);
 	}

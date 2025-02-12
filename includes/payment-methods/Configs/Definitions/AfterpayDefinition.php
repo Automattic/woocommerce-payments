@@ -24,8 +24,17 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 *
 	 * @return string
 	 */
-	public function get_id(): string {
-		return Payment_Method::AFTERPAY;
+	public static function get_id(): string {
+		return 'afterpay_clearpay';
+	}
+
+	/**
+	 * Get the keywords for the payment method
+	 *
+	 * @return string[]
+	 */
+	public static function get_keywords(): array {
+		return [ 'afterpay', 'clearpay' ];
 	}
 
 	/**
@@ -33,8 +42,8 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 *
 	 * @return string
 	 */
-	public function get_stripe_id(): string {
-		return PaymentMethodUtils::get_stripe_id( $this->get_id() );
+	public static function get_stripe_id(): string {
+		return PaymentMethodUtils::get_stripe_id( self::get_id() );
 	}
 
 	/**
@@ -43,7 +52,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	public function get_title( ?string $account_country = null ): string {
+	public static function get_title( ?string $account_country = null ): string {
 		if ( 'GB' === $account_country ) {
 			return __( 'Clearpay', 'woocommerce-payments' );
 		}
@@ -57,9 +66,9 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	public function get_description( ?string $account_country = null ): string {
+	public static function get_description( ?string $account_country = null ): string {
 		// translators: %s is the payment method title.
-		return sprintf( __( 'Allow customers to pay over time with %s.', 'woocommerce-payments' ), $this->get_title( $account_country ) );
+		return sprintf( __( 'Allow customers to pay over time with %s.', 'woocommerce-payments' ), self::get_title( $account_country ) );
 	}
 
 	/**
@@ -68,7 +77,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	private function get_icon_filename_base( ?string $account_country = null ): string {
+	private static function get_icon_filename_base( ?string $account_country = null ): string {
 		if ( 'GB' === $account_country ) {
 			return 'clearpay';
 		}
@@ -82,8 +91,8 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	public function get_icon_url( ?string $account_country = null ): string {
-		return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . $this->get_icon_filename_base( $account_country ) . '.svg';
+	public static function get_icon_url( ?string $account_country = null ): string {
+		return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . self::get_icon_filename_base( $account_country ) . '.svg';
 	}
 
 	/**
@@ -92,12 +101,12 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string Returns regular icon URL if no dark mode icon exists
 	 */
-	public function get_dark_icon_url( ?string $account_country = null ): string {
-		$dark_icon_path = dirname( WCPAY_PLUGIN_FILE ) . '/assets/images/payment-methods/' . $this->get_icon_filename_base( $account_country ) . '-dark.svg';
+	public static function get_dark_icon_url( ?string $account_country = null ): string {
+		$dark_icon_path = dirname( WCPAY_PLUGIN_FILE ) . '/assets/images/payment-methods/' . self::get_icon_filename_base( $account_country ) . '-dark.svg';
 		if ( file_exists( $dark_icon_path ) ) {
-			return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . $this->get_icon_filename_base( $account_country ) . '-dark.svg';
+			return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/' . self::get_icon_filename_base( $account_country ) . '-dark.svg';
 		}
-		return $this->get_icon_url( $account_country );
+		return self::get_icon_url( $account_country );
 	}
 
 	/**
@@ -105,7 +114,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 *
 	 * @return string[] Array of currency codes
 	 */
-	public function get_supported_currencies(): array {
+	public static function get_supported_currencies(): array {
 		return [
 			Currency_Code::UNITED_STATES_DOLLAR,
 			Currency_Code::CANADIAN_DOLLAR,
@@ -120,7 +129,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 *
 	 * @return string[] Array of country codes
 	 */
-	public function get_supported_countries(): array {
+	public static function get_supported_countries(): array {
 		return [
 			Country_Code::UNITED_STATES,
 			Country_Code::CANADA,
@@ -135,7 +144,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 *
 	 * @return string[]
 	 */
-	public function get_capabilities(): array {
+	public static function get_capabilities(): array {
 		return [
 			Payment_Method_Capability::REFUNDS,
 			Payment_Method_Capability::BUY_NOW_PAY_LATER,
@@ -149,7 +158,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 *
 	 * @return string HTML string containing testing instructions
 	 */
-	public function get_testing_instructions(): string {
+	public static function get_testing_instructions(): string {
 		return '';
 	}
 
@@ -158,7 +167,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 *
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
-	public function get_limits_per_currency(): array {
+	public static function get_limits_per_currency(): array {
 		return [
 			Currency_Code::AUSTRALIAN_DOLLAR    => [
 				Country_Code::AUSTRALIA => [
@@ -198,7 +207,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 *
 	 * @return bool
 	 */
-	public function is_enabled_by_default(): bool {
+	public static function is_enabled_by_default(): bool {
 		return false;
 	}
 
@@ -209,8 +218,8 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @param string $country  The country code.
 	 * @return int|null
 	 */
-	public function get_minimum_amount( string $currency, string $country ): ?int {
-		return $this->get_limits_per_currency()[ $currency ][ $country ]['min'] ?? null;
+	public static function get_minimum_amount( string $currency, string $country ): ?int {
+		return self::get_limits_per_currency()[ $currency ][ $country ]['min'] ?? null;
 	}
 
 	/**
@@ -220,8 +229,8 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @param string $country  The country code.
 	 * @return int|null
 	 */
-	public function get_maximum_amount( string $currency, string $country ): ?int {
-		return $this->get_limits_per_currency()[ $currency ][ $country ]['max'] ?? null;
+	public static function get_maximum_amount( string $currency, string $country ): ?int {
+		return self::get_limits_per_currency()[ $currency ][ $country ]['max'] ?? null;
 	}
 
 	/**
@@ -231,7 +240,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @param string $account_country The merchant's account country.
 	 * @return bool
 	 */
-	public function is_available_for( string $currency, string $account_country ): bool {
-		return PaymentMethodUtils::is_available_for( $this, $currency, $account_country );
+	public static function is_available_for( string $currency, string $account_country ): bool {
+		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country );
 	}
 }

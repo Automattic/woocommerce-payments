@@ -27,20 +27,19 @@ class PaymentMethodUtils {
 	/**
 	 * Whether a payment method is available for the given currency and country
 	 *
-	 * @param PaymentMethodDefinitionInterface $payment_method   The payment method to check.
-	 * @param string                           $currency         The currency code to check.
-	 * @param string                           $account_country  The merchant's account country.
+	 * @param array<string> $supported_currencies The list of supported currencies.
+	 * @param array<string> $supported_countries  The list of supported countries.
+	 * @param string        $currency             The currency code to check.
+	 * @param string        $account_country      The merchant's account country.
 	 * @return bool
 	 */
-	public static function is_available_for( PaymentMethodDefinitionInterface $payment_method, string $currency, string $account_country ): bool {
+	public static function is_available_for( array $supported_currencies, array $supported_countries, string $currency, string $account_country ): bool {
 		// Check if currency is supported.
-		$supported_currencies = $payment_method->get_supported_currencies();
 		if ( ! empty( $supported_currencies ) && ! in_array( $currency, $supported_currencies, true ) ) {
 			return false;
 		}
 
 		// Check if country is supported.
-		$supported_countries = $payment_method->get_supported_countries();
 		if ( ! empty( $supported_countries ) && ! in_array( $account_country, $supported_countries, true ) ) {
 			return false;
 		}

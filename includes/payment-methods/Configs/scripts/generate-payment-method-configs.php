@@ -35,23 +35,28 @@ function get_payment_method_definitions(): array {
 
 	$registry = Payment_Method_Definition_Registry::instance();
 
+	/**
+	 * The registry returns an array of class names.
+	 *
+	 * @var class-string<PaymentMethodDefinitionInterface>[] $payment_method_definitions
+	 */
 	$payment_method_definitions = $registry->get_all_payment_method_definitions();
 
-	foreach ( $payment_method_definitions as $definition ) {
-		$definitions[ $definition->get_id() ] = [
-			'id'           => $definition->get_id(),
-			'stripeId'     => $definition->get_stripe_id(),
-			'title'        => $definition->get_title(), // This will be untranslated.
-			'description'  => $definition->get_description(), // This will be untranslated.
-			'capabilities' => $definition->get_capabilities(),
-			'currencies'   => $definition->get_supported_currencies(),
-			'countries'    => $definition->get_supported_countries(),
+	foreach ( $payment_method_definitions as $definition_class ) {
+		$definitions[ $definition_class::get_id() ] = [
+			'id'           => $definition_class::get_id(),
+			'stripeId'     => $definition_class::get_stripe_id(),
+			'title'        => $definition_class::get_title(), // This will be untranslated.
+			'description'  => $definition_class::get_description(), // This will be untranslated.
+			'capabilities' => $definition_class::get_capabilities(),
+			'currencies'   => $definition_class::get_supported_currencies(),
+			'countries'    => $definition_class::get_supported_countries(),
 			'icons'        => [
 				'default' => [
-					'path' => str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), '', $definition->get_icon_url() ),
+					'path' => str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), '', $definition_class::get_icon_url() ),
 				],
 				'dark'    => [
-					'path' => str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), '', $definition->get_dark_icon_url() ),
+					'path' => str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), '', $definition_class::get_dark_icon_url() ),
 				],
 			],
 		];

@@ -18,15 +18,6 @@ use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
  */
 class Affirm_Payment_Method extends UPE_Payment_Method {
 
-	const PAYMENT_METHOD_STRIPE_ID = 'affirm';
-
-	/**
-	 * The payment method definition.
-	 *
-	 * @var BNPLPaymentMethodDefinition
-	 */
-	protected $definition;
-
 	/**
 	 * Constructor for Affirm payment method
 	 *
@@ -34,32 +25,31 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->definition = new AffirmDefinition();
 
 		// Register the payment method definition so it's exported for the client.
-		$this->register_payment_method( $this->definition );
+		$this->register_payment_method( AffirmDefinition::class );
 
-		$capabilities = $this->definition->get_capabilities();
+		$capabilities = AffirmDefinition::get_capabilities();
 
-		$this->stripe_id                    = $this->definition->get_id();
+		$this->stripe_id                    = AffirmDefinition::get_stripe_id();
 		$this->is_reusable                  = in_array( Payment_Method_Capability::TOKENIZATION, $capabilities, true );
 		$this->is_bnpl                      = in_array( Payment_Method_Capability::BUY_NOW_PAY_LATER, $capabilities, true );
-		$this->icon_url                     = $this->definition->get_icon_url();
-		$this->dark_icon_url                = $this->definition->get_dark_icon_url();
-		$this->currencies                   = $this->definition->get_supported_currencies();
+		$this->icon_url                     = AffirmDefinition::get_icon_url();
+		$this->dark_icon_url                = AffirmDefinition::get_dark_icon_url();
+		$this->currencies                   = AffirmDefinition::get_supported_currencies();
 		$this->accept_only_domestic_payment = in_array( Payment_Method_Capability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
-		$this->limits_per_currency          = $this->definition->get_limits_per_currency();
-		$this->countries                    = $this->definition->get_supported_countries();
+		$this->limits_per_currency          = AffirmDefinition::get_limits_per_currency();
+		$this->countries                    = AffirmDefinition::get_supported_countries();
 	}
 
 	/**
 	 * Register the payment method definition.
 	 *
-	 * @param PaymentMethodDefinitionInterface $definition The payment method definition to register.
+	 * @param string $definition_class The payment method definition class to register.
 	 */
-	public function register_payment_method( PaymentMethodDefinitionInterface $definition ): void {
+	public function register_payment_method( string $definition_class ): void {
 		$registry = Payment_Method_Definition_Registry::instance();
-		$registry->register_payment_method( $definition );
+		$registry->register_payment_method( $definition_class );
 	}
 
 	/**
@@ -71,7 +61,7 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
-		return $this->definition->get_title( $account_country );
+		return AffirmDefinition::get_title( $account_country );
 	}
 
 	/**
@@ -81,6 +71,6 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_testing_instructions( string $account_country ) {
-		return $this->definition->get_testing_instructions();
+		return AffirmDefinition::get_testing_instructions();
 	}
 }

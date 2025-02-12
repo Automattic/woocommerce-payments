@@ -76,6 +76,9 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
+use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
 
 /**
  * Gateway class for WooPayments
@@ -608,7 +611,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	public function maybe_update_properties_with_country(): void {
-		if ( Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $this->stripe_id ) {
+		// TODO: This used to call get_stripe_id() on the payment method class. That method used to just return 'afterpay_clearpay'. There are other places in the code that "stripe ID" refers to "afterpay_clearpay_payments".
+		if ( AfterpayDefinition::get_id() !== $this->stripe_id ) {
 			return;
 		}
 		$account_country = $this->get_account_country();
@@ -4118,9 +4122,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+
+		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
+		$payment_method_definitions = Payment_Method_Definition_Registry::instance()->get_all_payment_method_definitions();
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$available_methods[] = $definition_class::get_id();
+		}
 
 		$available_methods = array_values(
 			apply_filters(
