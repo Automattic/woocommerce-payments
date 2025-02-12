@@ -3,17 +3,11 @@
 /**
  * External dependencies
  */
-import React, { useState, Fragment } from 'react';
+import React from 'react';
 import { recordEvent } from 'tracks';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
-import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
 import { parseInt } from 'lodash';
 
@@ -107,8 +101,6 @@ export const DepositsList = (): JSX.Element => {
 
 	const { requestReportExport, isExportInProgress } = useReportExport();
 	const { createNotice } = useDispatch( 'core/notices' );
-
-	const [ isDownloading, setIsDownloading ] = useState( false );
 
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columns = getColumns( sortByDate );
@@ -214,8 +206,6 @@ export const DepositsList = (): JSX.Element => {
 	const storeCurrencies =
 		depositsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
-
-	const title = __( 'Payouts', 'woocommerce-payments' );
 
 	const downloadable = !! rows.length;
 
