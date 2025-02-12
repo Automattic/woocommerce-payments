@@ -95,7 +95,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		unset( $_GET );
 		unset( $_REQUEST );
 		parent::tear_down();
-		delete_option( '_wcpay_feature_embedded_kyc' );
 	}
 
 	public function test_filters_registered_properly() {
@@ -258,6 +257,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$has_working_jetpack_connection,
 		$is_stripe_connected,
 		$create_test_drive_account,
+		$redirect_to_settings_page,
 		$expected_next_step
 	) {
 
@@ -279,9 +279,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['page'] = 'wc-admin';
 		$_GET['path'] = '/payments/some-bogus-page';
 
-		$_GET['from']       = $onboarding_from;
-		$_GET['source']     = $onboarding_source;
-		$_GET['test_drive'] = $create_test_drive_account ? 'true' : null;
+		$_GET['from']                      = $onboarding_from;
+		$_GET['source']                    = $onboarding_source;
+		$_GET['test_drive']                = $create_test_drive_account ? 'true' : null;
+		$_GET['redirect_to_settings_page'] = $redirect_to_settings_page ? 'true' : null;
 
 		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
@@ -399,6 +400,18 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 						)
 					);
 				break;
+			case 'settings_page':
+				$this->mock_api_client
+					->expects( $this->never() )
+					->method( 'start_server_connection' );
+				$mock_redirect_service
+					->expects( $this->once() )
+					->method( 'redirect_to' )
+					->with(
+						// It should redirect to settings page URL.
+						$this->stringContains( 'page=wc-settings&tab=checkout' ),
+					);
+				break;
 			default:
 				$this->fail( 'Unexpected redirect type: ' . $expected_next_step );
 				break;
@@ -432,7 +445,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
-				'connect_page',
+				false,
+				'start_jetpack_connection',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
@@ -440,13 +454,15 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
-				'connect_page',
+				false,
+				'onboarding_wizard',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 				true,
 				true,
+				false,
 				false,
 				'overview_page',
 			],
@@ -456,12 +472,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Connect page - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE, // Some other original source.
 				true,
+				false,
 				false,
 				false,
 				'onboarding_wizard',
@@ -472,6 +490,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			'From Connect page - no Jetpack connection, Stripe connected - test-drive' => [
@@ -480,6 +499,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				true,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Connect page - Jetpack connection, Stripe not connected - test-drive' => [
@@ -488,6 +508,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				true,
+				false,
 				'init_stripe_onboarding',
 			],
 			'From Connect page - Jetpack connection, Stripe connected - test-drive' => [
@@ -496,7 +517,17 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				true,
+				false,
 				'overview_page',
+			],
+			'From Connect page - Jetpack connection, Stripe connected - test-drive, redirect to settings' => [
+				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE, // Some other original source.
+				true,
+				true,
+				true,
+				true,
+				'settings_page',
 			],
 			'From Woo Payments Settings - no Jetpack connection, Stripe connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
@@ -504,12 +535,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'connect_page',
 			],
 			'From Woo Payments Settings - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
 				true,
+				false,
 				false,
 				false,
 				'connect_page',
@@ -520,6 +553,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			'From Incentive page - no Jetpack connection, Stripe connected' => [
@@ -528,12 +562,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Incentive page - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_INCENTIVE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				true,
+				false,
 				false,
 				false,
 				'onboarding_wizard',
@@ -544,12 +580,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			// This is a weird scenario that should not happen under normal circumstances.
 			'From Onboarding wizard - no Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				false,
 				false,
 				false,
 				false,
@@ -561,6 +599,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
+				false,
 				'init_stripe_onboarding',
 			],
 			'From Onboarding wizard - Jetpack connection, Stripe connected' => [
@@ -568,6 +607,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				true,
 				true,
+				false,
 				false,
 				'overview_page',
 			],
@@ -843,8 +883,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'redirect_to_onboarding_wizard' );
 
-		update_option( '_wcpay_feature_embedded_kyc', '1' );
-
 		// If embedded KYC is in progress, we expect different URL.
 		$this->mock_onboarding_service
 			->expects( $this->once() )
@@ -867,6 +905,76 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Act.
 		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_ensure_woopay_enabled_by_default_value_set_in_sandbox_mode_kyc() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Configure the request to be in sandbox mode.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		$_GET['progressive']   = 'true';
+		$_GET['test_mode']     = 'true';
+		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
+
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturn(
+				[
+					'url'                       => false,
+					'woopay_enabled_by_default' => true,
+				]
+			);
+
+		$original_value = get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		$this->assertFalse( $original_value );
+		$this->assertTrue( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_ensure_woopay_not_enabled_by_default_for_existing_live_accounts() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Configure the request to be in sandbox mode.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		$_GET['progressive']   = 'true';
+		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
+
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturn(
+				[
+					'url'                       => false,
+					'woopay_enabled_by_default' => true,
+				]
+			);
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
 	}
 
 	public function test_maybe_handle_onboarding_init_stripe_onboarding_existing_account() {
@@ -3134,6 +3242,91 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->willReturn( $expected );
 
 		$this->assertSame( $expected, $this->wcpay_account->get_tracking_info() );
+	}
+
+	public function test_get_recommended_payment_methods_unsupported_country() {
+		$this->assertSame( [], $this->wcpay_account->get_recommended_payment_methods( 'XZ' ) );
+	}
+
+	public function get_recommended_payment_methods_provider() {
+		return [
+			'No PMs suggested'                  => [ 'US', [], [] ],
+			'Invalid PMs array'                 => [
+				'US',
+				[
+					'type'    => 'available',
+					'enabled' => false,
+				],
+				[],
+			],
+			'Enabled flag and priority not set' => [
+				'US',
+				[
+					[
+						'id'    => 1,
+						'title' => 'test PM',
+						'type'  => 'available',
+					],
+					[
+						'id'    => 2,
+						'title' => 'test PM 2',
+						'type'  => 'available',
+					],
+				],
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => false,
+						'priority' => 0,
+					],
+					[
+						'id'       => 2,
+						'title'    => 'test PM 2',
+						'type'     => 'available',
+						'enabled'  => false,
+						'priority' => 1,
+					],
+				],
+			],
+			'Enabled flag and priority set'     => [
+				'US',
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => true,
+						'priority' => 1,
+					],
+				],
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => true,
+						'priority' => 1,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider get_recommended_payment_methods_provider
+	 */
+	public function test_get_recommended_payment_methods( $country_code, $recommended_pms, $expected ) {
+
+		$this->mock_empty_cache();
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'get_recommended_payment_methods' )
+			->with( $country_code )
+			->willReturn( $recommended_pms );
+
+		$this->assertSame( $expected, $this->wcpay_account->get_recommended_payment_methods( $country_code ) );
 	}
 
 	/**

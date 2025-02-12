@@ -66,11 +66,9 @@ describe( 'AddPaymentMethodsTask', () => {
 			'card',
 			'bancontact',
 			'eps',
-			'giropay',
 			'ideal',
 			'p24',
 			'sepa_debit',
-			'sofort',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: {
@@ -85,10 +83,6 @@ describe( 'AddPaymentMethodsTask', () => {
 				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
 			},
-			giropay_payments: {
-				status: upeCapabilityStatuses.ACTIVE,
-				requirements: [],
-			},
 			ideal_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
@@ -98,10 +92,6 @@ describe( 'AddPaymentMethodsTask', () => {
 				requirements: [],
 			},
 			sepa_debit_payments: {
-				status: upeCapabilityStatuses.ACTIVE,
-				requirements: [],
-			},
-			sofort_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
 			},
@@ -186,11 +176,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		const expectedToBeUnchecked = [
 			'Bancontact',
 			'EPS',
-			'giropay',
 			'iDEAL',
 			'Przelewy24 (P24)',
 			'SEPA Direct Debit',
-			'Sofort',
 		];
 
 		expectedToBeUnchecked.forEach( function ( checkboxName ) {
@@ -243,11 +231,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		const expectedToBeUnchecked = [
 			'Bancontact',
 			'EPS',
-			'giropay',
 			'iDEAL',
 			'Przelewy24 (P24)',
 			'SEPA Direct Debit',
-			'Sofort',
 		];
 
 		expectedToBeUnchecked.forEach( function ( checkboxName ) {
@@ -294,15 +280,7 @@ describe( 'AddPaymentMethodsTask', () => {
 	it( 'should remove the un-checked payment methods, if they were present before', async () => {
 		const setCompletedMock = jest.fn();
 		const updateEnabledPaymentMethodsMock = jest.fn();
-		const initialMethods = [
-			'card',
-			'bancontact',
-			'eps',
-			'giropay',
-			'p24',
-			'ideal',
-			'sofort',
-		];
+		const initialMethods = [ 'card', 'bancontact', 'eps', 'p24', 'ideal' ];
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			initialMethods,
 			updateEnabledPaymentMethodsMock,
@@ -321,11 +299,9 @@ describe( 'AddPaymentMethodsTask', () => {
 		const expectedToBeUnchecked = [
 			'Bancontact',
 			'EPS',
-			'giropay',
 			'iDEAL',
 			'Przelewy24 (P24)',
 			'SEPA Direct Debit',
-			'Sofort',
 		];
 
 		expectedToBeUnchecked.forEach( function ( checkboxName ) {
@@ -335,7 +311,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		jest.useFakeTimers();
 		// Uncheck methods.
 		act( () => {
-			const methodsToCheck = [ 'Bancontact', 'giropay' ];
+			const methodsToCheck = [ 'Bancontact', 'iDEAL' ];
 			methodsToCheck.forEach( function ( checkboxName ) {
 				userEvent.click( screen.getByLabelText( checkboxName ) );
 				jest.runOnlyPendingTimers();
@@ -350,7 +326,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
 			'bancontact',
-			'giropay',
+			'ideal',
 		] );
 		await waitFor( () =>
 			expect( setCompletedMock ).toHaveBeenCalledWith(
@@ -376,10 +352,6 @@ describe( 'AddPaymentMethodsTask', () => {
 				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
 			},
-			giropay_payments: {
-				status: upeCapabilityStatuses.PENDING_APPROVAL,
-				requirements: [],
-			},
 			ideal_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
@@ -390,10 +362,6 @@ describe( 'AddPaymentMethodsTask', () => {
 			},
 			sepa_debit_payments: {
 				status: upeCapabilityStatuses.PENDING_VERIFICATION,
-				requirements: [],
-			},
-			sofort_payments: {
-				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
 			},
 		} );
@@ -422,9 +390,9 @@ describe( 'AddPaymentMethodsTask', () => {
 	it( 'should render the activation modal when requirements exist for the payment method', () => {
 		const setCompletedMock = jest.fn();
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ], jest.fn() ] );
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'sofort' ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'ideal' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			sofort_payments: {
+			ideal_payments: {
 				status: upeCapabilityStatuses.UNREQUESTED,
 				requirements: [ 'company.tax_id' ],
 			},
@@ -440,9 +408,9 @@ describe( 'AddPaymentMethodsTask', () => {
 			</SettingsContextProvider>
 		);
 
-		expect( screen.queryByLabelText( 'Sofort' ) ).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'iDEAL' ) ).toBeInTheDocument();
 
-		const cardCheckbox = screen.getByLabelText( 'Sofort' );
+		const cardCheckbox = screen.getByLabelText( 'iDEAL' );
 
 		expect( cardCheckbox ).not.toBeChecked();
 
@@ -456,7 +424,7 @@ describe( 'AddPaymentMethodsTask', () => {
 
 		expect(
 			screen.queryByText(
-				/You need to provide more information to enable Sofort on your checkout/
+				/You need to provide more information to enable iDEAL on your checkout/
 			)
 		).toBeInTheDocument();
 

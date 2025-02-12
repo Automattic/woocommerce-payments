@@ -28,7 +28,7 @@ Fetch a detailed overview of transactions.
 - `date_after`: Filter transactions after this date.
 - `date_between`: Filter transactions between these dates.
 - `order_id`: Filter transactions based on the associated order ID.
-- `deposit_id`: Filter transactions based on the associated deposit ID.
+- `deposit_id`: Filter transactions based on the associated payout ID.
 - `customer_email`: Filter transactions based on the customer email.
 - `payment_method_type`: Filter transactions based on the payment method used.
 - `type`: Filter transactions where type is a specific value.
@@ -159,7 +159,7 @@ Fetch a detailed overview of authorizations.
 - `date_after`: Filter authorizations after this date. If it's not provided the default it will be 7 days before today.
 - `date_between`: Filter authorizations between these dates.
 - `order_id`: Filter authorizations based on the associated order ID.
-- `deposit_id`: Filter authorizations based on the associated deposit ID.
+- `deposit_id`: Filter authorizations based on the associated payout ID.
 - `customer_email`: Filter authorizations based on the customer email.
 - `payment_method_type`: Filter authorizations based on the payment method used.
 - `type`: Filter authorizations where type is a specific value.

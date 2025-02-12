@@ -7,7 +7,6 @@ import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
 /**
@@ -21,6 +20,8 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { recordEvent } from 'tracks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 interface Column extends TableCardColumn {
 	key:
@@ -104,7 +105,11 @@ const getColumns = (): Column[] =>
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 export const AuthorizationsList = (): JSX.Element => {
-	const columnsToDisplay = getColumns();
+	const columns = getColumns();
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		Column
+	>( 'wc_payments_transactions_uncaptured_hidden_columns', columns );
+
 	const {
 		authorizationsSummary,
 		isLoading: isSummaryLoading,
@@ -130,35 +135,25 @@ export const AuthorizationsList = (): JSX.Element => {
 				display: auth.payment_intent_id,
 			},
 			created: {
-				value: dateI18n(
-					'M j, Y / g:iA',
-					moment.utc( auth.created ).local().toISOString()
-				),
+				value: formatDateTimeFromString( auth.created, {
+					includeTime: true,
+				} ),
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( auth.created ).local().toISOString()
-					)
+					formatDateTimeFromString( auth.created, {
+						includeTime: true,
+					} )
 				),
 			},
 			// Payments are authorized for a maximum of 7 days
 			capture_by: {
-				value: dateI18n(
-					'M j, Y / g:iA',
-					moment
-						.utc( auth.created )
-						.add( 7, 'd' )
-						.local()
-						.toISOString()
+				value: formatDateTimeFromString(
+					moment.utc( auth.created ).add( 7, 'd' ).toISOString(),
+					{ includeTime: true }
 				),
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment
-							.utc( auth.created )
-							.add( 7, 'd' )
-							.local()
-							.toISOString()
+					formatDateTimeFromString(
+						moment.utc( auth.created ).add( 7, 'd' ).toISOString(),
+						{ includeTime: true }
 					)
 				),
 			},
@@ -270,6 +265,7 @@ export const AuthorizationsList = (): JSX.Element => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 			/>
 		</Page>
 	);

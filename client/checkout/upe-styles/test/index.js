@@ -44,7 +44,7 @@ describe( 'Getting styles for automated theming', () => {
 			'.Input'
 		);
 		expect( fieldStyles ).toEqual( {
-			backgroundColor: 'rgb(255, 255, 255)',
+			backgroundColor: 'rgba(0, 0, 0, 0)',
 			color: 'rgb(109, 109, 109)',
 			fontFamily:
 				'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -134,7 +134,7 @@ describe( 'Getting styles for automated theming', () => {
 			theme: 'stripe',
 			rules: {
 				'.Input': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -143,7 +143,7 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 				},
 				'.Input--invalid': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -158,25 +158,28 @@ describe( 'Getting styles for automated theming', () => {
 					fontSize: '12px',
 					padding: '10px',
 				},
+				'.Label--resting': {
+					fontSize: '12px',
+				},
 				'.Tab': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab:hover': {
-					backgroundColor: 'rgb(237, 237, 237)',
-					color: 'rgb(0, 0, 0)',
+					backgroundColor: 'rgba(18, 18, 18, 0)',
+					color: 'rgb(255, 255, 255)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab--selected': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					outline: '1px solid rgb(150, 88, 138)',
 				},
 				'.TabIcon:hover': {
-					color: 'rgb(0, 0, 0)',
+					color: 'rgb(255, 255, 255)',
 				},
 				'.TabIcon--selected': {
 					color: 'rgb(109, 109, 109)',
@@ -207,7 +210,7 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 				},
 				'.Button': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -222,7 +225,34 @@ describe( 'Getting styles for automated theming', () => {
 					fontSize: '12px',
 					padding: '10px',
 				},
+				'.Container': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+				},
+				'.Footer': {
+					color: 'rgb(109, 109, 109)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Footer-link': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Header': {
+					color: 'rgb(109, 109, 109)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
 			},
+			labels: 'above',
 		} );
 	} );
 

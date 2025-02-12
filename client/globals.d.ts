@@ -3,6 +3,7 @@
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
+import { WCPayExpressCheckoutParams } from './express-checkout/utils';
 
 declare global {
 	const wcpaySettings: {
@@ -16,7 +17,6 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
-			isEmbeddedKycEnabled?: boolean;
 		};
 		fraudServices: unknown[];
 		testMode: boolean;
@@ -122,12 +122,27 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
-		reporting: {
-			exportModalDismissed?: boolean;
-		};
-		locale: {
+		isConnectionSuccessModalDismissed: boolean;
+		userLocale: {
+			/**
+			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
+			 *
+			 * @example 'es' // Spanish
+			 *
+			 * @see WC_Payments_Utils::convert_locale_to_language_code
+			 */
 			code: string;
+			/**
+			 * The English name of the locale.
+			 *
+			 * @example 'Spanish'
+			 */
 			english_name: string;
+			/**
+			 * The native name of the locale.
+			 *
+			 * @example 'Español'
+			 */
 			native_name: string;
 		};
 		trackingInfo?: {
@@ -136,9 +151,12 @@ declare global {
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
 		defaultExpressCheckoutBorderRadius: string;
+		dateFormat: string;
+		timeFormat: string;
 	};
 
 	const wc: {
+		wcSettings: typeof wcSettingsModule;
 		tracks: {
 			recordEvent: (
 				eventName: string,
@@ -184,7 +202,36 @@ declare global {
 		adminUrl: string;
 		countries: Record< string, string >;
 		homeUrl: string;
+		locale: {
+			/**
+			 * The locale of the current site, as set in WP Admin → Settings → General.
+			 *
+			 * @example 'en_AU' // English (Australia)
+			 */
+			siteLocale: string;
+			/**
+			 * The locale of the current user profile, as set in WP Admin → Users → Profile → Language.
+			 *
+			 * @example 'en_UK' // English (United Kingdom)
+			 */
+			userLocale: string;
+		};
 		siteTitle: string;
+	};
+
+	interface WcSettings {
+		ece_data?: WCPayExpressCheckoutParams;
+		woocommerce_payments_data: typeof wcpaySettings;
+	}
+
+	const wcSettingsModule: {
+		getSetting: <
+			K extends keyof WcSettings,
+			T extends WcSettings[ K ] | undefined
+		>(
+			setting: K,
+			fallback?: T
+		) => WcSettings[ K ] | T;
 	};
 
 	interface Window {

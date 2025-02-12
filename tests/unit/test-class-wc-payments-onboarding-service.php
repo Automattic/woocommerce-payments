@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
 use WCPay\Database_Cache;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_Payments_Onboarding_Service unit tests.
@@ -146,6 +147,121 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
+	}
+
+	public function test_create_embedded_kyc_session() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$expected_account_session = [
+			'client_secret'             => 'secret',
+			'expires_at'                => time() + 3600,
+			'account_id'                => 'acc_123',
+			'is_live'                   => true,
+			'account_created'           => true,
+			'publishable_key'           => 'pk_test_123',
+			'woopay_enabled_by_default' => true,
+		];
+
+		$this->mock_api_client
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->willReturn( $expected_account_session );
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
+
+		// Act.
+		$result = $this->onboarding_service->create_embedded_kyc_session( [], false );
+
+		// Assert.
+		$this->assertEquals( $expected_account_session['client_secret'], $result['clientSecret'] );
+		$this->assertEquals( $expected_account_session['expires_at'], $result['expiresAt'] );
+		$this->assertEquals( $expected_account_session['account_id'], $result['accountId'] );
+		$this->assertEquals( $expected_account_session['is_live'], $result['isLive'] );
+		$this->assertEquals( $expected_account_session['account_created'], $result['accountCreated'] );
+		$this->assertEquals( $expected_account_session['publishable_key'], $result['publishableKey'] );
+
+		$this->assertTrue( $this->onboarding_service->is_embedded_kyc_in_progress() );
+		$this->assertTrue( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_create_embedded_kyc_session_no_wpcom_connection() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( false );
+
+		// Act.
+		$result = $this->onboarding_service->create_embedded_kyc_session( [], false );
+
+		// Assert.
+		$this->assertEmpty( $result );
+	}
+
+	public function test_finalize_embedded_kyc() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$expected_result = [
+			'success'           => true,
+			'account_id'        => 'acc_id',
+			'details_submitted' => true,
+			'mode'              => 'test',
+			'promotion_id'      => 'promotion_id',
+		];
+		$this->mock_api_client
+			->method( 'finalize_onboarding_embedded_kyc' )
+			->willReturn( $expected_result );
+
+		$this->onboarding_service->set_embedded_kyc_in_progress();
+
+		// Act.
+		$result = $this->onboarding_service->finalize_embedded_kyc( 'en_US', 'source', [] );
+
+		// Assert.
+		$this->assertEquals( $expected_result['success'], $result['success'] );
+		$this->assertEquals( $expected_result['account_id'], $result['account_id'] );
+		$this->assertEquals( $expected_result['details_submitted'], $result['details_submitted'] );
+		$this->assertEquals( $expected_result['mode'], $result['mode'] );
+		$this->assertEquals( $expected_result['promotion_id'], $result['promotion_id'] );
+
+		$this->assertFalse( $this->onboarding_service->is_embedded_kyc_in_progress() );
+	}
+
+	public function test_finalize_embedded_kyc_no_wpcom_connection() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( false );
+
+		// Act.
+		$result = $this->onboarding_service->finalize_embedded_kyc( 'en_US', 'source', [] );
+
+		// Assert.
+		$this->assertEquals( [ 'success' => false ], $result );
+	}
+
+	public function test_finalize_embedded_kyc_no_success() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->method( 'finalize_onboarding_embedded_kyc' )
+			->willReturn( [ 'success' => false ] );
+
+		// Assert.
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Failed to finalize onboarding session.' );
+
+		// Act.
+		$this->onboarding_service->finalize_embedded_kyc( 'en_US', 'source', [] );
 	}
 
 	public function test_get_cached_business_types_with_no_server_connection() {

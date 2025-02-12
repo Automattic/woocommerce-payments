@@ -93,7 +93,7 @@ describe( 'WooPaySettings', () => {
 		);
 
 		usePaymentRequestButtonType.mockReturnValue(
-			getMockPaymentRequestButtonType( [ 'buy' ], jest.fn() )
+			getMockPaymentRequestButtonType( [ 'default' ], jest.fn() )
 		);
 
 		usePaymentRequestButtonSize.mockReturnValue(
@@ -149,7 +149,7 @@ describe( 'WooPaySettings', () => {
 		// confirm settings headings
 		expect(
 			screen.queryByRole( 'heading', {
-				name: 'Policies and custom text',
+				name: 'Checkout policies',
 			} )
 		).toBeInTheDocument();
 

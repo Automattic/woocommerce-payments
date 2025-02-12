@@ -102,6 +102,8 @@ const SaveFraudProtectionSettingsButton: React.FC = ( { children } ) => {
 };
 
 const FraudProtectionAdvancedSettingsPage: React.FC = () => {
+	const [ isDirty, setIsDirty ] = useState( false );
+
 	const { saveSettings, isLoading, isSaving } = useSettings() as SettingsHook;
 
 	const cardObserver = useRef< IntersectionObserver >();
@@ -120,10 +122,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState<
 		ProtectionSettingsUI
 	>( {} );
-	const [
-		protectionSettingsChanged,
-		setProtectionSettingsChanged,
-	] = useState( false );
 
 	useEffect( () => {
 		setProtectionSettingsUI(
@@ -315,7 +313,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	useEffect( confirmLeaveCallback, [
 		confirmLeaveCallback,
-		protectionSettingsChanged,
+		protectionSettingsUI,
 		advancedFraudProtectionSettings,
 	] );
 
@@ -327,7 +325,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 			disabled={
 				isSaving ||
 				isLoading ||
-				'error' === advancedFraudProtectionSettings
+				'error' === advancedFraudProtectionSettings ||
+				! isDirty
 			}
 		>
 			{ __( 'Save Changes', 'woocommerce-payments' ) }
@@ -339,11 +338,10 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 			value={ {
 				protectionSettingsUI,
 				setProtectionSettingsUI,
-				protectionSettingsChanged,
-				setProtectionSettingsChanged,
+				setIsDirty,
 			} }
 		>
-			<SettingsLayout displayBanner={ false }>
+			<SettingsLayout>
 				<ErrorBoundary>
 					<div className="fraud-protection-advanced-settings-layout">
 						<Breadcrumb />

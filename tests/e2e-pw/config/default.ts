@@ -3,33 +3,64 @@ export const config = {
 		admin: {
 			username: 'admin',
 			password: 'password',
-			email: 'e2e-wcpay-admin@woo.com',
+			email: 'e2e-wcpay-admin@woocommerce.com',
 		},
 		customer: {
 			username: 'customer',
 			password: 'password',
-			email: 'e2e-wcpay-customer@woo.com',
+			email: 'e2e-wcpay-customer@woocommerce.com',
 		},
 		'subscriptions-customer': {
 			username: 'subscriptions-customer',
 			password: 'password',
-			email: 'e2e-wcpay-customer@woo.com',
+			email: 'e2e-wcpay-customer@woocommerce.com',
 		},
 		guest: {
-			email: 'e2e-wcpay-guest@woo.com',
+			email: 'e2e-wcpay-guest@woocommerce.com',
 		},
 	},
 	products: {
+		cap: {
+			name: 'Cap',
+			pageNumber: 1,
+		},
+		belt: {
+			name: 'Belt',
+			pageNumber: 1,
+		},
 		simple: {
 			name: 'Beanie',
+			pageNumber: 1,
+		},
+		sunglasses: {
+			name: 'Sunglasses',
+			pageNumber: 2,
 		},
 		variable: {
 			name: 'Variable Product with Three Variations',
+			pageNumber: 1,
 		},
 		grouped: {
 			name: 'Grouped Product with Three Children',
+			pageNumber: 1,
 		},
-	},
+		hoodie_with_logo: {
+			name: 'Hoodie with Logo',
+			pageNumber: 1,
+		},
+		subscription_signup_fee: {
+			name: 'Subscription signup fee product',
+			pageNumber: 2,
+		},
+		subscription_no_signup_fee: {
+			name: 'Subscription no signup fee product',
+			pageNumber: 2,
+		},
+		subscription_free_trial: {
+			name: 'Subscription free trial product',
+			pageNumber: 2,
+		},
+	} as Record< string, Product >,
 	addresses: {
 		admin: {
 			store: {
@@ -37,13 +68,14 @@ export const config = {
 				lastname: 'Admin',
 				company: 'Automattic',
 				country: 'United States (US)',
+				country_code: 'US',
 				addressfirstline: '60 29th Street #343',
 				addresssecondline: 'store',
 				countryandstate: 'United States (US) — California',
 				city: 'San Francisco',
 				state: 'CA',
 				postcode: '94110',
-				email: 'e2e-wcpay-subscriptions-customer@woo.com',
+				email: 'e2e-wcpay-subscriptions-customer@woocommerce.com',
 			},
 		},
 		customer: {
@@ -52,54 +84,89 @@ export const config = {
 				lastname: 'Customer',
 				company: 'Automattic',
 				country: 'United States (US)',
+				country_code: 'US',
 				addressfirstline: '60 29th Street #343',
 				addresssecondline: 'billing',
 				city: 'San Francisco',
 				state: 'CA',
 				postcode: '94110',
 				phone: '123456789',
-				email: 'e2e-wcpay-customer@woo.com',
+				email: 'e2e-wcpay-customer@woocommerce.com',
 			},
 			shipping: {
 				firstname: 'I am',
 				lastname: 'Recipient',
 				company: 'Automattic',
 				country: 'United States (US)',
+				country_code: 'US',
 				addressfirstline: '60 29th Street #343',
 				addresssecondline: 'shipping',
 				city: 'San Francisco',
 				state: 'CA',
 				postcode: '94110',
 				phone: '123456789',
-				email: 'e2e-wcpay-customer@woo.com',
+				email: 'e2e-wcpay-customer@woocommerce.com',
+			},
+		},
+		'upe-customer': {
+			billing: {
+				be: {
+					firstname: 'I am',
+					lastname: 'Customer',
+					company: 'Automattic',
+					country: 'Belgium',
+					country_code: 'BE',
+					addressfirstline: 'Rue de l’Étuve, 1000',
+					addresssecondline: 'billing-be',
+					city: 'Bruxelles',
+					postcode: '1000',
+					phone: '123456789',
+					email: 'e2e-wcpay-customer@woocommerce.com',
+				},
+				de: {
+					firstname: 'I am',
+					lastname: 'Customer',
+					company: 'Automattic',
+					country: 'Germany',
+					country_code: 'DE',
+					addressfirstline: 'Petuelring 130',
+					addresssecondline: 'billing-de',
+					city: 'München',
+					postcode: '80809',
+					state: 'DE-BY',
+					phone: '123456789',
+					email: 'e2e-wcpay-customer@woocommerce.com',
+				},
 			},
 		},
 		'subscriptions-customer': {
 			billing: {
-				first_name: 'I am',
-				last_name: 'Subscriptions Customer',
+				firstname: 'I am',
+				lastname: 'Subscriptions Customer',
 				company: 'Automattic',
 				country: 'United States (US)',
-				address_1: '60 29th Street #343',
-				address_2: 'billing',
+				country_code: 'US',
+				addressfirstline: '60 29th Street #343',
+				addresssecondline: 'billing',
 				city: 'San Francisco',
 				state: 'CA',
 				postcode: '94110',
 				phone: '123456789',
-				email: 'e2e-wcpay-subscriptions-customer@woo.com',
+				email: 'e2e-wcpay-subscriptions-customer@woocommerce.com',
 			},
 			shipping: {
-				first_name: 'I am',
-				last_name: 'Subscriptions Recipient',
+				firstname: 'I am',
+				lastname: 'Subscriptions Recipient',
 				company: 'Automattic',
 				country: 'United States (US)',
-				address_1: '60 29th Street #343',
-				address_2: 'shipping',
+				country_code: 'US',
+				addressfirstline: '60 29th Street #343',
+				addresssecondline: 'shipping',
 				city: 'San Francisco',
 				state: 'CA',
 				postcode: '94110',
 				phone: '123456789',
-				email: 'e2e-wcpay-subscriptions-customer@woo.com',
+				email: 'e2e-wcpay-subscriptions-customer@woocommerce.com',
 			},
 		},
 	},
@@ -125,11 +192,11 @@ export const config = {
 		basic3: {
 			number: '378282246310005',
 			expires: {
-				month: '11',
+				month: '12',
 				year: '45',
 			},
 			cvc: '1234',
-			label: 'Amex ending in 0005',
+			label: 'American Express ending in 0005',
 		},
 		'3ds': {
 			number: '4000002760003184',
@@ -272,4 +339,11 @@ export const config = {
 	},
 };
 
-export type CustomerAddress = typeof config.addresses.customer.billing;
+export type CustomerAddress = Omit<
+	typeof config.addresses.customer.billing,
+	'state'
+> & {
+	state?: string;
+};
+
+export type Product = { name: string; pageNumber: number };

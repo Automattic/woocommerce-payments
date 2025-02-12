@@ -13,6 +13,7 @@ import {
 	appendRedirectionParams,
 	shouldSkipWooPay,
 	deleteSkipWooPayCookie,
+	isSupportedThemeEntrypoint,
 } from './utils';
 import { getAppearanceType } from '../utils';
 
@@ -180,6 +181,11 @@ export const handleWooPayEmailInput = async (
 		// Set the initial value.
 		iframeHeaderValue = true;
 		const appearanceType = getAppearanceType();
+		const appearance =
+			isSupportedThemeEntrypoint( appearanceType ) &&
+			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+				? getAppearance( appearanceType, true )
+				: null;
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(
@@ -189,9 +195,7 @@ export const handleWooPayEmailInput = async (
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
-					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-						? getAppearance( appearanceType, true )
-						: null,
+					appearance: appearance,
 				}
 			).then( ( response ) => {
 				if ( response?.data?.session ) {

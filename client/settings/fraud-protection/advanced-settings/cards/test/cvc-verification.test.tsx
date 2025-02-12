@@ -40,8 +40,7 @@ describe( 'CVC verification card', () => {
 		const contextValue = {
 			protectionSettingsUI: settings,
 			setProtectionSettingsUI: setSettings,
-			protectionSettingsChanged: false,
-			setProtectionSettingsChanged: jest.fn(),
+			setIsDirty: jest.fn(),
 		};
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
@@ -71,8 +70,7 @@ describe( 'CVC verification card', () => {
 		const contextValue = {
 			protectionSettingsUI: settings,
 			setProtectionSettingsUI: setSettings,
-			protectionSettingsChanged: false,
-			setProtectionSettingsChanged: jest.fn(),
+			setIsDirty: jest.fn(),
 		};
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>

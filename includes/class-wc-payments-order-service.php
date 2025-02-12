@@ -52,6 +52,13 @@ class WC_Payments_Order_Service {
 	const INTENTION_STATUS_META_KEY = '_intention_status';
 
 	/**
+	 * Meta key used to store the charge risk level.
+	 *
+	 * @const string
+	 */
+	const CHARGE_RISK_LEVEL_META_KEY = '_charge_risk_level';
+
+	/**
 	 * Meta key used to store customer Id.
 	 *
 	 * @const string
@@ -184,6 +191,21 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Handles the order state when a payment is captured successfully.
+	 * Unlike `update_order_status_from_intent`, this method does not check the current order status or skip processing
+	 * if the order is already in the "processing" state. This ensures the order status is updated correctly upon a
+	 * successful capture, preventing issues where the capture is not reflected in the order details or transaction screens
+	 * due to the order status being in the processing state.
+	 *
+	 * @param WC_Order                           $order   The order to update.
+	 * @param WC_Payments_API_Abstract_Intention $intent  The intent object containing payment or setup data.
+	 */
+	public function process_captured_payment( $order, $intent ) {
+		$this->mark_payment_capture_completed( $order, $intent );
+		$this->complete_order_processing( $order, $intent->get_status() );
+	}
+
+	/**
 	 * Updates an order to failed status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -307,15 +329,17 @@ class WC_Payments_Order_Service {
 	 * @param string   $amount     The disputed amount – formatted currency value.
 	 * @param string   $reason     The reason for the dispute – human-readable text.
 	 * @param string   $due_by     The deadline for responding to the dispute - formatted date string.
+	 * @param string   $status     The status of the dispute.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by ) {
+	public function mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status = '' ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
 
-		$note = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by );
+		$is_inquiry = strpos( $status, 'warning_' ) === 0;
+		$note       = $this->generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry );
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -339,7 +363,8 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->generate_dispute_closed_note( $charge_id, $status );
+		$is_inquiry = strpos( $status, 'warning_' ) === 0;
+		$note       = $this->generate_dispute_closed_note( $charge_id, $status, $is_inquiry );
 
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
@@ -393,6 +418,41 @@ class WC_Payments_Order_Service {
 		$this->update_order_status( $order, $order_status, $intent_id );
 		$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::TERMINAL_PAYMENT );
 		$this->complete_order_processing( $order, $intent_status );
+	}
+
+
+	/**
+	 * Mark terminal payment failed function.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 * @param string   $message       Optional message to add to the failed note.
+	 *
+	 * @return void
+	 */
+	public function mark_terminal_payment_failed( $order, string $intent_id, string $intent_status, string $charge_id, string $message ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		$order_status_before_update = $order->get_status();
+		$this->update_order_status( $order, Order_Status::FAILED );
+
+		$note = $this->generate_terminal_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+		if ( $this->order_note_exists( $order, $note ) ) {
+			$this->complete_order_processing( $order );
+			return;
+		}
+
+		$order->add_order_note( $note );
+		$this->complete_order_processing( $order, $intent_status );
+		// Trigger the failed order status hook to send notifications etc only if the order status was not already failed to avoid duplicate notifications.
+		if ( Order_Status::FAILED === $order_status_before_update ) {
+			do_action( 'woocommerce_order_status_pending_to_failed_notification', $order->get_id(), $order );
+			do_action( 'woocommerce_order_status_failed_notification', $order->get_id(), $order );
+		}
 	}
 
 	/**
@@ -564,6 +624,37 @@ class WC_Payments_Order_Service {
 		$order = $this->get_order( $order );
 		$order->update_meta_data( self::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY, $payment_transaction_id );
 		$order->save_meta_data();
+	}
+
+	/**
+	 * Set the payment metadata for risk level.
+	 *
+	 * @param  mixed  $order      The order.
+	 * @param  string $risk_level The value to be set.
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_charge_risk_level_for_order( $order, $risk_level ) {
+		if ( ! isset( $risk_level ) || null === $risk_level ) {
+			return;
+		}
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::CHARGE_RISK_LEVEL_META_KEY, $risk_level );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the risk level for an order.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 *
+	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_charge_risk_level_for_order( $order ): string {
+		$order = $this->get_order( $order );
+		return $order->get_meta( self::CHARGE_RISK_LEVEL_META_KEY, true );
 	}
 
 	/**
@@ -828,8 +919,10 @@ class WC_Payments_Order_Service {
 		$charge_id              = $charge ? $charge->get_id() : null;
 		$payment_transaction    = $charge ? $charge->get_balance_transaction() : null;
 		$payment_transaction_id = $payment_transaction['id'] ?? '';
+		$outcome                = $charge ? $charge->get_outcome() : null;
+		$risk_level             = $outcome ? $outcome['risk_level'] : null;
 		// next, save it in order meta.
-		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id );
+		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id, $risk_level );
 	}
 
 	/**
@@ -845,10 +938,11 @@ class WC_Payments_Order_Service {
 	 * @param string   $charge_id Charge ID.
 	 * @param string   $currency Currency code.
 	 * @param string   $payment_transaction_id The transaction ID of the linked charge.
+	 * @param string   $risk_level The risk level of the payment.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id = null ) {
+	public function attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id = null, $risk_level = null ) {
 		// first, let's save all the metadata that needed for refunds, required for status change etc.
 		$order->set_transaction_id( $intent_id );
 		$this->set_intent_id_for_order( $order, $intent_id );
@@ -858,6 +952,7 @@ class WC_Payments_Order_Service {
 		$this->set_customer_id_for_order( $order, $customer_id );
 		$this->set_wcpay_intent_currency_for_order( $order, $currency );
 		$this->set_payment_transaction_id_for_order( $order, $payment_transaction_id );
+		$this->set_charge_risk_level_for_order( $order, $risk_level );
 		$order->save();
 	}
 
@@ -1371,6 +1466,40 @@ class WC_Payments_Order_Service {
 
 		return $note;
 	}
+	/**
+	 * Get content for the failure order note and additional message, if included.
+	 *
+	 * @param string $intent_id        The ID of the intent associated with this order.
+	 * @param string $charge_id        The charge ID related to the intent/order.
+	 * @param string $message          Optional message to add to the note.
+	 * @param string $formatted_amount The formatted order total.
+	 *
+	 * @return string Note content.
+	 */
+	private function generate_terminal_payment_failure_note( $intent_id, $charge_id, $message, $formatted_amount ) {
+		// Add charge_id to the transaction URL instead of intent_id for uniqueness.
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( '', $charge_id );
+
+		$note = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the authorized amount, %2: WooPayments, %3: transaction ID of the payment, %4: timestamp */
+				__( 'A terminal payment of %1$s <strong>failed</strong> using %2$s (<a>%3$s</a>)', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$formatted_amount,
+			'WooPayments',
+			$intent_id ?? $charge_id
+		);
+
+		if ( ! empty( $message ) ) {
+			$note .= ' ' . $message;
+		}
+
+		return $note;
+	}
 
 	/**
 	 * Generates the payment authorized order note.
@@ -1601,26 +1730,44 @@ class WC_Payments_Order_Service {
 	 * @param string $amount     The disputed amount – formatted currency value.
 	 * @param string $reason     The reason for the dispute – human-readable text.
 	 * @param string $due_by     The deadline for responding to the dispute - formatted date string.
+	 * @param bool   $is_inquiry  Whether the dispute is an inquiry or not.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by ) {
+	private function generate_dispute_created_note( $charge_id, $amount, $reason, $due_by, $is_inquiry = false ) {
 		$dispute_url = $this->compose_dispute_url( $charge_id );
 
 		// Get merchant-friendly dispute reason description.
 		$reason = WC_Payments_Utils::get_dispute_reason_description( $reason );
+
+		if ( $is_inquiry ) {
+			return sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to the inquiry */
+					__( 'A payment inquiry has been raised for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%4$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$amount,
+				$reason,
+				$due_by,
+				$dispute_url
+			);
+		}
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the disputed amount and currency; %2: the dispute reason; %3 the deadline date for responding to dispute */
 				__( 'Payment has been disputed for %1$s with reason "%2$s". <a>Response due by %3$s</a>.', 'woocommerce-payments' ),
 				[
-					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
+					'a' => '<a href="%4$s" target="_blank" rel="noopener noreferrer">',
 				]
 			),
 			$amount,
 			$reason,
-			$due_by
+			$due_by,
+			$dispute_url
 		);
 	}
 
@@ -1629,20 +1776,37 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param string $charge_id The ID of the disputed charge associated with this order.
 	 * @param string $status    The status of the dispute.
+	 * @param bool   $is_inquiry Whether the dispute is an inquiry or not.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_dispute_closed_note( $charge_id, $status ) {
+	private function generate_dispute_closed_note( $charge_id, $status, $is_inquiry = false ) {
 		$dispute_url = $this->compose_dispute_url( $charge_id );
+
+		if ( $is_inquiry ) {
+			return sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the dispute status */
+					__( 'Payment inquiry has been closed with status %1$s. See <a>payment status</a> for more details.', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
+					]
+				),
+				$status,
+				$dispute_url
+			);
+		}
+
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the dispute status */
-				__( 'Payment dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
+				__( 'Dispute has been closed with status %1$s. See <a>dispute overview</a> for more details.', 'woocommerce-payments' ),
 				[
-					'a' => '<a href="' . $dispute_url . '" target="_blank" rel="noopener noreferrer">',
+					'a' => '<a href="%2$s" target="_blank" rel="noopener noreferrer">',
 				]
 			),
-			$status
+			$status,
+			$dispute_url
 		);
 	}
 
@@ -1657,10 +1821,8 @@ class WC_Payments_Order_Service {
 	 * @return string HTML note.
 	 */
 	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order ): string {
-		$formatted_price = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-			wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ),
-			$order
-		);
+		$multi_currency_instance = WC_Payments_Multi_Currency();
+		$formatted_price         = WC_Payments_Explicit_Price_Formatter::get_explicit_price( $multi_currency_instance->get_backend_formatted_wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ), $order );
 
 		if ( empty( $refund_reason ) ) {
 			$note = sprintf(
@@ -1705,7 +1867,7 @@ class WC_Payments_Order_Service {
 		return add_query_arg(
 			[
 				'page' => 'wc-admin',
-				'path' => '/payments/transactions/details',
+				'path' => rawurlencode( '/payments/transactions/details' ),
 				'id'   => $charge_id,
 			],
 			admin_url( 'admin.php' )
@@ -1835,7 +1997,11 @@ class WC_Payments_Order_Service {
 	 * @return string The formatted order total.
 	 */
 	private function get_order_amount( $order ) {
-		return WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order );
+		$multi_currency_instance = WC_Payments_Multi_Currency();
+		$order_price             = $order->get_total();
+
+		$formatted_price = $multi_currency_instance->get_backend_formatted_wc_price( $order_price, [ 'currency' => $order->get_currency() ] );
+		return WC_Payments_Explicit_Price_Formatter::get_explicit_price( $formatted_price, $order );
 	}
 
 	/**
@@ -1960,5 +2126,87 @@ class WC_Payments_Order_Service {
 	 */
 	private function intent_has_card_payment_type( $intent_data ): bool {
 		return isset( $intent_data['payment_method_type'] ) && 'card' === $intent_data['payment_method_type'];
+	}
+
+	/**
+	 * Countries where FROD balance is not supported.
+	 *
+	 * @var array
+	 */
+	const FROD_UNSUPPORTED_COUNTRIES = [ 'HK', 'SG', 'AE' ];
+
+	/**
+	 * Handle insufficient balance for refund.
+	 *
+	 * @param WC_Order $order  The order being refunded.
+	 * @param int      $amount The refund amount.
+	 */
+	public function handle_insufficient_balance_for_refund( WC_Order $order, $amount ) {
+		$account_country = WC_Payments::get_account_service()->get_account_country();
+
+		$formatted_amount = wc_price(
+			WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
+			[ 'currency' => $order->get_currency() ]
+		);
+
+		if ( $this->is_frod_supported( $account_country ) ) {
+			$order->add_order_note( $this->get_frod_support_note( $formatted_amount ) );
+		} else {
+			$order->add_order_note( $this->get_insufficient_balance_note( $formatted_amount ) );
+		}
+	}
+
+	/**
+	 * Check if FROD is supported for the given country.
+	 *
+	 * @param string $country_code Two-letter country code.
+	 * @return bool
+	 */
+	private function is_frod_supported( $country_code ) {
+		return ! in_array(
+			$country_code,
+			self::FROD_UNSUPPORTED_COUNTRIES,
+			true
+		);
+	}
+
+	/**
+	 * Get the order note for FROD supported countries.
+	 *
+	 * @param string $formatted_amount The formatted refund amount.
+	 * @return string
+	 */
+	private function get_frod_support_note( $formatted_amount ) {
+		$learn_more_url = 'https://woocommerce.com/document/woopayments/fees-and-debits/preventing-negative-balances/#adding-funds';
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %s: Formatted refund amount */
+				__( 'Refund of %s <strong>failed</strong> due to insufficient funds in your WooPayments balance. To prevent delays in refunding customers, please consider adding funds to your Future Refunds or Disputes (FROD) balance. <a>Learn more</a>.', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => '<a href="' . $learn_more_url . '" target="_blank" rel="noopener noreferrer">',
+				]
+			),
+			$formatted_amount
+		);
+	}
+
+	/**
+	 * Get the order note for countries without FROD support.
+	 *
+	 * @param string $formatted_amount The formatted refund amount.
+	 * @return string
+	 */
+	private function get_insufficient_balance_note( $formatted_amount ) {
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1$s: Formatted refund amount */
+				__( 'Refund of %1$s <strong>failed</strong> due to insufficient funds in your WooPayments balance.', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+				]
+			),
+			$formatted_amount
+		);
 	}
 }

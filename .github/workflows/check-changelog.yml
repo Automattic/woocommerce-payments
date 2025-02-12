@@ -22,7 +22,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
       - name: "Set up PHP"
         uses: ./.github/actions/setup-php

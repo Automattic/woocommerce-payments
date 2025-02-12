@@ -127,7 +127,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 	 * @param array|mixed     $item Item to prepare.
 	 * @param WP_REST_Request $request Request instance.
 	 *
-	 * @return WP_REST_Response|WP_Error|WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function prepare_item_for_response( $item, $request ) {
 

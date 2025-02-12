@@ -11,9 +11,8 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import type { TaskItemProps } from '../types';
 import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-details';
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 import { recordEvent } from 'wcpay/tracks';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 export const getUpdateBusinessDetailsTask = (
 	errorMessages: string[],
@@ -43,13 +42,12 @@ export const getUpdateBusinessDetailsTask = (
 		accountDetailsUpdateByDescription = sprintf(
 			/* translators: %s - formatted requirements current deadline (date) */
 			__(
-				'Update by %s to avoid a disruption in deposits.',
+				'Update by %s to avoid a disruption in payouts.',
 				'woocommerce-payments'
 			),
-			dateI18n(
-				'ga M j, Y',
-				moment( currentDeadline * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( currentDeadline, {
+				customFormat: 'ga M j, Y',
+			} )
 		);
 
 		if ( hasSingleError ) {
@@ -70,14 +68,14 @@ export const getUpdateBusinessDetailsTask = (
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
 				__(
-					'Payments and deposits are disabled for this account until setup is completed.',
+					'Payments and payouts are disabled for this account until setup is completed.',
 					'woocommerce-payments'
 				);
 		} else {
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
 				__(
-					'Payments and deposits are disabled for this account until missing business information is updated.',
+					'Payments and payouts are disabled for this account until missing business information is updated.',
 					'woocommerce-payments'
 				);
 		}

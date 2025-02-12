@@ -7,22 +7,15 @@ import * as React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
-import { dateI18n } from '@wordpress/date';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { useUserPreferences } from '@woocommerce/data';
 import { getUserTimeZone } from 'wcpay/utils/test-utils';
-import moment from 'moment';
-import os from 'os';
 
 /**
  * Internal dependencies
  */
 import { TransactionsList } from '../';
-import {
-	useTransactions,
-	useTransactionsSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useTransactions, useTransactionsSummary } from 'data/index';
 import type { Transaction } from 'data/transactions/hooks';
 
 jest.mock( '@woocommerce/csv-export', () => {
@@ -31,6 +24,15 @@ jest.mock( '@woocommerce/csv-export', () => {
 	return {
 		...actualModule,
 		downloadCSVFile: jest.fn(),
+	};
+} );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
 	};
 } );
 
@@ -55,12 +57,16 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
+// Mock dateI18n
+jest.mock( '@wordpress/date', () => ( {
+	dateI18n: jest.fn( ( format, date ) => {
+		return jest
+			.requireActual( '@wordpress/date' )
+			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
+	} ),
+} ) );
 
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
@@ -72,8 +78,8 @@ const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction
 	typeof useTransactionsSummary
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -97,8 +103,8 @@ declare const global: {
 				precision: number;
 			};
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
+		userLocale: {
+			code: string;
 		};
 	};
 };
@@ -199,18 +205,6 @@ const getMockTransactions: () => Transaction[] = () => [
 	},
 ];
 
-function getUnformattedAmount( formattedAmount: string ) {
-	const amount = formattedAmount.replace( /[^0-9,.' ]/g, '' ).trim();
-	return amount.replace( ',', '.' ); // Euro fix
-}
-
-function formatDate( date: string ) {
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( date ).local().toISOString()
-	);
-}
-
 describe( 'Transactions list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -218,7 +212,11 @@ describe( 'Transactions list', () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_transactions_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			featureFlags: {
@@ -240,13 +238,15 @@ describe( 'Transactions list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
+			userLocale: {
+				code: 'en',
 			},
 		};
+		window.wcpaySettings.dateFormat = 'M j, Y';
+		window.wcpaySettings.timeFormat = 'g:iA';
 	} );
 
-	test( 'renders correctly when filtered by deposit', () => {
+	test( 'renders correctly when filtered by payout', () => {
 		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
 				( txn: Transaction ) => 'po_mock' === txn.deposit_id
@@ -267,14 +267,15 @@ describe( 'Transactions list', () => {
 			isLoading: false,
 		} );
 
-		const { container } = render(
+		const { container, getByRole } = render(
 			<TransactionsList depositId="po_mock" />
 		);
 		expect( container ).toMatchSnapshot();
+		getByRole( 'heading', { name: 'Transactions' } );
 		expect( mockUseTransactions.mock.calls[ 0 ][ 1 ] ).toBe( 'po_mock' );
 	} );
 
-	describe( 'when not filtered by deposit', () => {
+	describe( 'when not filtered by payout', () => {
 		let container: Element;
 		let rerender: ( ui: React.ReactElement ) => void;
 		beforeEach( () => {
@@ -328,10 +329,10 @@ describe( 'Transactions list', () => {
 		} );
 
 		test( 'sorts by amount', () => {
-			sortBy( 'Amount in Deposit Curency' );
+			sortBy( 'Amount in Payout Currency' );
 			expectSortingToBe( 'amount', 'desc' );
 
-			sortBy( 'Amount in Deposit Curency' );
+			sortBy( 'Amount in Payout Currency' );
 			expectSortingToBe( 'amount', 'asc' );
 		} );
 
@@ -513,6 +514,46 @@ describe( 'Transactions list', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'renders columns hidden as per user preferences', () => {
+		mockUseTransactions.mockReturnValue( {
+			transactions: getMockTransactions(),
+			isLoading: false,
+			transactionsError: undefined,
+		} );
+
+		mockUseTransactionsSummary.mockReturnValue( {
+			transactionsSummary: {
+				count: 10,
+				currency: 'usd',
+				store_currencies: [ 'usd' ],
+				fees: 100,
+				total: 1000,
+				net: 900,
+			},
+			isLoading: false,
+		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			wc_payments_transactions_hidden_columns: [ 'fees' ],
+		} as any );
+
+		const { getByRole, queryByRole } = render( <TransactionsList /> );
+
+		// Fees column should not be visible, as it is hidden in user preferences.
+		expect(
+			queryByRole( 'columnheader', {
+				name: /Fees/i,
+			} )
+		).not.toBeInTheDocument();
+
+		// Channel column should be visible, as it is not hidden in user preferences.
+		expect(
+			getByRole( 'columnheader', {
+				name: /Channel/i,
+			} )
+		).toBeInTheDocument();
+	} );
+
 	describe( 'CSV download', () => {
 		beforeEach( () => {
 			mockUseTransactions.mockReturnValue( {
@@ -546,7 +587,7 @@ describe( 'Transactions list', () => {
 
 			const { getByRole } = render( <TransactionsList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -569,7 +610,7 @@ describe( 'Transactions list', () => {
 
 			const { getByRole } = render( <TransactionsList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -582,7 +623,7 @@ describe( 'Transactions list', () => {
 		} );
 
 		// Test also makes sure that the currentUserEmail is included in the path in the API call.
-		test( 'should fetch export with deposit_id if deposits transactions page', async () => {
+		test( 'should fetch export with deposit_id if payouts transactions page', async () => {
 			window.confirm = jest.fn( () => true );
 
 			mockUseTransactionsSummary.mockReturnValue( {
@@ -601,7 +642,7 @@ describe( 'Transactions list', () => {
 				<TransactionsList depositId="po_mock" />
 			);
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			await waitFor( () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
@@ -612,106 +653,6 @@ describe( 'Transactions list', () => {
 					) }&locale=en`,
 				} );
 			} );
-		} );
-
-		test( 'should render expected columns in CSV when the download button is clicked', () => {
-			const { getByRole } = render( <TransactionsList /> );
-
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const expected = [
-				'"Transaction Id"',
-				'"Date / Time"',
-				'Type',
-				'Channel',
-				'"Paid Currency"',
-				'"Amount Paid"',
-				'"Deposit Currency"',
-				'Amount',
-				'Fees',
-				'Net',
-				'"Order #"',
-				'"Payment Method"',
-				'Customer',
-				'Email',
-				'Country',
-				'"Risk level"',
-				'"Deposit ID"',
-				'"Deposit date"',
-				'"Deposit status"',
-			];
-
-			// checking if columns in CSV are rendered correctly
-			expect(
-				mockDownloadCSVFile.mock.calls[ 0 ][ 1 ]
-					.split( '\n' )[ 0 ]
-					.split( ',' )
-			).toEqual( expected );
-		} );
-
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <TransactionsList /> );
-
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows: HTMLElement[] = getAllByRole( 'row' );
-
-			expect( csvRows.length ).toEqual( displayRows.length );
-
-			const csvFirstTransaction = csvRows[ 1 ].split( ',' );
-			const displayFirstTransaction: string[] = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td: HTMLElement ) => td.textContent || '' );
-
-			// Date/Time column is a th
-			// Extract is separately and prepend to csvFirstTransaction
-			const displayFirstRowHead: string[] = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'th' )
-			).map( ( th: HTMLElement ) => th.textContent || '' );
-			displayFirstTransaction.unshift( displayFirstRowHead[ 0 ] );
-
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 1 because the first field in CSV is transaction id,
-			//    which is missing in display.
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-			expect( displayFirstTransaction[ 0 ] ).toBe(
-				formatDate( csvFirstTransaction[ 1 ].replace( /['"]+/g, '' ) ) // strip extra quotes
-			); // date
-			expect( displayFirstTransaction[ 1 ] ).toBe(
-				csvFirstTransaction[ 2 ]
-			); // type
-			expect( displayFirstTransaction[ 2 ] ).toBe(
-				csvFirstTransaction[ 3 ]
-			); // channel
-			expect(
-				getUnformattedAmount( displayFirstTransaction[ 3 ] ).indexOf(
-					csvFirstTransaction[ 7 ]
-				)
-			).not.toBe( -1 ); // amount
-			expect(
-				-Number( getUnformattedAmount( displayFirstTransaction[ 4 ] ) )
-			).toEqual(
-				Number(
-					csvFirstTransaction[ 8 ].replace( /['"]+/g, '' ) // strip extra quotes
-				)
-			); // fees
-			expect(
-				getUnformattedAmount( displayFirstTransaction[ 5 ] ).indexOf(
-					csvFirstTransaction[ 9 ]
-				)
-			).not.toBe( -1 ); // net
-			expect( displayFirstTransaction[ 6 ] ).toBe(
-				csvFirstTransaction[ 10 ]
-			); // order number
-			expect( displayFirstTransaction[ 8 ] ).toBe(
-				csvFirstTransaction[ 12 ].replace( /['"]+/g, '' ) // strip extra quotes
-			); // customer
 		} );
 	} );
 } );

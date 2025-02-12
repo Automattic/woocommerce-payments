@@ -76,14 +76,14 @@ describe( 'SupportPhoneInput', () => {
 		);
 	} );
 
-	it( 'no error message for empty phone input when it has not been set', async () => {
+	it( 'error message for empty phone input when it has not been set', async () => {
 		useAccountBusinessSupportPhone.mockReturnValue( [ '', jest.fn() ] );
 
 		const { container } = render( <SupportPhoneInput /> );
 
 		expect(
-			container.querySelector( '.components-notice.is-error' )
-		).toBeNull();
+			container.querySelector( '.components-notice.is-error' ).textContent
+		).toEqual( 'Support phone number cannot be empty.' );
 	} );
 
 	it( 'displays the error message for invalid phone', async () => {

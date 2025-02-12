@@ -6,6 +6,7 @@
 import * as React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -18,7 +19,6 @@ import {
 	useSettings,
 	useTransactions,
 	useTransactionsSummary,
-	useReportingExportLanguage,
 } from 'data/index';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -46,8 +46,16 @@ jest.mock( 'data/index', () => ( {
 	useManualCapture: jest.fn(),
 	useSettings: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
 
 const mockUseTransactions = useTransactions as jest.MockedFunction<
 	typeof useTransactions
@@ -73,8 +81,8 @@ const mockUseFraudOutcomeTransactionsSummary = useFraudOutcomeTransactionsSummar
 	typeof useFraudOutcomeTransactionsSummary
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -97,14 +105,13 @@ describe( 'TransactionsPage', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
-
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
 			isSaving: false,
+			isDirty: false,
 			saveSettings: ( a ) => a,
 		} );
 
@@ -125,6 +132,12 @@ describe( 'TransactionsPage', () => {
 			isLoading: false,
 			transactionsSummary: {},
 		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_transactions_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			featureFlags: {

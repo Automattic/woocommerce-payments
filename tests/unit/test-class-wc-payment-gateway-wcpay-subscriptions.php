@@ -161,12 +161,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$mock_payment_method,
 			[ 'card' => $mock_payment_method ],
-			$this->mock_session_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
 			$this->mock_fraud_service,
 			$this->mock_duplicates_detection_service,
+			$this->mock_session_rate_limiter
 		);
 		$this->wcpay_gateway->init_hooks();
 		WC_Payments::set_gateway( $this->wcpay_gateway );
@@ -906,12 +906,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$mock_payment_method,
 			[ 'card' => $mock_payment_method ],
-			$this->mock_session_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
 			$this->mock_fraud_service,
 			$this->mock_duplicates_detection_service,
+			$this->mock_session_rate_limiter
 		);
 
 		// Ensure the has_attached_integration_hooks property is set to false so callbacks can be attached in maybe_init_subscriptions().
@@ -941,12 +941,12 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$mock_payment_method,
 			[ 'card' => $mock_payment_method ],
-			$this->mock_session_rate_limiter,
 			$this->order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
 			$this->mock_fraud_service,
 			$this->mock_duplicates_detection_service,
+			$this->mock_session_rate_limiter
 		);
 
 		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );

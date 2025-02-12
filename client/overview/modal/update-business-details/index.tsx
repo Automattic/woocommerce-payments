@@ -3,9 +3,7 @@
  */
 import React, { useState } from 'react';
 import { Button, Modal, Notice } from '@wordpress/components';
-import { dateI18n } from '@wordpress/date';
 import { sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -13,6 +11,7 @@ import moment from 'moment';
 import strings from './strings';
 import './index.scss';
 import { recordEvent } from 'wcpay/tracks';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 interface Props {
 	errorMessages: Array< string >;
@@ -57,11 +56,11 @@ const UpdateBusinessDetailsModal = ( {
 								currentDeadline
 									? sprintf(
 											strings.restrictedSoonDescription,
-											dateI18n(
-												'ga M j, Y',
-												moment(
-													currentDeadline * 1000
-												).toISOString()
+											formatDateTimeFromTimestamp(
+												currentDeadline,
+												{
+													customFormat: 'ga M j, Y',
+												}
 											)
 									  )
 									: strings.restrictedDescription }

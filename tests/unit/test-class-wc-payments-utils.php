@@ -931,12 +931,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $result );
 	}
 
-	public function test_get_cached_minimum_amount_returns_amount_fallbacking_from_stripe_list() {
-		delete_transient( 'wcpay_minimum_amount_usd' );
-		$result = WC_Payments_Utils::get_cached_minimum_amount( 'usd', true );
-		$this->assertSame( 50, $result );
-	}
-
 	public function test_get_last_refund_from_order_id_returns_correct_refund() {
 		$order    = WC_Helper_Order::create_order();
 		$refund_1 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
@@ -1115,8 +1109,98 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_store_api_request_with_malformed_url() {
-		$_SERVER['REQUEST_URI'] = '///wp-json/wp/v2/users';
+		$_SERVER['REQUEST_URI'] = '///wp-json/wc/store/v1/checkout';
 
 		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+	}
+
+	public function test_is_store_api_request_with_url_with_no_path() {
+		$_SERVER['REQUEST_URI'] = '?something';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+
+		$_SERVER['REQUEST_URI'] = '';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+	}
+
+	public function test_is_any_bnpl_method_available() {
+		// Price within range for Afterpay/Clearpay in the US.
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay' ],
+				'US',
+				'USD',
+				100
+			)
+		);
+
+		// Price within range for Klarna in the US.
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'klarna' ],
+				'US',
+				'USD',
+				500
+			)
+		);
+
+		// Price below minimum for all methods.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'US',
+				'USD',
+				0.50
+			)
+		);
+
+		// Price above maximum for all methods.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'US',
+				'USD',
+				4000000
+			)
+		);
+
+		// Unsupported country.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'RU',
+				'RUB',
+				100
+			)
+		);
+
+		// Unsupported currency.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'US',
+				'JPY',
+				100
+			)
+		);
+
+		// Empty enabled methods array.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[],
+				'US',
+				'USD',
+				100
+			)
+		);
+
+		// Different country, same currency (Afterpay/Clearpay in Canada).
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay' ],
+				'CA',
+				'CAD',
+				100
+			)
+		);
 	}
 }

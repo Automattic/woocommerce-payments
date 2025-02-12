@@ -5,7 +5,7 @@ HTMLOptionsCollection [
   <option
     value="vat_invoice"
   >
-    VAT Invoice
+    Tax Invoice
   </option>,
 ]
 `;

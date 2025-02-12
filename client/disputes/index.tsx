@@ -5,7 +5,6 @@
  */
 import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
-import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { Button } from '@wordpress/components';
@@ -24,11 +23,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 /**
  * Internal dependencies.
  */
-import {
-	useDisputes,
-	useDisputesSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useDisputes, useDisputesSummary } from 'data/index';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
@@ -46,18 +41,12 @@ import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
-import {
-	applyThousandSeparator,
-	isExportModalDismissed,
-	getExportLanguage,
-	isDefaultSiteLanguage,
-} from 'wcpay/utils';
+import { applyThousandSeparator } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
-import CSVExportModal from 'components/csv-export-modal';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
-
 import './style.scss';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -201,10 +190,9 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 			</span>
 		);
 	}
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( dispute.due_by ).local().toISOString()
-	);
+	return formatDateTimeFromString( dispute.due_by, {
+		includeTime: true,
+	} );
 };
 
 export const DisputesList = (): JSX.Element => {
@@ -219,13 +207,11 @@ export const DisputesList = (): JSX.Element => {
 		getQuery()
 	);
 
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
-
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
-
 	const headers = getHeaders( getQuery().orderby );
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		DisputesTableHeader
+	>( 'wc_payments_disputes_hidden_columns', headers );
+
 	const totalRows = disputesSummary.count || 0;
 
 	const rows = disputes.map( ( dispute ) => {
@@ -301,10 +287,9 @@ export const DisputesList = (): JSX.Element => {
 			created: {
 				value: dispute.created,
 				display: clickable(
-					dateI18n(
-						'M j, Y',
-						moment( dispute.created ).toISOString()
-					)
+					formatDateTimeFromString( dispute.created, {
+						includeTime: true,
+					} )
 				),
 			},
 			dueBy: {
@@ -360,18 +345,19 @@ export const DisputesList = (): JSX.Element => {
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
+	const endpointExport = async () => {
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		const locale = getExportLanguage( language, exportLanguage );
+		const userLocale = wcpaySettings.userLocale.code;
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
 			date_between: dateBetween,
 			match,
+			filter,
 			status_is: statusIs,
 			status_is_not: statusIsNot,
 		} = getQuery();
@@ -398,21 +384,25 @@ export const DisputesList = (): JSX.Element => {
 			window.confirm( confirmMessage )
 		) {
 			try {
-				const { exported_disputes: exportedDisputes } = await apiFetch(
-					{
-						path: getDisputesCSV( {
-							userEmail,
-							locale,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							statusIs,
-							statusIsNot,
-						} ),
-						method: 'POST',
-					}
-				);
+				const {
+					exported_disputes: exportedDisputes,
+				} = await apiFetch< {
+					/** The total number of disputes that will be exported in the CSV. */
+					exported_disputes: number;
+				} >( {
+					path: getDisputesCSV( {
+						userEmail,
+						userLocale,
+						dateAfter,
+						dateBefore,
+						dateBetween,
+						match,
+						filter,
+						statusIs,
+						statusIsNot,
+					} ),
+					method: 'POST',
+				} );
 
 				createNotice(
 					'success',
@@ -448,11 +438,7 @@ export const DisputesList = (): JSX.Element => {
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
 		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
+			endpointExport();
 		} else {
 			const csvColumns = [
 				{
@@ -483,17 +469,18 @@ export const DisputesList = (): JSX.Element => {
 					{
 						// Disputed On.
 						...row[ 10 ],
-						value: dateI18n(
-							'Y-m-d',
-							moment( row[ 10 ].value ).toISOString()
+						value: formatDateTimeFromString(
+							row[ 10 ].value as string
 						),
 					},
 					{
 						// Respond by.
 						...row[ 11 ],
-						value: dateI18n(
-							'Y-m-d / g:iA',
-							moment( row[ 11 ].value ).toISOString()
+						value: formatDateTimeFromString(
+							row[ 11 ].value as string,
+							{
+								includeTime: true,
+							}
 						),
 					},
 				];
@@ -539,16 +526,6 @@ export const DisputesList = (): JSX.Element => {
 		disputesSummary.currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 
-	const closeModal = () => {
-		setCSVExportModalOpen( false );
-	};
-
-	const exportDisputes = ( language: string ) => {
-		endpointExport( language );
-
-		closeModal();
-	};
-
 	return (
 		<Page>
 			<TestModeNotice currentPage="disputes" />
@@ -559,11 +536,12 @@ export const DisputesList = (): JSX.Element => {
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
-				headers={ headers }
+				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					downloadable && (
 						<DownloadButton
@@ -574,16 +552,6 @@ export const DisputesList = (): JSX.Element => {
 					),
 				] }
 			/>
-			{ ! isDefaultSiteLanguage() &&
-				! isExportModalDismissed() &&
-				isCSVExportModalOpen && (
-					<CSVExportModal
-						onClose={ closeModal }
-						onSubmit={ exportDisputes }
-						totalItems={ totalRows }
-						exportType={ 'disputes' }
-					/>
-				) }
 		</Page>
 	);
 };

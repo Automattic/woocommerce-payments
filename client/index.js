@@ -70,25 +70,19 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 
-		// Currently under feature flag.
-		if (
-			wcpaySettings &&
-			wcpaySettings.featureFlags.isEmbeddedKycEnabled
-		) {
-			pages.push( {
-				container: OnboardingKycPage,
-				path: '/payments/onboarding/kyc',
-				wpOpenMenu: menuID,
-				breadcrumbs: [
-					rootLink,
-					__( 'Continue onboarding', 'woocommerce-payments' ),
-				],
-				navArgs: {
-					id: 'wc-payments-continue-onboarding',
-				},
-				capability: 'manage_woocommerce',
-			} );
-		}
+		pages.push( {
+			container: OnboardingKycPage,
+			path: '/payments/onboarding/kyc',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Continue onboarding', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-continue-onboarding',
+			},
+			capability: 'manage_woocommerce',
+		} );
 
 		pages.push( {
 			container: OverviewPage,
@@ -103,9 +97,9 @@ addFilter(
 
 		pages.push( {
 			container: DepositsPage,
-			path: '/payments/deposits',
+			path: '/payments/payouts',
 			wpOpenMenu: menuID,
-			breadcrumbs: [ rootLink, __( 'Deposits', 'woocommerce-payments' ) ],
+			breadcrumbs: [ rootLink, __( 'Payouts', 'woocommerce-payments' ) ],
 			navArgs: {
 				id: 'wc-payments-deposits',
 			},
@@ -113,19 +107,19 @@ addFilter(
 		} );
 		pages.push( {
 			container: DepositDetailsPage,
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
 				rootLink,
 				[
-					'/payments/deposits',
-					__( 'Deposits', 'woocommerce-payments' ),
+					'/payments/payouts',
+					__( 'Payouts', 'woocommerce-payments' ),
 				],
-				__( 'Deposit details', 'woocommerce-payments' ),
+				__( 'Payout details', 'woocommerce-payments' ),
 			],
 			navArgs: {
 				id: 'wc-payments-deposit-details',
-				parentPath: '/payments/deposits',
+				parentPath: '/payments/payouts',
 			},
 			capability: 'manage_woocommerce',
 		} );

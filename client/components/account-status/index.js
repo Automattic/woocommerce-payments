@@ -112,7 +112,7 @@ const AccountStatusDetails = ( props ) => {
 				/>
 			</AccountStatusItem>
 			<AccountStatusItem
-				label={ __( 'Deposits:', 'woocommerce-payments' ) }
+				label={ __( 'Payouts:', 'woocommerce-payments' ) }
 			>
 				<DepositsStatus
 					status={ accountStatus.deposits?.status }

@@ -35,7 +35,7 @@ const WCPAY_CONNECT =
 const WCPAY_DISPUTES =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
 const WCPAY_DEPOSITS =
-	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/deposits';
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/payouts';
 const WCPAY_TRANSACTIONS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
 const WCPAY_MULTI_CURRENCY =
@@ -693,9 +693,18 @@ export const merchantWCP = {
 	},
 
 	wcpSettingsSaveChanges: async () => {
+		const saveSettingsButtonSelector = '.save-settings-section button';
+		const saveSettingsButton = await page.$( saveSettingsButtonSelector );
+		const buttonStatus = await (
+			await saveSettingsButton.getProperty( 'disabled' )
+		 ).jsonValue();
+		if ( buttonStatus === true ) {
+			return;
+		}
+
 		const snackbarSettingsSaved = '.components-snackbar';
 
-		await expect( page ).toClick( '.save-settings-section button' );
+		await expect( page ).toClick( saveSettingsButtonSelector );
 		await expect( page ).toMatchElement( snackbarSettingsSaved, {
 			text: 'Settings saved.',
 			timeout: 60000,
@@ -925,6 +934,8 @@ export const merchantWCP = {
 			waitUntil: 'load',
 		} );
 
+		await page.waitForTimeout( 2000 );
+
 		const closeWelcomeModal = await page.$( 'button[aria-label="Close"]' );
 		if ( closeWelcomeModal ) {
 			await closeWelcomeModal.click();
@@ -939,7 +950,7 @@ export const merchantWCP = {
 			const searchInput = await page.waitForSelector(
 				'input[placeholder="Search"]'
 			);
-			searchInput.type( 'switcher', { delay: 20 } );
+			await searchInput.type( 'switcher', { delay: 20 } );
 
 			await page.waitForSelector(
 				'button.components-button[role="option"]',

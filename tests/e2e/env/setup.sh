@@ -17,6 +17,23 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	. "$E2E_ROOT/config/local.env"
 fi
 
+# Function to handle permissions in a cross-platform way
+handle_permissions() {
+    local path=$1
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # For MacOS environments, use less strict permissions
+        echo "Setting MacOS compatible permissions for $path"
+        chmod -R 755 "$path"
+    else
+        # For Linux/CI environments
+        echo "Setting Linux/CI permissions for $path"
+        if ! sudo chown www-data:www-data -R "$path"; then
+            echo "Failed to set permissions on $path"
+            exit 1
+        fi
+    fi
+}
+
 # Variables
 BLOG_ID=${E2E_BLOG_ID-111}
 WC_GUEST_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.guest.email')
@@ -33,19 +50,19 @@ if [[ $FORCE_E2E_DEPS_SETUP ]]; then
 	sudo rm -rf tests/e2e/deps
 fi
 
-# Setup WCPay local server instance.
+# Setup Transact Platform local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	if [[ ! -d "$SERVER_PATH" ]]; then
-		step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
+		step "Fetching server (branch ${TRANSACT_PLATFORM_SERVER_BRANCH-trunk})"
 
-		if [[ -z $WCP_SERVER_REPO ]]; then
-			echo "WCP_SERVER_REPO env variable is not defined"
+		if [[ -z $TRANSACT_PLATFORM_SERVER_REPO ]]; then
+			echo "TRANSACT_PLATFORM_SERVER_REPO env variable is not defined"
 			exit 1;
 		fi
 
 		rm -rf "$SERVER_PATH"
-		git clone --depth=1 --branch "${WCP_SERVER_BRANCH-trunk}" "$WCP_SERVER_REPO" "$SERVER_PATH"
+		git clone --depth=1 --branch "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "$TRANSACT_PLATFORM_SERVER_REPO" "$SERVER_PATH"
 	else
 		echo "Using cached server at ${SERVER_PATH}"
 	fi
@@ -75,8 +92,9 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	if [[ -n $CI ]]; then
 		echo "Setting docker folder permissions"
-		redirect_output sudo chown www-data:www-data -R ./docker/wordpress
-		redirect_output ls -al ./docker
+		handle_permissions "$SERVER_PATH/docker/wordpress"
+		touch "$SERVER_PATH/logstash.log"
+		handle_permissions "$SERVER_PATH/logstash.log"
 	fi
 
 	step "Setting up SERVER containers"
@@ -123,11 +141,11 @@ step "Setting up CLIENT site"
 # Wait for containers to be started up before the setup.
 # The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
 set +e
-cli wp db check --path=/var/www/html --quiet > /dev/null
+cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
 	sleep 5
-	cli wp db check --path=/var/www/html --quiet > /dev/null
+	cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 done
 echo "Client DB is up and running..."
 set -e
@@ -138,7 +156,7 @@ echo
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
-	redirect_output sudo chown www-data:www-data -R "$E2E_ROOT"/docker/wordpress/wp-content
+	handle_permissions "$E2E_ROOT/docker/wordpress/wp-content"
 	redirect_output ls -al "$E2E_ROOT"/docker/wordpress
 fi
 
@@ -210,12 +228,19 @@ cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
 
+echo "Deactivating Coming Soon mode in WooCommerce..."
+cli wp option set woocommerce_coming_soon "no"
+
+echo "Enabling company field as an optional parameter in checkout form..."
+cli wp option set woocommerce_checkout_company_field "optional"
+
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
 
+INSTALLED_WC_VERSION=$(cli_debug wp plugin get woocommerce --field=version)
+
 # Start - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
 # To be removed when WooPayments L-2 support is >= WC 8.3
-INSTALLED_WC_VERSION=$(cli_debug wp plugin get woocommerce --field=version)
 IS_WORKAROUND_REQUIRED=$(cli_debug wp eval "echo version_compare(\"$INSTALLED_WC_VERSION\", \"8.3\", \">=\");")
 
 if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
@@ -305,7 +330,7 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 
 	unzip -qq woocommerce-subscriptions.zip -d woocommerce-subscriptions-source
 
-	echo "Moving the unzipped plugin files. This may require your admin password"
+	echo "Moving the unzipped plugin files..."
 	sudo mv woocommerce-subscriptions-source/woocommerce-subscriptions/* woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
@@ -329,6 +354,7 @@ fi
 
 echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots
+handle_permissions $WCP_ROOT/screenshots
 
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
@@ -338,6 +364,17 @@ cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m
 
 echo "Setting up a coupon for E2E tests"
 cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
+
+# HPOS was officially released in WooCommerce 8.2.0, so we need to check if we should sync COT or HPOS data.
+IS_HPOS_AVAILABLE=$(cli_debug wp eval "echo version_compare(\"$INSTALLED_WC_VERSION\", \"8.2\", \">=\");")
+
+if [[ ${IS_HPOS_AVAILABLE} ]]; then
+	echo "Syncing HPOS data"
+	cli wp wc hpos sync
+else
+	echo "Syncing COT data"
+	cli wp wc cot sync
+fi
 
 # Log test configuration for visibility
 echo

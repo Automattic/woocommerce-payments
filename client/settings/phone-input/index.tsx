@@ -99,6 +99,7 @@ const PhoneNumberInput = ( {
 				hiddenInput: 'full',
 				utilsScript: utils,
 				dropdownContainer: document.body,
+				formatOnDisplay: false,
 				...phoneCountries,
 			} );
 			setInputInstance( iti );
@@ -149,6 +150,7 @@ const PhoneNumberInput = ( {
 			inputRef.current &&
 			( focusLost || inputInstance.getNumber() )
 		) {
+			inputInstance.setNumber( value );
 			onValidationChange( inputInstance.isValidNumber() );
 		}
 	}, [ value, inputInstance, inputRef, onValidationChange, focusLost ] );

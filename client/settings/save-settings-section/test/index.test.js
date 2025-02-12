@@ -28,6 +28,16 @@ describe( 'SaveSettingsSection', () => {
 		expect( screen.getByText( 'Save changes' ) ).toBeDisabled();
 	} );
 
+	it( 'disables the button by default', () => {
+		useSettings.mockReturnValue( {
+			isDirty: false,
+		} );
+
+		render( <SaveSettingsSection /> );
+
+		expect( screen.getByText( 'Save changes' ) ).toBeDisabled();
+	} );
+
 	it( 'disables the button when saving data', () => {
 		useSettings.mockReturnValue( {
 			isSaving: true,
@@ -43,6 +53,7 @@ describe( 'SaveSettingsSection', () => {
 		useSettings.mockReturnValue( {
 			isSaving: false,
 			isLoading: false,
+			isDirty: true,
 			saveSettings: saveSettingsMock,
 		} );
 

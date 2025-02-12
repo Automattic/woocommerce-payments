@@ -65,10 +65,8 @@ describe( 'CurrencyInformationForMethods', () => {
 						'card',
 						'bancontact',
 						'eps',
-						'giropay',
 						'ideal',
 						'p24',
-						'sofort',
 						'sepa_debit',
 					] }
 				/>
@@ -89,10 +87,8 @@ describe( 'CurrencyInformationForMethods', () => {
 						'card',
 						'bancontact',
 						'eps',
-						'giropay',
 						'ideal',
 						'p24',
-						'sofort',
 						'sepa_debit',
 					] }
 				/>
@@ -120,10 +116,8 @@ describe( 'CurrencyInformationForMethods', () => {
 						'card',
 						'bancontact',
 						'eps',
-						'giropay',
 						'ideal',
 						'p24',
-						'sofort',
 						'sepa_debit',
 					] }
 				/>

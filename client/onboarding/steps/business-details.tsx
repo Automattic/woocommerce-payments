@@ -19,6 +19,9 @@ import { BusinessType } from 'onboarding/types';
 import InlineNotice from 'components/inline-notice';
 import strings from 'onboarding/strings';
 
+/**
+ * Contains business and store details KYC logic.
+ */
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
 	const countries = getAvailableCountries();
@@ -50,6 +53,19 @@ const BusinessDetails: React.FC = () => {
 			( structure ) => structure.key === data[ 'company.structure' ]
 		);
 	const selectedMcc = mccsFlatList.find( ( mcc ) => mcc.key === data.mcc );
+
+	const annualRevenues = Object.entries( strings.annualRevenues ).map(
+		( [ key, name ] ) => ( {
+			key,
+			name,
+		} )
+	);
+	const goLiveTimeframes = Object.entries( strings.goLiveTimeframes ).map(
+		( [ key, name ] ) => ( {
+			key,
+			name,
+		} )
+	);
 
 	const handleTiedChange = (
 		name: keyof OnboardingFields,
@@ -139,9 +155,19 @@ const BusinessDetails: React.FC = () => {
 				selectedBusinessType &&
 				selectedBusinessStructure &&
 				selectedMcc && (
-					<span className={ 'wcpay-onboarding__tos' }>
-						{ strings.tos }
-					</span>
+					<>
+						<OnboardingSelectField
+							name="annual_revenue"
+							options={ annualRevenues }
+						/>
+						<OnboardingSelectField
+							name="go_live_timeframe"
+							options={ goLiveTimeframes }
+						/>
+						<span className={ 'wcpay-onboarding__tos' }>
+							{ strings.tos }
+						</span>
+					</>
 				) }
 		</>
 	);

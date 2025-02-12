@@ -31,7 +31,7 @@ interface Props {
 
 const nounToUse = {
 	documents: __( 'document', 'woocommerce-payments' ),
-	deposits: __( 'deposit', 'woocommerce-payments' ),
+	deposits: __( 'payout', 'woocommerce-payments' ),
 	disputes: __( 'dispute', 'woocommerce-payments' ),
 	loans: __( 'loan', 'woocommerce-payments' ),
 	payments: __( 'order', 'woocommerce-payments' ),
@@ -143,7 +143,9 @@ const getNoticeContent = (
 								'Viewing test %1$s. To view live %1s, disable test mode in {{settingsLink}}%2s settings{{/settingsLink}}.',
 								'woocommerce-payments'
 							),
-							currentPage,
+							'deposits' === currentPage
+								? 'payouts'
+								: currentPage,
 							'WooPayments'
 						),
 						components: {

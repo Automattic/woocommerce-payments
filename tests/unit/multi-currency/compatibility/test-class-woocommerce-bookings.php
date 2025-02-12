@@ -52,6 +52,13 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 	private $localization_service;
 
 	/**
+	 * Mock product.
+	 *
+	 * @var \WC_Product|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_product;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -62,6 +69,14 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 		$this->mock_frontend_currencies = $this->createMock( FrontendCurrencies::class );
 		$this->woocommerce_bookings     = new WooCommerceBookings( $this->mock_multi_currency, $this->mock_utils, $this->mock_frontend_currencies );
 		$this->localization_service     = new WC_Payments_Localization_Service();
+
+		$this->mock_product = $this->createMock( \WC_Product::class );
+		$this->mock_product
+			->method( 'get_id' )
+			->willReturn( 42 );
+		$this->mock_product
+			->method( 'get_type' )
+			->willReturn( 'booking' );
 	}
 
 	public function test_get_price_returns_empty_string() {
@@ -95,53 +110,29 @@ class WCPay_Multi_Currency_WooCommerceBookings_Tests extends WCPAY_UnitTestCase 
 	// If false is passed, it should automatically return false.
 	public function test_should_convert_product_price_returns_false_if_false_passed() {
 		$this->mock_utils->expects( $this->exactly( 0 ) )->method( 'is_call_in_backtrace' );
-		$this->assertFalse( $this->woocommerce_bookings->should_convert_product_price( false ) );
+		$this->assertFalse( $this->woocommerce_bookings->should_convert_product_price( false, $this->mock_product ) );
 	}
 
-	// If the first two sets of calls are found, it should return false.
-	public function test_should_convert_product_price_returns_false_if_cart_calls_found() {
-		$first_calls  = [ 'WC_Product_Booking->get_price' ];
-		$second_calls = [
-			'WC_Cart_Totals->calculate_item_totals',
-			'WC_Cart->get_product_price',
-			'WC_Cart->get_product_subtotal',
-		];
-		$this->mock_utils
-			->expects( $this->exactly( 2 ) )
-			->method( 'is_call_in_backtrace' )
-			->withConsecutive( [ $first_calls ], [ $second_calls ] )
-			->willReturn( true, true );
-		$this->assertFalse( $this->woocommerce_bookings->should_convert_product_price( true ) );
-	}
-
-	// If the last set of calls are found, it should return false.
-	// This also tests to make sure if the first set of calls is found, but not the second, it continues.
+	// If the get_price_html call is found, it should return false.
 	public function test_should_convert_product_price_returns_false_if_display_calls_found() {
-		$first_calls  = [ 'WC_Product_Booking->get_price' ];
-		$second_calls = [
-			'WC_Cart_Totals->calculate_item_totals',
-			'WC_Cart->get_product_price',
-			'WC_Cart->get_product_subtotal',
-		];
-		$third_calls  = [ 'WC_Product_Booking->get_price_html' ];
+		$expected_calls = [ 'WC_Product_Booking->get_price_html' ];
 		$this->mock_utils
-			->expects( $this->exactly( 3 ) )
+			->expects( $this->exactly( 1 ) )
 			->method( 'is_call_in_backtrace' )
-			->withConsecutive( [ $first_calls ], [ $second_calls ], [ $third_calls ] )
-			->willReturn( true, false, true );
-		$this->assertFalse( $this->woocommerce_bookings->should_convert_product_price( true ) );
+			->with( $expected_calls )
+			->willReturn( true );
+		$this->assertFalse( $this->woocommerce_bookings->should_convert_product_price( true, $this->mock_product ) );
 	}
 
 	// If no calls are found, it should return true.
 	public function test_should_convert_product_price_returns_true_if_no_calls_found() {
-		$first_calls = [ 'WC_Product_Booking->get_price' ];
-		$third_calls = [ 'WC_Product_Booking->get_price_html' ];
+		$expected_calls = [ 'WC_Product_Booking->get_price_html' ];
 		$this->mock_utils
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->exactly( 1 ) )
 			->method( 'is_call_in_backtrace' )
-			->withConsecutive( [ $first_calls ], [ $third_calls ] )
-			->willReturn( false, false );
-		$this->assertTrue( $this->woocommerce_bookings->should_convert_product_price( true ) );
+			->with( $expected_calls )
+			->willReturn( false );
+		$this->assertTrue( $this->woocommerce_bookings->should_convert_product_price( true, $this->mock_product ) );
 	}
 
 	public function test_filter_wc_price_args_returns_expected_results() {

@@ -23,7 +23,7 @@ jest.mock( '../../../data', () => ( {
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ true, jest.fn() ] ),
 	useWooPayCustomMessage: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
 	useWooPayStoreLogo: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
-	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	usePaymentRequestButtonBorderRadius: jest.fn().mockReturnValue( [ 4 ] ),
@@ -51,7 +51,7 @@ jest.mock( '@stripe/stripe-js', () => ( {
 } ) );
 
 jest.mock( 'utils/express-checkout', () => ( {
-	getPaymentRequestData: jest.fn().mockReturnValue( {
+	getExpressCheckoutConfig: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',
 		locale: 'en',
@@ -74,13 +74,6 @@ describe( 'ExpressCheckoutSettings', () => {
 				woopayExpressCheckout: true,
 			},
 		};
-	} );
-
-	test( 'renders banner at the top', () => {
-		render( <ExpressCheckoutSettings methodId="payment_request" /> );
-
-		const banner = screen.queryByAltText( 'WooPayments logo' );
-		expect( banner ).toBeInTheDocument();
 	} );
 
 	test( 'renders error message for invalid method IDs', () => {

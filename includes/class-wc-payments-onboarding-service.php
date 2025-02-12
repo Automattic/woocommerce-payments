@@ -20,8 +20,9 @@ use WCPay\Logger;
  */
 class WC_Payments_Onboarding_Service {
 
-	const TEST_MODE_OPTION                    = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_ELIGIBILITY_MODAL_OPTION = 'wcpay_onboarding_eligibility_modal_dismissed';
+	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
+	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
+	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
@@ -109,6 +110,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function init_hooks() {
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
+		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'maybe_add_test_drive_settings_to_new_account_request' ] );
 	}
 
 	/**
@@ -151,6 +153,98 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Retrieve and cache the account recommended payment methods list.
+	 *
+	 * @param string $country_code The account's business location country code. Provide a 2-letter ISO country code.
+	 * @param string $locale       Optional. The locale to use to i18n the data.
+	 *
+	 * @return ?array The recommended payment methods list.
+	 *                NULL on retrieval or validation error.
+	 */
+	public function get_recommended_payment_methods( string $country_code, string $locale = '' ): ?array {
+		$cache_key = Database_Cache::RECOMMENDED_PAYMENT_METHODS . '__' . $country_code;
+		if ( ! empty( $locale ) ) {
+			$cache_key .= '__' . $locale;
+		}
+
+		return \WC_Payments::get_database_cache()->get_or_add(
+			$cache_key,
+			function () use ( $country_code, $locale ) {
+				try {
+					return $this->payments_api_client->get_recommended_payment_methods( $country_code, $locale );
+				} catch ( API_Exception $e ) {
+					// Return NULL to signal retrieval error.
+					return null;
+				}
+			},
+			'is_array'
+		);
+	}
+
+	/**
+	 * Get the onboarding capabilities from the request.
+	 *
+	 * The capabilities are expected to be passed as an array of capabilities keyed by the capability ID and
+	 * with boolean values. If the value is true, the capability is requested when the account is created.
+	 *
+	 * @return array The standardized capabilities that were passed in the request.
+	 *               Empty array if no capabilities were passed or none were valid.
+	 */
+	public function get_capabilities_from_request(): array {
+		$capabilities = [];
+
+		if ( empty( $_REQUEST['capabilities'] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			return $capabilities;
+		}
+
+		// Try to extract the capabilities.
+		// They might be already decoded or not, so we need to handle both cases.
+		// We expect them to be an array.
+		// We disable the warning because we have our own sanitization and validation.
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$capabilities = wp_unslash( $_REQUEST['capabilities'] );
+		if ( ! is_array( $capabilities ) ) {
+			$capabilities = json_decode( $capabilities, true ) ?? [];
+		}
+
+		if ( empty( $capabilities ) ) {
+			return [];
+		}
+
+		// Sanitize and validate.
+		$capabilities = array_combine(
+			array_map(
+				function ( $key ) {
+					// Keep numeric keys as integers so we can remove them later.
+					if ( is_numeric( $key ) ) {
+						return intval( $key );
+					}
+
+					return sanitize_text_field( $key );
+				},
+				array_keys( $capabilities )
+			),
+			array_map(
+				function ( $value ) {
+					return filter_var( $value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+				},
+				$capabilities
+			)
+		);
+
+		// Filter out any invalid entries.
+		$capabilities = array_filter(
+			$capabilities,
+			function ( $value, $key ) {
+				return is_string( $key ) && is_bool( $value );
+			},
+			ARRAY_FILTER_USE_BOTH
+		);
+
+		return $capabilities;
+	}
+
+	/**
 	 * Retrieve the embedded KYC session and handle initial account creation (if necessary).
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
@@ -160,12 +254,13 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return array Session data.
 	 *
-	 * @throws API_Exception
+	 * @throws API_Exception|Exception
 	 */
 	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
+
 		$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
 
 		// Make sure the onboarding test mode DB flag is set.
@@ -176,15 +271,35 @@ class WC_Payments_Onboarding_Service {
 			'site_locale'   => get_locale(),
 		];
 		$user_data      = $this->get_onboarding_user_data();
-		$account_data   = $this->get_account_data( $setup_mode, $self_assessment_data );
+		$account_data   = $this->get_account_data(
+			$setup_mode,
+			$self_assessment_data,
+			$this->get_capabilities_from_request()
+		);
 		$actioned_notes = self::get_actioned_notes();
+
+		/**
+		 * ==================
+		 * Enforces the update of payment methods to 'enabled' based on the capabilities
+		 * provided during the NOX onboarding process.
+		 *
+		 * @see self::update_enabled_payment_methods_ids
+		 * ==================
+		 */
+		$capabilities = $this->get_capabilities_from_request();
+		$gateway      = WC_Payments::get_gateway();
+
+		// Activate enabled Payment Methods IDs.
+		if ( ! empty( $capabilities ) ) {
+			$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
+		}
 
 		try {
 			$account_session = $this->payments_api_client->initialize_onboarding_embedded_kyc(
 				'live' === $setup_mode,
 				$site_data,
-				array_filter( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
-				array_filter( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
+				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
 				$progressive
 			);
@@ -192,6 +307,16 @@ class WC_Payments_Onboarding_Service {
 			// If we fail to create the session, return an empty array.
 			return [];
 		}
+
+		// Set the embedded KYC in progress flag.
+		$this->set_embedded_kyc_in_progress();
+
+		// Remember if we should enable WooPay by default.
+		set_transient(
+			WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT,
+			filter_var( $account_session['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			DAY_IN_SECONDS
+		);
 
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
@@ -230,7 +355,7 @@ class WC_Payments_Onboarding_Service {
 			throw new API_Exception( __( 'Failed to finalize onboarding session.', 'woocommerce-payments' ), 'wcpay-onboarding-finalize-error', 400 );
 		}
 
-		// Clear the onboarding in progress option, since the onboarding flow is now complete.
+		// Clear the embedded KYC in progress option, since the onboarding flow is now complete.
 		$this->clear_embedded_kyc_in_progress();
 
 		return [
@@ -322,14 +447,17 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Get account data for onboarding from self assestment data.
+	 * Get account data for onboarding from self assessment data.
 	 *
-	 * @param string $setup_mode Setup mode.
+	 * @param string $setup_mode           Setup mode.
 	 * @param array  $self_assessment_data Self assessment data.
+	 * @param array  $capabilities         Optional. List keyed by capabilities IDs (payment methods) with boolean values.
+	 *                                     If the value is true, the capability is requested when the account is created.
+	 *                                     If the value is false, the capability is not requested when the account is created.
 	 *
 	 * @return array Account data.
 	 */
-	public function get_account_data( string $setup_mode, array $self_assessment_data ): array {
+	public function get_account_data( string $setup_mode, array $self_assessment_data, array $capabilities = [] ): array {
 		$home_url = get_home_url();
 		// If the site is running on localhost, use a bogus URL. This is to avoid Stripe's errors.
 		// wp_http_validate_url does not check that, unfortunately.
@@ -345,6 +473,33 @@ class WC_Payments_Onboarding_Service {
 			'url'           => ! $home_is_localhost && wp_http_validate_url( $home_url ) ? $home_url : $fallback_url,
 			'business_name' => get_bloginfo( 'name' ),
 		];
+
+		foreach ( $capabilities as $capability => $should_request ) {
+			// Remove the `_payments` suffix from the capability, if present.
+			if ( strpos( $capability, '_payments' ) === strlen( $capability ) - 9 ) {
+				$capability = str_replace( '_payments', '', $capability );
+			}
+
+			// Skip the special 'apple_google' because it is not a payment method.
+			// Skip the 'woopay' because it is automatically handled by the API.
+			if ( 'apple_google' === $capability || 'woopay' === $capability ) {
+				continue;
+			}
+
+			if ( 'card' === $capability ) {
+				// Card is always requested.
+				$account_data['capabilities']['card_payments'] = [ 'requested' => 'true' ];
+				// When requesting card, we also need to request transfers.
+				// The platform should handle this automatically, but it is best to be thorough.
+				$account_data['capabilities']['transfers'] = [ 'requested' => 'true' ];
+				continue;
+			}
+
+			// We only request, not unrequest capabilities.
+			if ( $should_request ) {
+				$account_data['capabilities'][ $capability . '_payments' ] = [ 'requested' => 'true' ];
+			}
+		}
 
 		if ( ! empty( $self_assessment_data ) ) {
 			$business_type = $self_assessment_data['business_type'] ?? null;
@@ -395,6 +550,7 @@ class WC_Payments_Onboarding_Service {
 				]
 			);
 		}
+
 		return $account_data;
 	}
 
@@ -424,7 +580,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return bool True if embedded KYC is in progress, false otherwise.
 	 */
 	public function is_embedded_kyc_in_progress(): bool {
-		return in_array( get_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'no' ), [ 'yes', '1' ], true );
+		return filter_var( get_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION, 'no' ), FILTER_VALIDATE_BOOLEAN );
 	}
 
 	/**
@@ -500,12 +656,13 @@ class WC_Payments_Onboarding_Service {
 
 	/**
 	 * Clear any account options we may want to reset when a new onboarding flow is initialised.
-	 * Currently, just deletes the option which stores whether the eligibility modal has been dismissed.
+	 * Currently, this deletes two options that store whether the eligibility and connection success modals have been dismissed.
 	 *
-	 * @return boolean Whether the option was deleted successfully.
+	 * @return void
 	 */
-	public static function clear_account_options(): bool {
-		return delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
+	public static function clear_account_options(): void {
+		delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
+		delete_option( self::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION );
 	}
 
 	/**
@@ -644,7 +801,7 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'path=/payments/onboarding' ) ) {
 			return self::FROM_ONBOARDING_WIZARD;
 		}
-		if ( false !== strpos( $referer, 'path=/payments/deposits' ) ) {
+		if ( false !== strpos( $referer, 'path=/payments/deposits' ) || false !== strpos( $referer, 'path=/payments/payouts' ) ) {
 			return self::FROM_PAYOUTS;
 		}
 		if ( false !== strpos( $referer, 'wordpress.com' ) ) {
@@ -847,11 +1004,118 @@ class WC_Payments_Onboarding_Service {
 					'path' => '/payments/deposits',
 				]
 			)
-		) ) {
+		) || ( 2 === count(
+			array_intersect_assoc(
+				$referer_params,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/payouts',
+				]
+			)
+		) ) ) {
 			return self::SOURCE_WCPAY_PAYOUTS_PAGE;
 		}
 
 		// Default to an unknown source.
 		return self::SOURCE_UNKNOWN;
+	}
+
+	/**
+	 * If settings are collected from the test-drive account,
+	 * include them in the existing arguments when creating the new account.
+	 *
+	 * @param array $args The request args to create new account.
+	 *
+	 * @return array The request args, possible updated with the test drive account settings, used to create new account.
+	 */
+	public function maybe_add_test_drive_settings_to_new_account_request( array $args ): array {
+		if (
+			get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) &&
+			is_array( get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT ) )
+		) {
+			$args['account_data'] = array_merge(
+				$args['account_data'],
+				get_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT )
+			);
+			delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Update payment methods to 'enabled' based on the capabilities
+	 * provided during the NOX onboarding process. Merchants can preselect their preferred
+	 * payment methods as part of this flow.
+	 *
+	 * The capabilities are provided in the following format:
+	 *
+	 * [
+	 *   'card' => true,
+	 *   'affirm' => true,
+	 *   ...
+	 * ]
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway Payment gateway instance.
+	 * @param array                    $capabilities Provided capabilities.
+	 */
+	public function update_enabled_payment_methods_ids( $gateway, $capabilities = [] ): void {
+		$enabled_gateways = $gateway->get_upe_enabled_payment_method_ids();
+
+		$enabled_payment_methods = array_unique(
+			array_merge(
+				$enabled_gateways,
+				$this->exclude_placeholder_payment_methods( $capabilities )
+			)
+		);
+
+		// Update the gateway option.
+		$gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+
+		/**
+		 * Keeps the list of enabled payment method IDs synchronized between the default
+		 * `woocommerce_woocommerce_payments_settings` and duplicates in individual gateway settings.
+		 */
+		foreach ( $enabled_payment_methods as $payment_method_id ) {
+			$payment_gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			if ( $payment_gateway ) {
+				$payment_gateway->enable();
+				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_payment_methods );
+			}
+		}
+
+		// If WooPay is enabled, update the gateway option.
+		if ( ! empty( $capabilities['woopay'] ) ) {
+			$gateway->update_is_woopay_enabled( true );
+		}
+
+		// If Apple Pay and Google Pay are disabled update the gateway option,
+		// otherwise they are enabled by default.
+		if ( empty( $capabilities['apple_google'] ) ) {
+			$gateway->update_option( 'payment_request', 'no' );
+		}
+	}
+
+	/**
+	 * Excludes placeholder payment methods and removes duplicates.
+	 *
+	 * WooPay and Apple Pay & Google Pay are considered placeholder payment methods and are excluded.
+	 *
+	 * @param array $payment_methods Array of payment methods to process.
+	 *
+	 * @return array Filtered array of unique payment methods.
+	 */
+	private function exclude_placeholder_payment_methods( array $payment_methods ): array {
+		// Placeholder payment methods.
+		$excluded_methods = [ 'woopay', 'apple_google' ];
+
+		return array_filter(
+			array_unique(
+				array_keys( array_filter( $payment_methods ) )
+			),
+			function ( $payment_method ) use ( $excluded_methods ) {
+				return ! in_array( $payment_method, $excluded_methods, true );
+			}
+		);
 	}
 }

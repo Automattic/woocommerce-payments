@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <strong>
+            This order has a payment dispute for $10.00 for the reason 'Transaction unauthorized'. 
+          </strong>
+           
+          Please respond before Oct 28, 2023.
+          <div
+            class="components-flex wcpay-inline-notice__content__actions css-azptjn-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
+          >
+            <button
+              class="components-button wcpay-inline-notice__action"
+              type="button"
+            >
+              Respond now
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DisputedOrderNoticeHandler renders urgent dispute notice 1`] = `
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <strong>
+            Please resolve the dispute on this order of $10.00 labeled 'Transaction unauthorized' by Oct 28, 2023.
+          </strong>
+           
+          (Last day today)
+          <div
+            class="components-flex wcpay-inline-notice__content__actions css-azptjn-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
+          >
+            <button
+              class="components-button wcpay-inline-notice__action"
+              type="button"
+            >
+              Respond today
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;

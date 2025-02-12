@@ -6,10 +6,25 @@ import { Page, expect } from 'playwright/test';
  * Internal dependencies
  */
 import * as navigation from './shopper-navigation';
-import { config, CustomerAddress } from '../config/default';
+import { config, CustomerAddress, Product } from '../config/default';
+import { isUIUnblocked } from './helpers';
 
-export const isUIUnblocked = async ( page: Page ) => {
-	await expect( page.locator( '.blockUI' ) ).toHaveCount( 0 );
+/**
+ * Waits for the UI to refresh after a user interaction.
+ *
+ * Woo core blocks and refreshes the UI after 1s after each key press
+ * in a text field or immediately after a select field changes.
+ * We need to wait to make sure that all key presses were processed by that mechanism.
+ */
+export const waitForUiRefresh = ( page: Page ) => page.waitForTimeout( 1000 );
+
+/**
+ * Takes off the focus out of the Stripe elements to let Stripe logic
+ * wrap up and make sure the Place Order button is clickable.
+ */
+export const focusPlaceOrderButton = async ( page: Page ) => {
+	await page.locator( '#place_order' ).focus();
+	await waitForUiRefresh( page );
 };
 
 export const fillBillingAddress = async (
@@ -31,10 +46,84 @@ export const fillBillingAddress = async (
 		.locator( '#billing_address_2' )
 		.fill( billingAddress.addresssecondline );
 	await page.locator( '#billing_city' ).fill( billingAddress.city );
-	await page.locator( '#billing_state' ).selectOption( billingAddress.state );
+	if ( billingAddress.state ) {
+		// Setting the state is optional, relative to the selected country. E.g Selecting Belgium hides the state input.
+		await page
+			.locator( '#billing_state' )
+			.selectOption( billingAddress.state );
+	}
 	await page.locator( '#billing_postcode' ).fill( billingAddress.postcode );
 	await page.locator( '#billing_phone' ).fill( billingAddress.phone );
 	await page.locator( '#billing_email' ).fill( billingAddress.email );
+};
+
+export const fillBillingAddressWCB = async (
+	page: Page,
+	billingAddress: CustomerAddress
+) => {
+	const editBillingAddressButton = page.getByLabel( 'Edit billing address' );
+	if ( await editBillingAddressButton.isVisible() ) {
+		await editBillingAddressButton.click();
+	}
+	const billingAddressForm = page.getByRole( 'group', {
+		name: 'Billing address',
+	} );
+
+	const countryField = billingAddressForm.getByLabel( 'Country/Region' );
+
+	try {
+		await countryField.selectOption( billingAddress.country );
+	} catch ( error ) {
+		// Fallback for WC 7.7.0.
+		await countryField.focus();
+		await countryField.fill( billingAddress.country );
+
+		await page
+			.locator( '.components-form-token-field__suggestion' )
+			.first()
+			.click();
+	}
+
+	await billingAddressForm
+		.getByLabel( 'First Name' )
+		.fill( billingAddress.firstname );
+	await billingAddressForm
+		.getByLabel( 'Last Name' )
+		.fill( billingAddress.firstname );
+	await billingAddressForm
+		.getByLabel( 'Company (optional)' )
+		.fill( billingAddress.company );
+	await billingAddressForm
+		.getByLabel( 'Address', { exact: true } )
+		.fill( billingAddress.addressfirstline );
+	const addSecondLineButton = page.getByRole( 'button', {
+		name: '+ Add apartment, suite, etc.',
+	} );
+	if ( ( await addSecondLineButton.count() ) > 0 ) {
+		await addSecondLineButton.click();
+	}
+	await billingAddressForm
+		.getByLabel( 'Apartment, suite, etc. (optional)' )
+		.fill( billingAddress.addresssecondline );
+	await billingAddressForm.getByLabel( 'City' ).fill( billingAddress.city );
+
+	const stateInput = billingAddressForm.getByLabel( 'State', {
+		exact: true,
+	} );
+	if ( billingAddress.state ) {
+		try {
+			await stateInput.selectOption( billingAddress.state );
+		} catch ( error ) {
+			// Fallback for WC 7.7.0.
+			await stateInput.fill( billingAddress.state );
+		}
+	}
+	await billingAddressForm
+		.getByLabel( 'ZIP Code' )
+		.fill( billingAddress.postcode );
+	await billingAddressForm
+		.getByLabel( 'Phone (optional)' )
+		.fill( billingAddress.phone );
 };
 
 // This is currently the source of some flaky tests since sometimes the form is not submitted
@@ -50,17 +139,47 @@ export const placeOrder = async ( page: Page ) => {
 	}
 };
 
-export const addCartProduct = async (
+export const placeOrderWCB = async (
 	page: Page,
-	productId = 16 // Beanie
+	confirmOrderReceived = true
 ) => {
-	await page.goto( `/shop/?add-to-cart=${ productId }` );
+	const placeOrderButton = page.getByRole( 'button', {
+		name: 'Place Order',
+	} );
+
+	await placeOrderButton.focus();
+	await waitForUiRefresh( page );
+
+	await placeOrderButton.click();
+
+	if ( confirmOrderReceived ) {
+		await page.waitForURL( /\/order-received\// );
+		await expect(
+			page.getByRole( 'heading', { name: 'Order received' } )
+		).toBeVisible();
+	}
+};
+
+const ensureSavedCardNotSelected = async ( page: Page ) => {
+	if (
+		await page
+			.locator( '#wc-woocommerce_payments-payment-token-new' )
+			.isVisible()
+	) {
+		const newCardOption = await page.locator(
+			'#wc-woocommerce_payments-payment-token-new'
+		);
+		if ( newCardOption ) {
+			await newCardOption.click();
+		}
+	}
 };
 
 export const fillCardDetails = async (
 	page: Page,
 	card = config.cards.basic
 ) => {
+	await ensureSavedCardNotSelected( page );
 	if (
 		await page.$(
 			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
@@ -105,10 +224,37 @@ export const fillCardDetails = async (
 	}
 };
 
+export const fillCardDetailsWCB = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const newPaymentMethodRadioButton = page.locator(
+		'#radio-control-wc-payment-method-options-woocommerce_payments'
+	);
+	if ( await newPaymentMethodRadioButton.isVisible() ) {
+		await newPaymentMethodRadioButton.click();
+	}
+	await page.waitForSelector( '.__PrivateStripeElement' );
+	const frameHandle = await page.waitForSelector(
+		'#payment-method .wcpay-payment-element iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+	if ( ! stripeFrame ) return;
+	await stripeFrame.getByPlaceholder( '1234 1234 1234' ).fill( card.number );
+	await stripeFrame
+		.getByPlaceholder( 'MM / YY' )
+		.fill( card.expires.month + card.expires.year );
+
+	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
+};
+
 export const confirmCardAuthentication = async (
 	page: Page,
 	authorize = true
 ) => {
+	// Wait for the Stripe modal to appear.
+	await page.waitForTimeout( 5000 );
+
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
 	// appears at the top of the DOM.
 	await page.waitForSelector(
@@ -129,8 +275,9 @@ export const confirmCardAuthentication = async (
 		name: authorize ? 'Complete' : 'Fail',
 	} );
 
-	// Not ideal, but we need to wait for the loading animation to finish before we can click the button.
-	await page.waitForTimeout( 1000 );
+	await expect(
+		stripeFrame.locator( '.LightboxModalLoadingIndicator' )
+	).not.toBeVisible();
 
 	await button.click();
 };
@@ -155,47 +302,65 @@ export const getPriceFromProduct = async ( page: Page, slug: string ) => {
  * Adds a product to the cart from the shop page.
  *
  * @param {Page} page The Playwright page object.
- * @param {string|number} product The product ID or title to add to the cart.
+ * @param {Product} product The product add to the cart.
  */
 export const addToCartFromShopPage = async (
 	page: Page,
-	product: string | number
+	product: Product = config.products.simple,
+	currency?: string
 ) => {
-	if ( Number.isInteger( product ) ) {
-		const addToCartSelector = `a[data-product_id="${ product }"]`;
+	await navigation.goToShop( page, {
+		pageNumber: product.pageNumber,
+		currency,
+	} );
 
-		await page.locator( addToCartSelector ).click();
-		await expect(
-			page.locator( `${ addToCartSelector }.added` )
-		).toBeVisible();
-	} else {
-		// These unicode characters are the smart (or curly) quotes: “ ”.
-		const addToCartRegex = new RegExp(
-			`Add to cart: \u201C${ product }\u201D`
-		);
+	// This generic regex will match the aria-label for the "Add to cart" button for any product.
+	// It should work for WC 7.7.0 and later.
+	// These unicode characters are the smart (or curly) quotes: “ ”.
+	const addToCartRegex = new RegExp(
+		`Add\\s+(?:to\\s+cart:\\s*)?\u201C${ product.name }\u201D(?:\\s+to\\s+your\\s+cart)?`
+	);
 
-		await page.getByLabel( addToCartRegex ).click();
-		await expect( page.getByLabel( addToCartRegex ) ).toHaveAttribute(
-			'class',
-			/added/
-		);
+	const addToCartButton = page.getByLabel( addToCartRegex );
+	await addToCartButton.click();
+
+	try {
+		await expect( addToCartButton ).toHaveAttribute( 'class', /added/, {
+			timeout: 5000,
+		} );
+	} catch ( error ) {
+		// fallback for a different theme.
+		await expect( addToCartButton ).toHaveText( /in cart/ );
+	}
+};
+
+export const selectPaymentMethod = async (
+	page: Page,
+	paymentMethod = 'Cards'
+) => {
+	await page.getByText( paymentMethod ).click();
+};
+
+/**
+ * The checkout page can sometimes be blank, so we need to reload it.
+ *
+ * @param page Page
+ */
+export const ensureCheckoutIsLoaded = async ( page: Page ) => {
+	if ( ! ( await page.locator( '#billing_first_name' ).isVisible() ) ) {
+		await page.reload();
 	}
 };
 
 export const setupCheckout = async (
 	page: Page,
-	billingAddress: CustomerAddress
+	billingAddress: CustomerAddress = config.addresses.customer.billing
 ) => {
 	await navigation.goToCheckout( page );
+	await ensureCheckoutIsLoaded( page );
 	await fillBillingAddress( page, billingAddress );
-	// Woo core blocks and refreshes the UI after 1s after each key press
-	// in a text field or immediately after a select field changes.
-	// We need to wait to make sure that all key presses were processed by that mechanism.
-	await page.waitForTimeout( 1000 );
+	await waitForUiRefresh( page );
 	await isUIUnblocked( page );
-	await page
-		.locator( '.wc_payment_method.payment_method_woocommerce_payments' )
-		.click();
 };
 
 /**
@@ -210,21 +375,23 @@ export const setupCheckout = async (
  */
 export async function setupProductCheckout(
 	page: Page,
-	lineItems: Array< [ string, number ] > = [
-		[ config.products.simple.name, 1 ],
-	],
-	billingAddress: CustomerAddress = config.addresses.customer.billing
+	lineItems: Array< [ Product, number ] > = [ [ config.products.simple, 1 ] ],
+	billingAddress: CustomerAddress = config.addresses.customer.billing,
+	currency?: string
 ) {
+	await navigation.goToShop( page );
+
 	const cartSizeText = await page
 		.locator( '.cart-contents .count' )
 		.textContent();
 	let cartSize = Number( cartSizeText?.replace( /\D/g, '' ) ?? '0' );
 
 	for ( const line of lineItems ) {
-		let [ productTitle, qty ] = line;
+		let [ product, qty ] = line;
 
 		while ( qty-- ) {
-			await addToCartFromShopPage( page, productTitle );
+			await addToCartFromShopPage( page, product, currency );
+
 			// Make sure the number of items in the cart is incremented before adding another item.
 			await expect( page.locator( '.cart-contents .count' ) ).toHaveText(
 				new RegExp( `${ ++cartSize } items?` ),
@@ -232,11 +399,68 @@ export async function setupProductCheckout(
 					timeout: 30000,
 				}
 			);
+
+			// Wait for the cart to update before adding another item.
+			await page.waitForTimeout( 500 );
 		}
 	}
 
 	await setupCheckout( page, billingAddress );
 }
+
+export const expectFraudPreventionToken = async (
+	page: Page,
+	toBeDefined: boolean
+) => {
+	const token = await page.evaluate( () => {
+		return ( window as any ).wcpayFraudPreventionToken;
+	} );
+
+	if ( toBeDefined ) {
+		expect( token ).toBeDefined();
+	} else {
+		expect( token ).toBeUndefined();
+	}
+};
+
+/**
+ * Places an order with custom options.
+ *
+ * @param  page The Playwright page object.
+ * @param  options The custom options to use for the order.
+ * @return The order ID.
+ */
+export const placeOrderWithOptions = async (
+	page: Page,
+	options?: {
+		product?: Product;
+		billingAddress?: CustomerAddress;
+		createAccount?: boolean;
+	}
+) => {
+	await navigation.goToShop( page );
+	await addToCartFromShopPage( page, options?.product );
+	await setupCheckout( page, options?.billingAddress );
+	if (
+		options?.createAccount &&
+		( await page.getByLabel( 'Create an account?' ).isVisible() )
+	) {
+		await page.getByLabel( 'Create an account?' ).check();
+	}
+	await selectPaymentMethod( page );
+	await fillCardDetails( page, config.cards.basic );
+	await focusPlaceOrderButton( page );
+	await placeOrder( page );
+	await page.waitForURL( /\/order-received\//, {
+		waitUntil: 'load',
+	} );
+	await expect(
+		page.getByRole( 'heading', { name: 'Order received' } )
+	).toBeVisible();
+
+	const url = await page.url();
+	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+};
 
 /**
  * Places an order with a specified currency.
@@ -249,21 +473,22 @@ export const placeOrderWithCurrency = async (
 	page: Page,
 	currency: string
 ) => {
-	await navigation.goToShopWithCurrency( page, currency );
-	await setupProductCheckout( page, [ [ config.products.simple.name, 1 ] ] );
-	await fillCardDetails( page, config.cards.basic );
-	// Takes off the focus out of the Stripe elements to let Stripe logic
-	// wrap up and make sure the Place Order button is clickable.
-	await page.locator( '#place_order' ).focus();
-	await page.waitForTimeout( 1000 );
-	await placeOrder( page );
-	await page.waitForURL( /\/order-received\//, { waitUntil: 'load' } );
-	await expect(
-		page.getByRole( 'heading', { name: 'Order received' } )
-	).toBeVisible();
+	await navigation.goToShop( page, { currency } );
+	return placeOrderWithOptions( page );
+};
 
-	const url = await page.url();
-	return url.match( /\/order-received\/(\d+)\// )?.[ 1 ] ?? '';
+export const setSavePaymentMethod = async ( page: Page, save = true ) => {
+	const checkbox = page.getByLabel(
+		'Save payment information to my account for future purchases.'
+	);
+
+	const isChecked = await checkbox.isChecked();
+
+	if ( save && ! isChecked ) {
+		await checkbox.check();
+	} else if ( ! save && isChecked ) {
+		await checkbox.uncheck();
+	}
 };
 
 export const emptyCart = async ( page: Page ) => {
@@ -289,7 +514,126 @@ export const emptyCart = async ( page: Page ) => {
 		coupons = await page.locator( '.woocommerce-remove-coupon' ).all();
 	}
 
-	await expect( page.locator( '.cart-empty.woocommerce-info' ) ).toHaveText(
-		'Your cart is currently empty.'
+	await expect(
+		page.getByText( 'Your cart is currently empty.' )
+	).toBeVisible();
+};
+
+export const changeAccountCurrency = async (
+	page: Page,
+	customerDetails: any,
+	currency: string
+) => {
+	await navigation.goToMyAccount( page, 'edit-account' );
+	await page.getByLabel( 'First name *' ).fill( customerDetails.firstname );
+	await page.getByLabel( 'Last name *' ).fill( customerDetails.lastname );
+	await page.getByLabel( 'Default currency' ).selectOption( currency );
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	await expect(
+		page.getByText( 'Account details changed successfully.' )
+	).toBeVisible();
+};
+
+export const addSavedCard = async (
+	page: Page,
+	card: typeof config.cards.basic,
+	country: string,
+	zipCode?: string
+) => {
+	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
+	await page.waitForLoadState( 'networkidle' );
+	await page.getByText( 'Cards', { exact: true } ).click();
+	const frameHandle = page.getByTitle( 'Secure payment input frame' );
+	const stripeFrame = frameHandle.contentFrame();
+
+	if ( ! stripeFrame ) return;
+
+	await stripeFrame
+		.getByPlaceholder( '1234 1234 1234 1234' )
+		.fill( card.number );
+
+	await stripeFrame
+		.getByPlaceholder( 'MM / YY' )
+		.fill( card.expires.month + card.expires.year );
+
+	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
+	await stripeFrame
+		.getByRole( 'combobox', { name: 'country' } )
+		.selectOption( country );
+	const zip = stripeFrame.getByLabel( 'ZIP Code' );
+	if ( zip ) await zip.fill( zipCode ?? '90210' );
+
+	await page.getByRole( 'button', { name: 'Add payment method' } ).click();
+};
+
+export const deleteSavedCard = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Delete' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await button.click();
+};
+
+export const selectSavedCardOnCheckout = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const option = page
+		.getByText(
+			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
+		)
+		.first();
+	await expect( option ).toBeVisible( { timeout: 100 } );
+	await option.click();
+};
+
+export const setDefaultPaymentMethod = async (
+	page: Page,
+	card: typeof config.cards.basic
+) => {
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Make default' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await button.click();
+};
+
+export const removeCoupon = async ( page: Page ) => {
+	const couponRemovalLink = page.getByRole( 'link', {
+		name: '[Remove]',
+	} );
+
+	if ( await couponRemovalLink.isVisible() ) {
+		await couponRemovalLink.click();
+		await expect(
+			page.getByText( 'Coupon has been removed.' )
+		).toBeVisible();
+	}
+};
+
+/**
+ * When using a 3DS card, call this function after clicking the 'Place order' button
+ * to confirm the card authentication.
+ *
+ * @param  {Page}          page The Shopper page object.
+ * @param  {boolean}       authorize Whether to authorize the transaction or not.
+ * @return {Promise<void>}      Void.
+ */
+export const confirmCardAuthenticationWCB = async (
+	page: Page,
+	authorize = true
+): Promise< void > => {
+	const placeOrderButton = page.locator(
+		'.wc-block-components-checkout-place-order-button'
 	);
+	await expect( placeOrderButton ).toBeDisabled();
+	await expect( placeOrderButton ).toHaveClass(
+		/wc-block-components-button--loading/
+	);
+	await confirmCardAuthentication( page, authorize );
 };

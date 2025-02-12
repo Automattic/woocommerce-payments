@@ -94,3 +94,13 @@ export const deleteSkipWooPayCookie = () => {
 	document.cookie =
 		'skip_woopay=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
 };
+
+/**
+ * Determine Global theming availability for the entrypoint based on the appearanceType.
+ *
+ * @param {string} appearanceType entrypoint identifier.
+ * @return {boolean} True if Global theming should be enabled for the entrypoint.
+ */
+export const isSupportedThemeEntrypoint = ( appearanceType ) => {
+	return appearanceType === 'woopay_shortcode_checkout';
+};

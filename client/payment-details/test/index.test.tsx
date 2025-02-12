@@ -20,6 +20,8 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		dateFormat: string;
+		timeFormat: string;
 	};
 };
 
@@ -141,6 +143,8 @@ global.wcpaySettings = {
 	featureFlags: { paymentTimeline: true },
 	zeroDecimalCurrencies: [ 'usd' ],
 	connect: { country: 'US' },
+	dateFormat: 'M j, Y',
+	timeFormat: 'g:ia',
 };
 
 describe( 'Payment details page', () => {

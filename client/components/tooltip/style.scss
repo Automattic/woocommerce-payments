@@ -50,11 +50,13 @@
 	&__tooltip {
 		position: relative;
 
+		// Default tooltip styles have a dark background and light text.
 		color: $white;
 		background-color: $gray-900;
 		padding: 10px;
 		text-align: center;
 
+		// Links inside default tooltips should have a light color against the dark background.
 		a {
 			color: var( --wp-admin-theme-color-background-25, $wp-blue-5 );
 			text-decoration: underline;
@@ -72,15 +74,20 @@
 		}
 
 		&__tooltip {
-			// Specific styles for the click tooltip variant.
+			// Click tooltips have a light background and dark text.
 			position: relative;
 			padding: 12px;
 			color: $gray-900;
 			text-align: left;
 			border-radius: 2px;
 			border: 1px solid $gray-400;
-			background: $white;
+			background-color: $white;
 			box-shadow: 0 2px 6px 0 rgba( 0, 0, 0, 0.05 );
+
+			// Links inside click tooltips should have a dark color against the light background.
+			a {
+				color: var( --wp-admin-theme-color, $gutenberg-blue );
+			}
 
 			&::after {
 				// Remove the arrow from the click tooltip variant.

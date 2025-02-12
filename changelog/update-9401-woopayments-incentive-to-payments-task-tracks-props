@@ -1,5 +1,0 @@
-Significance: patch
-Type: update
-Comment: Add the active incentive ID to the Payments task wcadmin_tasklist_click Tracks event.
-
-

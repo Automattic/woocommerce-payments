@@ -14,6 +14,7 @@ use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -80,12 +81,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$mock_account      = $this->createMock( MultiCurrencyAccountInterface::class );
 		$mock_localization = $this->createMock( MultiCurrencyLocalizationInterface::class );
 		$mock_cache        = $this->createMock( MultiCurrencyCacheInterface::class );
-		$gateway_context   = [
-			'is_dev_mode' => true,
-		];
+		$mock_settings     = $this->createMock( MultiCurrencySettingsInterface::class );
 
 		$this->mock_multi_currency = $this->getMockBuilder( MultiCurrency::class )
-			->setConstructorArgs( [ $gateway_context, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
+			->setConstructorArgs( [ $mock_settings, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
 			->getMock();
 
 		$this->mock_multi_currency->expects( $this->any() )
@@ -96,7 +95,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			->method( 'get_available_currencies' )
 			->willReturn( $this->get_mock_available_currencies() );
 
-		$this->analytics = new Analytics( $this->mock_multi_currency );
+		$this->analytics = new Analytics( $this->mock_multi_currency, $mock_settings );
 
 		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
 		$this->mock_localization_service->expects( $this->any() )

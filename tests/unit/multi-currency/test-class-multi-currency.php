@@ -11,6 +11,7 @@ use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Settings;
 use WCPay\MultiCurrency\SettingsOnboardCta;
@@ -90,6 +91,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	 * @var MultiCurrencyCacheInterface;
 	 */
 	private $mock_cache;
+
+	/**
+	 * Mock of MultiCurrencySettingsInterface.
+	 *
+	 * @var MultiCurrencySettingsInterface;
+	 */
+	private $mock_settings;
 
 	/**
 	 * Mock of Utils.
@@ -612,24 +620,27 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
-		// 0.708099 * 10 = 7,08099
-		$this->assertSame( 7.08099, $this->multi_currency->get_price( '10.0', 'coupon' ) );
+		// 0.708099 * 10 = 7.08099.
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'coupon' ) );
 	}
 
 	public function test_get_price_returns_converted_exchange_rate_without_adjustments() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
-		// 0.708099 * 10 = 7,08099
-		$this->assertSame( 7.08099, $this->multi_currency->get_price( '10.0', 'exchange_rate' ) );
+		// 0.708099 * 10 = 7.08099.
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'exchange_rate' ) );
 	}
 
 	public function test_get_price_returns_converted_tax_price() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
-		// 0.708099 * 10 = 7,08099
-		$this->assertSame( 7.08099, $this->multi_currency->get_price( '10.0', 'tax' ) );
+		// 0.708099 * 10 = 7.08099.
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'tax' ) );
 	}
 
 	/**
@@ -916,6 +927,18 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, $this->multi_currency->get_switcher_widget_markup() );
 	}
 
+	public function test_get_switcher_widget_markup_when_widget_instance_is_null() {
+		$mock_multi_currency = $this
+			->getMockBuilder( WCPay\MultiCurrency\MultiCurrency::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_currency_switcher_widget' ] )
+			->getMock();
+
+		$mock_multi_currency->method( 'get_currency_switcher_widget' )->willReturn( null );
+
+		$this->assertEquals( '', $mock_multi_currency->get_switcher_widget_markup() );
+	}
+
 	public function test_validate_currency_code_returns_existing_currency_code() {
 		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'CAD' ) );
 		$this->assertEquals( 'CAD', $this->multi_currency->validate_currency_code( 'cAd' ) );
@@ -1006,7 +1029,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function get_price_provider() {
 		return [
-			[ '5.2499', '0.00', 5.2499 ],
+			[ '5.2401', '0.00', 5.24 ], // Even though the precision is 0.00 we make sure the amount is rounded to the currency's number of digits.
+			[ '5.2499', '0.00', 5.25 ], // Even though the precision is 0.00 we make sure the amount is rounded to the currency's number of digits.
 			[ '5.2499', '0.25', 5.25 ],
 			[ '5.2500', '0.25', 5.25 ],
 			[ '5.2501', '0.25', 5.50 ],
@@ -1428,11 +1452,10 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_utils = $this->createMock( Utils::class );
 
-		$gateway_context      = [
-			'is_dev_mode' => true,
-		];
+		$this->mock_settings = $this->createMock( MultiCurrencySettingsInterface::class );
+
 		$this->multi_currency = new MultiCurrency(
-			$gateway_context,
+			$this->mock_settings,
 			$mock_api_client ?? $this->mock_api_client,
 			$this->mock_account,
 			$this->localization_service,

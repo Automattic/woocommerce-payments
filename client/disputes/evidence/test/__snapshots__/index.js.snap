@@ -320,6 +320,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
 <div>
   <div
     class="wcpay-dispute-evidence woocommerce-payments-page is-narrow"
+    id=""
   >
     <div
       class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"

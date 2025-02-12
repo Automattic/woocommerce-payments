@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
@@ -198,10 +199,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					'deposit_schedule_monthly_anchor'      => [
 						'description' => __( 'Monthly anchor for deposit scheduling when interval is set to monthly', 'woocommerce-payments' ),
 						'type'        => [ 'integer', 'null' ],
-					],
-					'reporting_export_language'            => [
-						'description' => __( 'The language for an exported report for transactions, deposits, or disputes.', 'woocommerce-payments' ),
-						'type'        => 'string',
 					],
 					'is_payment_request_enabled'           => [
 						'description'       => sprintf(
@@ -509,10 +506,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_request_button_size'            => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
 				'payment_request_button_type'            => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
 				'payment_request_button_theme'           => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
-				'payment_request_button_border_radius'   => WC_Payments_Features::is_stripe_ece_enabled() ? $this->wcpay_gateway->get_option( 'payment_request_button_border_radius', WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX ) : WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
+				'payment_request_button_border_radius'   => $this->wcpay_gateway->get_option( 'payment_request_button_border_radius', WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX ),
 				'is_saved_cards_enabled'                 => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'               => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
-				'is_woopay_enabled'                      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'is_woopay_enabled'                      => WC_Payments_Features::is_woopay_eligible() && 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'show_woopay_incompatibility_notice'     => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'                  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                      => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
@@ -524,7 +521,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'deposit_status'                         => $this->wcpay_gateway->get_option( 'deposit_status' ),
 				'deposit_restrictions'                   => $this->wcpay_gateway->get_option( 'deposit_restrictions' ),
 				'deposit_completed_waiting_period'       => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
-				'reporting_export_language'              => $this->wcpay_gateway->get_option( 'reporting_export_language' ),
 				'current_protection_level'               => $this->wcpay_gateway->get_option( 'current_protection_level' ),
 				'advanced_fraud_protection_settings'     => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
 				'is_migrating_stripe_billing'            => $is_migrating_stripe_billing ?? false,
@@ -553,7 +549,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_saved_cards_enabled( $request );
 		$this->update_is_woopay_enabled( $request );
 		$this->update_is_woopay_global_theme_support_enabled( $request );
-		$this->update_reporting_export_language( $request );
 		$this->update_woopay_store_logo( $request );
 		$this->update_woopay_custom_message( $request );
 		$this->update_woopay_enabled_locations( $request );
@@ -603,6 +598,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$payment_method_ids_to_enable = $request->get_param( 'enabled_payment_method_ids' );
 		$available_payment_methods    = $this->wcpay_gateway->get_upe_available_payment_methods();
 
+		// Only 'card' and 'link' support manual capture. Leave them enabled if they're already enabled.
+		if ( $request->has_param( 'is_manual_capture_enabled' ) && $request->get_param( 'is_manual_capture_enabled' ) ) {
+			$payment_method_ids_to_enable = array_intersect( $payment_method_ids_to_enable, [ Payment_Method::CARD, Payment_Method::LINK ] );
+		}
+
 		$payment_method_ids_to_enable = array_values(
 			array_filter(
 				$payment_method_ids_to_enable,
@@ -610,6 +610,18 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					return in_array( $payment_method, $available_payment_methods, true );
 				}
 			)
+		);
+
+		$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
+		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
+		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
+
+		$payment_method_ids_to_enable = array_filter(
+			$payment_method_ids_to_enable,
+			function ( $payment_method_id_to_enable ) use ( $capability_key_map, $payment_method_statuses ) {
+				$stripe_key = $capability_key_map[ $payment_method_id_to_enable ] ?? null;
+				return array_key_exists( $stripe_key, $payment_method_statuses ) && 'active' === $payment_method_statuses[ $stripe_key ]['status'];
+			}
 		);
 
 		$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
@@ -649,10 +661,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		// Keep the enabled payment method IDs list synchronized across gateway setting objects unless we remove this list with all dependencies.
 		foreach ( WC_Payments::get_payment_gateway_map() as $payment_gateway ) {
 			$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $payment_method_ids_to_enable );
-		}
-
-		if ( $payment_method_ids_to_enable ) {
-			$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
 		}
 	}
 
@@ -938,8 +946,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		$woopay_enabled_locations = $request->get_param( 'woopay_enabled_locations' );
+		$wcpay_form_fields        = $this->wcpay_gateway->get_form_fields();
+		$all_locations            = $wcpay_form_fields['payment_request_button_locations']['options'];
 
-		$all_locations = $this->wcpay_gateway->form_fields['payment_request_button_locations']['options'];
 		WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, $woopay_enabled_locations );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $woopay_enabled_locations );
@@ -1028,7 +1037,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_REST_Response|null The response object, if this is a REST request.
 	 */
-	public function schedule_stripe_billing_migration( WP_REST_Request $request = null ) {
+	public function schedule_stripe_billing_migration( ?WP_REST_Request $request = null ) {
 
 		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
 			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
@@ -1051,7 +1060,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @return WP_REST_Response|WP_Error The response object, if this is a REST request.
 	 */
-	public function request_capability( WP_REST_Request $request = null ) {
+	public function request_capability( ?WP_REST_Request $request = null ) {
 		$request_result          = null;
 		$id                      = $request->get_param( 'id' );
 		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
@@ -1085,20 +1094,5 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return $avs_check_enabled;
-	}
-
-	/**
-	 * Updates the "reporting_export_language" setting.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	private function update_reporting_export_language( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'reporting_export_language' ) ) {
-			return;
-		}
-
-		$reporting_export_language = $request->get_param( 'reporting_export_language' );
-
-		$this->wcpay_gateway->update_option( 'reporting_export_language', $reporting_export_language );
 	}
 }

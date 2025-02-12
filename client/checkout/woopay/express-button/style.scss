@@ -1,0 +1,121 @@
+#wcpay-woopay-button {
+	.woopay-express-button {
+		font-size: 18px;
+		font-weight: 500;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+			'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial', sans-serif;
+		letter-spacing: 0.8px;
+		height: 40px;
+		width: 100%;
+		background: $white;
+		border-radius: 4px;
+		border: none;
+		color: $studio-black;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		white-space: nowrap;
+		text-transform: none;
+		list-style-type: none;
+		min-height: auto;
+
+		.button-content {
+			display: flex;
+			align-content: center;
+			justify-content: center;
+			transform: scale( 0.9 );
+		}
+
+		&:not( :disabled ) {
+			&:focus,
+			&:focus-within {
+				outline: 4px solid $studio-woocommerce-purple-10;
+			}
+
+			&:hover {
+				cursor: pointer;
+			}
+		}
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		&.is-loading,
+		&.is-loading:hover,
+		&.is-loading:disabled {
+			opacity: 1 !important;
+		}
+
+		svg {
+			fill: $studio-woocommerce-purple-60;
+			width: 99px;
+		}
+
+		&[data-type='buy'],
+		&[data-type='book'],
+		&[data-type='donate'] {
+			min-width: 200px;
+
+			svg {
+				margin-left: 5px;
+			}
+		}
+
+		&[data-theme='dark'] {
+			background: $studio-woocommerce-purple-40;
+			color: $white;
+			border-color: $studio-woocommerce-purple-40;
+
+			svg {
+				fill: $white;
+			}
+			&:not( :disabled ):hover {
+				border-color: $studio-woocommerce-purple-30;
+				background: $studio-woocommerce-purple-30;
+			}
+		}
+
+		&[data-theme='light-outline'] {
+			border: 1px solid $studio-black;
+			&:not( :disabled ):hover {
+				background: #e0e0e0;
+			}
+		}
+
+		&[data-size='medium'] {
+			height: 48px;
+
+			&[data-type='buy'],
+			&[data-type='book'],
+			&[data-type='donate'] {
+				min-width: 229px;
+			}
+
+			.button-content {
+				transform: scale( 1 );
+			}
+		}
+
+		&[data-size='large'] {
+			height: 55px;
+
+			&[data-type='buy'],
+			&[data-type='book'],
+			&[data-type='donate'] {
+				min-width: 229px;
+			}
+
+			.button-content {
+				transform: scale( 1.1 );
+			}
+
+			// For this width range, the button's text is too large to fit
+			// in the button. The text is reduced to 22px to fit.
+			@media screen and ( min-width: 785px ) and ( max-width: 850px ) {
+				font-size: 22px;
+			}
+		}
+	}
+}

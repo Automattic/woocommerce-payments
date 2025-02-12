@@ -55,6 +55,7 @@ const borderOutlineBackgroundProps = [
 ];
 const upeSupportedProperties = {
 	'.Label': [ ...paddingColorProps, ...textFontTransitionProps ],
+	'.Text': [ ...paddingColorProps, ...textFontTransitionProps ],
 	'.Input': [
 		...paddingColorProps,
 		...textFontTransitionProps,
@@ -76,6 +77,17 @@ const upeSupportedProperties = {
 		...paddingColorProps.slice( 1 ), // Remove color
 		...borderOutlineBackgroundProps.slice( 1 ), // Remove backgroundColor
 	],
+	'.Container': [ ...borderOutlineBackgroundProps ],
+	'.Header': [
+		...paddingColorProps,
+		...borderOutlineBackgroundProps,
+		...textFontTransitionProps,
+	],
+	'.Footer': [
+		...paddingColorProps,
+		...borderOutlineBackgroundProps,
+		...textFontTransitionProps,
+	],
 };
 
 // Restricted properties allowed to generate the automated theming of UPE.
@@ -93,6 +105,7 @@ const restrictedTabIconSelectedProperties = [ 'color' ];
 
 export const upeRestrictedProperties = {
 	'.Label': upeSupportedProperties[ '.Label' ],
+	'.Label--floating': [ ...upeSupportedProperties[ '.Label' ], 'transform' ],
 	'.Input': [
 		...upeSupportedProperties[ '.Input' ],
 		'outlineColor',
@@ -109,4 +122,10 @@ export const upeRestrictedProperties = {
 	'.TabIcon--selected': [ ...restrictedTabIconSelectedProperties ],
 	'.TabLabel': upeSupportedProperties[ '.TabLabel' ],
 	'.Block': upeSupportedProperties[ '.Block' ],
+	'.Container': upeSupportedProperties[ '.Container' ],
+	'.Header': upeSupportedProperties[ '.Header' ],
+	'.Footer': upeSupportedProperties[ '.Footer' ],
+	'.Footer--link': upeSupportedProperties[ '.Text' ],
+	'.Text': upeSupportedProperties[ '.Text' ],
+	'.Text--redirect': upeSupportedProperties[ '.Text' ],
 };

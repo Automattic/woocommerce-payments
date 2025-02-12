@@ -17,6 +17,15 @@ import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
 
+// Mock dateI18n
+jest.mock( '@wordpress/date', () => ( {
+	dateI18n: jest.fn( ( format, date ) => {
+		return jest
+			.requireActual( '@wordpress/date' )
+			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
+	} ),
+} ) );
+
 declare const global: {
 	wcSettings: {
 		locale: {
@@ -34,6 +43,8 @@ declare const global: {
 		featureFlags: {
 			isAuthAndCaptureEnabled: boolean;
 		};
+		dateFormat: string;
+		timeFormat: string;
 	};
 };
 
@@ -74,7 +85,7 @@ const getBaseCharge = (): Charge =>
 		id: 'ch_38jdHA39KKA',
 		payment_intent: 'pi_abc',
 		/* Stripe data comes in seconds, instead of the default Date milliseconds */
-		created: Date.parse( 'Sep 19, 2019, 5:24 pm' ) / 1000,
+		created: 1568913840,
 		amount: 2000,
 		amount_refunded: 0,
 		application_fee_amount: 70,
@@ -203,6 +214,8 @@ describe( 'PaymentDetailsSummary', () => {
 					precision: 0,
 				},
 			},
+			dateFormat: 'M j, Y',
+			timeFormat: 'g:ia',
 		};
 
 		// mock Date.now that moment library uses to get current date for testing purposes
@@ -408,7 +421,7 @@ describe( 'PaymentDetailsSummary', () => {
 		).toHaveTextContent( /\$20.00/ );
 		expect(
 			screen.getByText( /Disputed On/i ).nextSibling
-		).toHaveTextContent( /Aug 30, 2023/ );
+		).toHaveTextContent( /Aug 31, 2023/ );
 		expect( screen.getByText( /Reason/i ).nextSibling ).toHaveTextContent(
 			/Transaction unauthorized/
 		);

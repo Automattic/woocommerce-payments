@@ -7,6 +7,7 @@ import * as React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -23,6 +24,15 @@ jest.mock( 'data/index', () => ( {
 
 jest.mock( 'wcpay/vat/form', () => jest.fn() );
 
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
+
 const mockUseDocuments = useDocuments as jest.MockedFunction<
 	typeof useDocuments
 >;
@@ -31,11 +41,16 @@ const mockUseDocumentsSummary = useDocumentsSummary as jest.MockedFunction<
 	typeof useDocumentsSummary
 >;
 
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
+>;
+
 declare const global: {
 	wcpaySettings: {
 		accountStatus: {
 			hasSubmittedVatData: boolean;
 		};
+		dateFormat: string;
 	};
 };
 
@@ -60,6 +75,11 @@ describe( 'Documents list', () => {
 	let container: Element;
 	let rerender: ( ui: React.ReactElement ) => void;
 	beforeEach( () => {
+		global.wcpaySettings = {
+			accountStatus: { hasSubmittedVatData: true },
+			dateFormat: 'M j, Y',
+		};
+
 		mockUseDocuments.mockReturnValue( {
 			documents: getMockDocuments(),
 			isLoading: false,
@@ -72,6 +92,12 @@ describe( 'Documents list', () => {
 			},
 			isLoading: false,
 		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_documents_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		( { container, rerender } = render( <DocumentsList /> ) );
 	} );
@@ -200,6 +226,7 @@ describe( 'Document download button', () => {
 			beforeEach( () => {
 				global.wcpaySettings = {
 					accountStatus: { hasSubmittedVatData: true },
+					dateFormat: 'M j, Y',
 				};
 
 				render( <DocumentsList /> );
@@ -223,6 +250,7 @@ describe( 'Document download button', () => {
 			beforeEach( () => {
 				global.wcpaySettings = {
 					accountStatus: { hasSubmittedVatData: false },
+					dateFormat: 'M j, Y',
 				};
 
 				render( <DocumentsList /> );
@@ -293,6 +321,7 @@ describe( 'Direct document download', () => {
 
 		global.wcpaySettings = {
 			accountStatus: { hasSubmittedVatData: true },
+			dateFormat: 'M j, Y',
 		};
 	} );
 

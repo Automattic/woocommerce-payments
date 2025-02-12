@@ -2,22 +2,22 @@
  * External dependencies
  */
 import React from 'react';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import classNames from 'classnames';
 import moment from 'moment';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 const DisputeDueByDate: React.FC< {
 	dueBy: number;
 	showRemainingDays?: boolean;
 } > = ( { dueBy, showRemainingDays = true } ) => {
 	const daysRemaining = Math.floor(
-		moment.unix( dueBy ).diff( moment(), 'days', true )
+		moment.unix( dueBy ).utc().diff( moment().utc(), 'days', true )
 	);
-	const respondByDate = dateI18n(
-		'M j, Y, g:ia',
-		moment( dueBy * 1000 ).toISOString()
-	);
+	const respondByDate = formatDateTimeFromTimestamp( dueBy, {
+		separator: ', ',
+		includeTime: true,
+	} );
 	return (
 		<span className="dispute-steps__steps__response-date">
 			{ respondByDate }

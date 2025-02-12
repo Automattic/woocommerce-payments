@@ -265,16 +265,6 @@ export const useDepositScheduleMonthlyAnchor = () => {
 	return [ depositScheduleMonthlyAnchor, updateDepositScheduleMonthlyAnchor ];
 };
 
-export const useReportingExportLanguage = () => {
-	const { updateExportLanguage } = useDispatch( STORE_NAME );
-
-	const exportLanguage = useSelect( ( select ) =>
-		select( STORE_NAME ).getExportLanguage()
-	);
-
-	return [ exportLanguage, updateExportLanguage ];
-};
-
 export const useDepositDelayDays = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getDepositDelayDays(), [] );
 
@@ -328,6 +318,7 @@ export const useSettings = () => {
 	const isSaving = useSelect( ( select ) =>
 		select( STORE_NAME ).isSavingSettings()
 	);
+	const isDirty = useSelect( ( select ) => select( STORE_NAME ).isDirty() );
 
 	const isLoading = useSelect( ( select ) => {
 		select( STORE_NAME ).getSettings();
@@ -342,6 +333,7 @@ export const useSettings = () => {
 		isLoading,
 		saveSettings,
 		isSaving,
+		isDirty,
 	};
 };
 

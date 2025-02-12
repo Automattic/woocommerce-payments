@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Constants\Intent_Status;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Amount_Too_Large_Exception;
 use WCPay\Exceptions\Connection_Exception;
@@ -81,6 +82,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 	const COMPATIBILITY_API            = 'compatibility';
 	const REPORTING_API                = 'reporting/payment_activity';
+	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -451,6 +453,77 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
+	}
+
+	/**
+	 * Get the export URL for a given export ID, if available.
+	 *
+	 * @param string $export_id The export ID.
+	 *
+	 * @return array The export URL response.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_transactions_export_url( string $export_id ): array {
+		return $this->request( [], self::TRANSACTIONS_API . "/download/{$export_id}", self::GET );
+	}
+
+	/**
+	 * Fetch account recommended payment methods data for a given country.
+	 *
+	 * @param string $country_code The account's business location country code. Provide a 2-letter ISO country code.
+	 * @param string $locale       Optional. The locale to instruct the platform to use for i18n.
+	 *
+	 * @return array The recommended payment methods data.
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_recommended_payment_methods( string $country_code, string $locale = '' ): array {
+		// We can't use the request method here because this route doesn't require a connected store
+		// and we request this data pre-onboarding.
+		// By this point, we have an expired transient or the store context has changed.
+		// Query for incentives by calling the WooPayments API.
+		$url = add_query_arg(
+			[
+				'country_code' => $country_code,
+				'locale'       => $locale,
+			],
+			self::ENDPOINT_BASE . '/' . self::ENDPOINT_REST_BASE . '/' . self::RECOMMENDED_PAYMENT_METHODS,
+		);
+
+		$response = wp_remote_get(
+			$url,
+			[
+				'headers'    => apply_filters(
+					'wcpay_api_request_headers',
+					[
+						'Content-type' => 'application/json; charset=utf-8',
+					]
+				),
+				'user-agent' => $this->user_agent,
+				'timeout'    => self::API_TIMEOUT_SECONDS,
+				'sslverify'  => false,
+			]
+		);
+
+		if ( is_wp_error( $response ) ) {
+			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			$message = sprintf(
+			// translators: %1: original error message.
+				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
+				$response->get_error_message()
+			);
+			throw new API_Exception( $message, 'wcpay_http_request_failed', 500 );
+		}
+
+		$results = [];
+		if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
+			// Decode the results, falling back to an empty array.
+			$results = $this->extract_response_body( $response );
+			if ( ! is_array( $results ) ) {
+				$results = [];
+			}
+		}
+
+		return $results;
 	}
 
 	/**
@@ -999,6 +1072,23 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		);
 
 		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
+
+		if ( ! is_array( $session ) ) {
+			return [];
+		}
+
+		return $session;
+	}
+
+	/**
+	 * Fetch the embedded account session object utilized by the frontend.
+	 *
+	 * @return array
+	 *
+	 * @throws API_Exception
+	 */
+	public function create_embedded_account_session(): array {
+		$session = $this->request( [], self::ACCOUNTS_API . '/embedded/session', self::POST, true, true );
 
 		if ( ! is_array( $session ) ) {
 			return [];
@@ -1702,7 +1792,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	public function register_terminal_reader( string $location, string $registration_code, string $label = null, array $metadata = null ) {
+	public function register_terminal_reader( string $location, string $registration_code, ?string $label = null, ?array $metadata = null ) {
 		$request = [
 			'location'          => $location,
 			'registration_code' => $registration_code,
@@ -2098,32 +2188,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			}
 		}
 
-		$env                    = [];
-		$env['WP_User']         = is_user_logged_in() ? wp_get_current_user()->user_login : 'Guest (non logged-in user)';
-		$env['HTTP_REFERER']    = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '--' ) );
-		$env['HTTP_USER_AGENT'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '--' ) );
-		$env['REQUEST_URI']     = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) );
-		$env['DOING_AJAX']      = defined( 'DOING_AJAX' ) && DOING_AJAX;
-		$env['DOING_CRON']      = defined( 'DOING_CRON' ) && DOING_CRON;
-		$env['WP_CLI']          = defined( 'WP_CLI' ) && WP_CLI;
-		Logger::log(
-			'ENVIRONMENT: '
-			. var_export( $env, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-		);
-
-		Logger::log( "REQUEST $method $redacted_url" );
-		Logger::log(
-			'HEADERS: '
-			. var_export( $headers, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-		);
-
-		if ( null !== $body ) {
-			Logger::log(
-				'BODY: '
-				. var_export( $redacted_params, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			);
-		}
-
 		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
 		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
 		$retries        = 0;
@@ -2136,19 +2200,29 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			// The header intention is to give us insights into request latency between store and backend.
 			$headers['X-Request-Initiated'] = microtime( true );
 
+			$request_args = [
+				'url'             => $url,
+				'method'          => $method,
+				'headers'         => $headers,
+				'timeout'         => self::API_TIMEOUT_SECONDS,
+				'connect_timeout' => self::API_TIMEOUT_SECONDS,
+			];
+
+			$log_request_id = uniqid();
+
+			Logger::log(
+				Logger::format_object(
+					'REQUEST_' . $log_request_id,
+					array_merge(
+						$request_args,
+						[ 'url' => $redacted_url ],
+						null !== $body ? [ 'body' => $redacted_params ] : []
+					)
+				)
+			);
+
 			try {
-				$response = $this->http_client->remote_request(
-					[
-						'url'             => $url,
-						'method'          => $method,
-						'headers'         => $headers,
-						'timeout'         => self::API_TIMEOUT_SECONDS,
-						'connect_timeout' => self::API_TIMEOUT_SECONDS,
-					],
-					$body,
-					$is_site_specific,
-					$use_user_token
-				);
+				$response = $this->http_client->remote_request( $request_args, $body, $is_site_specific, $use_user_token );
 
 				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
 				$response_code = wp_remote_retrieve_response_code( $response );
@@ -2197,8 +2271,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		Logger::log(
-			'RESPONSE: '
-			. var_export( WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			Logger::format_object(
+				'RESPONSE_' . $log_request_id,
+				WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT )
+			)
 		);
 
 		return $response_body;
@@ -2359,6 +2435,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
+
+			if ( 'card_declined' === $error_code && isset( $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] ) ) {
+				$merchant_message = $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'];
+
+				throw new API_Merchant_Exception( $message, $error_code, $response_code, $merchant_message, $error_type, $decline_code );
+			}
+
 			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code );
 		}
 	}

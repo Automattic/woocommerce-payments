@@ -100,6 +100,18 @@ describe( 'UPE Utilities to generate UPE styles', () => {
 		} );
 	} );
 
+	test( 'isColorLight returns valid brightness values', () => {
+		const white = '#ffffff';
+		const black = '#000000';
+		const darkGrey = '#454545';
+		const lightGrey = '#dbdbdb';
+
+		expect( upeUtils.isColorLight( white ) ).toEqual( true );
+		expect( upeUtils.isColorLight( black ) ).toEqual( false );
+		expect( upeUtils.isColorLight( darkGrey ) ).toEqual( false );
+		expect( upeUtils.isColorLight( lightGrey ) ).toEqual( true );
+	} );
+
 	test( 'maybeConvertRGBAtoRGB returns valid colors', () => {
 		const hex = '#ffffff';
 		const color = 'red';
@@ -124,17 +136,5 @@ describe( 'UPE Utilities to generate UPE styles', () => {
 			shadowTransparent
 		);
 		expect( upeUtils.maybeConvertRGBAtoRGB( pixel ) ).toEqual( pixel );
-	} );
-
-	test( 'isColorLight returns valid brightness values', () => {
-		const white = '#ffffff';
-		const black = '#000000';
-		const darkGrey = '#454545';
-		const lightGrey = '#dbdbdb';
-
-		expect( upeUtils.isColorLight( white ) ).toEqual( true );
-		expect( upeUtils.isColorLight( black ) ).toEqual( false );
-		expect( upeUtils.isColorLight( darkGrey ) ).toEqual( false );
-		expect( upeUtils.isColorLight( lightGrey ) ).toEqual( true );
 	} );
 } );

@@ -1,0 +1,42 @@
+.components-modal__frame.woopayments-connection-success-modal {
+	max-width: 512px;
+	@media screen and ( max-width: 782px ) {
+		max-width: 343px;
+		margin: auto;
+	}
+
+	.components-modal__header {
+		.components-button.has-icon {
+			padding: 0;
+			svg {
+				width: 30px;
+				height: 30px;
+			}
+		}
+
+		&-heading {
+			font-size: 20px;
+			line-height: 28px;
+			font-weight: 300;
+			text-wrap: auto;
+			color: $gray-900;
+		}
+	}
+
+	.woopayments-connection-success-modal__content {
+		display: flex;
+		gap: $gap-large;
+		flex-direction: column;
+		padding: $gap-small 0 $gap 0;
+		line-height: 20px;
+		font-weight: 400;
+		color: $gray-900;
+	}
+
+	.woopayments-connection-success-modal__actions {
+		flex-direction: row-reverse; // Use this to force items to start from end. That would require actions to be introduced in reverse order.
+		padding: $gap-large 0 0 0;
+		display: flex;
+		gap: $gap-small;
+	}
+}

@@ -23,7 +23,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     </div>
     <div>
       <div>
-        Foreign exchange fee
+        Currency conversion fee
       </div>
       <div>
         1%
@@ -102,7 +102,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     </div>
     <div>
       <div>
-        Foreign exchange fee
+        Currency conversion fee
       </div>
       <div>
         1%

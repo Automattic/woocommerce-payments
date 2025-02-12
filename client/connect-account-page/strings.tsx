@@ -37,7 +37,7 @@ export default {
 		),
 	paymentMethods: {
 		deposits: {
-			title: __( 'Deposits', 'woocommerce-payments' ),
+			title: __( 'Payouts', 'woocommerce-payments' ),
 			value: __( 'Automatic - Daily', 'woocommerce-payments' ),
 		},
 		capture: {
@@ -58,7 +58,7 @@ export default {
 		'woocommerce-payments'
 	),
 	usp3: __(
-		'Earn recurring revenue and get deposits into your bank account.',
+		'Earn recurring revenue and get payouts into your bank account.',
 		'woocommerce-payments'
 	),
 	sandboxMode: {
@@ -111,7 +111,7 @@ export default {
 				'woocommerce-payments'
 			),
 		},
-		button: __( 'enable deposits.', 'woocommerce-payments' ),
+		button: __( 'enable payouts.', 'woocommerce-payments' ),
 	},
 	infoModal: {
 		title: sprintf(
@@ -252,7 +252,7 @@ export default {
 	step2: {
 		heading: __( 'Provide a few business details', 'woocommerce-payments' ),
 		description: __(
-			'Next we’ll ask you to verify your business and payment details to enable deposits.',
+			'Next we’ll ask you to verify your business and payment details to enable payouts.',
 			'woocommerce-payments'
 		),
 	},

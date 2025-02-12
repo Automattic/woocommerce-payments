@@ -6,6 +6,7 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
@@ -144,49 +145,6 @@ class WC_Payments_Admin {
 		$this->incentives_service  = $incentives_service;
 		$this->fraud_service       = $fraud_service;
 		$this->database_cache      = $database_cache;
-
-		$this->admin_child_pages = [
-			'wc-payments-overview'     => [
-				'id'       => 'wc-payments-overview',
-				'title'    => __( 'Overview', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/overview',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 10,
-				],
-			],
-			'wc-payments-deposits'     => [
-				'id'       => 'wc-payments-deposits',
-				'title'    => __( 'Deposits', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/deposits',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 20,
-				],
-			],
-			'wc-payments-transactions' => [
-				'id'       => 'wc-payments-transactions',
-				'title'    => __( 'Transactions', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/transactions',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 30,
-				],
-			],
-			'wc-payments-disputes'     => [
-				'id'       => 'wc-payments-disputes',
-				'title'    => __( 'Disputes', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/disputes',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 40,
-				],
-			],
-		];
 	}
 
 	/**
@@ -209,6 +167,29 @@ class WC_Payments_Admin {
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
+		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
+	}
+
+	/**
+	 * Redirect /payments/deposits to /payments/payouts.
+	 */
+	public function redirect_deposits_to_payouts() {
+		if ( is_admin() && isset( $_GET['page'] ) && 'wc-admin' === $_GET['page'] && isset( $_GET['path'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$redirect_map = [
+				'/payments/deposits'         => '/payments/payouts',
+				'/payments/deposits/details' => '/payments/payouts/details',
+			];
+			$query_params = $_GET; // phpcs:ignore WordPress.Security.NonceVerification
+			if ( isset( $redirect_map[ $query_params['path'] ] ) ) {
+				$query_params['path'] = $redirect_map[ $query_params['path'] ];
+				$redirect_url         = add_query_arg(
+					$query_params,
+					admin_url( 'admin.php?page=wc-admin' ),
+				);
+				wp_safe_redirect( $redirect_url );
+				exit;
+			}
+		}
 	}
 
 	/**
@@ -292,6 +273,49 @@ class WC_Payments_Admin {
 		}
 		global $submenu;
 
+		$this->admin_child_pages = [
+			'wc-payments-overview'     => [
+				'id'       => 'wc-payments-overview',
+				'title'    => __( 'Overview', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/overview',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 10,
+				],
+			],
+			'wc-payments-deposits'     => [
+				'id'       => 'wc-payments-deposits',
+				'title'    => __( 'Payouts', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/payouts',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 20,
+				],
+			],
+			'wc-payments-transactions' => [
+				'id'       => 'wc-payments-transactions',
+				'title'    => __( 'Transactions', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/transactions',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 30,
+				],
+			],
+			'wc-payments-disputes'     => [
+				'id'       => 'wc-payments-disputes',
+				'title'    => __( 'Disputes', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/disputes',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 40,
+				],
+			],
+		];
+
 		try {
 			// Render full payments menu with sub-items only if:
 			// - we have working WPCOM/Jetpack connection;
@@ -349,7 +373,7 @@ class WC_Payments_Admin {
 		}
 
 		// We handle how we register this page slightly differently depending on if details are submitted or not.
-		if ( WC_Payments_Features::is_embedded_kyc_enabled() && $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
+		if ( $this->account->is_stripe_connected() && ! $this->account->is_details_submitted() ) {
 			wc_admin_register_page(
 				[
 					'id'         => 'wc-payments-onboarding-kyc',
@@ -368,8 +392,7 @@ class WC_Payments_Admin {
 
 		if ( $should_render_full_menu ) {
 			// Only register if details are submitted and the account is PO.
-			if ( WC_Payments_Features::is_embedded_kyc_enabled()
-				&& $this->account->is_stripe_connected()
+			if ( $this->account->is_stripe_connected()
 				&& $this->account->is_details_submitted()
 				&& $this->account->is_progressive_onboarding_in_progress()
 			) {
@@ -468,9 +491,9 @@ class WC_Payments_Admin {
 			wc_admin_register_page(
 				[
 					'id'     => 'wc-payments-deposit-details',
-					'title'  => __( 'Deposit details', 'woocommerce-payments' ),
+					'title'  => __( 'Payout details', 'woocommerce-payments' ),
 					'parent' => 'wc-payments-transactions', // Not (top level) deposits, as workaround for showing up as submenu page.
-					'path'   => '/payments/deposits/details',
+					'path'   => '/payments/payouts/details',
 				]
 			);
 			wc_admin_register_page(
@@ -734,7 +757,7 @@ class WC_Payments_Admin {
 		if ( in_array( $screen->id, [ 'shop_order', 'woocommerce_page_wc-orders' ], true ) ) {
 			$order = wc_get_order();
 
-			if ( $order && WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
+			if ( $order && strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID ) !== false ) {
 				$refund_amount = $order->get_remaining_refund_amount();
 
 				// Check if the order's test mode meta matches the site's current test mode state.
@@ -875,7 +898,7 @@ class WC_Payments_Admin {
 		}
 
 		$connect_url       = WC_Payments_Account::get_connect_url();
-		$connect_incentive = $this->incentives_service->get_cached_connect_incentive();
+		$connect_incentive = $this->incentives_service->get_connect_incentive();
 		// If we have an incentive ID, attach it to the connect URL.
 		if ( ! empty( $connect_incentive['id'] ) ) {
 			$connect_url = add_query_arg( [ 'promo' => sanitize_text_field( $connect_incentive['id'] ) ], $connect_url );
@@ -949,18 +972,23 @@ class WC_Payments_Admin {
 			'storeName'                          => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
-			'reporting'                          => [
-				'exportModalDismissed' => get_option( 'wcpay_reporting_export_modal_dismissed', false ),
-			],
 			'dismissedDuplicateNotices'          => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
-			'locale'                             => WC_Payments_Utils::get_language_data( get_locale() ),
+			'isConnectionSuccessModalDismissed'  => get_option( 'wcpay_connection_success_modal_dismissed', false ),
+			'userLocale'                         => WC_Payments_Utils::get_language_data( get_user_locale() ), // Language code found in current user's profile. This is different from the site's locale.
 			'isOverviewSurveySubmitted'          => get_option( 'wcpay_survey_payment_overview_submitted', false ),
 			'trackingInfo'                       => $this->account->get_tracking_info(),
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
+			'dateFormat'                         => wc_date_format(),
+			'timeFormat'                         => get_option( 'time_format' ),
 		];
 
+		/**
+		 * Filter the WCPay JS settings.
+		 *
+		 * @since 6.1.0
+		 */
 		return apply_filters( 'wcpay_js_settings', $this->wcpay_js_settings );
 	}
 
@@ -974,6 +1002,11 @@ class WC_Payments_Admin {
 			'exitSurveyLastShown' => get_option( 'wcpay_exit_survey_last_shown', null ),
 		];
 
+		/**
+		 * Filter the plugins page settings.
+		 *
+		 * @since 7.8.0
+		 */
 		return apply_filters( 'wcpay_plugins_page_js_settings', $plugins_page_settings );
 	}
 
@@ -1230,7 +1263,7 @@ class WC_Payments_Admin {
 	 */
 	public function display_wcpay_transaction_fee( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( ! $order || ! $order->get_meta( '_wcpay_transaction_fee' ) ) {
+		if ( ! $order || ! $order->get_meta( '_wcpay_transaction_fee' ) || Intent_Status::REQUIRES_CAPTURE === $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ) ) {
 			return;
 		}
 		?>
@@ -1313,6 +1346,7 @@ class WC_Payments_Admin {
 
 	/**
 	 * Gets the number of disputes which need a response. ie have a 'needs_response' or 'warning_needs_response' status.
+	 * Used to display a notification badge on the Payments > Disputes menu item.
 	 *
 	 * @return int The number of disputes which need a response.
 	 */

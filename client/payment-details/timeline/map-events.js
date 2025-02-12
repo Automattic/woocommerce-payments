@@ -5,9 +5,7 @@
  */
 import { flatMap } from 'lodash';
 import { __, sprintf } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
 import { addQueryArgs } from '@wordpress/url';
-import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 import SyncIcon from 'gridicons/dist/sync';
@@ -30,7 +28,9 @@ import {
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 import { ShieldIcon } from 'wcpay/icons';
-import { fraudOutcomeRulesetMapping } from './mappings';
+import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
+import { hasSameSymbol } from 'multi-currency/utils/currency';
 
 /**
  * Creates a timeline item about a payment status change
@@ -54,14 +54,14 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 };
 
 /**
- * Creates a timeline item about a deposit
+ * Creates a timeline item about a payout
  *
- * @param {Object} event An event affecting the deposit
+ * @param {Object} event An event affecting the payout
  * @param {string} formattedAmount Formatted amount string
  * @param {boolean} isPositive Whether the amount will be added or deducted
  * @param {Array} body Any extra subitems that should be included as item body
  *
- * @return {Object} Deposit timeline item
+ * @return {Object} Payout timeline item
  */
 const getDepositTimelineItem = (
 	event,
@@ -73,25 +73,22 @@ const getDepositTimelineItem = (
 	if ( event.deposit ) {
 		headline = sprintf(
 			isPositive
-				? // translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
+				? // translators: %1$s - formatted amount, %2$s - payout arrival date, <a> - link to the payout
 				  __(
-						'%1$s was added to your <a>%2$s deposit</a>.',
+						'%1$s was added to your <a>%2$s payout</a>.',
 						'woocommerce-payments'
 				  )
-				: // translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
+				: // translators: %1$s - formatted amount, %2$s - payout arrival date, <a> - link to the payout
 				  __(
-						'%1$s was deducted from your <a>%2$s deposit</a>.',
+						'%1$s was deducted from your <a>%2$s payout</a>.',
 						'woocommerce-payments'
 				  ),
 			formattedAmount,
-			dateI18n(
-				'M j, Y',
-				moment( event.deposit.arrival_date * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( event.deposit.arrival_date )
 		);
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			id: event.deposit.id,
 		} );
 
@@ -104,12 +101,12 @@ const getDepositTimelineItem = (
 			isPositive
 				? // translators: %s - formatted amount
 				  __(
-						'%s will be added to a future deposit.',
+						'%s will be added to a future payout.',
 						'woocommerce-payments'
 				  )
 				: // translators: %s - formatted amount
 				  __(
-						'%s will be deducted from a future deposit.',
+						'%s will be deducted from a future payout.',
 						'woocommerce-payments'
 				  ),
 			formattedAmount
@@ -127,31 +124,28 @@ const getDepositTimelineItem = (
 /**
  * Creates a timeline item about a financing paydown
  *
- * @param {Object} event An event affecting the deposit
+ * @param {Object} event An event affecting the payout
  * @param {string} formattedAmount Formatted amount string
  * @param {Array} body Any extra subitems that should be included as item body
  *
- * @return {Object} Deposit timeline item
+ * @return {Object} Payout timeline item
  */
 const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 	let headline = '';
 	if ( event.deposit ) {
 		headline = sprintf(
-			// translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
+			// translators: %1$s - formatted amount, %2$s - payout arrival date, <a> - link to the payout
 			__(
-				'%1$s was subtracted from your <a>%2$s deposit</a>.',
+				'%1$s was subtracted from your <a>%2$s payout</a>.',
 				'woocommerce-payments'
 			),
 			formattedAmount,
-			dateI18n(
-				'M j, Y',
-				moment( event.deposit.arrival_date * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( event.deposit.arrival_date )
 		);
 
 		const depositUrl = getAdminUrl( {
 			page: 'wc-admin',
-			path: '/payments/deposits/details',
+			path: '/payments/payouts/details',
 			id: event.deposit.id,
 		} );
 
@@ -162,7 +156,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 	} else {
 		headline = sprintf(
 			__(
-				'%s will be subtracted from a future deposit.',
+				'%s will be subtracted from a future payout.',
 				'woocommerce-payments'
 			),
 			formattedAmount
@@ -245,7 +239,7 @@ const formatNetString = ( event ) => {
 export const composeNetString = ( event ) => {
 	return sprintf(
 		/* translators: %s is a monetary amount */
-		__( 'Net deposit: %s', 'woocommerce-payments' ),
+		__( 'Net payout: %s', 'woocommerce-payments' ),
 		formatNetString( event )
 	);
 };
@@ -286,12 +280,19 @@ export const composeFeeString = ( event ) => {
 		);
 	}
 
+	const hasIdenticalSymbol = hasSameSymbol(
+		event.transaction_details.store_currency,
+		event.transaction_details.customer_currency
+	);
+
 	return sprintf(
-		'%1$s (%2$f%% + %3$s): %4$s',
+		'%1$s (%2$f%% + %3$s%4$s): %5$s%6$s',
 		baseFeeLabel,
 		formatFee( percentage ),
 		formatCurrency( fixed, fixedCurrency ),
-		formatCurrency( -feeAmount, feeCurrency )
+		hasIdenticalSymbol ? ` ${ fixedCurrency }` : '',
+		formatCurrency( -feeAmount, feeCurrency ),
+		hasIdenticalSymbol ? ` ${ feeCurrency }` : ''
 	);
 };
 
@@ -410,12 +411,12 @@ export const feeBreakdown = ( event ) => {
 			fixedRate !== 0
 				? __(
 						/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
-						'Foreign exchange fee: %1$s%% + %2$s',
+						'Currency conversion fee: %1$s%% + %2$s',
 						'woocommerce-payments'
 				  )
 				: __(
 						/* translators: %1$s% is the fee percentage */
-						'Foreign exchange fee: %1$s%%',
+						'Currency conversion fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
 		'additional-wcpay-subscription':
@@ -460,7 +461,14 @@ export const feeBreakdown = ( event ) => {
 		} = fee;
 
 		const percentageRateFormatted = formatFee( percentageRate );
-		const fixedRateFormatted = formatCurrency( fixedRate, currency );
+		const fixedRateFormatted = `${ formatCurrency( fixedRate, currency ) }${
+			hasSameSymbol(
+				event.transaction_details.store_currency,
+				event.transaction_details.customer_currency
+			)
+				? ` ${ currency.toUpperCase() }`
+				: ''
+		}`;
 
 		const label = sprintf(
 			feeLabelMapping( fixedRate, isCapped )[ labelType ],
@@ -772,6 +780,10 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 			];
 		case 'failed':
+			const paymentFailureMessage =
+				paymentFailureMapping[ event.reason ] ||
+				paymentFailureMapping.default;
+
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -779,11 +791,14 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 				getMainTimelineItem(
 					event,
-					stringWithAmount(
-						/* translators: %s is a monetary amount */
-						__( 'A payment of %s failed.', 'woocommerce-payments' ),
-						event.amount,
-						true
+					sprintf(
+						/* translators: %1$s is the payment amount, %2$s is the failure reason message */
+						__(
+							'A payment of %1$s failed: %2$s.',
+							'woocommerce-payments'
+						),
+						formatExplicitCurrency( event.amount, event.currency ),
+						paymentFailureMessage
 					),
 					<CrossIcon className="is-error" />
 				),

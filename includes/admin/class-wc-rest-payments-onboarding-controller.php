@@ -211,9 +211,6 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			$account_session['locale'] = get_user_locale();
 		}
 
-		// Set the onboarding in progress option.
-		$this->onboarding_service->set_embedded_kyc_in_progress();
-
 		return rest_ensure_response( $account_session );
 	}
 
@@ -222,7 +219,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
-	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function finalize_embedded_kyc( WP_REST_Request $request ) {
 		$source         = $request->get_param( 'source' ) ?? '';

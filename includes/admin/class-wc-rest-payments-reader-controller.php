@@ -146,7 +146,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
-	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_summary( $request ) {
 

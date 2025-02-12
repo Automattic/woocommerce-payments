@@ -59,6 +59,15 @@ class Blocks_Data_Extractor {
 			$blocks[] = new \Mailchimp_Woocommerce_Newsletter_Blocks_Integration();
 		}
 
+		if ( class_exists( '\WCK\Blocks\CheckoutIntegration' ) ) {
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedClass
+			 * @phpstan-ignore-next-line
+			 */
+			$blocks[] = new \WCK\Blocks\CheckoutIntegration();
+		}
+
 		return $blocks;
 	}
 

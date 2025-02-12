@@ -28,6 +28,7 @@ const mockAppearance = {
 		'.Input': {},
 		'.Input--invalid': {},
 		'.Label': {},
+		'.Label--resting': {},
 		'.Tab': {},
 		'.Tab--selected': {},
 		'.Tab:hover': {},
@@ -42,6 +43,10 @@ const mockAppearance = {
 		'.Heading': {},
 		'.Button': {},
 		'.Link': {},
+		'.Container': {},
+		'.Footer': {},
+		'.Footer-link': {},
+		'.Header': {},
 	},
 	theme: 'stripe',
 	variables: {
@@ -50,9 +55,49 @@ const mockAppearance = {
 		fontFamily: undefined,
 		fontSizeBase: undefined,
 	},
+	labels: 'above',
 };
 
 describe( 'WCPayAPI', () => {
+	describe( 'getStripe', () => {
+		afterEach( () => {
+			jest.useRealTimers();
+			window.Stripe = undefined;
+		} );
+
+		test( 'waits for Stripe to be available in the global scope', async () => {
+			jest.useFakeTimers();
+			const api = new WCPayAPI( {}, request );
+			let stripeInstance = null;
+
+			api.getStripe().then( ( result ) => {
+				stripeInstance = result;
+			} );
+
+			jest.runOnlyPendingTimers();
+			await Promise.resolve();
+
+			expect( stripeInstance ).toBeNull();
+
+			window.Stripe = function Stripe() {};
+
+			jest.runOnlyPendingTimers();
+			await Promise.resolve();
+
+			jest.runOnlyPendingTimers();
+			await Promise.resolve();
+
+			expect( stripeInstance ).toBeInstanceOf( window.Stripe );
+		} );
+
+		test( 'resolves immediately if Stripe is already available', async () => {
+			const api = new WCPayAPI( {}, request );
+			window.Stripe = function Stripe() {};
+			const stripeInstance = await api.getStripe();
+			expect( stripeInstance ).toBeInstanceOf( window.Stripe );
+		} );
+	} );
+
 	test( 'does not initialize woopay if already requesting', async () => {
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
 		getConfig.mockImplementation( ( key ) => {

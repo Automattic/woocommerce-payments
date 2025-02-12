@@ -49,6 +49,10 @@ export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
 };
 
+export const isDirty = ( state ) => {
+	return getSettingsState( state ).isDirty || false;
+};
+
 export const getAccountStatementDescriptor = ( state ) => {
 	return getSettings( state ).account_statement_descriptor || '';
 };
@@ -115,10 +119,6 @@ export const getAccountDomesticCurrency = ( state ) => {
 
 export const getDepositScheduleInterval = ( state ) => {
 	return getSettings( state ).deposit_schedule_interval || '';
-};
-
-export const getExportLanguage = ( state ) => {
-	return getSettings( state ).reporting_export_language || '';
 };
 
 export const getDepositScheduleWeeklyAnchor = ( state ) => {

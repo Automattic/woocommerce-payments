@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 
 /**
@@ -74,10 +76,6 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		if ( ! WC_Payments_Features::is_stripe_ece_enabled() ) {
-			return;
-		}
-
 		// Checks if Payment Request is enabled.
 		if ( 'yes' !== $this->gateway->get_option( 'payment_request' ) ) {
 			return;
@@ -99,6 +97,10 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		add_action( 'woocommerce_checkout_order_processed', [ $this->express_checkout_helper, 'add_order_payment_method_title' ], 10, 2 );
 
 		$this->express_checkout_ajax_handler->init();
+
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
+			$this->register_ece_data_for_block_editor();
+		}
 	}
 
 	/**
@@ -107,15 +109,15 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return array
 	 */
 	public function get_button_settings() {
-		$button_type                     = $this->gateway->get_option( 'payment_request_button_type' );
-		$common_settings                 = $this->express_checkout_helper->get_common_button_settings();
-		$payment_request_button_settings = [
+		$button_type                      = $this->gateway->get_option( 'payment_request_button_type' );
+		$common_settings                  = $this->express_checkout_helper->get_common_button_settings();
+		$express_checkout_button_settings = [
 			// Default format is en_US.
 			'locale'       => apply_filters( 'wcpay_payment_request_button_locale', substr( get_locale(), 0, 2 ) ),
 			'branded_type' => 'default' === $button_type ? 'short' : 'long',
 		];
 
-		return array_merge( $common_settings, $payment_request_button_settings );
+		return array_merge( $common_settings, $express_checkout_button_settings );
 	}
 
 	/**
@@ -202,13 +204,61 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
 		}
 
-		// If automatically generate username/password are disabled, the Payment Request API
+		// If automatically generate username/password are disabled, the Express Checkout API
 		// can't include any of those fields, so account creation is not possible.
 		return (
 			$is_signup_from_checkout_allowed &&
 			'yes' === get_option( 'woocommerce_registration_generate_username', 'yes' ) &&
 			'yes' === get_option( 'woocommerce_registration_generate_password', 'yes' )
 		);
+	}
+
+	/**
+	 * Gets the parameters needed for Express Checkout functionality.
+	 *
+	 * @return array Parameters for Express Checkout.
+	 */
+	public function get_express_checkout_params() {
+		return [
+			'ajax_url'           => admin_url( 'admin-ajax.php' ),
+			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'stripe'             => [
+				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+				'accountId'      => $this->account->get_stripe_account_id(),
+				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			],
+			'nonce'              => [
+				'get_cart_details'             => wp_create_nonce( 'wcpay-get-cart-details' ),
+				'shipping'                     => wp_create_nonce( 'wcpay-payment-request-shipping' ),
+				'update_shipping'              => wp_create_nonce( 'wcpay-update-shipping-method' ),
+				'checkout'                     => wp_create_nonce( 'woocommerce-process_checkout' ),
+				'add_to_cart'                  => wp_create_nonce( 'wcpay-add-to-cart' ),
+				'empty_cart'                   => wp_create_nonce( 'wcpay-empty-cart' ),
+				'get_selected_product_data'    => wp_create_nonce( 'wcpay-get-selected-product-data' ),
+				'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
+				'pay_for_order'                => wp_create_nonce( 'pay_for_order' ),
+				// needed to communicate via the Store API.
+				'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
+				'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
+				'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
+			],
+			'checkout'           => [
+				'currency_code'              => strtolower( get_woocommerce_currency() ),
+				'currency_decimals'          => WC_Payments::get_localization_service()->get_currency_format( get_woocommerce_currency() )['num_decimals'],
+				'country_code'               => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
+				'needs_shipping'             => WC()->cart->needs_shipping(),
+				// Defaults to 'required' to match how core initializes this option.
+				'needs_payer_phone'          => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
+				'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
+			],
+			'button'             => $this->get_button_settings(),
+			'login_confirmation' => $this->get_login_confirmation_settings(),
+			'button_context'     => $this->express_checkout_helper->get_button_context(),
+			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
+			'product'            => $this->express_checkout_helper->get_product_data(),
+			'total_label'        => $this->express_checkout_helper->get_total_label(),
+			'store_name'         => get_bloginfo( 'name' ),
+		];
 	}
 
 	/**
@@ -220,53 +270,43 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		$payment_request_params = [
-			'ajax_url'           => admin_url( 'admin-ajax.php' ),
-			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'stripe'             => [
-				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-				'accountId'      => $this->account->get_stripe_account_id(),
-				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			],
-			'nonce'              => [
-				'get_cart_details'          => wp_create_nonce( 'wcpay-get-cart-details' ),
-				'shipping'                  => wp_create_nonce( 'wcpay-payment-request-shipping' ),
-				'update_shipping'           => wp_create_nonce( 'wcpay-update-shipping-method' ),
-				'checkout'                  => wp_create_nonce( 'woocommerce-process_checkout' ),
-				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
-				'empty_cart'                => wp_create_nonce( 'wcpay-empty-cart' ),
-				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
-				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
-				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
-			],
-			'checkout'           => [
-				'currency_code'     => strtolower( get_woocommerce_currency() ),
-				'country_code'      => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
-				'needs_shipping'    => WC()->cart->needs_shipping(),
-				// Defaults to 'required' to match how core initializes this option.
-				'needs_payer_phone' => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
-			],
-			'button'             => $this->get_button_settings(),
-			'login_confirmation' => $this->get_login_confirmation_settings(),
-			'is_product_page'    => $this->express_checkout_helper->is_product(),
-			'button_context'     => $this->express_checkout_helper->get_button_context(),
-			'is_pay_for_order'   => $this->express_checkout_helper->is_pay_for_order_page(),
-			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
-			'product'            => $this->express_checkout_helper->get_product_data(),
-			'total_label'        => $this->express_checkout_helper->get_total_label(),
-			'is_checkout_page'   => $this->express_checkout_helper->is_checkout(),
-		];
+		$express_checkout_params = $this->get_express_checkout_params();
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'dist/express-checkout', [ 'jquery', 'stripe' ] );
+		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
+			WC_Payments::register_script_with_dependencies(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				'dist/tokenized-express-checkout',
+				[
+					'jquery',
+					'stripe',
+				]
+			);
 
-		WC_Payments_Utils::enqueue_style(
-			'WCPAY_EXPRESS_CHECKOUT_ECE',
-			plugins_url( 'dist/payment-request.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/payment-request.css' )
-		);
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				plugins_url( 'dist/tokenized-express-checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/tokenized-express-checkout.css' )
+			);
+		} else {
+			WC_Payments::register_script_with_dependencies(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				'dist/express-checkout',
+				[
+					'jquery',
+					'stripe',
+				]
+			);
 
-		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $payment_request_params );
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/express-checkout.css' )
+			);
+		}
+
+		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $express_checkout_params );
 
 		wp_set_script_translations( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'woocommerce-payments' );
 
@@ -281,7 +321,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	}
 
 	/**
-	 * Display the payment request button.
+	 * Display the express checkout button.
 	 */
 	public function display_express_checkout_button_html() {
 		if ( ! $this->express_checkout_helper->should_show_express_checkout_button() ) {
@@ -445,5 +485,25 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		return $title;
+	}
+
+	/**
+	 * Add ECE data to `wcSettings` to allow it to be accessed by the front-end JS script in the Block editor.
+	 *
+	 * @return void
+	 */
+	private function register_ece_data_for_block_editor() {
+		$data_registry = Package::container()->get( AssetDataRegistry::class );
+
+		if ( $data_registry->exists( 'ece_data' ) ) {
+			return;
+		}
+
+		$data_registry->add(
+			'ece_data',
+			[
+				'button' => $this->get_button_settings(),
+			]
+		);
 	}
 }

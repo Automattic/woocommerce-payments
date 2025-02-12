@@ -8,9 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
 import { getConfig } from 'wcpay/utils/checkout';
-import ApplePayPreview from './components/apple-pay-preview';
 import ExpressCheckoutContainer from './components/express-checkout-container';
-import GooglePayPreview from './components/google-pay-preview';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
 
 const expressCheckoutElementApplePay = ( api ) => ( {
@@ -25,18 +23,23 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 	content: (
 		<ExpressCheckoutContainer api={ api } expressPaymentMethod="applePay" />
 	),
-	edit: <ApplePayPreview />,
+	edit: (
+		<ExpressCheckoutContainer
+			api={ api }
+			expressPaymentMethod="applePay"
+			isPreview
+		/>
+	),
 	supports: {
 		features: getConfig( 'features' ),
+		style: [ 'height', 'borderRadius' ],
 	},
 	canMakePayment: ( { cart } ) => {
 		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
 			return false;
 		}
 
-		return new Promise( ( resolve ) => {
-			checkPaymentMethodIsAvailable( 'applePay', cart, resolve );
-		} );
+		return checkPaymentMethodIsAvailable( 'applePay', cart );
 	},
 } );
 
@@ -56,18 +59,23 @@ const expressCheckoutElementGooglePay = ( api ) => {
 				expressPaymentMethod="googlePay"
 			/>
 		),
-		edit: <GooglePayPreview />,
+		edit: (
+			<ExpressCheckoutContainer
+				api={ api }
+				expressPaymentMethod="googlePay"
+				isPreview
+			/>
+		),
 		supports: {
 			features: getConfig( 'features' ),
+			style: [ 'height', 'borderRadius' ],
 		},
 		canMakePayment: ( { cart } ) => {
 			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
 				return false;
 			}
 
-			return new Promise( ( resolve ) => {
-				checkPaymentMethodIsAvailable( 'googlePay', cart, resolve );
-			} );
+			return checkPaymentMethodIsAvailable( 'googlePay', cart );
 		},
 	};
 };

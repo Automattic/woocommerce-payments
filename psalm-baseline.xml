@@ -24,13 +24,6 @@
       <code>WC_Pre_Orders_Product</code>
     </UndefinedClass>
   </file>
-  <file src="includes/class-wc-payments-payment-request-button-handler.php">
-    <UndefinedClass occurrences="5">
-      <code>WC_Pre_Orders_Product</code>
-      <code>WC_Subscriptions_Product</code>
-      <code>WC_Subscriptions_Cart</code>
-    </UndefinedClass>
-  </file>
   <file src="includes/express-checkout/class-wc-payments-express-checkout-button-handler.php">
     <UndefinedClass occurrences="1">
       <code>WC_Subscriptions_Cart</code>
@@ -46,13 +39,13 @@
       <code>WC_Subscriptions_Product</code>
     </UndefinedClass>
   </file>
-  <file src="multi-currency/src/Compatibility/WooCommerceProductAddOns.php">
+  <file src="includes/multi-currency/Compatibility/WooCommerceProductAddOns.php">
     <UndefinedClass occurrences="2">
       <code>\WC_Product_Addons_Helper</code>
       <code>\WC_Product_Addons_Helper</code>
     </UndefinedClass>
   </file>
-  <file src="multi-currency/src/Compatibility/WooCommerceNameYourPrice.php">
+  <file src="includes/multi-currency/Compatibility/WooCommerceNameYourPrice.php">
     <UndefinedClass occurrences="2">
       <code>\WC_Name_Your_Price_Helpers</code>
       <code>\WC_Name_Your_Price_Helpers</code>

@@ -48,6 +48,9 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 		$property_reflection->setAccessible( true );
 		$this->original_api_client = $property_reflection->getValue( $account_service );
 		$property_reflection->setValue( $account_service, $this->mock_api_client );
+
+		// Clear the account cache before each test.
+		$account_service->clear_cache();
 	}
 
 	public function tear_down() {

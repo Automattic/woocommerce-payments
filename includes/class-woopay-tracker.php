@@ -148,18 +148,19 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @param bool   $record_on_frontend whether to record the event on the frontend to prevent cache break.
 	 */
 	public function maybe_record_wcpay_shopper_event( $event, $data = [], $record_on_frontend = true ) {
-		// Top level events should not be namespaced.
-		if ( '_aliasUser' !== $event ) {
-			$event = self::$user_prefix . '_' . $event;
-		}
-
 		$is_admin_event      = false;
 		$track_on_all_stores = true;
 
+		// Record the event immediately.
 		if ( ! $record_on_frontend ) {
+			// Top level events should not be namespaced.
+			if ( '_aliasUser' !== $event ) {
+				$event = self::$user_prefix . '_' . $event;
+			}
 			return $this->tracks_record_event( $event, $data, $is_admin_event, $track_on_all_stores );
 		}
 
+		// Route the event through frontend to avoid setting cookies on page load.
 		$data['record_event_data'] = compact( 'is_admin_event', 'track_on_all_stores' );
 
 		add_filter(
@@ -292,6 +293,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		if ( $user instanceof \WP_User && 'wptests_capabilities' === $user->cap_key ) {
 			return false;
 		}
+
+		$properties = apply_filters( 'wcpay_tracks_event_properties', $properties, $event_name );
 
 		if ( isset( $properties['record_event_data'] ) ) {
 			if ( isset( $properties['record_event_data']['is_admin_event'] ) ) {
@@ -540,7 +543,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$properties      = [ 'payment_title' => 'other' ];
 
 		// If the order was placed using WooCommerce Payments, record the payment title using Tracks.
-		if ( strpos( $payment_gateway->id, 'woocommerce_payments' ) === 0 ) {
+		if ( isset( $payment_gateway->id ) && strpos( $payment_gateway->id, 'woocommerce_payments' ) === 0 ) {
 			$order         = wc_get_order( $order_id );
 			$payment_title = $order->get_payment_method_title();
 			$properties    = [ 'payment_title' => $payment_title ];
@@ -621,12 +624,22 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		WC_Payments::register_script_with_dependencies( 'wcpay-frontend-tracks', 'dist/frontend-tracks' );
 
-		wp_enqueue_script( 'wcpay-frontend-tracks' );
+		// Define wcpayConfig before the frontend tracks script if it hasn't been defined yet.
+		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
+		wp_add_inline_script(
+			'wcpay-frontend-tracks',
+			"
+			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+			",
+			'before'
+		);
 
 		wp_localize_script(
 			'wcpay-frontend-tracks',
 			'wcPayFrontendTracks',
 			$frontent_tracks
 		);
+
+		wp_enqueue_script( 'wcpay-frontend-tracks' );
 	}
 }

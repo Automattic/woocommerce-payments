@@ -14,11 +14,11 @@ import AdvancedSettings from '../advanced-settings';
 import ExpressCheckout from '../express-checkout';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
-import ReportingSettings from '../reporting-settings';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
+import AccountManagement from '../account-management';
 import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
@@ -29,7 +29,6 @@ import {
 	useSettings,
 } from '../../data';
 import FraudProtection from '../fraud-protection';
-import { isDefaultSiteLanguage } from 'wcpay/utils';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 
 const ExpressCheckoutDescription = () => (
@@ -84,22 +83,36 @@ const DepositsDescription = () => {
 
 	return (
 		<>
-			<h2>{ __( 'Deposits', 'woocommerce-payments' ) }</h2>
+			<h2>{ __( 'Payouts', 'woocommerce-payments' ) }</h2>
 			<p>
 				{ sprintf(
 					__(
-						'Funds are available for deposit %s business days after they’re received.',
+						'Funds are available for payout %s business days after they’re received.',
 						'woocommerce-payments'
 					),
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
+		</>
+	);
+};
+
+const AccountDetailsDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Account details', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'View and edit your WooPayments account details like personal or business information and public information.',
+					'woocommerce-payments'
+				) }
+			</p>
 		</>
 	);
 };
@@ -120,20 +133,6 @@ const FraudProtectionDescription = () => {
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
-		</>
-	);
-};
-
-const ReportingDescription = () => {
-	return (
-		<>
-			<h2>{ __( 'Reporting', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ __(
-					'Adjust your report exporting language preferences.',
-					'woocommerce-payments'
-				) }
-			</p>
 		</>
 	);
 };
@@ -159,7 +158,6 @@ const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
-
 	const { isLoading } = useSettings();
 
 	useLayoutEffect( () => {
@@ -228,6 +226,16 @@ const SettingsManager = () => {
 				</SettingsSection>
 			</DuplicatedPaymentMethodsContext.Provider>
 			<SettingsSection
+				description={ AccountDetailsDescription }
+				id="account-details"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<AccountManagement />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
 				description={ TransactionsDescription }
 				id="transactions"
 			>
@@ -242,7 +250,7 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection description={ DepositsDescription } id="deposits">
-				<div id={ 'deposit-schedule' }>
+				<div id="payout-schedule">
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
 							<Deposits />
@@ -260,18 +268,6 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ ! isDefaultSiteLanguage() && (
-				<SettingsSection
-					description={ ReportingDescription }
-					id="fp-settings"
-				>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<ReportingSettings />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
 			<SettingsSection
 				description={ AdvancedDescription }
 				id="advanced-settings"

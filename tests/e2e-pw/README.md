@@ -17,9 +17,20 @@ See [tests/e2e/README.md](/tests/e2e/README.md) for detailed e2e environment set
 -   `npm run test:e2e-pw` headless run from within a linux docker container.
 -   `npm run test:e2e-pw-ui` runs tests in interactive UI mode from within a linux docker container – recommended for authoring tests and re-running failed tests.
 -   `npm run test:e2e-pw keyword` runs tests only with a specific keyword in the file name, e.g. `dispute` or `checkout`.
--   `npm run test:e2e-pw --update-snapshots` updates snapshots.
+-   `npm run test:e2e-pw -- --update-snapshots` updates snapshots. This can be combined with a keyword to update a specific set of snapshots, e.g. `npm run test:e2e-pw -- --update-snapshots deposits`.
 
 ## FAQs
+
+**I'm getting errors that host.docker.internal is not found.**
+
+This is because the `host.docker.internal` alias is not available on Linux. You can use the `localhost` alias instead. To apply it, create a file called `docker-compose.override.yml` in the `tests/e2e-pw` directory and add the following content:
+
+```yaml
+services:
+  playwright:
+    environment:
+      - BASE_URL=http://localhost:8084
+```
 
 **How do I wait for a page or element to load?**
 
@@ -39,7 +50,7 @@ Prefer the use of [user-facing attribute or test-id locators](https://playwright
 
 ```ts
 // Prefer locating by role, label, text, or test id when possible. See https://playwright.dev/docs/locators
-await page.getByRole( 'button', { name: 'All deposits' } ).click();
+await page.getByRole( 'button', { name: 'All payouts' } ).click();
 await page.getByLabel( 'Select a deposit status' ).selectOption( 'Pending' );
 await expect( page.getByText( 'Order received' ) ).toBeVisible();
 await page.getByTestId( 'accept-dispute-button' ).click();
@@ -56,7 +67,7 @@ Visual regression tests are captured by the [`toHaveScreenshot()` function](http
 await expect( page ).toHaveScreenshot();
 
 await expect(
-	page.getByRole( 'button', { name: 'All deposits' } )
+	page.getByRole( 'button', { name: 'All payouts' } )
 ).toHaveScreenshot();
 ```
 

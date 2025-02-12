@@ -55,8 +55,8 @@
     "feeBreakdown": {
       "base": "Base fee: capped at $6.00",
       "additional-international": "International card fee: 1.5%",
-      "additional-fx": "Foreign exchange fee: 1%"
+      "additional-fx": "Currency conversion fee: 1%"
     },
-    "netString": "Net deposit: $971.04 USD"
+    "netString": "Net payout: $971.04 USD"
   }
 }

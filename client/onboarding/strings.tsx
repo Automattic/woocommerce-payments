@@ -43,6 +43,10 @@ export default {
 				'This will take place in a secure environment through our partner. Once your business details are verified, you’ll be redirected back to your store dashboard.',
 				'woocommerce-payments'
 			),
+			cta: __(
+				'Finish your verification process',
+				'woocommerce-payments'
+			),
 		},
 		embedded: {
 			heading: __(
@@ -159,4 +163,5 @@ export default {
 	},
 	continue: __( 'Continue', 'woocommerce-payments' ),
 	back: __( 'Back', 'woocommerce-payments' ),
+	cancel: __( 'Cancel', 'woocommerce-payments' ),
 };

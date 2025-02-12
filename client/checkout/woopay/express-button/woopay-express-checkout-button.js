@@ -19,6 +19,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import {
 	appendRedirectionParams,
 	deleteSkipWooPayCookie,
+	isSupportedThemeEntrypoint,
 } from 'wcpay/checkout/woopay/utils';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
@@ -68,10 +69,11 @@ export const WoopayExpressCheckoutButton = ( {
 	// If we are on the checkout block, we receive button attributes which overwrite the extension specific settings
 	if ( typeof buttonAttributes !== 'undefined' ) {
 		buttonHeight = buttonAttributes.height || buttonHeight;
-		borderRadius = buttonAttributes.borderRadius || borderRadius;
+		borderRadius = buttonAttributes.borderRadius ?? borderRadius;
 	}
 
-	const buttonSize = buttonSizeMap.get( buttonHeight );
+	const buttonSize =
+		buttonSizeMap.get( buttonHeight?.toString() ) || 'medium';
 
 	const buttonText =
 		ButtonTypeTextMap[ buttonType || 'default' ] ??
@@ -220,6 +222,11 @@ export const WoopayExpressCheckoutButton = ( {
 			setIsLoading( true );
 
 			const appearanceType = getAppearanceType();
+			const appearance =
+				isSupportedThemeEntrypoint( appearanceType ) &&
+				getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+					? getAppearance( appearanceType, true )
+					: null;
 
 			if ( isProductPage ) {
 				const productData = getProductDataRef.current();
@@ -241,11 +248,7 @@ export const WoopayExpressCheckoutButton = ( {
 					}
 					WooPayFirstPartyAuth.getWooPaySessionFromMerchant( {
 						_ajax_nonce: getConfig( 'woopaySessionNonce' ),
-						appearance: getConfig(
-							'isWooPayGlobalThemeSupportEnabled'
-						)
-							? getAppearance( appearanceType, true )
-							: null,
+						appearance: appearance,
 					} )
 						.then( async ( response ) => {
 							if (
@@ -289,9 +292,7 @@ export const WoopayExpressCheckoutButton = ( {
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
-					appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-						? getAppearance( appearanceType, true )
-						: null,
+					appearance: appearance,
 				} )
 					.then( async ( response ) => {
 						if ( response?.blog_id && response?.data?.session ) {
@@ -363,40 +364,42 @@ export const WoopayExpressCheckoutButton = ( {
 	}, [] );
 
 	return (
-		<button
-			ref={ buttonRef }
-			key={ `${ buttonType }-${ theme }-${ buttonSize }` }
-			aria-label={ buttonText }
-			onClick={ ( e ) => onClickCallbackRef.current( e ) }
-			className={ classNames( 'woopay-express-button', {
-				'is-loading': isLoading,
-			} ) }
-			data-type={ buttonType }
-			data-size={ buttonSize }
-			data-theme={ theme }
-			data-width-type={ buttonWidthType }
-			style={ {
-				height: `${ buttonHeight }px`,
-				borderRadius: `${ borderRadius }px`,
-			} }
-			disabled={ isLoading }
-			type="button"
-		>
-			{ isLoading ? (
-				<span className="wc-block-components-spinner" />
-			) : (
-				<>
-					{ interpolateComponents( {
-						mixedString: buttonText.replace(
-							ButtonTypeTextMap.default,
-							'{{wooPayLogo /}}'
-						),
-						components: {
-							wooPayLogo: <ThemedWooPayIcon />,
-						},
-					} ) }
-				</>
-			) }
-		</button>
+		<div id="wcpay-woopay-button">
+			<button
+				ref={ buttonRef }
+				key={ `${ buttonType }-${ theme }-${ buttonSize }` }
+				aria-label={ buttonText }
+				onClick={ ( e ) => onClickCallbackRef.current( e ) }
+				className={ classNames( 'woopay-express-button', {
+					'is-loading': isLoading,
+				} ) }
+				data-type={ buttonType }
+				data-size={ buttonSize }
+				data-theme={ theme }
+				data-width-type={ buttonWidthType }
+				style={ {
+					height: `${ buttonHeight }px`,
+					borderRadius: `${ borderRadius }px`,
+				} }
+				disabled={ isLoading }
+				type="button"
+			>
+				{ isLoading ? (
+					<span className="wc-block-components-spinner" />
+				) : (
+					<div className="button-content">
+						{ interpolateComponents( {
+							mixedString: buttonText.replace(
+								ButtonTypeTextMap.default,
+								'{{wooPayLogo /}}'
+							),
+							components: {
+								wooPayLogo: <ThemedWooPayIcon />,
+							},
+						} ) }
+					</div>
+				) }
+			</button>
+		</div>
 	);
 };

@@ -33,9 +33,8 @@ export type ProtectionSettingsUI = Record< string, FraudPreventionSettings >;
 
 export interface FraudPreventionSettingsContextType {
 	protectionSettingsUI: ProtectionSettingsUI;
-	setProtectionSettingsUI: ( settings: ProtectionSettingsUI ) => void;
-	protectionSettingsChanged: boolean;
-	setProtectionSettingsChanged: Dispatch< SetStateAction< boolean > >;
+	setProtectionSettingsUI: Dispatch< SetStateAction< ProtectionSettingsUI > >;
+	setIsDirty: Dispatch< SetStateAction< boolean > >;
 }
 
 export interface FraudProtectionSettingsSingleCheck {

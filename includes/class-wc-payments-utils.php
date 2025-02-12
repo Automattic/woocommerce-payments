@@ -431,7 +431,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return array The filtered array.
 	 */
-	public static function array_filter_recursive( array $array, callable $callback = null ): array {
+	public static function array_filter_recursive( array $array, ?callable $callback = null ): array {
 		foreach ( $array as $key => &$value ) { // Mind the use of a reference.
 			if ( \is_array( $value ) ) {
 				$value = self::array_filter_recursive( $value, $callback );
@@ -716,59 +716,163 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Retrieves Stripe minimum order value authorized per currency.
-	 * The values are based on Stripe's recommendations.
-	 * See https://docs.stripe.com/currencies#minimum-and-maximum-charge-amounts.
+	 * Get the BNPL limits per currency for a specific payment method.
 	 *
-	 * @param string $currency The currency.
-	 *
-	 * @return int The minimum amount.
+	 * @param string $payment_method The payment method name ('affirm', 'afterpay_clearpay', or 'klarna').
+	 * @return array The BNPL limits per currency for the specified payment method.
 	 */
-	public static function get_stripe_minimum_amount( $currency ) {
-		switch ( $currency ) {
-			case 'AED':
-			case 'MYR':
-			case 'PLN':
-			case 'RON':
-				$minimum_amount = 200;
-				break;
-			case 'BGN':
-				$minimum_amount = 100;
-				break;
-			case 'CZK':
-				$minimum_amount = 1500;
-				break;
-			case 'DKK':
-				$minimum_amount = 250;
-				break;
-			case 'GBP':
-				$minimum_amount = 30;
-				break;
-			case 'HKD':
-				$minimum_amount = 400;
-				break;
-			case 'HUF':
-				$minimum_amount = 17500;
-				break;
-			case 'JPY':
-				$minimum_amount = 5000;
-				break;
-			case 'MXN':
-			case 'THB':
-				$minimum_amount = 1000;
-				break;
-			case 'NOK':
-			case 'SEK':
-				$minimum_amount = 300;
-				break;
+	public static function get_bnpl_limits_per_currency( $payment_method ) {
+		switch ( $payment_method ) {
+			case 'affirm':
+				return [
+					Currency_Code::CANADIAN_DOLLAR      => [
+						Country_Code::CANADA => [
+							'min' => 5000,
+							'max' => 3000000,
+						], // Represents CAD 50 - 30,000 CAD.
+					],
+					Currency_Code::UNITED_STATES_DOLLAR => [
+						Country_Code::UNITED_STATES => [
+							'min' => 5000,
+							'max' => 3000000,
+						],
+					], // Represents USD 50 - 30,000 USD.
+				];
+			case 'afterpay_clearpay':
+				return [
+					Currency_Code::AUSTRALIAN_DOLLAR    => [
+						Country_Code::AUSTRALIA => [
+							'min' => 100,
+							'max' => 200000,
+						], // Represents AUD 1 - 2,000 AUD.
+					],
+					Currency_Code::CANADIAN_DOLLAR      => [
+						Country_Code::CANADA => [
+							'min' => 100,
+							'max' => 200000,
+						], // Represents CAD 1 - 2,000 CAD.
+					],
+					Currency_Code::NEW_ZEALAND_DOLLAR   => [
+						Country_Code::NEW_ZEALAND => [
+							'min' => 100,
+							'max' => 200000,
+						], // Represents NZD 1 - 2,000 NZD.
+					],
+					Currency_Code::POUND_STERLING       => [
+						Country_Code::UNITED_KINGDOM => [
+							'min' => 100,
+							'max' => 120000,
+						], // Represents GBP 1 - 1,200 GBP.
+					],
+					Currency_Code::UNITED_STATES_DOLLAR => [
+						Country_Code::UNITED_STATES => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents USD 1 - 4,000 USD.
+					],
+				];
+			case 'klarna':
+				return [
+					Currency_Code::UNITED_STATES_DOLLAR => [
+						Country_Code::UNITED_STATES => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents USD 1 - 10,000 USD.
+					],
+					Currency_Code::POUND_STERLING       => [
+						Country_Code::UNITED_KINGDOM => [
+							'min' => 100,
+							'max' => 500000,
+						], // Represents GBP 1 - 5,000 GBP.
+					],
+					Currency_Code::EURO                 => [
+						Country_Code::AUSTRIA     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::BELGIUM     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::GERMANY     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::NETHERLANDS => [
+							'min' => 100,
+							'max' => 500000,
+						], // Represents EUR 1 - 5,000 EUR.
+						Country_Code::FINLAND     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::SPAIN       => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::IRELAND     => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
+						Country_Code::ITALY       => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
+						Country_Code::FRANCE      => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
+					],
+					Currency_Code::DANISH_KRONE         => [
+						Country_Code::DENMARK => [
+							'min' => 100,
+							'max' => 10000000,
+						], // Represents DKK 1 - 100,000 DKK.
+					],
+					Currency_Code::NORWEGIAN_KRONE      => [
+						Country_Code::NORWAY => [
+							'min' => 100,
+							'max' => 10000000,
+						], // Represents NOK 1 - 100,000 NOK.
+					],
+					Currency_Code::SWEDISH_KRONA        => [
+						Country_Code::SWEDEN => [
+							'min' => 100,
+							'max' => 10000000,
+						], // Represents SEK 1 - 100,000 SEK.
+					],
+				];
 			default:
-				$minimum_amount = 50;
-				break;
+				return [];
+		}
+	}
+
+	/**
+	 * Check if any BNPL method is available for a given country, currency, and price.
+	 *
+	 * @param array  $enabled_methods Array of enabled BNPL methods.
+	 * @param string $country_code Country code.
+	 * @param string $currency_code Currency code.
+	 * @param float  $price Product price.
+	 * @return bool True if any BNPL method is available, false otherwise.
+	 */
+	public static function is_any_bnpl_method_available( array $enabled_methods, string $country_code, string $currency_code, float $price ): bool {
+		$price_in_cents = $price;
+
+		foreach ( $enabled_methods as $method ) {
+			$limits = self::get_bnpl_limits_per_currency( $method );
+
+			if ( isset( $limits[ $currency_code ][ $country_code ] ) ) {
+				$min_amount = $limits[ $currency_code ][ $country_code ]['min'];
+				$max_amount = $limits[ $currency_code ][ $country_code ]['max'];
+
+				if ( $price_in_cents >= $min_amount && $price_in_cents <= $max_amount ) {
+					return true;
+				}
+			}
 		}
 
-		self::cache_minimum_amount( $currency, $minimum_amount );
-
-		return $minimum_amount;
+		return false;
 	}
 
 	/**
@@ -785,20 +889,12 @@ class WC_Payments_Utils {
 	 * Checks if there is a minimum amount required for transactions in a given currency.
 	 *
 	 * @param string $currency The currency to check for.
-	 * @param bool   $fallback_to_local_list Whether to fallback to the local Stripe list if the cached value is not available.
 	 *
 	 * @return int|null Either the minimum amount, or `null` if not available.
 	 */
-	public static function get_cached_minimum_amount( $currency, $fallback_to_local_list = false ) {
+	public static function get_cached_minimum_amount( $currency ) {
 		$cached = get_transient( 'wcpay_minimum_amount_' . strtolower( $currency ) );
-
-		if ( (int) $cached ) {
-			return (int) $cached;
-		} elseif ( $fallback_to_local_list ) {
-			return self::get_stripe_minimum_amount( $currency );
-		}
-
-		return null;
+		return (int) $cached ? (int) $cached : null;
 	}
 
 	/**
@@ -908,25 +1004,6 @@ class WC_Payments_Utils {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Check to see if the current user is in Core Payments task onboarding flow experiment treatment mode.
-	 *
-	 * @return bool
-	 */
-	public static function is_in_core_payments_task_onboarding_flow_treatment_mode(): bool {
-		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
-			return false;
-		}
-
-		$abtest = new \WCPay\Experimental_Abtest(
-			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
-			'woocommerce',
-			'yes' === get_option( 'woocommerce_allow_tracking', 'no' )
-		);
-
-		return 'treatment' === $abtest->get_variation( 'woopayments_core_payments_task_onboarding_flow_2024_v1' );
 	}
 
 	/**
@@ -1266,26 +1343,35 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Returns true if the request that's currently being processed is a Store API request, false
-	 * otherwise.
+	 * Determine if the request that's currently being processed is a Store API request.
 	 *
 	 * @return bool True if request is a Store API request, false otherwise.
 	 */
 	public static function is_store_api_request(): bool {
+		// @TODO We should move to a more robust way of getting to the route, like WC is doing in the StoreAPI library. https://github.com/woocommerce/woocommerce/blob/9ac48232a944baa2dbfaa7dd47edf9027cca9519/plugins/woocommerce/src/StoreApi/Authentication.php#L15-L15
 		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
 		} else {
+			// Extract the request path from the request URL.
 			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = $url_parts ? rtrim( $url_parts['path'], '/' ) : '';
-			$rest_route   = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+			$request_path = ! empty( $url_parts['path'] ) ? rtrim( $url_parts['path'], '/' ) : '';
+			// Remove the REST API prefix from the request path to end up with the route.
+			$rest_route = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
 		}
 
+		// Bail early if the rest route is empty.
+		if ( empty( $rest_route ) ) {
+			return false;
+		}
+
+		// Try to match the rest route against the store API route patterns.
 		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
 			if ( 1 === preg_match( $pattern, $rest_route ) ) {
 				return true;
 			}
 		}
 
+		// If no match was found, this is not a Store API request.
 		return false;
 	}
 

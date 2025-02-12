@@ -20,15 +20,10 @@
 	}
 }
 
-.woocommerce-table {
-	font-weight: 300;
-	letter-spacing: 0.012rem;
-	color: $studio-gray-60;
-
-	.woocommerce-table__summary {
-		border-radius: 0 0 3px 3px;
-	}
-
+/**
+* This styling is for all `<TableCard />` components found in WooPayments screens.
+*/
+.woocommerce-payments-page .woocommerce-table {
 	.woocommerce-table__item {
 		white-space: nowrap;
 	}
@@ -109,6 +104,10 @@
 		font-weight: normal;
 		line-height: 20px;
 		padding: 4px 0;
+
+		@media screen and ( max-width: 470px ) {
+			flex: 0 0 40%;
+		}
 	}
 
 	&__value {
@@ -136,13 +135,12 @@
 
 img {
 	&.payment-method__icon {
-		outline: 1px solid rgba( 0, 0, 0, 0.25 );
-		outline-offset: -1px;
-		border-radius: 3px;
+		border: 1px solid rgba( 0, 0, 0, 0.25 );
+		border-radius: 4px;
 		display: block;
 
-		&.no-outline {
-			outline: none;
+		&.no-border {
+			border: none;
 			border-radius: 0;
 		}
 	}

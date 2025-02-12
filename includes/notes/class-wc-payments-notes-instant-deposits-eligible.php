@@ -30,7 +30,7 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 		$note->set_title(
 			sprintf(
 				/* translators: %s: WooPayments */
-				__( 'You’re now eligible to receive Instant Deposits with %s', 'woocommerce-payments' ),
+				__( 'You’re now eligible to receive Instant Payouts with %s', 'woocommerce-payments' ),
 				'WooPayments'
 			)
 		);
@@ -38,10 +38,10 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 			WC_Payments_Utils::esc_interpolated_html(
 				sprintf(
 					/* translators: %s: WooPayments */
-					__( "Get immediate access to your funds when you need them – including nights, weekends, and holidays. With %s' <a>Instant Deposits feature</a>, you're able to transfer your earnings to a debit card within minutes.", 'woocommerce-payments' ),
+					__( "Get immediate access to your funds when you need them – including nights, weekends, and holidays. With %s' <a>Instant Payouts feature</a>, you're able to transfer your earnings to a debit card within minutes.", 'woocommerce-payments' ),
 					'WooPayments'
 				),
-				[ 'a' => '<a href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/">' ]
+				[ 'a' => '<a href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/">' ]
 			)
 		);
 		$note->set_content_data( (object) [] );
@@ -50,8 +50,8 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 		$note->set_source( 'woocommerce-payments' );
 		$note->add_action(
 			self::NOTE_NAME,
-			__( 'Request an instant deposit', 'woocommerce-payments' ),
-			'https://woocommerce.com/document/woopayments/deposits/instant-deposits/#request-an-instant-deposit',
+			__( 'Request an instant payout', 'woocommerce-payments' ),
+			'https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout',
 			'unactioned',
 			true
 		);

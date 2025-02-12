@@ -213,7 +213,7 @@ const WooPaySettings = ( { section } ) => {
 						<div className="woopay-global-theme-support">
 							<h4>
 								{ __(
-									'WooPay Global Theme Support',
+									'Checkout theme',
 									'woocommerce-payments'
 								) }
 							</h4>
@@ -226,10 +226,35 @@ const WooPaySettings = ( { section } ) => {
 									onChange={
 										updateIsWooPayGlobalThemeSupportEnabled
 									}
-									label={ __(
-										'Enable WooPay Global Theme Support',
-										'woocommerce-payments'
-									) }
+									label={
+										<div className="woopay-settings__global-theme-label">
+											{ __(
+												'Enable global theme support',
+												'woocommerce-payments'
+											) }
+											<span className="woopay-settings__badge">
+												Beta
+											</span>
+										</div>
+									}
+									help={ interpolateComponents( {
+										mixedString: __(
+											'When enabled, WooPay checkout will be themed with your store’s brand colors and fonts. ' +
+												'{{docs}}Learn more {{/docs}}',
+											'woocommerce-payments'
+										),
+										components: {
+											docs: (
+												/* eslint-disable-next-line jsx-a11y/anchor-has-content */
+												<a
+													target="_blank"
+													rel="noreferrer"
+													// eslint-disable-next-line max-len
+													href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance"
+												/>
+											),
+										},
+									} ) }
 								/>
 							</div>
 						</div>
@@ -237,7 +262,7 @@ const WooPaySettings = ( { section } ) => {
 					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
 							{ __(
-								'Policies and custom text',
+								'Checkout policies',
 								'woocommerce-payments'
 							) }
 						</h4>

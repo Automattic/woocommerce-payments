@@ -46,11 +46,32 @@ export const trackStepCompleted = ( step: string ): void => {
 	trackedSteps.add( step );
 };
 
-export const trackRedirected = ( isPoEligible: boolean ): void => {
+export const trackRedirected = (
+	isPoEligible: boolean,
+	isEmbedded = false
+): void => {
 	const urlParams = new URLSearchParams( window.location.search );
 
 	recordEvent( 'wcpay_onboarding_flow_redirected', {
 		is_po_eligible: isPoEligible,
+		is_embedded_onboarding: isEmbedded,
+		elapsed: elapsed( startTime ),
+		source:
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
+	} );
+};
+
+/**
+ * Track a change in the embedded onboarding step.
+ *
+ * @param step The current step in the embedded onboarding flow. See:
+ * https://docs.stripe.com/connect/supported-embedded-components/account-onboarding#step-values
+ */
+export const trackEmbeddedStepChange = ( step: string ): void => {
+	const urlParams = new URLSearchParams( window.location.search );
+
+	recordEvent( 'wcpay_onboarding_flow_embedded_step_change', {
+		step: step,
 		elapsed: elapsed( startTime ),
 		source:
 			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',

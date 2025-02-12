@@ -122,6 +122,41 @@ function submitForm( jQueryForm ) {
 }
 
 /**
+ * Validates the contents of the address fields based on the requirements from BNPL payment methods.
+ *
+ * @param {Object} params The parameters to be sent to `createPaymentMethod`.
+ * @param {string} paymentMethodType The type of Stripe payment method to create.
+ * @return {boolean} True, if there are missing address fields. False, if the validation passes or is not applicable.
+ */
+function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
+	if ( [ 'afterpay_clearpay', 'affirm' ].includes( paymentMethodType ) ) {
+		return false;
+	}
+	const address = params?.billing_details?.address;
+
+	if ( ! address ) {
+		return false;
+	}
+
+	const requiredAddressFields =
+		paymentMethodType === 'affirm'
+			? [ 'line1', 'state', 'city', 'postal_code', 'country' ] // Line2 is not required.
+			: [ 'line1', 'postal_code', 'country' ]; // City and State are not required in Afterpay.
+
+	for ( const field of requiredAddressFields ) {
+		if (
+			address[ field ] === '' ||
+			address[ field ] === null ||
+			typeof address[ field ] === 'undefined'
+		) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Creates a Stripe payment method by calling the Stripe API's createPaymentMethod with the provided elements
  * and billing details. The billing details are obtained from various form elements on the page.
  *
@@ -131,7 +166,7 @@ function submitForm( jQueryForm ) {
  * @param {string} paymentMethodType The type of Stripe payment method to create.
  * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
-function createStripePaymentMethod(
+async function createStripePaymentMethod(
 	api,
 	elements,
 	jQueryForm,
@@ -144,7 +179,7 @@ function createStripePaymentMethod(
 			billing_details: {
 				name: wcpayCustomerData.name || undefined,
 				email: wcpayCustomerData.email,
-				address: {
+				address: wcpayCustomerData.address || {
 					country: wcpayCustomerData.billing_country,
 				},
 			},
@@ -192,9 +227,17 @@ function createStripePaymentMethod(
 		};
 	}
 
-	return api
-		.getStripeForUPE( paymentMethodType )
-		.createPaymentMethod( { elements, params: params } );
+	if (
+		getUPEConfig( 'isOrderPay' ) &&
+		isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType )
+	) {
+		// These payment methods don't accept an address object with partial information, so we just remove the object entirely.
+		delete params.billing_details.address;
+	}
+
+	const stripe = await api.getStripeForUPE( paymentMethodType );
+
+	return stripe.createPaymentMethod( { elements, params: params } );
 }
 
 /**
@@ -231,11 +274,11 @@ async function createStripePaymentElement(
 		fonts: getFontRulesFromPage(),
 	};
 
-	const elements = api
-		.getStripeForUPE( paymentMethodType )
-		.elements( options );
+	const stripe = await api.getStripeForUPE( paymentMethodType );
+
+	const elements = stripe.elements( options );
 	const createdStripePaymentElement = elements.create( 'payment', {
-		...getUpeSettings(),
+		...getUpeSettings( paymentMethodType ),
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
@@ -453,14 +496,15 @@ export async function mountStripePaymentElement(
 export async function mountStripePaymentMethodMessagingElement(
 	api,
 	domElement,
-	cartData
+	cartData,
+	location
 ) {
 	const paymentMethodType = domElement.dataset.paymentMethodType;
-	const appearance = await initializeAppearance( api );
+	const appearance = await initializeAppearance( api, location );
 
 	try {
-		const paymentMethodMessagingElement = api
-			.getStripe()
+		const stripe = await api.getStripe();
+		const paymentMethodMessagingElement = stripe
 			.elements( {
 				appearance: appearance,
 				fonts: getFontRulesFromPage(),

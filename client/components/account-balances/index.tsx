@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { useDispatch } from '@wordpress/data';
-import { Flex } from '@wordpress/components';
+import { Card, CardBody, CardHeader, Flex } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
@@ -15,7 +15,7 @@ import type * as AccountOverview from 'wcpay/types/account-overview';
 import BalanceBlock from './balance-block';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import InlineNotice from '../inline-notice';
-import InstantDepositButton from 'deposits/instant-deposits';
+import InstantPayoutButton from 'wcpay/deposits/instant-payouts';
 import SendMoneyIcon from 'assets/images/icons/send-money.svg?asset';
 import {
 	TotalBalanceTooltip,
@@ -73,22 +73,25 @@ const AccountBalances: React.FC = () => {
 		};
 
 		return (
-			<Flex gap={ 0 } className="wcpay-account-balances__balances">
-				<BalanceBlock
-					id={ `wcpay-account-balances-${ loadingData.currencyCode }-total` }
-					title={ fundLabelStrings.total }
-					amount={ 0 }
-					currencyCode={ loadingData.currencyCode }
-					isLoading
-				/>
-				<BalanceBlock
-					id={ `wcpay-account-balances-${ loadingData.currencyCode }-available` }
-					title={ fundLabelStrings.available }
-					amount={ 0 }
-					currencyCode={ loadingData.currencyCode }
-					isLoading
-				/>
-			</Flex>
+			<Card className="wcpay-account-balances">
+				<CardHeader>Balance</CardHeader>
+				<CardBody className="wcpay-account-balances__balances">
+					<BalanceBlock
+						id={ `wcpay-account-balances-${ loadingData.currencyCode }-total` }
+						title={ fundLabelStrings.total }
+						amount={ 0 }
+						currencyCode={ loadingData.currencyCode }
+						isLoading
+					/>
+					<BalanceBlock
+						id={ `wcpay-account-balances-${ loadingData.currencyCode }-available` }
+						title={ fundLabelStrings.available }
+						amount={ 0 }
+						currencyCode={ loadingData.currencyCode }
+						isLoading
+					/>
+				</CardBody>
+			</Card>
 		);
 	}
 
@@ -115,26 +118,31 @@ const AccountBalances: React.FC = () => {
 
 	return (
 		<>
-			<Flex gap={ 0 } className="wcpay-account-balances__balances">
-				<BalanceBlock
-					id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-total` }
-					title={ fundLabelStrings.total }
-					amount={ totalBalance }
-					currencyCode={ selectedOverview.currencyCode }
-					tooltip={ <TotalBalanceTooltip balance={ totalBalance } /> }
-				/>
-				<BalanceBlock
-					id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-available` }
-					title={ fundLabelStrings.available }
-					amount={ selectedOverview.availableFunds }
-					currencyCode={ selectedOverview.currencyCode }
-					tooltip={
-						<AvailableBalanceTooltip
-							balance={ selectedOverview.availableFunds }
-						/>
-					}
-				/>
-			</Flex>
+			<Card className="wcpay-account-balances">
+				<CardHeader>Balance</CardHeader>
+				<CardBody className="wcpay-account-balances__balances">
+					<BalanceBlock
+						id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-total` }
+						title={ fundLabelStrings.total }
+						amount={ totalBalance }
+						currencyCode={ selectedOverview.currencyCode }
+						tooltip={
+							<TotalBalanceTooltip balance={ totalBalance } />
+						}
+					/>
+					<BalanceBlock
+						id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-available` }
+						title={ fundLabelStrings.available }
+						amount={ selectedOverview.availableFunds }
+						currencyCode={ selectedOverview.currencyCode }
+						tooltip={
+							<AvailableBalanceTooltip
+								balance={ selectedOverview.availableFunds }
+							/>
+						}
+					/>
+				</CardBody>
+			</Card>
 			{ selectedOverview.instantBalance &&
 				selectedOverview.instantBalance.amount > 0 && (
 					<Flex
@@ -154,9 +162,8 @@ const AccountBalances: React.FC = () => {
 							>
 								{ sprintf(
 									__(
-										/* translators: %$1$s: Available instant deposit amount, %2$s: Instant deposit fee percentage */
-										/* 'Instantly deposit %1$s and get funds in your bank account in 30 mins for a %2$s%% fee.' */
-										'Get %1$s via instant deposit. Funds are typically in your bank account within 30 mins. Fee: %2$s%%.',
+										/* translators: %$1$s: Available instant payout amount, %2$s: Instant payout fee percentage */
+										'Get %1$s via instant payout. Funds are typically in your bank account within 30 mins. Fee: %2$s%%.',
 										'woocommerce-payments'
 									),
 									formatCurrency(
@@ -170,7 +177,7 @@ const AccountBalances: React.FC = () => {
 						) }
 
 						<Flex justify="flex-start">
-							<InstantDepositButton
+							<InstantPayoutButton
 								instantBalance={
 									selectedOverview.instantBalance
 								}
@@ -179,17 +186,17 @@ const AccountBalances: React.FC = () => {
 								<ClickTooltip
 									buttonIcon={ <HelpOutlineIcon /> }
 									buttonLabel={ __(
-										'Learn more about instant deposit',
+										'Learn more about instant payouts',
 										'woocommerce-payments'
 									) }
 									content={
-										/* 'With instant deposit you can receive requested funds in your bank account within 30 mins for a 1.5% fee. Learn more' */
+										/* 'With instant payout you can receive requested funds in your bank account within 30 mins for a 1.5% fee. Learn more' */
 
 										interpolateComponents( {
 											mixedString: sprintf(
 												__(
-													/* translators: %s: Instant deposit fee percentage */
-													'With {{strong}}instant deposit{{/strong}} you can receive requested funds in your bank account within 30 mins for a %s%% fee. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+													/* translators: %s: Instant payout fee percentage */
+													'With {{strong}}instant payout{{/strong}} you can receive requested funds in your bank account within 30 mins for a %s%% fee. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 													'woocommerce-payments'
 												),
 												selectedOverview.instantBalance
@@ -199,7 +206,7 @@ const AccountBalances: React.FC = () => {
 												strong: <strong />,
 												learnMoreLink: (
 													<Link
-														href="https://woocommerce.com/document/woopayments/deposits/instant-deposits/"
+														href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/"
 														target="_blank"
 														rel="noreferrer"
 														type="external"
