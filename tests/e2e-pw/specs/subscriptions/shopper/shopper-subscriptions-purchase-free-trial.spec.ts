@@ -67,94 +67,98 @@ describeif( shouldRunSubscriptionsTests )(
 			}
 		} );
 
-		test( 'Shopper should be able to purchase a free trial', async ( {
-			browser,
-		} ) => {
-			const { shopperPage } = await getShopper( browser );
-			// Just to be sure, empty the cart
-			await emptyCart( shopperPage );
+		test(
+			'Shopper should be able to purchase a free trial',
+			{ tag: '@critical' },
+			async ( { browser } ) => {
+				const { shopperPage } = await getShopper( browser );
+				// Just to be sure, empty the cart
+				await emptyCart( shopperPage );
 
-			// Open the subscription product, and verify that the
-			// 14-day free trial is shown in the product description
-			await goToProductPageBySlug( shopperPage, productSlug );
-			await expect(
-				shopperPage
-					.locator( '.product' )
-					.getByText( '/ month with a 14-day free trial' )
-			).toBeVisible();
+				// Open the subscription product, and verify that the
+				// 14-day free trial is shown in the product description
+				await goToProductPageBySlug( shopperPage, productSlug );
+				await expect(
+					shopperPage
+						.locator( '.product' )
+						.getByText( '/ month with a 14-day free trial' )
+				).toBeVisible();
 
-			// Add it to the cart and verify that the cart page shows the free trial details
-			await shopperPage
-				.getByRole( 'button', { name: 'Sign up now' } )
-				.click();
-			await goToCart( shopperPage );
-			await expect(
-				shopperPage
-					.getByText( '/ month with a 14-day free trial' )
-					.first()
-			).toBeVisible();
-
-			// Also verify that the first renewal is 14 days from now
-			await expect(
-				shopperPage.getByText(
-					`First renewal: ${ renewalDateFormatted }`
-				)
-			).toBeVisible();
-
-			// Verify that the order total is $0.00
-			await expect(
-				shopperPage
-					.getByRole( 'row', {
-						name: 'Total $0.00',
-						exact: true,
-					} )
-					.locator( 'td' )
-			).toBeVisible();
-
-			// Proceed to the checkout page and verify that the 14-day free trial is shown in the product line item,
-			// and that the first renewal date is 14 days from now.
-			await setupCheckout( shopperPage, customerBilling );
-			await expect(
-				shopperPage
-					.locator( '#order_review' )
-					.getByText( '/ month with a 14-day free trial' )
-			).toBeVisible();
-			await expect(
-				shopperPage.getByText(
-					`First renewal: ${ renewalDateFormatted }`
-				)
-			).toBeVisible();
-
-			// Pay using a 3DS card
-			const card = config.cards[ '3dsOTP' ];
-			await fillCardDetails( shopperPage, card );
-			await shopperPage
-				.getByRole( 'button', { name: 'Sign up now' } )
-				.click();
-			await shopperPage.frames()[ 0 ].waitForLoadState( 'load' );
-			await confirmCardAuthentication( shopperPage, true );
-			await shopperPage.frames()[ 0 ].waitForLoadState( 'networkidle' );
-			await shopperPage.waitForLoadState( 'networkidle' );
-			await expect(
-				shopperPage.getByRole( 'heading', {
-					name: 'Order received',
-				} )
-			).toBeVisible();
-
-			// Get the order ID so we can open it in the merchant view
-			orderId = (
-				await shopperPage.getByText( 'Order number:' ).innerText()
-			 )
-				.replace( /[^0-9]/g, '' )
-				.trim();
-			subscriptionId = (
+				// Add it to the cart and verify that the cart page shows the free trial details
 				await shopperPage
-					.getByLabel( 'View subscription number' )
-					.textContent()
-			 )
-				.trim()
-				.replace( '#', '' );
-		} );
+					.getByRole( 'button', { name: 'Sign up now' } )
+					.click();
+				await goToCart( shopperPage );
+				await expect(
+					shopperPage
+						.getByText( '/ month with a 14-day free trial' )
+						.first()
+				).toBeVisible();
+
+				// Also verify that the first renewal is 14 days from now
+				await expect(
+					shopperPage.getByText(
+						`First renewal: ${ renewalDateFormatted }`
+					)
+				).toBeVisible();
+
+				// Verify that the order total is $0.00
+				await expect(
+					shopperPage
+						.getByRole( 'row', {
+							name: 'Total $0.00',
+							exact: true,
+						} )
+						.locator( 'td' )
+				).toBeVisible();
+
+				// Proceed to the checkout page and verify that the 14-day free trial is shown in the product line item,
+				// and that the first renewal date is 14 days from now.
+				await setupCheckout( shopperPage, customerBilling );
+				await expect(
+					shopperPage
+						.locator( '#order_review' )
+						.getByText( '/ month with a 14-day free trial' )
+				).toBeVisible();
+				await expect(
+					shopperPage.getByText(
+						`First renewal: ${ renewalDateFormatted }`
+					)
+				).toBeVisible();
+
+				// Pay using a 3DS card
+				const card = config.cards[ '3dsOTP' ];
+				await fillCardDetails( shopperPage, card );
+				await shopperPage
+					.getByRole( 'button', { name: 'Sign up now' } )
+					.click();
+				await shopperPage.frames()[ 0 ].waitForLoadState( 'load' );
+				await confirmCardAuthentication( shopperPage, true );
+				await shopperPage
+					.frames()[ 0 ]
+					.waitForLoadState( 'networkidle' );
+				await shopperPage.waitForLoadState( 'networkidle' );
+				await expect(
+					shopperPage.getByRole( 'heading', {
+						name: 'Order received',
+					} )
+				).toBeVisible();
+
+				// Get the order ID so we can open it in the merchant view
+				orderId = (
+					await shopperPage.getByText( 'Order number:' ).innerText()
+				 )
+					.replace( /[^0-9]/g, '' )
+					.trim();
+				subscriptionId = (
+					await shopperPage
+						.getByLabel( 'View subscription number' )
+						.textContent()
+				 )
+					.trim()
+					.replace( '#', '' );
+			}
+		);
 
 		test( 'Merchant should be able to create an order with "Setup Intent"', async () => {
 			await goToOrder( merchantPage, orderId );

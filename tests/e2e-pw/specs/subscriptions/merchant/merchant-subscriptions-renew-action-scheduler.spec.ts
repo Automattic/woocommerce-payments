@@ -21,6 +21,7 @@ import {
 // Run the tests if the two 'skip' environment variables are not set.
 describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 	'Subscriptions > Renew a subscription via Action Scheduler',
+	{ tag: '@critical' },
 	() => {
 		const actionSchedulerHook =
 			'woocommerce_scheduled_subscription_payment';

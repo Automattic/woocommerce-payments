@@ -90,43 +90,52 @@ test.describe( 'Order > Refund Failure', () => {
 				await merchantPage.waitForSelector( 'button.do-api-refund' );
 			} );
 
-			test( `should fail refund attempt when ${ fieldName } is ${ valueDescription }`, async () => {
-				// Initiate refund attempt
-				await merchantPage.locator( selector ).first().fill( value );
+			test(
+				`should fail refund attempt when ${ fieldName } is ${ valueDescription }`,
+				{ tag: '@critical' },
+				async () => {
+					// Initiate refund attempt
+					await merchantPage
+						.locator( selector )
+						.first()
+						.fill( value );
 
-				const refundButton = await merchantPage.waitForSelector(
-					'.do-api-refund',
-					{
-						state: 'visible',
+					const refundButton = await merchantPage.waitForSelector(
+						'.do-api-refund',
+						{
+							state: 'visible',
+						}
+					);
+					const refundButtonText: string = await refundButton.textContent();
+					expect( refundButtonText ).toMatch(
+						/Refund .* via WooPayments.+/
+					);
+
+					function* dialogHandler( dialog: Dialog ) {
+						yield dialog.accept();
+						expect( dialog.message() ).toBe(
+							'Invalid refund amount'
+						);
+						yield dialog.accept();
 					}
-				);
-				const refundButtonText: string = await refundButton.textContent();
-				expect( refundButtonText ).toMatch(
-					/Refund .* via WooPayments.+/
-				);
 
-				function* dialogHandler( dialog: Dialog ) {
-					yield dialog.accept();
-					expect( dialog.message() ).toBe( 'Invalid refund amount' );
-					yield dialog.accept();
+					// Confirm the refund. There will be two dialogs shown, one for the refund
+					// confirmation, one for the error message. Accept the first one, and
+					// verify the second one.
+					merchantPage.on(
+						'dialog',
+						( dialog ) => dialogHandler( dialog ).next().value
+					);
+
+					// The above will happen once we click the refund button.
+					await refundButton.click();
+
+					// Verify that no entry is listed in the "Order refunds" section underneath the product line items
+					await expect(
+						merchantPage.locator( '#order_refunds' )
+					).not.toBeVisible();
 				}
-
-				// Confirm the refund. There will be two dialogs shown, one for the refund
-				// confirmation, one for the error message. Accept the first one, and
-				// verify the second one.
-				merchantPage.on(
-					'dialog',
-					( dialog ) => dialogHandler( dialog ).next().value
-				);
-
-				// The above will happen once we click the refund button.
-				await refundButton.click();
-
-				// Verify that no entry is listed in the "Order refunds" section underneath the product line items
-				await expect(
-					merchantPage.locator( '#order_refunds' )
-				).not.toBeVisible();
-			} );
+			);
 		} );
 	} );
 } );
