@@ -33,8 +33,8 @@ import Page from '../../components/page';
 import DepositsFilters from '../filters';
 import DownloadButton from 'components/download-button';
 import {
-	getDepositsCSVRequestURL,
-	depositsDownloadEndpoint,
+	getPayoutsCSVRequestURL,
+	payoutsDownloadEndpoint,
 } from 'wcpay/data/deposits/resolvers';
 import { applyThousandSeparator } from '../../utils/index.js';
 import DepositStatusChip from 'components/deposit-status-chip';
@@ -238,7 +238,7 @@ export const DepositsList = (): JSX.Element => {
 			store_currency_is: storeCurrencyIs,
 		} = getQuery();
 
-		const exportRequestURL = getDepositsCSVRequestURL( {
+		const exportRequestURL = getPayoutsCSVRequestURL( {
 			userEmail,
 			userLocale,
 			dateBefore,
@@ -274,7 +274,7 @@ export const DepositsList = (): JSX.Element => {
 		) {
 			requestReportExport( {
 				exportRequestURL,
-				exportFileAvailabilityEndpoint: depositsDownloadEndpoint,
+				exportFileAvailabilityEndpoint: payoutsDownloadEndpoint,
 				userEmail,
 			} );
 
