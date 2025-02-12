@@ -96,8 +96,12 @@ describe( 'ECE product page compatibility', () => {
 					<tbody>
 						<tr>
 							<th className="label">
-								<label htmlFor="size%f0%9f%98%86">Size😆</label>
-								<span>: Medium</span>
+								<label htmlFor="size%f0%9f%98%86">
+									Size😆
+									<span className="cfvsw-selected-label">
+										Medium
+									</span>
+								</label>
 							</th>
 							<td className="value woo-variation-items-wrapper">
 								<select
