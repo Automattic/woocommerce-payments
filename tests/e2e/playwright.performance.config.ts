@@ -9,30 +9,7 @@ import path from 'path';
 config( { path: path.resolve( __dirname, '../e2e/config', '.env' ) } );
 config( { path: path.resolve( __dirname, '../e2e/config', 'local.env' ) } );
 
-const { BASE_URL, NODE_ENV, E2E_GROUP, E2E_BRANCH } = process.env;
-
-const validGroups = [ 'wcpay', 'subscriptions' ];
-const validBranches = [ 'merchant', 'shopper' ];
-
-const buildTestDir = ( group: string, branch: string ) => {
-	const baseDir = `\/specs`;
-
-	if ( ! group || ! validGroups.includes( group ) ) {
-		return baseDir;
-	}
-
-	if ( ! branch || ! validBranches.includes( branch ) ) {
-		return `${ baseDir }\/${ group }`;
-	}
-
-	return `${ baseDir }\/${ group }\/${ branch }`;
-};
-
-const getTestMatch = ( group: string, branch: string ) => {
-	const testDir = buildTestDir( group, branch );
-
-	return new RegExp( `${ testDir }\/.*\.spec\.ts` );
-};
+const { BASE_URL, NODE_ENV } = process.env;
 
 const getBaseUrl = () => {
 	if ( NODE_ENV === 'atomic' ) {
@@ -73,7 +50,7 @@ export default defineConfig( {
 		video: 'on-first-retry',
 		viewport: { width: 1280, height: 720 },
 	},
-	timeout: 120 * 1000, // Default is 30s, somteimes it is not enough for local tests due to long setup.
+	timeout: 120 * 1000, // Default is 30s, sometimes it is not enough for local tests due to long setup.
 	expect: {
 		toHaveScreenshot: {
 			maxDiffPixelRatio:
@@ -84,7 +61,7 @@ export default defineConfig( {
 	},
 	snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{ext}',
 
-	testMatch: getTestMatch( E2E_GROUP, E2E_BRANCH ),
+	testMatch: /specs\/performance/,
 
 	/* Configure projects for major browsers */
 	projects: [
