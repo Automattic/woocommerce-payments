@@ -143,7 +143,7 @@ class Duplicates_Detection_Service {
 					if ( strpos( $gateway->id, $keyword ) !== false ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
-					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) ) {
+					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && in_array( $gateway->id, [ 'woocommerce_payments', 'stripe' ], true ) ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
 					} elseif ( 'yes' === $gateway->get_option( 'express_checkout_enabled' ) ) {
