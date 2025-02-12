@@ -274,6 +274,14 @@ async function createStripePaymentElement(
 		fonts: getFontRulesFromPage(),
 	};
 
+	if ( paymentMethodType === 'wechat_pay' ) {
+		options.paymentMethodOptions = {
+			wechatPay: {
+				client: 'web',
+			},
+		};
+	}
+
 	const stripe = await api.getStripeForUPE( paymentMethodType );
 
 	const elements = stripe.elements( options );

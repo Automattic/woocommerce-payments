@@ -77,6 +77,13 @@ const PaymentElements = ( { api, ...props } ) => {
 					paymentMethodTypes: paymentMethodTypes,
 					appearance: appearance,
 					fonts: fontRules,
+					...( paymentMethodTypes.includes( 'wechat_pay' ) && {
+						paymentMethodOptions: {
+							wechatPay: {
+								client: 'web',
+							},
+						},
+					} ),
 				} }
 			>
 				{ paymentProcessorLoadErrorMessage?.error?.message && (
