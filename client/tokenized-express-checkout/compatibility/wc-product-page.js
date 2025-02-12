@@ -80,7 +80,7 @@ addFilter(
 							''
 						) }"]`
 					).childNodes
-				)[ 0 ],
+				)[ 0 ].textContent,
 				value: $select.val() || '',
 			} );
 		} );
