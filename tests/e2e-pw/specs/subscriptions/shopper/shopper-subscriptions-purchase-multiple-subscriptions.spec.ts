@@ -50,74 +50,80 @@ describeif( shouldRunSubscriptionsTests )(
 			}
 		} );
 
-		test( ' should be able to purchase multiple subscriptions', async () => {
-			// As a Shopper, purchase the subscription products.
-			await emptyCart( shopperPage );
-			await setupProductCheckout(
-				shopperPage,
-				[
-					[ config.products.subscription_no_signup_fee, 1 ],
-					[ config.products.subscription_signup_fee, 1 ],
-				],
-				configBillingAddress,
-				'USD'
-			);
-			await fillCardDetails( shopperPage, config.cards.basic );
-			await placeOrder( shopperPage );
-			await expect(
-				shopperPage.getByRole( 'heading', { name: 'Order received' } )
-			).toBeVisible();
-
-			const subscriptionId = (
-				await shopperPage
-					.getByLabel( 'View subscription number' )
-					.innerText()
-			 )
-				.trim()
-				.replace( '#', '' );
-
-			await goToSubscriptions( shopperPage );
-
-			const latestSubscriptionRow = shopperPage.getByRole( 'row', {
-				name: `subscription number ${ subscriptionId }`,
-			} );
-
-			await expect( latestSubscriptionRow ).toBeVisible();
-			await latestSubscriptionRow
-				.getByRole( 'link', {
-					name: 'View',
-				} )
-				.nth( 0 )
-				.click();
-
-			await shopperPage.waitForLoadState( 'networkidle' );
-
-			// Ensure 'Subscription totals' section lists the subscription products with the correct price.
-			const subTotalsRows = shopperPage.locator(
-				'.order_details tr.order_item'
-			);
-			for ( let i = 0; i < ( await subTotalsRows.count() ); i++ ) {
-				const row = subTotalsRows.nth( i );
-				await expect( row.getByRole( 'cell' ).nth( 1 ) ).toContainText(
-					Object.keys( products )[ i ]
+		test(
+			'should be able to purchase multiple subscriptions',
+			{ tag: '@critical' },
+			async () => {
+				// As a Shopper, purchase the subscription products.
+				await emptyCart( shopperPage );
+				await setupProductCheckout(
+					shopperPage,
+					[
+						[ config.products.subscription_no_signup_fee, 1 ],
+						[ config.products.subscription_signup_fee, 1 ],
+					],
+					configBillingAddress,
+					'USD'
 				);
+				await fillCardDetails( shopperPage, config.cards.basic );
+				await placeOrder( shopperPage );
+				await expect(
+					shopperPage.getByRole( 'heading', {
+						name: 'Order received',
+					} )
+				).toBeVisible();
 
-				await expect( row.getByRole( 'cell' ).nth( 2 ) ).toContainText(
-					'$9.99 / month'
+				const subscriptionId = (
+					await shopperPage
+						.getByLabel( 'View subscription number' )
+						.innerText()
+				 )
+					.trim()
+					.replace( '#', '' );
+
+				await goToSubscriptions( shopperPage );
+
+				const latestSubscriptionRow = shopperPage.getByRole( 'row', {
+					name: `subscription number ${ subscriptionId }`,
+				} );
+
+				await expect( latestSubscriptionRow ).toBeVisible();
+				await latestSubscriptionRow
+					.getByRole( 'link', {
+						name: 'View',
+					} )
+					.nth( 0 )
+					.click();
+
+				await shopperPage.waitForLoadState( 'networkidle' );
+
+				// Ensure 'Subscription totals' section lists the subscription products with the correct price.
+				const subTotalsRows = shopperPage.locator(
+					'.order_details tr.order_item'
 				);
+				for ( let i = 0; i < ( await subTotalsRows.count() ); i++ ) {
+					const row = subTotalsRows.nth( i );
+					await expect(
+						row.getByRole( 'cell' ).nth( 1 )
+					).toContainText( Object.keys( products )[ i ] );
+
+					await expect(
+						row.getByRole( 'cell' ).nth( 2 )
+					).toContainText( '$9.99 / month' );
+				}
+
+				await expect(
+					shopperPage
+						.getByRole( 'row', { name: 'total:' } )
+						.getByRole( 'cell' )
+						.nth( 1 )
+				).toContainText( '$19.98 USD / month' );
+
+				// Confirm related order total matches payment
+				await expect(
+					shopperPage.getByText( '$21.97 USD for 2 items' )
+				).toBeVisible();
 			}
-
-			await expect(
-				shopperPage
-					.getByRole( 'row', { name: 'total:' } )
-					.getByRole( 'cell' )
-					.nth( 1 )
-			).toContainText( '$19.98 USD / month' );
-
-			// Confirm related order total matches payment
-			await expect(
-				shopperPage.getByText( '$21.97 USD for 2 items' )
-			).toBeVisible();
-		} );
+		);
 	}
 );

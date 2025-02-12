@@ -18,7 +18,7 @@ import {
 } from '../../../utils/merchant';
 import * as navigation from '../../../utils/merchant-navigation';
 
-test.describe( 'Multi-currency on-boarding', () => {
+test.describe( 'Multi-currency on-boarding', { tag: '@critical' }, () => {
 	let page: Page;
 	let wasMulticurrencyEnabled: boolean;
 	let activeThemeSlug: string;

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add critical tag to tests that are part of the critical flows.
