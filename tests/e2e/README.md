@@ -209,19 +209,20 @@ You can use the locator functionality to help correctly determine the locator sy
 
 ## Slack integration
 
-Slack reporter requires a custom jest config provided by `@woocommerce/e2e-environment` package. This integration is currently disabled.
+The Slack reporter is a custom reporter that sends e2e test failures to a Slack channel. The reporter is configured to only send the first failure of a test to Slack. If the retry also fails it will not be sent to prevent spamming the channel.
 
 **Configuration steps:**
 
 1. Create public Slack channel for reporting.
 2. [Create Slack app.](https://api.slack.com/apps/)
 3. Add OAuth permissions to the app:
-    * `chat:write`
-    * `files:write`
+    - `chat:write`
+    - `files:write`
 4. Install app into channel. `Settings > Install App` page.
 5. Go to slack channel and manually invite created slack app by mentioning app bot username. User name can be found and configured on app config page `Features > App Home` page.
 6. Set following env variables either locally or in CI:
-```
+
+```bash
 CI=true
 E2E_SLACK_TOKEN='<bot token, starts with xoxb- >'
 E2E_CHANNEL_NAME='<public slack channel name>'
