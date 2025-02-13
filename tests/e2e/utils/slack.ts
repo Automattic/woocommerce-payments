@@ -24,7 +24,7 @@ const {
 	GITHUB_REPOSITORY,
 	GITHUB_RUN_ID,
 	E2E_SLACK_TOKEN,
-	E2E_SLACK_CHANNEL,
+	E2E_SLACK_CHANNEL_ID,
 	WC_E2E_SCREENSHOTS,
 } = process.env;
 
@@ -108,7 +108,7 @@ export const sendFailedTestMessageToSlack = async ( testName: string ) => {
 	try {
 		// Adding the app does not add the app user to the channel
 		await webClient.conversations.join( {
-			channel: E2E_SLACK_CHANNEL,
+			channel: E2E_SLACK_CHANNEL_ID,
 			token: E2E_SLACK_TOKEN,
 		} );
 	} catch ( error ) {
@@ -121,7 +121,7 @@ export const sendFailedTestMessageToSlack = async ( testName: string ) => {
 
 	try {
 		await webClient.chat.postMessage( {
-			channel: E2E_SLACK_CHANNEL,
+			channel: E2E_SLACK_CHANNEL_ID,
 			token: E2E_SLACK_TOKEN,
 			text: `Test failed on *${ branch }* branch. \n
             The commit this build is testing is *${ commit }*. \n
@@ -149,15 +149,11 @@ export const sendFailedTestScreenshotToSlack = async (
 	const webClient = initializeWeb();
 
 	try {
-		console.log(
-			`Uploading screenshot to Slack channel: ${ E2E_SLACK_CHANNEL }`
-		);
-
 		await webClient.filesUploadV2( {
 			filename,
 			file: createReadStream( screenshotOfFailedTest ),
 			token: E2E_SLACK_TOKEN,
-			channels: E2E_SLACK_CHANNEL,
+			channel_id: E2E_SLACK_CHANNEL_ID,
 		} );
 	} catch ( error ) {
 		handleRequestError( error, 'Failed to upload screenshot to Slack' );
