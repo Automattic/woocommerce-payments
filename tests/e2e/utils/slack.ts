@@ -4,7 +4,7 @@
 /**
  * External dependencies
  */
-import { statSync, promises } from 'fs';
+import { createReadStream } from 'fs';
 import {
 	WebClient,
 	ErrorCode,
@@ -112,6 +112,10 @@ export const sendFailedTestMessageToSlack = async ( testName: string ) => {
 			token: E2E_SLACK_TOKEN,
 		} );
 	} catch ( error ) {
+		if ( error.data.error === 'channel_not_found' ) {
+			return;
+		}
+
 		handleRequestError( error, 'Failed to join the channel' );
 	}
 
@@ -142,38 +146,18 @@ export const sendFailedTestScreenshotToSlack = async (
 	}
 
 	const filename = 'screenshot_of_failed_test.png';
-	const fileSize = statSync( screenshotOfFailedTest ).size;
 	const webClient = initializeWeb();
 
 	try {
-		// Get the URL to upload the screenshot to.
-		const uploadUrlResponse = await webClient.files.getUploadURLExternal( {
+		console.log(
+			`Uploading screenshot to Slack channel: ${ E2E_SLACK_CHANNEL }`
+		);
+
+		await webClient.filesUploadV2( {
 			filename,
+			file: createReadStream( screenshotOfFailedTest ),
 			token: E2E_SLACK_TOKEN,
-			length: fileSize,
-		} );
-		const { file_id: fileId, upload_url: uploadUrl } = uploadUrlResponse;
-
-		// Upload the screenshot to the provided URL.
-		const fileBuffer = await promises.readFile( screenshotOfFailedTest );
-		const uploadResponse = await fetch( uploadUrl, {
-			method: 'PUT',
-			body: fileBuffer,
-			headers: { 'Content-Type': 'application/octet-stream' },
-		} );
-
-		if ( ! uploadResponse.ok ) {
-			const errorText = await uploadResponse.text();
-			throw new Error(
-				`Upload failed: ${ uploadResponse.statusText } - ${ errorText }`
-			);
-		}
-
-		// Complete the upload process.
-		await webClient.files.completeUploadExternal( {
-			files: [ { id: fileId, title: filename } ],
-			token: E2E_SLACK_TOKEN,
-			channel_id: E2E_SLACK_CHANNEL,
+			channels: E2E_SLACK_CHANNEL,
 		} );
 	} catch ( error ) {
 		handleRequestError( error, 'Failed to upload screenshot to Slack' );
