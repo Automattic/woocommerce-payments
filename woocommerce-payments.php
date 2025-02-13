@@ -28,6 +28,10 @@ require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
 require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
 
+// Register WP-CLI commands.
+require_once __DIR__ . '/includes/cli/class-cli-commands.php';
+\WCPay\CLI\CLI_Commands::init();
+
 /**
  * Plugin activation hook.
  */
@@ -64,7 +68,6 @@ $is_autoloading_ready = class_exists( Automattic\Jetpack\Connection\Rest_Authent
 if ( ! $is_autoloading_ready ) {
 	return;
 }
-
 
 /**
  * Initialize the Jetpack functionalities: connection, identity crisis, etc.
@@ -414,9 +417,3 @@ add_action(
 		}
 	}
 );
-
-// Register WP-CLI commands.
-if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	require_once __DIR__ . '/includes/payment-methods/Configs/Scripts/class-generate-payment-method-configs-command.php';
-	WP_CLI::add_command( 'wcpay generate-payment-method-configs', \WCPay\PaymentMethods\Configs\Scripts\Generate_Payment_Method_Configs_Command::class );
-}
