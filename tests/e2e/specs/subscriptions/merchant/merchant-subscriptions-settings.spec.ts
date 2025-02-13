@@ -26,7 +26,7 @@ describeif( shouldRunSubscriptionsTests )(
 					name: 'Subscriptions',
 				} )
 				.first();
-			await expect( heading ).not.toBeVisible();
+			await expect( heading ).toBeVisible();
 		} );
 	}
 );
