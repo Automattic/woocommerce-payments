@@ -8,7 +8,7 @@
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
-use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
+use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
@@ -95,10 +95,10 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function get_capabilities(): array {
 		return [
-			Payment_Method_Capability::REFUNDS,
-			Payment_Method_Capability::BUY_NOW_PAY_LATER,
-			Payment_Method_Capability::MULTI_CURRENCY,
-			Payment_Method_Capability::DOMESTIC_TRANSACTIONS_ONLY,
+			PaymentMethodCapability::REFUNDS,
+			PaymentMethodCapability::BUY_NOW_PAY_LATER,
+			PaymentMethodCapability::MULTI_CURRENCY,
+			PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY,
 		];
 	}
 

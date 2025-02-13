@@ -7,14 +7,14 @@
 
 namespace WCPay\PaymentMethods\Configs\Scripts;
 
-use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
+use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WP_CLI;
 
 /**
  * Generates payment method configurations for the frontend.
  */
-class Generate_Payment_Method_Configs_Command {
+class GeneratePaymentMethodConfigsCommand {
 
 	/**
 	 * Generates the payment method configurations JSON file.
@@ -104,7 +104,7 @@ class Generate_Payment_Method_Configs_Command {
 	 * @return array Array of capability constants
 	 */
 	private function get_capability_constants(): array {
-		$reflection = new \ReflectionClass( Payment_Method_Capability::class );
+		$reflection = new \ReflectionClass( PaymentMethodCapability::class );
 		return $reflection->getConstants();
 	}
 }

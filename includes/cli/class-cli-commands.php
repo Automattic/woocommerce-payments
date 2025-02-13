@@ -20,11 +20,11 @@ class CLI_Commands {
 		}
 
 		// Load the command class.
-		require_once WCPAY_ABSPATH . '/includes/payment-methods/Configs/Scripts/class-generate-payment-method-configs-command.php';
+		require_once WCPAY_ABSPATH . '/includes/payment-methods/Configs/Scripts/GeneratePaymentMethodConfigsCommand.php';
 
 		\WP_CLI::add_command(
 			'wcpay generate-payment-method-configs',
-			\WCPay\PaymentMethods\Configs\Scripts\Generate_Payment_Method_Configs_Command::class
+			\WCPay\PaymentMethods\Configs\Scripts\GeneratePaymentMethodConfigsCommand::class
 		);
 	}
 }

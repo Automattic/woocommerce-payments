@@ -10,7 +10,7 @@
 
 namespace WCPay\PaymentMethods\Configs\Scripts;
 
-use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
+use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 // Define ABSPATH if not already defined.
@@ -67,7 +67,7 @@ function get_payment_method_definitions(): array {
  * @return array Array of capability constants
  */
 function get_capability_constants(): array {
-	$reflection = new \ReflectionClass( Payment_Method_Capability::class );
+	$reflection = new \ReflectionClass( PaymentMethodCapability::class );
 	return $reflection->getConstants();
 }
 

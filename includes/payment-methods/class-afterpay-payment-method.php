@@ -9,7 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
 use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
-use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
+use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 
 /**
  * Afterpay Payment Method class extending UPE base class
@@ -27,13 +27,13 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$capabilities = AfterpayDefinition::get_capabilities();
 
 		$this->stripe_id                    = AfterpayDefinition::get_id(); // TODO: I know this is confusing - just roll with it. I'll try and untangle stripe_id vs id soon.
-		$this->is_reusable                  = in_array( Payment_Method_Capability::TOKENIZATION, $capabilities, true );
-		$this->is_bnpl                      = in_array( Payment_Method_Capability::BUY_NOW_PAY_LATER, $capabilities, true );
+		$this->is_reusable                  = in_array( PaymentMethodCapability::TOKENIZATION, $capabilities, true );
+		$this->is_bnpl                      = in_array( PaymentMethodCapability::BUY_NOW_PAY_LATER, $capabilities, true );
 		$this->icon_url                     = AfterpayDefinition::get_icon_url();
 		$this->dark_icon_url                = AfterpayDefinition::get_dark_icon_url();
 		$this->currencies                   = AfterpayDefinition::get_supported_currencies();
 		$this->countries                    = AfterpayDefinition::get_supported_countries();
-		$this->accept_only_domestic_payment = in_array( Payment_Method_Capability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
+		$this->accept_only_domestic_payment = in_array( PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
 		$this->limits_per_currency          = AfterpayDefinition::get_limits_per_currency();
 	}
 

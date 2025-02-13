@@ -10,7 +10,7 @@ namespace WCPay\PaymentMethods\Configs\Constants;
 /**
  * Class defining payment method capability constants.
  */
-class Payment_Method_Capability {
+class PaymentMethodCapability {
 	/**
 	 * Payment method can be saved and reused
 	 *
