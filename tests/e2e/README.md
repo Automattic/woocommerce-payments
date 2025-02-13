@@ -209,7 +209,7 @@ You can use the locator functionality to help correctly determine the locator sy
 
 ## Slack integration
 
-The Slack reporter is a custom reporter that sends e2e test failures to a Slack channel. The reporter is configured to only send the first failure of a test to Slack. If the retry also fails it will not be sent to prevent spamming the channel.
+The Slack reporter is a custom reporter that sends e2e test failures to a public Slack channel (search Slack channel ID `CQ0Q6N62D`). The reporter is configured to only send the first failure of a test to Slack. If the retry also fails it will not be sent to prevent spamming the channel.
 
 **Configuration steps:**
 
