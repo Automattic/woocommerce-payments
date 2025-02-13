@@ -10,9 +10,8 @@ namespace WCPay\Payment_Methods;
 use WC_Payments_Token_Service;
 use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
-use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
-use WCPay\PaymentMethods\Configs\Interfaces\BNPLPaymentMethodDefinition;
 use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
+
 /**
  * Affirm Payment Method class extending UPE base class
  */
@@ -31,7 +30,7 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 
 		$capabilities = AffirmDefinition::get_capabilities();
 
-		$this->stripe_id                    = AffirmDefinition::get_stripe_id();
+		$this->stripe_id                    = AffirmDefinition::get_id();
 		$this->is_reusable                  = in_array( Payment_Method_Capability::TOKENIZATION, $capabilities, true );
 		$this->is_bnpl                      = in_array( Payment_Method_Capability::BUY_NOW_PAY_LATER, $capabilities, true );
 		$this->icon_url                     = AffirmDefinition::get_icon_url();
