@@ -6,7 +6,6 @@ import {
 	updateSettings,
 	updateIsSavingSettings,
 	updateIsManualCaptureEnabled,
-	updateAccountStatementDescriptor,
 	updatePaymentRequestLocations,
 	updateIsPaymentRequestEnabled,
 	updateAccountBusinessName,
@@ -162,52 +161,6 @@ describe( 'Settings reducer tests', () => {
 				foo: 'bar',
 				data: {
 					is_manual_capture_enabled: true,
-					baz: 'quux',
-				},
-			} );
-		} );
-	} );
-
-	describe( 'SET_ACCOUNT_STATEMENT_DESCRIPTOR', () => {
-		test( 'toggles `data.account_statement_descriptor`', () => {
-			const oldState = {
-				data: {
-					account_statement_descriptor: 'Statement',
-				},
-			};
-
-			const state = reducer(
-				oldState,
-				updateAccountStatementDescriptor( 'New Statement' )
-			);
-
-			expect( state.data.account_statement_descriptor ).toEqual(
-				'New Statement'
-			);
-		} );
-
-		test( 'leaves other fields unchanged', () => {
-			const oldState = {
-				isDirty: false,
-				foo: 'bar',
-				data: {
-					account_statement_descriptor: 'Statement',
-					baz: 'quux',
-				},
-				savingError: {},
-			};
-
-			const state = reducer(
-				oldState,
-				updateAccountStatementDescriptor( 'New Statement' )
-			);
-
-			expect( state ).toEqual( {
-				isDirty: true,
-				foo: 'bar',
-				savingError: null,
-				data: {
-					account_statement_descriptor: 'New Statement',
 					baz: 'quux',
 				},
 			} );
