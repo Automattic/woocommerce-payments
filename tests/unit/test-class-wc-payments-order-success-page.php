@@ -95,16 +95,16 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $method_name, $result );
 	}
 
-	public function test_show_payment_method_logo() {
+	public function test_show_lpm_payment_method_name() {
 		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$gateway->method( 'get_account_country' )->willReturn( 'US' );
+		$gateway->method( 'get_account_country' )->willReturn( 'SG' );
 
 		$payment_method = $this->createMock( UPE_Payment_Method::class );
 		$payment_method->method( 'get_title' )->willReturn( 'GrabPay' );
 		$payment_method->method( 'get_id' )->willReturn( 'grabpay' );
 		$payment_method->method( 'get_payment_method_icon_for_location' )->willReturn( '/grabpay.svg' );
 
-		$result = $this->payments_order_success_page->show_payment_method_logo( $gateway, $payment_method );
+		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method );
 
 		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper', $result );
 		$this->assertStringContainsString( 'alt="GrabPay"', $result );
@@ -112,31 +112,16 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'src="/grabpay.svg"', $result );
 	}
 
-	public function test_show_payment_method_logo_with_name() {
+	public function test_show_lpm_payment_method_name_icon_not_found() {
 		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$gateway->method( 'get_account_country' )->willReturn( 'US' );
-
-		$payment_method = $this->createMock( UPE_Payment_Method::class );
-		$payment_method->method( 'get_title' )->willReturn( 'GrabPay' );
-		$payment_method->method( 'get_id' )->willReturn( 'grabpay' );
-		$payment_method->method( 'get_payment_method_icon_for_location' )->willReturn( '/grabpay.svg' );
-
-		$result = $this->payments_order_success_page->show_payment_method_logo( $gateway, $payment_method, true );
-
-		$this->assertStringContainsString( 'src="/grabpay.svg"', $result );
-		$this->assertStringContainsString( '<span class="wc-payment-gateway-method-logo-name">GrabPay</span>', $result );
-	}
-
-	public function test_show_payment_method_logo_icon_not_found() {
-		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$gateway->method( 'get_account_country' )->willReturn( 'US' );
+		$gateway->method( 'get_account_country' )->willReturn( 'SG' );
 
 		$payment_method = $this->createMock( UPE_Payment_Method::class );
 		$payment_method->method( 'get_title' )->willReturn( 'GrabPay' );
 		$payment_method->method( 'get_id' )->willReturn( 'grabpay' );
 		$payment_method->method( 'get_payment_method_icon_for_location' )->willReturn( '' );
 
-		$result = $this->payments_order_success_page->show_payment_method_logo( $gateway, $payment_method, true );
+		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method, true );
 
 		$this->assertFalse( $result );
 	}
