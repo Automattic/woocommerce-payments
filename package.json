@@ -84,7 +84,7 @@
     "phpcbf": [
       "phpcbf -p"
     ],
-    "build:payment-methods": "php includes/payment-methods/Configs/scripts/generate-payment-method-configs.php && ts-node includes/payment-methods/Configs/scripts/generate-payment-method-types.ts"
+    "build:payment-methods": "php includes/payment-methods/Configs/Scripts/generate-payment-method-configs.php && ts-node includes/payment-methods/Configs/Scripts/generate-payment-method-types.ts"
   },
   "dependencies": {
     "@automattic/interpolate-components": "1.2.1",

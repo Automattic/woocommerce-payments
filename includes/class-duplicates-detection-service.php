@@ -12,8 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WC_Payments;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
-use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -24,7 +22,7 @@ use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
-use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 /**
  * Class handling detection of payment methods enabled by multiple plugins simultaneously.
  */
@@ -108,7 +106,7 @@ class Duplicates_Detection_Service {
 			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
-		$payment_method_definitions = Payment_Method_Definition_Registry::instance()->get_all_payment_method_definitions();
+		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
 
 		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
 		foreach ( $payment_method_definitions as $definition_class ) {

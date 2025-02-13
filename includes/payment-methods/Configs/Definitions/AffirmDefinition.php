@@ -11,7 +11,6 @@ use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
-use WCPay\Constants\Payment_Method;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
@@ -228,5 +227,14 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function get_maximum_amount( string $currency, string $country ): ?int {
 		return self::get_limits_per_currency()[ $currency ][ $country ]['max'] ?? null;
+	}
+
+	/**
+	 * Get the payment method class name that implements this definition.
+	 *
+	 * @return class-string The payment method class name.
+	 */
+	public static function get_payment_method_class(): string {
+		return \WCPay\Payment_Methods\Affirm_Payment_Method::class;
 	}
 }

@@ -27,8 +27,6 @@ use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
-use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
@@ -43,6 +41,7 @@ use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\WC_Payments_Currency_Manager;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -421,7 +420,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
-		include_once __DIR__ . '/payment-methods/class-payment-method-definition-registry.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
@@ -570,10 +568,16 @@ class WC_Payments {
 			Becs_Payment_Method::class,
 			Eps_Payment_Method::class,
 			Link_Payment_Method::class,
-			Affirm_Payment_Method::class,
-			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
 		];
+
+		// Get payment method classes from the registry for those that have been converted.
+		$registry                   = PaymentMethodDefinitionRegistry::instance();
+		$payment_method_definitions = $registry->get_all_payment_method_definitions();
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$payment_method_classes[] = $definition_class::get_payment_method_class();
+		}
 
 		$payment_methods = [];
 		foreach ( $payment_method_classes as $payment_method_class ) {

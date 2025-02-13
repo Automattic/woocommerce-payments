@@ -414,3 +414,9 @@ add_action(
 		}
 	}
 );
+
+// Register WP-CLI commands.
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	require_once __DIR__ . '/includes/payment-methods/Configs/Scripts/class-generate-payment-method-configs-command.php';
+	WP_CLI::add_command( 'wcpay generate-payment-method-configs', \WCPay\PaymentMethods\Configs\Scripts\Generate_Payment_Method_Configs_Command::class );
+}

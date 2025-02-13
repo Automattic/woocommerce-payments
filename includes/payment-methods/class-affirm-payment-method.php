@@ -10,7 +10,6 @@ namespace WCPay\Payment_Methods;
 use WC_Payments_Token_Service;
 use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
-use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
 
 /**
  * Affirm Payment Method class extending UPE base class
@@ -25,12 +24,9 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 
-		// Register the payment method definition so it's exported for the client.
-		$this->register_payment_method( AffirmDefinition::class );
-
 		$capabilities = AffirmDefinition::get_capabilities();
 
-		$this->stripe_id                    = AffirmDefinition::get_id();
+		$this->stripe_id                    = AffirmDefinition::get_id(); // TODO: I know this is confusing - just roll with it. I'll try and untangle stripe_id vs id soon.
 		$this->is_reusable                  = in_array( Payment_Method_Capability::TOKENIZATION, $capabilities, true );
 		$this->is_bnpl                      = in_array( Payment_Method_Capability::BUY_NOW_PAY_LATER, $capabilities, true );
 		$this->icon_url                     = AffirmDefinition::get_icon_url();
@@ -39,16 +35,6 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 		$this->accept_only_domestic_payment = in_array( Payment_Method_Capability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
 		$this->limits_per_currency          = AffirmDefinition::get_limits_per_currency();
 		$this->countries                    = AffirmDefinition::get_supported_countries();
-	}
-
-	/**
-	 * Register the payment method definition.
-	 *
-	 * @param string $definition_class The payment method definition class to register.
-	 */
-	public function register_payment_method( string $definition_class ): void {
-		$registry = Payment_Method_Definition_Registry::instance();
-		$registry->register_payment_method( $definition_class );
 	}
 
 	/**

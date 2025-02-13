@@ -10,9 +10,8 @@
 
 namespace WCPay\PaymentMethods\Configs\Scripts;
 
-use WCPay\PaymentMethods\Configs\Definitions;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
-use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 // Define ABSPATH if not already defined.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,9 +21,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Load WordPress.
 require_once ABSPATH . 'wp-load.php';
 
-// Load WooCommerce functions.
-require_once ABSPATH . 'wp-content/plugins/woocommerce/includes/wc-core-functions.php';
-
 /**
  * Get all payment method definitions without translations
  *
@@ -33,7 +29,7 @@ require_once ABSPATH . 'wp-content/plugins/woocommerce/includes/wc-core-function
 function get_payment_method_definitions(): array {
 	$definitions = [];
 
-	$registry = Payment_Method_Definition_Registry::instance();
+	$registry = PaymentMethodDefinitionRegistry::instance();
 
 	/**
 	 * The registry returns an array of class names.

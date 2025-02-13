@@ -76,7 +76,7 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\PaymentMethods\Payment_Method_Definition_Registry;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
 
@@ -4125,7 +4125,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
-		$payment_method_definitions = Payment_Method_Definition_Registry::instance()->get_all_payment_method_definitions();
+		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
 
 		foreach ( $payment_method_definitions as $definition_class ) {
 			$available_methods[] = $definition_class::get_id();

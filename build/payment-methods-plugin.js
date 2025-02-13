@@ -90,40 +90,35 @@ class PaymentMethodsPlugin {
 			isBuilding = true;
 			console.log( '\nBuilding payment method definitions...' );
 
-			// Split the long path into multiple lines
-			const phpScriptPath = path.join(
-				'/var/www/html/wp-content/plugins',
-				'woocommerce-payments/includes/payment-methods',
-				'Configs/scripts/generate-payment-method-configs.php'
-			);
-
-			// Run the PHP script inside Docker
-			const phpScript = spawn( 'docker', [
+			// Run WP-CLI command inside Docker
+			const cliScript = spawn( 'docker', [
 				'compose',
 				'exec',
 				'-T',
 				'wordpress',
-				'php',
-				phpScriptPath,
+				'wp',
+				'wcpay',
+				'generate-payment-method-configs',
+				'--allow-root',
 			] );
 
-			phpScript.stdout.on( 'data', ( data ) => {
-				console.log( `PHP: ${ data }` );
+			cliScript.stdout.on( 'data', ( data ) => {
+				console.log( `${ data }` );
 			} );
 
-			phpScript.stderr.on( 'data', ( data ) => {
-				console.error( `PHP Error: ${ data }` );
+			cliScript.stderr.on( 'data', ( data ) => {
+				console.error( `Error: ${ data }` );
 			} );
 
-			phpScript.on( 'close', ( code ) => {
+			cliScript.on( 'close', ( code ) => {
 				if ( code !== 0 ) {
-					console.error( 'PHP script failed' );
+					console.error( 'WP-CLI command failed' );
 					isBuilding = false;
-					callback( new Error( 'PHP script failed' ) );
+					callback( new Error( 'WP-CLI command failed' ) );
 					return;
 				}
 
-				console.log( 'PHP script completed successfully' );
+				console.log( 'WP-CLI command completed successfully' );
 
 				// Then run the JavaScript script
 				const jsScript = spawn(
@@ -131,7 +126,7 @@ class PaymentMethodsPlugin {
 					[
 						path.resolve(
 							__dirname,
-							'../includes/payment-methods/Configs/scripts/generate-payment-method-types.js'
+							'../includes/payment-methods/Configs/Scripts/generate-payment-method-types.js'
 						),
 					],
 					{
@@ -158,7 +153,7 @@ class PaymentMethodsPlugin {
 							'client/payment-methods/types.ts',
 						],
 						{
-							stdio: 'inherit',
+							stdio: [ 'inherit', 'ignore', 'ignore' ],
 						}
 					);
 

@@ -11,7 +11,6 @@ use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Constants\Payment_Method_Capability;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
-use WCPay\Constants\Payment_Method;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
@@ -242,5 +241,15 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
 		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country );
+	}
+
+
+	/**
+	 * Get the payment method class name that implements this definition.
+	 *
+	 * @return class-string The payment method class name.
+	 */
+	public static function get_payment_method_class(): string {
+		return \WCPay\Payment_Methods\Afterpay_Payment_Method::class;
 	}
 }

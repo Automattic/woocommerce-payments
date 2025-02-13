@@ -2,36 +2,68 @@
 /**
  * Payment method definition registry.
  *
- * @package WCPay\PaymentMethods
+ * @package WCPay\PaymentMethods\Configs\Registry
  */
 
-namespace WCPay\PaymentMethods;
+namespace WCPay\PaymentMethods\Configs\Registry;
 
+use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
 /**
  * Registry for payment method definitions.
  */
-class Payment_Method_Definition_Registry {
+class PaymentMethodDefinitionRegistry {
 
 	/**
 	 * Singleton instance.
 	 *
-	 * @var Payment_Method_Definition_Registry|null
+	 * @var PaymentMethodDefinitionRegistry|null
 	 */
 	private static $instance = null;
 
 	/**
-	 * Payment method definitions.
+	 * List of all available payment method definitions.
+	 * Add new payment methods here.
 	 *
-	 * @var class-string<PaymentMethodDefinitionInterface>[]
+	 * @var array<class-string<PaymentMethodDefinitionInterface>>
+	 */
+	private static $available_definitions = [
+		AffirmDefinition::class,
+		AfterpayDefinition::class,
+		// Add new payment method definitions here.
+	];
+
+	/**
+	 * Payment method definitions that have been registered for use.
+	 *
+	 * @var array<string,class-string<PaymentMethodDefinitionInterface>>
 	 */
 	private $payment_methods = [];
 
 	/**
+	 * Initialize the registry by registering all available payment method definitions.
+	 */
+	public static function init(): void {
+		foreach ( self::$available_definitions as $definition ) {
+			self::instance()->register_payment_method( $definition );
+		}
+	}
+
+	/**
+	 * Get all available payment method definitions.
+	 *
+	 * @return array<class-string<PaymentMethodDefinitionInterface>> Array of payment method definition class names.
+	 */
+	public static function get_available_definitions(): array {
+		return self::$available_definitions;
+	}
+
+	/**
 	 * Get the singleton instance.
 	 *
-	 * @return Payment_Method_Definition_Registry
+	 * @return PaymentMethodDefinitionRegistry
 	 */
 	public static function instance(): self {
 		if ( null === self::$instance ) {
