@@ -37,8 +37,17 @@ export const goToCart = async ( page: Page ) => {
 	await isUIUnblocked( page );
 };
 
-export const goToCheckout = async ( page: Page ) => {
-	await page.goto( '/checkout/', { waitUntil: 'load' } );
+export const goToCheckout = async (
+	page: Page,
+	{ currency }: { currency?: string } = {}
+) => {
+	let url = '/checkout/';
+
+	if ( currency ) {
+		url += `?currency=${ currency }`;
+	}
+
+	await page.goto( url, { waitUntil: 'load' } );
 	await isUIUnblocked( page );
 };
 
