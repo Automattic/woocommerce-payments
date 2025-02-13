@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Replaced deprecated ReactDOM.render() with createRoot() for React 18 compatibility.
