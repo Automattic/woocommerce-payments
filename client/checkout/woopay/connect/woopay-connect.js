@@ -110,7 +110,7 @@ class WoopayConnect {
 			self.listeners.getIframePostMessageCallback = resolve;
 		} );
 
-		ReactDOM.render( <WooPayConnectIframe />, hiddenDiv );
+		ReactDOM.createRoot( hiddenDiv ).render( <WooPayConnectIframe /> );
 	}
 
 	/**

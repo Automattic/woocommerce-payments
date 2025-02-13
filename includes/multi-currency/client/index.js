@@ -50,7 +50,6 @@ const MultiCurrencySettingsPage = () => {
 	);
 };
 
-ReactDOM.render(
-	<MultiCurrencySettingsPage />,
+ReactDOM.createRoot(
 	document.querySelector( '#wcpay_multi_currency_settings_container' )
-);
+).render( <MultiCurrencySettingsPage /> );

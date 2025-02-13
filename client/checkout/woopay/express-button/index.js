@@ -37,7 +37,7 @@ const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 
 		oldWoopayContainers.push( woopayContainer );
 
-		ReactDOM.render(
+		ReactDOM.createRoot( woopayContainer ).render(
 			<WoopayExpressCheckoutButton
 				listenForCartChanges={ listenForCartChanges }
 				buttonSettings={ getConfig( 'woopayButton' ) }
@@ -46,8 +46,7 @@ const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 					!! woopayContainer.getAttribute( 'data-product_page' )
 				}
 				emailSelector="#billing_email"
-			/>,
-			woopayContainer
+			/>
 		);
 	}
 };

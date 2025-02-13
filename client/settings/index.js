@@ -21,13 +21,12 @@ const settingsContainer = document.getElementById(
 	'wcpay-account-settings-container'
 );
 if ( settingsContainer ) {
-	ReactDOM.render(
+	ReactDOM.createRoot( settingsContainer ).render(
 		<WCPaySettingsContext.Provider value={ wcpaySettings }>
 			<ErrorBoundary>
 				<SettingsManager />
 			</ErrorBoundary>
-		</WCPaySettingsContext.Provider>,
-		settingsContainer
+		</WCPaySettingsContext.Provider>
 	);
 }
 
@@ -37,12 +36,11 @@ const expressCheckoutSettingsContainer = document.getElementById(
 if ( expressCheckoutSettingsContainer ) {
 	const methodId = expressCheckoutSettingsContainer.dataset.methodId;
 
-	ReactDOM.render(
+	ReactDOM.createRoot( expressCheckoutSettingsContainer ).render(
 		<WCPaySettingsContext.Provider value={ wcpaySettings }>
 			<ErrorBoundary>
 				<ExpressCheckoutSettings methodId={ methodId } />
 			</ErrorBoundary>
-		</WCPaySettingsContext.Provider>,
-		expressCheckoutSettingsContainer
+		</WCPaySettingsContext.Provider>
 	);
 }

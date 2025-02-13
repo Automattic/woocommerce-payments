@@ -49,9 +49,8 @@ const renderSaveUserSection = () => {
 			}
 		}
 
-		ReactDOM.render(
-			<CheckoutPageSaveUser isBlocksCheckout={ true } />,
-			checkoutPageSaveUserContainer
+		ReactDOM.createRoot( checkoutPageSaveUserContainer ).render(
+			<CheckoutPageSaveUser isBlocksCheckout={ true } />
 		);
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
@@ -69,9 +68,8 @@ const renderSaveUserSection = () => {
 				placeOrderButton
 			);
 
-			ReactDOM.render(
-				<CheckoutPageSaveUser isBlocksCheckout={ false } />,
-				checkoutPageSaveUserContainer
+			ReactDOM.createRoot( checkoutPageSaveUserContainer ).render(
+				<CheckoutPageSaveUser isBlocksCheckout={ false } />
 			);
 		}
 	}

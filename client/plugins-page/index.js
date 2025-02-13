@@ -98,7 +98,6 @@ const PluginsPage = () => {
 	);
 };
 
-ReactDOM.render(
-	<PluginsPage />,
+ReactDOM.createRoot(
 	document.querySelector( '#woopayments-plugins-page-app' )
-);
+).render( <PluginsPage /> );

@@ -13,8 +13,7 @@ const paymentGatewaysContainer = document.getElementById(
 	'wcpay-payment-gateways-container'
 );
 if ( paymentGatewaysContainer ) {
-	ReactDOM.render(
-		<PaymentGatewaysConfirmation />,
-		paymentGatewaysContainer
+	ReactDOM.createRoot( paymentGatewaysContainer ).render(
+		<PaymentGatewaysConfirmation />
 	);
 }
