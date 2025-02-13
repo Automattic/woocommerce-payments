@@ -2,7 +2,11 @@
  * External dependencies
  */
 import type { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
-import e2eEnvironment from '@woocommerce/e2e-environment';
+
+/**
+ * Internal dependencies
+ */
+import * as Slack from '../utils/slack';
 
 class SlackReporter implements Reporter {
 	onTestEnd( test: TestCase, result: TestResult ) {
@@ -12,7 +16,7 @@ class SlackReporter implements Reporter {
 		}
 
 		if ( test.outcome() === 'unexpected' ) {
-			e2eEnvironment.sendFailedTestMessageToSlack( test.title );
+			Slack.sendFailedTestMessageToSlack( test.title );
 
 			const screenshots = result.attachments.filter(
 				( { name, path } ) => name === 'screenshot' && path
@@ -20,9 +24,7 @@ class SlackReporter implements Reporter {
 
 			if ( screenshots.length > 0 ) {
 				const [ screenshot ] = screenshots;
-				e2eEnvironment.sendFailedTestScreenshotToSlack(
-					screenshot.path
-				);
+				Slack.sendFailedTestScreenshotToSlack( screenshot.path );
 			}
 		}
 	}
