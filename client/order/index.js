@@ -110,7 +110,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		ReactDOM.render(
+		ReactDOM.createRoot( container ).render(
 			<>
 				{ testMode && <TestModeNotice /> }
 
@@ -120,8 +120,7 @@ jQuery( function ( $ ) {
 						onDisableOrderRefund={ disableWooOrderRefundButton }
 					/>
 				) }
-			</>,
-			container
+			</>
 		);
 	}
 } );
