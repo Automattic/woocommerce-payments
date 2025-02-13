@@ -571,7 +571,8 @@ class WC_Payments {
 			Klarna_Payment_Method::class,
 		];
 
-		// Get payment method classes from the registry for those that have been converted.
+		// Initialize and get payment method classes from the registry for those that have been converted.
+		PaymentMethodDefinitionRegistry::init();
 		$registry                   = PaymentMethodDefinitionRegistry::instance();
 		$payment_method_definitions = $registry->get_all_payment_method_definitions();
 
