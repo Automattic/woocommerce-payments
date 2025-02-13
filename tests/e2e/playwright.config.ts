@@ -62,6 +62,7 @@ export default defineConfig( {
 				[ 'dot' ],
 				[ 'json', { outputFile: 'results.json' } ],
 				[ 'html' ],
+				[ './reporters/slack-reporter.ts' ],
 		  ]
 		: [ [ 'html', { open: 'never' } ] ],
 	outputDir: './test-results',
