@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, test, expect } from '@jest/globals';
+
 /**
  * Internal dependencies
  */
@@ -18,7 +18,7 @@ const mockPaymentMethods = [
 ];
 
 describe( 'PaymentMethodsLogos', () => {
-	test( 'renders without crashing', () => {
+	it( 'renders without crashing', () => {
 		render(
 			<PaymentMethodsLogos
 				maxElements={ 5 }
@@ -29,7 +29,7 @@ describe( 'PaymentMethodsLogos', () => {
 		expect( logoContainer ).toBeTruthy();
 	} );
 
-	test( 'displays correct number of logos based on maxElements', () => {
+	it( 'displays correct number of logos based on maxElements', () => {
 		render(
 			<PaymentMethodsLogos
 				maxElements={ 3 }
@@ -40,7 +40,7 @@ describe( 'PaymentMethodsLogos', () => {
 		expect( logos ).toHaveLength( 3 );
 	} );
 
-	test( 'shows popover indicator when there are more payment methods than maxElements', () => {
+	it( 'shows popover indicator when there are more payment methods than maxElements', () => {
 		render(
 			<PaymentMethodsLogos
 				maxElements={ 3 }
@@ -53,7 +53,7 @@ describe( 'PaymentMethodsLogos', () => {
 		expect( popoverIndicator ).toBeTruthy();
 	} );
 
-	test( 'opens popover on button click', async () => {
+	it( 'opens popover on button click', async () => {
 		render(
 			<PaymentMethodsLogos
 				maxElements={ 3 }
@@ -68,7 +68,7 @@ describe( 'PaymentMethodsLogos', () => {
 		expect( popover ).toBeTruthy();
 	} );
 
-	test( 'handles keyboard navigation', async () => {
+	it( 'handles keyboard navigation', async () => {
 		render(
 			<PaymentMethodsLogos
 				maxElements={ 3 }
@@ -83,7 +83,7 @@ describe( 'PaymentMethodsLogos', () => {
 		expect( popover ).toBeTruthy();
 	} );
 
-	test( 'does not show popover indicator when there are fewer payment methods than maxElements', () => {
+	it( 'does not show popover indicator when there are fewer payment methods than maxElements', () => {
 		render(
 			<PaymentMethodsLogos
 				maxElements={ 10 }
@@ -97,7 +97,7 @@ describe( 'PaymentMethodsLogos', () => {
 		expect( logos ).toHaveLength( mockPaymentMethods.length );
 	} );
 
-	test( 'does not show popover when there are fewer payment methods than maxElements', async () => {
+	it( 'does not show popover when there are fewer payment methods than maxElements', async () => {
 		render(
 			<PaymentMethodsLogos
 				maxElements={ 10 }

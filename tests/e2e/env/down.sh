@@ -19,4 +19,4 @@ fi
 # Remove auth credentials from the Playwright config.
 # This must be kept when we fully migrate.
 step "Removing Playwright auth credentials"
-rm -rf "$E2E_ROOT/../e2e-pw/.auth"
+rm -rf "$E2E_ROOT/../e2e/.auth"

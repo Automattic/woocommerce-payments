@@ -10,7 +10,7 @@ env:
   E2E_SLACK_TOKEN: ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_WP_VERSION: 'nightly'
   E2E_WC_VERSION: 'latest'
-  E2E_RESULT_FILEPATH: 'tests/e2e-pw/results.json'
+  E2E_RESULT_FILEPATH: 'tests/e2e/results.json'
   NODE_ENV: 'atomic'
 
 concurrency:
