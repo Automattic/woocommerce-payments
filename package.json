@@ -96,6 +96,7 @@
     "@jest/test-sequencer": "29.5.0",
     "@playwright/test": "1.50.1",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
+    "@slack/web-api": "7.8.0",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.5",
     "@testing-library/react-hooks": "8.0.1",
@@ -117,8 +118,6 @@
     "@woocommerce/currency": "4.3.0",
     "@woocommerce/date": "4.2.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
-    "@woocommerce/e2e-environment": "0.2.3",
-    "@woocommerce/e2e-utils": "0.2.0",
     "@woocommerce/eslint-plugin": "1.1.0",
     "@woocommerce/experimental": "1.2.0",
     "@woocommerce/settings": "1.0.0",
@@ -206,7 +205,6 @@
     "yarnhook": "0.5.1"
   },
   "overrides": {
-    "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils#update/babel-deps",
     "@woocommerce/components": {
       "@woocommerce/csv-export": "1.10.0",
       "@woocommerce/currency": "4.3.0"
