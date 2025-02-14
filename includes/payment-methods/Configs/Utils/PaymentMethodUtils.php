@@ -7,6 +7,7 @@
 
 namespace WCPay\PaymentMethods\Configs\Utils;
 
+use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
 /**
@@ -45,5 +46,35 @@ class PaymentMethodUtils {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Is the payment method a BNPL (Buy Now Pay Later) payment method?
+	 *
+	 * @param array<string> $capabilities The payment method capabilities.
+	 * @return boolean
+	 */
+	public static function is_bnpl( array $capabilities ): bool {
+		return in_array( PaymentMethodCapability::BUY_NOW_PAY_LATER, $capabilities, true );
+	}
+
+	/**
+	 * Is the payment method a reusable payment method?
+	 *
+	 * @param array<string> $capabilities The payment method capabilities.
+	 * @return boolean
+	 */
+	public static function is_reusable( array $capabilities ): bool {
+		return in_array( PaymentMethodCapability::TOKENIZATION, $capabilities, true );
+	}
+
+	/**
+	 * Does the payment method accept only domestic payments?
+	 *
+	 * @param array<string> $capabilities The payment method capabilities.
+	 * @return boolean
+	 */
+	public static function does_accept_only_domestic_payments( array $capabilities ): bool {
+		return in_array( PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
 	}
 }

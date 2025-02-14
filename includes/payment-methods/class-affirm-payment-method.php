@@ -27,12 +27,12 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 		$capabilities = AffirmDefinition::get_capabilities();
 
 		$this->stripe_id                    = AffirmDefinition::get_id(); // TODO: I know this is confusing - just roll with it. I'll try and untangle stripe_id vs id soon.
-		$this->is_reusable                  = in_array( PaymentMethodCapability::TOKENIZATION, $capabilities, true );
-		$this->is_bnpl                      = in_array( PaymentMethodCapability::BUY_NOW_PAY_LATER, $capabilities, true );
+		$this->is_reusable                  = AffirmDefinition::is_reusable();
+		$this->is_bnpl                      = AffirmDefinition::is_bnpl();
 		$this->icon_url                     = AffirmDefinition::get_icon_url();
 		$this->dark_icon_url                = AffirmDefinition::get_dark_icon_url();
 		$this->currencies                   = AffirmDefinition::get_supported_currencies();
-		$this->accept_only_domestic_payment = in_array( PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
+		$this->accept_only_domestic_payment = AffirmDefinition::does_accept_only_domestic_payments();
 		$this->limits_per_currency          = AffirmDefinition::get_limits_per_currency();
 		$this->countries                    = AffirmDefinition::get_supported_countries();
 	}

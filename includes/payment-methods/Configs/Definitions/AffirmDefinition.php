@@ -74,6 +74,33 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
+	 * Is the payment method a BNPL (Buy Now Pay Later) payment method?
+	 *
+	 * @return boolean
+	 */
+	public static function is_bnpl(): bool {
+		return PaymentMethodUtils::is_bnpl( self::get_capabilities() );
+	}
+
+	/**
+	 * Is the payment method a reusable payment method?
+	 *
+	 * @return boolean
+	 */
+	public static function is_reusable(): bool {
+		return PaymentMethodUtils::is_reusable( self::get_capabilities() );
+	}
+
+	/**
+	 * Does the payment method accept only domestic payments?
+	 *
+	 * @return boolean
+	 */
+	public static function does_accept_only_domestic_payments(): bool {
+		return PaymentMethodUtils::does_accept_only_domestic_payments( self::get_capabilities() );
+	}
+
+	/**
 	 * Get the list of supported currencies
 	 *
 	 * @return string[] Array of currency codes

@@ -56,6 +56,27 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_description(): string;
 
 	/**
+	 * Is the payment method a BNPL (Buy Now Pay Later) payment method?
+	 *
+	 * @return boolean
+	 */
+	public static function is_bnpl(): bool;
+
+	/**
+	 * Is the payment method a reusable payment method?
+	 *
+	 * @return boolean
+	 */
+	public static function is_reusable(): bool;
+
+	/**
+	 * Does the payment method accept only domestic payments?
+	 *
+	 * @return boolean
+	 */
+	public static function does_accept_only_domestic_payments(): bool;
+
+	/**
 	 * Get the list of supported currencies
 	 * Empty array means all currencies are supported
 	 *
