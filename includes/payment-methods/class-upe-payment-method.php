@@ -292,7 +292,7 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method supported countries
+	 * Returns payment method supported countries.
 	 *
 	 * @return array
 	 */

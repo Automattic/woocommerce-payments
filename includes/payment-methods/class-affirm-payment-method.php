@@ -71,13 +71,14 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method supported countries
+	 * Returns payment method supported countries.
 	 *
 	 * @return array
 	 */
 	public function get_countries() {
-		$account = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
 
-		return isset( $account['country'] ) ? [ strtoupper( $account['country'] ) ] : [];
+		return in_array( $account_country, $this->countries, true ) ? [ $account_country ] : $this->countries;
 	}
 }

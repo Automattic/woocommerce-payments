@@ -67,8 +67,8 @@ class Alipay_Payment_Method extends UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method supported countries for the merchant's account
-	 * (ensuring it's part of the contracted Alipay countries).
+	 * Returns payment method supported currencies for the merchant's account
+	 * (ensuring it's part of the contracted Alipay currencies).
 	 *
 	 * @return array
 	 */
