@@ -1,4 +1,5 @@
 export const PAYMENT_METHOD_NAME_CARD = 'woocommerce_payments';
+export const PAYMENT_METHOD_NAME_ALIPAY = 'woocommerce_payments_alipay';
 export const PAYMENT_METHOD_NAME_BANCONTACT = 'woocommerce_payments_bancontact';
 export const PAYMENT_METHOD_NAME_BECS = 'woocommerce_payments_au_becs_debit';
 export const PAYMENT_METHOD_NAME_EPS = 'woocommerce_payments_eps';
@@ -21,6 +22,7 @@ export const WC_STORE_CART = 'wc/store/cart';
 
 export function getPaymentMethodsConstants() {
 	return [
+		PAYMENT_METHOD_NAME_ALIPAY,
 		PAYMENT_METHOD_NAME_BANCONTACT,
 		PAYMENT_METHOD_NAME_BECS,
 		PAYMENT_METHOD_NAME_EPS,

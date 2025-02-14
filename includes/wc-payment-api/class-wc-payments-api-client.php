@@ -456,7 +456,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Get the export URL for a given export ID, if available.
+	 * Get the transactions export URL for a given export ID, if available.
 	 *
 	 * @param string $export_id The export ID.
 	 *
@@ -465,6 +465,18 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 */
 	public function get_transactions_export_url( string $export_id ): array {
 		return $this->request( [], self::TRANSACTIONS_API . "/download/{$export_id}", self::GET );
+	}
+
+	/**
+	 * Get the disputes export URL for a given export ID, if available.
+	 *
+	 * @param string $export_id The export ID.
+	 *
+	 * @return array The export URL response.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes_export_url( string $export_id ): array {
+		return $this->request( [], self::DISPUTES_API . "/download/{$export_id}", self::GET );
 	}
 
 	/**
@@ -1072,6 +1084,23 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		);
 
 		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
+
+		if ( ! is_array( $session ) ) {
+			return [];
+		}
+
+		return $session;
+	}
+
+	/**
+	 * Fetch the embedded account session object utilized by the frontend.
+	 *
+	 * @return array
+	 *
+	 * @throws API_Exception
+	 */
+	public function create_embedded_account_session(): array {
+		$session = $this->request( [], self::ACCOUNTS_API . '/embedded/session', self::POST, true, true );
 
 		if ( ! is_array( $session ) ) {
 			return [];
