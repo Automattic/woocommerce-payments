@@ -26,15 +26,14 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->is_reusable                  = false;
-		$this->is_bnpl                      = true;
-		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/affirm-logo.svg', WCPAY_PLUGIN_FILE );
-		$this->dark_icon_url                = plugins_url( 'assets/images/payment-methods/affirm-logo-dark.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
-		$this->accept_only_domestic_payment = true;
-		$this->limits_per_currency          = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
-		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::CANADA ];
+		$this->stripe_id           = self::PAYMENT_METHOD_STRIPE_ID;
+		$this->is_reusable         = false;
+		$this->is_bnpl             = true;
+		$this->icon_url            = plugins_url( 'assets/images/payment-methods/affirm-logo.svg', WCPAY_PLUGIN_FILE );
+		$this->dark_icon_url       = plugins_url( 'assets/images/payment-methods/affirm-logo-dark.svg', WCPAY_PLUGIN_FILE );
+		$this->currencies          = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
+		$this->limits_per_currency = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
+		$this->countries           = [ Country_Code::UNITED_STATES, Country_Code::CANADA ];
 	}
 
 	/**
@@ -57,5 +56,28 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function get_testing_instructions( string $account_country ) {
 		return '';
+	}
+
+	/**
+	 * Returns payment method supported currencies.
+	 *
+	 * @return array
+	 */
+	public function get_currencies() {
+		$account          = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_currency = isset( $account['currency'] ) ? strtoupper( $account['currency'] ) : '';
+
+		return in_array( $account_currency, $this->currencies, true ) ? $account_currency : [ $this->currencies[0] ];
+	}
+
+	/**
+	 * Returns payment method supported countries
+	 *
+	 * @return array
+	 */
+	public function get_countries() {
+		$account = \WC_Payments::get_account_service()->get_cached_account_data();
+
+		return isset( $account['country'] ) ? [ strtoupper( $account['country'] ) ] : [];
 	}
 }

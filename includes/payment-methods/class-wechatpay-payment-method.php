@@ -25,13 +25,12 @@ class Wechatpay_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->is_reusable                  = false;
-		$this->is_bnpl                      = false;
-		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/wechat_pay.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CHINESE_YUAN, Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::CANADIAN_DOLLAR, Currency_Code::EURO, Currency_Code::POUND_STERLING, Currency_Code::HONG_KONG_DOLLAR, Currency_Code::JAPANESE_YEN, Currency_Code::SINGAPORE_DOLLAR, Currency_Code::DANISH_KRONE, Currency_Code::NORWEGIAN_KRONE, Currency_Code::SWEDISH_KRONA, Currency_Code::SWISS_FRANC ];
-		$this->accept_only_domestic_payment = false;
-		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::CHINA, Country_Code::AUSTRALIA, Country_Code::CANADA, Country_Code::AUSTRIA, Country_Code::BELGIUM, Country_Code::DENMARK, Country_Code::FINLAND, Country_Code::FRANCE, Country_Code::GERMANY, Country_Code::IRELAND, Country_Code::ITALY, Country_Code::LUXEMBOURG, Country_Code::NETHERLANDS, Country_Code::NORWAY, Country_Code::PORTUGAL, Country_Code::SPAIN, Country_Code::SWEDEN, Country_Code::SWITZERLAND, Country_Code::UNITED_KINGDOM, Country_Code::HONG_KONG, Country_Code::JAPAN, Country_Code::SINGAPORE ];
+		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
+		$this->is_reusable = false;
+		$this->is_bnpl     = false;
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/wechat_pay.svg', WCPAY_PLUGIN_FILE );
+		$this->currencies  = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CHINESE_YUAN, Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::CANADIAN_DOLLAR, Currency_Code::EURO, Currency_Code::POUND_STERLING, Currency_Code::HONG_KONG_DOLLAR, Currency_Code::JAPANESE_YEN, Currency_Code::SINGAPORE_DOLLAR, Currency_Code::DANISH_KRONE, Currency_Code::NORWEGIAN_KRONE, Currency_Code::SWEDISH_KRONA, Currency_Code::SWISS_FRANC ];
+		$this->countries   = [ Country_Code::UNITED_STATES, Country_Code::CHINA, Country_Code::AUSTRALIA, Country_Code::CANADA, Country_Code::AUSTRIA, Country_Code::BELGIUM, Country_Code::DENMARK, Country_Code::FINLAND, Country_Code::FRANCE, Country_Code::GERMANY, Country_Code::IRELAND, Country_Code::ITALY, Country_Code::LUXEMBOURG, Country_Code::NETHERLANDS, Country_Code::NORWAY, Country_Code::PORTUGAL, Country_Code::SPAIN, Country_Code::SWEDEN, Country_Code::SWITZERLAND, Country_Code::UNITED_KINGDOM, Country_Code::HONG_KONG, Country_Code::JAPAN, Country_Code::SINGAPORE ];
 	}
 
 	/**

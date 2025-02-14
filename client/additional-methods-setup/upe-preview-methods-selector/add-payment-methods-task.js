@@ -214,8 +214,9 @@ const AddPaymentMethodsTask = () => {
 
 	const prepareUpePaymentMethods = ( upeMethodIds ) => {
 		return upeMethodIds.map( ( key ) => {
-			// TODO : fix in https://github.com/Automattic/woocommerce-payments/issues/10182 to remove duplicated logic
-			const { label, currencies } = paymentMethodsMap[ key ];
+			const { label } = paymentMethodsMap[ key ];
+			const currencies =
+				wcpayWpAdminPaymentMethodsConfig[ key ]?.currencies;
 
 			if ( availablePaymentMethods.includes( key ) ) {
 				let isSetupRequired = false;
@@ -259,7 +260,7 @@ const AddPaymentMethodsTask = () => {
 
 	const availableBuyNowPayLaterUpeMethods = upeMethods.filter(
 		( id ) =>
-			paymentMethodsMap[ id ].allows_pay_later &&
+			wcpayWpAdminPaymentMethodsConfig[ id ]?.allows_pay_later &&
 			availablePaymentMethods.includes( id )
 	);
 
@@ -345,8 +346,9 @@ const AddPaymentMethodsTask = () => {
 									{ prepareUpePaymentMethods(
 										upeMethods.filter(
 											( id ) =>
-												! paymentMethodsMap[ id ]
-													.allows_pay_later
+												! wcpayWpAdminPaymentMethodsConfig[
+													id
+												]?.allows_pay_later
 										)
 									) }
 								</PaymentMethodCheckboxes>

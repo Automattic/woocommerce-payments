@@ -34,11 +34,8 @@ export interface PaymentMethodMapEntry {
 	label: string;
 	description: string;
 	icon: ReactImgFuncComponent;
-	currencies: string[];
 	stripe_key: string;
 	allows_manual_capture: boolean;
-	allows_pay_later: boolean;
-	accepts_only_domestic_payment: boolean;
 }
 
 const PaymentMethodInformationObject: Record<
@@ -53,11 +50,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: CreditCardIcon,
-		currencies: [],
 		stripe_key: 'card_payments',
 		allows_manual_capture: true,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	alipay: {
 		id: 'alipay',
@@ -67,11 +61,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: AlipayIcon,
-		currencies: [],
 		stripe_key: 'alipay_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	au_becs_debit: {
 		id: 'au_becs_debit',
@@ -81,11 +72,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: BankDebitIcon,
-		currencies: [ 'AUD' ],
 		stripe_key: 'au_becs_debit_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	bancontact: {
 		id: 'bancontact',
@@ -95,11 +83,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: BancontactIcon,
-		currencies: [ 'EUR' ],
 		stripe_key: 'bancontact_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	eps: {
 		id: 'eps',
@@ -109,11 +94,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: EpsIcon,
-		currencies: [ 'EUR' ],
 		stripe_key: 'eps_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	giropay: {
 		id: 'giropay',
@@ -123,11 +105,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: GiropayIcon,
-		currencies: [ 'EUR' ],
 		stripe_key: 'giropay_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	ideal: {
 		id: 'ideal',
@@ -137,11 +116,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: IdealIcon,
-		currencies: [ 'EUR' ],
 		stripe_key: 'ideal_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	p24: {
 		id: 'p24',
@@ -151,11 +127,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: P24Icon,
-		currencies: [ 'EUR', 'PLN' ],
 		stripe_key: 'p24_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	sepa_debit: {
 		id: 'sepa_debit',
@@ -165,11 +138,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: SepaIcon,
-		currencies: [ 'EUR' ],
 		stripe_key: 'sepa_debit_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	sofort: {
 		id: 'sofort',
@@ -179,11 +149,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: SofortIcon,
-		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	affirm: {
 		id: 'affirm',
@@ -193,11 +160,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: AffirmIcon,
-		currencies: [ 'USD', 'CAD' ],
 		stripe_key: 'affirm_payments',
 		allows_manual_capture: false,
-		allows_pay_later: true,
-		accepts_only_domestic_payment: true,
 	},
 	afterpay_clearpay: {
 		id: 'afterpay_clearpay',
@@ -216,11 +180,8 @@ const PaymentMethodInformationObject: Record<
 						'woocommerce-payments'
 				  ),
 		icon: 'GB' === accountCountry ? ClearpayIcon : AfterpayIcon,
-		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP' ],
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
-		allows_pay_later: true,
-		accepts_only_domestic_payment: true,
 	},
 	jcb: {
 		id: 'jcb',
@@ -230,11 +191,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: JCBIcon,
-		currencies: [ 'JPY' ],
 		stripe_key: 'jcb_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	klarna: {
 		id: 'klarna',
@@ -244,11 +202,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: KlarnaIcon,
-		currencies: [ 'EUR', 'GBP', 'USD', 'DKK', 'NOK', 'SEK' ],
 		stripe_key: 'klarna_payments',
 		allows_manual_capture: false,
-		allows_pay_later: true,
-		accepts_only_domestic_payment: true,
 	},
 	grabpay: {
 		id: 'grabpay',
@@ -258,11 +213,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: GrabPayIcon,
-		currencies: [ 'SGD' ],
 		stripe_key: 'grabpay_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 	wechat_pay: {
 		id: 'wechat_pay',
@@ -272,25 +224,8 @@ const PaymentMethodInformationObject: Record<
 			'woocommerce-payments'
 		),
 		icon: WeChatPayIcon,
-		currencies: [
-			'USD',
-			'CNY',
-			'AUD',
-			'CAD',
-			'EUR',
-			'GBP',
-			'HKD',
-			'JPY',
-			'SGD',
-			'DKK',
-			'NOK',
-			'SEK',
-			'CHF',
-		],
 		stripe_key: 'wechat_pay_payments',
 		allows_manual_capture: false,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
 	},
 };
 

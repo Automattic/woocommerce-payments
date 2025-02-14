@@ -567,6 +567,12 @@ class WC_Payments_Admin {
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
 
+		wp_add_inline_script(
+			'WCPAY_DASH_APP',
+			new \WCPay\Inline_Script_Payloads\Wp_Admin_Payment_Methods_Config( $this->wcpay_gateway ),
+			'before'
+		);
+
 		WC_Payments_Utils::register_style(
 			'WCPAY_DASH_APP',
 			plugins_url( 'dist/index.css', WCPAY_PLUGIN_FILE ),
@@ -609,6 +615,11 @@ class WC_Payments_Admin {
 				],
 			]
 		);
+		wp_add_inline_script(
+			'WCPAY_ADMIN_SETTINGS',
+			new \WCPay\Inline_Script_Payloads\Wp_Admin_Payment_Methods_Config( $this->wcpay_gateway ),
+			'before'
+		);
 
 		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
@@ -621,6 +632,11 @@ class WC_Payments_Admin {
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
+		wp_add_inline_script(
+			'WCPAY_PAYMENT_GATEWAYS_PAGE',
+			new \WCPay\Inline_Script_Payloads\Wp_Admin_Payment_Methods_Config( $this->wcpay_gateway ),
+			'before'
+		);
 
 		WC_Payments_Utils::register_style(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',

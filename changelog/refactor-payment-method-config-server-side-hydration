@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: payment method admin config server-side hydration

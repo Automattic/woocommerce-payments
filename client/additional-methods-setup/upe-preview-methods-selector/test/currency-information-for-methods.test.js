@@ -7,17 +7,12 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { useAccountDomesticCurrency } from '../../../data';
 import {
 	useCurrencies,
 	useEnabledCurrencies,
 } from 'multi-currency/interface/data';
 import CurrencyInformationForMethods from '../currency-information-for-methods';
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
-
-jest.mock( '../../../data', () => ( {
-	useAccountDomesticCurrency: jest.fn(),
-} ) );
 
 jest.mock( 'multi-currency/interface/data', () => ( {
 	useCurrencies: jest.fn(),
@@ -39,6 +34,25 @@ const FlagsContextWrapper = ( { children, multiCurrency = true } ) => (
 
 describe( 'CurrencyInformationForMethods', () => {
 	beforeEach( () => {
+		global.wcpayWpAdminPaymentMethodsConfig = {
+			card: { currencies: [], allows_pay_later: false },
+			alipay: { currencies: [ 'USD' ], allows_pay_later: false },
+			bancontact: { currencies: [ 'EUR' ], allows_pay_later: false },
+			eps: { currencies: [ 'EUR' ], allows_pay_later: false },
+			ideal: { currencies: [ 'EUR' ], allows_pay_later: false },
+			sepa_debit: { currencies: [ 'EUR' ], allows_pay_later: false },
+			p24: { currencies: [ 'EUR', 'PLN' ], allows_pay_later: false },
+			link: { currencies: [ 'USD' ], allows_pay_later: false },
+			affirm: { currencies: [ 'USD' ], allows_pay_later: true },
+			afterpay_clearpay: {
+				currencies: [ 'USD' ],
+				allows_pay_later: true,
+			},
+			klarna: {
+				currencies: [ 'USD' ],
+				allows_pay_later: true,
+			},
+		};
 		useCurrencies.mockReturnValue( {
 			isLoading: false,
 			currencies: {
@@ -54,7 +68,6 @@ describe( 'CurrencyInformationForMethods', () => {
 				USD: { id: 'usd', code: 'USD' },
 			},
 		} );
-		useAccountDomesticCurrency.mockReturnValue( 'usd' );
 	} );
 
 	it( 'should not display content when the feature flag is disabled', () => {
@@ -149,7 +162,7 @@ describe( 'CurrencyInformationForMethods', () => {
 		render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
-					selectedMethods={ [ 'card', 'giropay' ] }
+					selectedMethods={ [ 'card', 'sepa_debit' ] }
 				/>
 			</FlagsContextWrapper>
 		);
@@ -206,7 +219,12 @@ describe( 'CurrencyInformationForMethods', () => {
 	} );
 
 	it( "should display a notice to enable additional currencies for BNPL methods, if the account' currency is not enabled", () => {
-		useAccountDomesticCurrency.mockReturnValue( 'eur' );
+		useEnabledCurrencies.mockReturnValue( {
+			enabledCurrencies: {
+				PLN: { id: 'pln', code: 'PLN' },
+			},
+		} );
+
 		render(
 			<FlagsContextWrapper>
 				<CurrencyInformationForMethods
@@ -228,7 +246,7 @@ describe( 'CurrencyInformationForMethods', () => {
 			)
 		).toBeInTheDocument();
 		expect(
-			screen.queryByText( /we\'ll add Euro \(€\) to your store/, {
+			screen.queryByText( /we\'ll add US Dollar \(\$\) to your store/, {
 				ignore: '.a11y-speak-region',
 			} )
 		).toBeInTheDocument();

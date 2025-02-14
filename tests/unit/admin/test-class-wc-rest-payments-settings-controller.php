@@ -722,34 +722,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$cod_gateway->enabled = 'no';
 	}
 
-	public function test_get_settings_domestic_currency(): void {
-		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn(
-			[
-				'currency_code' => $this->domestic_currency,
-			]
-		);
-		$this->mock_wcpay_account
-			->expects( $this->never() )
-			->method( 'get_account_default_currency' );
-
-		$response = $this->controller->get_settings();
-
-		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
-		$this->assertSame( $this->domestic_currency, $response->get_data()['account_domestic_currency'] );
-	}
-
-	public function test_get_settings_domestic_currency_fallbacks_to_default_currency(): void {
-		$this->mock_localization_service->method( 'get_country_locale_data' )->willReturn( [] );
-		$this->mock_wcpay_account
-			->expects( $this->once() )
-			->method( 'get_account_default_currency' )
-			->willReturn( $this->domestic_currency );
-		$response = $this->controller->get_settings();
-
-		$this->assertArrayHasKey( 'account_domestic_currency', $response->get_data() );
-		$this->assertSame( $this->domestic_currency, $response->get_data()['account_domestic_currency'] );
-	}
-
 	public function test_get_settings_is_woopay_enabled_returns_true(): void {
 		$current_platform_checkout = $this->gateway->get_option( 'platform_checkout' );
 

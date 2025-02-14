@@ -26,14 +26,13 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->is_reusable                  = false;
-		$this->is_bnpl                      = true;
-		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/klarna-pill.svg', WCPAY_PLUGIN_FILE );
-		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING, Currency_Code::EURO, Currency_Code::DANISH_KRONE, Currency_Code::NORWEGIAN_KRONE, Currency_Code::SWEDISH_KRONA ];
-		$this->accept_only_domestic_payment = true;
-		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM, Country_Code::AUSTRIA, Country_Code::GERMANY, Country_Code::NETHERLANDS, Country_Code::BELGIUM, Country_Code::SPAIN, Country_Code::ITALY, Country_Code::IRELAND, Country_Code::DENMARK, Country_Code::FINLAND, Country_Code::NORWAY, Country_Code::SWEDEN, Country_Code::FRANCE ];
-		$this->limits_per_currency          = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
+		$this->stripe_id           = self::PAYMENT_METHOD_STRIPE_ID;
+		$this->is_reusable         = false;
+		$this->is_bnpl             = true;
+		$this->icon_url            = plugins_url( 'assets/images/payment-methods/klarna-pill.svg', WCPAY_PLUGIN_FILE );
+		$this->currencies          = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::POUND_STERLING, Currency_Code::EURO, Currency_Code::DANISH_KRONE, Currency_Code::NORWEGIAN_KRONE, Currency_Code::SWEDISH_KRONA ];
+		$this->countries           = [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM, Country_Code::AUSTRIA, Country_Code::GERMANY, Country_Code::NETHERLANDS, Country_Code::BELGIUM, Country_Code::SPAIN, Country_Code::ITALY, Country_Code::IRELAND, Country_Code::DENMARK, Country_Code::FINLAND, Country_Code::NORWAY, Country_Code::SWEDEN, Country_Code::FRANCE ];
+		$this->limits_per_currency = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
 	}
 
 	/**
@@ -76,6 +75,18 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		}
 
 		return parent::get_countries();
+	}
+
+	/**
+	 * Returns payment method supported currencies.
+	 *
+	 * @return array
+	 */
+	public function get_currencies() {
+		$account          = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_currency = isset( $account['currency'] ) ? strtoupper( $account['currency'] ) : '';
+
+		return in_array( $account_currency, $this->currencies, true ) ? $account_currency : [ $this->currencies[0] ];
 	}
 
 	/**

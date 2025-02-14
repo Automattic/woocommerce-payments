@@ -23,7 +23,6 @@ import {
 	useGetPaymentMethodStatuses,
 	useSettings,
 	useManualCapture,
-	useAccountDomesticCurrency,
 } from '../../../data';
 import {
 	useCurrencies,
@@ -39,7 +38,6 @@ jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn(),
 	useGetPaymentMethodStatuses: jest.fn(),
 	useManualCapture: jest.fn(),
-	useAccountDomesticCurrency: jest.fn(),
 } ) );
 
 jest.mock( 'multi-currency/interface/data', () => ( {
@@ -120,7 +118,6 @@ describe( 'AddPaymentMethodsTask', () => {
 			},
 		} );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
-		useAccountDomesticCurrency.mockReturnValue( 'usd' );
 		global.wcpaySettings = {
 			isMultiCurrencyEnabled: true,
 			storeCurrency: 'USD',

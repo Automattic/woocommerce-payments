@@ -14,7 +14,6 @@ import SettingsSection from '../settings-section';
 import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
 import { useGetAvailablePaymentMethodIds } from 'wcpay/data';
-import methodsConfiguration from 'wcpay/payment-methods-map';
 import CardBody from 'wcpay/settings/card-body';
 
 const BuyNowPayLaterMethodsDescription = () => (
@@ -38,8 +37,8 @@ const BuyNowPayLaterSection = () => {
 
 	const availableBuyNowPayLaterMethodIds = availablePaymentMethodIds.filter(
 		( id ) =>
-			methodsConfiguration[ id ] &&
-			methodsConfiguration[ id ].allows_pay_later
+			wcpayWpAdminPaymentMethodsConfig[ id ] &&
+			wcpayWpAdminPaymentMethodsConfig[ id ].allows_pay_later
 	);
 
 	if ( availableBuyNowPayLaterMethodIds.length === 0 ) {

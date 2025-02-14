@@ -705,6 +705,7 @@ class WC_Payments {
 
 		// Add admin screens.
 		if ( is_admin() ) {
+			include_once WCPAY_ABSPATH . 'includes/inline-script-payloads/class-wp-admin-payment-methods-config.php';
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 		}
 

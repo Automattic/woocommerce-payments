@@ -115,13 +115,14 @@ const PaymentMethodsList = ( { methodIds } ) => {
 						allows_manual_capture: isAllowingManualCapture,
 						setup_required: isSetupRequired,
 						setup_tooltip: setupTooltip,
-						// TODO : fix in https://github.com/Automattic/woocommerce-payments/issues/10182 to remove duplicated logic
-						currencies,
 					} ) => {
 						if (
 							! wcpaySettings.isMultiCurrencyEnabled &&
 							id !== PAYMENT_METHOD_IDS.CARD
 						) {
+							const currencies =
+								wcpayWpAdminPaymentMethodsConfig[ id ]
+									.currencies;
 							const currency = wcpaySettings.storeCurrency;
 							if ( currencies.indexOf( currency ) < 0 ) {
 								isSetupRequired = true;

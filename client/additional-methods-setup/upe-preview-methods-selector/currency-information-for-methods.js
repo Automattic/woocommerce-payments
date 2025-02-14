@@ -9,7 +9,6 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { useAccountDomesticCurrency } from '../../data';
 import {
 	useCurrencies,
 	useEnabledCurrencies,
@@ -25,7 +24,6 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		currencies: currencyInfo,
 	} = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
-	const stripeAccountDomesticCurrency = useAccountDomesticCurrency().toUpperCase();
 
 	if ( isLoadingCurrencyInformation ) {
 		return null;
@@ -42,12 +40,26 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		// in case of payment methods accepting only domestic payments, we shouldn't add _all_ the currencies defined on the payment method.
 		// instead, we should ensure that the merchant account's currency is set.
 		const paymentMethodInformation = PaymentMethodsMap[ paymentMethod ];
-		if ( ! paymentMethodInformation ) return;
+		if (
+			! paymentMethodInformation ||
+			! wcpayWpAdminPaymentMethodsConfig[ paymentMethod ]
+		)
+			return;
 
-		// TODO : fix in https://github.com/Automattic/woocommerce-payments/issues/10182 to remove duplicated logic
-		let currencies = paymentMethodInformation.currencies || [];
-		if ( paymentMethodInformation.accepts_only_domestic_payment ) {
-			currencies = [ stripeAccountDomesticCurrency ];
+		const currencies =
+			wcpayWpAdminPaymentMethodsConfig[ paymentMethod ].currencies;
+
+		if ( currencies.length === 0 ) {
+			return;
+		}
+
+		// if the payment method already has at least one currency enabled, no need to enable other ones.
+		if (
+			currencies.some( ( currency ) =>
+				enabledCurrenciesIds.includes( currency.toLowerCase() )
+			)
+		) {
+			return;
 		}
 
 		currencies.forEach( ( currency ) => {

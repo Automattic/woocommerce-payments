@@ -15,7 +15,6 @@ import ErrorBoundary from '../../components/error-boundary';
 import { useGetAvailablePaymentMethodIds } from '../../data';
 import CardBody from 'wcpay/settings/card-body';
 import PaymentMethodsList from '../payment-methods-list';
-import methodsConfiguration from 'wcpay/payment-methods-map';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 const PaymentMethodsDescription = () => (
@@ -40,8 +39,8 @@ const PaymentMethodsSection = () => {
 	const availableNonBuyNowPayLaterMethodIds = availablePaymentMethodIds
 		.filter(
 			( id ) =>
-				methodsConfiguration[ id ] &&
-				! methodsConfiguration[ id ].allows_pay_later &&
+				wcpayWpAdminPaymentMethodsConfig[ id ] &&
+				! wcpayWpAdminPaymentMethodsConfig[ id ].allows_pay_later &&
 				// Stripe Link is displayed in the Express Checkout section
 				PAYMENT_METHOD_IDS.LINK !== id
 		)

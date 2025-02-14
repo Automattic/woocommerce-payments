@@ -62,14 +62,6 @@ abstract class UPE_Payment_Method {
 	protected $currencies;
 
 	/**
-	 * Should payment method be restricted to only domestic payments.
-	 * E.g. only to Stripe's connected account currency.
-	 *
-	 * @var boolean
-	 */
-	protected $accept_only_domestic_payment = false;
-
-	/**
 	 * Represent payment total limitations for the payment method (per-currency).
 	 *
 	 * @var array<string,array<string,array<string,int>>>
@@ -144,16 +136,6 @@ abstract class UPE_Payment_Method {
 	 */
 	public function get_currencies() {
 		return $this->currencies;
-	}
-
-	/**
-	 * Determines whether the payment method is restricted to the Stripe account's currency.
-	 * E.g.: Afterpay/Clearpay and Affirm only supports domestic payments; Klarna also implements a simplified version of these market restrictions.
-	 *
-	 * @return bool
-	 */
-	public function has_domestic_transactions_restrictions() {
-		return $this->accept_only_domestic_payment;
 	}
 
 	/**
@@ -238,21 +220,13 @@ abstract class UPE_Payment_Method {
 	 * Returns boolean dependent on whether payment method will accept charges
 	 * with chosen currency
 	 *
-	 * @param string   $account_domestic_currency Domestic currency of the account.
-	 * @param int|null $order_id                 Optional order ID, if order currency should take precedence.
+	 * @param int|null $order_id Optional order ID, if order currency should take precedence.
 	 *
 	 * @return bool
 	 */
-	public function is_currency_valid( string $account_domestic_currency, $order_id = null ) {
+	public function is_currency_valid( $order_id = null ) {
 		$current_store_currency = $this->get_currency( $order_id );
-
-		if ( $this->has_domestic_transactions_restrictions() ) {
-			if ( strtolower( $current_store_currency ) !== strtolower( $account_domestic_currency ) ) {
-				return false;
-			}
-		}
-
-		$supported_currencies = $this->get_currencies();
+		$supported_currencies   = $this->get_currencies();
 
 		return empty( $supported_currencies ) || in_array( $current_store_currency, $supported_currencies, true );
 	}
@@ -323,10 +297,7 @@ abstract class UPE_Payment_Method {
 	 * @return array
 	 */
 	public function get_countries() {
-		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
-		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
-
-		return $this->has_domestic_transactions_restrictions() ? [ $account_country ] : $this->countries;
+		return $this->countries;
 	}
 
 	/**
