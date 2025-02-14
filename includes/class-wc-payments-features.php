@@ -31,6 +31,7 @@ class WC_Payments_Features {
 	const TOKENIZED_CART_ECE_FLAG_NAME          = '_wcpay_feature_tokenized_cart_ece';
 	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME     = '_wcpay_feature_payment_overview_widget';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME = '_wcpay_feature_woopay_global_theme_support';
+	const PROMPT_MERCHANT_FOR_REVIEW_FLAG_NAME  = '_wcpay_feature_prompt_merchant_for_review';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -390,5 +391,14 @@ class WC_Payments_Features {
 		$woopayments_enabled_setting = $woopayments_settings['enabled'] ?? 'no';
 
 		return 'yes' === $woopayments_enabled_setting;
+	}
+
+	/**
+	 * Checks if the merchant feedback prompt feature flag is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_merchant_feedback_prompt_enabled(): bool {
+		return '1' === get_option( self::PROMPT_MERCHANT_FOR_REVIEW_FLAG_NAME, '0' );
 	}
 }
