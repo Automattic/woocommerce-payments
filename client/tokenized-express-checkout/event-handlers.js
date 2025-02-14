@@ -34,6 +34,8 @@ export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
 
 export const shippingAddressChangeHandler = async ( event, elements ) => {
+	lastSelectedAddress = event.address;
+
 	try {
 		// Please note that the `event.address` might not contain all the fields.
 		// Some fields might not be present (like `line_1` or `line_2`) due to semi-anonymized data.
@@ -61,8 +63,6 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 				cartData.totals
 			),
 		} );
-
-		lastSelectedAddress = event.address;
 
 		event.resolve( {
 			shippingRates: transformCartDataForShippingRates( cartData ),

@@ -698,7 +698,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
-		$this->assertEquals( 'Credit card / debit card', $card_method->get_title( 'US' ) );
+		$this->assertEquals( 'Cards', $card_method->get_title( 'US' ) );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
 		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( 'US', $mock_mastercard_details ) );
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );

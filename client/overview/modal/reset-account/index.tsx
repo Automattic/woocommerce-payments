@@ -9,6 +9,7 @@ import { Button, CardDivider, Modal } from '@wordpress/components';
  */
 import './style.scss';
 import strings from './strings';
+import { isInTestModeOnboarding } from 'utils';
 
 interface Props {
 	isVisible: boolean;
@@ -34,13 +35,20 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 				{ strings.description }
 			</p>
 			<div className="wcpay-reset-account-modal__content">
-				<b>{ strings.beforeContinue }</b>
-				<ol>
-					<li>{ strings.step1 }</li>
-					<li>{ strings.step2 }</li>
-					<li>{ strings.step3 }</li>
-				</ol>
-				<CardDivider />
+				{
+					// Only show the steps involved info if the account has been onboarded in live mode.
+					! isInTestModeOnboarding && (
+						<>
+							<b>{ strings.beforeContinue }</b>
+							<ol>
+								<li>{ strings.step1 }</li>
+								<li>{ strings.step2 }</li>
+								<li>{ strings.step3 }</li>
+							</ol>
+							<CardDivider />
+						</>
+					)
+				}
 				<b>{ strings.confirmation }</b>
 			</div>
 			<div className="wcpay-reset-account-modal__footer">

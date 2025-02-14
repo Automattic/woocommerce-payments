@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Add type assertion for payouts CSV export response to ensure type safety and fix TypeScript linting error
-
-

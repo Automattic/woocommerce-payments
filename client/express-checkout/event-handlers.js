@@ -23,6 +23,8 @@ import {
 let lastSelectedAddress = null;
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
+	lastSelectedAddress = event.address;
+
 	try {
 		const response = await api.expressCheckoutECECalculateShippingOptions(
 			normalizeShippingAddress( event.address )
@@ -32,8 +34,6 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 			elements.update( {
 				amount: response.total.amount,
 			} );
-
-			lastSelectedAddress = event.address;
 
 			event.resolve( {
 				shippingRates: response.shipping_options,

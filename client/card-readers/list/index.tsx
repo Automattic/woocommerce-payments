@@ -36,7 +36,7 @@ const ReadersList = (): JSX.Element => {
 	const { readers, isLoading } = useReaders( 10 );
 
 	return (
-		<SettingsLayout displayBanner={ false }>
+		<SettingsLayout>
 			<SettingsSection description={ ReadersListDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<Card className="card-readers-list__wrapper">

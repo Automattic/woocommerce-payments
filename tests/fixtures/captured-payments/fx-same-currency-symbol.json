@@ -1,0 +1,56 @@
+{
+  "title": "FX Payment with a same currency symbol but different currency",
+  "capturedEvent":
+    {
+      "type": "captured",
+      "amount": 2400,
+      "amount_captured": 2400,
+      "fee": 132,
+      "fee_rates": {
+        "percentage": 0.039,
+        "fixed": 39,
+        "fixed_currency": "CAD",
+        "history": [
+          {
+            "type": "base",
+            "additional_type": "",
+            "fee_id": "base-us-card-fee",
+            "percentage_rate": 0.029,
+            "fixed_rate": 30,
+            "currency": "usd"
+          },
+          {
+            "type": "additional",
+            "additional_type": "fx",
+            "fee_id": "additional-us-card-fx-fee",
+            "percentage_rate": 0.01,
+            "fixed_rate": 0,
+            "currency": "usd"
+          }
+        ]
+      },
+      "currency": "CAD",
+      "datetime": 1736871090,
+      "deposit": null,
+      "transaction_id": "txn_3QhCiER3NO9FvHYd2DQY4k1S",
+      "transaction_details": {
+        "customer_currency": "CAD",
+        "customer_amount": 2400,
+        "customer_amount_captured": 2400,
+        "customer_fee": 132,
+        "store_currency": "USD",
+        "store_amount": 1672,
+        "store_amount_captured": 1672,
+        "store_fee": 92
+      }
+    },
+  "expectation": {
+    "fxString": "1.00 CAD → 0.696667 USD: $16.72 USD",
+    "feeString": "Fee (3.9% + $0.39 CAD): -$0.92 USD",
+    "feeBreakdown": {
+      "base": "Base fee: 2.9% + $0.30 USD",
+      "additional-fx": "Currency conversion fee: 1%"
+    },
+    "netString": "Net payout: $15.80 USD"
+  }
+}

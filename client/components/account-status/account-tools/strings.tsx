@@ -13,7 +13,7 @@ export default {
 	title: __( 'Account Tools', 'woocommerce-payments' ),
 	description: isInTestModeOnboarding()
 		? __(
-				'Your account is in sandbox mode. If you are experiencing problems completing account setup, or wish to test with a different email/country associated with your account, you can reset your account and start from the beginning.',
+				'You are using a test account. If you are experiencing problems completing account setup, or wish to test with a different email/country associated with your account, you can reset your account and start from the beginning.',
 				'woocommerce-payments'
 		  )
 		: __(

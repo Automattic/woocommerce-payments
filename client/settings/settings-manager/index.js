@@ -18,6 +18,7 @@ import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
+import AccountManagement from '../account-management';
 import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
@@ -102,6 +103,20 @@ const DepositsDescription = () => {
 	);
 };
 
+const AccountDetailsDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Account details', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'View and edit your WooPayments account details like personal or business information and public information.',
+					'woocommerce-payments'
+				) }
+			</p>
+		</>
+	);
+};
+
 const FraudProtectionDescription = () => {
 	return (
 		<>
@@ -143,7 +158,6 @@ const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
-
 	const { isLoading } = useSettings();
 
 	useLayoutEffect( () => {
@@ -211,6 +225,16 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</SettingsSection>
 			</DuplicatedPaymentMethodsContext.Provider>
+			<SettingsSection
+				description={ AccountDetailsDescription }
+				id="account-details"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<AccountManagement />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
 			<SettingsSection
 				description={ TransactionsDescription }
 				id="transactions"

@@ -15,7 +15,7 @@ import { getDetailsURL } from '../../components/details-link';
 import ClickableCell from '../../components/clickable-cell';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
-interface Column extends TableCardColumn {
+export interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'status';
 	visible?: boolean;
 	cellClassName?: string;
@@ -31,7 +31,6 @@ export const getBlockedListColumns = (): Column[] =>
 			key: 'created',
 			label: __( 'Date / Time', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Date / Time', 'woocommerce-payments' ),
-			labelInCsv: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',

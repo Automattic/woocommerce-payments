@@ -15,7 +15,7 @@ import { dispatch } from '@wordpress/data';
 import AccountBalances from 'components/account-balances';
 import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
-import ConnectionSuccessNotice from './connection-sucess-notice';
+import ConnectionSuccessModal from './modal/connection-success';
 import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
 import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
@@ -93,6 +93,8 @@ const OverviewPage = () => {
 	const accountRejected =
 		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 	const accountUnderReview = accountStatus.status === 'under_review';
+	const paymentsEnabled = accountStatus.paymentsEnabled;
+	const depositsEnabled = accountStatus.deposits?.status === 'enabled';
 
 	const showConnectionSuccess =
 		queryParams[ 'wcpay-connection-success' ] === '1';
@@ -114,6 +116,14 @@ const OverviewPage = () => {
 		! progressiveOnboarding.isComplete;
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
+	const isPoDisabledOrCompleted =
+		! progressiveOnboarding.isEnabled || progressiveOnboarding.isComplete;
+	const showConnectionSuccessModal =
+		showConnectionSuccess &&
+		! isTestModeOnboarding &&
+		paymentsEnabled &&
+		depositsEnabled &&
+		isPoDisabledOrCompleted;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -191,7 +201,6 @@ const OverviewPage = () => {
 				<FRTDiscoverabilityBanner />
 			</ErrorBoundary>
 
-			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<Welcome />
@@ -246,6 +255,11 @@ const OverviewPage = () => {
 			{ showProgressiveOnboardingEligibilityModal && (
 				<ErrorBoundary>
 					<ProgressiveOnboardingEligibilityModal />
+				</ErrorBoundary>
+			) }
+			{ showConnectionSuccessModal && (
+				<ErrorBoundary>
+					<ConnectionSuccessModal />
 				</ErrorBoundary>
 			) }
 		</Page>

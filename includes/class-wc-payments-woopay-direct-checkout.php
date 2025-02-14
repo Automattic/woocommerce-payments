@@ -6,6 +6,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\WooPay\WooPay_Utilities;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -14,6 +16,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class WC_Payments_WooPay_Direct_Checkout.
  */
 class WC_Payments_WooPay_Direct_Checkout {
+	/**
+	 * WooPay_Utilities instance.
+	 *
+	 * @var WooPay_Utilities
+	 */
+	private $woopay_utilities;
+
+	/**
+	 * Initialize class actions.
+	 *
+	 * @param WooPay_Utilities $woopay_utilities WooPay utilities.
+	 */
+	public function __construct( WooPay_Utilities $woopay_utilities ) {
+		$this->woopay_utilities = $woopay_utilities;
+	}
+
 	/**
 	 * Initialize the hooks.
 	 *
@@ -68,6 +86,10 @@ class WC_Payments_WooPay_Direct_Checkout {
 	 */
 	public function scripts() {
 		if ( ! $this->should_enqueue_scripts() ) {
+			return;
+		}
+
+		if ( ! $this->woopay_utilities->should_enable_woopay_on_cart_or_checkout() ) {
 			return;
 		}
 

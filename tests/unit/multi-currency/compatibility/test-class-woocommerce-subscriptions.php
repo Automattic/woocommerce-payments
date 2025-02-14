@@ -490,13 +490,56 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	}
 
 	/**
-	 * Confirm that false is returned if specific types of subs are in the cart and there are specific calls in the backtrace.
-	 *
-	 * @dataProvider provider_sub_types_renewal_resubscribe
+	 * Tests that should_convert_product_price returns true when WooCommerce Subscriptions is setting up WC cart with the renewal item.
 	 */
-	public function test_should_convert_product_price_return_false_when_sub_type_in_cart_and_backtrace_match( $sub_type ) {
+	public function test_should_convert_product_price_return_true_when_renewal_in_cart_and_cart_is_being_set_up() {
 		// Arrange: Create a subscription and cart_items to be used.
-		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( $sub_type );
+		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'renewal' );
+
+		// Arrange: Set expectation and return for is_call_in_backtrace.
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->with( [ 'WCS_Cart_Renewal->setup_cart' ] )
+			->willReturn( true );
+
+		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
+	}
+
+	/**
+	 * Confirm that false is returned if renewal is in cart and there are specific calls in the backtrace.
+	 */
+	public function test_should_convert_product_price_return_false_when_renewal_in_cart_and_backtrace_match() {
+		// Arrange: Create a subscription and cart_items to be used.
+		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'renewal' );
+
+		// Arrange: Set expectation and return for is_call_in_backtrace.
+		$this->mock_utils
+			->expects( $this->exactly( 2 ) )
+			->method( 'is_call_in_backtrace' )
+			->withConsecutive(
+				[ [ 'WCS_Cart_Renewal->setup_cart' ] ],
+				[
+					[
+						'WC_Cart_Totals->calculate_item_totals',
+						'WC_Cart->get_product_subtotal',
+						'wc_get_price_excluding_tax',
+						'wc_get_price_including_tax',
+					],
+				]
+			)
+			->willReturn( false, true );
+
+		// Act/Assert: Confirm the result value is false.
+		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
+	}
+
+	/**
+	 * Confirm that false is returned if resubscribe is in cart and there are specific calls in the backtrace.
+	 */
+	public function test_should_convert_product_price_return_false_when_resubscribe_in_cart_and_backtrace_match() {
+		// Arrange: Create a subscription and cart_items to be used.
+		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'resubscribe' );
 
 		// Arrange: Set expectation and return for is_call_in_backtrace.
 		$this->mock_utils
@@ -517,13 +560,40 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	}
 
 	/**
-	 * Confirm that true is returned even if there are specific sub types in the cart, but the backtraces are not correct.
-	 *
-	 * @dataProvider provider_sub_types_renewal_resubscribe
+	 * Confirm that true is returned even if there is renewal in the cart, but the backtraces are not correct.
 	 */
-	public function test_should_convert_product_price_return_true_when_sub_type_in_cart_and_backtraces_do_not_match( $sub_type ) {
+	public function test_should_convert_product_price_return_true_when_renewal_in_cart_and_backtraces_do_not_match() {
 		// Arrange: Create a subscription and cart_items to be used.
-		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( $sub_type );
+		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'renewal' );
+
+		// Arrange: Set expectations and returns for is_call_in_backtrace.
+		$this->mock_utils
+			->expects( $this->exactly( 3 ) )
+			->method( 'is_call_in_backtrace' )
+			->withConsecutive(
+				[ [ 'WCS_Cart_Renewal->setup_cart' ] ],
+				[
+					[
+						'WC_Cart_Totals->calculate_item_totals',
+						'WC_Cart->get_product_subtotal',
+						'wc_get_price_excluding_tax',
+						'wc_get_price_including_tax',
+					],
+				],
+				[ [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] ]
+			)
+			->willReturn( false );
+
+		// Act/Assert: Confirm the result value is true.
+		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
+	}
+
+	/**
+	 * Confirm that true is returned even if there is resubscribe in the cart, but the backtraces are not correct.
+	 */
+	public function test_should_convert_product_price_return_true_when_resubscribe_in_cart_and_backtraces_do_not_match() {
+		// Arrange: Create a subscription and cart_items to be used.
+		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'resubscribe' );
 
 		// Arrange: Set expectations and returns for is_call_in_backtrace.
 		$this->mock_utils
@@ -547,14 +617,43 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	}
 
 	/**
-	 * Confirm that true is returned even if there are specific sub types in the cart, but the backtraces are not correct.
+	 * Confirm that true is returned even if there is renewal in the cart, but the backtraces are not correct.
 	 * This is the same as the above, with the second backtrace check being true, so the third one is now checked.
-	 *
-	 * @dataProvider provider_sub_types_renewal_resubscribe
 	 */
-	public function test_should_convert_product_price_return_true_when_sub_type_in_cart_and_backtraces_do_not_match_exactly( $sub_type ) {
+	public function test_should_convert_product_price_return_true_when_renewal_in_cart_and_backtraces_do_not_match_exactly() {
 		// Arrange: Create a subscription and cart_items to be used.
-		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( $sub_type );
+		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'renewal' );
+
+		// Arrange: Set expectations and returns for is_call_in_backtrace.
+		$this->mock_utils
+			->expects( $this->exactly( 4 ) )
+			->method( 'is_call_in_backtrace' )
+			->withConsecutive(
+				[ [ 'WCS_Cart_Renewal->setup_cart' ] ],
+				[
+					[
+						'WC_Cart_Totals->calculate_item_totals',
+						'WC_Cart->get_product_subtotal',
+						'wc_get_price_excluding_tax',
+						'wc_get_price_including_tax',
+					],
+				],
+				[ [ 'WC_Payments_Subscription_Service->get_recurring_item_data_for_subscription' ] ],
+				[ [ 'WC_Product->get_price' ] ]
+			)
+			->willReturn( false, false, true, false );
+
+		// Act/Assert: Confirm the result value is true.
+		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
+	}
+
+	/**
+	 * Confirm that true is returned even if there is resubscribe in the cart, but the backtraces are not correct.
+	 * This is the same as the above, with the second backtrace check being true, so the third one is now checked.
+	 */
+	public function test_should_convert_product_price_return_true_when_resubscribe_in_cart_and_backtraces_do_not_match_exactly() {
+		// Arrange: Create a subscription and cart_items to be used.
+		[ $mock_subscription, $cart_items ] = $this->get_mock_subscription_and_session_cart_items( 'resubscribe' );
 
 		// Arrange: Set expectations and returns for is_call_in_backtrace.
 		$this->mock_utils
@@ -859,13 +958,6 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			'renewal'     => [ 'renewal' ],
 			'resubscribe' => [ 'resubscribe' ],
 			'switch'      => [ 'switch' ],
-		];
-	}
-
-	public function provider_sub_types_renewal_resubscribe() {
-		return [
-			'renewal'     => [ 'renewal' ],
-			'resubscribe' => [ 'resubscribe' ],
 		];
 	}
 

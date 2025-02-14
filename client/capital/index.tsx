@@ -225,6 +225,7 @@ const CapitalPage = (): JSX.Element => {
 				rows={ getRowsData( loans ) }
 				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
+				// The Capital Loan table does not have column configuration enabled, see issue #10106.
 				showMenu={ false }
 			/>
 		</Page>

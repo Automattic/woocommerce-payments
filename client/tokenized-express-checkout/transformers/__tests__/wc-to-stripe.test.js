@@ -17,6 +17,83 @@ describe( 'wc-to-stripe transformers', () => {
 				transformCartDataForDisplayItems( {
 					items: [
 						{
+							key: '6fd9b4da889ae534ceae47561b939f24',
+							id: 214,
+							type: 'simple',
+							quantity: 2,
+							name: 'Deposit',
+							variation: [],
+							item_data: [
+								{
+									name: 'Payment Plan',
+									value: 'Deposit 30',
+									display: '',
+								},
+								{
+									key: 'Payable In Total',
+									value: '&#36;45.00 payable over 20 days',
+								},
+							],
+							prices: {
+								price: '4500',
+								regular_price: '5000',
+								sale_price: '4500',
+								price_range: null,
+								currency_code: 'USD',
+								currency_symbol: '$',
+								currency_minor_unit: 2,
+								currency_decimal_separator: '.',
+								currency_thousand_separator: ',',
+								currency_prefix: '$',
+								currency_suffix: '',
+								raw_prices: {
+									precision: 6,
+									price: '45000000',
+									regular_price: '50000000',
+									sale_price: '45000000',
+								},
+							},
+							totals: {
+								line_subtotal: '1350',
+								line_subtotal_tax: 0,
+								line_total: '4500',
+								line_total_tax: '388',
+								currency_code: 'USD',
+								currency_symbol: '$',
+								currency_minor_unit: 2,
+								currency_decimal_separator: '.',
+								currency_thousand_separator: ',',
+								currency_prefix: '$',
+								currency_suffix: '',
+							},
+							catalog_visibility: 'visible',
+							extensions: {
+								'woocommerce-deposits': {
+									is_deposit: true,
+									has_payment_plan: true,
+									plan_schedule: [
+										{
+											schedule_id: '2',
+											schedule_index: '0',
+											plan_id: '2',
+											amount: '30',
+											interval_amount: '0',
+											interval_unit: '0',
+										},
+										{
+											schedule_id: '3',
+											schedule_index: '1',
+											plan_id: '2',
+											amount: '70',
+											interval_amount: '20',
+											interval_unit: 'day',
+										},
+									],
+								},
+								bundles: [],
+							},
+						},
+						{
 							key: '30e94626ff41df1be0572e19f249746f',
 							id: 44,
 							type: 'subscription',
@@ -136,11 +213,40 @@ describe( 'wc-to-stripe transformers', () => {
 						},
 					],
 					shipping_rates: [],
-					totals: {},
+					totals: {
+						currency_code: 'USD',
+						currency_decimal_separator: '.',
+						currency_minor_unit: 2,
+						currency_prefix: '$',
+						currency_suffix: '',
+						currency_symbol: '$',
+						currency_thousand_separator: ',',
+						tax_lines: [],
+						total_discount: '0',
+						total_discount_tax: '0',
+						total_fees: '0',
+						total_fees_tax: '0',
+						total_items: '6000',
+						total_items_tax: '0',
+						total_price: '6000',
+						total_shipping: '0',
+						total_shipping_tax: '0',
+						total_tax: '0',
+					},
 				} )
 			).toStrictEqual( [
+				{
+					amount: 1350,
+					name:
+						'Deposit (x2) - Payment Plan: Deposit 30, Payable In Total: $45.00 payable over 20 days',
+				},
 				{ amount: 4500, name: 'Physical subscription' },
-				{ amount: 150, name: 'WC Bookings – Equipment Rental' },
+				{
+					amount: 150,
+					name:
+						// eslint-disable-next-line max-len
+						'WC Bookings – Equipment Rental - Booking Date: August 3, 2024, Qty (Sample person): 1, Booking Type: Black folding chairs (Sample resource)',
+				},
 			] );
 		} );
 
@@ -183,6 +289,113 @@ describe( 'wc-to-stripe transformers', () => {
 			expect(
 				transformCartDataForDisplayItems( {
 					items: [],
+					shipping_rates: [],
+					totals: {
+						total_items: '0',
+						total_items_tax: '0',
+						total_fees: '0',
+						total_fees_tax: '0',
+						total_discount: '0',
+						total_discount_tax: '0',
+						total_shipping: '0',
+						total_shipping_tax: '0',
+						total_price: '0',
+						total_tax: '0',
+						tax_lines: [],
+						currency_code: 'USD',
+						currency_symbol: '$',
+						currency_minor_unit: 2,
+						currency_decimal_separator: '.',
+						currency_thousand_separator: ',',
+						currency_prefix: '$',
+						currency_suffix: '',
+					},
+				} )
+			).toStrictEqual( [] );
+		} );
+
+		it( 'does not return line items when there is a discrepancy with the totals', () => {
+			expect(
+				transformCartDataForDisplayItems( {
+					items: [
+						{
+							key: '6fd9b4da889ae534ceae47561b939f24',
+							id: 214,
+							type: 'simple',
+							quantity: 2,
+							name: 'Deposit',
+							variation: [],
+							item_data: [
+								{
+									name: 'Payment Plan',
+									value: 'Deposit 30',
+									display: '',
+								},
+								{
+									key: 'Payable In Total',
+									value: '&#36;45.00 payable over 20 days',
+								},
+							],
+							prices: {
+								price: '4500',
+								regular_price: '5000',
+								sale_price: '4500',
+								price_range: null,
+								currency_code: 'USD',
+								currency_symbol: '$',
+								currency_minor_unit: 2,
+								currency_decimal_separator: '.',
+								currency_thousand_separator: ',',
+								currency_prefix: '$',
+								currency_suffix: '',
+								raw_prices: {
+									precision: 6,
+									price: '45000000',
+									regular_price: '50000000',
+									sale_price: '45000000',
+								},
+							},
+							totals: {
+								line_subtotal: '1350',
+								line_subtotal_tax: 0,
+								line_total: '4500',
+								line_total_tax: '388',
+								currency_code: 'USD',
+								currency_symbol: '$',
+								currency_minor_unit: 2,
+								currency_decimal_separator: '.',
+								currency_thousand_separator: ',',
+								currency_prefix: '$',
+								currency_suffix: '',
+							},
+							catalog_visibility: 'visible',
+							extensions: {
+								'woocommerce-deposits': {
+									is_deposit: true,
+									has_payment_plan: true,
+									plan_schedule: [
+										{
+											schedule_id: '2',
+											schedule_index: '0',
+											plan_id: '2',
+											amount: '30',
+											interval_amount: '0',
+											interval_unit: '0',
+										},
+										{
+											schedule_id: '3',
+											schedule_index: '1',
+											plan_id: '2',
+											amount: '70',
+											interval_amount: '20',
+											interval_unit: 'day',
+										},
+									],
+								},
+								bundles: [],
+							},
+						},
+					],
 					shipping_rates: [],
 					totals: {
 						total_items: '0',

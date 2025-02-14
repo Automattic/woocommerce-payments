@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @psalm-immutable
  */
 class Payment_Method extends Base_Constant {
+	const ALIPAY          = 'alipay';
 	const BANCONTACT      = 'bancontact';
 	const BASC            = 'bacs_debit';
 	const BECS            = 'au_becs_debit';
@@ -35,6 +36,8 @@ class Payment_Method extends Base_Constant {
 	const AFFIRM          = 'affirm';
 	const AFTERPAY        = 'afterpay_clearpay';
 	const KLARNA          = 'klarna';
+	const GRABPAY         = 'grabpay';
+	const WECHAT_PAY      = 'wechat_pay';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,

@@ -68,6 +68,7 @@ Capture the funds of an in-person payment intent. Given an intent ID and an orde
 -   `wcpay_refunded_order_uncapturable` - Payment cannot be captured for partially or fully refunded orders
 -   `wcpay_payment_uncapturable` - The payment cannot be captured if intent status is not one of 'processing', 'requires_capture', or 'succeeded'
 -   `wcpay_capture_error` - Unknown error
+-   `wcpay_capture_error_amount_too_small` - The payment cannot be captured because the amount is too small
 
 ### HTTP request
 
@@ -124,6 +125,7 @@ Capture the funds of an existing uncaptured payment intent that was marked to be
 -   `wcpay_payment_uncapturable` - The payment cannot be captured if intent status is not one of 'processing', 'requires_capture', or 'succeeded'
 -   `wcpay_intent_order_mismatch` - Payment cannot be captured because the order id does not match
 -   `wcpay_capture_error` - Unknown error
+-   `wcpay_capture_error_amount_too_small` - The payment cannot be captured because the amount is too small
 
 ### HTTP request
 

@@ -95,16 +95,6 @@ button.wcpay-stripelink-modal-trigger:hover {
 				display: none;
 			}
 
-			@include breakpoint( '<480px' ) {
-				grid-template-areas: 'label logos' 'badge badge';
-				grid-template-columns: 1fr auto;
-				align-items: start;
-
-				.payment-methods--logos {
-					justify-self: end;
-				}
-			}
-
 			&__pmme-container {
 				width: 100%;
 				pointer-events: none;

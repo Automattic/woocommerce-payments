@@ -31,6 +31,7 @@ import {
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
 import {
+	Column,
 	getBlockedListColumns,
 	getBlockedListColumnsStructure,
 } from './columns';
@@ -38,13 +39,17 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import autocompleter from '../fraud-protection/autocompleter';
 import DownloadButton from '../../components/download-button';
 import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 export const BlockedList = (): JSX.Element => {
 	const [ isDownloading, setIsDownloading ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const query = getQuery();
 
-	const columnsToDisplay = getBlockedListColumns();
+	const columns = getBlockedListColumns();
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		Column
+	>( 'wc_payments_transactions_blocked_hidden_columns', columns );
 	const { isLoading, transactions } = useFraudOutcomeTransactions(
 		'block',
 		query
@@ -174,6 +179,7 @@ export const BlockedList = (): JSX.Element => {
 				summary={ summary }
 				query={ query }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					<Search
 						inlineTags

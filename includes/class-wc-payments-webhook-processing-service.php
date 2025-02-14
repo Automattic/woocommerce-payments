@@ -324,6 +324,19 @@ class WC_Payments_Webhook_Processing_Service {
 		$order->add_order_note( $note );
 		$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
 		$order->save();
+
+		try {
+			$failure_reason = $this->read_webhook_property( $event_object, 'failure_reason' );
+
+			if ( 'insufficient_funds' === $failure_reason ) {
+				$this->order_service->handle_insufficient_balance_for_refund(
+					$order,
+					$amount
+				);
+			}
+		} catch ( Exception $e ) {
+			Logger::debug( 'Failed to handle insufficient balance for refund: ' . $e->getMessage() );
+		}
 	}
 
 	/**
@@ -439,8 +452,11 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object  = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$intent_status = $this->read_webhook_property( $event_object, 'status' );
-
-		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
+		if ( Payment_Method::CARD_PRESENT === $payment_method_type ) {
+			$this->order_service->mark_terminal_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
+		} else {
+			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
+		}
 	}
 
 	/**

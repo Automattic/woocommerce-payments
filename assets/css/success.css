@@ -8,6 +8,7 @@
 
 .wc-payment-gateway-method-logo-wrapper img {
 	margin-right: 0.5rem;
+	max-height: 20px;
 }
 
 .wc-payment-gateway-method-logo-wrapper.wc-payment-lpm-logo img {

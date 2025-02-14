@@ -65,29 +65,18 @@ const fetchNewCartData = async () => {
 };
 
 const getServerSideExpressCheckoutProductData = () => {
-	const requestShipping =
-		getExpressCheckoutData( 'product' )?.needs_shipping ?? false;
 	const displayItems = (
 		getExpressCheckoutData( 'product' )?.displayItems ?? []
 	).map( ( { label, amount } ) => ( {
 		name: label,
 		amount,
 	} ) );
-	const shippingRates = requestShipping
-		? [
-				{
-					id: 'pending',
-					displayName: __( 'Pending', 'woocommerce-payments' ),
-					amount: 0,
-				},
-		  ]
-		: undefined;
 
 	return {
 		total: getExpressCheckoutData( 'product' )?.total.amount,
 		currency: getExpressCheckoutData( 'product' )?.currency,
-		requestShipping,
-		shippingRates,
+		requestShipping:
+			getExpressCheckoutData( 'product' )?.needs_shipping ?? false,
 		requestPhone:
 			getExpressCheckoutData( 'checkout' )?.needs_payer_phone ?? false,
 		displayItems,
@@ -258,17 +247,38 @@ jQuery( ( $ ) => {
 					} );
 				}
 
+				const shippingOptionsWithFallback =
+					! options.shippingRates || // server-side data on the product page initialization doesn't provide any shipping rates.
+					options.shippingRates.length === 0 // but it can also happen that there are no rates in the array.
+						? [
+								// fallback for initialization (and initialization _only_), before an address is provided by the ECE.
+								{
+									id: 'pending',
+									displayName: __(
+										'Pending',
+										'woocommerce-payments'
+									),
+									amount: 0,
+								},
+						  ]
+						: options.shippingRates;
+
 				const clickOptions = {
 					// `options.displayItems`, `options.requestShipping`, `options.requestPhone`, `options.shippingRates`,
 					// are all coming from prior of the initialization.
 					// The "real" values will be updated once the button loads.
 					// They are preemptively initialized because the `event.resolve({})`
 					// needs to be called within 1 second of the `click` event.
+					business: {
+						name: getExpressCheckoutData( 'store_name' ),
+					},
 					lineItems: options.displayItems,
 					emailRequired: true,
 					shippingAddressRequired: options.requestShipping,
 					phoneNumberRequired: options.requestPhone,
-					shippingRates: options.shippingRates,
+					shippingRates: options.requestShipping
+						? shippingOptionsWithFallback
+						: undefined,
 					allowedShippingCountries: getExpressCheckoutData(
 						'checkout'
 					).allowed_shipping_countries,
@@ -299,8 +309,6 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'cancel', async () => {
-				wcpayECE.paymentAborted = true;
-
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
@@ -353,48 +361,13 @@ jQuery( ( $ ) => {
 						expressCheckoutButtonUi.blockButton();
 
 						cachedCartData = await fetchNewCartData();
-						// checking if items needed shipping, before assigning new cart data.
-						const didItemsNeedShipping = options.requestShipping;
 
-						/**
-						 * If the customer aborted the payment request, we need to re init the payment request button to ensure the shipping
-						 * options are re-fetched. If the customer didn't abort the payment request, and the product's shipping status is
-						 * consistent, we can simply update the payment request button with the new total and display items.
-						 */
-						if (
-							! wcpayECE.paymentAborted &&
-							didItemsNeedShipping ===
-								cachedCartData.needs_shipping
-						) {
-							elements.update( {
-								total: {
-									label: getExpressCheckoutData(
-										'total_label'
-									),
-									amount: transformPrice(
-										parseInt(
-											cachedCartData.totals.total_price,
-											10
-										) -
-											parseInt(
-												cachedCartData.totals
-													.total_refund || 0,
-												10
-											),
-										cachedCartData.totals
-									),
-								},
-								displayItems: transformCartDataForDisplayItems(
-									cachedCartData
-								),
-							} );
-						} else {
-							// the cachedCartData from the Store API will be used from now on,
-							// instead of the `product` attributes.
-							wcpayExpressCheckoutParams.product = null;
+						// We need to re init the payment request button to ensure the shipping options & taxes are re-fetched.
+						// The cachedCartData from the Store API will be used from now on,
+						// instead of the `product` attributes.
+						wcpayExpressCheckoutParams.product = null;
 
-							await wcpayECE.init();
-						}
+						await wcpayECE.init();
 
 						expressCheckoutButtonUi.unblockButton();
 					} catch ( e ) {
@@ -410,6 +383,14 @@ jQuery( ( $ ) => {
 		init: async () => {
 			// on product pages, we should be able to have `getExpressCheckoutData( 'product' )` from the backend,
 			// which saves us some AJAX calls.
+			if (
+				getExpressCheckoutData( 'button_context' ) === 'product' &&
+				getExpressCheckoutData( 'product' )?.product_type === 'bundle'
+			) {
+				// server-side data for bundled products is not reliable.
+				wcpayExpressCheckoutParams.product = undefined;
+			}
+
 			if ( ! getExpressCheckoutData( 'product' ) && ! cachedCartData ) {
 				try {
 					cachedCartData = await fetchNewCartData();
@@ -472,9 +453,6 @@ jQuery( ( $ ) => {
 				expressCheckoutButtonUi.hideContainer();
 				expressCheckoutButtonUi.getButtonSeparator().hide();
 			}
-
-			// After initializing a new express checkout button, we need to reset the paymentAborted flag.
-			wcpayECE.paymentAborted = false;
 		},
 	};
 

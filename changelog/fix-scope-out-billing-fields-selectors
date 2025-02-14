@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Broaden billing field queries from form-scoped to document-scoped

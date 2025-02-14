@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import ChevronLeft from 'gridicons/dist/chevron-left';
 
 /**
  * Internal dependencies
@@ -12,6 +11,7 @@ import { OnboardingSteps } from './types';
 import { useTrackAbandoned } from './tracking';
 import strings from './strings';
 import WooLogo from 'assets/images/woo-logo.svg';
+import CloseIcon from 'assets/images/icons/close.svg?asset';
 import './style.scss';
 
 interface Props {
@@ -30,23 +30,13 @@ const Step: React.FC< Props > = ( { name, children, showHeading = true } ) => {
 	return (
 		<>
 			<div className="stepper__nav">
-				<button
-					type="button"
-					className={ `stepper__nav-button ${
-						name === 'embedded' ? 'hide' : ''
-					}` }
-					onClick={ prevStep }
-				>
-					<ChevronLeft />
-					{ strings.back }
-				</button>
 				<img src={ WooLogo } alt="Woo" className="stepper__nav-logo" />
 				<button
 					type="button"
 					className="stepper__nav-button"
 					onClick={ handleExit }
 				>
-					{ strings.cancel }
+					<img src={ CloseIcon } alt="Close" />
 				</button>
 			</div>
 			<div className="stepper__wrapper">

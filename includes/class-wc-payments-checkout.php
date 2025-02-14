@@ -246,7 +246,7 @@ class WC_Payments_Checkout {
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
 			if ( ! isset( $billing_field_options['enabled'] ) || $billing_field_options['enabled'] ) {
 				$enabled_billing_fields[ $billing_field ] = [
-					'required' => $billing_field_options['required'],
+					'required' => $billing_field_options['required'] ?? false,
 				];
 			}
 		}

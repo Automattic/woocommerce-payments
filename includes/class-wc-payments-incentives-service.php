@@ -9,12 +9,42 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\Admin\WCAdminHelper;
 use WCPay\Database_Cache;
 
 /**
- * Class handling onboarding related business logic.
+ * Class handling WooPayments incentives related business logic.
  */
 class WC_Payments_Incentives_Service {
+	const PREFIX = 'woocommerce_admin_pes_incentive_';
+
+	/**
+	 * The transient name for incentives cache.
+	 *
+	 * @var string
+	 */
+	private $cache_transient_name;
+
+	/**
+	 * The transient name used to store the value for if store has orders.
+	 *
+	 * @var string
+	 */
+	private $store_has_orders_transient_name;
+
+	/**
+	 * The option name used to store the value for if store had WooPayments in use.
+	 *
+	 * @var string
+	 */
+	private $store_had_woopayments_option_name;
+
+	/**
+	 * The memoized incentives to avoid fetching multiple times during a request.
+	 *
+	 * @var array|null
+	 */
+	private $incentives_memo = null;
 
 	/**
 	 * Cache util for managing onboarding data.
@@ -30,6 +60,13 @@ class WC_Payments_Incentives_Service {
 	 */
 	public function __construct( Database_Cache $database_cache ) {
 		$this->database_cache = $database_cache;
+
+		// We use the same transient keys as the WC core suggestion incentives.
+		// This way we can reuse the same cache for the incentives across the store admin.
+		// @see \Automattic\WooCommerce\Internal\Admin\Suggestions\Incentives\WooPayments.
+		$this->cache_transient_name              = self::PREFIX . 'woopayments_cache';
+		$this->store_has_orders_transient_name   = self::PREFIX . 'woopayments_store_has_orders';
+		$this->store_had_woopayments_option_name = self::PREFIX . 'woopayments_store_had_woopayments';
 	}
 
 	/**
@@ -52,7 +89,8 @@ class WC_Payments_Incentives_Service {
 	public function add_payments_menu_badge(): void {
 		global $menu;
 
-		if ( ! $this->get_cached_connect_incentive() ) {
+		// Return early if there is no eligible incentive.
+		if ( ! $this->get_connect_incentive() ) {
 			return;
 		}
 
@@ -74,16 +112,12 @@ class WC_Payments_Incentives_Service {
 	 * @return array Updated allowed promo notes.
 	 */
 	public function allowed_promo_notes( $promo_notes = [] ): array {
-		$incentive = $this->get_cached_connect_incentive();
+		$incentive = $this->get_connect_incentive();
 		// Return early if there is no eligible incentive.
 		if ( empty( $incentive['id'] ) ) {
 			return $promo_notes;
 		}
 
-		/**
-		 * Suppress psalm error because we already check that `id` exists in `is_valid_cached_incentive`.
-		 *
-		 * @psalm-suppress PossiblyNullArrayAccess */
 		$promo_notes[] = $incentive['id'];
 
 		return $promo_notes;
@@ -97,13 +131,13 @@ class WC_Payments_Incentives_Service {
 	 * @return string
 	 */
 	public function onboarding_task_badge( string $badge ): string {
-		$incentive = $this->get_cached_connect_incentive();
-		// Return early if there is no eligible incentive.
-		if ( empty( $incentive['id'] ) ) {
+		$incentive = $this->get_connect_incentive();
+		// Return early if there is no eligible incentive or there is no task badge for it.
+		if ( empty( $incentive['task_badge'] ) ) {
 			return $badge;
 		}
 
-		return $incentive['task_badge'] ?? $badge;
+		return $incentive['task_badge'];
 	}
 
 	/**
@@ -114,7 +148,7 @@ class WC_Payments_Incentives_Service {
 	 * @return ?array The filtered task additional data.
 	 */
 	public function onboarding_task_additional_data( ?array $additional_data ): ?array {
-		$incentive = $this->get_cached_connect_incentive();
+		$incentive = $this->get_connect_incentive();
 		// Return early if there is no eligible incentive.
 		if ( empty( $incentive['id'] ) ) {
 			return $additional_data;
@@ -129,60 +163,130 @@ class WC_Payments_Incentives_Service {
 	}
 
 	/**
-	 * Gets and caches eligible connect incentive from the server.
-	 *
-	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
-	 *
-	 * @return array|null List of incentives or null.
+	 * Clear the incentives cache.
 	 */
-	public function get_cached_connect_incentive( bool $force_refresh = false ): ?array {
+	public function clear_cache() {
+		delete_transient( $this->cache_transient_name );
+		$this->reset_memo();
+	}
+
+	/**
+	 * Reset the memoized incentives.
+	 *
+	 * This is useful for testing purposes.
+	 */
+	public function reset_memo() {
+		$this->incentives_memo = null;
+	}
+
+	/**
+	 * Get an eligible 'connect_page' type incentive, if available.
+	 *
+	 * @return array|null The incentive details or null if there is no eligible incentive.
+	 */
+	public function get_connect_incentive(): ?array {
 		// Return early if there is an account connected.
 		if ( WC_Payments::get_account_service()->is_stripe_connected() ) {
 			return null;
 		}
 
+		// The country for which to get the incentive.
+		$country_code = WC()->countries->get_base_country();
+
 		// Return early if the country is not supported.
-		if ( ! array_key_exists( WC()->countries->get_base_country(), WC_Payments_Utils::supported_countries() ) ) {
+		if ( ! array_key_exists( $country_code, WC_Payments_Utils::supported_countries() ) ) {
 			return null;
 		}
 
-		// Fingerprint the store context through a hash of certain entries.
-		$store_context_hash = $this->generate_context_hash( $this->get_store_context() );
+		// Get all the valid incentives.
+		$incentives = array_filter(
+			$this->get_incentives( $country_code ),
+			function ( $incentive ) {
+				return $this->validate_incentive( $incentive );
+			}
+		);
 
-		// First, get the cache contents, if any.
-		$incentive_data = $this->database_cache->get( Database_Cache::CONNECT_INCENTIVE_KEY, true );
-		// Check if we need to force-refresh the cache contents.
-		if ( empty( $incentive_data['context_hash'] ) || ! is_string( $incentive_data['context_hash'] )
-			|| ! hash_equals( $store_context_hash, $incentive_data['context_hash'] ) ) {
+		// Filter by the 'connect_page' incentive type.
+		$incentives = array_filter(
+			$incentives,
+			function ( $incentive ) {
+				return 'connect_page' === $incentive['type'];
+			}
+		);
 
-			// No cache, the hash is missing, or it doesn't match. Force refresh.
-			$incentive_data = $this->database_cache->get_or_add(
-				Database_Cache::CONNECT_INCENTIVE_KEY,
-				[ $this, 'fetch_connect_incentive_details' ],
-				'is_array',
-				true
-			);
-		}
-
-		if ( ! $this->is_valid_cached_incentive( $incentive_data ) ) {
+		// Return early if there are no incentives left.
+		if ( empty( $incentives ) ) {
 			return null;
 		}
 
-		return $incentive_data['incentive'];
+		// Finally, return the first incentive found, if there are more than one.
+		return reset( $incentives );
 	}
 
 	/**
-	 * Fetches eligible connect incentive details from the server.
+	 * Fetches and caches eligible incentives from the WooPayments API.
 	 *
-	 * @return array|null Array of eligible incentive data or null.
+	 * @param string $country_code The business location country code to get incentives for.
+	 *
+	 * @return array List of eligible incentives.
 	 */
-	public function fetch_connect_incentive_details(): ?array {
-		$store_context = $this->get_store_context();
+	private function get_incentives( string $country_code ): array {
+		if ( isset( $this->incentives_memo ) ) {
+			return $this->incentives_memo;
+		}
 
-		// Request incentive from WCPAY API.
+		// Get the cached data.
+		$cache = get_transient( $this->cache_transient_name );
+
+		// If the cached data is not expired, and it's a WP_Error,
+		// it means there was an API error previously, and we should not retry just yet.
+		if ( is_wp_error( $cache ) ) {
+			// Initialize the in-memory cache and return it.
+			$this->incentives_memo = [];
+
+			return $this->incentives_memo;
+		}
+
+		// Gather the store context data.
+		/**
+		 * The WC stub uses 'number' as the return type.
+		 *
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
+		$store_context = [
+			'country'      => $country_code,
+			// Store locale, e.g. `en_US`.
+			'locale'       => get_locale(),
+			// WooCommerce store active for duration in seconds.
+			'active_for'   => WCAdminHelper::get_wcadmin_active_for_in_seconds(),
+			'has_orders'   => $this->has_orders(),
+			// Whether the store has at least one payment gateway enabled.
+			'has_payments' => ! empty( WC()->payment_gateways()->get_available_payment_gateways() ),
+			'has_wcpay'    => $this->has_wcpay(),
+		];
+
+		// Fingerprint the store context through a hash of certain entries.
+		$store_context_hash = $this->generate_context_hash( $store_context );
+
+		// Use the transient cached incentive if it exists, it is not expired,
+		// and the store context hasn't changed since we last requested from the WooPayments API (based on context hash).
+		if ( false !== $cache
+			&& ! empty( $cache['context_hash'] ) && is_string( $cache['context_hash'] )
+			&& hash_equals( $store_context_hash, $cache['context_hash'] ) ) {
+
+			// We have a store context hash, and it matches with the current context one.
+			// We can use the cached incentive data.
+			// Store the incentives in the in-memory cache and return them.
+			$this->incentives_memo = $cache['incentives'] ?? [];
+
+			return $this->incentives_memo;
+		}
+
+		// By this point, we have an expired transient or the store context has changed.
+		// Query for incentives by calling the WooPayments API.
 		$url = add_query_arg(
 			$store_context,
-			'https://public-api.wordpress.com/wpcom/v2/wcpay/incentives'
+			'https://public-api.wordpress.com/wpcom/v2/wcpay/incentives',
 		);
 
 		$response = wp_remote_get(
@@ -192,62 +296,73 @@ class WC_Payments_Incentives_Service {
 			]
 		);
 
-		// Return early if there is an error.
+		// Return early if there is an error, waiting 6 hours before the next attempt.
 		if ( is_wp_error( $response ) ) {
-			return null;
+			// Store a trimmed down, lightweight error.
+			$error = new \WP_Error(
+				$response->get_error_code(),
+				$response->get_error_message(),
+				wp_remote_retrieve_response_code( $response )
+			);
+			// Store the error in the transient so we know this is due to an API error.
+			set_transient( $this->cache_transient_name, $error, HOUR_IN_SECONDS * 6 );
+			// Initialize the in-memory cache and return it.
+			$this->incentives_memo = [];
+
+			return $this->incentives_memo;
 		}
 
-		$incentive = [];
+		$cache_for = wp_remote_retrieve_header( $response, 'cache-for' );
+		// Initialize the in-memory cache.
+		$this->incentives_memo = [];
 
 		if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
 			// Decode the results, falling back to an empty array.
-			$results = json_decode( wp_remote_retrieve_body( $response ), true );
+			$results = json_decode( wp_remote_retrieve_body( $response ), true ) ?? [];
 
-			// Find a `connect_page` incentive.
-			if ( ! empty( $results ) ) {
-				$incentive = array_filter(
-					$results,
-					function ( array $incentive ) {
-						return isset( $incentive['type'] ) && 'connect_page' === $incentive['type'];
-					}
-				)[0] ?? [];
+			// Store incentives in the in-memory cache.
+			$this->incentives_memo = $results;
+		}
+
+		// Skip transient cache if `cache-for` header equals zero.
+		if ( '0' === $cache_for ) {
+			// If we have a transient cache that is not expired, delete it so there are no leftovers.
+			if ( false !== $cache ) {
+				delete_transient( $this->cache_transient_name );
 			}
+
+			return $this->incentives_memo;
 		}
 
-		// Read TTL form the `cache-for` header, or default to 1 day.
-		$cache_for = wp_remote_retrieve_header( $response, 'cache-for' );
+		// Store incentive in transient cache (together with the context hash) for the given number of seconds
+		// or 1 day in seconds. Also attach a timestamp to the transient data so we know when we last fetched.
+		set_transient(
+			$this->cache_transient_name,
+			[
+				'incentives'   => $this->incentives_memo,
+				'context_hash' => $store_context_hash,
+				'timestamp'    => time(),
+			],
+			! empty( $cache_for ) ? (int) $cache_for : DAY_IN_SECONDS
+		);
 
-		$incentive_data = [
-			'incentive' => $incentive,
-		];
-		// Set the Time-To-Live for the incentive data.
-		if ( '' !== $cache_for ) {
-			$incentive_data['ttl'] = (int) $cache_for;
-		} else {
-			$incentive_data['ttl'] = DAY_IN_SECONDS;
-		}
-
-		// Attach the context hash to the incentive data.
-		$incentive_data['context_hash'] = $this->generate_context_hash( $store_context );
-
-		return $incentive_data;
+		return $this->incentives_memo;
 	}
 
 	/**
-	 * Check whether the incentive data fetched from the cache are valid.
-	 * Expects an array with an `incentive` entry that is an array with at least `id`, `description`, and `tc_url` keys.
+	 * Check whether the incentive data is valid.
+	 * Expects an array with at least `id`, `description`, and `tc_url` keys.
 	 *
-	 * @param mixed $incentive_data The incentive data returned from the cache.
+	 * @param mixed $incentive_data The incentive data.
 	 *
 	 * @return bool Whether the incentive data is valid.
 	 */
-	public function is_valid_cached_incentive( $incentive_data ): bool {
+	private function validate_incentive( $incentive_data ): bool {
 		if ( ! is_array( $incentive_data )
-			|| empty( $incentive_data['incentive'] )
-			|| ! is_array( $incentive_data['incentive'] )
-			|| ! isset( $incentive_data['incentive']['id'] )
-			|| ! isset( $incentive_data['incentive']['description'] )
-			|| ! isset( $incentive_data['incentive']['tc_url'] ) ) {
+			|| empty( $incentive_data )
+			|| ! isset( $incentive_data['id'] )
+			|| ! isset( $incentive_data['description'] )
+			|| ! isset( $incentive_data['tc_url'] ) ) {
 
 			return false;
 		}
@@ -256,32 +371,49 @@ class WC_Payments_Incentives_Service {
 	}
 
 	/**
-	 * Check if the WooPayments payment gateway is active and set up,
+	 * Check if WooPayments payment gateway was active and set up at some point,
 	 * or there are orders processed with it, at some moment.
 	 *
-	 * @return boolean
+	 * @return boolean Whether the store has WooPayments.
 	 */
 	private function has_wcpay(): bool {
+		// First, get the stored value, if it exists.
+		// This way we avoid costly DB queries and API calls.
+		// Basically, we only want to know if WooPayments was in use in the past.
+		// Since the past can't be changed, neither can this value.
+		$had_wcpay = get_option( $this->store_had_woopayments_option_name );
+		if ( false !== $had_wcpay ) {
+			return filter_var( $had_wcpay, FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// We need to determine the value.
+		// Start with the assumption that the store didn't have WooPayments in use.
+		$had_wcpay = false;
+
 		// We consider the store to have WooPayments if there is meaningful account data in the WooPayments account cache.
-		// This implies that WooPayments is or was active at some point and that it was connected.
+		// This implies that WooPayments was active at some point and that it was connected.
 		if ( $this->has_wcpay_account_data() ) {
-			return true;
+			$had_wcpay = true;
 		}
 
 		// If there is at least one order processed with WooPayments, we consider the store to have WooPayments.
-		if ( ! empty(
+		if ( false === $had_wcpay && ! empty(
 			wc_get_orders(
 				[
 					'payment_method' => 'woocommerce_payments',
 					'return'         => 'ids',
 					'limit'          => 1,
+					'orderby'        => 'none',
 				]
 			)
 		) ) {
-			return true;
+			$had_wcpay = true;
 		}
 
-		return false;
+		// Store the value for future use.
+		update_option( $this->store_had_woopayments_option_name, $had_wcpay ? 'yes' : 'no' );
+
+		return $had_wcpay;
 	}
 
 	/**
@@ -299,33 +431,55 @@ class WC_Payments_Incentives_Service {
 	}
 
 	/**
-	 * Get the store context to be used in determining eligibility.
+	 * Check if the store has any paid orders.
 	 *
-	 * @return array The store context.
+	 * Currently, we look at the past 90 days and only consider orders
+	 * with status `wc-completed`, `wc-processing`, or `wc-refunded`.
+	 *
+	 * @return boolean Whether the store has any paid orders.
 	 */
-	private function get_store_context(): array {
-		return [
-			// Store ISO-2 country code, e.g. `US`.
-			'country'      => WC()->countries->get_base_country(),
-			// Store locale, e.g. `en_US`.
-			'locale'       => get_locale(),
-			// WooCommerce active for duration in seconds.
-			'active_for'   => time() - get_option( 'woocommerce_admin_install_timestamp', time() ),
-			// Whether the store has paid orders in the last 90 days.
-			'has_orders'   => ! empty(
-				wc_get_orders(
-					[
-						'status'       => [ 'wc-completed', 'wc-processing' ],
-						'date_created' => '>=' . strtotime( '-90 days' ),
-						'return'       => 'ids',
-						'limit'        => 1,
-					]
-				)
-			),
-			// Whether the store has at least one payment gateway enabled.
-			'has_payments' => ! empty( WC()->payment_gateways()->get_available_payment_gateways() ),
-			'has_wcpay'    => $this->has_wcpay(),
-		];
+	private function has_orders(): bool {
+		// First, get the stored value, if it exists.
+		// This way we avoid costly DB queries and API calls.
+		$has_orders = get_transient( $this->store_has_orders_transient_name );
+		if ( false !== $has_orders ) {
+			return filter_var( $has_orders, FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// We need to determine the value.
+		// Start with the assumption that the store doesn't have orders in the timeframe we look at.
+		$has_orders = false;
+		// By default, we will check for new orders every 6 hours.
+		$expiration = 6 * HOUR_IN_SECONDS;
+
+		// Get the latest completed, processing, or refunded order.
+		$latest_order = wc_get_orders(
+			[
+				'status'  => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
+				'limit'   => 1,
+				'orderby' => 'date',
+				'order'   => 'DESC',
+			]
+		);
+		if ( ! empty( $latest_order ) ) {
+			$latest_order = reset( $latest_order );
+			// If the latest order is within the timeframe we look at, we consider the store to have orders.
+			// Otherwise, it clearly doesn't have orders.
+			if ( $latest_order instanceof WC_Abstract_Order
+				&& strtotime( (string) $latest_order->get_date_created() ) >= strtotime( '-90 days' ) ) {
+
+				$has_orders = true;
+
+				// For ultimate efficiency, we will check again after 90 days from the latest order
+				// because in all that time we will consider the store to have orders regardless of new orders.
+				$expiration = strtotime( (string) $latest_order->get_date_created() ) + 90 * DAY_IN_SECONDS - time();
+			}
+		}
+
+		// Store the value for future use.
+		set_transient( $this->store_has_orders_transient_name, $has_orders ? 'yes' : 'no', $expiration );
+
+		return $has_orders;
 	}
 
 	/**

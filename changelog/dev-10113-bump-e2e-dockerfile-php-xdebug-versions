@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Update the PHP version and the Xdebug version used in the E2E testing environment.

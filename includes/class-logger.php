@@ -23,20 +23,21 @@ class Logger {
 	 * we need this to access the plugins debug setting to figure out if the setting
 	 * is turned on.
 	 *
-	 * @param string $message Log message.
+	 * @param string                $message Log message.
 	 *
-	 * @param string $level One of the following:
-	 *     'emergency': System is unusable.
-	 *     'alert': Action must be taken immediately.
-	 *     'critical': Critical conditions.
-	 *     'error': Error conditions.
-	 *     'warning': Warning conditions.
-	 *     'notice': Normal but significant condition.
-	 *     'info': Informational messages.
-	 *     'debug': Debug-level messages.
+	 * @param string                $level One of the following:
+	 *                    'emergency': System is unusable.
+	 *                    'alert': Action must be taken immediately.
+	 *                    'critical': Critical conditions.
+	 *                    'error': Error conditions.
+	 *                    'warning': Warning conditions.
+	 *                    'notice': Normal but significant condition.
+	 *                    'info': Informational messages.
+	 *                    'debug': Debug-level messages.
+	 *  @param array<string, string> $context Context data.
 	 */
-	public static function log( $message, $level = 'info' ) {
-		wcpay_get_container()->get( InternalLogger::class )->log( $message, $level );
+	public static function log( $message, $level = 'info', $context = [] ) {
+		wcpay_get_container()->get( InternalLogger::class )->log( $message, $level, $context );
 	}
 
 	/**
@@ -118,5 +119,21 @@ class Logger {
 	 */
 	public static function debug( $message ) {
 		self::log( $message, 'debug' );
+	}
+
+	/**
+	 * Formats an object for logging.
+	 *
+	 * @param string $label  Label for the object.
+	 * @param mixed  $object Object to format.
+	 * @return string
+	 */
+	public static function format_object( $label, $object ) {
+		try {
+			$encoded = wp_json_encode( $object, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR );
+		} catch ( \JsonException $e ) {
+			return sprintf( 'Error encoding object "%s": %s', $label, $e->getMessage() );
+		}
+		return sprintf( '%s (JSON): %s', $label, $encoded );
 	}
 }

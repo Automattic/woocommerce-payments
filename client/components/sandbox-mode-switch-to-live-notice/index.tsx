@@ -72,10 +72,10 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 									<>
 										{ interpolateComponents( {
 											mixedString: sprintf(
-												/* translators: %1$s: WooPayments */
+												/* translators: 1: WooPayments */
 												__(
 													// eslint-disable-next-line max-len
-													'Sandbox mode gives you access to all %1$s features while checkout transactions are simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+													'A test account gives you access to all %1$s features while checkout transactions are simulated. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 													'woocommerce-payments'
 												),
 												'WooPayments'
