@@ -107,6 +107,15 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
+	 * Does the payment method allow manual capture?
+	 *
+	 * @return boolean
+	 */
+	public static function allows_manual_capture(): bool {
+		return PaymentMethodUtils::allows_manual_capture( self::get_capabilities() );
+	}
+
+	/**
 	 * Get the base filename for the payment method's icons.
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.

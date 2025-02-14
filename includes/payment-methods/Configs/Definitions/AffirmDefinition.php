@@ -101,6 +101,15 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
+	 * Does the payment method allow manual capture?
+	 *
+	 * @return boolean
+	 */
+	public static function allows_manual_capture(): bool {
+		return PaymentMethodUtils::allows_manual_capture( self::get_capabilities() );
+	}
+
+	/**
 	 * Get the list of supported currencies
 	 *
 	 * @return string[] Array of currency codes

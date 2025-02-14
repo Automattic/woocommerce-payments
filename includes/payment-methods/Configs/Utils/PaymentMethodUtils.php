@@ -77,4 +77,14 @@ class PaymentMethodUtils {
 	public static function accepts_only_domestic_payments( array $capabilities ): bool {
 		return in_array( PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
 	}
+
+	/**
+	 * Does the payment method allow manual capture?
+	 *
+	 * @param array<string> $capabilities The payment method capabilities.
+	 * @return boolean
+	 */
+	public static function allows_manual_capture( array $capabilities ): bool {
+		return in_array( PaymentMethodCapability::CAPTURE_LATER, $capabilities, true );
+	}
 }
