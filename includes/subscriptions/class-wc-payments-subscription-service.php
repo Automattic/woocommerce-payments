@@ -147,20 +147,22 @@ class WC_Payments_Subscription_Service {
 			add_action( 'woocommerce_payment_token_added_to_order', [ $this, 'update_wcpay_subscription_payment_method' ], 10, 3 );
 		}
 
-		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
-		add_action( 'woocommerce_subscription_status_expired', [ $this, 'cancel_subscription' ] );
-		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'handle_subscription_status_on_hold' ] );
-		add_action( 'woocommerce_subscription_status_pending-cancel', [ $this, 'set_pending_cancel_for_subscription' ] );
-		add_action( 'woocommerce_subscription_status_pending-cancel_to_active', [ $this, 'reactivate_subscription' ] );
-		add_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this, 'reactivate_subscription' ] );
+		if ( class_exists( 'WC_Subscription' ) ) {
+			add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
+			add_action( 'woocommerce_subscription_status_expired', [ $this, 'cancel_subscription' ] );
+			add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'handle_subscription_status_on_hold' ] );
+			add_action( 'woocommerce_subscription_status_pending-cancel', [ $this, 'set_pending_cancel_for_subscription' ] );
+			add_action( 'woocommerce_subscription_status_pending-cancel_to_active', [ $this, 'reactivate_subscription' ] );
+			add_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this, 'reactivate_subscription' ] );
 
-		add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'prevent_wcpay_subscription_changes' ], 10, 3 );
-		add_filter( 'woocommerce_order_actions', [ $this, 'prevent_wcpay_manual_renewal' ], 11, 1 );
+			add_filter( 'woocommerce_subscription_payment_gateway_supports', [ $this, 'prevent_wcpay_subscription_changes' ], 10, 3 );
+			add_filter( 'woocommerce_order_actions', [ $this, 'prevent_wcpay_manual_renewal' ], 11, 1 );
 
-		add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
-		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'show_wcpay_subscription_id' ] );
+			add_action( 'woocommerce_payments_changed_subscription_payment_method', [ $this, 'maybe_attempt_payment_for_subscription' ], 10, 2 );
+			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'show_wcpay_subscription_id' ] );
 
-		add_action( 'woocommerce_subscription_payment_method_updated_from_' . WC_Payment_Gateway_WCPay::GATEWAY_ID, [ $this, 'maybe_cancel_subscription' ], 10, 2 );
+			add_action( 'woocommerce_subscription_payment_method_updated_from_' . WC_Payment_Gateway_WCPay::GATEWAY_ID, [ $this, 'maybe_cancel_subscription' ], 10, 2 );
+		}
 	}
 
 	/**
