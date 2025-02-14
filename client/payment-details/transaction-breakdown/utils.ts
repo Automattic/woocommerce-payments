@@ -9,10 +9,11 @@ import { filter, join } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import { TimelineFeeRate } from 'wcpay/data/timeline/types';
+
 export const formatFeeType = (
 	type: string,
 	additionalType?: string,
-	discountFee?: TimelineFeeRate
+	isDiscounted?: boolean
 ): string => {
 	const feeTypes: Record< string, string | Record< string, string > > = {
 		total: __( 'Total transaction fee', 'woocommerce-payments' ),
@@ -26,7 +27,7 @@ export const formatFeeType = (
 		},
 	};
 
-	const suffix = discountFee && type === 'base' ? ' (discounted)' : '';
+	const suffix = isDiscounted ? ' (discounted)' : '';
 
 	if ( type === 'additional' && additionalType ) {
 		const additionalFees = feeTypes.additional as Record< string, string >;
@@ -55,8 +56,10 @@ export const formatFeeRate = (
 		? formatCurrency( fixed, currency, storeCurrency )
 		: '';
 
-	return join(
-		filter( [ formattedPercentage, formattedFixed ], Boolean ),
-		' + '
+	return (
+		join(
+			filter( [ formattedPercentage, formattedFixed ], Boolean ),
+			' + '
+		) || '0%'
 	);
 };

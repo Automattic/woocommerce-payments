@@ -28,6 +28,11 @@ const FeesBreakdown: React.FC< {
 		  )
 		: undefined;
 
+	let remainingPercentageDiscount = Math.abs(
+		discountFee?.percentage_rate || 0
+	);
+	let remainingFixedDiscount = Math.abs( discountFee?.fixed_rate || 0 );
+
 	const FeeRow: React.FC< {
 		type: string;
 		additionalType?: string;
@@ -35,20 +40,20 @@ const FeesBreakdown: React.FC< {
 		fixed: number;
 		currency: string;
 		amount?: number;
-	} > = ( { type, additionalType, percentage, fixed, currency, amount } ) => {
-		if ( 'discount' === type ) {
-			return null;
-		}
-
-		if ( 'base' === type && discountFee ) {
-			percentage = percentage + discountFee.percentage_rate;
-			fixed = fixed + discountFee.fixed_rate;
-		}
-
+		isDiscounted?: boolean;
+	} > = ( {
+		type,
+		additionalType,
+		percentage,
+		fixed,
+		currency,
+		amount,
+		isDiscounted,
+	} ) => {
 		const formattedFeeType = formatFeeType(
 			type,
 			additionalType,
-			'base' === type ? discountFee : undefined
+			isDiscounted
 		);
 		const formattedFeeRate = formatFeeRate(
 			percentage,
@@ -92,17 +97,45 @@ const FeesBreakdown: React.FC< {
 		);
 	} else {
 		event.fee_rates.history.map( ( fee: TimelineFeeRate ) => {
+			if ( 'discount' === fee.type ) {
+				return null;
+			}
+
+			let percentage = fee.percentage_rate;
+			let fixed = fee.fixed_rate;
+			let isDiscounted = false;
+
+			if ( remainingPercentageDiscount > 0 ) {
+				const percentageDiscount = Math.min(
+					remainingPercentageDiscount,
+					percentage
+				);
+				percentage = percentage - percentageDiscount;
+				remainingPercentageDiscount =
+					remainingPercentageDiscount - percentageDiscount;
+				isDiscounted = true;
+			}
+
+			if ( remainingFixedDiscount > 0 ) {
+				const fixedDiscount = Math.min( remainingFixedDiscount, fixed );
+				fixed = fixed - fixedDiscount;
+				remainingFixedDiscount = remainingFixedDiscount - fixedDiscount;
+				isDiscounted = true;
+			}
+
 			const feeType =
 				fee.type +
 				( fee.additional_type ? `_${ fee.additional_type }` : '' );
+
 			fees.push(
 				<FeeRow
 					key={ feeType }
 					type={ fee.type }
 					additionalType={ fee.additional_type }
-					percentage={ fee.percentage_rate }
-					fixed={ fee.fixed_rate }
+					percentage={ percentage }
+					fixed={ fixed }
 					currency={ fee.currency }
+					isDiscounted={ isDiscounted }
 				/>
 			);
 			return null;

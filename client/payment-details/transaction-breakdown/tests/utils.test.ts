@@ -67,4 +67,8 @@ describe( 'formatFeeRate', () => {
 			'2.9% + $0.30'
 		);
 	} );
+
+	it( 'returns 0% when both percentage and fixed are 0', () => {
+		expect( formatFeeRate( 0, 0, 'USD', 'USD' ) ).toBe( '0%' );
+	} );
 } );
