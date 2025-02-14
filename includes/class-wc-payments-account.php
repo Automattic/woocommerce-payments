@@ -372,6 +372,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
 				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
 			],
+			'campaigns'             => [
+				'wporgReview2025' => $account['eligibility_wporg_review_campaign_2025'] ?? false,
+			],
 		];
 	}
 

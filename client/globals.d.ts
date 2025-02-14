@@ -69,6 +69,9 @@ declare global {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
 			};
+			campaigns: {
+				wporgReview2025: boolean;
+			};
 		};
 		accountLoans: {
 			has_active_loan: boolean;
