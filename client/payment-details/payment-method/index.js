@@ -19,6 +19,7 @@ import CardDetails from './card';
 import CardPresentDetails from './card-present';
 import EpsDetails from './eps';
 import GiropayDetails from './giropay';
+import GrabPayDetails from './grabpay';
 import IdealDetails from './ideal';
 import KlarnaDetails from './klarna';
 import P24Details from './p24';
@@ -35,6 +36,7 @@ const detailsComponentMap = {
 	card_present: CardPresentDetails,
 	eps: EpsDetails,
 	giropay: GiropayDetails,
+	grabpay: GrabPayDetails,
 	ideal: IdealDetails,
 	klarna: KlarnaDetails,
 	p24: P24Details,
