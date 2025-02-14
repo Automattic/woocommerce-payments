@@ -32,6 +32,7 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
+import MerchantFeedbackPrompt from 'wcpay/merchant-feedback-prompt';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -61,7 +62,10 @@ const OverviewPage = () => {
 		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
 		enabledPaymentMethods,
-		featureFlags: { isPaymentOverviewWidgetEnabled },
+		featureFlags: {
+			isPaymentOverviewWidgetEnabled,
+			isMerchantFeedbackPromptEnabled,
+		},
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
@@ -161,6 +165,7 @@ const OverviewPage = () => {
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
 			<JetpackIdcNotice />
+			{ isMerchantFeedbackPromptEnabled && <MerchantFeedbackPrompt /> }
 			{ showLoanOfferError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(
