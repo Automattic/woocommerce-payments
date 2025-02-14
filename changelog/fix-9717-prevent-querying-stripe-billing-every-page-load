@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Improve how Stripe Billing integration is loaded to prevent unnecessary queries on every page load.
