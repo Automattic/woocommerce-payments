@@ -46,6 +46,15 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
+	 * Get the payment method class name that implements this definition.
+	 *
+	 * @return class-string The payment method class name.
+	 */
+	public static function get_payment_method_class(): string {
+		return \WCPay\Payment_Methods\Affirm_Payment_Method::class;
+	}
+
+	/**
 	 * Get the customer-facing title of the payment method
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
@@ -227,14 +236,5 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function get_maximum_amount( string $currency, string $country ): ?int {
 		return self::get_limits_per_currency()[ $currency ][ $country ]['max'] ?? null;
-	}
-
-	/**
-	 * Get the payment method class name that implements this definition.
-	 *
-	 * @return class-string The payment method class name.
-	 */
-	public static function get_payment_method_class(): string {
-		return \WCPay\Payment_Methods\Affirm_Payment_Method::class;
 	}
 }
