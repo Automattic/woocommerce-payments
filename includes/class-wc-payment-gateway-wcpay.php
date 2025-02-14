@@ -63,8 +63,6 @@ use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
-use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -78,7 +76,6 @@ use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
-use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
 
 /**
