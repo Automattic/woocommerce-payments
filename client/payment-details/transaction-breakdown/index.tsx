@@ -19,11 +19,11 @@ import {
 	Flex,
 	FlexItem,
 } from '@wordpress/components';
-import { TimelineItem, TimelineFeeRate } from 'wcpay/data/timeline/types';
+import { TimelineItem } from 'wcpay/data/timeline/types';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { formatCurrency } from 'multi-currency/interface/functions';
-import { formatFeeType, formatFeeRate } from './utils';
 import { useTransactionAmounts } from './hooks';
+import FeesBreakdown from './fees-breakdown';
 import './style.scss';
 
 interface PaymentTransactionBreakdownProps {
@@ -71,107 +71,6 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 		''
 	);
 
-	const FeeRow: React.FC< {
-		type: string;
-		additionalType?: string;
-		percentage: number;
-		fixed: number;
-		currency: string;
-		storeCurrency: string;
-		amount?: number;
-	} > = ( {
-		type,
-		additionalType,
-		percentage,
-		fixed,
-		currency,
-		storeCurrency,
-		amount,
-	} ) => {
-		const formattedFeeType = formatFeeType( type, additionalType );
-		const formattedFeeRate = formatFeeRate(
-			percentage,
-			fixed,
-			currency,
-			storeCurrency
-		);
-		const formattedFeeAmount = amount
-			? ` - ${ formatCurrency( amount, storeCurrency, storeCurrency ) }`
-			: '';
-		const feeType = type + ( additionalType ? `_${ additionalType }` : '' );
-
-		return (
-			<Flex
-				className={ `wcpay-transaction-breakdown__fee_info wcpay-transaction-breakdown__${ feeType }_fee_info` }
-			>
-				<FlexItem className="wcpay-transaction-breakdown__fee_name">
-					{ formattedFeeType }
-				</FlexItem>
-				<FlexItem className="wcpay-transaction-breakdown__fee_rate">
-					{ formattedFeeRate }
-				</FlexItem>
-				<FlexItem className="wcpay-transaction-breakdown__fee_amount">
-					{ formattedFeeAmount }
-				</FlexItem>
-			</Flex>
-		);
-	};
-
-	function formatFees( event: TimelineItem ): JSX.Element[] {
-		if ( ! event.fee_rates || ! event.transaction_details ) {
-			return [];
-		}
-
-		const storeCurrency = event.transaction_details.store_currency;
-
-		const fees = [];
-
-		if ( ! event.fee_rates.history ) {
-			fees.push(
-				<FeeRow
-					key="base"
-					type="base"
-					percentage={ event.fee_rates.percentage }
-					fixed={ event.fee_rates.fixed }
-					currency={ event.fee_rates.fixed_currency }
-					storeCurrency={ storeCurrency }
-				/>
-			);
-		} else {
-			event.fee_rates.history.map( ( fee: TimelineFeeRate ) => {
-				const feeType =
-					fee.type +
-					( fee.additional_type ? `_${ fee.additional_type }` : '' );
-				fees.push(
-					<FeeRow
-						key={ feeType }
-						type={ fee.type }
-						additionalType={ fee.additional_type }
-						percentage={ fee.percentage_rate }
-						fixed={ fee.fixed_rate }
-						currency={ fee.currency }
-						storeCurrency={ storeCurrency }
-					/>
-				);
-				return null;
-			} );
-		}
-
-		fees.push(
-			<FeeRow
-				key="total"
-				type="total"
-				percentage={ event.fee_rates.percentage }
-				fixed={ event.fee_rates.fixed / feeExchangeRate }
-				currency={ storeCurrency }
-				storeCurrency={ storeCurrency }
-				amount={ event.transaction_details.store_fee }
-			/>
-		);
-
-		return fees;
-	}
-
 	return captureEvent ? (
 		<Card size="large">
 			<CardHeader>
@@ -212,7 +111,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 							className="wcpay-transaction-breakdown__fees"
 							direction="column"
 						>
-							{ formatFees( captureEvent ) }
+							<FeesBreakdown event={ captureEvent } />
 						</Flex>
 					</Flex>
 				</LoadableBlock>
