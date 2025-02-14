@@ -25,11 +25,10 @@ class PaymentMethodDefinitionRegistry {
 
 	/**
 	 * List of all available payment method definitions.
-	 * Add new payment methods here.
 	 *
 	 * @var array<class-string<PaymentMethodDefinitionInterface>>
 	 */
-	private static $available_definitions = [
+	private $available_definitions = [
 		AffirmDefinition::class,
 		AfterpayDefinition::class,
 		// Add new payment method definitions here.
@@ -43,22 +42,9 @@ class PaymentMethodDefinitionRegistry {
 	private $payment_methods = [];
 
 	/**
-	 * Initialize the registry by registering all available payment method definitions.
+	 * Constructor is private to enforce singleton pattern.
 	 */
-	public static function init(): void {
-		foreach ( self::$available_definitions as $definition ) {
-			self::instance()->register_payment_method( $definition );
-		}
-	}
-
-	/**
-	 * Get all available payment method definitions.
-	 *
-	 * @return array<class-string<PaymentMethodDefinitionInterface>> Array of payment method definition class names.
-	 */
-	public static function get_available_definitions(): array {
-		return self::$available_definitions;
-	}
+	private function __construct() {}
 
 	/**
 	 * Get the singleton instance.
@@ -70,6 +56,26 @@ class PaymentMethodDefinitionRegistry {
 			self::$instance = new self();
 		}
 		return self::$instance;
+	}
+
+	/**
+	 * Initialize the registry by registering all available payment method definitions.
+	 *
+	 * @return void
+	 */
+	public function init(): void {
+		foreach ( $this->available_definitions as $definition ) {
+			$this->register_payment_method( $definition );
+		}
+	}
+
+	/**
+	 * Get all available payment method definitions.
+	 *
+	 * @return array<class-string<PaymentMethodDefinitionInterface>> Array of payment method definition class names.
+	 */
+	public function get_available_definitions(): array {
+		return $this->available_definitions;
 	}
 
 	/**

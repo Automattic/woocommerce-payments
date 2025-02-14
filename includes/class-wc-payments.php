@@ -572,8 +572,8 @@ class WC_Payments {
 		];
 
 		// Initialize and get payment method classes from the registry for those that have been converted.
-		PaymentMethodDefinitionRegistry::init();
-		$registry                   = PaymentMethodDefinitionRegistry::instance();
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		$registry->init();
 		$payment_method_definitions = $registry->get_all_payment_method_definitions();
 
 		foreach ( $payment_method_definitions as $definition_class ) {

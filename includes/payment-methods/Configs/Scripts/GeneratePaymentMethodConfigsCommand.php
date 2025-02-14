@@ -31,7 +31,7 @@ class GeneratePaymentMethodConfigsCommand {
 
 		try {
 			// Register all payment method definitions from the registry.
-			PaymentMethodDefinitionRegistry::init();
+			PaymentMethodDefinitionRegistry::instance()->init();
 
 			$output = [
 				'paymentMethods' => $this->get_payment_method_definitions(),
