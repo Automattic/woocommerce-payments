@@ -1,154 +1,275 @@
-.connect-account-page {
-	h2 {
-		@include wp-title-small;
-		color: $gray-90;
-		margin: 0;
-	}
-
-	&__heading {
-		padding: $gap-large $gap-large 0;
-
-		img {
-			height: 22px;
-			margin-bottom: $gap-large;
+#connect-account-page {
+	.connect-account-page {
+		h2 {
+			@include wp-title-small;
+			color: $gray-90;
+			margin: 0;
 		}
 
-		@media screen and ( min-width: $break-small ) {
-			h2 {
-				margin-right: 7%;
-				@include wp-title-large;
-			}
-		}
-	}
-
-	&__content {
-		padding: $gap-large;
-	}
-
-	&__payment-methods {
-		padding: 0 $gap-large;
-
-		p {
-			@include wp-small-button;
-			color: $gray-700;
-			margin-top: 0;
-		}
-		&__icons {
-			border: 1px solid $gray-300;
-			border-bottom: none;
-			padding: $gap-small;
-			display: grid;
-			column-gap: $gap-smaller;
-			row-gap: $gap;
-			grid-template-columns: repeat( auto-fill, minmax( 39px, 1fr ) );
+		&__heading {
+			padding: $gap-large $gap-large 0;
 
 			img {
-				height: 24px;
+				height: 22px;
+				margin-bottom: $gap-small;
 			}
 
-			span {
-				@include wc-others-caption;
-				color: $gray-700;
-				display: none;
+			h2 {
+				margin: $gap-large 0;
+			}
 
-				@media screen and ( min-width: $break-small ) {
-					display: initial;
-					white-space: nowrap;
-					align-self: end;
+			@media screen and ( min-width: $break-small ) {
+				h2 {
+					@include wp-title-large;
+					line-height: normal;
 				}
 			}
 		}
-		&__description {
-			padding: $gap-small;
-			display: flex;
-			flex-direction: column;
-			gap: 10px;
-			border: 1px solid $gray-300;
+
+		&__content {
+			padding: $gap-large;
+			padding-top: 0;
+		}
+
+		&__payment-methods {
+			padding: 0 $gap-large;
+
 			p {
-				font-size: 11px;
-				line-height: 16px;
+				@include wp-small-button;
+				color: $gray-700;
+				margin-top: 0;
+			}
+
+			&__icons {
+				border: 1px solid $gray-300;
+				border-bottom: none;
+				padding: $gap-small;
+				display: grid;
+				column-gap: $gap-smaller;
+				row-gap: $gap;
+				grid-template-columns: repeat( auto-fill, minmax( 39px, 1fr ) );
+
+				img {
+					height: 24px;
+				}
+
+				span {
+					@include wc-others-caption;
+					color: $gray-700;
+					display: none;
+
+					@media screen and ( min-width: $break-small ) {
+						display: initial;
+						white-space: nowrap;
+						align-self: end;
+					}
+				}
+			}
+
+			&__description {
+				padding: $gap-small;
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+				border: 1px solid $gray-300;
+
+				p {
+					font-size: 11px;
+					line-height: 16px;
+					color: $gray-900;
+					font-weight: 600;
+					text-transform: uppercase;
+					margin-bottom: 0;
+				}
+
+				span {
+					@include wc-others-caption;
+					color: $gray-700;
+				}
+
+				&__divider {
+					border-top: 1px solid $gray-200;
+					@media screen and ( min-width: $break-small ) {
+						border-right: 1px solid $gray-200;
+					}
+				}
+
+				@media screen and ( min-width: $break-small ) {
+					flex-direction: row;
+				}
+			}
+		}
+
+		&__buttons {
+			padding: $gap-large;
+
+			button {
+				width: 100%;
+				justify-content: center;
+				margin-right: $gap-small;
+				@media screen and ( min-width: $break-small ) {
+					width: auto;
+					justify-content: left;
+				}
+
+				&.is-primary {
+					background: $studio-wordpress-blue-50;
+
+					&:hover {
+						background: $studio-wordpress-blue-40;
+					}
+				}
+			}
+		}
+
+		&__details {
+			padding: $gap-larger $gap-large;
+
+			.wcpay-component-tip-box {
+				margin-top: $gap-large;
+			}
+		}
+
+		&__steps {
+			@media screen and ( min-width: $break-small ) {
+				display: grid;
+				grid-template-columns: repeat( 3, 1fr );
+				column-gap: 20px;
+			}
+		}
+
+		&__step {
+			padding-top: $gap-smaller;
+			display: grid;
+			grid-template-rows: auto 1fr auto;
+
+			span {
+				background-color: $studio-woocommerce-purple-0;
+				color: $studio-woocommerce-purple-60;
+				font-size: 20px;
+				font-weight: 800;
+				border-radius: 12px;
+				height: 40px;
+				width: 40px;
+				display: inline-block;
+				text-align: center;
+				line-height: 40px;
+				margin-bottom: $gap-smaller;
+			}
+
+			h3 {
+				@include wp-subtitle-small;
 				color: $gray-900;
-				font-weight: 600;
-				text-transform: uppercase;
 				margin-bottom: 0;
 			}
-			span {
+
+			p {
 				@include wc-others-caption;
-				color: $gray-700;
+				color: $gray-800;
+				margin-top: $gap-smallest;
 			}
-			&__divider {
-				border-top: 1px solid $gray-200;
-				@media screen and ( min-width: $break-small ) {
-					border-right: 1px solid $gray-200;
+		}
+
+		&__incentive {
+			background: #faf8ff;
+			border: 1px solid #ae7dd0;
+			border-radius: 2px;
+			padding: $gap-large;
+			margin-bottom: $gap-large;
+
+			&-pill {
+				display: inline-block;
+				padding: 0 $gap-small;
+				border: 1px solid #1d2327; // Gray 90
+				border-radius: 16px;
+				text-transform: uppercase;
+				font-size: 12px;
+				line-height: 22px;
+				font-weight: 600;
+				color: $gray-900;
+				margin-bottom: $gap-small;
+			}
+
+			p {
+				@include wc-others-caption;
+				color: #50575e;
+
+				&:last-child {
+					margin-bottom: 0;
 				}
 			}
+
 			@media screen and ( min-width: $break-small ) {
-				flex-direction: row;
+				h2 {
+					margin-right: 10%;
+				}
+
+				p {
+					margin-right: 15%;
+				}
 			}
 		}
-	}
 
-	&__buttons {
-		padding: $gap-large;
-		button {
+		&__sandbox-mode-panel {
+			.components-panel__body.is-opened {
+				padding: $gap-large;
+
+				h2 {
+					margin: -24px -24px 5px;
+				}
+			}
+
+			h2 {
+				button {
+					@include wp-subtitle;
+					padding: $gap $gap-largest $gap $gap-large !important;
+
+					&:focus {
+						box-shadow: none !important;
+					}
+
+					&:hover {
+						background: #fff !important;
+					}
+				}
+			}
+
+			.components-notice {
+				margin-top: 8px;
+			}
+
+			button.is-secondary {
+				width: 100%;
+				justify-content: center;
+				@media screen and ( min-width: $break-small ) {
+					width: auto;
+					justify-content: left;
+				}
+			}
+		}
+
+		&__preloader {
+			position: fixed;
 			width: 100%;
-			justify-content: center;
-			margin-right: $gap-small;
-			@media screen and ( min-width: $break-small ) {
-				width: auto;
-				justify-content: left;
+			height: 100%;
+			top: 0;
+			left: 0;
+			background: #fff;
+			z-index: 999999;
+			text-align: center;
+
+			img.logo {
+				position: absolute;
+				height: 40px;
+				width: 40px;
+				top: 18px;
+				left: 36px;
 			}
 		}
 	}
+}
 
-	&__details {
-		padding: $gap-larger $gap-large;
-
-		.wcpay-component-tip-box {
-			margin-top: $gap-large;
-		}
-	}
-
-	&__steps {
-		@media screen and ( min-width: $break-small ) {
-			display: grid;
-			grid-template-columns: repeat( 3, 1fr );
-			column-gap: 20px;
-		}
-	}
-
-	&__step {
-		padding-top: $gap-smaller;
-		display: grid;
-		grid-template-rows: auto 1fr auto;
-
-		span {
-			background-color: $studio-woocommerce-purple-0;
-			color: $studio-woocommerce-purple-60;
-			font-size: 20px;
-			font-weight: 800;
-			border-radius: 12px;
-			height: 40px;
-			width: 40px;
-			display: inline-block;
-			text-align: center;
-			line-height: 40px;
-			margin-bottom: $gap-smaller;
-		}
-
-		h3 {
-			@include wp-subtitle-small;
-			color: $gray-900;
-			margin-bottom: 0;
-		}
-
-		p {
-			@include wc-others-caption;
-			color: $gray-800;
-			margin-top: $gap-smallest;
-		}
-	}
-
+.connect-account-page {
 	&__info-modal {
 		&.components-modal__frame {
 			max-width: 700px;
@@ -165,96 +286,6 @@
 
 		&__footer {
 			@include modal-footer-buttons;
-		}
-	}
-
-	&__incentive {
-		background: #faf8ff;
-		border: 1px solid #ae7dd0;
-		border-radius: 2px;
-		padding: $gap-large;
-		margin-bottom: $gap-large;
-
-		&-pill {
-			display: inline-block;
-			padding: 0 $gap-small;
-			border: 1px solid #1d2327; // Gray 90
-			border-radius: 16px;
-			text-transform: uppercase;
-			font-size: 12px;
-			line-height: 22px;
-			font-weight: 600;
-			color: $gray-900;
-			margin-bottom: $gap-small;
-		}
-
-		p {
-			@include wc-others-caption;
-			color: #50575e;
-
-			&:last-child {
-				margin-bottom: 0;
-			}
-		}
-
-		@media screen and ( min-width: $break-small ) {
-			h2 {
-				margin-right: 10%;
-			}
-
-			p {
-				margin-right: 15%;
-			}
-		}
-	}
-	&__sandbox-mode-panel {
-		.components-panel__body.is-opened {
-			padding: $gap-large;
-			h2 {
-				margin: -24px -24px 5px;
-			}
-		}
-		h2 {
-			button {
-				@include wp-subtitle;
-				padding: $gap $gap-largest $gap $gap-large !important;
-				&:focus {
-					box-shadow: none !important;
-				}
-				&:hover {
-					background: #fff !important;
-				}
-			}
-		}
-		.components-notice {
-			margin-top: 8px;
-		}
-		button.is-secondary {
-			width: 100%;
-			justify-content: center;
-			@media screen and ( min-width: $break-small ) {
-				width: auto;
-				justify-content: left;
-			}
-		}
-	}
-
-	&__preloader {
-		position: fixed;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		left: 0;
-		background: #fff;
-		z-index: 999999;
-		text-align: center;
-
-		img.logo {
-			position: absolute;
-			height: 40px;
-			width: 40px;
-			top: 18px;
-			left: 36px;
 		}
 	}
 }

@@ -28,7 +28,7 @@ if $WATCH_FLAG; then
 else
 	echo "Running the tests..."
 
-	docker-compose exec -u www-data wordpress \
+	docker compose exec -u www-data wordpress \
 		/var/www/html/wp-content/plugins/woocommerce-payments/vendor/bin/phpunit \
 		--configuration /var/www/html/wp-content/plugins/woocommerce-payments/phpunit.xml.dist \
 		$*

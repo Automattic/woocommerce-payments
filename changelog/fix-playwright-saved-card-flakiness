@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix flakiness in saved card tests caused by selling the same cart multiple times, triggering duplicate order protection

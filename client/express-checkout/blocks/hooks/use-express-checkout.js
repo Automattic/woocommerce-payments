@@ -91,8 +91,27 @@ export const useExpressCheckout = ( {
 				}
 			}
 
+			const lineItems = normalizeLineItems( billing.cartTotalItems );
+			const totalAmountOfLineItems = lineItems.reduce(
+				( acc, lineItem ) => {
+					return acc + lineItem.amount;
+				},
+				0
+			);
+
 			const options = {
-				lineItems: normalizeLineItems( billing?.cartTotalItems ),
+				business: {
+					name: getExpressCheckoutData( 'store_name' ),
+				},
+				// if the `billing.cartTotal.value` is less than the total of `lineItems`, Stripe throws an error
+				// it can sometimes happen that the total is _slightly_ less, due to rounding errors on individual items/taxes/shipping
+				// (or with the `woocommerce_tax_round_at_subtotal` setting).
+				// if that happens, let's just not return any of the line items.
+				// This way, just the total amount will be displayed to the customer.
+				lineItems:
+					billing.cartTotal.value < totalAmountOfLineItems
+						? []
+						: lineItems,
 				emailRequired: true,
 				shippingAddressRequired,
 				phoneNumberRequired:
@@ -112,6 +131,7 @@ export const useExpressCheckout = ( {
 		[
 			onClick,
 			billing.cartTotalItems,
+			billing.cartTotal.value,
 			shippingData.needsShipping,
 			shippingData.shippingRates,
 		]

@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-feat: GooglePay/ApplePay refactor to leverage Store API is enabled by default. Please contact us if you encounter new issues with these buttons.

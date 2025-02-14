@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Set orderby to `none` for order queries where checking if order exists.

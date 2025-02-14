@@ -46,6 +46,15 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/download/(?P<export_id>.*)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_export_url' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/summary',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -168,6 +177,16 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$filters    = $this->get_transactions_filters( $request );
 
 		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id, $locale ] );
+	}
+
+	/**
+	 * Get the export URL for a given export ID, if available.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_export_url( $request ) {
+		$export_id = $request->get_param( 'export_id' );
+		return $this->forward_request( 'get_transactions_export_url', [ $export_id ] );
 	}
 
 	/**

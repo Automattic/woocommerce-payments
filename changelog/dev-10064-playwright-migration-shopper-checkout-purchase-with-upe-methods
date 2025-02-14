@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Convert shopper checkout with UPE methods E2E test to Playwright, split saving card tests to separate file

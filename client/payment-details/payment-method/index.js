@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Loadable from 'components/loadable';
 import AffirmDetails from './affirm';
+import AlipayDetails from './alipay';
 import AfterpayClearpayDetails from './afterpay-clearpay';
 import BancontactDetails from './bancontact';
 import BecsDetails from './becs';
@@ -26,6 +27,7 @@ import SofortDetails from './sofort';
 
 const detailsComponentMap = {
 	affirm: AffirmDetails,
+	alipay: AlipayDetails,
 	afterpay_clearpay: AfterpayClearpayDetails,
 	au_becs_debit: BecsDetails,
 	bancontact: BancontactDetails,
