@@ -370,13 +370,14 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
-				'woopay'                         => self::is_woopay_eligible(),
-				'documents'                      => self::is_documents_section_enabled(),
-				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
-				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
-				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
-				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
+				'multiCurrency'                   => self::is_customer_multi_currency_enabled(),
+				'woopay'                          => self::is_woopay_eligible(),
+				'documents'                       => self::is_documents_section_enabled(),
+				'woopayExpressCheckout'           => self::is_woopay_express_checkout_enabled(),
+				'isAuthAndCaptureEnabled'         => self::is_auth_and_capture_enabled(),
+				'isDisputeIssuerEvidenceEnabled'  => self::is_dispute_issuer_evidence_enabled(),
+				'isPaymentOverviewWidgetEnabled'  => self::is_payment_overview_widget_ui_enabled(),
+				'isMerchantFeedbackPromptEnabled' => self::is_merchant_feedback_prompt_enabled(),
 			]
 		);
 	}
