@@ -77,6 +77,13 @@ interface PaymentMethodDefinitionInterface {
 	public static function accepts_only_domestic_payments(): bool;
 
 	/**
+	 * Does the payment method allow manual capture?
+	 *
+	 * @return boolean
+	 */
+	public static function allows_manual_capture(): bool;
+
+	/**
 	 * Get the list of supported currencies
 	 * Empty array means all currencies are supported
 	 *
