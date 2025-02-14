@@ -43,8 +43,9 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		if (
 			! paymentMethodInformation ||
 			! wcpayWpAdminPaymentMethodsConfig[ paymentMethod ]
-		)
+		) {
 			return;
+		}
 
 		const currencies =
 			wcpayWpAdminPaymentMethodsConfig[ paymentMethod ].currencies;
