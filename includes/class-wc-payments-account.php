@@ -373,6 +373,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
 			],
 			'campaigns'             => [
+				// This campaign is inactive by default. If the flag is missing or removed from the server, the campaign will remain inactive.
 				'wporgReview2025' => $account['eligibility_wporg_review_campaign_2025'] ?? false,
 			],
 		];
