@@ -112,10 +112,6 @@ export const sendFailedTestMessageToSlack = async ( testName: string ) => {
 			token: E2E_SLACK_TOKEN,
 		} );
 	} catch ( error ) {
-		if ( error.data.error === 'channel_not_found' ) {
-			return;
-		}
-
 		handleRequestError( error, 'Failed to join the channel' );
 	}
 
@@ -127,7 +123,7 @@ export const sendFailedTestMessageToSlack = async ( testName: string ) => {
             The commit this build is testing is *${ commit }*. \n
             The name of the test that failed: *${ testName }*. \n
             See screenshot of the failed test below. ${
-				webUrl ? `*Build log* could be found here: ${ webUrl }` : ''
+				webUrl ? `*Build log* can be found here: ${ webUrl }` : ''
 			}`,
 		} );
 	} catch ( error ) {
