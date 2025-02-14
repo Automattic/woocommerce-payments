@@ -84,7 +84,7 @@ describe( 'FeesBreakdown', () => {
 
 		expect( screen.getByText( 'Base fee' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( '2.90% + $0.30', {
+			screen.getByText( '2.9% + $0.30', {
 				selector: '.wcpay-transaction-breakdown__total_fee_info div',
 			} )
 		).toBeInTheDocument();
@@ -131,7 +131,7 @@ describe( 'FeesBreakdown', () => {
 			screen.getByText( 'Base fee (discounted)' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( '2.80% + $0.25', {
+			screen.getByText( '2.8% + $0.25', {
 				selector: '.wcpay-transaction-breakdown__base_fee_info div',
 			} )
 		).toBeInTheDocument();
@@ -142,7 +142,7 @@ describe( 'FeesBreakdown', () => {
 			} )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( '1.00%', {
+			screen.getByText( '1%', {
 				selector:
 					'.wcpay-transaction-breakdown__additional_international_fee_info div',
 			} )
@@ -192,12 +192,12 @@ describe( 'FeesBreakdown', () => {
 			screen.getByText( 'International card fee' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( '2.90% + $0.30', {
+			screen.getByText( '2.9% + $0.30', {
 				selector: '.wcpay-transaction-breakdown__base_fee_info div',
 			} )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( '1.00%', {
+			screen.getByText( '1%', {
 				selector:
 					'.wcpay-transaction-breakdown__additional_international_fee_info div',
 			} )

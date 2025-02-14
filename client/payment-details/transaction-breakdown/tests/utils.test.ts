@@ -49,7 +49,11 @@ describe( 'formatFeeRate', () => {
 	} );
 
 	it( 'formats percentage only', () => {
-		expect( formatFeeRate( 0.029, 0, 'USD', 'USD' ) ).toBe( '2.90%' );
+		expect( formatFeeRate( 0.029, 0, 'USD', 'USD' ) ).toBe( '2.9%' );
+	} );
+
+	it( 'formats percentage only using all decimals', () => {
+		expect( formatFeeRate( 0.0295, 0, 'USD', 'USD' ) ).toBe( '2.95%' );
 	} );
 
 	it( 'formats fixed amount only', () => {
@@ -60,7 +64,7 @@ describe( 'formatFeeRate', () => {
 	it( 'combines percentage and fixed amount', () => {
 		( formatCurrency as jest.Mock ).mockReturnValue( '$0.30' );
 		expect( formatFeeRate( 0.029, 30, 'USD', 'USD' ) ).toBe(
-			'2.90% + $0.30'
+			'2.9% + $0.30'
 		);
 	} );
 } );

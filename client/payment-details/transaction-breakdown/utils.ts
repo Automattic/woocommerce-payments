@@ -49,7 +49,7 @@ export const formatFeeRate = (
 	storeCurrency: string
 ): string => {
 	const formattedPercentage = percentage
-		? `${ ( percentage * 100 ).toFixed( 2 ) }%`
+		? `${ Number.parseFloat( ( percentage * 100 ).toFixed( 2 ) ) }%`
 		: '';
 	const formattedFixed = fixed
 		? formatCurrency( fixed, currency, storeCurrency )
