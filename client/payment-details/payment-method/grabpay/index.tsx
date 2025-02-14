@@ -28,7 +28,7 @@ const formatPaymentMethodDetails = (
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 
 	const grabPayTransactionId =
-		charge.payment_method_details.grabpay?.grabpay_id;
+		charge.payment_method_details.grabpay?.transaction_id;
 
 	return {
 		id,
