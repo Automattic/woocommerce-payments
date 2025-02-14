@@ -43,6 +43,9 @@ WC_CUSTOMER_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.passw
 WP_ADMIN=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.username')
 WP_ADMIN_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.password')
 WP_ADMIN_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.email')
+WP_EDITOR=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.editor.username')
+WP_EDITOR_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.editor.password')
+WP_EDITOR_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.editor.email')
 SITE_TITLE="WooPayments E2E site"
 SITE_URL=$WP_URL
 
@@ -269,6 +272,9 @@ cli wp user delete "$WC_GUEST_EMAIL" --yes
 
 echo "Adding customer account ..."
 cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer --user_pass="$WC_CUSTOMER_PASSWORD"
+
+echo "Adding editor account ..."
+cli wp user create "$WP_EDITOR" "$WP_EDITOR_EMAIL" --role=editor --user_pass="$WP_EDITOR_PASSWORD"
 
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
 if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
