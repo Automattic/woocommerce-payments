@@ -275,7 +275,7 @@ export const loginAsEditor = async (
 	for ( let i = 0; i < editorRetries; i++ ) {
 		try {
 			// eslint-disable-next-line no-console
-			console.log( 'Trying to log-in as customer...' );
+			console.log( 'Trying to log-in as editor...' );
 			await wpAdminLogin( page, editor );
 			await page.goto( '/wp-admin' );
 			await page.waitForLoadState( 'domcontentloaded' );
