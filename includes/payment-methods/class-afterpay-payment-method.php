@@ -33,7 +33,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$this->dark_icon_url                = AfterpayDefinition::get_dark_icon_url();
 		$this->currencies                   = AfterpayDefinition::get_supported_currencies();
 		$this->countries                    = AfterpayDefinition::get_supported_countries();
-		$this->accept_only_domestic_payment = AfterpayDefinition::does_accept_only_domestic_payments();
+		$this->accept_only_domestic_payment = AfterpayDefinition::accepts_only_domestic_payments();
 		$this->limits_per_currency          = AfterpayDefinition::get_limits_per_currency();
 	}
 

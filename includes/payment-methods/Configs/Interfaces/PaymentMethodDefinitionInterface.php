@@ -74,7 +74,7 @@ interface PaymentMethodDefinitionInterface {
 	 *
 	 * @return boolean
 	 */
-	public static function does_accept_only_domestic_payments(): bool;
+	public static function accepts_only_domestic_payments(): bool;
 
 	/**
 	 * Get the list of supported currencies

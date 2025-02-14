@@ -96,8 +96,8 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	 *
 	 * @return boolean
 	 */
-	public static function does_accept_only_domestic_payments(): bool {
-		return PaymentMethodUtils::does_accept_only_domestic_payments( self::get_capabilities() );
+	public static function accepts_only_domestic_payments(): bool {
+		return PaymentMethodUtils::accepts_only_domestic_payments( self::get_capabilities() );
 	}
 
 	/**

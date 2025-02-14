@@ -74,7 +74,7 @@ class PaymentMethodUtils {
 	 * @param array<string> $capabilities The payment method capabilities.
 	 * @return boolean
 	 */
-	public static function does_accept_only_domestic_payments( array $capabilities ): bool {
+	public static function accepts_only_domestic_payments( array $capabilities ): bool {
 		return in_array( PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
 	}
 }

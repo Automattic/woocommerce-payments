@@ -32,7 +32,7 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 		$this->icon_url                     = AffirmDefinition::get_icon_url();
 		$this->dark_icon_url                = AffirmDefinition::get_dark_icon_url();
 		$this->currencies                   = AffirmDefinition::get_supported_currencies();
-		$this->accept_only_domestic_payment = AffirmDefinition::does_accept_only_domestic_payments();
+		$this->accept_only_domestic_payment = AffirmDefinition::accepts_only_domestic_payments();
 		$this->limits_per_currency          = AffirmDefinition::get_limits_per_currency();
 		$this->countries                    = AffirmDefinition::get_supported_countries();
 	}
