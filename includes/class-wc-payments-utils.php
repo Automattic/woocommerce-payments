@@ -58,19 +58,19 @@ class WC_Payments_Utils {
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
-	 * @param string $string string to process.
+	 * @param string $text string to process.
 	 * @param array  $element_map map of elements to not escape.
 	 *
 	 * @return string String where all of the html was escaped, except for the tags specified in element map.
 	 */
-	public static function esc_interpolated_html( $string, $element_map ) {
+	public static function esc_interpolated_html( $text, $element_map ) {
 		// Regex to match string expressions wrapped in angle brackets.
 		$tokenizer    = '/<(\/)?(\w+)\s*(\/)?>/';
 		$string_queue = [];
 		$token_queue  = [];
 		$last_mapped  = true;
 		// Start with a copy of the string.
-		$processed = $string;
+		$processed = $text;
 
 		// Match every angle bracket expression.
 		while ( preg_match( $tokenizer, $processed, $matches ) ) {
@@ -97,7 +97,7 @@ class WC_Payments_Utils {
 				$map_matched = preg_match( '/^<(\w+)(\s.+?)?\/?>$/', $element_map[ $token ], $map_matches );
 				if ( ! $map_matches ) {
 					// Should not happen with the properly formatted html as map value. Return the whole string escaped.
-					return esc_html( $string );
+					return esc_html( $text );
 				}
 				// Add the matched token and its attributes into the token queue. It will not be escaped when constructing the final string.
 				$tag   = $map_matches[1];
@@ -123,7 +123,7 @@ class WC_Payments_Utils {
 		// No mapped tokens were found in the string, or token and string queues are not of equal length.
 		// The latter should not happen - token queue and string queue should be the same length.
 		if ( empty( $token_queue ) || count( $token_queue ) !== count( $string_queue ) ) {
-			return esc_html( $string );
+			return esc_html( $text );
 		}
 
 		// Construct the final string by escaping the string queue values and not escaping the token queue.
@@ -361,20 +361,20 @@ class WC_Payments_Utils {
 	/**
 	 * Redacts the provided array, removing the sensitive information, and limits its depth to LOG_MAX_RECURSION.
 	 *
-	 * @param object|array $array          The array to redact.
+	 * @param object|array $input          The array to redact.
 	 * @param array        $keys_to_redact The keys whose values need to be redacted.
 	 * @param integer      $level          The current recursion level.
 	 *
 	 * @return string|array The redacted array.
 	 */
-	public static function redact_array( $array, array $keys_to_redact, int $level = 0 ) {
-		if ( is_object( $array ) ) {
+	public static function redact_array( $input, array $keys_to_redact, int $level = 0 ) {
+		if ( is_object( $input ) ) {
 			// TODO: if we ever want to log objects, they could implement a method returning an array or a string.
-			return get_class( $array ) . '()';
+			return get_class( $input ) . '()';
 		}
 
-		if ( ! is_array( $array ) ) {
-			return $array;
+		if ( ! is_array( $input ) ) {
+			return $input;
 		}
 
 		if ( $level >= self::MAX_ARRAY_DEPTH ) {
@@ -383,7 +383,7 @@ class WC_Payments_Utils {
 
 		$result = [];
 
-		foreach ( $array as $key => $value ) {
+		foreach ( $input as $key => $value ) {
 			if ( in_array( $key, $keys_to_redact, true ) ) {
 				$result[ $key ] = '(redacted)';
 				continue;
@@ -398,23 +398,23 @@ class WC_Payments_Utils {
 	/**
 	 * Apply a callback on every value in an array, regardless of the number of array dimensions.
 	 *
-	 * @param array    $array    The array to map.
+	 * @param array    $input    The array to map.
 	 * @param callable $callback The callback to apply.
 	 *
 	 * @return array The mapped array.
 	 */
-	public static function array_map_recursive( array $array, callable $callback ): array {
-		foreach ( $array as $key => $value ) {
+	public static function array_map_recursive( array $input, callable $callback ): array {
+		foreach ( $input as $key => $value ) {
 			if ( \is_array( $value ) ) {
 				$value = self::array_map_recursive( $value, $callback );
 			} else {
-				$value = $callback( $value, $key, $array );
+				$value = $callback( $value, $key, $input );
 			}
 
-			$array[ $key ] = $value;
+			$input[ $key ] = $value;
 		}
 
-		return $array;
+		return $input;
 	}
 
 	/**
@@ -424,31 +424,31 @@ class WC_Payments_Utils {
 	 *
 	 * @see https://www.php.net/manual/en/function.array-filter.php
 	 *
-	 * @param array         $array    The array to filter.
+	 * @param array         $input    The array to filter.
 	 * @param callable|null $callback Optional. The callback to apply.
 	 *                                The callback should return true to keep the value, false otherwise.
 	 *                                If no callback is provided, all non-truthy values will be removed.
 	 *
 	 * @return array The filtered array.
 	 */
-	public static function array_filter_recursive( array $array, ?callable $callback = null ): array {
-		foreach ( $array as $key => &$value ) { // Mind the use of a reference.
+	public static function array_filter_recursive( array $input, ?callable $callback = null ): array {
+		foreach ( $input as $key => &$value ) { // Mind the use of a reference.
 			if ( \is_array( $value ) ) {
 				$value = self::array_filter_recursive( $value, $callback );
 				if ( ! $value ) {
-					unset( $array[ $key ] );
+					unset( $input[ $key ] );
 				}
 			} elseif ( ! is_null( $callback ) ) {
 				if ( ! $callback( $value ) ) {
-					unset( $array[ $key ] );
+					unset( $input[ $key ] );
 				}
 			} elseif ( ! $value ) {
-				unset( $array[ $key ] );
+				unset( $input[ $key ] );
 			}
 		}
 		unset( $value ); // Kill the reference to avoid memory leaks.
 
-		return $array;
+		return $input;
 	}
 
 	/**
