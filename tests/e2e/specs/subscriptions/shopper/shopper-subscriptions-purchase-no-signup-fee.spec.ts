@@ -102,6 +102,12 @@ describeif( shouldRunSubscriptionsTests )(
 				waitUntil: 'load',
 			} );
 
+			if (
+				await merchantPage.getByText( 'No data to display' ).isVisible()
+			) {
+				await merchantPage.reload( { waitUntil: 'load' } );
+			}
+
 			await expect(
 				merchantPage.getByText(
 					'A payment of $9.99 was successfully charged.'
