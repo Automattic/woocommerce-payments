@@ -6,6 +6,15 @@ import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 import { WCPayExpressCheckoutParams } from './express-checkout/utils';
 
 declare global {
+	interface wcpayWpAdminPaymentMethodConfig {
+		currencies: string[];
+		allows_pay_later: boolean;
+	}
+	const wcpayWpAdminPaymentMethodsConfig: Record<
+		string,
+		wcpayWpAdminPaymentMethodConfig
+	>;
+
 	const wcpaySettings: {
 		version: string;
 		connectUrl: string;
@@ -235,6 +244,7 @@ declare global {
 	};
 
 	interface Window {
+		wcpayWpAdminPaymentMethodsConfig: typeof wcpayWpAdminPaymentMethodsConfig;
 		wcpaySettings: typeof wcpaySettings;
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;
