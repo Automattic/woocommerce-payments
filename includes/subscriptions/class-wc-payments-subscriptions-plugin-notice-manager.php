@@ -18,10 +18,6 @@ class WC_Payments_Subscriptions_Plugin_Notice_Manager {
 	 * Initialize the class and attach callbacks.
 	 */
 	public function __construct() {
-		if ( ! WC_Payments_Features::should_use_stripe_billing() ) {
-			return;
-		}
-
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts_and_styles' ], 100 );
 		add_action( 'admin_footer', [ $this, 'output_notice_template' ] );
 	}
