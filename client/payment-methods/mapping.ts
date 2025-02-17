@@ -45,10 +45,8 @@ export function mapDefinitionToEntry(
 		icon: getIconComponent( def.id ),
 		currencies: def.currencies,
 		stripe_key: def.stripeId,
-		allows_manual_capture: def.capabilities.includes( 'capture_later' ),
-		allows_pay_later: def.capabilities.includes( 'buy_now_pay_later' ),
-		accepts_only_domestic_payment: def.capabilities.includes(
-			'domestic_transactions_only'
-		),
+		allows_manual_capture: def.allowsManualCapture,
+		allows_pay_later: def.allowsPayLater,
+		accepts_only_domestic_payment: def.acceptsOnlyDomesticPayment,
 	};
 }

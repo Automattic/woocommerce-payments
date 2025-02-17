@@ -44,6 +44,9 @@ export interface PaymentMethodDefinition {
 	capabilities: string[];
 	currencies: string[];
 	countries: string[];
+	allowsManualCapture: boolean;
+	allowsPayLater: boolean;
+	acceptsOnlyDomesticPayment: boolean;
 	icons: PaymentMethodIcons;
 }
 

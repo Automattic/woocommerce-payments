@@ -20,6 +20,9 @@ export interface PaymentMethodDefinition {
 	capabilities: string[];
 	currencies: string[];
 	countries: string[];
+	allowsManualCapture: boolean;
+	allowsPayLater: boolean;
+	acceptsOnlyDomesticPayment: boolean;
 	icons: PaymentMethodIcons;
 }
 
@@ -52,6 +55,9 @@ export const PaymentMethodDefinitions: PaymentMethodConfigurations = {
 		],
 		currencies: [ 'USD', 'CAD' ],
 		countries: [ 'US', 'CA' ],
+		allowsManualCapture: false,
+		allowsPayLater: true,
+		acceptsOnlyDomesticPayment: true,
 		icons: {
 			default: {
 				path: 'assets/images/payment-methods/affirm-logo.svg',
@@ -74,6 +80,9 @@ export const PaymentMethodDefinitions: PaymentMethodConfigurations = {
 		],
 		currencies: [ 'USD', 'CAD', 'AUD', 'NZD', 'GBP' ],
 		countries: [ 'US', 'CA', 'AU', 'NZ', 'GB' ],
+		allowsManualCapture: false,
+		allowsPayLater: true,
+		acceptsOnlyDomesticPayment: true,
 		icons: {
 			default: {
 				path: 'assets/images/payment-methods/afterpay-badge.svg',

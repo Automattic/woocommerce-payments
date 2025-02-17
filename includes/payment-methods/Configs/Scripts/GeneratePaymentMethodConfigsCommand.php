@@ -77,14 +77,17 @@ class GeneratePaymentMethodConfigsCommand {
 
 		foreach ( $payment_method_definitions as $definition_class ) {
 			$definitions[ $definition_class::get_id() ] = [
-				'id'           => $definition_class::get_id(),
-				'stripeId'     => $definition_class::get_stripe_id(),
-				'title'        => $definition_class::get_title(),
-				'description'  => $definition_class::get_description(),
-				'capabilities' => $definition_class::get_capabilities(),
-				'currencies'   => $definition_class::get_supported_currencies(),
-				'countries'    => $definition_class::get_supported_countries(),
-				'icons'        => [
+				'id'                         => $definition_class::get_id(),
+				'stripeId'                   => $definition_class::get_stripe_id(),
+				'title'                      => $definition_class::get_title(),
+				'description'                => $definition_class::get_description(),
+				'capabilities'               => $definition_class::get_capabilities(),
+				'currencies'                 => $definition_class::get_supported_currencies(),
+				'countries'                  => $definition_class::get_supported_countries(),
+				'allowsManualCapture'        => $definition_class::allows_manual_capture(),
+				'allowsPayLater'             => $definition_class::is_bnpl(),
+				'acceptsOnlyDomesticPayment' => $definition_class::accepts_only_domestic_payments(),
+				'icons'                      => [
 					'default' => [
 						'path' => str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), '', $definition_class::get_icon_url() ),
 					],
