@@ -33,7 +33,8 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 		$this->dark_icon_url       = plugins_url( 'assets/images/payment-methods/affirm-logo-dark.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies          = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
 		$this->limits_per_currency = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
-		$this->countries           = [ Country_Code::UNITED_STATES, Country_Code::CANADA ];
+		// In this scenario, this is the list of the contracted countries with Stripe.
+		$this->countries = [ Country_Code::UNITED_STATES, Country_Code::CANADA ];
 	}
 
 	/**

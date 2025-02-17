@@ -56,16 +56,4 @@ class Grabpay_Payment_Method extends UPE_Payment_Method {
 	public function get_testing_instructions( string $account_country ) {
 		return '';
 	}
-
-	/**
-	 * Returns the payment method's supported countries at checkout.
-	 *
-	 * @return array
-	 */
-	public function get_countries() {
-		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
-		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
-
-		return in_array( $account_country, $this->countries, true ) ? [ $account_country ] : $this->countries;
-	}
 }

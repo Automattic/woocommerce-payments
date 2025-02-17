@@ -8,7 +8,6 @@
 namespace WCPay\Payment_Methods;
 
 use WCPay\Constants\Country_Code;
-use WP_User;
 use WC_Payments_Token_Service;
 use WCPay\Constants\Currency_Code;
 
