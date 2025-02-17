@@ -181,6 +181,15 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
+	 * Get the URL for the payment method's settings icon
+	 *
+	 * @return string
+	 */
+	public static function get_settings_icon_url(): string {
+		return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/affirm-badge.svg';
+	}
+
+	/**
 	 * Get the testing instructions for the payment method
 	 *
 	 * @return string HTML string containing testing instructions

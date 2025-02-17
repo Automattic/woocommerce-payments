@@ -23,6 +23,7 @@ export interface PaymentMethodDefinition {
 	allowsManualCapture: boolean;
 	allowsPayLater: boolean;
 	acceptsOnlyDomesticPayment: boolean;
+	settingsIcon: string;
 	icons: PaymentMethodIcons;
 }
 
@@ -58,6 +59,7 @@ export const PaymentMethodDefinitions: PaymentMethodConfigurations = {
 		allowsManualCapture: false,
 		allowsPayLater: true,
 		acceptsOnlyDomesticPayment: true,
+		settingsIcon: 'assets/images/payment-methods/affirm-badge.svg',
 		icons: {
 			default: {
 				path: 'assets/images/payment-methods/affirm-logo.svg',
@@ -83,6 +85,7 @@ export const PaymentMethodDefinitions: PaymentMethodConfigurations = {
 		allowsManualCapture: false,
 		allowsPayLater: true,
 		acceptsOnlyDomesticPayment: true,
+		settingsIcon: 'assets/images/payment-methods/afterpay-logo.svg',
 		icons: {
 			default: {
 				path: 'assets/images/payment-methods/afterpay-badge.svg',

@@ -87,6 +87,7 @@ class GeneratePaymentMethodConfigsCommand {
 				'allowsManualCapture'        => $definition_class::allows_manual_capture(),
 				'allowsPayLater'             => $definition_class::is_bnpl(),
 				'acceptsOnlyDomesticPayment' => $definition_class::accepts_only_domestic_payments(),
+				'settingsIcon'               => str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), '', $definition_class::get_settings_icon_url() ),
 				'icons'                      => [
 					'default' => [
 						'path' => str_replace( plugin_dir_url( WCPAY_PLUGIN_FILE ), '', $definition_class::get_icon_url() ),

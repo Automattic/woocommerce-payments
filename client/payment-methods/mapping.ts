@@ -8,32 +8,24 @@ import type { ImgHTMLAttributes, FunctionComponent } from 'react';
  */
 import type { PaymentMethodDefinition } from './types';
 import type { PaymentMethodMapEntry } from '../payment-methods-map';
-import {
-	AffirmIcon,
-	AfterpayIcon,
-	ClearpayIcon,
-} from '../payment-methods-icons';
+import { createPaymentMethodIconComponent } from './icons';
 
 type ReactImgFuncComponent = FunctionComponent<
 	ImgHTMLAttributes< HTMLImageElement >
 >;
 
-const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
-
 /**
  * Maps payment method IDs to their corresponding icon components
  */
-function getIconComponent( id: string ): ReactImgFuncComponent {
-	const iconMap: Record< string, ReactImgFuncComponent > = {
-		affirm: AffirmIcon,
-		afterpay_clearpay:
-			accountCountry === 'GB' ? ClearpayIcon : AfterpayIcon,
-	};
-	return iconMap[ id ];
+function getIconComponent(
+	def: PaymentMethodDefinition
+): ReactImgFuncComponent {
+	return createPaymentMethodIconComponent( def );
 }
 
 /**
  * Maps a PaymentMethodDefinition to a PaymentMethodMapEntry
+ * Note: Titles and descriptions are already translated in PHP payment method definition files.
  */
 export function mapDefinitionToEntry(
 	def: PaymentMethodDefinition
@@ -42,7 +34,7 @@ export function mapDefinitionToEntry(
 		id: def.id,
 		label: def.title,
 		description: def.description,
-		icon: getIconComponent( def.id ),
+		icon: getIconComponent( def ),
 		currencies: def.currencies,
 		stripe_key: def.stripeId,
 		allows_manual_capture: def.allowsManualCapture,

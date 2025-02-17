@@ -124,6 +124,14 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_dark_icon_url( ?string $account_country = null ): string;
 
 	/**
+	 * Get the URL for the payment method's settings icon
+	 * This icon is used in the payment method settings page.
+	 *
+	 * @return string
+	 */
+	public static function get_settings_icon_url(): string;
+
+	/**
 	 * Get the testing instructions for the payment method
 	 *
 	 * @return string HTML string containing testing instructions

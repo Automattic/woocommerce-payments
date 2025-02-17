@@ -47,6 +47,7 @@ export interface PaymentMethodDefinition {
 	allowsManualCapture: boolean;
 	allowsPayLater: boolean;
 	acceptsOnlyDomesticPayment: boolean;
+	settingsIcon: string;
 	icons: PaymentMethodIcons;
 }
 

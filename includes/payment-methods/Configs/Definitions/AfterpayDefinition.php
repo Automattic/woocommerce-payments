@@ -154,6 +154,20 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
+	 * Get the URL for the payment method's settings icon
+	 *
+	 * @return string
+	 */
+	public static function get_settings_icon_url(): string {
+		$account_country = \WC_Payments::get_gateway()->get_account_country();
+		if ( 'GB' === $account_country ) {
+			return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/clearpay.svg';
+		}
+
+		return plugin_dir_url( WCPAY_PLUGIN_FILE ) . 'assets/images/payment-methods/afterpay-logo.svg';
+	}
+
+	/**
 	 * Get the list of supported currencies
 	 *
 	 * @return string[] Array of currency codes
