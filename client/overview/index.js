@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
@@ -32,6 +32,13 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
+import useAccountSession from 'wcpay/utils/embedded-components/account-session';
+import appearance from 'wcpay/utils/embedded-components/appearance';
+import {
+	ConnectComponentsProvider,
+	ConnectNotificationBanner,
+} from '@stripe/react-connect-js';
+import { recordEvent } from 'wcpay/tracks';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -63,9 +70,30 @@ const OverviewPage = () => {
 		enabledPaymentMethods,
 		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
-		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 	} = wcpaySettings;
+
+	// Don't show the update details and verify business tasks by default due to embedded component.
+	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
+		false
+	);
+	const [
+		showGetVerifyBankAccountTask,
+		setShowGetVerifyBankAccountTask,
+	] = useState( false );
+
+	const [
+		stripeNotificationsBannerErrorMessage,
+		setStripeNotificationsBannerErrorMessage,
+	] = useState( '' );
+	const [
+		notificationsBannerMessage,
+		setNotificationsBannerMessage,
+	] = React.useState( '' );
+	const stripeConnectInstance = useAccountSession( {
+		setLoadErrorMessage: setStripeNotificationsBannerErrorMessage,
+		appearance,
+	} );
 
 	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
 	const { isLoading: settingsIsLoading } = useSettings();
@@ -85,6 +113,7 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 		activeDisputes,
 		enabledPaymentMethods,
+		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -157,6 +186,42 @@ const OverviewPage = () => {
 		setTestDriveSuccessDisplayed( true );
 	}
 
+	// Show old tasks if the embedded component fails to load.
+	useEffect( () => {
+		if ( stripeNotificationsBannerErrorMessage ) {
+			setShowUpdateDetailsTask( true );
+			setShowGetVerifyBankAccountTask( true );
+		}
+	}, [ stripeNotificationsBannerErrorMessage ] );
+
+	// eslint-disable-next-line valid-jsdoc
+	/**
+	 * Configure custom banner behaviour so the banner isn't shown when there are no action items.
+	 * We'll use notificationBannerMessage for that.
+	 * See https://docs.stripe.com/connect/supported-embedded-components/notification-banner#configure-custom-banner-behavior
+	 */
+	const handleNotificationsChange = ( response ) => {
+		if ( response.actionRequired > 0 ) {
+			// eslint-disable-next-line max-len
+			// Do something related to required actions, such as adding margins to the banner container or tracking the current number of notifications.
+			setNotificationsBannerMessage(
+				'You must resolve the notifications on this page before proceeding.'
+			);
+		} else if ( response.total > 0 ) {
+			// Do something related to notifications that don't require action.
+			setNotificationsBannerMessage( 'The items below are in review.' );
+		} else {
+			setNotificationsBannerMessage( '' );
+		}
+		if ( response.actionRequired > 0 || response.total > 0 ) {
+			// Record the event indicating user got the notifications banner with some actionRequired or total items.
+			recordEvent( 'wcpay_overview_stripe_notifications_banner_update', {
+				action_required_count: response.actionRequired,
+				total_count: response.total,
+			} );
+		}
+	};
+
 	return (
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
@@ -204,6 +269,39 @@ const OverviewPage = () => {
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<Welcome />
+
+					{ stripeConnectInstance && (
+						<div
+							className="stripe-notifications-banner-wrapper"
+							style={ {
+								display: notificationsBannerMessage
+									? 'block'
+									: 'none',
+							} }
+						>
+							<ErrorBoundary>
+								<ConnectComponentsProvider
+									connectInstance={ stripeConnectInstance }
+								>
+									<ConnectNotificationBanner
+										onLoadError={ ( loadError ) =>
+											setStripeNotificationsBannerErrorMessage(
+												loadError.error.message ||
+													'Unknown error'
+											)
+										}
+										collectionOptions={ {
+											fields: 'eventually_due',
+											futureRequirements: 'omit',
+										} }
+										onNotificationsChange={
+											handleNotificationsChange
+										}
+									/>
+								</ConnectComponentsProvider>
+							</ErrorBoundary>
+						</div>
+					) }
 
 					{ showTaskList && (
 						<Card>

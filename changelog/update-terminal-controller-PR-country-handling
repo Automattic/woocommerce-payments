@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Update handling of PR as a country in the terminal locations endpoint.

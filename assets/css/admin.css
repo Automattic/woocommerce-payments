@@ -139,6 +139,10 @@
 	background-image: url( '../images/payment-methods/klarna.svg' );
 }
 
+.payment-method__brand--grabpay {
+	background-image: url( '../images/payment-methods/grabpay.svg' );
+}
+
 .payment-method__brand--wechat_pay {
 	background-image: url( '../images/payment-methods/wechat-pay.svg' );
 }
