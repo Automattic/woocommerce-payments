@@ -30,6 +30,7 @@ interface TaskListProps {
 	activeDisputes?: CachedDispute[];
 	enabledPaymentMethods?: string[];
 	showGoLiveTask: boolean;
+	showGetVerifyBankAccountTask: boolean;
 }
 
 export const getTasks = ( {
@@ -38,6 +39,7 @@ export const getTasks = ( {
 	activeDisputes = [],
 	enabledPaymentMethods = [],
 	showGoLiveTask = false,
+	showGetVerifyBankAccountTask = true,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
 		status,
@@ -93,6 +95,9 @@ export const getTasks = ( {
 		isInTestModeOnboarding( false ) &&
 		showGoLiveTask;
 
+	const isGetVerifyBankAccountTaskVisible =
+		showGetVerifyBankAccountTask && isPoEnabled && detailsSubmitted;
+
 	return [
 		isUpdateDetailsTaskVisible &&
 			getUpdateBusinessDetailsTask(
@@ -105,7 +110,7 @@ export const getTasks = ( {
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
-		isPoEnabled && detailsSubmitted && getVerifyBankAccountTask(),
+		isGetVerifyBankAccountTaskVisible && getVerifyBankAccountTask(),
 		isAddApmsTaskVisible && getAddApmsTask(),
 		isGoLiveTaskVisible && getGoLiveTask(),
 	].filter( Boolean );
