@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WC_Payments;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
+use WCPay\Payment_Methods\Alipay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -23,6 +24,7 @@ use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
+use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 
 /**
  * Class handling detection of payment methods enabled by multiple plugins simultaneously.
@@ -95,6 +97,7 @@ class Duplicates_Detection_Service {
 		$keywords = [
 			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'alipay'     => Alipay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'p24'        => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'przelewy24' => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'ideal'      => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
@@ -105,6 +108,7 @@ class Duplicates_Detection_Service {
 			'clearpay'   => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'grabpay'    => Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'wechatpay'  => Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
 		foreach ( $this->get_enabled_gateways() as $gateway ) {
@@ -139,7 +143,7 @@ class Duplicates_Detection_Service {
 					if ( strpos( $gateway->id, $keyword ) !== false ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
-					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) ) {
+					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && in_array( $gateway->id, [ 'woocommerce_payments', 'stripe' ], true ) ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
 					} elseif ( 'yes' === $gateway->get_option( 'express_checkout_enabled' ) ) {

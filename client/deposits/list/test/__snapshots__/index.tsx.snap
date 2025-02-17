@@ -107,22 +107,26 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
               type="button"
             >
               <svg
-                class="gridicon gridicons-cloud-download"
+                fill="currentColor"
                 height="24"
                 viewBox="0 0 24 24"
                 width="24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g>
-                  <path
-                    d="M18 9c-.009 0-.017.002-.025.003A6.496 6.496 0 005 9.5a6.5 6.5 0 00.186 1.519C5.123 11.016 5.064 11 5 11a4 4 0 00-4 4c0 1.202.541 2.267 1.38 3h18.593C22.196 17.089 23 15.643 23 14a5 5 0 00-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
-                  />
-                </g>
+                <path
+                  d="M18.5 15v5H20v-5h-1.5zM4 15v5h1.5v-5H4zm0 5h16v-1.5H4V20z"
+                />
+                <path
+                  d="M12.25 16L6.5 10.75M12.25 16V3M12.25 16l5.25-5.25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
               </svg>
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>
@@ -796,22 +800,26 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
               type="button"
             >
               <svg
-                class="gridicon gridicons-cloud-download"
+                fill="currentColor"
                 height="24"
                 viewBox="0 0 24 24"
                 width="24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g>
-                  <path
-                    d="M18 9c-.009 0-.017.002-.025.003A6.496 6.496 0 005 9.5a6.5 6.5 0 00.186 1.519C5.123 11.016 5.064 11 5 11a4 4 0 00-4 4c0 1.202.541 2.267 1.38 3h18.593C22.196 17.089 23 15.643 23 14a5 5 0 00-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
-                  />
-                </g>
+                <path
+                  d="M18.5 15v5H20v-5h-1.5zM4 15v5h1.5v-5H4zm0 5h16v-1.5H4V20z"
+                />
+                <path
+                  d="M12.25 16L6.5 10.75M12.25 16V3M12.25 16l5.25-5.25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
               </svg>
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>

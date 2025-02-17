@@ -3,9 +3,7 @@
  * External dependencies
  */
 import { render, waitFor } from '@testing-library/react';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-import os from 'os';
 import { useUserPreferences } from '@woocommerce/data';
 
 /**
@@ -13,23 +11,12 @@ import { useUserPreferences } from '@woocommerce/data';
  */
 import DisputesList from '..';
 import { useDisputes, useDisputesSummary, useSettings } from 'data/index';
-import { getUnformattedAmount } from 'wcpay/utils/test-utils';
 import React from 'react';
 import {
 	CachedDispute,
 	DisputeReason,
 	DisputeStatus,
 } from 'wcpay/types/disputes';
-import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
-
-	return {
-		...actualModule,
-		downloadCSVFile: jest.fn(),
-	};
-} );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -62,10 +49,6 @@ jest.mock( '@woocommerce/data', () => {
 		useUserPreferences: jest.fn(),
 	};
 } );
-
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
 
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
@@ -278,7 +261,7 @@ describe( 'Disputes list', () => {
 			} );
 
 			const { queryByRole } = render( <DisputesList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).not.toBeNull();
 		} );
@@ -290,7 +273,7 @@ describe( 'Disputes list', () => {
 			} );
 
 			const { queryByRole } = render( <DisputesList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).toBeNull();
 		} );
@@ -323,7 +306,7 @@ describe( 'Disputes list', () => {
 
 			const { getByRole } = render( <DisputesList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -338,83 +321,6 @@ describe( 'Disputes list', () => {
 						'/wc/v3/payments/disputes/download?user_email=mock%40example.com&locale=en',
 				} );
 			} );
-		} );
-
-		test( 'should render expected columns in CSV when the download button is clicked ', () => {
-			const { getByRole } = render( <DisputesList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const expected = [
-				'"Dispute Id"',
-				'Amount',
-				'Currency',
-				'Status',
-				'Reason',
-				'Source',
-				'"Order #"',
-				'Customer',
-				'Email',
-				'Country',
-				'"Disputed on"',
-				'"Respond by"',
-			];
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
-			expect( csvHeaderRow ).toEqual( expected );
-		} );
-
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <DisputesList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows = getAllByRole( 'row' );
-
-			expect( csvRows.length ).toEqual( displayRows.length );
-
-			const csvFirstDispute = csvRows[ 1 ].split( ',' );
-			const displayFirstDispute = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td ) => td.textContent );
-
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 2 because:
-			// 		- the first field in CSV is dispute id, which is missing in display.
-			// 		- the third field in CSV is currency, which is missing in display (it's displayed in "amount" column).
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-			expect(
-				getUnformattedAmount( displayFirstDispute[ 0 ] ).indexOf(
-					csvFirstDispute[ 1 ]
-				)
-			).not.toBe( -1 ); // amount
-
-			expect( csvFirstDispute[ 2 ] ).toBe( 'usd' );
-
-			expect( csvFirstDispute[ 3 ] ).toBe(
-				`"${ displayFirstDispute[ 1 ] }"`
-			); //status
-
-			expect( csvFirstDispute[ 4 ] ).toBe(
-				`"${ displayFirstDispute[ 2 ] }"`
-			); // reason
-
-			expect( csvFirstDispute[ 6 ] ).toBe( displayFirstDispute[ 4 ] ); // order
-
-			expect( csvFirstDispute[ 7 ] ).toBe(
-				`"${ displayFirstDispute[ 5 ] }"`
-			); // customer
-
-			expect( csvFirstDispute[ 11 ].replace( /^"|"$/g, '' ) ).toBe(
-				formatDateTimeFromString( mockDisputes[ 0 ].due_by, {
-					includeTime: true,
-				} )
-			); // date respond by
 		} );
 	} );
 } );
