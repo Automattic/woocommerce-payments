@@ -233,7 +233,7 @@ export const writeRuleset = (
 	return rulesetConfig.filter( ( rule ) => rule );
 };
 
-const shouldBlockOutcome = ( outcome: string ) => {
+const getRuleBlockStatus = ( outcome: string ) => {
 	const { isFRTReviewFeatureActive } = wcpaySettings;
 
 	if ( ! isFRTReviewFeatureActive ) {
@@ -285,25 +285,25 @@ export const readRuleset = (
 				case Rules.RULE_AVS_VERIFICATION:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: shouldBlockOutcome( rule.outcome ),
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_ADDRESS_MISMATCH:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: shouldBlockOutcome( rule.outcome ),
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_INTERNATIONAL_IP_ADDRESS:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: shouldBlockOutcome( rule.outcome ),
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_IP_ADDRESS_MISMATCH:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: shouldBlockOutcome( rule.outcome ),
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_ORDER_ITEMS_THRESHOLD:
@@ -319,7 +319,7 @@ export const readRuleset = (
 					) as FraudProtectionSettingsSingleCheck;
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: shouldBlockOutcome( rule.outcome ),
+						block: getRuleBlockStatus( rule.outcome ),
 						min_items: minItemsCheck.value ?? '',
 						max_items: maxItemsCheck.value ?? '',
 					};
@@ -337,7 +337,7 @@ export const readRuleset = (
 					) as FraudProtectionSettingsSingleCheck;
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: shouldBlockOutcome( rule.outcome ),
+						block: getRuleBlockStatus( rule.outcome ),
 						min_amount: readFormattedRulePrice(
 							minAmountCheck.value
 						),
