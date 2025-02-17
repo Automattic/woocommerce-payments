@@ -87,6 +87,43 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 9.0.0-test-2 - unreleased =
+* Add - Add E2E tests for currency switching at checkout.
+* Add - Add GrabPay to the settings page when eligible.
+* Add - Add payment method logos to checkout block card label.
+* Add - Add Stripe embedded account notifications component on the Overview page
+* Add - Add the Stripe embedded account management component into the Payments → Settings page.
+* Add - Add WeChat Pay settings.
+* Add - feat: add initial support for Alipay settings
+* Add - feat: add order notes to tokenized ECE GooglePay/ApplePay on blocks checkout
+* Add - Implement checkout for GrabPay payments.
+* Add - Pass the business name to the express checkout handler.
+* Fix - Avoid duplicated payment methods detection notice on new stores.
+* Fix - Ensure multi-currency widget markup getter don't throw errors.
+* Fix - fix: attribute selection from PDPs with tokenized ECE
+* Fix - fix: tokenized ECE improvements with WC Deposits, Bookings, Bundles.
+* Fix - Fixed an issue with the copy test card number on Astra theme
+* Fix - Fixes thrown PHP warning in checkout config.
+* Fix - Set orderby to `none` for order queries where checking if order exists.
+* Update - Improve CSV export experience and deliver consistent reports via async transact platform service-based CSV exports.
+* Update - Remove the receipt details tab in the card readers page.
+* Update - update: add payment method functionality to honor WC rate limit.
+* Update - update: tokenized ECE to exclude itemized items on rounding discrepancies of totals.
+* Update - Update Credit Card / Debit Card label to Cards
+* Update - Update handling for 0 feeAmount to be consistent with details page.
+* Update - Update handling for refund processing in case of insufficient funds.
+* Update - Update handling of PR as a country in the terminal locations endpoint.
+* Dev - Add critical tag to tests that are part of the critical flows.
+* Dev - Add Slack integration to Playwright E2E tests.
+* Dev - Cache calls to wc_get_orders in the incentives class
+* Dev - Extract the Account Session logic from Embedded components onboarding into a reusable utility hook.
+* Dev - Fix potential flakiness while creating a page with the checkout block.
+* Dev - Remove Puppeteer references.
+* Dev - Update E2E NPM scripts.
+* Dev - Update E2E readme doc.
+* Dev - Update E2E setup scripts to avoid conflicts with other containers and permissions.
+* Dev - Update Github actions and workflows. Change e2e tests directory structure.
+
 = 8.9.1 - 2025-02-07 =
 * Fix - Ensures that the tokenised cart for ECE implementation is disabled by default.
 
