@@ -130,7 +130,7 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method currencies
+	 * Returns payment method's supported currencies at checkout.
 	 *
 	 * @return array
 	 */
@@ -292,7 +292,7 @@ abstract class UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method supported countries.
+	 * Returns the payment method's supported countries at checkout.
 	 *
 	 * @return array
 	 */

@@ -58,7 +58,7 @@ class Grabpay_Payment_Method extends UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method supported countries.
+	 * Returns the payment method's supported countries at checkout.
 	 *
 	 * @return array
 	 */

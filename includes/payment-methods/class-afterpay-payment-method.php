@@ -77,7 +77,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns payment method supported currencies.
+	 * Returns the payment method's supported currencies at checkout.
 	 *
 	 * @return array
 	 */
@@ -85,11 +85,11 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 		$account          = \WC_Payments::get_account_service()->get_cached_account_data();
 		$account_currency = isset( $account['currency'] ) ? strtoupper( $account['currency'] ) : '';
 
-		return in_array( $account_currency, $this->currencies, true ) ? $account_currency : [ $this->currencies[0] ];
+		return in_array( $account_currency, $this->currencies, true ) ? [ $account_currency ] : $this->currencies;
 	}
 
 	/**
-	 * Returns payment method supported countries.
+	 * Returns the payment method's supported countries at checkout.
 	 *
 	 * @return array
 	 */
