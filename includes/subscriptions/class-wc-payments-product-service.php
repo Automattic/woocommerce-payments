@@ -201,6 +201,10 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id The ID of the product to handle.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return;
+		}
+
 		// Skip products which have already been scheduled or aren't subscriptions.
 		$product = wc_get_product( $product_id );
 		if ( ! $product || isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
@@ -292,7 +296,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to update.
 	 */
 	public function update_products( WC_Product $product ) {
-		if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return;
 		}
 

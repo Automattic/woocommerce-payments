@@ -759,6 +759,10 @@ class WC_Payments_Subscription_Service {
 	 * @param int $order_id WC Order ID.
 	 */
 	public function create_subscription_for_manual_renewal( int $order_id ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_renewal_order' ) ) {
+			return;
+		}
+
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
 
 		foreach ( $subscriptions as $subscription_id => $subscription ) {
