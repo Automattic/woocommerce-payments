@@ -73,6 +73,7 @@ declare const global: {
 			}
 		>;
 		isMultiCurrencyEnabled: string;
+		isFRTReviewFeatureActive: boolean;
 	};
 };
 
@@ -143,6 +144,7 @@ describe( 'Advanced fraud protection settings', () => {
 				},
 			},
 			isMultiCurrencyEnabled: '1',
+			isFRTReviewFeatureActive: false,
 		};
 
 		mockUseAdvancedFraudProtectionSettings.mockReturnValue( [

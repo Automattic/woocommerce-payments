@@ -205,20 +205,26 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
 				$http_code     = $result['http_code'] ?? 502;
-				$error_code    = $result['error_code'] ?? null;
 				$extra_details = $result['extra_details'] ?? [];
-				return new WP_Error(
-					'wcpay_capture_error',
-					sprintf(
+				$error_type    = $result['error_code'] ?? null;
+				$error_code    = 'wcpay_capture_error';
+
+				$message = sprintf(
 					// translators: %s: the error message.
-						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
-						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
-					),
-					[
-						'status'        => $http_code,
-						'extra_details' => $extra_details,
-						'error_type'    => $error_code,
-					]
+					__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
+					$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+				);
+
+				if ( 'amount_too_small' === $error_type && ! empty( $extra_details ) ) {
+					// Make it easier to parse the error metadata for the mobile apps.
+					$error_code = 'wcpay_capture_error_amount_too_small';
+					$message    = esc_html( wp_json_encode( $extra_details ) );
+				}
+
+				return new WP_Error(
+					$error_code,
+					$message,
+					[ 'status' => $http_code ]
 				);
 			}
 			// Store receipt generation URL for mobile applications in order meta-data.
