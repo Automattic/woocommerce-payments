@@ -11,28 +11,18 @@ import Detail from '../detail';
 import { PaymentMethodDetails } from 'wcpay/payment-details/types';
 import { Charge } from 'wcpay/types/charges';
 
-interface GrabPayPaymentMethodDetails extends PaymentMethodDetails {
-	grabPayTransactionId: string;
-}
-
 /**
  * Extracts and formats payment method details from a charge.
  *
  * @param {Charge} charge The charge object.
- * @return {GrabPayPaymentMethodDetails} A flat hash of all necessary values.
+ * @return {PaymentMethodDetails} A flat hash of all necessary values.
  */
-const formatPaymentMethodDetails = (
-	charge: Charge
-): GrabPayPaymentMethodDetails => {
+const formatPaymentMethodDetails = ( charge: Charge ): PaymentMethodDetails => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
 	const { name, email, formatted_address: formattedAddress } = billingDetails;
 
-	const grabPayTransactionId =
-		charge.payment_method_details.grabpay?.transaction_id;
-
 	return {
 		id,
-		grabPayTransactionId,
 		name,
 		email,
 		formattedAddress,
@@ -48,13 +38,9 @@ const GrabPayDetails: React.FC< GrabPayDetailsProps > = ( {
 	charge,
 	isLoading,
 } ) => {
-	const {
-		id,
-		grabPayTransactionId,
-		name,
-		email,
-		formattedAddress,
-	} = formatPaymentMethodDetails( charge );
+	const { id, name, email, formattedAddress } = formatPaymentMethodDetails(
+		charge
+	);
 
 	return (
 		<div className="payment-method-details">
@@ -64,16 +50,6 @@ const GrabPayDetails: React.FC< GrabPayDetailsProps > = ( {
 					label={ __( 'ID', 'woocommerce-payments' ) }
 				>
 					{ !! id ? id : '–' }
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __(
-						'GrabPay Transaction ID',
-						'woocommerce-payments'
-					) }
-				>
-					{ !! grabPayTransactionId ? grabPayTransactionId : '–' }
 				</Detail>
 			</div>
 
