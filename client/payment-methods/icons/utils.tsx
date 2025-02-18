@@ -14,10 +14,6 @@ type ReactImgFuncComponent = FunctionComponent<
 	ImgHTMLAttributes< HTMLImageElement >
 >;
 
-// Make webpack aware of all possible SVG assets
-// @ts-expect-error - webpack's require.context is not typed in NodeRequire
-const iconContext = require.context( 'assets/images', true, /\.svg$/ );
-
 interface IconComponentOptions {
 	hasBorder?: boolean;
 }
@@ -35,9 +31,6 @@ export const createIconComponent = (
 	label: string,
 	options: IconComponentOptions = { hasBorder: true }
 ): ReactImgFuncComponent => {
-	// Remove 'assets/images/' from the start of the path as iconContext is already rooted there
-	const relativePath = iconPath.replace( /^assets\/images\//, './' );
-
 	return ( { className, ...props } ): JSX.Element => (
 		<img
 			className={ classNames(
@@ -45,7 +38,7 @@ export const createIconComponent = (
 				options.hasBorder ? '' : 'no-border',
 				className
 			) }
-			src={ iconContext( relativePath ) }
+			src={ iconPath }
 			alt={ label }
 			{ ...props }
 		/>
