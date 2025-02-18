@@ -82,6 +82,7 @@ class PaymentMethodDefinitionRegistry {
 	 * Register a payment method definition.
 	 *
 	 * @param string $definition_class The payment method definition class to register.
+	 * @psalm-param class-string<PaymentMethodDefinitionInterface> $definition_class
 	 * @throws \InvalidArgumentException If the class does not exist or does not implement PaymentMethodDefinitionInterface.
 	 */
 	public function register_payment_method( string $definition_class ): void {
@@ -105,6 +106,11 @@ class PaymentMethodDefinitionRegistry {
 			);
 		}
 
+		/**
+		 * Ensure type safety for the payment method definition class.
+		 *
+		 * @var class-string<PaymentMethodDefinitionInterface> $definition_class
+		 */
 		$this->payment_methods[ $definition_class::get_id() ] = $definition_class;
 	}
 

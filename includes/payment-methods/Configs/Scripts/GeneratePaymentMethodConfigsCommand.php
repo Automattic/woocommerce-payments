@@ -9,6 +9,7 @@ namespace WCPay\PaymentMethods\Configs\Scripts;
 
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
+use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WP_CLI;
 
 /**
@@ -60,9 +61,9 @@ class GeneratePaymentMethodConfigsCommand {
 	}
 
 	/**
-	 * Get all payment method definitions without translations
+	 * Get all payment method definitions without translations.
 	 *
-	 * @return array Array of payment method definitions
+	 * @return array Array of payment method definitions.
 	 */
 	private function get_payment_method_definitions(): array {
 		$definitions = [];
@@ -75,6 +76,11 @@ class GeneratePaymentMethodConfigsCommand {
 		 */
 		$payment_method_definitions = $registry->get_all_payment_method_definitions();
 
+		/**
+		 * Variable containing the current payment method definition class being processed.
+		 *
+		 * @var class-string<PaymentMethodDefinitionInterface> $definition_class
+		 */
 		foreach ( $payment_method_definitions as $definition_class ) {
 			$definitions[ $definition_class::get_id() ] = [
 				'id'                         => $definition_class::get_id(),
@@ -103,9 +109,9 @@ class GeneratePaymentMethodConfigsCommand {
 	}
 
 	/**
-	 * Get payment method capabilities as constants
+	 * Get payment method capabilities as constants.
 	 *
-	 * @return array Array of capability constants
+	 * @return array Array of capability constants.
 	 */
 	private function get_capability_constants(): array {
 		$reflection = new \ReflectionClass( PaymentMethodCapability::class );
