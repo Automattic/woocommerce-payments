@@ -9,6 +9,7 @@ namespace WCPay\PaymentMethods\Configs\Registry;
 
 use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
 /**
@@ -31,6 +32,7 @@ class PaymentMethodDefinitionRegistry {
 	private $available_definitions = [
 		AffirmDefinition::class,
 		AfterpayDefinition::class,
+		KlarnaDefinition::class,
 		// Add new payment method definitions here.
 	];
 

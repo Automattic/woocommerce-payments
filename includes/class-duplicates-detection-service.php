@@ -18,7 +18,6 @@ use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
@@ -104,7 +103,6 @@ class Duplicates_Detection_Service {
 			'ideal'      => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'becs'       => Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'eps'        => Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'grabpay'    => Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'wechatpay'  => Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];

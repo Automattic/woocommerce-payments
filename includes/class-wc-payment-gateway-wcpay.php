@@ -69,7 +69,6 @@ use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\Alipay_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -4149,7 +4148,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
