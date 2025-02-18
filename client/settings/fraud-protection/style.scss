@@ -186,22 +186,6 @@
 					&:last-child {
 						margin-bottom: 0;
 					}
-
-					input[type='radio'] {
-						border-color: #757575;
-
-						&:checked {
-							background-color: #fff;
-							border-color: #757575;
-
-							&::before {
-								border: 6px solid #3582c4;
-								width: 12px;
-								height: 12px;
-								transform: translate( 3px, 3px );
-							}
-						}
-					}
 				}
 			}
 		}

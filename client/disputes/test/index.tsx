@@ -3,7 +3,6 @@
  * External dependencies
  */
 import { render, waitFor } from '@testing-library/react';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
 import { useUserPreferences } from '@woocommerce/data';
 
@@ -18,15 +17,6 @@ import {
 	DisputeReason,
 	DisputeStatus,
 } from 'wcpay/types/disputes';
-
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
-
-	return {
-		...actualModule,
-		downloadCSVFile: jest.fn(),
-	};
-} );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -59,10 +49,6 @@ jest.mock( '@woocommerce/data', () => {
 		useUserPreferences: jest.fn(),
 	};
 } );
-
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
 
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 

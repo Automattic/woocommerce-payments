@@ -272,13 +272,14 @@ describe( 'Authorizations actions', () => {
 
 				// Mock API error for amount too small
 				const apiError = {
-					code: 'wcpay_capture_error_amount_too_small',
+					code: 'wcpay_capture_error',
 					data: {
 						status: 400,
 						extra_details: {
 							minimum_amount: 50,
 							minimum_amount_currency: 'USD',
 						},
+						error_type: 'amount_too_small',
 					},
 				};
 
@@ -300,9 +301,10 @@ describe( 'Authorizations actions', () => {
 
 				// Mock API error for amount too small
 				const apiError = {
-					code: 'wcpay_capture_error_amount_too_small',
+					code: 'wcpay_capture_error',
 					data: {
 						status: 400,
+						error_type: 'amount_too_small',
 					},
 				};
 
