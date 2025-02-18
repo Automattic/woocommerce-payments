@@ -309,19 +309,6 @@ class KlarnaDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Check if the payment method meets additional availability constraints beyond currency and country support.
-	 * For Klarna, we need to check if the currency matches the country's domestic currency.
-	 *
-	 * @param string $currency        The currency code to check.
-	 * @param string $account_country The merchant's account country.
-	 * @return bool True if the payment method meets all additional availability constraints.
-	 */
-	private static function meets_availability_constraints( string $currency, string $account_country ): bool {
-		$limits = self::get_limits_per_currency()[ $currency ] ?? [];
-		return isset( $limits[ $account_country ] );
-	}
-
-	/**
 	 * Whether this payment method should be enabled by default
 	 *
 	 * @return bool
