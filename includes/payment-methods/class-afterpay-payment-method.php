@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_Account;
 use WC_Payments_Token_Service;
 use WC_Payments_Utils;
 use WCPay\Constants\Country_Code;
@@ -23,9 +24,10 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * Constructor for Afterpay payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Token class instance.
+	 * @param WC_Payments_Account       $account_service account service instance.
 	 */
-	public function __construct( $token_service ) {
-		parent::__construct( $token_service );
+	public function __construct( $token_service, $account_service ) {
+		parent::__construct( $token_service, $account_service );
 		$this->stripe_id           = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->is_reusable         = false;
 		$this->is_bnpl             = true;
@@ -83,7 +85,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * @return array
 	 */
 	public function get_currencies() {
-		$account          = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account          = $this->account_service->get_cached_account_data();
 		$account_currency = isset( $account['currency'] ) ? strtoupper( $account['currency'] ) : '';
 
 		return in_array( $account_currency, $this->currencies, true ) ? [ $account_currency ] : $this->currencies;
@@ -95,7 +97,7 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * @return array
 	 */
 	public function get_countries() {
-		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account         = $this->account_service->get_cached_account_data();
 		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
 
 		return in_array( $account_country, $this->countries, true ) ? [ $account_country ] : $this->countries;

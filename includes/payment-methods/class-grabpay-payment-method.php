@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_Account;
 use WC_Payments_Token_Service;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
@@ -22,9 +23,10 @@ class Grabpay_Payment_Method extends UPE_Payment_Method {
 	 * Constructor for GrabPay payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Token class instance.
+	 * @param WC_Payments_Account       $account_service account service instance.
 	 */
-	public function __construct( $token_service ) {
-		parent::__construct( $token_service );
+	public function __construct( $token_service, $account_service ) {
+		parent::__construct( $token_service, $account_service );
 		// Note: If WooPayments becomes available to merchants from Malaysia in the future, we'll need to not only add MYR here, but also implement
 		// logic to limit the currency based on the Stripe account country, so SG accounts only accept SGD, and MY accounts only accept MYR.
 		$this->currencies  = [ Currency_Code::SINGAPORE_DOLLAR ];

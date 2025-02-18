@@ -9,6 +9,7 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_Account;
 use WC_Payments_Utils;
 use WCPay\MultiCurrency\MultiCurrency;
 use WP_User;
@@ -98,12 +99,22 @@ abstract class UPE_Payment_Method {
 	protected $countries = [];
 
 	/**
+	 * Account service instance.
+	 * Needed in some methods to determine the payment method's country or currency eligibility.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	protected $account_service;
+
+	/**
 	 * Create instance of payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
+	 * @param WC_Payments_Account       $account_service account service instance.
 	 */
-	public function __construct( $token_service ) {
-		$this->token_service = $token_service;
+	public function __construct( $token_service, $account_service ) {
+		$this->token_service   = $token_service;
+		$this->account_service = $account_service;
 	}
 
 	/**

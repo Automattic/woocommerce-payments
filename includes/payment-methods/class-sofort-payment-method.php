@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment_Methods;
 
+use WC_Payments_Account;
 use WCPay\Constants\Country_Code;
 use WC_Payments_Token_Service;
 use WCPay\Constants\Currency_Code;
@@ -22,9 +23,10 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 	 * Constructor for Sofort payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Token class instance.
+	 * @param WC_Payments_Account       $account_service account service instance.
 	 */
-	public function __construct( $token_service ) {
-		parent::__construct( $token_service );
+	public function __construct( $token_service, $account_service ) {
+		parent::__construct( $token_service, $account_service );
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = 'Sofort';
 		$this->is_reusable = false;

@@ -588,7 +588,7 @@ class WC_Payments {
 
 		$payment_methods = [];
 		foreach ( $payment_method_classes as $payment_method_class ) {
-			$payment_method                               = new $payment_method_class( self::$token_service );
+			$payment_method                               = new $payment_method_class( self::get_token_service(), self::get_account_service() );
 			$payment_methods[ $payment_method->get_id() ] = $payment_method;
 		}
 		foreach ( $payment_methods as $payment_method ) {
