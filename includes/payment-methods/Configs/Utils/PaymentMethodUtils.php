@@ -87,4 +87,23 @@ class PaymentMethodUtils {
 	public static function allows_manual_capture( array $capabilities ): bool {
 		return in_array( PaymentMethodCapability::CAPTURE_LATER, $capabilities, true );
 	}
+
+	/**
+	 * Checks if a currency is domestic for a given country.
+	 *
+	 * @param string $currency The currency code to check.
+	 * @param string $country The country code to check against.
+	 * @return bool True if the currency is domestic for the country
+	 */
+	public static function is_domestic_currency_for_country( string $currency, string $country ): bool {
+		// Get the locale info which contains country->currency mapping.
+		$locale_info = include WC()->plugin_path() . '/i18n/locale-info.php';
+
+		// If country doesn't exist in our locale info, we can't validate.
+		if ( ! isset( $locale_info[ $country ] ) ) {
+			return false;
+		}
+
+		return $locale_info[ $country ]['currency_code'] === $currency;
+	}
 }

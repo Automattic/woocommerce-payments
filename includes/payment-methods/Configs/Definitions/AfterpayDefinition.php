@@ -299,6 +299,11 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
-		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country );
+		return (
+			// Check if the currency and country are in the supported lists.
+			PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country ) &&
+			// Check if the currency is domestic for the given country.
+			PaymentMethodUtils::is_domestic_currency_for_country( $currency, $account_country )
+		);
 	}
 }

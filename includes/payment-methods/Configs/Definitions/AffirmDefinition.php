@@ -232,24 +232,12 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
-		if ( ! PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country ) ) {
-			return false;
-		}
-
-		return self::meets_availability_constraints( $currency, $account_country );
-	}
-
-	/**
-	 * Check if the payment method meets additional availability constraints beyond currency and country support.
-	 * For Affirm, the currency must match the country (USD for US, CAD for Canada).
-	 *
-	 * @param string $currency        The currency code to check.
-	 * @param string $account_country The merchant's account country.
-	 * @return bool True if the payment method meets all additional availability constraints.
-	 */
-	private static function meets_availability_constraints( string $currency, string $account_country ): bool {
-		return ( Currency_Code::UNITED_STATES_DOLLAR === $currency && Country_Code::UNITED_STATES === $account_country ) ||
-				( Currency_Code::CANADIAN_DOLLAR === $currency && Country_Code::CANADA === $account_country );
+		return (
+			// Check if the currency and country are in the supported lists.
+			PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country ) &&
+			// Check if the currency is domestic for the given country.
+			PaymentMethodUtils::is_domestic_currency_for_country( $currency, $account_country )
+		);
 	}
 
 	/**
