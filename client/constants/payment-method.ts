@@ -59,7 +59,6 @@ export const PAYMENT_METHOD_TITLES = {
 	stripe_account: __( 'Stripe Account', 'woocommerce-payments' ),
 	unionpay: __( 'Union Pay', 'woocommerce-payments' ),
 	visa: __( 'Visa', 'woocommerce-payments' ),
-	wechat: __( 'WeChat', 'woocommerce-payments' ),
 	wechat_pay: __( 'WeChat Pay', 'woocommerce-payments' ),
 };
 

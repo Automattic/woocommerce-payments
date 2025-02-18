@@ -143,6 +143,10 @@
 	background-image: url( '../images/payment-methods/grabpay.svg' );
 }
 
+.payment-method__brand--wechat_pay {
+	background-image: url( '../images/payment-methods/wechat-pay.svg' );
+}
+
 .wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {
 	border: 1px solid #ddd;
 	border-radius: 2px;
