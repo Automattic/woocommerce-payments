@@ -3395,10 +3395,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'minimum_amount_currency' => strtoupper( $e->get_currency() ),
 					];
 					$minimum_amount_details = sprintf(
-						/* translators: %1$s: minimum amount, %2$s: currency */
-						__( 'The minimum amount to capture is %1$s %2$s.', 'woocommerce-payments' ),
-						WC_Payments_Utils::interpret_stripe_amount( $e->get_minimum_amount(), $e->get_currency() ),
-						strtoupper( $e->get_currency() )
+						/* translators: %s: formatted minimum amount with currency */
+						__( 'The minimum amount to capture is %s.', 'woocommerce-payments' ),
+						WC_Payments_Utils::format_explicit_currency(
+							WC_Payments_Utils::interpret_stripe_amount( $e->get_minimum_amount(), $e->get_currency() ),
+							$e->get_currency()
+						)
 					);
 					$error_message = $error_message . ' ' . $minimum_amount_details;
 				}
