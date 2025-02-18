@@ -29,6 +29,7 @@ interface ChargeRefunds {
 
 export interface PaymentMethodDetails {
 	card?: any;
+	grabpay?: any;
 	type:
 		| 'affirm'
 		| 'afterpay_clearpay'

@@ -42,6 +42,7 @@ import {
 	PAYMENT_METHOD_NAME_AFTERPAY,
 	PAYMENT_METHOD_NAME_KLARNA,
 	PAYMENT_METHOD_NAME_GRABPAY,
+	PAYMENT_METHOD_NAME_WECHAT_PAY,
 } from '../constants.js';
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
@@ -65,6 +66,7 @@ const upeMethods = {
 	afterpay_clearpay: PAYMENT_METHOD_NAME_AFTERPAY,
 	klarna: PAYMENT_METHOD_NAME_KLARNA,
 	grabpay: PAYMENT_METHOD_NAME_GRABPAY,
+	wechat_pay: PAYMENT_METHOD_NAME_WECHAT_PAY,
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
