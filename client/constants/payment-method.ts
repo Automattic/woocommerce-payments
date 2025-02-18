@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 
 enum PAYMENT_METHOD_IDS {
 	AFFIRM = 'affirm',
+	ALIPAY = 'alipay',
 	AFTERPAY_CLEARPAY = 'afterpay_clearpay',
 	AU_BECS_DEBIT = 'au_becs_debit',
 	BANCONTACT = 'bancontact',
@@ -12,6 +13,7 @@ enum PAYMENT_METHOD_IDS {
 	CARD_PRESENT = 'card_present',
 	EPS = 'eps',
 	KLARNA = 'klarna',
+	GRABPAY = 'grabpay',
 	GIROPAY = 'giropay',
 	IDEAL = 'ideal',
 	LINK = 'link',
@@ -19,6 +21,7 @@ enum PAYMENT_METHOD_IDS {
 	SEPA_DEBIT = 'sepa_debit',
 	SOFORT = 'sofort',
 	MULTIBANCO = 'multibanco',
+	WECHAT_PAY = 'wechat_pay',
 }
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
@@ -28,12 +31,12 @@ export const PAYMENT_METHOD_TITLES = {
 	ach_credit_transfer: __( 'ACH Credit Transfer', 'woocommerce-payments' ),
 	ach_debit: __( 'ACH Debit', 'woocommerce-payments' ),
 	acss_debit: __( 'ACSS Debit', 'woocommerce-payments' ),
+	alipay: __( 'Alipay', 'woocommerce-payments' ),
 	affirm: __( 'Affirm', 'woocommerce-payments' ),
 	afterpay_clearpay:
 		'GB' === accountCountry
 			? __( 'Clearpay', 'woocommerce-payments' )
 			: __( 'Afterpay', 'woocommerce-payments' ),
-	alipay: __( 'Alipay', 'woocommerce-payments' ),
 	amex: __( 'American Express', 'woocommerce-payments' ),
 	au_becs_debit: __( 'AU BECS Debit', 'woocommerce-payments' ),
 	bancontact: __( 'Bancontact', 'woocommerce-payments' ),
@@ -47,6 +50,7 @@ export const PAYMENT_METHOD_TITLES = {
 	ideal: __( 'iDEAL', 'woocommerce-payments' ),
 	jcb: __( 'JCB', 'woocommerce-payments' ),
 	klarna: __( 'Klarna', 'woocommerce-payments' ),
+	grabpay: __( 'GrabPay', 'woocommerce-payments' ),
 	link: __( 'Link', 'woocommerce-payments' ),
 	mastercard: __( 'Mastercard', 'woocommerce-payments' ),
 	multibanco: __( 'Multibanco', 'woocommerce-payments' ),
@@ -57,6 +61,7 @@ export const PAYMENT_METHOD_TITLES = {
 	unionpay: __( 'Union Pay', 'woocommerce-payments' ),
 	visa: __( 'Visa', 'woocommerce-payments' ),
 	wechat: __( 'WeChat', 'woocommerce-payments' ),
+	wechat_pay: __( 'WeChat Pay', 'woocommerce-payments' ),
 };
 
 export default PAYMENT_METHOD_IDS;

@@ -37,14 +37,16 @@ addFilter(
 	'wcpay.express-checkout.cart-add-item',
 	'automattic/wcpay/express-checkout',
 	( productData ) => {
-		const $variationInformation = jQuery( '.single_variation_wrap' );
-		if ( ! $variationInformation.length ) {
+		const variationInformation = document.querySelector(
+			'.single_variation_wrap'
+		);
+		if ( ! variationInformation ) {
 			return productData;
 		}
 
-		const productId = $variationInformation
-			.find( 'input[name="product_id"]' )
-			.val();
+		const productId = variationInformation.querySelector(
+			'input[name="product_id"]'
+		).value;
 		return {
 			...productData,
 			id: parseInt( productId, 10 ),
@@ -55,31 +57,39 @@ addFilter(
 	'wcpay.express-checkout.cart-add-item',
 	'automattic/wcpay/express-checkout',
 	( productData ) => {
-		const $variationsForm = jQuery( '.variations_form' );
-		if ( ! $variationsForm.length ) {
+		const variationsForm = document.querySelector( '.variations_form' );
+		if ( ! variationsForm ) {
 			return productData;
 		}
 
 		const attributes = [];
-		const $variationSelectElements = $variationsForm.find(
+		const variationSelectElements = variationsForm.querySelectorAll(
 			'.variations select'
 		);
-		$variationSelectElements.each( function () {
-			const $select = jQuery( this );
+		Array.from( variationSelectElements ).forEach( function ( select ) {
 			const attributeName =
-				$select.data( 'attribute_name' ) || $select.attr( 'name' );
+				select.dataset.attribute_name || select.dataset.name;
 
 			attributes.push( {
 				// The Store API accepts the variable attribute's label, rather than an internal identifier:
 				// https://github.com/woocommerce/woocommerce-blocks/blob/trunk/src/StoreApi/docs/cart.md#add-item
 				// It's an unfortunate hack that doesn't work when labels have special characters in them.
-				attribute: document.querySelector(
-					`label[for="${ attributeName.replace(
-						'attribute_',
-						''
-					) }"]`
-				).innerHTML,
-				value: $select.val() || '',
+				// fallback until https://github.com/woocommerce/woocommerce/pull/55317 has been consolidated in WC Core.
+				attribute: Array.from(
+					document.querySelector(
+						`label[for="${ attributeName.replace(
+							'attribute_',
+							''
+						) }"]`
+					).childNodes
+				)[ 0 ].textContent,
+				value: select.value || '',
+			} );
+
+			// proper logic for https://github.com/woocommerce/woocommerce/pull/55317 .
+			attributes.push( {
+				attribute: attributeName,
+				value: select.value || '',
 			} );
 		} );
 

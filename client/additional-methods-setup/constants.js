@@ -1,5 +1,6 @@
 export const upeMethods = [
 	'au_becs_debit',
+	'alipay',
 	'bancontact',
 	'eps',
 	'giropay',
@@ -12,6 +13,8 @@ export const upeMethods = [
 	'jcb',
 	'klarna',
 	'multibanco',
+	'grabpay',
+	'wechat_pay',
 ];
 
 export const upeCapabilityStatuses = {

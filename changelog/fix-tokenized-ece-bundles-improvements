@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: tokenized ECE improvements with WC Deposits, Bookings, Bundles.

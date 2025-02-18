@@ -191,13 +191,9 @@ class WC_Payments_Webhook_Processing_Service {
 				$this->process_webhook_payment_intent_amount_capturable_updated( $event_body );
 				break;
 			case 'invoice.upcoming':
-				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_upcoming( $event_body );
-				break;
 			case 'invoice.paid':
-				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_paid( $event_body );
-				break;
 			case 'invoice.payment_failed':
-				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_payment_failed( $event_body );
+				$this->process_webhook_stripe_billing_invoice( $event_type, $event_body );
 				break;
 		}
 
@@ -324,6 +320,19 @@ class WC_Payments_Webhook_Processing_Service {
 		$order->add_order_note( $note );
 		$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
 		$order->save();
+
+		try {
+			$failure_reason = $this->read_webhook_property( $event_object, 'failure_reason' );
+
+			if ( 'insufficient_funds' === $failure_reason ) {
+				$this->order_service->handle_insufficient_balance_for_refund(
+					$order,
+					$amount
+				);
+			}
+		} catch ( Exception $e ) {
+			Logger::debug( 'Failed to handle insufficient balance for refund: ' . $e->getMessage() );
+		}
 	}
 
 	/**
@@ -870,5 +879,33 @@ class WC_Payments_Webhook_Processing_Service {
 		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
 		// Process the refund in the order service.
 		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
+	}
+
+	/**
+	 * Process webhook for Stripe Billing invoice events.
+	 *
+	 * @param string $event_type The type of event that triggered the webhook.
+	 * @param array  $event_body The event that triggered the webhook.
+	 *
+	 * @return void
+	 *
+	 * @throws Invalid_Webhook_Data_Exception When the linked subscription is not found.
+	 */
+	private function process_webhook_stripe_billing_invoice( $event_type, $event_body ) {
+		if ( ! class_exists( 'WC_Payments_Subscriptions' ) ) {
+			return;
+		}
+
+		switch ( $event_type ) {
+			case 'invoice.upcoming':
+				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_upcoming( $event_body );
+				break;
+			case 'invoice.paid':
+				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_paid( $event_body );
+				break;
+			case 'invoice.payment_failed':
+				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_payment_failed( $event_body );
+				break;
+		}
 	}
 }
