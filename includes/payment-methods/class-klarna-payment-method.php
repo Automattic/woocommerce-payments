@@ -8,6 +8,8 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
+use WC_Payments_Utils;
+use WCPay\Constants\Country_Code;
 use WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition;
 
 /**
@@ -54,5 +56,37 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function get_testing_instructions( string $account_country ) {
 		return KlarnaDefinition::get_testing_instructions();
+	}
+
+	/**
+	 * Returns payment method supported countries.
+	 *
+	 * For Klarna we need to include additional logic to support transactions between countries in the EEA,
+	 * UK, and Switzerland.
+	 *
+	 * @return array
+	 */
+	public function get_countries() {
+		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
+
+		// Countries in the EEA can transact across all other EEA countries. This includes Switzerland and the UK who aren't strictly in the EU.
+		$eea_countries = array_merge(
+			WC_Payments_Utils::get_european_economic_area_countries(),
+			[ Country_Code::SWITZERLAND, Country_Code::UNITED_KINGDOM ]
+		);
+
+		// If the merchant is in the EEA, UK, or Switzerland, only the countries that have the same domestic currency as the store currency will be supported.
+		if ( in_array( $account_country, $eea_countries, true ) ) {
+			$store_currency = strtoupper( get_woocommerce_currency() );
+
+			$countries_that_support_store_currency = array_keys( KlarnaDefinition::get_limits_per_currency()[ $store_currency ] ?? [] );
+
+			return array_values( array_intersect( $eea_countries, $countries_that_support_store_currency ) );
+		}
+
+		// For non-EEA countries, only return the merchant's country if it's supported.
+		$supported_countries = KlarnaDefinition::get_supported_countries();
+		return in_array( $account_country, $supported_countries, true ) ? [ $account_country ] : [];
 	}
 }
