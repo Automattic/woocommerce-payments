@@ -22,9 +22,13 @@ export default {
 				),
 				'WooPayments'
 		  )
-		: __(
-				'If you are experiencing problems completing account setup, or need to change the email/country associated with your account, you can reset your account and start from the beginning.',
-				'woocommerce-payments'
+		: sprintf(
+				/* translators: 1: WooPayments. */
+				__(
+					'When you reset your account, all payment data — including your %1$s account details, test transactions, and payouts history — will be lost. Your order history will remain. This action cannot be undone, but you can create a new test account at any time.',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 		  ),
 	beforeContinue: __( 'Before you continue', 'woocommerce-payments' ),
 	step1: sprintf(
