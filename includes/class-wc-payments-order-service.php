@@ -132,6 +132,34 @@ class WC_Payments_Order_Service {
 	const WCPAY_PAYMENT_TRANSACTION_ID_META_KEY = '_wcpay_payment_transaction_id';
 
 	/**
+	 * Meta key used to store the Multibanco entity.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_ENTITY_META_KEY = '_wcpay_multibanco_entity';
+
+	/**
+	 * Meta key used to store the Multibanco reference.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_REFERENCE_META_KEY = '_wcpay_multibanco_reference';
+
+	/**
+	 * Meta key used to store the Multibanco expiry.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_EXPIRY_META_KEY = '_wcpay_multibanco_expiry';
+
+	/**
+	 * Meta key used to store the Multibanco URL.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_URL_META_KEY = '_wcpay_multibanco_url';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -2181,6 +2209,37 @@ class WC_Payments_Order_Service {
 		} else {
 			$order->add_order_note( $this->get_insufficient_balance_note( $formatted_amount ) );
 		}
+	}
+
+	/**
+	 * Attach Multibanco information to the order.
+	 *
+	 * @param WC_Order $order     The order being paid.
+	 * @param string   $reference The Multibanco reference.
+	 * @param string   $entity    The Multibanco entity.
+	 * @param string   $url       The Multibanco URL.
+	 * @param int      $expiry    The Multibanco expiry.
+	 */
+	public function attach_multibanco_info_to_order( WC_Order $order, string $reference, string $entity, string $url, int $expiry ): void {
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_REFERENCE_META_KEY, $reference );
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_ENTITY_META_KEY, $entity );
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_URL_META_KEY, $url );
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_EXPIRY_META_KEY, $expiry );
+	}
+
+	/**
+	 * Get Multibanco information from the order.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return array
+	 */
+	public function get_multibanco_info_from_order( WC_Order $order ): array {
+		return [
+			'reference' => $order->get_meta( self::WCPAY_MULTIBANCO_REFERENCE_META_KEY ),
+			'entity'    => $order->get_meta( self::WCPAY_MULTIBANCO_ENTITY_META_KEY ),
+			'url'       => $order->get_meta( self::WCPAY_MULTIBANCO_URL_META_KEY ),
+			'expiry'    => $order->get_meta( self::WCPAY_MULTIBANCO_EXPIRY_META_KEY ),
+		];
 	}
 
 	/**
