@@ -81,8 +81,10 @@ class WC_Payments_Invoice_Service {
 			return;
 		}
 
-		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
-		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
+		if ( WC_Payments_Features::should_use_stripe_billing() ) {
+			add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
+			add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
+		}
 	}
 
 	/**
@@ -189,6 +191,10 @@ class WC_Payments_Invoice_Service {
 	 * @throws API_Exception If the request to mark the invoice as paid fails.
 	 */
 	public function maybe_record_invoice_payment( int $order_id ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			return;
+		}
+
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order || self::get_order_invoice_id( $order ) ) {
