@@ -24,6 +24,7 @@ import KlarnaDetails from './klarna';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
+import WeChatPayDetails from './wechat-pay';
 
 const detailsComponentMap = {
 	affirm: AffirmDetails,
@@ -40,6 +41,7 @@ const detailsComponentMap = {
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
+	wechat_pay: WeChatPayDetails,
 };
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
