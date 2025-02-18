@@ -85,16 +85,15 @@ local.env
 # Screenshots created locally when running e2e tests
 tests/e2e/screenshots
 
-# E2E Performance test results
+# E2E test results
 tests/e2e/reports
-
-# E2E Playwright
 /playwright-report/
 /blob-report/
-tests/e2e-pw/.auth/
-tests/e2e-pw/test-results/
-tests/e2e-pw/playwright/.cache/
-tests/e2e-pw/tests/e2e-pw/.auth/*
+tests/e2e/.auth/
+tests/e2e/test-results/
+tests/e2e/playwright/.cache/
+tests/e2e/tests/e2e/.auth/*
+
 # Slate docs
 docs/rest-api/build/*
 

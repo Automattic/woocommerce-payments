@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add Slack integration to Playwright E2E tests.

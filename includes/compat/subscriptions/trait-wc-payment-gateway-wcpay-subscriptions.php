@@ -876,17 +876,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool True if the renewal order is linked to a renewal order. Otherwise false.
 	 */
 	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
-		/**
-		 * Check if WC_Payments_Subscription_Service class exists first before fetching the subscription for the renewal order.
-		 *
-		 * This class is only loaded when the store has the Stripe Billing feature turned on or has existing
-		 * WCPay Subscriptions @see WC_Payments::should_load_stripe_billing_integration().
-		 */
-		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) ) {
+		// Renewal orders copy metadata from the parent subscription, so we can first check if it has the `_wcpay_subscription_id` meta.
+		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) || ! $renewal_order->meta_exists( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY ) ) {
 			return false;
 		}
 
-		// Check if the renewal order is linked to a subscription which is a WCPay Subscription.
+		// Confirm the renewal order is linked to a subscription which is a WCPay Subscription.
 		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
 			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 				return true;
