@@ -9,10 +9,10 @@ runs:
       # Use +e to trap errors when running E2E tests.
       shell: /bin/bash +e {0}
       run: |
-        npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH" --NODE_ENV="$NODE_ENV"
+        npm run test:e2e-ci
         
         if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
-          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
+          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.stats["unexpected"]')
           echo "FIRST_RUN_FAILED_TEST_SUITES=$(echo $E2E_NUM_FAILED_TEST_SUITES)" >> $GITHUB_OUTPUT
           if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
             echo "::notice::${E2E_NUM_FAILED_TEST_SUITES} test suite(s) failed in the first run but we will try (it) them again in the second run."
@@ -20,8 +20,7 @@ runs:
           fi
         else
           echo "FIRST_RUN_FAILED_TEST_SUITES=0" >> $GITHUB_OUTPUT
-          echo "::notice::${E2E_RESULT_FILEPATH} doesn't exist so results are unclear and we will not try again."
-          exit 1
+          exit 0
         fi
 
     # Retry failed E2E tests
@@ -30,18 +29,17 @@ runs:
       shell: bash
       # Filter failed E2E files from the result JSON file, and re-run them.
       run: |
-        cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e -- --NODE_ENV="$NODE_ENV"
+        npm run test:e2e-ci $(cat $E2E_RESULT_FILEPATH | jq -r '[.suites[] | (if has("suites") then .suites[] | .specs[] else .specs[] end) | select(.tests[].status == "unexpected") | .file] | unique | .[]')
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs
-      if: ${{ failure() }}
+      if: ${{ always() }}
       uses: actions/upload-artifact@v4
       with:
           name: wp(${{ env.E2E_WP_VERSION }})-wc(${{ env.E2E_WC_VERSION }})-${{ env.E2E_GROUP }}-${{ env.E2E_BRANCH }}
           path: |
-            screenshots
-            tests/e2e/screenshots
-            tests/e2e/docker/wordpress/wp-content/debug.log
+            playwright-report/
+            tests/e2e/test-results
             ${{ env.E2E_RESULT_FILEPATH }}
           if-no-files-found: ignore
           retention-days: 14

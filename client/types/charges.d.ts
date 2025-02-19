@@ -29,6 +29,7 @@ interface ChargeRefunds {
 
 export interface PaymentMethodDetails {
 	card?: any;
+	grabpay?: any;
 	type:
 		| 'affirm'
 		| 'afterpay_clearpay'
@@ -40,6 +41,7 @@ export interface PaymentMethodDetails {
 		| 'giropay'
 		| 'ideal'
 		| 'klarna'
+		| 'grabpay'
 		| 'p24'
 		| 'sepa_debit'
 		| 'sofort';

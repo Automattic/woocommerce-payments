@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 
 import {
+	AlipayIcon,
 	AffirmIcon,
 	AfterpayIcon,
 	ClearpayIcon,
@@ -22,6 +23,8 @@ import {
 	P24Icon,
 	SepaIcon,
 	SofortIcon,
+	GrabPayIcon,
+	WeChatPayIcon,
 } from 'wcpay/payment-methods-icons';
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
@@ -44,7 +47,7 @@ const PaymentMethodInformationObject: Record<
 > = {
 	card: {
 		id: 'card',
-		label: __( 'Credit / Debit card', 'woocommerce-payments' ),
+		label: __( 'Credit / Debit Cards', 'woocommerce-payments' ),
 		description: __(
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
@@ -53,6 +56,20 @@ const PaymentMethodInformationObject: Record<
 		currencies: [],
 		stripe_key: 'card_payments',
 		allows_manual_capture: true,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
+	},
+	alipay: {
+		id: 'alipay',
+		label: __( 'Alipay', 'woocommerce-payments' ),
+		description: __(
+			'Alipay is a popular wallet in China, operated by Ant Financial Services Group, a financial services provider affiliated with Alibaba.',
+			'woocommerce-payments'
+		),
+		icon: AlipayIcon,
+		currencies: [],
+		stripe_key: 'alipay_payments',
+		allows_manual_capture: false,
 		allows_pay_later: false,
 		accepts_only_domestic_payment: false,
 	},
@@ -232,6 +249,48 @@ const PaymentMethodInformationObject: Record<
 		allows_manual_capture: false,
 		allows_pay_later: true,
 		accepts_only_domestic_payment: true,
+	},
+	grabpay: {
+		id: 'grabpay',
+		label: __( 'GrabPay', 'woocommerce-payments' ),
+		description: __(
+			'A popular digital wallet for cashless payments in Singapore.',
+			'woocommerce-payments'
+		),
+		icon: GrabPayIcon,
+		currencies: [ 'SGD' ],
+		stripe_key: 'grabpay_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
+	},
+	wechat_pay: {
+		id: 'wechat_pay',
+		label: __( 'WeChat Pay', 'woocommerce-payments' ),
+		description: __(
+			'A digital wallet popular with customers from China.',
+			'woocommerce-payments'
+		),
+		icon: WeChatPayIcon,
+		currencies: [
+			'USD',
+			'CNY',
+			'AUD',
+			'CAD',
+			'EUR',
+			'GBP',
+			'HKD',
+			'JPY',
+			'SGD',
+			'DKK',
+			'NOK',
+			'SEK',
+			'CHF',
+		],
+		stripe_key: 'wechat_pay_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
 	},
 };
 

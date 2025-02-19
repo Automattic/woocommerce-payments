@@ -6,7 +6,7 @@ on:
 
 env:
   WC_E2E_SCREENSHOTS: 1
-  E2E_SLACK_CHANNEL: ${{ secrets.E2E_SLACK_CHANNEL }}
+  E2E_SLACK_CHANNEL_ID: ${{ secrets.E2E_SLACK_CHANNEL_ID }}
   E2E_SLACK_TOKEN: ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_WP_VERSION: 'nightly'
   E2E_WC_VERSION: 'latest'

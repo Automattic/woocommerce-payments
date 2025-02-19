@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add new E2E tests to make sure a non-admin user, such as an editor, can access the wp-admin without errors.

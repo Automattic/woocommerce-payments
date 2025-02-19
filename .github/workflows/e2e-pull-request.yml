@@ -3,9 +3,8 @@ name: E2E Tests - Pull Request
 on:
   pull_request:
     branches:
-      # - develop
-      # - trunk
-      - dev/10240-update-npm-scripts # [TODO] Remove this line after the branch is merged.
+      - develop
+      - trunk
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -28,7 +27,7 @@ env:
   E2E_BLOG_TOKEN:                ${{ secrets.E2E_BLOG_TOKEN }}
   E2E_USER_TOKEN:                ${{ secrets.E2E_USER_TOKEN }}
   WC_E2E_SCREENSHOTS:            1
-  E2E_SLACK_CHANNEL:             ${{ secrets.E2E_SLACK_CHANNEL }}
+  E2E_SLACK_CHANNEL_ID:          ${{ secrets.E2E_SLACK_CHANNEL_ID }}
   E2E_SLACK_TOKEN:               ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_USE_LOCAL_SERVER:          false
   E2E_RESULT_FILEPATH:           'tests/e2e/results.json'
@@ -74,6 +73,10 @@ jobs:
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
+
+      - name: Install Playwright
+        shell: bash
+        run: npx playwright install chromium
 
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests
