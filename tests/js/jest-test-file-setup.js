@@ -133,3 +133,26 @@ jest.mock( 'tracks', () => ( {
 	isEnabled: jest.fn(),
 	events: {},
 } ) );
+
+// Mock the icons/utils module with minimal implementation
+jest.mock( 'wcpay/payment-methods/icons/utils', () => {
+	const React = require( 'react' );
+	const classNames = require( 'classnames' );
+
+	return {
+		createPaymentMethodIconComponent: ( def, options ) => {
+			return function IconComponent( { className, ...props } ) {
+				return React.createElement( 'img', {
+					className: classNames(
+						'payment-method__icon',
+						options?.hasBorder === false ? 'no-border' : '',
+						className
+					),
+					src: `test-file-stub/${ def.settingsIcon }`,
+					alt: def.title,
+					...props,
+				} );
+			};
+		},
+	};
+} );
