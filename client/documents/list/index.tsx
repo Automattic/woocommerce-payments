@@ -18,7 +18,7 @@ import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';
 import { getDocumentUrl } from 'wcpay/utils';
-import VatFormModal from 'wcpay/vat/form-modal';
+import VatFormModal from '../form-modal';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 

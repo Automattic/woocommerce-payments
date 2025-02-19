@@ -11,7 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import VatForm from '..';
+import TaxDetailsForm from '..';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -67,7 +67,7 @@ describe( 'VAT form', () => {
 				accountStatus: { country: country },
 			};
 
-			render( <VatForm onCompleted={ mockOnCompleted } /> );
+			render( <TaxDetailsForm onCompleted={ mockOnCompleted } /> );
 
 			user.click(
 				screen.getByLabelText(
@@ -99,7 +99,7 @@ describe( 'VAT form', () => {
 			accountStatus: { country: 'GB' },
 		};
 
-		render( <VatForm onCompleted={ mockOnCompleted } /> );
+		render( <TaxDetailsForm onCompleted={ mockOnCompleted } /> );
 	} );
 
 	afterEach( () => {
