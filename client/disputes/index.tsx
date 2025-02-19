@@ -345,9 +345,9 @@ export const DisputesList = (): JSX.Element => {
 	const downloadable = !! rows.length;
 
 	const onDownload = async () => {
-		recordEvent( 'wcpay_disputes_download', {
-			exported_disputes: rows.length,
-			total_disputes: disputesSummary.count,
+		recordEvent( 'wcpay_csv_export_click', {
+			location: 'disputes',
+			exported_rows: disputesSummary.count,
 		} );
 
 		// We destructure page and path to get the right params.
