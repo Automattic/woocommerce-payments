@@ -36,7 +36,7 @@ import CBAsset from 'assets/images/cards/cb.svg?asset';
 import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
 import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
-import WeChatPayAsset from 'assets/images/payment-methods/wechat_pay.svg?asset';
+import WeChatPayAsset from 'assets/images/payment-methods/wechat-pay.svg?asset';
 import './style.scss';
 
 const iconComponent = (

@@ -39,6 +39,7 @@ import {
 	ConnectNotificationBanner,
 } from '@stripe/react-connect-js';
 import { recordEvent } from 'wcpay/tracks';
+import StripeSpinner from 'wcpay/components/stripe-spinner';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -94,6 +95,9 @@ const OverviewPage = () => {
 		setLoadErrorMessage: setStripeNotificationsBannerErrorMessage,
 		appearance,
 	} );
+	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
+		true
+	);
 
 	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
 	const { isLoading: settingsIsLoading } = useSettings();
@@ -191,6 +195,7 @@ const OverviewPage = () => {
 		if ( stripeNotificationsBannerErrorMessage ) {
 			setShowUpdateDetailsTask( true );
 			setShowGetVerifyBankAccountTask( true );
+			setStripeComponentLoading( false );
 		}
 	}, [ stripeNotificationsBannerErrorMessage ] );
 
@@ -220,6 +225,9 @@ const OverviewPage = () => {
 				total_count: response.total,
 			} );
 		}
+		// If the component inits successfully, this function is always called.
+		// It's safe to set the loading false here rather than onLoaderStart, because it happens too early and the UX is not smooth.
+		setStripeComponentLoading( false );
 	};
 
 	return (
@@ -270,6 +278,14 @@ const OverviewPage = () => {
 				<ErrorBoundary>
 					<Welcome />
 
+					{ stripeComponentLoading &&
+						accountStatus.status !== 'complete' && (
+							<Card>
+								<div className="stripe-notifications-banner-loader">
+									<StripeSpinner />
+								</div>
+							</Card>
+						) }
 					{ stripeConnectInstance && (
 						<div
 							className="stripe-notifications-banner-wrapper"
@@ -284,12 +300,13 @@ const OverviewPage = () => {
 									connectInstance={ stripeConnectInstance }
 								>
 									<ConnectNotificationBanner
-										onLoadError={ ( loadError ) =>
+										onLoadError={ ( loadError ) => {
 											setStripeNotificationsBannerErrorMessage(
 												loadError.error.message ||
 													'Unknown error'
-											)
-										}
+											);
+											setStripeComponentLoading( false );
+										} }
 										collectionOptions={ {
 											fields: 'eventually_due',
 											futureRequirements: 'omit',
