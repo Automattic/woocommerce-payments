@@ -25,18 +25,7 @@ import {
 } from 'wcpay/payment-methods-icons';
 
 import GeneratedPaymentMethodInformationObject from './payment-methods/generated-map';
-
-export interface PaymentMethodMapEntry {
-	id: string;
-	label: string;
-	description: string;
-	icon: ReactImgFuncComponent;
-	currencies: string[];
-	stripe_key: string;
-	allows_manual_capture: boolean;
-	allows_pay_later: boolean;
-	accepts_only_domestic_payment: boolean;
-}
+import type { PaymentMethodMapEntry } from './types/payment-methods';
 
 const PaymentMethodInformationObject: Record<
 	string,

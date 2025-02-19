@@ -7,7 +7,7 @@ import type { ImgHTMLAttributes, FunctionComponent } from 'react';
  * Internal dependencies
  */
 import type { PaymentMethodDefinition } from './types';
-import type { PaymentMethodMapEntry } from '../payment-methods-map';
+import { PaymentMethodMapEntry } from 'wcpay/types/payment-methods';
 import { createPaymentMethodIconComponent } from './icons';
 
 type ReactImgFuncComponent = FunctionComponent<

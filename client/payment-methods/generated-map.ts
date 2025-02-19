@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import type { PaymentMethodMapEntry } from '../payment-methods-map';
+import { PaymentMethodMapEntry } from 'wcpay/types/payment-methods';
 import { PaymentMethodDefinitions } from './types';
 import { mapDefinitionToEntry } from './mapping';
 
