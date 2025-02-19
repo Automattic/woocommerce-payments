@@ -344,6 +344,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$properties['blog_url']  = $site_url;
 		$properties['blog_id']   = \Jetpack_Options::get_option( 'id' );
 		$properties['user_lang'] = $user->get( 'WPLANG' );
+		$properties['store_id']  = get_option( \WC_Install::STORE_ID_OPTION, null );
 
 		// Add event property for test mode vs. live mode events.
 		$properties['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
