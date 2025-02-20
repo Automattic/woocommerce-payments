@@ -3654,6 +3654,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
 			'payment_method'       => 'woocommerce_payments',
+			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-new-payment-method' => 'true',
 		];
 
 		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
@@ -3680,6 +3681,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$_POST                         = [
 			'wcpay-payment-method' => 'pm_mock',
 			'payment_method'       => 'woocommerce_payments',
+			'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-new-payment-method' => 'true',
 		];
 
 		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
