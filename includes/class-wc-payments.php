@@ -465,7 +465,6 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-prevention-enabled-exception.php';
-		include_once __DIR__ . '/exceptions/class-new-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-id-mismatch-exception.php';
 		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
