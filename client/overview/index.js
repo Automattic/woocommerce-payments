@@ -40,6 +40,7 @@ import {
 } from '@stripe/react-connect-js';
 import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
+import { getAdminUrl } from 'wcpay/utils';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -230,6 +231,15 @@ const OverviewPage = () => {
 						'woocommerce-payments'
 					),
 					{
+						actions: [
+							{
+								label: __( 'Refresh', 'woocommerce-payments' ),
+								url: getAdminUrl( {
+									page: 'wc-admin',
+									path: '/payments/overview',
+								} ),
+							},
+						],
 						explicitDismiss: true,
 					}
 				);
