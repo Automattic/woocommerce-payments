@@ -739,7 +739,7 @@ class WC_Payments {
 		}
 
 		// Load Stripe Billing subscription integration.
-		if ( self::should_load_stripe_billing_integration() ) {
+		if ( WC_Payments_Features::is_stripe_billing_eligible() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 		}

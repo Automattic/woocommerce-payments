@@ -27,6 +27,11 @@ export const customerStorageFile = path.resolve(
 	'../.auth/customer.json'
 );
 
+export const editorStorageFile = path.resolve(
+	__dirname,
+	'../.auth/editor.json'
+);
+
 /**
  * Logs in to the WordPress admin as a given user.
  */
@@ -258,4 +263,59 @@ export const ensureCustomerIsLoggedIn = async (
 		await addSupportSessionDetectedCookie( page, project );
 		await loginAsCustomer( page, config.users.customer );
 	}
+};
+
+export const loginAsEditor = async (
+	page: Page,
+	editor: { username: string; password: string }
+) => {
+	let editorLoggedIn = false;
+	const editorRetries = 5;
+
+	for ( let i = 0; i < editorRetries; i++ ) {
+		try {
+			// eslint-disable-next-line no-console
+			console.log( 'Trying to log-in as editor...' );
+			await wpAdminLogin( page, editor );
+			await page.goto( '/wp-admin' );
+			await page.waitForLoadState( 'domcontentloaded' );
+			await expect(
+				page.getByRole( 'heading', { name: 'Dashboard' } )
+			).toContainText( 'Dashboard' );
+
+			console.log( 'Logged-in as editor successfully.' );
+			editorLoggedIn = true;
+			break;
+		} catch ( e ) {
+			console.log(
+				`Editor log-in failed. Retrying... ${ i }/${ editorRetries }`
+			);
+			console.log( e );
+		}
+	}
+
+	if ( ! editorLoggedIn ) {
+		throw new Error(
+			'Cannot proceed with e2e test, as editor login failed. Please check if the test site has been setup correctly.'
+		);
+	}
+
+	await page.context().storageState( { path: editorStorageFile } );
+};
+
+/**
+ * Returns the editor authenticated page and context.
+ * Allows switching between editor and other user contexts within a single test.
+ */
+export const getEditor = async (
+	browser: Browser
+): Promise< {
+	editorPage: Page;
+	editorContext: BrowserContext;
+} > => {
+	const editorContext = await browser.newContext( {
+		storageState: editorStorageFile,
+	} );
+	const editorPage = await editorContext.newPage();
+	return { editorPage, editorContext };
 };
