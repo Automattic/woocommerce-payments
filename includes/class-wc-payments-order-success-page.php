@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class WC_Payments_Order_Success_Page
  *
@@ -13,12 +14,14 @@ use WCPay\Duplicate_Payment_Prevention_Service;
  */
 class WC_Payments_Order_Success_Page {
 
+
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
 		add_filter( 'woocommerce_order_received_verify_known_shoppers', [ $this, 'determine_woopay_order_received_verify_known_shoppers' ], 11 );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
+		add_action( 'woocommerce_before_thankyou', [ $this, 'maybe_render_multibanco_payment_instructions' ] );
 		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'unregister_payment_method_override' ] );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_successful_intent' ], 11 );
@@ -31,6 +34,65 @@ class WC_Payments_Order_Success_Page {
 	public function register_payment_method_override() {
 		// Override the payment method title on the order received page.
 		add_filter( 'woocommerce_order_get_payment_method_title', [ $this, 'show_woocommerce_payments_payment_method_name' ], 10, 2 );
+	}
+
+	/**
+	 * Maybe render the payment instructions for Multibanco payment method.
+	 *
+	 * @param int $order_id The order ID.
+	 */
+	public function maybe_render_multibanco_payment_instructions( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		// TODO: Check if order is on hold and has Multibanco payment method.
+		if ( ! $order || $order->get_payment_method() !== 'woocommerce_payments_' . Payment_Method::MULTIBANCO ) {
+			return;
+		}
+
+		wc_print_notice(
+			__( 'Your order is on hold until payment is received. Please follow the payment instructions by the expiry date.', 'woocommerce-payments' ),
+			'notice'
+		);
+		?>
+		<div id="wc-payment-gateway-multibanco-instructions-container">
+			<div class="card">
+				<div class="card-header">
+					<div class="logo-container">
+						<!-- TODO: Show dark icon when theme is dark. -->
+						<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/multibanco-instructions.svg', WCPAY_PLUGIN_FILE ) ); ?>" alt="Multibanco">
+					</div>
+					<div class="payment-details">
+						<div class="payment-header">$189.70 USD</div>
+						<div class="payment-expiry">Expires <strong>February 3, 2025 at 5:15 PM</strong></div>
+						<span class="badge">6 days</span>
+					</div>
+				</div>
+
+				<div class="payment-instructions">
+					<p><strong>Payment instructions</strong></p>
+					<ol>
+						<li>In your online bank account or from an ATM, choose "Payment and other services".</li>
+						<li>Click "Payments of services/shopping".</li>
+						<li>Enter the entity number, reference number, and amount.</li>
+					</ol>
+				</div>
+
+				<div class="payment-box">
+					<div class="payment-box-row">
+						<span class="payment-box-label">Entity</span>
+						<span class="payment-box-value">12345 <i class="copy-icon"></i></span>
+					</div>
+					<div class="payment-box-row">
+						<span class="payment-box-label">Reference</span>
+						<span class="payment-box-value">123456789 <i class="copy-icon"></i></span>
+					</div>
+				</div>
+
+				<button type="button" class="button alt print-btn">Print</button>
+				<button type="button" class="button alt copy-btn">Copy link for sharing <i class="copy-icon"></i></button>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**
@@ -240,7 +302,8 @@ class WC_Payments_Order_Success_Page {
 		 * @see https://github.com/woocommerce/woocommerce/pull/39758 Introduce the issue since 8.1.0.
 		 * @see https://github.com/woocommerce/woocommerce/pull/40353 Fix the issue since 8.3.0.
 		 */
-		if ( version_compare( WC_VERSION, '8.0', '>' )
+		if (
+			version_compare( WC_VERSION, '8.0', '>' )
 			&& version_compare( WC_VERSION, '8.3', '<' )
 		) {
 			echo "
@@ -270,6 +333,10 @@ class WC_Payments_Order_Success_Page {
 			WC_Payments::get_file_version( 'assets/css/success.css' ),
 			'all',
 		);
+
+		WC_Payments::register_script_with_dependencies( 'WCPAY_SUCCESS_PAGE', 'dist/success', [] );
+		wp_set_script_translations( 'WCPAY_SUCCESS_PAGE', 'woocommerce-payments' );
+		wp_enqueue_script( 'WCPAY_SUCCESS_PAGE' );
 	}
 
 	/**
