@@ -226,7 +226,7 @@ const OverviewPage = () => {
 			if ( stripeNotificationsCountToAddressMemo > 0 ) {
 				dispatch( 'core/notices' ).createSuccessNotice(
 					__(
-						'It takes some time to see updates, so please refresh the page in a minute or so.',
+						'Updates take a moment to appear. Please refresh the page in a minute.',
 						'woocommerce-payments'
 					),
 					{
