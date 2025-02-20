@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Class WC_Payments_Order_Success_Page
  *
@@ -49,6 +48,12 @@ class WC_Payments_Order_Success_Page {
 			return;
 		}
 
+		$order_service         = WC_Payments::get_order_service();
+		$multibanco_info       = $order_service->get_multibanco_info_from_order( $order );
+		$unix_expiry           = $multibanco_info['expiry'];
+		$expiry_date           = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $unix_expiry );
+		$days_remaining        = max( 0, floor( ( $unix_expiry - time() ) / DAY_IN_SECONDS ) );
+		$formatted_order_total = $order->get_formatted_order_total();
 		wc_print_notice(
 			__( 'Your order is on hold until payment is received. Please follow the payment instructions by the expiry date.', 'woocommerce-payments' ),
 			'notice'
@@ -62,9 +67,9 @@ class WC_Payments_Order_Success_Page {
 						<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/multibanco-instructions.svg', WCPAY_PLUGIN_FILE ) ); ?>" alt="Multibanco">
 					</div>
 					<div class="payment-details">
-						<div class="payment-header">$189.70 USD</div>
-						<div class="payment-expiry">Expires <strong>February 3, 2025 at 5:15 PM</strong></div>
-						<span class="badge">6 days</span>
+						<div class="payment-header"><?php echo $formatted_order_total; ?></div>
+						<div class="payment-expiry">Expires <strong><?php echo $expiry_date; ?></strong></div>
+						<span class="badge"><?php echo $days_remaining; ?> days</span>
 					</div>
 				</div>
 
@@ -80,11 +85,11 @@ class WC_Payments_Order_Success_Page {
 				<div class="payment-box">
 					<div class="payment-box-row">
 						<span class="payment-box-label">Entity</span>
-						<span class="payment-box-value">12345 <i class="copy-icon"></i></span>
+						<span class="payment-box-value"><?php echo $multibanco_info['entity']; ?> <i class="copy-icon"></i></span>
 					</div>
 					<div class="payment-box-row">
 						<span class="payment-box-label">Reference</span>
-						<span class="payment-box-value">123456789 <i class="copy-icon"></i></span>
+						<span class="payment-box-value"><?php echo $multibanco_info['reference']; ?> <i class="copy-icon"></i></span>
 					</div>
 				</div>
 
