@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import {
 	Button,
@@ -11,7 +11,7 @@ import {
 	NoticeList,
 	SnackbarList,
 } from '@wordpress/components';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -39,29 +39,18 @@ const SnackbarPortal = ( { children }: { children: React.ReactNode } ) => {
 };
 
 export default function MerchantFeedbackPrompt() {
-	const { createNotice } = useDispatch( 'core/notices' );
-	const notices = useSelect(
+	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
+	const coreNotices = useSelect(
 		( select ) =>
 			select( 'core/notices' ).getNotices() as NoticeList.Notice[]
 	);
 	const [ isDismissed, setIsDismissed ] = useState( false );
 
-	useEffect( () => {
-		// Temporary test notice on mount.
-		createNotice(
-			'info',
-			__( 'This is a test notice', 'woocommerce-payments' ),
-			{
-				explicitDismiss: true,
-			}
-		);
-	}, [ createNotice ] );
-
 	function handleDismiss() {
 		setIsDismissed( true );
 	}
 
-	if ( notices?.length > 0 ) {
+	if ( coreNotices?.length > 0 ) {
 		// We don't want to render the prompt if there are other notices being displayed.
 		return null;
 	}
