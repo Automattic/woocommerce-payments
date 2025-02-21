@@ -53,7 +53,6 @@ export const initializeBnplSiteMessaging = async () => {
 		paymentMethods,
 		currencyCode,
 		isCart,
-		isCartBlock,
 		cartTotal,
 		isBnplAvailable,
 	} = window.wcpayStripeSiteMessaging;
@@ -64,7 +63,7 @@ export const initializeBnplSiteMessaging = async () => {
 		'payment-method-message'
 	);
 
-	if ( isCart || isCartBlock ) {
+	if ( isCart ) {
 		amount = parseInt( cartTotal, 10 ) || 0;
 		elementLocation = 'bnplClassicCart';
 	} else {
@@ -75,37 +74,33 @@ export const initializeBnplSiteMessaging = async () => {
 		}
 	}
 
-	let paymentMessageElement;
+	const api = new WCPayAPI(
+		{
+			publishableKey: publishableKey,
+			accountId: accountId,
+			locale: locale,
+		},
+		apiRequest
+	);
 
-	if ( ! isCartBlock ) {
-		const api = new WCPayAPI(
-			{
-				publishableKey: publishableKey,
-				accountId: accountId,
-				locale: locale,
-			},
-			apiRequest
-		);
+	const options = {
+		amount: amount,
+		currency: currencyCode || 'USD',
+		paymentMethodTypes: paymentMethods || [],
+		countryCode: country, // Customer's country or base country of the store.
+	};
 
-		const options = {
-			amount: amount,
-			currency: currencyCode || 'USD',
-			paymentMethodTypes: paymentMethods || [],
-			countryCode: country, // Customer's country or base country of the store.
-		};
+	const elementsOptions = {
+		appearance: await initializeAppearance( api, elementLocation ),
+		fonts: getFontRulesFromPage(),
+	};
 
-		const elementsOptions = {
-			appearance: await initializeAppearance( api, elementLocation ),
-			fonts: getFontRulesFromPage(),
-		};
+	const stripe = await api.getStripe();
 
-		const stripe = await api.getStripe();
-
-		paymentMessageElement = stripe
-			.elements( elementsOptions )
-			.create( 'paymentMethodMessaging', options );
-		paymentMessageElement.mount( '#payment-method-message' );
-	}
+	const paymentMessageElement = stripe
+		.elements( elementsOptions )
+		.create( 'paymentMethodMessaging', options );
+	paymentMessageElement.mount( '#payment-method-message' );
 
 	// This function converts relative units (rem/em) to pixels based on the current font size.
 	function convertToPixels( value, baseFontSize ) {
