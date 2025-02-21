@@ -55,7 +55,6 @@ export const initializeBnplSiteMessaging = async () => {
 		isCart,
 		cartTotal,
 		shouldShowPMME,
-		shouldInitializePMME,
 	} = window.wcpayStripeSiteMessaging;
 
 	let amount;
@@ -63,11 +62,6 @@ export const initializeBnplSiteMessaging = async () => {
 	const paymentMessageContainer = document.getElementById(
 		'payment-method-message'
 	);
-
-	if ( ! shouldInitializePMME ) {
-		paymentMessageContainer.style.setProperty( 'display', 'none' );
-		return;
-	}
 
 	if ( isCart ) {
 		amount = parseInt( cartTotal, 10 ) || 0;

@@ -30,6 +30,10 @@ jQuery( async function ( $ ) {
 	const { shouldInitializePMME } = window.wcpayStripeSiteMessaging;
 
 	if ( ! shouldInitializePMME ) {
+		const paymentMessageContainer = document.getElementById(
+			'payment-method-message'
+		);
+		paymentMessageContainer.style.setProperty( 'display', 'none' );
 		return;
 	}
 
