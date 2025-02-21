@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import {
 	Button,
@@ -44,6 +44,7 @@ export default function MerchantFeedbackPrompt() {
 		( select ) =>
 			select( 'core/notices' ).getNotices() as NoticeList.Notice[]
 	);
+	const [ isDismissed, setIsDismissed ] = useState( false );
 
 	useEffect( () => {
 		// Temporary test notice on mount.
@@ -56,8 +57,16 @@ export default function MerchantFeedbackPrompt() {
 		);
 	}, [ createNotice ] );
 
+	function handleDismiss() {
+		setIsDismissed( true );
+	}
+
 	if ( notices?.length > 0 ) {
 		// We don't want to render the prompt if there are other notices being displayed.
+		return null;
+	}
+
+	if ( isDismissed ) {
 		return null;
 	}
 
@@ -67,8 +76,7 @@ export default function MerchantFeedbackPrompt() {
 				className="wcpay-merchant-feedback-prompt-wrap"
 				notices={ [
 					{
-						id: 'merchant-feedback-prompt',
-						isDismissible: true,
+						id: 'wcpay-merchant-feedback-prompt',
 						className: 'wcpay-merchant-feedback-prompt',
 						content: (
 							<Flex gap={ 3 } align="center">
@@ -125,6 +133,24 @@ export default function MerchantFeedbackPrompt() {
 											) }
 										</span>
 									</Button>
+								</FlexItem>
+
+								{ /*
+									Explicit dismiss button, implemented due to the outdated bundled SnackbarList component.
+									See https://github.com/WordPress/gutenberg/blob/c300edfebb48f79f6f0f6643ce04dd73303c5fcb/packages/components/src/snackbar/index.tsx#L166-L177
+								*/ }
+								<FlexItem>
+									<span
+										role="button"
+										aria-label={ __(
+											'Dismiss this notice'
+										) }
+										tabIndex={ 0 }
+										onClick={ handleDismiss }
+										onKeyPress={ handleDismiss }
+									>
+										&#x2715;
+									</span>
 								</FlexItem>
 							</Flex>
 						),
