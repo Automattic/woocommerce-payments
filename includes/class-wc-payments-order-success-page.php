@@ -85,16 +85,16 @@ class WC_Payments_Order_Success_Page {
 				<div class="payment-box">
 					<div class="payment-box-row">
 						<span class="payment-box-label">Entity</span>
-						<button class="payment-box-value"><?php echo $multibanco_info['entity']; ?><i class="copy-icon"></i></button>
+						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo $multibanco_info['entity']; ?>"><?php echo $multibanco_info['entity']; ?><i class="copy-icon"></i></button>
 					</div>
 					<div class="payment-box-row">
 						<span class="payment-box-label">Reference</span>
-						<button class="payment-box-value"><?php echo $multibanco_info['reference']; ?><i class="copy-icon"></i></button>
+						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo $multibanco_info['reference']; ?>"><?php echo $multibanco_info['reference']; ?><i class="copy-icon"></i></button>
 					</div>
 				</div>
 
 				<button type="button" class="button alt print-btn">Print</button>
-				<button type="button" class="button alt copy-btn">Copy link for sharing<i class="copy-icon"></i></button>
+				<button type="button" class="button alt copy-link-btn copy-btn" data-copy-value="<?php echo $multibanco_info['url']; ?>">Copy link for sharing<i class="copy-icon"></i></button>
 			</div>
 		</div>
 		<?php

@@ -57,5 +57,32 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			'--woopayments-multibanco-card-bg-color',
 			parentBgColor
 		);
+
+		// Add click handlers for copy buttons
+		const copyButtons = multibancoInstructionsContainer.querySelectorAll(
+			'.copy-btn'
+		);
+		copyButtons.forEach( ( button ) => {
+			button.addEventListener( 'click', () => {
+				const textToCopy = button.dataset.copyValue;
+				if ( textToCopy ) {
+					navigator.clipboard
+						.writeText( textToCopy )
+						.then( () => {
+							button.classList.add( 'copied' );
+							setTimeout( () => {
+								button.classList.remove( 'copied' );
+							}, 2000 );
+						} )
+						.catch( () => {
+							// show a prompt with the data-copy-value selected in a field and tell the user to copy it
+							prompt(
+								`Failed to copy text. Please copy it manually:`,
+								textToCopy
+							);
+						} );
+				}
+			} );
+		} );
 	}
 } );

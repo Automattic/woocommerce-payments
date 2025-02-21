@@ -40,12 +40,16 @@
 	width: 100%;
 }
 
-#wc-payment-gateway-multibanco-instructions-container .copy-btn {
+#wc-payment-gateway-multibanco-instructions-container .copy-link-btn {
 	width: 100%;
 	background: transparent;
 	border: none;
 	color: var( --woopayments-multibanco-text-color );
 	font-weight: normal;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .copy-link-btn:focus {
+	outline: none;
 }
 
 #wc-payment-gateway-multibanco-instructions-container .payment-instructions p {
@@ -128,6 +132,10 @@
 	background-color: currentColor;
 	vertical-align: middle;
 	margin-left: 5px;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .copied i.copy-icon {
+	mask-image: url( '../images/icons/check-green.svg' );
 }
 
 #wc-payment-gateway-multibanco-instructions-container .badge {
