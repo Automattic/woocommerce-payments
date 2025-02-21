@@ -175,3 +175,11 @@
 		opacity: 0.7;
 	}
 }
+
+@media screen and ( max-width: 568px ) {
+	#wc-payment-gateway-multibanco-instructions-container {
+		margin: 0;
+		width: 100%;
+		background: none;
+	}
+}
