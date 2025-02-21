@@ -12,14 +12,16 @@ import { config } from '../config/default';
 import {
 	merchantStorageFile,
 	customerStorageFile,
+	editorStorageFile,
 	wpAdminLogin,
 	loginAsCustomer,
+	loginAsEditor,
 	addSupportSessionDetectedCookie,
 } from '../utils/helpers';
 
 // See https://playwright.dev/docs/auth#multiple-signed-in-roles
 const {
-	users: { admin, customer },
+	users: { admin, customer, editor },
 } = config;
 
 const isAuthStateStale = ( authStateFile: string ) => {
@@ -94,4 +96,17 @@ setup( 'authenticate as customer', async ( { page }, { project } ) => {
 
 	await addSupportSessionDetectedCookie( page, project );
 	await loginAsCustomer( page, customer );
+} );
+
+setup( 'authenticate as editor', async ( { page }, { project } ) => {
+	// For local development, use existing state if it exists and isn't stale.
+	if ( ! process.env.CI ) {
+		if ( ! isAuthStateStale( editorStorageFile ) ) {
+			console.log( 'Using existing editor state.' );
+			return;
+		}
+	}
+
+	await addSupportSessionDetectedCookie( page, project );
+	await loginAsEditor( page, editor );
 } );
