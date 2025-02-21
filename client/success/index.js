@@ -84,5 +84,15 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				}
 			} );
 		} );
+
+		// Add click handler for print button
+		const printButton = multibancoInstructionsContainer.querySelector(
+			'.print-btn'
+		);
+		if ( printButton ) {
+			printButton.addEventListener( 'click', () => {
+				window.print();
+			} );
+		}
 	}
 } );
