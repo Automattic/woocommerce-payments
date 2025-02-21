@@ -275,17 +275,34 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		isBlocksCheckout,
 	] );
 
+	useEffect( () => {
+		if (
+			! getConfig( 'forceNetworkSavedCards' ) ||
+			! isWCPayWithNewTokenChosen ||
+			isRegisteredUser
+		) {
+			// Clicking the place order button sets the extension data in backend. If user changes the payment method
+			// due to an error, we need to clear the extension data in backend.
+			if ( isBlocksCheckout && userDataSent ) {
+				sendExtensionData( true );
+			}
+			clearValidationError( errorId );
+		}
+	}, [
+		clearValidationError,
+		errorId,
+		isBlocksCheckout,
+		isRegisteredUser,
+		isWCPayWithNewTokenChosen,
+		sendExtensionData,
+		userDataSent,
+	] );
+
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
 		! isWCPayWithNewTokenChosen ||
 		isRegisteredUser
 	) {
-		// Clicking the place order button sets the extension data in backend. If user changes the payment method
-		// due to an error, we need to clear the extension data in backend.
-		if ( isBlocksCheckout && userDataSent ) {
-			sendExtensionData( true );
-		}
-		clearValidationError( errorId );
 		return null;
 	}
 
