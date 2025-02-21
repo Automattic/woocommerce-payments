@@ -584,6 +584,7 @@ export const TransactionsList = (
 
 	const onDownload = async () => {
 		recordEvent( 'wcpay_csv_export_click', {
+			type: 'transactions',
 			location: props.depositId ? 'deposit_details' : 'transactions',
 			exported_rows: transactionsSummary.count,
 		} );

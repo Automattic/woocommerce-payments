@@ -211,6 +211,7 @@ export const DepositsList = (): JSX.Element => {
 
 	const onDownload = async () => {
 		recordEvent( 'wcpay_csv_export_click', {
+			type: 'payouts',
 			location: 'payouts',
 			exported_rows: depositsSummary.count,
 		} );

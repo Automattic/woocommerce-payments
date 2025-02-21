@@ -346,6 +346,7 @@ export const DisputesList = (): JSX.Element => {
 
 	const onDownload = async () => {
 		recordEvent( 'wcpay_csv_export_click', {
+			type: 'disputes',
 			location: 'disputes',
 			exported_rows: disputesSummary.count,
 		} );
