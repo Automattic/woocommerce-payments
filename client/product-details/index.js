@@ -27,6 +27,12 @@ jQuery( async function ( $ ) {
 		return;
 	}
 
+	const { shouldInitializePMME } = window.wcpayStripeSiteMessaging;
+
+	if ( ! shouldInitializePMME ) {
+		return;
+	}
+
 	const {
 		productVariations,
 		productId,
