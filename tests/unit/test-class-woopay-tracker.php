@@ -44,11 +44,11 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->http_client_stub->method( 'get_connected_user_data' )->willReturn( [ 'ID' => 1234 ] );
 
 		$this->mock_tracker = $this->getMockBuilder( WooPay_Tracker::class )
-			->setConstructorArgs( [$this->http_client_stub] )
-			->onlyMethods( ['get_wc_store_id'] )
+			->setConstructorArgs( [ $this->http_client_stub ] )
+			->onlyMethods( [ 'get_wc_store_id' ] )
 			->getMock();
-		$this->mock_tracker->method('get_wc_store_id')
-			->willReturn('mock_store_id');
+		$this->mock_tracker->method( 'get_wc_store_id' )
+			->willReturn( 'mock_store_id' );
 
 		$this->cache      = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
