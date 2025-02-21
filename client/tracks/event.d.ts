@@ -14,6 +14,7 @@ export type Event =
 	| 'wcpay_welcome_learn_more'
 	| 'wcpay_stripe_connected'
 	| 'wcpay_connect_account_kyc_modal_opened'
+	| 'wcpay_csv_export_click'
 	| 'wcpay_deposits_row_click'
 	| 'wcpay_deposits_download'
 	| 'wcpay_disputes_row_action_click'
