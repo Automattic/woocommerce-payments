@@ -62,10 +62,7 @@ const OverviewPage = () => {
 		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
 		enabledPaymentMethods,
-		featureFlags: {
-			isPaymentOverviewWidgetEnabled,
-			isMerchantFeedbackPromptEnabled,
-		},
+		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
@@ -163,9 +160,12 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
+			{ wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled && (
+				<MerchantFeedbackPrompt />
+			) }
+
 			<OverviewPageError />
 			<JetpackIdcNotice />
-			{ isMerchantFeedbackPromptEnabled && <MerchantFeedbackPrompt /> }
 			{ showLoanOfferError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(

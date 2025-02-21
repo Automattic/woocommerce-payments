@@ -23,6 +23,7 @@ import {
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import BlockedList from './blocked';
+import MerchantFeedbackPrompt from 'wcpay/merchant-feedback-prompt';
 
 declare const window: any;
 
@@ -106,6 +107,9 @@ export const TransactionsPage: React.FC = () => {
 
 	return (
 		<Page className="wcpay-transactions-page">
+			{ wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled && (
+				<MerchantFeedbackPrompt />
+			) }
 			<TestModeNotice currentPage="transactions" />
 			<TabPanel
 				activeClass="active-tab"

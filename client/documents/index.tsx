@@ -9,10 +9,13 @@ import React from 'react';
 import Page from 'components/page';
 import DocumentsList from './list';
 import { TestModeNotice } from 'components/test-mode-notice';
-
+import MerchantFeedbackPrompt from 'wcpay/merchant-feedback-prompt';
 export const DocumentsPage = (): JSX.Element => {
 	return (
 		<Page>
+			{ wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled && (
+				<MerchantFeedbackPrompt />
+			) }
 			<TestModeNotice currentPage="documents" />
 			<DocumentsList />
 		</Page>
