@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 8.9.2 - 2025-02-21 =
+* Fix - Fixed WooPay opt-in race condition
+
 = 8.9.1 - 2025-02-07 =
 * Fix - Ensures that the tokenised cart for ECE implementation is disabled by default.
 
