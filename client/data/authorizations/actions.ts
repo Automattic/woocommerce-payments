@@ -29,6 +29,7 @@ interface WCPayError {
 			minimum_amount?: number;
 			minimum_amount_currency?: string;
 		};
+		error_type?: string;
 	};
 }
 
@@ -82,10 +83,16 @@ const getErrorMessage = ( apiError: WCPayError ): string => {
 			'This payment cannot be processed in its current state.',
 			'woocommerce-payments'
 		),
-		wcpay_capture_error: __(
-			'The payment capture failed to complete.',
-			'woocommerce-payments'
-		),
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		wcpay_capture_error: ( error: WCPayError ): string => {
+			if ( error.data?.error_type === 'amount_too_small' ) {
+				return getAmountTooSmallError( error );
+			}
+			return __(
+				'The payment capture failed to complete.',
+				'woocommerce-payments'
+			);
+		},
 		wcpay_cancel_error: __(
 			'The payment cancellation failed to complete.',
 			'woocommerce-payments'
@@ -94,7 +101,6 @@ const getErrorMessage = ( apiError: WCPayError ): string => {
 			'An unexpected error occurred. Please try again later.',
 			'woocommerce-payments'
 		),
-		wcpay_capture_error_amount_too_small: getAmountTooSmallError,
 	};
 
 	const errorHandler = errorMessages[ apiError.code ?? '' ];

@@ -18,6 +18,11 @@ export const config = {
 		guest: {
 			email: 'e2e-wcpay-guest@woocommerce.com',
 		},
+		editor: {
+			username: 'editor',
+			password: 'password',
+			email: 'e2e-wcpay-editor@woocommerce.com',
+		},
 	},
 	products: {
 		cap: {
