@@ -81,7 +81,7 @@ jQuery( async function ( $ ) {
 		if ( totalAmount <= 0 || ! currency ) {
 			return;
 		}
-		bnplPaymentMessageElement.update( { amount: totalAmount, currency } );
+		bnplPaymentMessageElement?.update( { amount: totalAmount, currency } );
 	};
 
 	/**

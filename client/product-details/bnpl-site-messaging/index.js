@@ -54,7 +54,8 @@ export const initializeBnplSiteMessaging = async () => {
 		currencyCode,
 		isCart,
 		cartTotal,
-		isBnplAvailable,
+		shouldShowPMME,
+		shouldInitializePMME,
 	} = window.wcpayStripeSiteMessaging;
 
 	let amount;
@@ -63,13 +64,18 @@ export const initializeBnplSiteMessaging = async () => {
 		'payment-method-message'
 	);
 
+	if ( ! shouldInitializePMME ) {
+		paymentMessageContainer.style.setProperty( 'display', 'none' );
+		return;
+	}
+
 	if ( isCart ) {
 		amount = parseInt( cartTotal, 10 ) || 0;
 		elementLocation = 'bnplClassicCart';
 	} else {
 		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
 
-		if ( ! isBnplAvailable ) {
+		if ( ! shouldShowPMME ) {
 			paymentMessageContainer.style.setProperty( 'display', 'none' );
 		}
 	}
