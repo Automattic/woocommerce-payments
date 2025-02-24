@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
@@ -32,6 +32,15 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
+import useAccountSession from 'wcpay/utils/embedded-components/account-session';
+import appearance from 'wcpay/utils/embedded-components/appearance';
+import {
+	ConnectComponentsProvider,
+	ConnectNotificationBanner,
+} from '@stripe/react-connect-js';
+import { recordEvent } from 'wcpay/tracks';
+import StripeSpinner from 'wcpay/components/stripe-spinner';
+import { getAdminUrl } from 'wcpay/utils';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -63,9 +72,38 @@ const OverviewPage = () => {
 		enabledPaymentMethods,
 		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
-		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 	} = wcpaySettings;
+
+	// Don't show the update details and verify business tasks by default due to embedded component.
+	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
+		false
+	);
+	const [
+		showGetVerifyBankAccountTask,
+		setShowGetVerifyBankAccountTask,
+	] = useState( false );
+
+	const [
+		stripeNotificationsBannerErrorMessage,
+		setStripeNotificationsBannerErrorMessage,
+	] = useState( '' );
+	const [
+		notificationsBannerMessage,
+		setNotificationsBannerMessage,
+	] = React.useState( '' );
+	const stripeConnectInstance = useAccountSession( {
+		setLoadErrorMessage: setStripeNotificationsBannerErrorMessage,
+		appearance,
+	} );
+	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
+		true
+	);
+	// Variable to memoize the count of Stripe notifications.
+	const [
+		stripeNotificationsCountToAddressMemo,
+		setStripeNotificationsCountToAddressMemo,
+	] = useState( 0 );
 
 	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
 	const { isLoading: settingsIsLoading } = useSettings();
@@ -85,6 +123,7 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 		activeDisputes,
 		enabledPaymentMethods,
+		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -157,6 +196,70 @@ const OverviewPage = () => {
 		setTestDriveSuccessDisplayed( true );
 	}
 
+	// Show old tasks if the embedded component fails to load.
+	useEffect( () => {
+		if ( stripeNotificationsBannerErrorMessage ) {
+			setShowUpdateDetailsTask( true );
+			setShowGetVerifyBankAccountTask( true );
+			setStripeComponentLoading( false );
+		}
+	}, [ stripeNotificationsBannerErrorMessage ] );
+
+	// eslint-disable-next-line valid-jsdoc
+	/**
+	 * Configure custom banner behaviour so the banner isn't shown when there are no action items.
+	 * We'll use notificationBannerMessage for that.
+	 * See https://docs.stripe.com/connect/supported-embedded-components/notification-banner#configure-custom-banner-behavior
+	 */
+	const handleNotificationsChange = ( response ) => {
+		if ( response.actionRequired > 0 ) {
+			// eslint-disable-next-line max-len
+			// Do something related to required actions, such as adding margins to the banner container or tracking the current number of notifications.
+			setNotificationsBannerMessage(
+				'You must resolve the notifications on this page before proceeding.'
+			);
+		} else if ( response.total > 0 ) {
+			// Do something related to notifications that don't require action.
+			setNotificationsBannerMessage( 'The items below are in review.' );
+		} else {
+			// This is the case where we addressed everything and previously had some notifications to address.
+			// We recommend the merchant to reload the page in this case.
+			if ( stripeNotificationsCountToAddressMemo > 0 ) {
+				dispatch( 'core/notices' ).createSuccessNotice(
+					__(
+						'Updates take a moment to appear. Please refresh the page in a minute.',
+						'woocommerce-payments'
+					),
+					{
+						actions: [
+							{
+								label: __( 'Refresh', 'woocommerce-payments' ),
+								url: getAdminUrl( {
+									page: 'wc-admin',
+									path: '/payments/overview',
+								} ),
+							},
+						],
+						explicitDismiss: true,
+					}
+				);
+			}
+			setNotificationsBannerMessage( '' );
+		}
+		if ( response.actionRequired > 0 || response.total > 0 ) {
+			// Record the event indicating user got the notifications banner with some actionRequired or total items.
+			recordEvent( 'wcpay_overview_stripe_notifications_banner_update', {
+				action_required_count: response.actionRequired,
+				total_count: response.total,
+			} );
+			// Memoize the notifications count to be able to compare it with the fresh count when this function is called one more time.
+			setStripeNotificationsCountToAddressMemo( response.total );
+		}
+		// If the component inits successfully, this function is always called.
+		// It's safe to set the loading false here rather than onLoaderStart, because it happens too early and the UX is not smooth.
+		setStripeComponentLoading( false );
+	};
+
 	return (
 		<Page isNarrow className="wcpay-overview">
 			<OverviewPageError />
@@ -204,6 +307,48 @@ const OverviewPage = () => {
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<Welcome />
+
+					{ stripeComponentLoading &&
+						accountStatus.status !== 'complete' && (
+							<Card>
+								<div className="stripe-notifications-banner-loader">
+									<StripeSpinner />
+								</div>
+							</Card>
+						) }
+					{ stripeConnectInstance && (
+						<div
+							className="stripe-notifications-banner-wrapper"
+							style={ {
+								display: notificationsBannerMessage
+									? 'block'
+									: 'none',
+							} }
+						>
+							<ErrorBoundary>
+								<ConnectComponentsProvider
+									connectInstance={ stripeConnectInstance }
+								>
+									<ConnectNotificationBanner
+										onLoadError={ ( loadError ) => {
+											setStripeNotificationsBannerErrorMessage(
+												loadError.error.message ||
+													'Unknown error'
+											);
+											setStripeComponentLoading( false );
+										} }
+										collectionOptions={ {
+											fields: 'eventually_due',
+											futureRequirements: 'omit',
+										} }
+										onNotificationsChange={
+											handleNotificationsChange
+										}
+									/>
+								</ConnectComponentsProvider>
+							</ErrorBoundary>
+						</div>
+					) }
 
 					{ showTaskList && (
 						<Card>

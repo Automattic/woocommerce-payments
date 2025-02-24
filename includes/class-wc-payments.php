@@ -465,7 +465,6 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-prevention-enabled-exception.php';
-		include_once __DIR__ . '/exceptions/class-new-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-id-mismatch-exception.php';
 		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
@@ -739,7 +738,7 @@ class WC_Payments {
 		}
 
 		// Load Stripe Billing subscription integration.
-		if ( self::should_load_stripe_billing_integration() ) {
+		if ( WC_Payments_Features::is_stripe_billing_eligible() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 		}

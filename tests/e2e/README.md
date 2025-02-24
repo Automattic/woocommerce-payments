@@ -224,9 +224,9 @@ The Slack reporter is a custom reporter that sends e2e test failures to a public
 
 ```bash
 CI=true
+WC_E2E_SCREENSHOTS=1
 E2E_SLACK_TOKEN='<bot token, starts with xoxb- >'
-E2E_CHANNEL_NAME='<public slack channel name>'
-E2E_SLACKBOT_USER='<bot user name>'
+E2E_SLACK_CHANNEL_ID='<public slack channel id>'
 ```
 
 ## FAQs

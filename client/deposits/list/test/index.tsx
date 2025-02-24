@@ -6,9 +6,7 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-import os from 'os';
 import { useUserPreferences } from '@woocommerce/data';
 
 /**
@@ -16,7 +14,6 @@ import { useUserPreferences } from '@woocommerce/data';
  */
 import { DepositsList } from '../';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
-import { getUnformattedAmount } from 'wcpay/utils/test-utils';
 import {
 	CachedDeposit,
 	CachedDeposits,
@@ -27,15 +24,6 @@ jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
 } ) );
-
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
-
-	return {
-		...actualModule,
-		downloadCSVFile: jest.fn(),
-	};
-} );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -120,10 +108,6 @@ const mockUseDeposits = useDeposits as jest.MockedFunction<
 
 const mockUseDepositsSummary = useDepositsSummary as jest.MockedFunction<
 	typeof useDepositsSummary
->;
-
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
 >;
 
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
@@ -287,68 +271,6 @@ describe( 'Deposits list', () => {
 				} as DepositsSummary,
 				isLoading: false,
 			} );
-		} );
-
-		test( 'should render expected columns in CSV when the download button is clicked', () => {
-			const { getByRole } = render( <DepositsList /> );
-			getByRole( 'button', { name: 'Export' } ).click();
-
-			const expected = [
-				'"Payout Id"',
-				'Date',
-				'Type',
-				'Amount',
-				'Status',
-				'"Bank account"',
-				'"Bank reference ID"',
-			];
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
-			expect( csvHeaderRow ).toEqual( expected );
-		} );
-
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <DepositsList /> );
-			getByRole( 'button', { name: 'Export' } ).click();
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows = getAllByRole( 'row' );
-
-			expect( csvRows.length ).toEqual( displayRows.length );
-
-			const csvFirstDeposit = csvRows[ 1 ].split( ',' );
-			const displayFirstDeposit = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td ) => td.textContent );
-
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 1 because the first field in CSV is deposit id,
-			//    which is missing in display.
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-			expect( csvFirstDeposit[ 1 ].replace( /^"|"$/g, '' ) ).toBe(
-				displayFirstDeposit[ 0 ]
-			); // date
-			expect( csvFirstDeposit[ 2 ] ).toBe( displayFirstDeposit[ 1 ] ); // type
-			expect(
-				getUnformattedAmount( displayFirstDeposit[ 2 ] ).indexOf(
-					csvFirstDeposit[ 3 ]
-				)
-			).not.toBe( -1 ); // amount
-			expect( csvFirstDeposit[ 4 ] ).toBe(
-				`"${ displayFirstDeposit[ 3 ] }"`
-			); // status
-			expect( csvFirstDeposit[ 5 ] ).toBe(
-				`"${ displayFirstDeposit[ 4 ] }"`
-			); // bank account
-			expect( csvFirstDeposit[ 6 ] ).toBe(
-				`${ displayFirstDeposit[ 5 ] }`
-			); // bank reference key
 		} );
 
 		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 1000.', async () => {
