@@ -387,7 +387,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return string|null
 	 */
 	public function get_wc_store_id() {
-		if ( defined( \WC_Install::STORE_ID_OPTION ) ) {
+		if ( defined( '\WC_Install::STORE_ID_OPTION' ) ) {
 			return get_option( \WC_Install::STORE_ID_OPTION, null );
 		}
 		return null;
