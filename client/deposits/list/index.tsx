@@ -214,7 +214,7 @@ export const DepositsList = (): JSX.Element => {
 		recordEvent( 'wcpay_csv_export_click', {
 			row_type: 'payouts',
 			source: path,
-			row_count: depositsSummary.count,
+			exported_row_count: depositsSummary.count,
 		} );
 
 		const userEmail = wcpaySettings.currentUserEmail;

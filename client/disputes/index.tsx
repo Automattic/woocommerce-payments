@@ -353,7 +353,7 @@ export const DisputesList = (): JSX.Element => {
 		recordEvent( 'wcpay_csv_export_click', {
 			row_type: 'disputes',
 			source: path,
-			row_count: disputesSummary.count,
+			exported_row_count: disputesSummary.count,
 		} );
 
 		const userLocale = wcpaySettings.userLocale.code;

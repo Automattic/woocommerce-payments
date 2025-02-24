@@ -587,7 +587,7 @@ export const TransactionsList = (
 		recordEvent( 'wcpay_csv_export_click', {
 			row_type: 'transactions',
 			source: path,
-			row_count: transactionsSummary.count,
+			exported_row_count: transactionsSummary.count,
 		} );
 
 		const userEmail = wcpaySettings.currentUserEmail;
