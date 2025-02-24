@@ -10,7 +10,6 @@ import {
 	isSavingSettings,
 	getPaymentRequestLocations,
 	getIsPaymentRequestEnabled,
-	getAccountBusinessSupportAddress,
 	getAccountBusinessSupportEmail,
 	getAccountBusinessSupportPhone,
 	getIsWooPayEnabled,
@@ -279,10 +278,6 @@ describe( 'Settings selectors tests', () => {
 	} );
 
 	describe.each( [
-		{
-			getFunc: getAccountBusinessSupportAddress,
-			setting: 'account_business_support_address',
-		},
 		{
 			getFunc: getAccountBusinessSupportEmail,
 			setting: 'account_business_support_email',
