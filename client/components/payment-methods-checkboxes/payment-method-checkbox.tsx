@@ -77,7 +77,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 } ) => {
 	const {
 		accountFees,
-	}: { accountFees?: Record< string, FeeStructure > } = useContext(
+	}: { accountFees: Record< string, FeeStructure > } = useContext(
 		WCPaySettingsContext
 	);
 
