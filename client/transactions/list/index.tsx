@@ -709,7 +709,7 @@ export const TransactionsList = (
 	const isTransactionsSummaryDataLoaded =
 		transactionsSummary.count !== undefined &&
 		transactionsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		! isSummaryLoading;
 
 	// Generate summary only if the data has been loaded
 	if ( isTransactionsSummaryDataLoaded ) {

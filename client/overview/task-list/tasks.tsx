@@ -92,7 +92,7 @@ export const getTasks = ( {
 
 	const isGoLiveTaskVisible =
 		wcpaySettings.isAccountConnected &&
-		isInTestModeOnboarding( false ) &&
+		isInTestModeOnboarding() &&
 		showGoLiveTask;
 
 	const isGetVerifyBankAccountTaskVisible =

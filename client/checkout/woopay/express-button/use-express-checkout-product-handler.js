@@ -14,9 +14,7 @@ const useExpressCheckoutProductHandler = ( api ) => {
 		if ( select ) {
 			select.forEach( ( s ) => {
 				const attributeName = s.name;
-				const value = s.value || '';
-
-				attributes[ attributeName ] = value;
+				attributes[ attributeName ] = s.value || '';
 			} );
 		}
 

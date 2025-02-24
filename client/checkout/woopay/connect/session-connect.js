@@ -116,9 +116,7 @@ class WooPaySessionConnect extends WoopayConnect {
 		tempPostMessage( { action: 'getIsThirdPartyCookiesEnabled' } );
 
 		try {
-			const isThirdPartyCookieEnabled = await isThirdPartyCookieEnabledPromise;
-
-			return isThirdPartyCookieEnabled;
+			return await isThirdPartyCookieEnabledPromise;
 		} catch ( error ) {
 			return false;
 		} finally {

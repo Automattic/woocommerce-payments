@@ -129,5 +129,3 @@ const PhoneNumberControl: React.FC< Props > = ( {
 };
 
 export default PhoneNumberControl;
-
-export type { Props as PhoneNumberControlProps };

@@ -215,7 +215,7 @@ export const DocumentsList = (): JSX.Element => {
 	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
 	let summary;
 	const isDocumentsSummaryDataLoaded =
-		documentsSummary.count !== undefined && false === isSummaryLoading;
+		documentsSummary.count !== undefined && ! isSummaryLoading;
 
 	// Generate summary only if the data has been loaded
 	if ( isDocumentsSummaryDataLoaded ) {

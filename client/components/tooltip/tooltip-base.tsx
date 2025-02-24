@@ -21,13 +21,12 @@ const isEventTriggeredWithin = (
 	if ( ! element ) {
 		return false;
 	}
+
 	if ( element === event.target ) {
 		return true;
 	}
-	if ( event.target instanceof Node && element.contains( event.target ) ) {
-		return true;
-	}
-	return false;
+
+	return event.target instanceof Node && element.contains( event.target );
 };
 
 type UseHideDelayProps = {

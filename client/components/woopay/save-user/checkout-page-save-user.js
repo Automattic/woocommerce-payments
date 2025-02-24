@@ -91,7 +91,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	}, [ checkoutIsProcessing, isBlocksCheckout ] );
 
 	const getPhoneFieldValue = useCallback( () => {
-		let phoneFieldValue = '';
+		let phoneFieldValue;
 		if ( isBlocksCheckout ) {
 			phoneFieldValue =
 				document.getElementById( 'phone' )?.value ||

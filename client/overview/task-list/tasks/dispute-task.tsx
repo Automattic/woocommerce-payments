@@ -108,7 +108,7 @@ export const getDisputeResolutionTask = (
 			// Only handle clicks on the action button.
 		},
 		dataAttrs: {
-			'data-urgent': !! ( numDisputesDueWithin72h >= 1 ),
+			'data-urgent': numDisputesDueWithin72h >= 1,
 		},
 	};
 

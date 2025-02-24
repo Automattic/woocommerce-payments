@@ -71,7 +71,7 @@ export const BlockedList = (): JSX.Element => {
 	const isTransactionsSummaryLoaded =
 		transactionsSummary.count !== undefined &&
 		transactionsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		! isSummaryLoading;
 	const totalRows = transactionsSummary.count || 0;
 
 	if ( isTransactionsSummaryLoaded ) {

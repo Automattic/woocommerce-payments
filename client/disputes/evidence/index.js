@@ -81,11 +81,8 @@ export const DisputeEvidenceForm = ( props ) => {
 				typeof cur === 'string' ? acc + cur.length : acc,
 			0
 		);
-		if ( totalLength >= DISPUTE_EVIDENCE_MAX_LENGTH ) {
-			return false;
-		}
 
-		return true;
+		return totalLength < DISPUTE_EVIDENCE_MAX_LENGTH;
 	};
 
 	const composeDefaultControlProps = ( field ) => ( {

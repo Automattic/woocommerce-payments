@@ -14,14 +14,14 @@ import moment from 'moment';
  */
 import { NAMESPACE } from '../constants';
 import {
-	updateTransactions,
+	updateErrorForFraudOutcomeTransactions,
+	updateErrorForFraudOutcomeTransactionsSummary,
 	updateErrorForTransactions,
-	updateTransactionsSummary,
 	updateErrorForTransactionsSummary,
 	updateFraudOutcomeTransactions,
-	updateErrorForFraudOutcomeTransactions,
 	updateFraudOutcomeTransactionsSummary,
-	updateErrorForFraudOutcomeTransactionsSummary,
+	updateTransactions,
+	updateTransactionsSummary,
 } from './actions';
 import { formatDateValue } from 'utils';
 
@@ -90,12 +90,10 @@ export function* getTransactions( query ) {
 
 export const transactionsDownloadEndpoint = `${ NAMESPACE }/transactions/download`;
 export function getTransactionsCSVRequestURL( query ) {
-	const path = addQueryArgs(
+	return addQueryArgs(
 		transactionsDownloadEndpoint,
 		formatQueryFilters( query )
 	);
-
-	return path;
 }
 
 /**
@@ -206,7 +204,7 @@ export function* getFraudOutcomeTransactionsSummary( status, query ) {
 }
 
 export function getFraudOutcomeTransactionsExport( status, query ) {
-	const path = addQueryArgs(
+	return addQueryArgs(
 		`${ NAMESPACE }/transactions/fraud-outcomes/download`,
 		{
 			status,
@@ -216,6 +214,4 @@ export function getFraudOutcomeTransactionsExport( status, query ) {
 			...formatQueryFilters( query ),
 		}
 	);
-
-	return path;
 }

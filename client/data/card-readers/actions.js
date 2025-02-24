@@ -23,6 +23,7 @@ export function updateCardReaders( query, data ) {
 
 export function updateErrorForCardReaderStats( id, data, error ) {
 	return {
+		// TODO ~FR: unresolved type?
 		type: TYPES.SET_CARD_ERROR_FOR_READER_STATS,
 		id,
 		data,
@@ -32,6 +33,7 @@ export function updateErrorForCardReaderStats( id, data, error ) {
 
 export function updateErrorForCardReaders( data, error ) {
 	return {
+		// TODO ~FR: unresolved type?
 		type: TYPES.SET_CARD_ERROR_FOR_READERS,
 		data,
 		error,

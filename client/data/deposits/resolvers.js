@@ -13,14 +13,14 @@ import { __ } from '@wordpress/i18n';
  */
 import { NAMESPACE, STORE_NAME } from '../constants';
 import {
+	updateAllDepositsOverviews,
 	updateDeposit,
 	updateDeposits,
 	updateDepositsCount,
-	updateErrorForDepositQuery,
 	updateDepositsSummary,
-	updateErrorForDepositsSummary,
-	updateAllDepositsOverviews,
 	updateErrorForAllDepositsOverviews,
+	updateErrorForDepositQuery,
+	updateErrorForDepositsSummary,
 } from './actions';
 import { formatDateValue } from 'utils';
 
@@ -89,12 +89,7 @@ const formatQueryFilters = ( query ) => ( {
 
 export const payoutsDownloadEndpoint = `${ NAMESPACE }/deposits/download`;
 export function getPayoutsCSVRequestURL( query ) {
-	const path = addQueryArgs(
-		payoutsDownloadEndpoint,
-		formatQueryFilters( query )
-	);
-
-	return path;
+	return addQueryArgs( payoutsDownloadEndpoint, formatQueryFilters( query ) );
 }
 
 /**

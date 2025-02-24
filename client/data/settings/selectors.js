@@ -65,14 +65,6 @@ export const getAccountStatementDescriptorKana = ( state ) => {
 	return getSettings( state ).account_statement_descriptor_kana || '';
 };
 
-export const getAccountBusinessName = ( state ) => {
-	return getSettings( state ).account_business_name || '';
-};
-
-export const getAccountBusinessURL = ( state ) => {
-	return getSettings( state ).account_business_url || '';
-};
-
 export const getAccountBusinessSupportAddress = ( state ) => {
 	return getSettings( state ).account_business_support_address || '';
 };
@@ -107,10 +99,6 @@ export const getAccountBusinessSupportEmail = ( state ) => {
 
 export const getAccountBusinessSupportPhone = ( state ) => {
 	return getSettings( state ).account_business_support_phone || '';
-};
-
-export const getAccountBrandingLogo = ( state ) => {
-	return getSettings( state ).account_branding_logo || '';
 };
 
 export const getAccountDomesticCurrency = ( state ) => {

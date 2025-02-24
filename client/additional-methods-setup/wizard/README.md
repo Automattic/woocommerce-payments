@@ -49,7 +49,7 @@ By leveraging the `WizardContext` you can instruct this component to update the 
 ```jsx
 const Consumer = () => {
 	return (
-		<WizardTask
+		<Wizard
 			defaultActiveTask="task-2"
 			defaultCompletedTasks={ { 'task-1': true } }
 		>

@@ -219,10 +219,9 @@ class WooPayDirectCheckout {
 			hash,
 		} );
 
-		const redirectUrl =
-			getConfig( 'woopayHost' ) + '/woopay/?' + redirectParams.toString();
-
-		return redirectUrl;
+		return (
+			getConfig( 'woopayHost' ) + '/woopay/?' + redirectParams.toString()
+		);
 	}
 
 	/**
@@ -470,14 +469,11 @@ class WooPayDirectCheckout {
 	static validateRedirectUrl( redirectUrl, requiredParam ) {
 		try {
 			const parsedUrl = new URL( redirectUrl );
-			if (
+
+			return ! (
 				parsedUrl.origin !== getConfig( 'woopayHost' ) ||
 				! parsedUrl.searchParams.has( requiredParam )
-			) {
-				return false;
-			}
-
-			return true;
+			);
 		} catch ( error ) {
 			return false;
 		}

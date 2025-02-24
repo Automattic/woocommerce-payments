@@ -26,57 +26,33 @@ export const isObject = ( value ) => {
 /**
  * Returns true if WooPayments is in test mode, false otherwise.
  *
- * @param {boolean} fallback Test mode fallback value in case test mode value can't be found.
- *
- * @return {boolean} True if in test mode, false otherwise. Fallback value if test mode value can't be found.
+ * @return {boolean} True if in test mode, false otherwise. Fallback to false if test mode value can't be found.
  */
-export const isInTestMode = ( fallback = false ) => {
+export const isInTestMode = () => {
 	if (
 		! isObject( wcpaySettings ) ||
 		! wcpaySettings.hasOwnProperty( 'testMode' )
 	) {
-		return fallback;
+		return false;
 	}
 
-	return !! wcpaySettings.testMode || fallback;
+	return !! wcpaySettings.testMode;
 };
 
 /**
  * Returns true if WooPayments is in test/sandbox mode onboarding, false otherwise.
  *
- * @param {boolean} fallback Fallback in case test/sandbox mode onboarding value can't be found
- * 							 (for example if the wcpaySettings are undefined).
- *
  * @return {boolean} True if in test/sandbox mode onboarding, false otherwise.
- * 					 Fallback value if test/sandbox mode onboarding value can't be found.
  */
-export const isInTestModeOnboarding = ( fallback = false ) => {
+export const isInTestModeOnboarding = () => {
 	if (
 		! isObject( wcpaySettings ) ||
 		! wcpaySettings.hasOwnProperty( 'testModeOnboarding' )
 	) {
-		return fallback;
+		return false;
 	}
 
-	return !! wcpaySettings.testModeOnboarding || fallback;
-};
-
-/**
- * Returns true if WooPayments is in dev/sandbox mode, false otherwise.
- *
- * @param {boolean} fallback Fallback in case dev/sandbox mode value can't be found (for example if the wcpaySettings are undefined).
- *
- * @return {boolean} True if in dev/sandbox mode, false otherwise. Fallback value if dev/sandbox mode value can't be found.
- */
-export const isInDevMode = ( fallback = false ) => {
-	if (
-		! isObject( wcpaySettings ) ||
-		! wcpaySettings.hasOwnProperty( 'devMode' )
-	) {
-		return fallback;
-	}
-
-	return !! wcpaySettings.devMode || fallback;
+	return !! wcpaySettings.testModeOnboarding;
 };
 
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
@@ -234,16 +210,4 @@ export const applyThousandSeparator = ( trxCount ) => {
 
 	const formattedNumber = partial( numberFormat, siteNumberOptions );
 	return formattedNumber( trxCount );
-};
-
-/**
- * Given an object, remove all properties with null or undefined values.
- *
- * @param {Object} obj The object to remove empty properties from.
- * @return {Object|any} A new object with all properties with null or undefined values removed.
- */
-export const objectRemoveEmptyProperties = ( obj ) => {
-	return Object.keys( obj )
-		.filter( ( k ) => obj[ k ] !== null && obj[ k ] !== undefined )
-		.reduce( ( a, k ) => ( { ...a, [ k ]: obj[ k ] } ), {} );
 };

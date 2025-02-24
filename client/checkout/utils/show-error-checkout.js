@@ -7,7 +7,7 @@ const showErrorCheckout = (
 	validateFields = true,
 	customId = null
 ) => {
-	let messageWrapper = '';
+	let messageWrapper;
 	if ( errorMessage.includes( 'woocommerce-error' ) ) {
 		messageWrapper = errorMessage;
 	} else {

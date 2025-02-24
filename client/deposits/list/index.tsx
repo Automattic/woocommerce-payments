@@ -174,7 +174,7 @@ export const DepositsList = (): JSX.Element => {
 	const isDespositsSummaryDataLoaded =
 		depositsSummary.count !== undefined &&
 		depositsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		! isSummaryLoading;
 
 	// Generate summary only if the data has been loaded
 	if ( isDespositsSummaryDataLoaded ) {

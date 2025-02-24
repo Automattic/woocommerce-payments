@@ -7,8 +7,6 @@
  */
 
 export type PaymentMethod =
-	| 'affirm'
-	| 'afterpay_clearpay'
 	| 'au_becs_debit'
 	| 'bancontact'
 	| 'card'

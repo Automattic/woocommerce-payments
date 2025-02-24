@@ -6,17 +6,6 @@
  * Internal dependencies
  */
 
-declare module '@woocommerce/explat' {
-	interface ExperimentProps {
-		name: string;
-		defaultExperience: JSX.Element;
-		treatmentExperience?: JSX.Element;
-		loadingExperience?: JSX.Element;
-	}
-
-	const Experiment: ( props: ExperimentProps ) => JSX.Element;
-}
-
 declare module '@automattic/interpolate-components' {
 	interface InterpolateComponentsParams {
 		mixedString: string;

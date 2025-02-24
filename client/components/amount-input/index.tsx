@@ -39,9 +39,6 @@ const AmountInput: React.FC< AmountInputProps > = ( {
 		}
 	}, [ validateInput, internalValue, onChange ] );
 
-	if ( isNaN( Number( value ) ) || null === value || '0' === value )
-		value = '';
-
 	const handleChange = ( inputValue: string ) => {
 		if ( validateInput( inputValue ) ) {
 			setInternalValue( inputValue );

@@ -82,7 +82,7 @@ const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 		return null;
 	}
 
-	let stringFormat = '';
+	let stringFormat;
 	if (
 		paymentMethodsWithMissingCurrencies.length === 1 &&
 		missingCurrencyLabels.length === 1

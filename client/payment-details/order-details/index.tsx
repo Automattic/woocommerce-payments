@@ -28,13 +28,11 @@ const PaymentOrderDetails: React.FC< PaymentOrderDetailsProps > = ( {
 		if ( ! charge ) return;
 
 		if ( shouldRedirect ) {
-			const url = getAdminUrl( {
+			window.location.href = getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/transactions/details',
 				id: charge.payment_intent,
 			} );
-
-			window.location.href = url;
 		}
 	}, [ charge, shouldRedirect ] );
 

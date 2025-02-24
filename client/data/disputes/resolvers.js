@@ -43,12 +43,10 @@ const formatQueryFilters = ( query ) => ( {
 
 export const disputesDownloadEndpoint = `${ NAMESPACE }/disputes/download`;
 export function getDisputesCSVRequestURL( query ) {
-	const path = addQueryArgs(
+	return addQueryArgs(
 		disputesDownloadEndpoint,
 		formatQueryFilters( query )
 	);
-
-	return path;
 }
 
 /**

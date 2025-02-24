@@ -69,7 +69,7 @@ const getDepositTimelineItem = (
 	isPositive,
 	body = []
 ) => {
-	let headline = '';
+	let headline;
 	if ( event.deposit ) {
 		headline = sprintf(
 			isPositive
@@ -131,7 +131,7 @@ const getDepositTimelineItem = (
  * @return {Object} Payout timeline item
  */
 const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
-	let headline = '';
+	let headline;
 	if ( event.deposit ) {
 		headline = sprintf(
 			// translators: %1$s - formatted amount, %2$s - payout arrival date, <a> - link to the payout

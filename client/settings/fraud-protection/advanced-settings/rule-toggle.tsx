@@ -117,7 +117,7 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 				<div>
 					{ children }
 
-					{ !! isFRTReviewFeatureActive && (
+					{ Boolean( isFRTReviewFeatureActive ) && (
 						<div className="fraud-protection-rule-toggle-block">
 							<strong>
 								{ __(
