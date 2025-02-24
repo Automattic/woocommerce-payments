@@ -1,5 +1,5 @@
 Significance: patch
 Type: dev
-Comment: Use a single tracks event to record CSV exports, and a location prop to distinguish where and for what the export is generated.
+Comment: Add a single tracks event - wcadmin_wcpay_csv_export_click to track export requests of transactions, payouts and disputes, using the new async export method. See - https://github.com/Automattic/woocommerce-payments/issues/9969
 
 
