@@ -31,8 +31,7 @@ use WCPay\Exceptions\{Add_Payment_Method_Exception,
 	Invalid_Phone_Number_Exception,
 	Rate_Limiter_Enabled_Exception,
 	Order_ID_Mismatch_Exception,
-	Order_Not_Found_Exception,
-	New_Process_Payment_Exception};
+	Order_Not_Found_Exception};
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -47,9 +46,6 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
-use WCPay\Internal\Payment\State\AuthenticationRequiredState;
-use WCPay\Internal\Payment\State\DuplicateOrderDetectedState;
-use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\Link_Payment_Method;
@@ -57,10 +53,6 @@ use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
-use WCPay\Internal\Service\PaymentProcessingService;
-use WCPay\Internal\Payment\Factor;
-use WCPay\Internal\Payment\Router;
-use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
@@ -1037,159 +1029,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Checks whether the new payment process should be used to pay for a given order.
-	 *
-	 * @param WC_Order $order Order that's being paid.
-	 * @return bool
-	 */
-	public function should_use_new_process( WC_Order $order ) {
-		$order_id = $order->get_id();
-
-		// The new process us under active development, and not ready for production yet.
-		if ( ! WC_Payments::mode()->is_dev() ) {
-			return false;
-		}
-
-		// This array will contain all factors, present during checkout.
-		$factors = [
-			/**
-			 * The new payment process is a factor itself.
-			 * Even if no other factors are present, this will make entering
-			 * the new payment process possible only if this factor is allowed.
-			 */
-			Factor::NEW_PAYMENT_PROCESS(),
-		];
-
-		// If there is a token in the request, we're using a saved PM.
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$using_saved_payment_method = ! empty( Payment_Information::get_token_from_request( $_POST ) );
-		if ( $using_saved_payment_method ) {
-			$factors[] = Factor::USE_SAVED_PM();
-		}
-
-		// The PM should be saved when chosen, or when it's a recurrent payment, but not if already saved.
-		$save_payment_method = ! $using_saved_payment_method && (
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] )
-			|| $this->is_payment_recurring( $order_id )
-		);
-		if ( $save_payment_method ) {
-			$factors[] = Factor::SAVE_PM();
-		}
-
-		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
-		if (
-			apply_filters(
-				'wcpay_confirm_without_payment_intent',
-				$order->get_total() <= 0 && ! $save_payment_method
-			)
-		) {
-			$factors[] = Factor::NO_PAYMENT();
-		}
-
-		// Subscription (both WCPay and WCSubs) if when the order contains one.
-		if ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order_id ) ) {
-			$factors[] = Factor::SUBSCRIPTION_SIGNUP();
-		}
-
-		// WooPay might change how payment fields were loaded.
-		if (
-			$this->woopay_util->should_enable_woopay( $this )
-			&& $this->woopay_util->should_enable_woopay_on_cart_or_checkout()
-		) {
-			$factors[] = Factor::WOOPAY_ENABLED();
-		}
-
-		// WooPay payments are indicated by the platform checkout intent.
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( isset( $_POST['platform-checkout-intent'] ) ) {
-			$factors[] = Factor::WOOPAY_PAYMENT();
-		}
-
-		// Check whether the customer is signining up for a WCPay subscription.
-		if (
-			function_exists( 'wcs_order_contains_subscription' )
-			&& wcs_order_contains_subscription( $order_id )
-			&& WC_Payments_Features::should_use_stripe_billing()
-		) {
-			$factors[] = Factor::WCPAY_SUBSCRIPTION_SIGNUP();
-		}
-
-		if ( defined( 'WCPAY_PAYMENT_REQUEST_CHECKOUT' ) && WCPAY_PAYMENT_REQUEST_CHECKOUT ) {
-			$factors[] = Factor::PAYMENT_REQUEST();
-		}
-
-		if ( defined( 'WCPAY_EXPRESS_CHECKOUT_CHECKOUT' ) && WCPAY_EXPRESS_CHECKOUT_CHECKOUT ) {
-			$factors[] = Factor::EXPRESS_CHECKOUT_ELEMENT();
-		}
-
-		$router = wcpay_get_container()->get( Router::class );
-		return $router->should_use_new_payment_process( $factors );
-	}
-
-	/**
-	 * Checks whether the new payment process should be entered,
-	 * and if the answer is yes, uses it and returns the result.
-	 *
-	 * @param WC_Order $order Order that needs payment.
-	 * @return array|null Array  if processed, null if the new process is not supported.
-	 * @throws Exception Error processing the payment.
-	 */
-	public function new_process_payment( WC_Order $order ) {
-		$manual_capture = $this->get_capture_type() === Payment_Capture_Type::MANUAL();
-
-		// Important: No factors are provided here, they were meant just for `Feature`.
-		$service = wcpay_get_container()->get( PaymentProcessingService::class );
-		$state   = $service->process_payment( $order->get_id(), $manual_capture );
-
-		if ( $state instanceof DuplicateOrderDetectedState ) {
-			$duplicate_order_return_url = add_query_arg(
-				DuplicatePaymentPreventionService::FLAG_PREVIOUS_ORDER_PAID,
-				'yes',
-				$this->get_return_url( wc_get_order( $state->get_context()->get_duplicate_order_id() ) )
-			);
-
-			return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
-				'result'   => 'success',
-				'redirect' => $duplicate_order_return_url,
-			];
-		}
-
-		if ( $state instanceof CompletedState ) {
-			$return_url = $this->get_return_url( $order );
-			if ( $state->get_context()->is_detected_authorized_intent() ) {
-				$return_url = add_query_arg(
-					DuplicatePaymentPreventionService::FLAG_PREVIOUS_SUCCESSFUL_INTENT,
-					'yes',
-					$return_url
-				);
-			}
-
-			return [ // nosemgrep: audit.php.wp.security.xss.query-arg -- https://woocommerce.github.io/code-reference/classes/WC-Payment-Gateway.html#method_get_return_url is passed in.
-				'result'   => 'success',
-				'redirect' => $return_url,
-			];
-		}
-
-		if ( $state instanceof AuthenticationRequiredState ) {
-			$context = $state->get_context();
-			return [
-				'result'   => 'success',
-				'redirect' => $service->get_authentication_redirect_url( $context->get_intent(), $context->get_order_id() ),
-			];
-		}
-
-		throw new Exception(
-			__( 'The payment process could not be completed.', 'woocommerce-payments' ),
-			0,
-			new New_Process_Payment_Exception(
-				__( 'The payment process could not be completed.', 'woocommerce-payments' ),
-				'new_process_payment'
-			)
-		);
-	}
-
-	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param int $order_id Order ID to process the payment for.
@@ -1199,11 +1038,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
-
-		// Use the new payment process if allowed.
-		if ( $this->should_use_new_process( $order ) ) {
-			return $this->new_process_payment( $order );
-		}
 
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {

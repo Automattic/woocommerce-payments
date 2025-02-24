@@ -1122,6 +1122,35 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
 	}
 
+	public function test_is_any_bnpl_supporting_country() {
+		// Test supported country and currency combination (US with USD).
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_supporting_country(
+				[ 'afterpay_clearpay', 'klarna' ],
+				'US',
+				'USD'
+			)
+		);
+
+		// Test unsupported country and currency combination.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_supporting_country(
+				[ 'afterpay_clearpay', 'klarna' ],
+				'CN',
+				'CNY'
+			)
+		);
+
+		// Test with empty enabled methods.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_supporting_country(
+				[],
+				'US',
+				'USD'
+			)
+		);
+	}
+
 	public function test_is_any_bnpl_method_available() {
 		// Price within range for Afterpay/Clearpay in the US.
 		$this->assertTrue(
