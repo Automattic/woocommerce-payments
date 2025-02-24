@@ -14,6 +14,7 @@ declare global {
 		featureFlags: {
 			customSearch: boolean;
 			woopay: boolean;
+			documents: boolean;
 			woopayExpressCheckout: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
