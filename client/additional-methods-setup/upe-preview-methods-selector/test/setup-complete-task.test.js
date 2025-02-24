@@ -10,6 +10,7 @@ import WizardTaskContext from '../../wizard/task/context';
 import SetupComplete from '../setup-complete-task';
 import WizardContext from '../../wizard/wrapper/context';
 import { useEnabledPaymentMethodIds } from '../../../data';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
@@ -17,6 +18,14 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( '../../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 } ) );
+
+const SettingsContextProvider = ( { children } ) => (
+	<WCPaySettingsContext.Provider
+		value={ { featureFlags: { multiCurrency: true } } }
+	>
+		{ children }
+	</WCPaySettingsContext.Provider>
+);
 
 describe( 'SetupComplete', () => {
 	beforeEach( () => {
@@ -28,11 +37,13 @@ describe( 'SetupComplete', () => {
 
 	it( 'renders setup complete messaging when context value is undefined', () => {
 		render(
-			<WizardContext.Provider value={ { completedTasks: {} } }>
-				<WizardTaskContext.Provider value={ { isActive: true } }>
-					<SetupComplete />
-				</WizardTaskContext.Provider>
-			</WizardContext.Provider>
+			<SettingsContextProvider>
+				<WizardContext.Provider value={ { completedTasks: {} } }>
+					<WizardTaskContext.Provider value={ { isActive: true } }>
+						<SetupComplete />
+					</WizardTaskContext.Provider>
+				</WizardContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect(
@@ -42,13 +53,17 @@ describe( 'SetupComplete', () => {
 
 	it( 'renders setup complete messaging when context value is `true`', () => {
 		render(
-			<WizardContext.Provider
-				value={ { completedTasks: { 'add-payment-methods': true } } }
-			>
-				<WizardTaskContext.Provider value={ { isActive: true } }>
-					<SetupComplete />
-				</WizardTaskContext.Provider>
-			</WizardContext.Provider>
+			<SettingsContextProvider>
+				<WizardContext.Provider
+					value={ {
+						completedTasks: { 'add-payment-methods': true },
+					} }
+				>
+					<WizardTaskContext.Provider value={ { isActive: true } }>
+						<SetupComplete />
+					</WizardTaskContext.Provider>
+				</WizardContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect( screen.getByText( /Setup complete/ ) ).toHaveTextContent(
@@ -58,26 +73,28 @@ describe( 'SetupComplete', () => {
 
 	it( 'renders setup complete messaging when context value says that methods have not changed', () => {
 		render(
-			<WizardContext.Provider
-				value={ {
-					completedTasks: {
-						'add-payment-methods': {
-							initialMethods: [
-								'card',
-								'bancontact',
-								'eps',
-								'ideal',
-								'p24',
-								'sepa_debit',
-							],
+			<SettingsContextProvider>
+				<WizardContext.Provider
+					value={ {
+						completedTasks: {
+							'add-payment-methods': {
+								initialMethods: [
+									'card',
+									'bancontact',
+									'eps',
+									'ideal',
+									'p24',
+									'sepa_debit',
+								],
+							},
 						},
-					},
-				} }
-			>
-				<WizardTaskContext.Provider value={ { isActive: true } }>
-					<SetupComplete />
-				</WizardTaskContext.Provider>
-			</WizardContext.Provider>
+					} }
+				>
+					<WizardTaskContext.Provider value={ { isActive: true } }>
+						<SetupComplete />
+					</WizardTaskContext.Provider>
+				</WizardContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect( screen.getByText( /Setup complete/ ) ).toHaveTextContent(
@@ -91,26 +108,28 @@ describe( 'SetupComplete', () => {
 			() => null,
 		] );
 		render(
-			<WizardContext.Provider
-				value={ {
-					completedTasks: {
-						'add-payment-methods': {
-							initialMethods: [
-								'card',
-								'bancontact',
-								'eps',
-								'ideal',
-								'p24',
-								'sepa_debit',
-							],
+			<SettingsContextProvider>
+				<WizardContext.Provider
+					value={ {
+						completedTasks: {
+							'add-payment-methods': {
+								initialMethods: [
+									'card',
+									'bancontact',
+									'eps',
+									'ideal',
+									'p24',
+									'sepa_debit',
+								],
+							},
 						},
-					},
-				} }
-			>
-				<WizardTaskContext.Provider value={ { isActive: true } }>
-					<SetupComplete />
-				</WizardTaskContext.Provider>
-			</WizardContext.Provider>
+					} }
+				>
+					<WizardTaskContext.Provider value={ { isActive: true } }>
+						<SetupComplete />
+					</WizardTaskContext.Provider>
+				</WizardContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect( screen.getByText( /Setup complete/ ) ).toHaveTextContent(
@@ -124,19 +143,21 @@ describe( 'SetupComplete', () => {
 			() => null,
 		] );
 		render(
-			<WizardContext.Provider
-				value={ {
-					completedTasks: {
-						'add-payment-methods': {
-							initialMethods: [ 'card' ],
+			<SettingsContextProvider>
+				<WizardContext.Provider
+					value={ {
+						completedTasks: {
+							'add-payment-methods': {
+								initialMethods: [ 'card' ],
+							},
 						},
-					},
-				} }
-			>
-				<WizardTaskContext.Provider value={ { isActive: true } }>
-					<SetupComplete />
-				</WizardTaskContext.Provider>
-			</WizardContext.Provider>
+					} }
+				>
+					<WizardTaskContext.Provider value={ { isActive: true } }>
+						<SetupComplete />
+					</WizardTaskContext.Provider>
+				</WizardContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect( screen.getByText( /Setup complete/ ) ).toHaveTextContent(
@@ -157,19 +178,21 @@ describe( 'SetupComplete', () => {
 			() => null,
 		] );
 		render(
-			<WizardContext.Provider
-				value={ {
-					completedTasks: {
-						'add-payment-methods': {
-							initialMethods: [ 'card' ],
+			<SettingsContextProvider>
+				<WizardContext.Provider
+					value={ {
+						completedTasks: {
+							'add-payment-methods': {
+								initialMethods: [ 'card' ],
+							},
 						},
-					},
-				} }
-			>
-				<WizardTaskContext.Provider value={ { isActive: true } }>
-					<SetupComplete />
-				</WizardTaskContext.Provider>
-			</WizardContext.Provider>
+					} }
+				>
+					<WizardTaskContext.Provider value={ { isActive: true } }>
+						<SetupComplete />
+					</WizardTaskContext.Provider>
+				</WizardContext.Provider>
+			</SettingsContextProvider>
 		);
 
 		expect( screen.getByText( /Setup complete/ ) ).toHaveTextContent(

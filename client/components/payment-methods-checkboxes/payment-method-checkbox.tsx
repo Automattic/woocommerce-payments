@@ -77,7 +77,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 } ) => {
 	const {
 		accountFees,
-	}: { accountFees: Record< string, FeeStructure > } = useContext(
+	}: { accountFees?: Record< string, FeeStructure > } = useContext(
 		WCPaySettingsContext
 	);
 
@@ -192,10 +192,10 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 						</PaymentMethodDisabledTooltip>
 					) }
 				</div>
-				<div className={ 'payment-method-checkbox__pills-right' }>
+				<div className="payment-method-checkbox__pills-right">
 					<HoverTooltip
 						content={ formatMethodFeesTooltip(
-							accountFees[ name ]
+							accountFees?.[ name ]
 						) }
 						maxWidth={ '300px' }
 					>
@@ -210,7 +210,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 						>
 							<span>
 								{ formatMethodFeesDescription(
-									accountFees[ name ]
+									accountFees?.[ name ]
 								) }
 							</span>
 						</Pill>

@@ -161,7 +161,7 @@ const DepositsOverview: React.FC = () => {
 						{ hasErroredExternalAccount && (
 							<DepositFailureNotice
 								updateAccountLink={
-									wcpaySettings.accountStatus.accountLink
+									wcpaySettings.accountStatus?.accountLink
 								}
 							/>
 						) }

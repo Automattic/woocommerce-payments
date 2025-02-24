@@ -11,13 +11,17 @@ declare global {
 		connectUrl: string;
 		overviewUrl: string;
 		isSubscriptionsActive: boolean;
-		featureFlags: {
+		featureFlags: Partial< {
 			customSearch: boolean;
+			woopay: boolean;
+			woopayExpressCheckout: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
-		};
+			multiCurrency?: boolean;
+		} >;
+		accountFees: Record< string, any >;
 		fraudServices: unknown[];
 		testMode: boolean;
 		testModeOnboarding: boolean;
@@ -26,9 +30,10 @@ declare global {
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
 		isAccountValid: boolean;
-		accountStatus: {
+		accountStatus: Partial< {
 			email?: string;
 			created: string;
+			isLive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -69,7 +74,7 @@ declare global {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
 			};
-		};
+		} >;
 		accountLoans: {
 			has_active_loan: boolean;
 			has_past_loans: boolean;
