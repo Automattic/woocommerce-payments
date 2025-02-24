@@ -140,7 +140,7 @@
 }
 
 .payment-method__brand--multibanco {
-	background-image: url( '../images/payment-methods/multibanco.svg' ); 
+	background-image: url( '../images/payment-methods/multibanco-icon.svg' );
 }
 
 .payment-method__brand--grabpay {
