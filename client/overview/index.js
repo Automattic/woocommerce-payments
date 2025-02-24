@@ -40,6 +40,7 @@ import {
 } from '@stripe/react-connect-js';
 import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
+import { getAdminUrl } from 'wcpay/utils';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -98,6 +99,11 @@ const OverviewPage = () => {
 	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
 		true
 	);
+	// Variable to memoize the count of Stripe notifications.
+	const [
+		stripeNotificationsCountToAddressMemo,
+		setStripeNotificationsCountToAddressMemo,
+	] = useState( 0 );
 
 	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
 	const { isLoading: settingsIsLoading } = useSettings();
@@ -216,6 +222,28 @@ const OverviewPage = () => {
 			// Do something related to notifications that don't require action.
 			setNotificationsBannerMessage( 'The items below are in review.' );
 		} else {
+			// This is the case where we addressed everything and previously had some notifications to address.
+			// We recommend the merchant to reload the page in this case.
+			if ( stripeNotificationsCountToAddressMemo > 0 ) {
+				dispatch( 'core/notices' ).createSuccessNotice(
+					__(
+						'Updates take a moment to appear. Please refresh the page in a minute.',
+						'woocommerce-payments'
+					),
+					{
+						actions: [
+							{
+								label: __( 'Refresh', 'woocommerce-payments' ),
+								url: getAdminUrl( {
+									page: 'wc-admin',
+									path: '/payments/overview',
+								} ),
+							},
+						],
+						explicitDismiss: true,
+					}
+				);
+			}
 			setNotificationsBannerMessage( '' );
 		}
 		if ( response.actionRequired > 0 || response.total > 0 ) {
@@ -224,6 +252,8 @@ const OverviewPage = () => {
 				action_required_count: response.actionRequired,
 				total_count: response.total,
 			} );
+			// Memoize the notifications count to be able to compare it with the fresh count when this function is called one more time.
+			setStripeNotificationsCountToAddressMemo( response.total );
 		}
 		// If the component inits successfully, this function is always called.
 		// It's safe to set the loading false here rather than onLoaderStart, because it happens too early and the UX is not smooth.
