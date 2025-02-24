@@ -54,6 +54,7 @@ class WC_Payments_Order_Success_Page {
 		$expiry_date           = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $unix_expiry );
 		$days_remaining        = max( 0, floor( ( $unix_expiry - time() ) / DAY_IN_SECONDS ) );
 		$formatted_order_total = $order->get_formatted_order_total();
+		$bank_formatted_amount = number_format( $order->get_total(), 2, ',', '.' );
 		wc_print_notice(
 			__( 'Your order is on hold until payment is received. Please follow the payment instructions by the expiry date.', 'woocommerce-payments' ),
 			'notice'
@@ -90,6 +91,10 @@ class WC_Payments_Order_Success_Page {
 					<div class="payment-box-row">
 						<span class="payment-box-label">Reference</span>
 						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo $multibanco_info['reference']; ?>"><?php echo $multibanco_info['reference']; ?><i class="copy-icon"></i></button>
+					</div>
+					<div class="payment-box-row">
+						<span class="payment-box-label">Amount</span>
+						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( $bank_formatted_amount ); ?>"><?php echo $bank_formatted_amount; ?><i class="copy-icon"></i></button>
 					</div>
 				</div>
 
