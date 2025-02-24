@@ -120,7 +120,10 @@ export const getBackgroundColor = ( selectors, scope = document ) => {
 			continue;
 		}
 
-		const bgColor = window.getComputedStyle( element ).backgroundColor;
+		const windowObject = scope.defaultView || window;
+
+		const bgColor = windowObject.getComputedStyle( element )
+			.backgroundColor;
 		// If backgroundColor property present and alpha > 0.
 		if ( bgColor && tinycolor( bgColor ).getAlpha() > 0 ) {
 			color = bgColor;

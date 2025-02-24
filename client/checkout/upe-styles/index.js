@@ -180,7 +180,7 @@ export const appearanceSelectors = {
 	 *
 	 * @return {Object} Updated selectors.
 	 */
-	updateSelectors: function ( selectors, scope = document ) {
+	updateSelectors: function ( selectors, scope ) {
 		if ( selectors.hasOwnProperty( 'alternateSelectors' ) ) {
 			Object.entries( selectors.alternateSelectors ).forEach(
 				( altSelector ) => {
@@ -206,7 +206,7 @@ export const appearanceSelectors = {
 	 *
 	 * @return {Object} Selectors for checkout type specified.
 	 */
-	getSelectors: function ( elementsLocation, scope = document ) {
+	getSelectors: function ( elementsLocation, scope ) {
 		let appearanceSelector = this.blocksCheckout;
 
 		switch ( elementsLocation ) {
@@ -246,7 +246,7 @@ const hiddenElementsForUPE = {
 	 *
 	 * @return {Object} Object of the created hidden container element.
 	 */
-	getHiddenContainer: function ( elementID, scope = document ) {
+	getHiddenContainer: function ( elementID, scope ) {
 		const hiddenDiv = scope.createElement( 'div' );
 		hiddenDiv.setAttribute( 'id', this.getIDFromSelector( elementID ) );
 		hiddenDiv.style.border = 0;
@@ -269,7 +269,7 @@ const hiddenElementsForUPE = {
 	 *
 	 * @return {Object} Object of the created invalid row element.
 	 */
-	createRow: function ( elementType, classes = [], scope = document ) {
+	createRow: function ( elementType, classes = [], scope ) {
 		const newRow = scope.createElement( elementType );
 		if ( classes.length ) {
 			newRow.classList.add( ...classes );
@@ -289,7 +289,7 @@ const hiddenElementsForUPE = {
 		appendTarget,
 		elementToClone,
 		newElementID,
-		scope = document
+		scope
 	) {
 		const cloneTarget = scope.querySelector( elementToClone );
 		if ( cloneTarget ) {
@@ -321,7 +321,7 @@ const hiddenElementsForUPE = {
 	 * @param {boolean} elementsLocation The location of the elements.
 	 * @param {Object} scope The scope of the elements.
 	 */
-	init: function ( elementsLocation, scope = document ) {
+	init: function ( elementsLocation, scope ) {
 		const selectors = appearanceSelectors.getSelectors( elementsLocation ),
 			appendTarget = scope.querySelector( selectors.appendTarget ),
 			elementToClone = scope.querySelector(
@@ -403,7 +403,7 @@ const hiddenElementsForUPE = {
 	 *
 	 * @param {Object} scope The scope of the elements.
 	 */
-	cleanup: function ( scope = document ) {
+	cleanup: function ( scope ) {
 		const element = scope.querySelector(
 			appearanceSelectors.default.hiddenContainer
 		);
@@ -423,11 +423,13 @@ export const getFieldStyles = (
 		return {};
 	}
 
+	const windowObject = scope.defaultView || window;
+
 	const validProperties = upeRestrictedProperties[ upeElement ];
 
 	const elem = scope.querySelector( selector );
 
-	const styles = window.getComputedStyle( elem );
+	const styles = windowObject.getComputedStyle( elem );
 
 	const filteredStyles = {};
 	for ( let i = 0; i < styles.length; i++ ) {
@@ -512,7 +514,7 @@ function ensureFontSizeSmallerThan(
 	selector,
 	fontSize,
 	percentage = PMME_RELATIVE_TEXT_SIZE,
-	scope = document
+	scope
 ) {
 	const fontSizeNumber = parseFloat( fontSize );
 
@@ -544,9 +546,8 @@ function ensureFontSizeSmallerThan(
 export const getAppearance = (
 	elementsLocation,
 	forWooPay = false,
-	container = null
+	scope = document
 ) => {
-	const scope = container ? container : document;
 	const selectors = appearanceSelectors.getSelectors(
 		elementsLocation,
 		scope
