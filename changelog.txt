@@ -1,6 +1,6 @@
 *** WooPayments Changelog ***
 
-= 9.0.0 - 2025-02-26 =
+= 9.0.0-test-3 - unreleased =
 * Add - Add E2E tests for currency switching at checkout.
 * Add - Add GrabPay payment method details to the View Transaction page.
 * Add - Add GrabPay to the settings page when eligible.
