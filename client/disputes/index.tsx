@@ -345,15 +345,16 @@ export const DisputesList = (): JSX.Element => {
 	const downloadable = !! rows.length;
 
 	const onDownload = async () => {
-		recordEvent( 'wcpay_disputes_download', {
-			exported_disputes: rows.length,
-			total_disputes: disputesSummary.count,
-		} );
-
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
+
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'disputes',
+			source: path,
+			exported_row_count: disputesSummary.count,
+		} );
 
 		const userLocale = wcpaySettings.userLocale.code;
 		const {
