@@ -67,6 +67,7 @@ jest.mock( 'wcpay/data', () => ( {
 		.mockReturnValue( { overviews: { currencies: [] } } ),
 	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
 } ) );
+jest.mock( 'wcpay/utils/embedded-components/account-session' );
 
 select.mockReturnValue( {
 	getSettings: () => settingsMock,

@@ -16,6 +16,37 @@ const defaultUIConfig = {
 		enabled: false,
 	},
 	address_mismatch: {
+		block: true,
+		enabled: false,
+	},
+	ip_address_mismatch: {
+		block: true,
+		enabled: false,
+	},
+	international_ip_address: {
+		block: true,
+		enabled: false,
+	},
+	order_items_threshold: {
+		block: true,
+		enabled: false,
+		max_items: null,
+		min_items: null,
+	},
+	purchase_price_threshold: {
+		block: true,
+		enabled: false,
+		max_amount: null,
+		min_amount: null,
+	},
+};
+
+const defaultUIConfigWithReviewEnabled = {
+	avs_verification: {
+		block: false,
+		enabled: false,
+	},
+	address_mismatch: {
 		block: false,
 		enabled: false,
 	},
@@ -57,6 +88,7 @@ declare const global: {
 				precision: number;
 			};
 		};
+		isFRTReviewFeatureActive: boolean;
 	};
 	wcSettings: {
 		admin: {
@@ -88,15 +120,42 @@ describe( 'Ruleset adapter utilities test', () => {
 					precision: 2,
 				},
 			},
+			isFRTReviewFeatureActive: false,
 		};
 	} );
 
-	test( 'converts an empty ruleset to default UI config', () => {
+	test( 'converts an empty ruleset to default UI config with isFRTReviewFeatureActive disabled', () => {
 		const ruleset: FraudProtectionRule[] = [];
 		const expected = defaultUIConfig;
 		const output = readRuleset( ruleset );
 		expect( output ).toEqual( expected );
 	} );
+
+	test( 'converts an empty ruleset to default UI config with isFRTReviewFeatureActive enabled', () => {
+		global.wcpaySettings = {
+			storeCurrency: 'USD',
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+			isFRTReviewFeatureActive: true,
+		};
+
+		const ruleset: FraudProtectionRule[] = [];
+		const expected = defaultUIConfigWithReviewEnabled;
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+
 	test( 'converts an address mismatch ruleset to matching UI config', () => {
 		const ruleset = [
 			{
@@ -111,7 +170,7 @@ describe( 'Ruleset adapter utilities test', () => {
 		];
 		const expected = Object.assign( {}, defaultUIConfig, {
 			address_mismatch: {
-				block: false,
+				block: true,
 				enabled: true,
 			},
 		} );
@@ -288,7 +347,7 @@ describe( 'Ruleset adapter utilities test', () => {
 		const expected = Object.assign( {}, defaultUIConfig, {
 			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
 				enabled: true,
-				block: false,
+				block: true,
 				min_amount: 1,
 				max_amount: '',
 			},
@@ -371,7 +430,7 @@ describe( 'Ruleset adapter utilities test', () => {
 		const expected = Object.assign( {}, defaultUIConfig, {
 			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
 				enabled: true,
-				block: false,
+				block: true,
 				min_amount: 0.01,
 				max_amount: '',
 			},
