@@ -11,7 +11,7 @@ declare global {
 		connectUrl: string;
 		overviewUrl: string;
 		isSubscriptionsActive: boolean;
-		featureFlags: Partial< {
+		featureFlags: {
 			customSearch: boolean;
 			woopay: boolean;
 			woopayExpressCheckout: boolean;
@@ -20,7 +20,7 @@ declare global {
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
 			multiCurrency?: boolean;
-		} >;
+		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
 		testMode: boolean;
