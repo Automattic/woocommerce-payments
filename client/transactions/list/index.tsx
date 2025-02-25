@@ -582,11 +582,12 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const onDownload = async () => {
-		recordEvent( 'wcpay_transactions_download_csv_click', {
-			location: props.depositId ? 'deposit_details' : 'transactions',
-			exported_transactions: rows.length,
-			total_transactions: transactionsSummary.count,
+	const { path } = getQuery();
+	const onExport = async () => {
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'transactions',
+			source: path,
+			exported_row_count: transactionsSummary.count,
 		} );
 
 		const userEmail = wcpaySettings.currentUserEmail;
@@ -807,7 +808,7 @@ export const TransactionsList = (
 							key="download"
 							isDisabled={ isLoading || isExportInProgress }
 							isBusy={ isExportInProgress }
-							onClick={ onDownload }
+							onClick={ onExport }
 						/>
 					),
 				] }

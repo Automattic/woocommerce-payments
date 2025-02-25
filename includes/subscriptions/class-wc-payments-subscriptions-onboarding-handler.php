@@ -37,14 +37,18 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	 * @param WC_Payments_Account $account account service instance.
 	 */
 	public function __construct( WC_Payments_Account $account ) {
+		$this->account = $account;
+
+		if ( ! WC_Payments_Features::should_use_stripe_billing() ) {
+			return;
+		}
+
 		// This action is triggered on product save but after other required subscriptions logic is triggered.
 		add_action( 'woocommerce_admin_process_product_object', [ $this, 'product_save' ] );
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'account_data_refreshed' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_modal_scripts_and_styles' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_toast_script' ] );
 		add_filter( 'woocommerce_subscriptions_admin_pointer_script_parameters', [ $this, 'filter_admin_pointer_script_parameters' ] );
-
-		$this->account = $account;
 	}
 
 	/**

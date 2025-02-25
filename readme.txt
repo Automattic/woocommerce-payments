@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.3
-Stable tag: 8.9.1
+Stable tag: 8.9.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,10 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 8.9.2 - 2025-02-21 =
+* Fix - Fixed WooPay opt-in race condition
+
 
 = 8.9.1 - 2025-02-07 =
 * Fix - Ensures that the tokenised cart for ECE implementation is disabled by default.
