@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { renderHook } from '@testing-library/react-hooks';
-import { jest } from '@jest/globals';
 
 /**
  * Internal dependencies

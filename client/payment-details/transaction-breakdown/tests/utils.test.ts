@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { jest } from '@jest/globals';
 
 /**
  * Internal dependencies
