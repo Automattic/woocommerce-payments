@@ -180,7 +180,12 @@ class WC_Payments_Order_Service {
 				break;
 			case Intent_Status::REQUIRES_ACTION:
 			case Intent_Status::REQUIRES_PAYMENT_METHOD:
-				$this->mark_payment_started( $order, $intent_data );
+				if ( ! empty( $intent_data['error'] ) ) {
+					$this->unlock_order_payment( $order );
+					$this->mark_payment_failed( $order, $intent_data['intent_id'], $intent_data['intent_status'], $intent_data['charge_id'], $intent_data['error']['message'] );
+				} else {
+					$this->mark_payment_started( $order, $intent_data );
+				}
 				break;
 			default:
 				Logger::error( 'Uncaught payment intent status of ' . $intent_data['intent_status'] . ' passed for order id: ' . $order->get_id() );
@@ -2056,6 +2061,7 @@ class WC_Payments_Order_Service {
 		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
 			$charge                   = $intent->get_charge();
 			$intent_data['charge_id'] = $charge ? $charge->get_id() : null;
+			$intent_data['error']     = $intent->get_last_payment_error();
 		}
 
 		return $intent_data;

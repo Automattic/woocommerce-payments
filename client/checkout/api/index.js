@@ -142,7 +142,7 @@ export default class WCPayAPI {
 	 */
 	confirmIntent( redirectUrl, shouldSavePaymentMethod = false ) {
 		const partials = redirectUrl.match(
-			/#wcpay-confirm-(pi|si):(.+):(.+):(.+)$/
+			/#wcpay-confirm-(pi|si):(.+):(.+):(.+):(.+)$/
 		);
 
 		if ( ! partials ) {
@@ -153,7 +153,7 @@ export default class WCPayAPI {
 		let orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
 		const nonce = partials[ 4 ];
-
+		const paymentMethodType = partials[ 5 ];
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
 		const isOrderPage = orderPayIndex > -1;
 
@@ -199,6 +199,18 @@ export default class WCPayAPI {
 				).confirmCardPayment( clientSecret );
 			}
 
+			if ( paymentMethodType === 'wechat_pay' ) {
+				const confirmPayment = await stripe.confirmWechatPayPayment(
+					clientSecret,
+					{
+						payment_method_options: {
+							wechat_pay: { client: 'web' },
+						},
+					}
+				);
+				return confirmPayment;
+			}
+
 			// When not dealing with a setup intent or woopay we need to force an account
 			// specific request in Stripe.
 			const stripeWithForcedAccountRequest = await this.getStripe( true );
@@ -211,6 +223,20 @@ export default class WCPayAPI {
 			confirmPaymentOrSetup()
 				// ToDo: Switch to an async function once it works with webpack.
 				.then( ( result ) => {
+					let paymentError = null;
+					if ( result.paymentIntent?.last_payment_error ) {
+						paymentError = {
+							message:
+								result.paymentIntent.last_payment_error.message,
+						};
+					}
+					// If a wallet iframe is closed, Stripe doesn't throw an error, but the intent status will be requires_action.
+					if ( result.paymentIntent?.status === 'requires_action' ) {
+						paymentError = {
+							message: 'Payment requires additional action.',
+						};
+					}
+
 					const intentId =
 						( result.paymentIntent && result.paymentIntent.id ) ||
 						( result.setupIntent && result.setupIntent.id ) ||
@@ -238,9 +264,15 @@ export default class WCPayAPI {
 							: 'false',
 					} );
 
-					return [ ajaxCall, result.error ];
+					return [ ajaxCall, paymentError || result.error ];
 				} )
-				.then( ( [ verificationCall, originalError ] ) => {
+				.then( ( res ) => {
+					const [
+						verificationCall,
+						paymentError,
+						originalError,
+					] = res;
+
 					if ( originalError ) {
 						throw originalError;
 					}
@@ -253,6 +285,10 @@ export default class WCPayAPI {
 
 						if ( result.error ) {
 							throw result.error;
+						}
+
+						if ( paymentError ) {
+							throw paymentError;
 						}
 
 						return result.return_url;
