@@ -93,7 +93,7 @@ class WC_Payments_Order_Success_Page {
 					</div>
 					<div class="payment-box-row">
 						<span class="payment-box-label">Amount</span>
-						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( $bank_formatted_amount ); ?>"><?php echo $bank_formatted_amount; ?><i class="copy-icon"></i></button>
+						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( $bank_formatted_amount ); ?>">&euro; <?php echo $bank_formatted_amount; ?><i class="copy-icon"></i></button>
 					</div>
 				</div>
 
