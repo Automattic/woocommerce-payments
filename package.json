@@ -72,16 +72,7 @@
     "psalm": "./bin/run-psalm.sh",
     "xdebug:toggle": "docker compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh",
     "changelog": "./vendor/bin/changelogger add",
-    "cli": "./bin/cli.sh",
-    "test": [
-      "phpunit"
-    ],
-    "phpcs": [
-      "phpcs -s -p"
-    ],
-    "phpcbf": [
-      "phpcbf -p"
-    ]
+    "cli": "./bin/cli.sh"
   },
   "dependencies": {
     "@automattic/interpolate-components": "1.2.1",

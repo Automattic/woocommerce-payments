@@ -1,6 +1,5 @@
 /* eslint-disable */
 const { mergeWithRules } = require( 'webpack-merge' );
-const PaymentMethodsPlugin = require( './build/payment-methods-plugin' );
 
 const shared = require( './webpack/shared' );
 const production = require( './webpack/production' );
