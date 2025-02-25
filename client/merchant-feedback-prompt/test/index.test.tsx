@@ -37,6 +37,11 @@ declare const global: {
 		featureFlags: {
 			isMerchantFeedbackPromptDevFlagEnabled: boolean;
 		};
+		accountStatus: {
+			campaigns: {
+				wporgReview2025: boolean;
+			};
+		};
 	};
 };
 
@@ -58,6 +63,11 @@ describe( 'MerchantFeedbackPrompt', () => {
 			featureFlags: {
 				isMerchantFeedbackPromptDevFlagEnabled: true,
 			},
+			accountStatus: {
+				campaigns: {
+					wporgReview2025: true,
+				},
+			},
 		};
 
 		// Create a mock footer element for the portal
@@ -75,6 +85,31 @@ describe( 'MerchantFeedbackPrompt', () => {
 		global.wcpaySettings = {
 			featureFlags: {
 				isMerchantFeedbackPromptDevFlagEnabled: false,
+			},
+			accountStatus: {
+				campaigns: {
+					wporgReview2025: true,
+				},
+			},
+		};
+
+		render( <MerchantFeedbackPrompt /> );
+
+		// The prompt should not be rendered
+		expect(
+			screen.queryByText( 'Are you satisfied with WooPayments?' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'does not render when the account is not eligible for the campaign', () => {
+		global.wcpaySettings = {
+			featureFlags: {
+				isMerchantFeedbackPromptDevFlagEnabled: true,
+			},
+			accountStatus: {
+				campaigns: {
+					wporgReview2025: false,
+				},
 			},
 		};
 

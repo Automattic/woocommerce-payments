@@ -54,9 +54,14 @@ export default function MerchantFeedbackPrompt() {
 	// Create a ref to track if the view event has been recorded to prevent multiple recordings on a single screen.
 	const hasRecordedViewEvent = useRef( false );
 
-	// Only render the prompt if the dev feature flag is enabled, there are no core notices, and the prompt has not been dismissed.
-	const shouldRender =
+	// Only render the prompt if:
+	// - the dev feature flag is enabled,
+	// - the account is eligible for the campaign,
+	// - there are no core notices, and
+	// - the prompt has not been dismissed.
+	const shouldShowPrompt =
 		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
+		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025 &&
 		coreNotices?.length === 0 &&
 		! isDismissed;
 
@@ -67,13 +72,13 @@ export default function MerchantFeedbackPrompt() {
 
 	useEffect( () => {
 		// Record the event when the prompt is rendered, but only once per screen.
-		if ( shouldRender && ! hasRecordedViewEvent.current ) {
+		if ( shouldShowPrompt && ! hasRecordedViewEvent.current ) {
 			recordEvent( 'wcpay_merchant_feedback_prompt_view' );
 			hasRecordedViewEvent.current = true;
 		}
-	}, [ shouldRender ] );
+	}, [ shouldShowPrompt ] );
 
-	if ( ! shouldRender ) {
+	if ( ! shouldShowPrompt ) {
 		return null;
 	}
 
