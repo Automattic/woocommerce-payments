@@ -122,7 +122,8 @@ export default function MerchantFeedbackPrompt() {
 								</FlexItem>
 
 								{ /*
-									Explicit dismiss button, implemented due to the outdated bundled SnackbarList component.
+									Explicit dismiss button, in place of missing `explicitDismiss` prop.
+									We need to implement manually because we use an outdated bundled SnackbarList component which doesn't have the `explicitDismiss` prop.
 									See https://github.com/WordPress/gutenberg/blob/c300edfebb48f79f6f0f6643ce04dd73303c5fcb/packages/components/src/snackbar/index.tsx#L166-L177
 								*/ }
 								<FlexItem>
@@ -135,6 +136,7 @@ export default function MerchantFeedbackPrompt() {
 										onClick={ handleDismiss }
 										onKeyPress={ handleDismiss }
 									>
+										{ /* Unicode character for "close" icon */ }
 										&#x2715;
 									</span>
 								</FlexItem>
