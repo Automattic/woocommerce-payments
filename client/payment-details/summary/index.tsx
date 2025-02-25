@@ -458,7 +458,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							{ ! isLoading && isFraudOutcomeReview && (
 								<div className="payment-details-summary__fraud-outcome-action">
 									<CancelAuthorizationButton
-										orderId={ charge.order?.number || 0 }
+										orderId={ charge.order?.id || 0 }
 										paymentIntentId={
 											charge.payment_intent || ''
 										}
@@ -484,7 +484,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 									<CaptureAuthorizationButton
 										buttonIsPrimary
-										orderId={ charge.order?.number || 0 }
+										orderId={ charge.order?.id || 0 }
 										paymentIntentId={
 											charge.payment_intent || ''
 										}
@@ -599,7 +599,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	charge.payment_intent,
 																order_id:
 																	charge.order
-																		?.number,
+																		?.id,
 															}
 														);
 														window.location =
@@ -679,7 +679,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							actions={
 								! isFraudOutcomeReview ? (
 									<CaptureAuthorizationButton
-										orderId={ charge.order?.number || 0 }
+										orderId={ charge.order?.id || 0 }
 										paymentIntentId={
 											charge.payment_intent || ''
 										}
@@ -702,7 +702,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						>
 							{ createInterpolateElement(
 								__(
-									'You must <a>capture</a> this charge within the next',
+									'You must <a>capture</a> this charge within the next testinggg',
 									'woocommerce-payments'
 								),
 								{

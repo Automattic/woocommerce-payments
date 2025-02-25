@@ -108,6 +108,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		type: 'refund',
 		source: 'visa',
 		order: {
+			id: 123,
 			number: 123,
 			url: 'https://example.com/order/123',
 			// eslint-disable-next-line camelcase
@@ -139,6 +140,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		type: 'charge',
 		source: 'mastercard',
 		order: {
+			id: 123,
 			number: 125,
 			url: 'https://example.com/order/125',
 			// eslint-disable-next-line camelcase
@@ -170,6 +172,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		type: 'charge',
 		source: 'visa',
 		order: {
+			id: 123,
 			number: 335,
 			url: 'https://example.com/order/335',
 			// eslint-disable-next-line camelcase

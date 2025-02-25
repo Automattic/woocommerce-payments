@@ -12,6 +12,7 @@ interface SubscriptionDetails {
 }
 
 interface OrderDetails {
+	id: number;
 	number: number;
 	url: string;
 	customer_url: null | string;

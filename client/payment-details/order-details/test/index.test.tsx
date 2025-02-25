@@ -63,6 +63,7 @@ const chargeFromOrderMock = {
 	disputed: false,
 	outcome: null,
 	order: {
+		id: 776,
 		number: 776,
 		url: 'http://wcpay.test/wp-admin/post.php?post=776&action=edit',
 		customer_url:
