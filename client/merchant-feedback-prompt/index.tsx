@@ -20,8 +20,8 @@ import { __ } from '@wordpress/i18n';
 import './style.scss';
 
 /**
- * A portal for the merchant feedback prompt.
- * This is used to render the prompt in the WC footer component, consistent with where WC transient notices are rendered.
+ * A react portal for the merchant feedback prompt.
+ * This is used to render the custom snackbar prompt in the WC footer component, consistent with where WC notices (snackbars) are rendered.
  */
 const SnackbarPortal = ( { children }: { children: React.ReactNode } ) => {
 	const portalRoot = document.getElementsByClassName(
@@ -32,10 +32,7 @@ const SnackbarPortal = ( { children }: { children: React.ReactNode } ) => {
 		return null;
 	}
 
-	return ReactDOM.createPortal(
-		children,
-		portalRoot as HTMLElement // Renders here instead of parent
-	);
+	return ReactDOM.createPortal( children, portalRoot );
 };
 
 export default function MerchantFeedbackPrompt() {
