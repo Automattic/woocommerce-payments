@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Manual capture fails in the transaction detail screen with a customized order number
