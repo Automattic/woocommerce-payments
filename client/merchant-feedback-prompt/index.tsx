@@ -23,7 +23,7 @@ import './style.scss';
  * A react portal for the merchant feedback prompt.
  * This is used to render the custom snackbar prompt in the WC footer component, consistent with where WC notices (snackbars) are rendered.
  */
-const SnackbarPortal = ( { children }: { children: React.ReactNode } ) => {
+const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 	const portalRoot = document.getElementsByClassName(
 		'woocommerce-layout__footer'
 	)[ 0 ];
@@ -57,7 +57,7 @@ export default function MerchantFeedbackPrompt() {
 	}
 
 	return (
-		<SnackbarPortal>
+		<WCFooterPortal>
 			<SnackbarList
 				className="wcpay-merchant-feedback-prompt-wrap"
 				notices={ [
@@ -143,6 +143,6 @@ export default function MerchantFeedbackPrompt() {
 					},
 				] }
 			/>
-		</SnackbarPortal>
+		</WCFooterPortal>
 	);
 }
