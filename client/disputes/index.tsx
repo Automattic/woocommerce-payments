@@ -447,9 +447,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			{ wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled && (
-				<MerchantFeedbackPrompt />
-			) }
+			<MerchantFeedbackPrompt />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard

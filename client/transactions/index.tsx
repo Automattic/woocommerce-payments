@@ -107,9 +107,7 @@ export const TransactionsPage: React.FC = () => {
 
 	return (
 		<Page className="wcpay-transactions-page">
-			{ wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled && (
-				<MerchantFeedbackPrompt />
-			) }
+			<MerchantFeedbackPrompt />
 			<TestModeNotice currentPage="transactions" />
 			<TabPanel
 				activeClass="active-tab"

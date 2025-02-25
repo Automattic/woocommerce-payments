@@ -149,9 +149,7 @@ const DepositsPage: React.FC = () => {
 
 	return (
 		<Page>
-			{ wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled && (
-				<MerchantFeedbackPrompt />
-			) }
+			<MerchantFeedbackPrompt />
 			<TestModeNotice currentPage="deposits" />
 			<NextDepositNotice />
 			<DepositFailureNotice />

@@ -53,7 +53,12 @@ export default function MerchantFeedbackPrompt() {
 
 	// Create a ref to track if the view event has been recorded to prevent multiple recordings on a single screen.
 	const hasRecordedViewEvent = useRef( false );
-	const shouldRender = coreNotices?.length === 0 && ! isDismissed;
+
+	// Only render the prompt if the feature flag is enabled, there are no core notices, and the prompt has not been dismissed.
+	const shouldRender =
+		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled &&
+		coreNotices?.length === 0 &&
+		! isDismissed;
 
 	function dismissPrompt() {
 		setIsDismissed( true );

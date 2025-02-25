@@ -31,6 +31,15 @@ jest.mock( 'wcpay/tracks', () => ( {
 	recordEvent: jest.fn(),
 } ) );
 
+// Mock the wcpaySettings object
+declare const global: {
+	wcpaySettings: {
+		featureFlags: {
+			isMerchantFeedbackPromptEnabled: boolean;
+		};
+	};
+};
+
 describe( 'MerchantFeedbackPrompt', () => {
 	// Create a mock footer element for the portal
 	let portalRoot: HTMLDivElement;
@@ -44,6 +53,13 @@ describe( 'MerchantFeedbackPrompt', () => {
 			getNotices: jest.fn().mockReturnValue( [] ),
 		} ) );
 
+		// Mock the feature flag to be enabled
+		global.wcpaySettings = {
+			featureFlags: {
+				isMerchantFeedbackPromptEnabled: true,
+			},
+		};
+
 		// Create a mock footer element for the portal
 		portalRoot = document.createElement( 'div' );
 		portalRoot.className = 'woocommerce-layout__footer';
@@ -53,6 +69,22 @@ describe( 'MerchantFeedbackPrompt', () => {
 	afterEach( () => {
 		// Clean up
 		document.body.removeChild( portalRoot );
+	} );
+
+	it( 'does not render when the feature flag is disabled', () => {
+		// Mock the feature flag to be disabled
+		global.wcpaySettings = {
+			featureFlags: {
+				isMerchantFeedbackPromptEnabled: false,
+			},
+		};
+
+		render( <MerchantFeedbackPrompt /> );
+
+		// The prompt should not be rendered
+		expect(
+			screen.queryByText( 'Are you satisfied with WooPayments?' )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the feedback prompt when there are no core notices', () => {

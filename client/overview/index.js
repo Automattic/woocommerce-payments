@@ -263,10 +263,7 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
-			{ wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled && (
-				<MerchantFeedbackPrompt />
-			) }
-
+			<MerchantFeedbackPrompt />
 			<OverviewPageError />
 			<JetpackIdcNotice />
 			{ showLoanOfferError && (

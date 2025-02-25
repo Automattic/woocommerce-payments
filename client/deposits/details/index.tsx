@@ -301,9 +301,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 
 	return (
 		<Page>
-			{ wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled && (
-				<MerchantFeedbackPrompt />
-			) }
+			<MerchantFeedbackPrompt />
 			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 			<ErrorBoundary>
 				{ isLoading ? (

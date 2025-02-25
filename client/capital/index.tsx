@@ -210,9 +210,7 @@ const CapitalPage = (): JSX.Element => {
 
 	return (
 		<Page>
-			{ wcpaySettings?.featureFlags?.isMerchantFeedbackPromptEnabled && (
-				<MerchantFeedbackPrompt />
-			) }
+			<MerchantFeedbackPrompt />
 			<TestModeNotice currentPage="loans" />
 
 			{ wcpaySettings.accountLoans.has_active_loan && (
