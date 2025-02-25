@@ -36,6 +36,12 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 	return ReactDOM.createPortal( children, portalRoot );
 };
 
+/**
+ * Renders the merchant feedback prompt (snackbar) in the WC footer.
+ *
+ * This is used to gather feedback from merchants about their experience with WooPayments.
+ * Only renders if there are no core notices and the prompt has not been dismissed.
+ */
 export default function MerchantFeedbackPrompt() {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
 	const coreNotices = useSelect(
@@ -75,7 +81,11 @@ export default function MerchantFeedbackPrompt() {
 						id: 'wcpay-merchant-feedback-prompt',
 						className: 'wcpay-merchant-feedback-prompt',
 						content: (
-							<Flex gap={ 3 } align="center">
+							<Flex
+								gap={ 3 }
+								align="center"
+								onClick={ dismissPrompt }
+							>
 								<FlexItem>
 									{ __(
 										'Are you satisfied with WooPayments?',
