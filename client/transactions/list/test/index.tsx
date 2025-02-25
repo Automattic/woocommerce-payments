@@ -109,7 +109,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		source: 'visa',
 		order: {
 			id: 123,
-			number: 123,
+			number: 'custom-123',
 			url: 'https://example.com/order/123',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
@@ -141,7 +141,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		source: 'mastercard',
 		order: {
 			id: 123,
-			number: 125,
+			number: 'custom-125',
 			url: 'https://example.com/order/125',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
@@ -173,7 +173,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		source: 'visa',
 		order: {
 			id: 123,
-			number: 335,
+			number: 'custom-335',
 			url: 'https://example.com/order/335',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',

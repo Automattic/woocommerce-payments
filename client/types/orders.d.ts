@@ -13,7 +13,12 @@ interface SubscriptionDetails {
 
 interface OrderDetails {
 	id: number;
-	number: number;
+	/**
+	 * The order number for display.
+	 * By default, it's order ID but a plugin can customize it.
+	 * See PHP method WC_Order::get_order_number().
+	 */
+	number: string;
 	url: string;
 	customer_url: null | string;
 	customer_email: null | string;

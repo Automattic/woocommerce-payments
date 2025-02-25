@@ -199,7 +199,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const { authorization } = useAuthorization(
 		charge.payment_intent as string,
-		charge.order?.number as number,
+		charge.order?.id as number,
 		shouldFetchAuthorization
 	);
 

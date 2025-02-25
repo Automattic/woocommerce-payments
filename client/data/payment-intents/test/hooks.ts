@@ -55,7 +55,7 @@ export const chargeMock: Charge = {
 	disputed: false,
 	order: {
 		id: 123,
-		number: Number( '67' ),
+		number: 'custom-67',
 		url: 'http://order.url',
 		customer_url: 'customer.url',
 		customer_name: '',
@@ -90,7 +90,7 @@ export const paymentIntentMock: PaymentIntent = {
 	status: 'requires_capture',
 	order: {
 		id: 123,
-		number: 123,
+		number: 'custom-123',
 		url: 'http://order.url',
 		customer_url: 'customer.url',
 		customer_name: '',
