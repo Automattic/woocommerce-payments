@@ -1084,14 +1084,17 @@ class WC_Payments_Onboarding_Service {
 			}
 		}
 
-		// If WooPay is enabled, update the gateway option.
+		// Update gateway option with the WooPay capability.
 		if ( ! empty( $capabilities['woopay'] ) ) {
 			$gateway->update_is_woopay_enabled( true );
+		} else {
+			$gateway->update_is_woopay_enabled( false );
 		}
 
-		// If Apple Pay and Google Pay are disabled update the gateway option,
-		// otherwise they are enabled by default.
-		if ( empty( $capabilities['apple_google'] ) ) {
+		// Update gateway option with the Apple/Google Pay capability.
+		if ( ! empty( $capabilities['apple_google'] ) ) {
+			$gateway->update_option( 'payment_request', 'yes' );
+		} else {
 			$gateway->update_option( 'payment_request', 'no' );
 		}
 	}
