@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import {
 	Button,
@@ -17,6 +17,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { recordEvent } from 'wcpay/tracks';
 import './style.scss';
 
 /**
@@ -41,18 +42,27 @@ export default function MerchantFeedbackPrompt() {
 		( select ) =>
 			select( 'core/notices' ).getNotices() as NoticeList.Notice[]
 	);
+	// TODO: This is a temporary local state to track if the prompt has been dismissed. Move to a user-persistent state in #10329.
 	const [ isDismissed, setIsDismissed ] = useState( false );
 
-	function handleDismiss() {
+	// Create a ref to track if the view event has been recorded to prevent multiple recordings on a single screen.
+	const hasRecordedViewEvent = useRef( false );
+	const shouldRender = coreNotices?.length === 0 && ! isDismissed;
+
+	function dismissPrompt() {
 		setIsDismissed( true );
+		recordEvent( 'wcpay_merchant_feedback_prompt_dismiss' );
 	}
 
-	if ( coreNotices?.length > 0 ) {
-		// We don't want to render the prompt if there are other notices being displayed.
-		return null;
-	}
+	useEffect( () => {
+		// Record the event when the prompt is rendered, but only once per screen.
+		if ( shouldRender && ! hasRecordedViewEvent.current ) {
+			recordEvent( 'wcpay_merchant_feedback_prompt_view' );
+			hasRecordedViewEvent.current = true;
+		}
+	}, [ shouldRender ] );
 
-	if ( isDismissed ) {
+	if ( ! shouldRender ) {
 		return null;
 	}
 
@@ -77,8 +87,10 @@ export default function MerchantFeedbackPrompt() {
 										variant="link"
 										className="wcpay-merchant-feedback-prompt__action"
 										onClick={ () => {
-											// eslint-disable-next-line no-console -- temporary action logging
-											console.log( 'Yes clicked 👍' );
+											recordEvent(
+												'wcpay_merchant_feedback_prompt_yes_click'
+											);
+											dismissPrompt();
 										} }
 									>
 										<Icon
@@ -101,8 +113,10 @@ export default function MerchantFeedbackPrompt() {
 										variant="link"
 										className="wcpay-merchant-feedback-prompt__action"
 										onClick={ () => {
-											// eslint-disable-next-line no-console -- temporary action logging
-											console.log( 'No clicked 👎' );
+											recordEvent(
+												'wcpay_merchant_feedback_prompt_no_click'
+											);
+											dismissPrompt();
 										} }
 									>
 										<Icon
@@ -130,11 +144,12 @@ export default function MerchantFeedbackPrompt() {
 									<span
 										role="button"
 										aria-label={ __(
-											'Dismiss this notice'
+											'Dismiss',
+											'woocommerce-payments'
 										) }
 										tabIndex={ 0 }
-										onClick={ handleDismiss }
-										onKeyPress={ handleDismiss }
+										onClick={ dismissPrompt }
+										onKeyPress={ dismissPrompt }
 									>
 										{ /* Unicode character for "close" icon */ }
 										&#x2715;
