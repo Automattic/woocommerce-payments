@@ -38,6 +38,11 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 	return ReactDOM.createPortal( children, portalRoot );
 };
 
+interface MerchantFeedbackPromptProps {
+	/** A function to be called when the user dismisses the prompt and it is to be removed. */
+	dismissPrompt: () => void;
+}
+
 /**
  * Renders the merchant feedback prompt (snackbar) in the WC footer.
  *
@@ -47,7 +52,9 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
  * Note that this includes a customised React component for the snackbar,
  * because the Snackbar component doesn't accept two actions. See comment below for more details.
  */
-function MerchantFeedbackPrompt( { onDismiss }: { onDismiss: () => void } ) {
+const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
+	dismissPrompt,
+} ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
 	const coreNotices = useSelect(
 		( select ) =>
@@ -59,11 +66,6 @@ function MerchantFeedbackPrompt( { onDismiss }: { onDismiss: () => void } ) {
 
 	// Only render the prompt if there are no core notices.
 	const shouldShowPrompt = coreNotices?.length === 0;
-
-	function dismissPrompt() {
-		onDismiss();
-		recordEvent( 'wcpay_merchant_feedback_prompt_dismiss' );
-	}
 
 	useEffect( () => {
 		// Record the event when the prompt is rendered, but only once per screen.
@@ -170,8 +172,18 @@ function MerchantFeedbackPrompt( { onDismiss }: { onDismiss: () => void } ) {
 											'woocommerce-payments'
 										) }
 										tabIndex={ 0 }
-										onClick={ dismissPrompt }
-										onKeyPress={ dismissPrompt }
+										onClick={ () => {
+											recordEvent(
+												'wcpay_merchant_feedback_prompt_dismiss'
+											);
+											dismissPrompt();
+										} }
+										onKeyPress={ () => {
+											recordEvent(
+												'wcpay_merchant_feedback_prompt_dismiss'
+											);
+											dismissPrompt();
+										} }
 									>
 										{ /* Unicode character for "close" icon */ }
 										&#x2715;
@@ -184,7 +196,7 @@ function MerchantFeedbackPrompt( { onDismiss }: { onDismiss: () => void } ) {
 			/>
 		</WCFooterPortal>
 	);
-}
+};
 
 /**
  * A wrapper component that conditionally renders the merchant feedback prompt.
@@ -205,7 +217,7 @@ export default function MaybeShowMerchantFeedbackPrompt() {
 
 	return (
 		<MerchantFeedbackPrompt
-			onDismiss={ () => setHasUserDismissed( true ) }
+			dismissPrompt={ () => setHasUserDismissed( true ) }
 		/>
 	);
 }
