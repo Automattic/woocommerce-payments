@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: tokenize ECE initialization and update flow on pricing change.
