@@ -702,7 +702,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						>
 							{ createInterpolateElement(
 								__(
-									'You must <a>capture</a> this charge within the next testinggg',
+									'You must <a>capture</a> this charge within the next',
 									'woocommerce-payments'
 								),
 								{
