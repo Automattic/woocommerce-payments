@@ -1,7 +1,9 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -24,8 +26,39 @@ import {
 	WeChatPayIcon,
 } from 'wcpay/payment-methods-icons';
 
-import GeneratedPaymentMethodInformationObject from './payment-methods/generated-map';
 import type { PaymentMethodMapEntry } from './types/payment-methods';
+
+// Get any payment method definitions from the client.
+const PaymentMethodDefinitions =
+	typeof woopaymentsPaymentMethodDefinitions !== 'undefined'
+		? woopaymentsPaymentMethodDefinitions
+		: {};
+
+const convertedPaymentMethodDefinitions = Object.fromEntries(
+	Object.entries( PaymentMethodDefinitions ).map( ( [ key, value ] ) => [
+		key,
+		{
+			id: value.id,
+			label: value.title,
+			description: value.description,
+			icon: ( { className } ) => (
+				<img
+					src={ value.icon }
+					alt={ value.title }
+					className={ classNames(
+						'payment-method__icon',
+						className
+					) }
+				/>
+			),
+			currencies: value.currencies,
+			stripe_key: value.stripeId,
+			allows_manual_capture: value.allows_manual_capture,
+			allows_pay_later: value.allows_pay_later,
+			accepts_only_domestic_payment: value.accepts_only_domestic_payment,
+		} as PaymentMethodMapEntry,
+	] )
+);
 
 const PaymentMethodInformationObject: Record<
 	string,
@@ -241,7 +274,7 @@ const PaymentMethodInformationObject: Record<
 		allows_pay_later: false,
 		accepts_only_domestic_payment: false,
 	},
-	...GeneratedPaymentMethodInformationObject,
+	...convertedPaymentMethodDefinitions,
 };
 
 export default PaymentMethodInformationObject;

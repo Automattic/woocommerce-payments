@@ -8,7 +8,7 @@
 namespace WCPay\PaymentMethods\Configs\Utils;
 
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
-use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * Utility class for payment method related functions.
@@ -105,5 +105,30 @@ class PaymentMethodUtils {
 		}
 
 		return $locale_info[ $country ]['currency_code'] === $currency;
+	}
+
+	/**
+	 * Get the payment method definitions as a JSON string.
+	 *
+	 * @return string
+	 */
+	public static function get_payment_method_definitions_json() {
+		$registry                   = PaymentMethodDefinitionRegistry::instance();
+		$payment_method_definitions = [];
+
+		foreach ( $registry->get_available_definitions() as $payment_method_definition ) {
+			$payment_method_definitions[ $payment_method_definition::get_id() ] = [
+				'id'                            => $payment_method_definition::get_id(),
+				'title'                         => $payment_method_definition::get_title(),
+				'description'                   => $payment_method_definition::get_description(),
+				'icon'                          => $payment_method_definition::get_settings_icon_url(),
+				'currencies'                    => $payment_method_definition::get_supported_currencies(),
+				'allows_manual_capture'         => $payment_method_definition::allows_manual_capture(),
+				'allows_pay_later'              => $payment_method_definition::is_bnpl(),
+				'accepts_only_domestic_payment' => $payment_method_definition::accepts_only_domestic_payments(),
+			];
+		}
+
+		return wp_json_encode( $payment_method_definitions );
 	}
 }

@@ -155,6 +155,11 @@ declare global {
 		timeFormat: string;
 	};
 
+	const woopaymentsPaymentMethodDefinitions: Record<
+		string,
+		PaymentMethodDefinition
+	>;
+
 	const wc: {
 		wcSettings: typeof wcSettingsModule;
 		tracks: {

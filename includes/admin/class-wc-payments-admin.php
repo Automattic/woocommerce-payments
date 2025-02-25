@@ -11,6 +11,7 @@ use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
 use WCPay\WooPay\WooPay_Utilities;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -659,6 +660,12 @@ class WC_Payments_Admin {
 				$this->get_js_settings()
 			);
 
+			wp_add_inline_script(
+				'WCPAY_ADMIN_SETTINGS',
+				'const woopaymentsPaymentMethodDefinitions = ' . PaymentMethodUtils::get_payment_method_definitions_json() . ';',
+				'before'
+			);
+
 			// Output the settings JS and CSS only on the settings page.
 			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
@@ -682,6 +689,12 @@ class WC_Payments_Admin {
 				'WCPAY_DASH_APP',
 				'wcpaySettings',
 				$this->get_js_settings()
+			);
+
+			wp_add_inline_script(
+				'WCPAY_DASH_APP',
+				'const woopaymentsPaymentMethodDefinitions = ' . PaymentMethodUtils::get_payment_method_definitions_json() . ';',
+				'before'
 			);
 
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
