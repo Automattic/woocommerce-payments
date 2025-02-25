@@ -1,0 +1,156 @@
+/**
+ * External dependencies
+ */
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { select } from '@wordpress/data';
+
+/**
+ * Internal dependencies
+ */
+import MerchantFeedbackPrompt from '../';
+import { recordEvent } from 'wcpay/tracks';
+
+// Mock the WordPress data module
+jest.mock( '@wordpress/data', () => ( {
+	useSelect: jest.fn().mockImplementation( ( fn ) => fn( select ) ),
+	select: jest.fn(),
+} ) );
+
+// Mock ReactDOM.createPortal
+jest.mock( 'react-dom', () => ( {
+	...jest.requireActual( 'react-dom' ),
+	createPortal: ( element: React.ReactNode ) => element,
+} ) );
+
+// Mock window.scrollTo to fix the "Not implemented: window.scrollTo" error
+window.scrollTo = jest.fn();
+
+// Mock the recordEvent function
+jest.mock( 'wcpay/tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
+describe( 'MerchantFeedbackPrompt', () => {
+	// Create a mock footer element for the portal
+	let portalRoot: HTMLDivElement;
+
+	beforeEach( () => {
+		// Reset mocks
+		jest.clearAllMocks();
+
+		// Mock the core/notices select function to return empty notices by default
+		( select as jest.Mock ).mockImplementation( () => ( {
+			getNotices: jest.fn().mockReturnValue( [] ),
+		} ) );
+
+		// Create a mock footer element for the portal
+		portalRoot = document.createElement( 'div' );
+		portalRoot.className = 'woocommerce-layout__footer';
+		document.body.appendChild( portalRoot );
+	} );
+
+	afterEach( () => {
+		// Clean up
+		document.body.removeChild( portalRoot );
+	} );
+
+	it( 'renders the feedback prompt when there are no core notices', () => {
+		render( <MerchantFeedbackPrompt /> );
+
+		// Check if the prompt text is rendered
+		const promptElement = screen.getByText(
+			'Are you satisfied with WooPayments?'
+		);
+		expect( promptElement ).toBeInTheDocument();
+
+		// Check if Yes and No buttons are rendered
+		expect( screen.getByText( 'Yes' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'No' ) ).toBeInTheDocument();
+
+		// Check if dismiss button is rendered
+		expect(
+			screen.getByRole( 'button', {
+				name: 'Dismiss',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not render when there are core notices', () => {
+		// Mock core notices to return some notices
+		( select as jest.Mock ).mockImplementation( () => ( {
+			getNotices: jest.fn().mockReturnValue( [ { id: 'test-notice' } ] ),
+		} ) );
+
+		render( <MerchantFeedbackPrompt /> );
+
+		// The prompt should not be rendered
+		expect(
+			screen.queryByText( 'Are you satisfied with WooPayments?' )
+		).not.toBeInTheDocument();
+
+		// Should not record the view event
+		expect( recordEvent ).not.toHaveBeenCalled();
+	} );
+
+	it( 'does not render after being dismissed', async () => {
+		render( <MerchantFeedbackPrompt /> );
+
+		// Verify prompt is initially rendered
+		expect(
+			screen.getByText( 'Are you satisfied with WooPayments?' )
+		).toBeInTheDocument();
+
+		// Click the dismiss button
+		const dismissButton = screen.getByRole( 'button', {
+			name: 'Dismiss',
+		} );
+		fireEvent.click( dismissButton );
+
+		// Expect the event to be recorded
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_dismiss'
+		);
+
+		// The prompt should no longer be rendered
+		expect(
+			screen.queryByText( 'Are you satisfied with WooPayments?' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'records event when Yes button is clicked', () => {
+		render( <MerchantFeedbackPrompt /> );
+
+		// Click the Yes button
+		const yesButton = screen.getByText( 'Yes' );
+		fireEvent.click( yesButton );
+
+		// Expect the event to be recorded
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_yes_click'
+		);
+
+		// The prompt should no longer be rendered
+		expect(
+			screen.queryByText( 'Are you satisfied with WooPayments?' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'records event when No button is clicked', () => {
+		render( <MerchantFeedbackPrompt /> );
+
+		// Click the No button
+		const noButton = screen.getByText( 'No' );
+		fireEvent.click( noButton );
+
+		// Expect the event to be recorded
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_no_click'
+		);
+
+		// The prompt should no longer be rendered
+		expect(
+			screen.queryByText( 'Are you satisfied with WooPayments?' )
+		).not.toBeInTheDocument();
+	} );
+} );
