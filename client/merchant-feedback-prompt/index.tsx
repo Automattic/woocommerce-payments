@@ -12,6 +12,7 @@ import {
 	SnackbarList,
 } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
+import { useUserPreferences } from '@woocommerce/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -187,13 +188,26 @@ function MerchantFeedbackPrompt( { onDismiss }: { onDismiss: () => void } ) {
 }
 
 /**
+ * Extend the user preferences returned from useUserPreferences to include the WooPayments merchant feedback prompt dismissed state.
+ * See WC_Payments::add_user_data_fields() in includes/class-wc-payments.php for the PHP implementation.
+ */
+interface UserPreferences extends ReturnType< typeof useUserPreferences > {
+	wc_payments_wporg_review_2025_prompt_dismissed: boolean;
+}
+
+/**
  * A wrapper component that conditionally renders the merchant feedback prompt.
  *
  * This is used to ensure the prompt is only rendered if the account is eligible for the campaign and the user has not dismissed the prompt.
  */
 export default function MaybeShowMerchantFeedbackPrompt() {
-	// TODO: This is a temporary local state to track if the prompt has been dismissed. Move to a user-persistent state in #10329.
-	const [ hasUserDismissed, setHasUserDismissed ] = useState( false );
+	const {
+		updateUserPreferences,
+		...userPrefs
+	} = useUserPreferences() as UserPreferences;
+
+	const hasUserDismissed =
+		userPrefs?.wc_payments_wporg_review_2025_prompt_dismissed;
 
 	const isAccountEligible =
 		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
@@ -205,7 +219,11 @@ export default function MaybeShowMerchantFeedbackPrompt() {
 
 	return (
 		<MerchantFeedbackPrompt
-			onDismiss={ () => setHasUserDismissed( true ) }
+			onDismiss={ () =>
+				updateUserPreferences( {
+					wc_payments_wporg_review_2025_prompt_dismissed: true,
+				} )
+			}
 		/>
 	);
 }
