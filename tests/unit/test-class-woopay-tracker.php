@@ -14,7 +14,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @var WooPay_Tracker
 	 */
-	private $mock_tracker;
+	private $tracker;
 
 	/**
 	 * @var WC_Payments_Http
@@ -43,12 +43,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->http_client_stub->method( 'is_user_connected' )->willReturn( true );
 		$this->http_client_stub->method( 'get_connected_user_data' )->willReturn( [ 'ID' => 1234 ] );
 
-		$this->mock_tracker = $this->getMockBuilder( WooPay_Tracker::class )
-			->setConstructorArgs( [ $this->http_client_stub ] )
-			->onlyMethods( [ 'get_wc_store_id' ] )
-			->getMock();
-		$this->mock_tracker->method( 'get_wc_store_id' )
-			->willReturn( 'mock_store_id' );
+		$this->tracker = new WooPay_Tracker( $this->http_client_stub );
 
 		$this->cache      = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
@@ -68,7 +63,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$is_account_connected = true;
 
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
-		$this->assertFalse( $this->mock_tracker->should_enable_tracking() );
+		$this->assertFalse( $this->tracker->should_enable_tracking() );
 	}
 
 	public function test_does_not_track_admin_pages(): void {
@@ -76,7 +71,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$is_account_connected = true;
 		$is_admin_page        = true;
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected, $is_admin_page );
-		$this->assertFalse( $this->mock_tracker->should_enable_tracking() );
+		$this->assertFalse( $this->tracker->should_enable_tracking() );
 	}
 
 	public function test_does_track_non_admins(): void {
@@ -89,7 +84,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 
 		foreach ( $all_roles as $role ) {
 			wp_get_current_user()->set_role( $role );
-			$this->assertTrue( $this->mock_tracker->should_enable_tracking() );
+			$this->assertTrue( $this->tracker->should_enable_tracking() );
 		}
 	}
 
@@ -97,7 +92,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$is_woopay_eligible   = true;
 		$is_account_connected = false;
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
-		$this->assertFalse( $this->mock_tracker->should_enable_tracking() );
+		$this->assertFalse( $this->tracker->should_enable_tracking() );
 	}
 
 	public function test_tracks_build_event_obj_for_admin_events(): void {
@@ -105,10 +100,9 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$event_name = 'wcadmin_test_event';
 		$properties = [ 'test_property' => 'value' ];
 
-		$event_obj = $this->invoke_method( $this->mock_tracker, 'tracks_build_event_obj', [ wp_get_current_user(), $event_name, $properties ] );
+		$event_obj = $this->invoke_method( $this->tracker, 'tracks_build_event_obj', [ wp_get_current_user(), $event_name, $properties ] );
 		$this->assertEquals( 'value', $event_obj->test_property );
 		$this->assertEquals( 1234, $event_obj->_ui );
-		$this->assertEquals( 'mock_store_id', $event_obj->store_id );
 		$this->assertEquals( $event_name, $event_obj->_en );
 	}
 
@@ -117,12 +111,11 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$event_name = 'wcpay_test_event';
 		$properties = [ 'test_property' => 'value' ];
 
-		$event_obj = $this->invoke_method( $this->mock_tracker, 'tracks_build_event_obj', [ wp_get_current_user(), $event_name, $properties ] );
+		$event_obj = $this->invoke_method( $this->tracker, 'tracks_build_event_obj', [ wp_get_current_user(), $event_name, $properties ] );
 
 		$this->assertInstanceOf( Jetpack_Tracks_Event::class, $event_obj );
 		$this->assertEquals( 'value', $event_obj->test_property );
 		$this->assertEquals( 1234, $event_obj->_ui );
-		$this->assertEquals( 'mock_store_id', $event_obj->store_id );
 		$this->assertEquals( $event_name, $event_obj->_en );
 	}
 
