@@ -7,7 +7,7 @@
  */
 
 interface SubscriptionDetails {
-	number: number;
+	number: string; // Comment for OderDetails.number below applies here as well.
 	url: string;
 }
 

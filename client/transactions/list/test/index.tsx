@@ -427,7 +427,7 @@ describe( 'Transactions list', () => {
 		const mockTransactions = getMockTransactions();
 		mockTransactions[ 0 ].order.subscriptions = [
 			{
-				number: 246,
+				number: 'custom-246',
 				url: 'https://example.com/subscription/246',
 			},
 		];
