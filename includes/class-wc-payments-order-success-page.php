@@ -43,7 +43,6 @@ class WC_Payments_Order_Success_Page {
 	public function maybe_render_multibanco_payment_instructions( $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		// TODO: Check if order is on hold and has Multibanco payment method.
 		if ( ! $order || $order->get_payment_method() !== 'woocommerce_payments_' . Payment_Method::MULTIBANCO || 'on-hold' !== $order->get_status() ) {
 			return;
 		}
@@ -64,41 +63,57 @@ class WC_Payments_Order_Success_Page {
 			<div class="card">
 				<div class="card-header">
 					<div class="logo-container">
-						<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/multibanco-instructions.svg', WCPAY_PLUGIN_FILE ) ); ?>" alt="Multibanco">
+						<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/multibanco-instructions.svg', WCPAY_PLUGIN_FILE ) ); ?>" alt="<?php esc_attr_e( 'Multibanco', 'woocommerce-payments' ); ?>">
 					</div>
 					<div class="payment-details">
 						<div class="payment-header"><?php echo $formatted_order_total; ?></div>
-						<div class="payment-expiry">Expires <strong><?php echo $expiry_date; ?></strong></div>
-						<span class="badge"><?php echo $days_remaining; ?> days</span>
+						<div class="payment-expiry">
+						<?php
+							printf(
+								/* translators: %s: expiry date */
+								esc_html__( 'Expires %s', 'woocommerce-payments' ),
+								'<strong>' . $expiry_date . '</strong>'
+							);
+						?>
+						</div>
+						<span class="badge">
+						<?php
+							printf(
+								/* translators: %d: number of days */
+								_n( '%d day', '%d days', $days_remaining, 'woocommerce-payments' ),
+								$days_remaining
+							);
+						?>
+						</span>
 					</div>
 				</div>
 
 				<div class="payment-instructions">
-					<p><strong>Payment instructions</strong></p>
+					<p><strong><?php esc_html_e( 'Payment instructions', 'woocommerce-payments' ); ?></strong></p>
 					<ol>
-						<li>In your online bank account or from an ATM, choose "Payment and other services".</li>
-						<li>Click "Payments of services/shopping".</li>
-						<li>Enter the entity number, reference number, and amount.</li>
+						<li><?php esc_html_e( 'In your online bank account or from an ATM, choose "Payment and other services".', 'woocommerce-payments' ); ?></li>
+						<li><?php esc_html_e( 'Click "Payments of services/shopping".', 'woocommerce-payments' ); ?></li>
+						<li><?php esc_html_e( 'Enter the entity number, reference number, and amount.', 'woocommerce-payments' ); ?></li>
 					</ol>
 				</div>
 
 				<div class="payment-box">
 					<div class="payment-box-row">
-						<span class="payment-box-label">Entity</span>
-						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( $multibanco_info['entity'] ); ?>"><?php echo $multibanco_info['entity']; ?><i class="copy-icon"></i></button>
+						<span class="payment-box-label"><?php esc_html_e( 'Entity', 'woocommerce-payments' ); ?></span>
+						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( $multibanco_info['entity'] ); ?>"><?php echo esc_html( $multibanco_info['entity'] ); ?><i class="copy-icon"></i></button>
 					</div>
 					<div class="payment-box-row">
-						<span class="payment-box-label">Reference</span>
-						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( $multibanco_info['reference'] ); ?>"><?php echo $multibanco_info['reference']; ?><i class="copy-icon"></i></button>
+						<span class="payment-box-label"><?php esc_html_e( 'Reference', 'woocommerce-payments' ); ?></span>
+						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( $multibanco_info['reference'] ); ?>"><?php echo esc_html( $multibanco_info['reference'] ); ?><i class="copy-icon"></i></button>
 					</div>
 					<div class="payment-box-row">
-						<span class="payment-box-label">Amount</span>
-						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( $bank_formatted_amount ); ?>">&euro; <?php echo $bank_formatted_amount; ?><i class="copy-icon"></i></button>
+						<span class="payment-box-label"><?php esc_html_e( 'Amount', 'woocommerce-payments' ); ?></span>
+						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( $bank_formatted_amount ); ?>">&euro; <?php echo esc_html( $bank_formatted_amount ); ?><i class="copy-icon"></i></button>
 					</div>
 				</div>
 
-				<button type="button" class="button alt print-btn">Print</button>
-				<button type="button" class="button alt copy-link-btn copy-btn" data-copy-value="<?php echo esc_attr( $multibanco_info['url'] ); ?>">Copy link for sharing<i class="copy-icon"></i></button>
+				<button type="button" class="button alt print-btn"><?php esc_html_e( 'Print', 'woocommerce-payments' ); ?></button>
+				<button type="button" class="button alt copy-link-btn copy-btn" data-copy-value="<?php echo esc_attr( $multibanco_info['url'] ); ?>"><?php esc_html_e( 'Copy link for sharing', 'woocommerce-payments' ); ?><i class="copy-icon"></i></button>
 			</div>
 		</div>
 		<?php
