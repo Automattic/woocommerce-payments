@@ -83,11 +83,20 @@ const ProductDetail = ( { cart, context } ) => {
 		wcSettings.currency.precision
 	);
 
+	if ( ! window.wcpayStripeSiteMessaging ) {
+		return null;
+	}
+
 	const {
 		country,
 		paymentMethods,
 		currencyCode,
+		shouldInitializePMME,
 	} = window.wcpayStripeSiteMessaging;
+
+	if ( ! shouldInitializePMME ) {
+		return null;
+	}
 
 	const amount = parseInt( cartTotal, 10 ) || 0;
 

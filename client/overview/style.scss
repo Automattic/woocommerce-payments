@@ -54,6 +54,14 @@
 		margin-right: -1px;
 	}
 
+	.stripe-notifications-banner-loader {
+		width: min( 680px, 90vw ); /* Keeps it 680px max but adapts */
+		height: 160px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
 	.wcpay-setup-real-payments {
 		&__body {
 			display: grid;

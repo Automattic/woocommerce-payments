@@ -209,10 +209,12 @@ export const DepositsList = (): JSX.Element => {
 
 	const downloadable = !! rows.length;
 
-	const onDownload = async () => {
-		recordEvent( 'wcpay_deposits_download', {
-			exported_deposits: rows.length,
-			total_deposits: depositsSummary.count,
+	const { path } = getQuery();
+	const onExport = async () => {
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'payouts',
+			source: path,
+			exported_row_count: depositsSummary.count,
 		} );
 
 		const userEmail = wcpaySettings.currentUserEmail;
@@ -302,7 +304,7 @@ export const DepositsList = (): JSX.Element => {
 							key="download"
 							isDisabled={ isLoading || isExportInProgress }
 							isBusy={ isExportInProgress }
-							onClick={ onDownload }
+							onClick={ onExport }
 						/>
 					),
 				] }

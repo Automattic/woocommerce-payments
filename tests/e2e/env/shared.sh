@@ -10,7 +10,7 @@ export SERVER_CONTAINER="transact_platform_server_wordpress_e2e"
 export DEV_TOOLS_DIR="wcp-dev-tools-e2e"
 export DEV_TOOLS_PATH="$E2E_ROOT/deps/$DEV_TOOLS_DIR"
 export CLIENT_CONTAINER="wcp_e2e_wordpress"
-export DEFAULT_CONFIG_JSON_PATH="$E2E_ROOT/config/default.json"
+export USERS_CONFIG_JSON_PATH="$E2E_ROOT/config/users.json"
 
 step() {
 	echo

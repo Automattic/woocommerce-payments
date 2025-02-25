@@ -19,12 +19,14 @@ import CardDetails from './card';
 import CardPresentDetails from './card-present';
 import EpsDetails from './eps';
 import GiropayDetails from './giropay';
+import GrabPayDetails from './grabpay';
 import IdealDetails from './ideal';
 import KlarnaDetails from './klarna';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
 import MultibancoDetails from './multibanco';
+import WeChatPayDetails from './wechat-pay';
 
 const detailsComponentMap = {
 	affirm: AffirmDetails,
@@ -36,12 +38,14 @@ const detailsComponentMap = {
 	card_present: CardPresentDetails,
 	eps: EpsDetails,
 	giropay: GiropayDetails,
+	grabpay: GrabPayDetails,
 	ideal: IdealDetails,
 	klarna: KlarnaDetails,
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
 	multibanco: MultibancoDetails,
+	wechat_pay: WeChatPayDetails,
 };
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {

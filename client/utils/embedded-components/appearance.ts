@@ -5,7 +5,7 @@
  */
 export default {
 	variables: {
-		colorPrimary: '#7F54B3',
+		colorPrimary: '#873EFF',
 		colorBackground: '#FFFFFF',
 		buttonPrimaryColorBackground: '#3858E9',
 		buttonPrimaryColorBorder: '#3858E9',

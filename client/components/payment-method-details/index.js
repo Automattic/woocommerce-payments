@@ -48,6 +48,7 @@ const formatDetails = ( payment ) => {
 		case 'afterpay_clearpay':
 		case 'klarna':
 		case 'multibanco':
+		case 'wechat_pay':
 		default:
 			return <Fragment />;
 	}
