@@ -2598,6 +2598,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 */
 	public function build_order_info( WC_Order $order ): array {
 		$order_info = [
+			'id'                  => $order->get_id(),
 			'number'              => $order->get_order_number(),
 			'url'                 => $order->get_edit_order_url(),
 			'customer_url'        => $this->get_customer_url( $order ),
