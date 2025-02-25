@@ -35,7 +35,7 @@ jest.mock( 'wcpay/tracks', () => ( {
 declare const global: {
 	wcpaySettings: {
 		featureFlags: {
-			isMerchantFeedbackPromptEnabled: boolean;
+			isMerchantFeedbackPromptDevFlagEnabled: boolean;
 		};
 	};
 };
@@ -53,10 +53,10 @@ describe( 'MerchantFeedbackPrompt', () => {
 			getNotices: jest.fn().mockReturnValue( [] ),
 		} ) );
 
-		// Mock the feature flag to be enabled
+		// Mock the dev feature flag to be enabled
 		global.wcpaySettings = {
 			featureFlags: {
-				isMerchantFeedbackPromptEnabled: true,
+				isMerchantFeedbackPromptDevFlagEnabled: true,
 			},
 		};
 
@@ -71,11 +71,10 @@ describe( 'MerchantFeedbackPrompt', () => {
 		document.body.removeChild( portalRoot );
 	} );
 
-	it( 'does not render when the feature flag is disabled', () => {
-		// Mock the feature flag to be disabled
+	it( 'does not render when the dev feature flag is disabled', () => {
 		global.wcpaySettings = {
 			featureFlags: {
-				isMerchantFeedbackPromptEnabled: false,
+				isMerchantFeedbackPromptDevFlagEnabled: false,
 			},
 		};
 

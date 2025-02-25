@@ -20,7 +20,7 @@ declare global {
 			/**
 			 * The development feature flag for the merchant feedback prompt.
 			 */
-			isMerchantFeedbackPromptEnabled: boolean;
+			isMerchantFeedbackPromptDevFlagEnabled: boolean;
 		};
 		fraudServices: unknown[];
 		testMode: boolean;

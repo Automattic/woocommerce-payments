@@ -372,14 +372,14 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'multiCurrency'                   => self::is_customer_multi_currency_enabled(),
-				'woopay'                          => self::is_woopay_eligible(),
-				'documents'                       => self::is_documents_section_enabled(),
-				'woopayExpressCheckout'           => self::is_woopay_express_checkout_enabled(),
-				'isAuthAndCaptureEnabled'         => self::is_auth_and_capture_enabled(),
-				'isDisputeIssuerEvidenceEnabled'  => self::is_dispute_issuer_evidence_enabled(),
-				'isPaymentOverviewWidgetEnabled'  => self::is_payment_overview_widget_ui_enabled(),
-				'isMerchantFeedbackPromptEnabled' => self::is_merchant_feedback_prompt_enabled(),
+				'multiCurrency'                          => self::is_customer_multi_currency_enabled(),
+				'woopay'                                 => self::is_woopay_eligible(),
+				'documents'                              => self::is_documents_section_enabled(),
+				'woopayExpressCheckout'                  => self::is_woopay_express_checkout_enabled(),
+				'isAuthAndCaptureEnabled'                => self::is_auth_and_capture_enabled(),
+				'isDisputeIssuerEvidenceEnabled'         => self::is_dispute_issuer_evidence_enabled(),
+				'isPaymentOverviewWidgetEnabled'         => self::is_payment_overview_widget_ui_enabled(),
+				'isMerchantFeedbackPromptDevFlagEnabled' => self::is_merchant_feedback_prompt_dev_flag_enabled(),
 			]
 		);
 	}
@@ -397,11 +397,13 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks if the merchant feedback prompt feature flag is enabled.
+	 * Checks if the merchant feedback prompt development feature flag is enabled.
+	 *
+	 * This is a temporary development flag that will be removed once the feature is ready for production.
 	 *
 	 * @return bool
 	 */
-	public static function is_merchant_feedback_prompt_enabled(): bool {
+	public static function is_merchant_feedback_prompt_dev_flag_enabled(): bool {
 		return '1' === get_option( self::PROMPT_MERCHANT_FOR_REVIEW_FLAG_NAME, '0' );
 	}
 }
