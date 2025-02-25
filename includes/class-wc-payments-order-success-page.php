@@ -44,7 +44,7 @@ class WC_Payments_Order_Success_Page {
 		$order = wc_get_order( $order_id );
 
 		// TODO: Check if order is on hold and has Multibanco payment method.
-		if ( ! $order || $order->get_payment_method() !== 'woocommerce_payments_' . Payment_Method::MULTIBANCO ) {
+		if ( ! $order || $order->get_payment_method() !== 'woocommerce_payments_' . Payment_Method::MULTIBANCO || 'on-hold' !== $order->get_status() ) {
 			return;
 		}
 
@@ -64,7 +64,6 @@ class WC_Payments_Order_Success_Page {
 			<div class="card">
 				<div class="card-header">
 					<div class="logo-container">
-						<!-- TODO: Show dark icon when theme is dark. -->
 						<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/multibanco-instructions.svg', WCPAY_PLUGIN_FILE ) ); ?>" alt="Multibanco">
 					</div>
 					<div class="payment-details">
