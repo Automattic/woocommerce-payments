@@ -42,31 +42,21 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
  * This is used to gather feedback from merchants about their experience with WooPayments.
  * Only renders if there are no core notices and the prompt has not been dismissed.
  */
-export default function MerchantFeedbackPrompt() {
+function MerchantFeedbackPrompt( { onDismiss }: { onDismiss: () => void } ) {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
 	const coreNotices = useSelect(
 		( select ) =>
 			select( 'core/notices' ).getNotices() as NoticeList.Notice[]
 	);
-	// TODO: This is a temporary local state to track if the prompt has been dismissed. Move to a user-persistent state in #10329.
-	const [ isDismissed, setIsDismissed ] = useState( false );
 
 	// Create a ref to track if the view event has been recorded to prevent multiple recordings on a single screen.
 	const hasRecordedViewEvent = useRef( false );
 
-	// Only render the prompt if:
-	// - the dev feature flag is enabled,
-	// - the account is eligible for the campaign,
-	// - there are no core notices, and
-	// - the prompt has not been dismissed.
-	const shouldShowPrompt =
-		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
-		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025 &&
-		coreNotices?.length === 0 &&
-		! isDismissed;
+	// Only render the prompt if there are no core notices.
+	const shouldShowPrompt = coreNotices?.length === 0;
 
 	function dismissPrompt() {
-		setIsDismissed( true );
+		onDismiss();
 		recordEvent( 'wcpay_merchant_feedback_prompt_dismiss' );
 	}
 
@@ -181,5 +171,29 @@ export default function MerchantFeedbackPrompt() {
 				] }
 			/>
 		</WCFooterPortal>
+	);
+}
+
+/**
+ * A wrapper component that conditionally renders the merchant feedback prompt.
+ *
+ * This is used to ensure the prompt is only rendered if the account is eligible for the campaign and the user has not dismissed the prompt.
+ */
+export default function MaybeShowMerchantFeedbackPrompt() {
+	// TODO: This is a temporary local state to track if the prompt has been dismissed. Move to a user-persistent state in #10329.
+	const [ hasUserDismissed, setHasUserDismissed ] = useState( false );
+
+	const isAccountEligible =
+		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
+		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
+
+	if ( hasUserDismissed || ! isAccountEligible ) {
+		return null;
+	}
+
+	return (
+		<MerchantFeedbackPrompt
+			onDismiss={ () => setHasUserDismissed( true ) }
+		/>
 	);
 }
