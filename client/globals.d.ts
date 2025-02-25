@@ -73,7 +73,14 @@ declare global {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
 			};
+			/**
+			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			 */
 			campaigns: {
+				/**
+				 * The flag for the WordPress.org merchant review campaign in 2025.
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
 				wporgReview2025: boolean;
 			};
 		};
