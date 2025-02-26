@@ -8,7 +8,6 @@ import { filter, join } from 'lodash';
  */
 import { __ } from '@wordpress/i18n';
 import { formatCurrency } from 'multi-currency/interface/functions';
-import { TimelineFeeRate } from 'wcpay/data/timeline/types';
 
 export const formatFeeType = (
 	type: string,
