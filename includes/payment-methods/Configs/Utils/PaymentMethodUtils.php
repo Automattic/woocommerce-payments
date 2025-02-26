@@ -129,6 +129,6 @@ class PaymentMethodUtils {
 			];
 		}
 
-		return wp_json_encode( $payment_method_definitions );
+		return wp_json_encode( $payment_method_definitions ) ?? '';
 	}
 }
