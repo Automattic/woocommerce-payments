@@ -1,3 +1,8 @@
+/**
+ * External dependencies
+ */
+import tinycolor from 'tinycolor2';
+
 document.addEventListener( 'DOMContentLoaded', () => {
 	const multibancoInstructionsContainer = document.getElementById(
 		'wc-payment-gateway-multibanco-instructions-container'
@@ -9,7 +14,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			multibancoInstructionsContainer
 		).color;
 
-		// Get the parent's background color
 		// Get the parent's background color, accounting for transparency
 		const getEffectiveBackgroundColor = ( element ) => {
 			let currentElement = element;
@@ -17,10 +21,12 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				.backgroundColor;
 
 			// Keep going up the DOM tree until we find a non-transparent background
-			while (
-				backgroundColor === 'transparent' ||
-				backgroundColor.includes( 'rgba(0, 0, 0, 0)' )
-			) {
+			while ( currentElement ) {
+				const color = tinycolor( backgroundColor );
+				// Skip colors with 0 alpha
+				if ( color.getAlpha() > 0 ) {
+					return backgroundColor;
+				}
 				currentElement = currentElement.parentElement;
 				if ( ! currentElement ) {
 					return 'rgb(255, 255, 255)'; // Default to white if we reach the root
@@ -28,7 +34,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 				backgroundColor = window.getComputedStyle( currentElement )
 					.backgroundColor;
 			}
-			return backgroundColor;
+			return 'rgb(255, 255, 255)'; // Default to white as fallback
 		};
 
 		const parentBgColor = getEffectiveBackgroundColor(
@@ -37,7 +43,9 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 		// Convert RGB color to RGBA with different opacities
 		const convertRgbToRgba = ( rgbColor, opacity ) => {
-			return rgbColor.replace( /rgb\((.*)\)/, `rgba($1, ${ opacity })` );
+			const color = tinycolor( rgbColor );
+			color.setAlpha( opacity );
+			return color.toRgbString();
 		};
 
 		// Set the CSS variables on the container
