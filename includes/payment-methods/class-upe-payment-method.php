@@ -10,13 +10,11 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Utils;
-use WCPay\MultiCurrency\MultiCurrency;
 use WP_User;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Subscriptions_Utilities;
-use WCPay\Logger;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
 /**

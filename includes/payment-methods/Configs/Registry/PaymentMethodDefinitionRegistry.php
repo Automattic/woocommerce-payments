@@ -30,9 +30,6 @@ class PaymentMethodDefinitionRegistry {
 	 * @var array<class-string<PaymentMethodDefinitionInterface>>
 	 */
 	private $available_definitions = [
-		AffirmDefinition::class,
-		AfterpayDefinition::class,
-		KlarnaDefinition::class,
 		// Add new payment method definitions here.
 	];
 

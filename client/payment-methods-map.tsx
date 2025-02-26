@@ -11,6 +11,9 @@ import classNames from 'classnames';
 
 import {
 	AlipayIcon,
+	AffirmIcon,
+	AfterpayIcon,
+	ClearpayIcon,
 	BancontactIcon,
 	BankDebitIcon,
 	CreditCardIcon,
@@ -25,6 +28,8 @@ import {
 	GrabPayIcon,
 	WeChatPayIcon,
 } from 'wcpay/payment-methods-icons';
+
+const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
 
 import type { PaymentMethodMapEntry } from './types/payment-methods';
 
@@ -203,6 +208,43 @@ const PaymentMethodInformationObject: Record<
 		allows_manual_capture: false,
 		allows_pay_later: false,
 		accepts_only_domestic_payment: false,
+	},
+	affirm: {
+		id: 'affirm',
+		label: __( 'Affirm', 'woocommerce-payments' ),
+		description: __(
+			'Allow customers to pay over time with Affirm.',
+			'woocommerce-payments'
+		),
+		icon: AffirmIcon,
+		currencies: [ 'USD', 'CAD' ],
+		stripe_key: 'affirm_payments',
+		allows_manual_capture: false,
+		allows_pay_later: true,
+		accepts_only_domestic_payment: true,
+	},
+	afterpay_clearpay: {
+		id: 'afterpay_clearpay',
+		label:
+			'GB' === accountCountry
+				? __( 'Clearpay', 'woocommerce-payments' )
+				: __( 'Afterpay', 'woocommerce-payments' ),
+		description:
+			'GB' === accountCountry
+				? __(
+						'Allow customers to pay over time with Clearpay.',
+						'woocommerce-payments'
+				  )
+				: __(
+						'Allow customers to pay over time with Afterpay.',
+						'woocommerce-payments'
+				  ),
+		icon: 'GB' === accountCountry ? ClearpayIcon : AfterpayIcon,
+		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP' ],
+		stripe_key: 'afterpay_clearpay_payments',
+		allows_manual_capture: false,
+		allows_pay_later: true,
+		accepts_only_domestic_payment: true,
 	},
 	jcb: {
 		id: 'jcb',

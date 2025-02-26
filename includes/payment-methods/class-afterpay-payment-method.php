@@ -8,13 +8,16 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
-use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
-use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
+use WC_Payments_Utils;
+use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 
 /**
  * Afterpay Payment Method class extending UPE base class
  */
 class Afterpay_Payment_Method extends UPE_Payment_Method {
+
+	const PAYMENT_METHOD_STRIPE_ID = 'afterpay_clearpay';
 
 	/**
 	 * Constructor for Afterpay payment method
@@ -23,18 +26,14 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-
-		$capabilities = AfterpayDefinition::get_capabilities();
-
-		$this->stripe_id                    = AfterpayDefinition::get_id(); // TODO: I know this is confusing - just roll with it. I'll try and untangle stripe_id vs id soon.
-		$this->is_reusable                  = AfterpayDefinition::is_reusable();
-		$this->is_bnpl                      = AfterpayDefinition::is_bnpl();
-		$this->icon_url                     = AfterpayDefinition::get_icon_url();
-		$this->dark_icon_url                = AfterpayDefinition::get_dark_icon_url();
-		$this->currencies                   = AfterpayDefinition::get_supported_currencies();
-		$this->countries                    = AfterpayDefinition::get_supported_countries();
-		$this->accept_only_domestic_payment = AfterpayDefinition::accepts_only_domestic_payments();
-		$this->limits_per_currency          = AfterpayDefinition::get_limits_per_currency();
+		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
+		$this->is_reusable                  = false;
+		$this->is_bnpl                      = true;
+		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/afterpay-logo.svg', WCPAY_PLUGIN_FILE );
+		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR, Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::NEW_ZEALAND_DOLLAR, Currency_Code::POUND_STERLING ];
+		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::CANADA, Country_Code::AUSTRALIA, Country_Code::NEW_ZEALAND, Country_Code::UNITED_KINGDOM ];
+		$this->accept_only_domestic_payment = true;
+		$this->limits_per_currency          = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
 	}
 
 	/**
@@ -47,7 +46,11 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
-		return AfterpayDefinition::get_title( $account_country );
+		if ( 'GB' === $account_country ) {
+			return __( 'Clearpay', 'woocommerce-payments' );
+		}
+
+		return __( 'Afterpay', 'woocommerce-payments' );
 	}
 
 	/**
@@ -57,7 +60,11 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * @return string|null
 	 */
 	public function get_icon( ?string $account_country = null ) {
-		return AfterpayDefinition::get_icon_url( $account_country );
+		if ( 'GB' === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		return plugins_url( 'assets/images/payment-methods/afterpay-badge.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -67,6 +74,6 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_testing_instructions( string $account_country ) {
-		return AfterpayDefinition::get_testing_instructions();
+		return '';
 	}
 }

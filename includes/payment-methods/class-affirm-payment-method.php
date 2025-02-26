@@ -8,13 +8,16 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Token_Service;
-use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
-use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
+use WC_Payments_Utils;
+use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 
 /**
  * Affirm Payment Method class extending UPE base class
  */
 class Affirm_Payment_Method extends UPE_Payment_Method {
+
+	const PAYMENT_METHOD_STRIPE_ID = 'affirm';
 
 	/**
 	 * Constructor for Affirm payment method
@@ -23,18 +26,15 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-
-		$capabilities = AffirmDefinition::get_capabilities();
-
-		$this->stripe_id                    = AffirmDefinition::get_id(); // TODO: I know this is confusing - just roll with it. I'll try and untangle stripe_id vs id soon.
-		$this->is_reusable                  = AffirmDefinition::is_reusable();
-		$this->is_bnpl                      = AffirmDefinition::is_bnpl();
-		$this->icon_url                     = AffirmDefinition::get_icon_url();
-		$this->dark_icon_url                = AffirmDefinition::get_dark_icon_url();
-		$this->currencies                   = AffirmDefinition::get_supported_currencies();
-		$this->accept_only_domestic_payment = AffirmDefinition::accepts_only_domestic_payments();
-		$this->limits_per_currency          = AffirmDefinition::get_limits_per_currency();
-		$this->countries                    = AffirmDefinition::get_supported_countries();
+		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
+		$this->is_reusable                  = false;
+		$this->is_bnpl                      = true;
+		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/affirm-logo.svg', WCPAY_PLUGIN_FILE );
+		$this->dark_icon_url                = plugins_url( 'assets/images/payment-methods/affirm-logo-dark.svg', WCPAY_PLUGIN_FILE );
+		$this->currencies                   = [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CANADIAN_DOLLAR ];
+		$this->accept_only_domestic_payment = true;
+		$this->limits_per_currency          = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
+		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::CANADA ];
 	}
 
 	/**
@@ -46,7 +46,7 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
-		return AffirmDefinition::get_title( $account_country );
+		return __( 'Affirm', 'woocommerce-payments' );
 	}
 
 	/**
@@ -56,6 +56,6 @@ class Affirm_Payment_Method extends UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_testing_instructions( string $account_country ) {
-		return AffirmDefinition::get_testing_instructions();
+		return '';
 	}
 }
