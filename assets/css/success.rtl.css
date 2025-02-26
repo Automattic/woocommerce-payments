@@ -115,12 +115,6 @@
 	border-bottom: 1px solid var( --woopayments-multibanco-border-color );
 }
 
-#wc-payment-gateway-multibanco-instructions-container
-	.payment-box-row
-	.payment-box-label {
-	font-weight: 600;
-}
-
 #wc-payment-gateway-multibanco-instructions-container i.copy-icon {
 	display: inline-block;
 	width: 1.2em;
@@ -139,7 +133,6 @@
 }
 
 #wc-payment-gateway-multibanco-instructions-container .badge {
-	grid-area: badge;
 	background-color: #fff2d7;
 	border-radius: 4px;
 	padding: 4px 6px;
@@ -149,6 +142,7 @@
 	color: #4d3716;
 	justify-self: start;
 	width: max-content;
+	margin-left: 5px;
 }
 
 #wc-payment-gateway-multibanco-instructions-container .payment-box-value {
@@ -161,6 +155,7 @@
 	cursor: pointer;
 	display: inline-flex;
 	align-items: center;
+	font-weight: 600;
 }
 
 #wc-payment-gateway-multibanco-instructions-container .payment-box-value:focus {

@@ -74,16 +74,16 @@ class WC_Payments_Order_Success_Page {
 								'<strong>' . $expiry_date . '</strong>'
 							);
 						?>
-						</div>
-						<span class="badge">
-						<?php
+							<span class="badge">
+							<?php
 							printf(
-								/* translators: %d: number of days */
+							/* translators: %d: number of days */
 								_n( '%d day', '%d days', $days_remaining, 'woocommerce-payments' ),
 								$days_remaining
 							);
-						?>
-						</span>
+							?>
+							</span>
+						</div>
 					</div>
 				</div>
 
