@@ -1,4 +1,5 @@
 Significance: patch
-Type: dev
+Type: fix
+Comment: Increased the PHP memory limit for the Docker container
 
-Increased the PHP memory limit for the Docker container
+
