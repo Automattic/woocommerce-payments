@@ -50,7 +50,7 @@ class WC_Payments_Order_Success_Page {
 		$order_service         = WC_Payments::get_order_service();
 		$multibanco_info       = $order_service->get_multibanco_info_from_order( $order );
 		$unix_expiry           = $multibanco_info['expiry'];
-		$expiry_date           = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $unix_expiry );
+		$expiry_date           = date_i18n( wc_date_format() . ' ' . wc_time_format(), $unix_expiry );
 		$days_remaining        = max( 0, floor( ( $unix_expiry - time() ) / DAY_IN_SECONDS ) );
 		$formatted_order_total = $order->get_formatted_order_total();
 		wc_print_notice(
