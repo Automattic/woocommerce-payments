@@ -17,7 +17,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
  * Internal dependencies.
  */
 
-import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
+import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes/hooks';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
@@ -38,7 +38,7 @@ import {
 	disputesDownloadEndpoint,
 } from 'wcpay/data/disputes/resolvers';
 import { applyThousandSeparator } from 'wcpay/utils';
-import { useSettings } from 'wcpay/data/settings';
+import { useSettings } from 'wcpay/data/settings/hooks';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';

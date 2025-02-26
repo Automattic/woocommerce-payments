@@ -15,7 +15,7 @@ import LoadableCheckboxControl from 'components/loadable-checkbox';
 import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
-import { useManualCapture } from 'wcpay/data/settings';
+import { useManualCapture } from 'wcpay/data/settings/hooks';
 import { FeeStructure } from 'wcpay/types/fees';
 import PaymentMethodsMap from '../../payment-methods-map';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';

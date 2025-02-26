@@ -10,7 +10,7 @@ import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
  */
 import Page from 'components/page';
 
-import { useDispute } from 'wcpay/data/disputes';
+import { useDispute } from 'wcpay/data/disputes/hooks';
 import { Charge } from 'wcpay/types/charges';
 import { getAdminUrl } from 'wcpay/utils';
 

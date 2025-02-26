@@ -13,7 +13,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 
-import { useManualCapture } from 'wcpay/data/settings';
+import { useManualCapture } from 'wcpay/data/settings/hooks';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,

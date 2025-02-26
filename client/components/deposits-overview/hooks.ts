@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 
-import { useDeposits } from 'wcpay/data/deposits';
+import { useDeposits } from 'wcpay/data/deposits/hooks';
 import { CachedDeposit } from 'wcpay/types/deposits';
 
 interface RecentDeposits {

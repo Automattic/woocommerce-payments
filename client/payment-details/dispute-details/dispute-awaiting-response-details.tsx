@@ -27,7 +27,7 @@ import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import { recordEvent } from 'tracks';
 
-import { useDisputeAccept } from 'wcpay/data/disputes';
+import { useDisputeAccept } from 'wcpay/data/disputes/hooks';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';

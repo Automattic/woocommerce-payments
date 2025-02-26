@@ -12,7 +12,7 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 
-import { useManualCapture } from 'wcpay/data/settings';
+import { useManualCapture } from 'wcpay/data/settings/hooks';
 import { HoverTooltip } from 'components/tooltip';
 import './style.scss';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';

@@ -11,7 +11,7 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 
-import { useAuthorization } from 'wcpay/data/authorizations';
+import { useAuthorization } from 'wcpay/data/authorizations/hooks';
 
 interface CaptureAuthorizationButtonProps {
 	orderId: number;

@@ -32,7 +32,7 @@ import {
 	usePaymentRequestButtonBorderRadius,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
-} from 'wcpay/data/settings';
+} from 'wcpay/data/settings/hooks';
 
 const makeButtonSizeText = ( string ) =>
 	interpolateComponents( {

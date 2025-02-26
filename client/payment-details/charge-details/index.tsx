@@ -18,7 +18,7 @@ import {
 import {
 	getIsChargeId,
 	usePaymentIntentWithChargeFallback,
-} from 'wcpay/data/payment-intents';
+} from 'wcpay/data/payment-intents/hooks';
 import { PaymentIntent } from '../../types/payment-intents';
 import { Charge } from '../../types/charges';
 import { getAdminUrl } from '../../utils';

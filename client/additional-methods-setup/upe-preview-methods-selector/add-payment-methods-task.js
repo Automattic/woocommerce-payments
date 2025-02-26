@@ -31,7 +31,7 @@ import {
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useSettings,
-} from 'wcpay/data/settings';
+} from 'wcpay/data/settings/hooks';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
 import PaymentMethodCheckbox from '../../components/payment-methods-checkboxes/payment-method-checkbox';
 import { LoadableBlock } from '../../components/loadable';

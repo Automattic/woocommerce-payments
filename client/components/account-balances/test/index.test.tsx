@@ -12,7 +12,7 @@ import AccountBalances from '..';
 import {
 	useAllDepositsOverviews,
 	useInstantDeposit,
-} from 'wcpay/data/deposits';
+} from 'wcpay/data/deposits/hooks';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
@@ -58,7 +58,7 @@ const mockWcPaySettings = {
 	},
 };
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/deposits/hooks', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 	useInstantDeposit: jest.fn(),
 } ) );

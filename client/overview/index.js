@@ -29,8 +29,8 @@ import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboardin
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 
-import { useDisputes } from 'wcpay/data/disputes';
-import { useGetSettings, useSettings } from 'wcpay/data/settings';
+import { useDisputes } from 'wcpay/data/disputes/hooks';
+import { useGetSettings, useSettings } from 'wcpay/data/settings/hooks';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';

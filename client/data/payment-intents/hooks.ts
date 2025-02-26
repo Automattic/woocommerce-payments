@@ -4,7 +4,7 @@
  */
 import { useDispatch, useSelect } from '@wordpress/data';
 import { PaymentIntent } from '../../types/payment-intents';
-import { getChargeData } from '../charges';
+import { getChargeData } from '../charges/hooks';
 import { PaymentChargeDetailsResponse } from '../../payment-details/types';
 import { STORE_NAME } from '../constants';
 import { Charge } from 'wcpay/types/charges';

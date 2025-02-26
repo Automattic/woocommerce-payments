@@ -15,7 +15,7 @@ import moment from 'moment';
 import {
 	useAuthorizations,
 	useAuthorizationsSummary,
-} from 'wcpay/data/authorizations';
+} from 'wcpay/data/authorizations/hooks';
 import Page from '../../components/page';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';

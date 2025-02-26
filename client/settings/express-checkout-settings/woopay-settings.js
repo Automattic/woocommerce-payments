@@ -24,7 +24,7 @@ import WooPayPreview from './woopay-preview';
 import {
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,
-} from 'wcpay/data/settings';
+} from 'wcpay/data/settings/hooks';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
 import { useDispatch, useSelect } from '@wordpress/data';

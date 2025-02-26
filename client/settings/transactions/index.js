@@ -14,7 +14,7 @@ import {
  */
 import CardBody from '../card-body';
 
-import { useGetSavingError } from 'wcpay/data/settings';
+import { useGetSavingError } from 'wcpay/data/settings/hooks';
 import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
 import SupportPhoneInput from 'wcpay/settings/support-phone-input';

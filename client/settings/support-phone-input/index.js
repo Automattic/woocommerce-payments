@@ -9,7 +9,10 @@ import { useState, useEffect, useRef } from 'react';
  * Internal dependencies
  */
 
-import { useGetSavingError, useTestModeOnboarding } from 'wcpay/data/settings';
+import {
+	useGetSavingError,
+	useTestModeOnboarding,
+} from 'wcpay/data/settings/hooks';
 import PhoneNumberInput from 'wcpay/settings/phone-input';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { STORE_NAME } from 'wcpay/data/constants';

@@ -17,7 +17,7 @@ import {
 	isUnderReview,
 } from 'wcpay/disputes/utils';
 
-import { useCharge } from 'wcpay/data/charges';
+import { useCharge } from 'wcpay/data/charges/hooks';
 import { recordEvent } from 'tracks';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';

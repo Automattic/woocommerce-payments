@@ -8,7 +8,7 @@ import React from 'react';
  * Internal dependencies
  */
 
-import { useSettings } from 'wcpay/data/settings';
+import { useSettings } from 'wcpay/data/settings/hooks';
 import { LoadableBlock } from '../components/loadable';
 
 const LoadableSettingsSection = ( { children, numLines } ) => {

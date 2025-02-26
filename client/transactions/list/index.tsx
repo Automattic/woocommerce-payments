@@ -26,8 +26,8 @@ import {
 import {
 	useTransactions,
 	useTransactionsSummary,
-} from 'wcpay/data/transactions';
-import { Transaction } from 'wcpay/data/transactions/hooks';
+	Transaction,
+} from 'wcpay/data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';

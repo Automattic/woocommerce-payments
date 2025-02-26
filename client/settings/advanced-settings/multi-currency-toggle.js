@@ -9,7 +9,7 @@ import { useEffect, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 
-import { useMultiCurrency } from 'wcpay/data/settings';
+import { useMultiCurrency } from 'wcpay/data/settings/hooks';
 import interpolateComponents from '@automattic/interpolate-components';
 
 const MultiCurrencyToggle = () => {

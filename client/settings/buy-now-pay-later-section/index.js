@@ -14,7 +14,7 @@ import SettingsSection from '../settings-section';
 import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
 
-import { useGetAvailablePaymentMethodIds } from 'wcpay/data/settings';
+import { useGetAvailablePaymentMethodIds } from 'wcpay/data/settings/hooks';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 import CardBody from 'wcpay/settings/card-body';
 

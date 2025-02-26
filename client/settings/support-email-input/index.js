@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 
-import { useGetSavingError } from 'wcpay/data/settings';
+import { useGetSavingError } from 'wcpay/data/settings/hooks';
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { STORE_NAME } from 'wcpay/data/constants';

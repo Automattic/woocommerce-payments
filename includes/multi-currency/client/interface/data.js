@@ -3,7 +3,7 @@
  */
 // wcpay/data
 import 'wcpay/data';
-export { useSettings, useMultiCurrency } from 'wcpay/data/settings';
+export { useSettings, useMultiCurrency } from 'wcpay/data/settings/hooks';
 
 /**
  * Dependencies from MCCY to WooPayments.

@@ -24,7 +24,7 @@ import {
 	useCurrentProtectionLevel,
 	useAdvancedFraudProtectionSettings,
 	useSettings,
-} from 'wcpay/data/settings';
+} from 'wcpay/data/settings/hooks';
 import ErrorBoundary from '../../../components/error-boundary';
 import { getAdminUrl } from '../../../utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';

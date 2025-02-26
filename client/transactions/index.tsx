@@ -17,8 +17,8 @@ import { TestModeNotice } from 'components/test-mode-notice';
 import Authorizations from './uncaptured';
 import './style.scss';
 import 'wcpay/data';
-import { useManualCapture, useSettings } from 'wcpay/data/settings';
-import { useAuthorizationsSummary } from 'wcpay/data/authorizations';
+import { useManualCapture, useSettings } from 'wcpay/data/settings/hooks';
+import { useAuthorizationsSummary } from 'wcpay/data/authorizations/hooks';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import BlockedList from './blocked';
 

@@ -9,7 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 
-import { useAllDepositsOverviews } from 'wcpay/data/deposits';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits/hooks';
 import { useCurrentWpUser } from './hooks';
 import { CurrencySelect } from './currency-select';
 import './style.scss';

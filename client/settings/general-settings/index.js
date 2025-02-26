@@ -10,7 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 
-import { useTestMode, useTestModeOnboarding } from 'wcpay/data/settings';
+import { useTestMode, useTestModeOnboarding } from 'wcpay/data/settings/hooks';
 import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';

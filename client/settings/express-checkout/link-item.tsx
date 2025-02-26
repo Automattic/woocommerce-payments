@@ -14,7 +14,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useWooPayEnabledSettings,
-} from 'wcpay/data/settings';
+} from 'wcpay/data/settings/hooks';
 import './style.scss';
 import { HoverTooltip } from 'components/tooltip';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';

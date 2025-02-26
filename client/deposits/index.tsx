@@ -18,8 +18,8 @@ import { TestModeNotice } from 'components/test-mode-notice';
 import BannerNotice from 'components/banner-notice';
 import DepositSchedule from 'components/deposits-overview/deposit-schedule';
 
-import { useAllDepositsOverviews } from 'wcpay/data/deposits';
-import { useSettings } from 'wcpay/data/settings';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits/hooks';
+import { useSettings } from 'wcpay/data/settings/hooks';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import { recordEvent } from 'wcpay/tracks';

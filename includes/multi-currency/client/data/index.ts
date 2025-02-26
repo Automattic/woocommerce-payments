@@ -17,4 +17,3 @@ import * as actions from './actions';
 import * as resolvers from './resolvers';
 
 export { selectors, actions, resolvers };
-export * from './hooks';

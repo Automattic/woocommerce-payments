@@ -17,7 +17,7 @@ import PaymentActivityDataComponent from './payment-activity-data';
 import Survey from './survey';
 import { recordEvent } from 'wcpay/tracks';
 
-import { usePaymentActivityData } from 'wcpay/data/payment-activity';
+import { usePaymentActivityData } from 'wcpay/data/payment-activity/hooks';
 import { usePaymentActivityDateRangePresets } from './hooks';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import { WcPayOverviewSurveyContextProvider } from './survey/context';

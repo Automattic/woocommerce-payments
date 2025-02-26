@@ -14,7 +14,7 @@ import { Button } from '@wordpress/components';
 import {
 	useCurrentProtectionLevel,
 	useAdvancedFraudProtectionSettings,
-} from 'wcpay/data/settings';
+} from 'wcpay/data/settings/hooks';
 import { FraudProtectionHelpText, BasicFraudProtectionModal } from '../index';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';

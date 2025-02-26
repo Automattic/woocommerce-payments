@@ -49,7 +49,7 @@ import {
 	isRefundable,
 } from 'wcpay/disputes/utils';
 
-import { useAuthorization } from 'wcpay/data/authorizations';
+import { useAuthorization } from 'wcpay/data/authorizations/hooks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';

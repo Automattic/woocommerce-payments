@@ -16,7 +16,7 @@ import { TableCard } from '@woocommerce/components';
  * Internal dependencies
  */
 
-import { useCardReaderStats } from 'wcpay/data/card-readers';
+import { useCardReaderStats } from 'wcpay/data/card-readers/hooks';
 import { TestModeNotice } from 'components/test-mode-notice';
 import Page from 'components/page';
 import DownloadButton from 'components/download-button';

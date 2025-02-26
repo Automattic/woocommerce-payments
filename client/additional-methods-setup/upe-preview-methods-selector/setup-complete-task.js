@@ -13,7 +13,7 @@ import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
-import { useEnabledPaymentMethodIds } from 'wcpay/data/settings';
+import { useEnabledPaymentMethodIds } from 'wcpay/data/settings/hooks';
 import WizardContext from '../wizard/wrapper/context';
 import PaymentMethodIcon from '../../settings/payment-method-icon';
 import './setup-complete-task.scss';

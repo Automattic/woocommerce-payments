@@ -7,7 +7,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 
-import { useAllDepositsOverviews } from 'wcpay/data/deposits';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits/hooks';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 
 // Extend the Query interface to include the selected_currency query parameter.

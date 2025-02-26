@@ -25,7 +25,7 @@ import { merge, some, flatten, isMatchWith } from 'lodash';
  */
 import '../style.scss';
 
-import { useDisputeEvidence } from 'wcpay/data/disputes';
+import { useDisputeEvidence } from 'wcpay/data/disputes/hooks';
 import evidenceFields from './fields';
 import { FileUploadControl, UploadedReadOnly } from 'components/file-upload';
 import { TestModeNotice } from 'components/test-mode-notice';

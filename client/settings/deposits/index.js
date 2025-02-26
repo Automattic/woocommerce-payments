@@ -15,7 +15,7 @@ import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
 
-import { useAllDepositsOverviews } from 'wcpay/data/deposits';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits/hooks';
 import './style.scss';
 import { recordEvent } from 'tracks';
 import InlineNotice from 'components/inline-notice';

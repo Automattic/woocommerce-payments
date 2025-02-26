@@ -25,7 +25,7 @@ import { fundLabelStrings } from './strings';
 import { ClickTooltip } from '../tooltip';
 import { formatCurrency } from 'multi-currency/interface/functions';
 
-import { useAllDepositsOverviews } from 'wcpay/data/deposits';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits/hooks';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import './style.scss';
 

@@ -20,7 +20,7 @@ import {
 	usePaymentRequestButtonBorderRadius,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
-} from 'wcpay/data/settings';
+} from 'wcpay/data/settings/hooks';
 import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/blocks/components/express-checkout-preview';
 
 const buttonSizeToPxMap = {

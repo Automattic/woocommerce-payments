@@ -18,7 +18,7 @@ import {
 	Document,
 	useDocuments,
 	useDocumentsSummary,
-} from 'wcpay/data/documents';
+} from 'wcpay/data/documents/hooks';
 import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';

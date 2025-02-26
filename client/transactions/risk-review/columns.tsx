@@ -15,7 +15,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
 import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 
-import { FraudOutcomeTransaction } from 'wcpay/data/transactions';
+import { FraudOutcomeTransaction } from 'wcpay/data/transactions/hooks';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 export interface Column extends TableCardColumn {
