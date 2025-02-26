@@ -129,6 +129,7 @@ class PaymentMethodUtils {
 			];
 		}
 
-		return wp_json_encode( $payment_method_definitions ) ?? '';
+		$encoded_response = wp_json_encode( $payment_method_definitions );
+		return false === $encoded_response ? '' : $encoded_response;
 	}
 }
