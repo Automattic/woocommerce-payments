@@ -8,12 +8,21 @@ import { useState, useEffect, useRef } from 'react';
 /**
  * Internal dependencies
  */
-import {
-	useAccountBusinessSupportPhone,
-	useGetSavingError,
-	useTestModeOnboarding,
-} from 'wcpay/data';
+import 'wcpay/data';
+import { useGetSavingError, useTestModeOnboarding } from 'wcpay/data/settings';
 import PhoneNumberInput from 'wcpay/settings/phone-input';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
+
+const useAccountBusinessSupportPhone = () => {
+	const { updateAccountBusinessSupportPhone } = useDispatch( STORE_NAME );
+
+	const accountBusinessSupportPhone = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountBusinessSupportPhone()
+	);
+
+	return [ accountBusinessSupportPhone, updateAccountBusinessSupportPhone ];
+};
 
 const SupportPhoneInput = ( { setInputVallid } ) => {
 	const [ supportPhone, setSupportPhone ] = useAccountBusinessSupportPhone();

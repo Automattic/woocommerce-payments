@@ -9,11 +9,12 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
+import 'wcpay/data';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useWooPayEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import './style.scss';
 import { HoverTooltip } from 'components/tooltip';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';

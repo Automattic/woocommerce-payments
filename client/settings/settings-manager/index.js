@@ -22,13 +22,12 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
-import {
-	useDepositDelayDays,
-	useGetDuplicatedPaymentMethodIds,
-	useSettings,
-} from '../../data';
+import 'wcpay/data';
+import { useSettings } from 'wcpay/data/settings';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import { useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -76,6 +75,9 @@ const TransactionsDescription = () => (
 		</ExternalLink>
 	</>
 );
+
+const useDepositDelayDays = () =>
+	useSelect( ( s ) => s( STORE_NAME ).getDepositDelayDays(), [] );
 
 const DepositsDescription = () => {
 	const depositDelayDays = useDepositDelayDays();
@@ -138,6 +140,11 @@ const AdvancedDescription = () => {
 		</>
 	);
 };
+
+const useGetDuplicatedPaymentMethodIds = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getDuplicatedPaymentMethodIds()
+	);
 
 const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(

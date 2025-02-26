@@ -6,7 +6,8 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { useActiveLoanSummary, useLoans } from 'wcpay/data';
+import 'wcpay/data';
+import { useActiveLoanSummary, useLoans } from 'wcpay/data/capital';
 import CapitalPage from '../index';
 
 // Mock the useLoans hook

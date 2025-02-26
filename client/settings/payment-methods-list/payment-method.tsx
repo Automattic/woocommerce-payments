@@ -12,7 +12,8 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { __, sprintf } from '@wordpress/i18n';
 import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import { useManualCapture } from 'wcpay/data';
+import 'wcpay/data';
+import { useManualCapture } from 'wcpay/data/settings';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,

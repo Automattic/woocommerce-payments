@@ -10,7 +10,8 @@ import { Card, CardBody, CardHeader } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { useTimeline } from 'wcpay/data';
+import 'wcpay/data';
+import { useTimeline } from 'wcpay/data/timeline';
 import mapTimelineEvents from './map-events';
 import Loadable, { LoadableBlock } from 'components/loadable';
 

@@ -9,12 +9,12 @@ import React, { useState } from 'react';
  * Internal dependencies
  */
 import './style.scss';
+import 'wcpay/data';
 import {
 	useEnabledPaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useSelectedPaymentMethod,
-	useUnselectedPaymentMethod,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import PaymentMethod from './payment-method';
 import methodsConfiguration from '../../payment-methods-map';
@@ -23,6 +23,18 @@ import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import CapabilityRequestNotice from './capability-request';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/interface/functions';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
+
+const useUnselectedPaymentMethod = () => {
+	const { updateUnselectedPaymentMethod } = useDispatch( STORE_NAME );
+
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
+	);
+
+	return [ enabledPaymentMethodIds, updateUnselectedPaymentMethod ];
+};
 
 const PaymentMethodsList = ( { methodIds } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();

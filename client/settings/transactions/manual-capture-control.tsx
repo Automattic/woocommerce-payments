@@ -9,10 +9,23 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { useManualCapture, useCardPresentEligible } from '../../data';
+import 'wcpay/data';
+import { useManualCapture } from 'wcpay/data/settings';
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import interpolateComponents from '@automattic/interpolate-components';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
+
+const useCardPresentEligible = () => {
+	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
+
+	const isCardPresentEligible = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsCardPresentEligible()
+	);
+
+	return [ isCardPresentEligible, updateIsCardPresentEligible ];
+};
 
 const ManualCaptureControl = (): JSX.Element => {
 	const [

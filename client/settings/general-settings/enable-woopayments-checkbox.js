@@ -8,10 +8,21 @@ import { CheckboxControl } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { useIsWCPayEnabled } from 'wcpay/data';
 import { recordEvent } from 'tracks';
 import DisableConfirmationModal from 'wcpay/disable-confirmation-modal';
 import useToggle from 'wcpay/utils/use-toggle';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
+
+const useIsWCPayEnabled = () => {
+	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
+
+	const IsWCPayEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPayEnabled()
+	);
+
+	return [ IsWCPayEnabled, updateIsWCPayEnabled ];
+};
 
 const EnableWooPaymentsCheckbox = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();

@@ -16,11 +16,9 @@ import TransactionsList from './list';
 import { TestModeNotice } from 'components/test-mode-notice';
 import Authorizations from './uncaptured';
 import './style.scss';
-import {
-	useManualCapture,
-	useSettings,
-	useAuthorizationsSummary,
-} from 'wcpay/data';
+import 'wcpay/data';
+import { useManualCapture, useSettings } from 'wcpay/data/settings';
+import { useAuthorizationsSummary } from 'wcpay/data/authorizations';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import BlockedList from './blocked';
 

@@ -8,7 +8,8 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useAllDepositsOverviews } from 'data';
+import 'wcpay/data';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import { useCurrentWpUser } from './hooks';
 import { CurrencySelect } from './currency-select';
 import './style.scss';

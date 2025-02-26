@@ -24,7 +24,8 @@ import { merge, some, flatten, isMatchWith } from 'lodash';
  * Internal dependencies.
  */
 import '../style.scss';
-import { useDisputeEvidence } from 'wcpay/data';
+import 'wcpay/data';
+import { useDisputeEvidence } from 'wcpay/data/disputes';
 import evidenceFields from './fields';
 import { FileUploadControl, UploadedReadOnly } from 'components/file-upload';
 import { TestModeNotice } from 'components/test-mode-notice';

@@ -16,7 +16,8 @@ import interpolateComponents from '@automattic/interpolate-components';
 
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import { Charge } from 'wcpay/types/charges';
-import { usePaymentIntentWithChargeFallback } from 'wcpay/data';
+import 'wcpay/data';
+import { usePaymentIntentWithChargeFallback } from 'wcpay/data/payment-intents';
 import { PaymentChargeDetailsResponse } from 'wcpay/payment-details/types';
 import { recordEvent } from 'tracks';
 

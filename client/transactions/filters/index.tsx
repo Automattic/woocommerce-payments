@@ -12,7 +12,7 @@ import { getFilters, getAdvancedFilters } from './config';
 import { formatCurrencyName } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
-import { Transaction } from 'wcpay/data';
+import { Transaction } from 'wcpay/data/transactions';
 
 interface TransactionsFiltersProps {
 	storeCurrencies: string[];

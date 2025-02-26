@@ -15,7 +15,8 @@ import { parseInt } from 'lodash';
  * Internal dependencies.
  */
 import type { DepositsTableHeader } from 'wcpay/types/deposits';
-import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import 'wcpay/data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data/deposits';
 import { displayType, depositStatusLabels } from '../strings';
 import {
 	formatExplicitCurrency,

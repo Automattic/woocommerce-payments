@@ -22,8 +22,12 @@ import {
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'data/index';
-import { Transaction } from 'data/transactions/hooks';
+import 'wcpay/data';
+import {
+	useTransactions,
+	useTransactionsSummary,
+} from 'wcpay/data/transactions';
+import { Transaction } from 'wcpay/data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
@@ -48,7 +52,7 @@ import DownloadButton from 'components/download-button';
 import {
 	getTransactionsCSVRequestURL,
 	transactionsDownloadEndpoint,
-} from '../../data/transactions/resolvers';
+} from 'wcpay/data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';

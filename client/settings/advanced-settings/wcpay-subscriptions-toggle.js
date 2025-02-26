@@ -8,8 +8,26 @@ import { useEffect, useRef } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { useWCPaySubscriptions } from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
+
+const useWCPaySubscriptions = () => {
+	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
+
+	const isWCPaySubscriptionsEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPaySubscriptionsEnabled()
+	);
+	const isWCPaySubscriptionsEligible = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPaySubscriptionsEligible()
+	);
+
+	return [
+		isWCPaySubscriptionsEnabled,
+		isWCPaySubscriptionsEligible,
+		updateIsWCPaySubscriptionsEnabled,
+	];
+};
 
 const WCPaySubscriptionsToggle = () => {
 	const [

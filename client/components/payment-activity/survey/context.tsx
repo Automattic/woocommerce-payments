@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from 'data/constants';
+import { NAMESPACE } from 'wcpay/data/constants';
 import type { OverviewSurveyFields } from './types';
 
 type ResponseStatus = 'pending' | 'resolved' | 'error';

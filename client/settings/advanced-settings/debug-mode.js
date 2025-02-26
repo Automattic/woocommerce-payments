@@ -7,8 +7,20 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useDebugLog, useDevMode } from 'wcpay/data';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
 
+const useDevMode = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getIsDevModeEnabled(), [] );
+const useDebugLog = () => {
+	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
+
+	const isDebugLogEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsDebugLogEnabled()
+	);
+
+	return [ isDebugLogEnabled, updateIsDebugLogEnabled ];
+};
 const DebugMode = () => {
 	const isDevModeEnabled = useDevMode();
 	const [ isLoggingChecked, setIsLoggingChecked ] = useDebugLog();

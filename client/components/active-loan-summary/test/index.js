@@ -8,7 +8,8 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import ActiveLoanSummary from '..';
-import { useActiveLoanSummary } from 'wcpay/data';
+import 'wcpay/data';
+import { useActiveLoanSummary } from 'wcpay/data/capital';
 
 jest.mock( 'wcpay/data', () => ( {
 	useActiveLoanSummary: jest.fn(),

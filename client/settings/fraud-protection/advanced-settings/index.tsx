@@ -19,11 +19,12 @@ import { dispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
+import 'wcpay/data';
 import {
 	useCurrentProtectionLevel,
 	useAdvancedFraudProtectionSettings,
 	useSettings,
-} from '../../../data';
+} from 'wcpay/data/settings';
 import ErrorBoundary from '../../../components/error-boundary';
 import { getAdminUrl } from '../../../utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';

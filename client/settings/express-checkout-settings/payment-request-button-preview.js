@@ -12,6 +12,7 @@ import { useStripe } from '@stripe/react-stripe-js';
  */
 import InlineNotice from 'components/inline-notice';
 import { WoopayExpressCheckoutButton } from 'wcpay/checkout/woopay/express-button/woopay-express-checkout-button';
+import 'wcpay/data';
 import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
@@ -19,7 +20,7 @@ import {
 	usePaymentRequestButtonBorderRadius,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
-} from '../../data';
+} from 'wcpay/data/settings';
 import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/blocks/components/express-checkout-preview';
 
 const buttonSizeToPxMap = {

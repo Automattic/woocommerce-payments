@@ -13,24 +13,63 @@ import {
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import {
-	useAccountStatementDescriptor,
-	useAccountStatementDescriptorKanji,
-	useAccountStatementDescriptorKana,
-	useGetSavingError,
-	useSavedCards,
-} from '../../data';
+import 'wcpay/data';
+import { useGetSavingError } from 'wcpay/data/settings';
 import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
 import SupportPhoneInput from 'wcpay/settings/support-phone-input';
 import SupportEmailInput from 'wcpay/settings/support-email-input';
 import React, { useEffect, useState } from 'react';
-import { select } from '@wordpress/data';
+import { select, useDispatch, useSelect } from '@wordpress/data';
 import { STORE_NAME } from 'wcpay/data/constants';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 const ACCOUNT_STATEMENT_MAX_LENGTH_KANJI = 17;
 const ACCOUNT_STATEMENT_MAX_LENGTH_KANA = 22;
+
+const useAccountStatementDescriptorKana = () => {
+	const { updateAccountStatementDescriptorKana } = useDispatch( STORE_NAME );
+
+	const accountStatementDescriptorKana = useSelect( ( s ) =>
+		s( STORE_NAME ).getAccountStatementDescriptorKana()
+	);
+
+	return [
+		accountStatementDescriptorKana,
+		updateAccountStatementDescriptorKana,
+	];
+};
+const useAccountStatementDescriptorKanji = () => {
+	const { updateAccountStatementDescriptorKanji } = useDispatch( STORE_NAME );
+
+	const accountStatementDescriptorKanji = useSelect( ( s ) =>
+		s( STORE_NAME ).getAccountStatementDescriptorKanji()
+	);
+
+	return [
+		accountStatementDescriptorKanji,
+		updateAccountStatementDescriptorKanji,
+	];
+};
+const useAccountStatementDescriptor = () => {
+	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
+
+	const accountStatementDescriptor = useSelect( ( s ) =>
+		s( STORE_NAME ).getAccountStatementDescriptor()
+	);
+
+	return [ accountStatementDescriptor, updateAccountStatementDescriptor ];
+};
+
+const useSavedCards = () => {
+	const { updateIsSavedCardsEnabled } = useDispatch( STORE_NAME );
+
+	const isSavedCardsEnabled = useSelect( ( s ) =>
+		s( STORE_NAME ).getIsSavedCardsEnabled()
+	);
+
+	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
+};
 
 const Transactions = ( { setTransactionInputsValid } ) => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();

@@ -9,7 +9,6 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { useAccountDomesticCurrency } from '../../data';
 import {
 	useCurrencies,
 	useEnabledCurrencies,
@@ -18,7 +17,13 @@ import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import InlineNotice from 'components/inline-notice';
 import PaymentMethodsMap from '../../payment-methods-map';
 import { formatListOfItems } from 'wcpay/utils/format-list-of-items';
+import { useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
 
+const useAccountDomesticCurrency = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountDomesticCurrency()
+	);
 const CurrencyInformationForMethods = ( { selectedMethods } ) => {
 	const {
 		isLoading: isLoadingCurrencyInformation,

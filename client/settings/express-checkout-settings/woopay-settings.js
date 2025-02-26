@@ -20,16 +20,60 @@ import { Link } from '@woocommerce/components';
 import CardBody from '../card-body';
 import WooPayFileUpload from './file-upload';
 import WooPayPreview from './woopay-preview';
+import 'wcpay/data';
 import {
 	useWooPayEnabledSettings,
-	useWooPayCustomMessage,
-	useWooPayStoreLogo,
-	useWooPayLocations,
 	useWooPayShowIncompatibilityNotice,
-	useWooPayGlobalThemeSupportEnabledSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
+
+const useWooPayGlobalThemeSupportEnabledSettings = () => {
+	const { updateIsWooPayGlobalThemeSupportEnabled } = useDispatch(
+		STORE_NAME
+	);
+
+	const isWooPayGlobalThemeSupportEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWooPayGlobalThemeSupportEnabled()
+	);
+
+	return [
+		isWooPayGlobalThemeSupportEnabled,
+		updateIsWooPayGlobalThemeSupportEnabled,
+	];
+};
+
+const useWooPayCustomMessage = () => {
+	const { updateWooPayCustomMessage } = useDispatch( STORE_NAME );
+
+	const wooPayCustomMessage = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayCustomMessage()
+	);
+
+	return [ wooPayCustomMessage, updateWooPayCustomMessage ];
+};
+
+const useWooPayStoreLogo = () => {
+	const { updateWooPayStoreLogo } = useDispatch( STORE_NAME );
+
+	const wooPayStoreLogo = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayStoreLogo()
+	);
+
+	return [ wooPayStoreLogo, updateWooPayStoreLogo ];
+};
+
+const useWooPayLocations = () => {
+	const { updateWooPayLocations } = useDispatch( STORE_NAME );
+
+	const wooPayLocations = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayLocations()
+	);
+
+	return [ wooPayLocations, updateWooPayLocations ];
+};
 
 const WooPaySettings = ( { section } ) => {
 	const [

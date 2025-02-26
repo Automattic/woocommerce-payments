@@ -13,11 +13,12 @@ import { useContext } from '@wordpress/element';
  * Internal dependencies
  */
 import { HoverTooltip } from 'components/tooltip';
+import 'wcpay/data';
 import {
 	useEnabledPaymentMethodIds,
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';

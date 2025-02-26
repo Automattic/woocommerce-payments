@@ -11,10 +11,20 @@ import { Card, CheckboxControl } from '@wordpress/components';
  */
 import CardBody from '../card-body';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
-import {
-	usePaymentRequestEnabledSettings,
-	usePaymentRequestLocations,
-} from 'wcpay/data';
+import 'wcpay/data';
+import { usePaymentRequestEnabledSettings } from 'wcpay/data/settings';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
+
+const usePaymentRequestLocations = () => {
+	const { updatePaymentRequestLocations } = useDispatch( STORE_NAME );
+
+	const paymentRequestLocations = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestLocations()
+	);
+
+	return [ paymentRequestLocations, updatePaymentRequestLocations ];
+};
 
 const PaymentRequestSettings = ( { section } ) => {
 	const [

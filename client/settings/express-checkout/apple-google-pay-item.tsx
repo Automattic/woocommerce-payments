@@ -10,7 +10,8 @@ import React, { useContext } from 'react';
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
-import { usePaymentRequestEnabledSettings } from 'wcpay/data';
+import 'wcpay/data';
+import { usePaymentRequestEnabledSettings } from 'wcpay/data/settings';
 import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';

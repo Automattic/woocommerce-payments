@@ -14,7 +14,11 @@ import {
 	isCharge,
 	isPaymentIntent,
 } from '../types';
-import { getIsChargeId, usePaymentIntentWithChargeFallback } from '../../data';
+import 'wcpay/data';
+import {
+	getIsChargeId,
+	usePaymentIntentWithChargeFallback,
+} from 'wcpay/data/payment-intents';
 import { PaymentIntent } from '../../types/payment-intents';
 import { Charge } from '../../types/charges';
 import { getAdminUrl } from '../../utils';

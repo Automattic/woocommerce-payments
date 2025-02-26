@@ -10,10 +10,11 @@ import { Button } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import 'wcpay/data';
 import {
 	useCurrentProtectionLevel,
 	useAdvancedFraudProtectionSettings,
-} from 'wcpay/data';
+} from 'wcpay/data/settings';
 import { FraudProtectionHelpText, BasicFraudProtectionModal } from '../index';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';

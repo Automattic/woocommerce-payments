@@ -7,15 +7,49 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import {
-	useStripeBilling,
-	useStripeBillingMigration,
-	useSettings,
-} from 'wcpay/data';
+import 'wcpay/data';
+import { useSettings } from 'wcpay/data/settings';
 import Notices from './stripe-billing-notices/notices';
 import StripeBillingMigrationNoticeContext from './stripe-billing-notices/context';
 import StripeBillingToggle from './stripe-billing-toggle';
 import { StripeBillingHook, StripeBillingMigrationHook } from './interfaces';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
+
+const useStripeBilling = () => {
+	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
+
+	const isStripeBillingEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsStripeBillingEnabled()
+	);
+
+	return [ isStripeBillingEnabled, updateIsStripeBillingEnabled ];
+};
+
+const useStripeBillingMigration = () => {
+	const { submitStripeBillingSubscriptionMigration } = useDispatch(
+		STORE_NAME
+	);
+
+	return useSelect( ( select ) => {
+		const { getStripeBillingSubscriptionCount } = select( STORE_NAME );
+		const { getIsStripeBillingMigrationInProgress } = select( STORE_NAME );
+		const { isResolving } = select( STORE_NAME );
+		const hasResolved = select( STORE_NAME ).hasFinishedResolution(
+			'scheduleStripeBillingMigration'
+		);
+		const { getStripeBillingMigratedCount } = select( STORE_NAME );
+
+		return [
+			getIsStripeBillingMigrationInProgress(),
+			getStripeBillingMigratedCount(),
+			getStripeBillingSubscriptionCount(),
+			submitStripeBillingSubscriptionMigration,
+			isResolving( 'scheduleStripeBillingMigration' ),
+			hasResolved,
+		];
+	}, [] );
+};
 
 /**
  * Renders a WooPayments Subscriptions Advanced Settings Section.

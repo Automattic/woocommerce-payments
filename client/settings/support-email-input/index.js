@@ -7,8 +7,21 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useAccountBusinessSupportEmail, useGetSavingError } from 'wcpay/data';
+import 'wcpay/data';
+import { useGetSavingError } from 'wcpay/data/settings';
 import { useEffect, useRef } from 'react';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { STORE_NAME } from 'wcpay/data/constants';
+
+const useAccountBusinessSupportEmail = () => {
+	const { updateAccountBusinessSupportEmail } = useDispatch( STORE_NAME );
+
+	const accountBusinessSupportEmail = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountBusinessSupportEmail()
+	);
+
+	return [ accountBusinessSupportEmail, updateAccountBusinessSupportEmail ];
+};
 
 const SupportEmailInput = ( { setInputVallid } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();

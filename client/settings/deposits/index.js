@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { select } from '@wordpress/data';
+import { select, useDispatch, useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 import { Card, SelectControl, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -14,15 +14,8 @@ import { STORE_NAME } from 'wcpay/data/constants';
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
-import {
-	useDepositScheduleInterval,
-	useDepositScheduleWeeklyAnchor,
-	useDepositScheduleMonthlyAnchor,
-	useDepositStatus,
-	useCompletedWaitingPeriod,
-	useDepositRestrictions,
-	useAllDepositsOverviews,
-} from '../../data';
+import 'wcpay/data';
+import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import './style.scss';
 import { recordEvent } from 'tracks';
 import InlineNotice from 'components/inline-notice';
@@ -48,6 +41,33 @@ const monthlyAnchors = [
 	label: getDepositMonthlyAnchorLabel( { monthlyAnchor: anchor } ),
 } ) );
 
+const useDepositScheduleMonthlyAnchor = () => {
+	const { updateDepositScheduleMonthlyAnchor } = useDispatch( STORE_NAME );
+
+	const depositScheduleMonthlyAnchor = useSelect( ( s ) =>
+		s( STORE_NAME ).getDepositScheduleMonthlyAnchor()
+	);
+
+	return [ depositScheduleMonthlyAnchor, updateDepositScheduleMonthlyAnchor ];
+};
+const useDepositScheduleInterval = () => {
+	const { updateDepositScheduleInterval } = useDispatch( STORE_NAME );
+
+	const depositScheduleInterval = useSelect( ( s ) =>
+		s( STORE_NAME ).getDepositScheduleInterval()
+	);
+
+	return [ depositScheduleInterval, updateDepositScheduleInterval ];
+};
+const useDepositScheduleWeeklyAnchor = () => {
+	const { updateDepositScheduleWeeklyAnchor } = useDispatch( STORE_NAME );
+
+	const depositScheduleWeeklyAnchor = useSelect( ( s ) =>
+		s( STORE_NAME ).getDepositScheduleWeeklyAnchor()
+	);
+
+	return [ depositScheduleWeeklyAnchor, updateDepositScheduleWeeklyAnchor ];
+};
 const CustomizeDepositSchedule = () => {
 	const [
 		depositScheduleInterval,
@@ -148,6 +168,14 @@ const CustomizeDepositSchedule = () => {
 		</>
 	);
 };
+
+const useDepositRestrictions = () =>
+	useSelect( ( s ) => s( STORE_NAME ).getDepositRestrictions() );
+const useDepositStatus = () =>
+	useSelect( ( s ) => s( STORE_NAME ).getDepositStatus(), [] );
+const useCompletedWaitingPeriod = () =>
+	useSelect( ( s ) => s( STORE_NAME ).getCompletedWaitingPeriod() );
+
 const DepositsSchedule = () => {
 	const depositStatus = useDepositStatus();
 	const depositRestrictions = useDepositRestrictions();

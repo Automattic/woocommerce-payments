@@ -8,7 +8,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
  * Internal dependencies
  */
 import DisableConfirmationModal from '../disable-confirmation-modal';
-import { useSettings } from 'wcpay/data';
+import 'wcpay/data';
+import { useSettings } from 'wcpay/data/settings';
 import { recordEvent } from 'tracks';
 
 const PaymentGatewaysConfirmation = () => {

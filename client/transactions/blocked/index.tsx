@@ -23,11 +23,12 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
+import 'wcpay/data';
 import {
 	FraudOutcomeTransaction,
 	useFraudOutcomeTransactions,
 	useFraudOutcomeTransactionsSummary,
-} from 'data/index';
+} from 'wcpay/data/transactions';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
 import {
@@ -38,7 +39,7 @@ import {
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import autocompleter from '../fraud-protection/autocompleter';
 import DownloadButton from '../../components/download-button';
-import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
+import { getFraudOutcomeTransactionsExport } from 'wcpay/data/transactions/resolvers';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 export const BlockedList = (): JSX.Element => {
