@@ -34,6 +34,9 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 			'woocommerce-payments'
 		);
 	}
+	/* console.log( 'isTestPhoneValid: ' + isTestPhoneValid );
+	console.log( 'isPhoneValid: ' + isPhoneValid );
+	console.log( 'isEmptyPhoneValid: ' + isEmptyPhoneValid ); */
 	if ( ! isTestPhoneValid && ! isPhoneValid && ! isEmptyPhoneValid ) {
 		supportPhoneError = __(
 			'Please enter a valid phone number.',

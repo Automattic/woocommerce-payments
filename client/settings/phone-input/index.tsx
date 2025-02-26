@@ -43,8 +43,9 @@ const PhoneNumberInput = ( {
 		setInputInstance,
 	] = useState< intlTelInput.Plugin | null >( null );
 	const inputRef = useRef< HTMLInputElement >( null );
-
+	inputProps.name = 'full';
 	const handlePhoneNumberInputChange = () => {
+		// console.log( 'changed!' );
 		if ( inputInstance ) {
 			onValueChange( inputInstance.getNumber() );
 			onValidationChange( inputInstance.isValidNumber() );
@@ -52,6 +53,7 @@ const PhoneNumberInput = ( {
 	};
 
 	const removeInternationalPrefix = ( phone: string ) => {
+		// console.log(inputInstance);
 		if ( inputInstance ) {
 			return phone.replace(
 				'+' + inputInstance.getSelectedCountryData().dialCode,
@@ -96,9 +98,14 @@ const PhoneNumberInput = ( {
 			iti = intlTelInput( currentRef, {
 				customPlaceholder: () => '',
 				separateDialCode: true,
-				hiddenInput: 'full',
+				// hiddenInput: function() {
+				// 	return {
+				// 		phone: "full_phone",
+				// 		country: "country_code"
+				// 	};
+				// },
 				utilsScript: utils,
-				dropdownContainer: document.body,
+				// dropdownContainer: document.body,
 				formatOnDisplay: false,
 				...phoneCountries,
 			} );

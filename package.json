@@ -87,7 +87,7 @@
     "canvas-confetti": "1.9.2",
     "compare-versions": "6.1.1",
     "debug": "4.3.5",
-    "intl-tel-input": "17.0.15",
+    "intl-tel-input": "20.3.0",
     "lodash": "4.17.21",
     "validator": "13.12.0"
   },
