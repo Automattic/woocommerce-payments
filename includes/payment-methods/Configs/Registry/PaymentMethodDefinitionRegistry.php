@@ -7,9 +7,6 @@
 
 namespace WCPay\PaymentMethods\Configs\Registry;
 
-use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
 /**

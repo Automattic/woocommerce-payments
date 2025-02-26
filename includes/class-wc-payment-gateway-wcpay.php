@@ -70,7 +70,6 @@ use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
-use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
 
 /**
  * Gateway class for WooPayments
