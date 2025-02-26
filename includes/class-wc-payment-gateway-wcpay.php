@@ -1679,11 +1679,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( Intent_Status::REQUIRES_ACTION === $status ) {
-				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
+				$next_action_type = $next_action['type'] ?? null;
+				if ( 'redirect_to_url' === $next_action_type && ! empty( $next_action[ $next_action_type ]['url'] ) ) {
 					$response = [
 						'result'   => 'success',
-						'redirect' => $next_action['redirect_to_url']['url'],
+						'redirect' => $next_action[ $next_action_type ]['url'],
 					];
+				} elseif ( 'multibanco_display_details' === $next_action_type ) {
+					$this->order_service->attach_multibanco_info_to_order(
+						$order,
+						$next_action[ $next_action_type ]['reference'],
+						$next_action[ $next_action_type ]['entity'],
+						$next_action[ $next_action_type ]['hosted_voucher_url'],
+						$next_action[ $next_action_type ]['expires_at']
+					);
 				} else {
 					$response = [
 						'result'         => 'success',
