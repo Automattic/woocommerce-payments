@@ -9,7 +9,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useManualCapture } from 'wcpay/data/settings';
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';

@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import { recordEvent } from '../../tracks';
 import SettingsSection from '../settings-section';

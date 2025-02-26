@@ -13,6 +13,7 @@ import 'wp-mediaelement';
 /**
  * Internal dependencies
  */
+import 'wcpay/data';
 import './style.scss';
 import ConnectAccountPage from 'connect-account-page';
 import DepositsPage from 'deposits';

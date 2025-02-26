@@ -16,7 +16,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 /**
  * Internal dependencies.
  */
-import 'wcpay/data';
+
 import { useDisputes, useDisputesSummary } from 'wcpay/data/disputes';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';

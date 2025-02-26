@@ -10,7 +10,7 @@ import { Button } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useAuthorization } from 'wcpay/data/authorizations';
 
 interface CancelAuthorizationButtonProps {

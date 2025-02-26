@@ -4,7 +4,6 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 
-import 'wcpay/data';
 import { useGetPaymentMethodStatuses } from 'wcpay/data/settings';
 import { useState } from '@wordpress/element';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';

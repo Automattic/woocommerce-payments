@@ -20,7 +20,7 @@ import { Link } from '@woocommerce/components';
 import CardBody from '../card-body';
 import WooPayFileUpload from './file-upload';
 import WooPayPreview from './woopay-preview';
-import 'wcpay/data';
+
 import {
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,

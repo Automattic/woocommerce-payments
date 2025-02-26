@@ -12,7 +12,7 @@ import { Card, CardHeader } from '@wordpress/components';
 import SettingsSection from '../settings-section';
 import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import 'wcpay/data';
+
 import { useGetAvailablePaymentMethodIds } from 'wcpay/data/settings';
 import CardBody from 'wcpay/settings/card-body';
 import PaymentMethodsList from '../payment-methods-list';

@@ -10,7 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import './styles.scss';
-import 'wcpay/data';
+
 import {
 	useEnabledPaymentMethodIds,
 	usePaymentRequestEnabledSettings,

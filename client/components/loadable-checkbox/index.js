@@ -11,7 +11,7 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useManualCapture } from 'wcpay/data/settings';
 import { HoverTooltip } from 'components/tooltip';
 import './style.scss';

@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useSettings } from 'wcpay/data/settings';
 import Notices from './stripe-billing-notices/notices';
 import StripeBillingMigrationNoticeContext from './stripe-billing-notices/context';

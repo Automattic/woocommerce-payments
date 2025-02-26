@@ -9,7 +9,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useTestMode, useTestModeOnboarding } from 'wcpay/data/settings';
 import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';

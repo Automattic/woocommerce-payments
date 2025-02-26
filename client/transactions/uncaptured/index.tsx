@@ -12,7 +12,6 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
 import {
 	useAuthorizations,
 	useAuthorizationsSummary,

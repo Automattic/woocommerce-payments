@@ -26,7 +26,7 @@ import classNames from 'classnames';
  * Internal dependencies.
  */
 import type { CachedDeposit } from 'types/deposits';
-import 'wcpay/data';
+
 import { useDeposit } from 'wcpay/data/deposits';
 import TransactionsList from 'transactions/list';
 import { CopyButton } from 'components/copy-button';

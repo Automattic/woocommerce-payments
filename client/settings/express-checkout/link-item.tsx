@@ -9,7 +9,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,

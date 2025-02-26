@@ -14,7 +14,7 @@ import {
 	isCharge,
 	isPaymentIntent,
 } from '../types';
-import 'wcpay/data';
+
 import {
 	getIsChargeId,
 	usePaymentIntentWithChargeFallback,

@@ -12,7 +12,7 @@ import { Button } from '@wordpress/components';
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
-import 'wcpay/data';
+
 import { useEnabledPaymentMethodIds } from 'wcpay/data/settings';
 import WizardContext from '../wizard/wrapper/context';
 import PaymentMethodIcon from '../../settings/payment-method-icon';

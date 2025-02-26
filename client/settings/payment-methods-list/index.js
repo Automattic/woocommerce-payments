@@ -9,7 +9,7 @@ import React, { useState } from 'react';
  * Internal dependencies
  */
 import './style.scss';
-import 'wcpay/data';
+
 import {
 	useEnabledPaymentMethodIds,
 	useGetPaymentMethodStatuses,

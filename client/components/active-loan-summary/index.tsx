@@ -19,7 +19,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import Loadable from 'components/loadable';
-import 'wcpay/data';
+
 import { useActiveLoanSummary } from 'wcpay/data/capital';
 import { getAdminUrl } from 'wcpay/utils';
 

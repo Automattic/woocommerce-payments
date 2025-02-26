@@ -28,7 +28,7 @@ import InboxNotifications from './inbox-notifications';
 import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
-import 'wcpay/data';
+
 import { useDisputes } from 'wcpay/data/disputes';
 import { useGetSettings, useSettings } from 'wcpay/data/settings';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';

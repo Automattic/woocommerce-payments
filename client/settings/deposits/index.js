@@ -14,7 +14,7 @@ import { STORE_NAME } from 'wcpay/data/constants';
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
-import 'wcpay/data';
+
 import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import './style.scss';
 import { recordEvent } from 'tracks';

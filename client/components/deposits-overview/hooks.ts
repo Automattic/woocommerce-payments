@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useDeposits } from 'wcpay/data/deposits';
 import { CachedDeposit } from 'wcpay/types/deposits';
 

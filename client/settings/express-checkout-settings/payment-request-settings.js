@@ -11,7 +11,7 @@ import { Card, CheckboxControl } from '@wordpress/components';
  */
 import CardBody from '../card-body';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
-import 'wcpay/data';
+
 import { usePaymentRequestEnabledSettings } from 'wcpay/data/settings';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { STORE_NAME } from 'wcpay/data/constants';

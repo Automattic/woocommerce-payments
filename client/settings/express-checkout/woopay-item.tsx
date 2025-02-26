@@ -13,7 +13,7 @@ import { useContext } from '@wordpress/element';
  * Internal dependencies
  */
 import { HoverTooltip } from 'components/tooltip';
-import 'wcpay/data';
+
 import {
 	useEnabledPaymentMethodIds,
 	useWooPayEnabledSettings,

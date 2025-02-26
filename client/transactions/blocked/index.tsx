@@ -23,7 +23,7 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import {
 	FraudOutcomeTransaction,
 	useFraudOutcomeTransactions,

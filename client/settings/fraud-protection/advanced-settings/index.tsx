@@ -19,7 +19,7 @@ import { dispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import {
 	useCurrentProtectionLevel,
 	useAdvancedFraudProtectionSettings,

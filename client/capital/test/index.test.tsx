@@ -6,7 +6,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useActiveLoanSummary, useLoans } from 'wcpay/data/capital';
 import CapitalPage from '../index';
 

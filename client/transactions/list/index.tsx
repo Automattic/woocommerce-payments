@@ -22,7 +22,7 @@ import {
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import {
 	useTransactions,
 	useTransactionsSummary,

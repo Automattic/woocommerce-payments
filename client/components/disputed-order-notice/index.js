@@ -16,7 +16,7 @@ import {
 	isRefundable,
 	isUnderReview,
 } from 'wcpay/disputes/utils';
-import 'wcpay/data';
+
 import { useCharge } from 'wcpay/data/charges';
 import { recordEvent } from 'tracks';
 import './style.scss';

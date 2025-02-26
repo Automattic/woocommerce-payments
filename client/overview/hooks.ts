@@ -6,7 +6,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useAllDepositsOverviews } from 'wcpay/data/deposits';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 

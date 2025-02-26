@@ -9,7 +9,7 @@ import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
  * Internal dependencies.
  */
 import Page from 'components/page';
-import 'wcpay/data';
+
 import { useDispute } from 'wcpay/data/disputes';
 import { Charge } from 'wcpay/types/charges';
 import { getAdminUrl } from 'wcpay/utils';

@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
 /**
  * Internal Dependencies
  */
+import 'wcpay/data';
 import PaymentGatewaysConfirmation from './payment-gateways-confirmation';
 
 const paymentGatewaysContainer = document.getElementById(

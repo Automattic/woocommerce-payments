@@ -7,7 +7,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useSettings } from 'wcpay/data/settings';
 import { LoadableBlock } from '../components/loadable';
 

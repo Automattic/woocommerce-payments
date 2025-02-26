@@ -13,7 +13,7 @@ import {
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import 'wcpay/data';
+
 import { useGetSavingError } from 'wcpay/data/settings';
 import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';

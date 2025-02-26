@@ -13,7 +13,7 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import { displayType } from 'documents/strings';
-import 'wcpay/data';
+
 import {
 	Document,
 	useDocuments,

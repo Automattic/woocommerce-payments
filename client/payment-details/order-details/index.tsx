@@ -6,7 +6,7 @@ import React, { useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import { useChargeFromOrder } from 'wcpay/data/charges';
 import PaymentDetails from '../payment-details';
 import { getAdminUrl } from '../../utils';

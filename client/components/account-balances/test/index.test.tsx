@@ -8,7 +8,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
  * Internal dependencies
  */
 import AccountBalances from '..';
-import 'wcpay/data';
+
 import {
 	useAllDepositsOverviews,
 	useInstantDeposit,

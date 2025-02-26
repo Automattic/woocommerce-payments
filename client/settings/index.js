@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
 /**
  * Internal dependencies
  */
+import 'wcpay/data';
 import enqueueFraudScripts from 'fraud-scripts';
 import SettingsManager from 'settings/settings-manager';
 import ExpressCheckoutSettings from './express-checkout-settings';

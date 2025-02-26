@@ -14,7 +14,7 @@ import React, { useContext, useEffect } from 'react';
 import LoadableCheckboxControl from 'components/loadable-checkbox';
 import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import 'wcpay/data';
+
 import { useManualCapture } from 'wcpay/data/settings';
 import { FeeStructure } from 'wcpay/types/fees';
 import PaymentMethodsMap from '../../payment-methods-map';

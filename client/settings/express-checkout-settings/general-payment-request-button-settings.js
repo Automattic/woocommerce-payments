@@ -24,7 +24,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { getExpressCheckoutConfig } from 'utils/express-checkout';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import InlineNotice from 'wcpay/components/inline-notice';
-import 'wcpay/data';
+
 import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,

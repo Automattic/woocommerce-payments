@@ -25,7 +25,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import WizardTaskContext from '../wizard/task/context';
 import CollapsibleBody from '../wizard/collapsible-body';
 import WizardTaskItem from '../wizard/task-item';
-import 'wcpay/data';
+
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,

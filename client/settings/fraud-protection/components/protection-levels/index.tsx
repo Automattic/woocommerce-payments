@@ -10,7 +10,7 @@ import { Button } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import 'wcpay/data';
+
 import {
 	useCurrentProtectionLevel,
 	useAdvancedFraudProtectionSettings,
