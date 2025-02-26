@@ -20,6 +20,12 @@
 }
 
 #wc-payment-gateway-multibanco-instructions-container {
+	/* Default values */
+	--woopayments-multibanco-text-color: rgb( 109, 109, 109 );
+	--woopayments-multibanco-bg-color: rgba( 109, 109, 109, 0.06 );
+	--woopayments-multibanco-border-color: rgba( 109, 109, 109, 0.16 );
+	--woopayments-multibanco-card-bg-color: rgb( 255, 255, 255 );
+
 	display: flex;
 	justify-content: center;
 	margin: 2em 0;
