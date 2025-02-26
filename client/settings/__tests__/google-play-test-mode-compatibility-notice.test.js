@@ -51,7 +51,7 @@ describe( 'GooglePayTestModeCompatibilityNotice', () => {
 		expect( container.firstChild ).toBeNull();
 	} );
 
-	it( 'does not render when GooglePlay is not enabled', () => {
+	it( 'does not render when Google Pay is not enabled', () => {
 		useTestMode.mockReturnValue( [ true ] );
 		usePaymentRequestEnabledSettings.mockReturnValue( [ false ] );
 
