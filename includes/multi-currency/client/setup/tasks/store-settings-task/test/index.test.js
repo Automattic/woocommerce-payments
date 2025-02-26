@@ -7,7 +7,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { useCurrencies, useStoreSettings } from 'multi-currency/data';
+import { useCurrencies, useStoreSettings } from 'multi-currency/data/hooks';
 import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
 import { WizardTaskContext } from 'multi-currency/interface/functions';
 import StoreSettingsTask from '..';

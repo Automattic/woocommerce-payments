@@ -13,7 +13,7 @@ import {
 	useAvailableCurrencies,
 	useEnabledCurrencies,
 	useDefaultCurrency,
-} from 'multi-currency/data';
+} from 'multi-currency/data/hooks';
 import EnabledCurrenciesModalCheckboxList from './modal-checkbox-list';
 import EnabledCurrenciesModalCheckbox from './modal-checkbox';
 import { ConfirmationModal } from 'multi-currency/interface/components';

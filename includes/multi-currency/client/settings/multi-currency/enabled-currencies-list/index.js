@@ -15,7 +15,7 @@ import {
 	useCurrencies,
 	useDefaultCurrency,
 	useEnabledCurrencies,
-} from 'multi-currency/data';
+} from 'multi-currency/data/hooks';
 
 import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';

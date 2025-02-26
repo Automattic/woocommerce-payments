@@ -8,4 +8,4 @@ export { useSettings, useMultiCurrency } from 'wcpay/data/settings/hooks';
 /**
  * Dependencies from MCCY to WooPayments.
  */
-export { useCurrencies, useEnabledCurrencies } from 'multi-currency/data';
+export { useCurrencies, useEnabledCurrencies } from 'multi-currency/data/hooks';

@@ -18,7 +18,7 @@ import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
 import PreviewModal from 'multi-currency/components/preview-modal';
 import './index.scss';
 
-import { useStoreSettings } from 'multi-currency/data';
+import { useStoreSettings } from 'multi-currency/data/hooks';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();

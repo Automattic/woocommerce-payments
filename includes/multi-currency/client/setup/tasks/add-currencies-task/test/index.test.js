@@ -16,7 +16,7 @@ import {
 	useAvailableCurrencies,
 	useDefaultCurrency,
 	useEnabledCurrencies,
-} from 'multi-currency/data';
+} from 'multi-currency/data/hooks';
 
 import { recommendedCurrencyCodes } from '../constants';
 import { __ } from '@wordpress/i18n';

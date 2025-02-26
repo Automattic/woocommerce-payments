@@ -15,7 +15,7 @@ import {
 	useEnabledCurrencies,
 	useCurrencySettings,
 	useStoreSettings,
-} from 'multi-currency/data';
+} from 'multi-currency/data/hooks';
 
 import MultiCurrencySettingsContext from 'multi-currency/context';
 

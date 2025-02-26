@@ -23,7 +23,7 @@ import {
 	useAvailableCurrencies,
 	useEnabledCurrencies,
 	useDefaultCurrency,
-} from 'multi-currency/data';
+} from 'multi-currency/data/hooks';
 
 // eslint-disable-next-line max-len
 import EnabledCurrenciesModalCheckboxList from 'multi-currency/settings/multi-currency/enabled-currencies-list/modal-checkbox-list';

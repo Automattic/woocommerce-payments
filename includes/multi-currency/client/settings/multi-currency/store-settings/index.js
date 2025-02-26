@@ -11,7 +11,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import './style.scss';
 
-import { useStoreSettings } from 'multi-currency/data';
+import { useStoreSettings } from 'multi-currency/data/hooks';
 import {
 	LoadableBlock,
 	SettingsSection,
