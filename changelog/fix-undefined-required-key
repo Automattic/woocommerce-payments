@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: avoid PHP 8.1 warning when required key is not defined.
