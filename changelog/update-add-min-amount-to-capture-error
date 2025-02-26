@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Add JSON-formatted minimum amount details to the amount too small error message.
