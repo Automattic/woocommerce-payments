@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Avoid duplicated payment methods detection notice on new stores.
