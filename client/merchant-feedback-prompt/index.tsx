@@ -208,16 +208,12 @@ export default function MaybeShowMerchantFeedbackPrompt() {
 	const {
 		isAccountEligible,
 		hasUserDismissedPrompt,
-		setHasUserDismissedPrompt,
+		dismissPrompt,
 	} = useMerchantFeedbackPromptState();
 
 	if ( hasUserDismissedPrompt || ! isAccountEligible ) {
 		return null;
 	}
 
-	return (
-		<MerchantFeedbackPrompt
-			dismissPrompt={ () => setHasUserDismissedPrompt( true ) }
-		/>
-	);
+	return <MerchantFeedbackPrompt dismissPrompt={ dismissPrompt } />;
 }

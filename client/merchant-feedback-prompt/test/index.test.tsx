@@ -33,7 +33,7 @@ jest.mock( 'wcpay/tracks', () => ( {
 
 // Mock the useUserPreferences hook
 let preferences = {
-	wc_payments_wporg_review_2025_prompt_dismissed: false,
+	wc_payments_wporg_review_2025_prompt_dismissed: undefined,
 };
 jest.mock( '@woocommerce/data', () => {
 	return {
@@ -76,7 +76,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 
 		// Reset the preferences to the initial state
 		preferences = {
-			wc_payments_wporg_review_2025_prompt_dismissed: false,
+			wc_payments_wporg_review_2025_prompt_dismissed: undefined,
 		};
 
 		// Mock the dev feature flag to be enabled

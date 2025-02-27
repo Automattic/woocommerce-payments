@@ -8,7 +8,8 @@ import { useUserPreferences } from '@woocommerce/data';
  * See WC_Payments::add_user_data_fields() in includes/class-wc-payments.php for the PHP implementation.
  */
 interface UserPreferences extends ReturnType< typeof useUserPreferences > {
-	wc_payments_wporg_review_2025_prompt_dismissed: boolean;
+	/** The unix timestamp of the dismissal of the merchant feedback prompt. */
+	wc_payments_wporg_review_2025_prompt_dismissed?: number;
 }
 
 /**
@@ -28,9 +29,11 @@ export const useMerchantFeedbackPromptState = () => {
 	const hasUserDismissedPrompt =
 		userPrefs?.wc_payments_wporg_review_2025_prompt_dismissed;
 
-	const setHasUserDismissedPrompt = ( value: boolean ) => {
+	const dismissPrompt = () => {
+		// Stored as a unix timestamp in case we want to let this expire in the future.
+		const unixTimestamp = Date.now();
 		updateUserPreferences( {
-			wc_payments_wporg_review_2025_prompt_dismissed: value,
+			wc_payments_wporg_review_2025_prompt_dismissed: unixTimestamp,
 		} );
 	};
 
@@ -39,7 +42,7 @@ export const useMerchantFeedbackPromptState = () => {
 		isAccountEligible,
 		/** Whether the user has dismissed the merchant feedback prompt. */
 		hasUserDismissedPrompt,
-		/** A function to update the merchant feedback prompt visibility state, true to dismiss, false to show. */
-		setHasUserDismissedPrompt,
+		/** A function to dismiss the merchant feedback prompt. Stores the current timestamp of dismissal in user preferences. */
+		dismissPrompt,
 	};
 };
