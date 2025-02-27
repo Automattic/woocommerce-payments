@@ -43,7 +43,7 @@ const PhoneNumberInput = ( {
 		setInputInstance,
 	] = useState< intlTelInput.Plugin | null >( null );
 	const inputRef = useRef< HTMLInputElement >( null );
-	inputProps.name = 'full';
+
 	const handlePhoneNumberInputChange = () => {
 		// console.log( 'changed!' );
 		if ( inputInstance ) {
