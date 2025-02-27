@@ -4,16 +4,22 @@
 import React from 'react';
 import { Fill } from '@wordpress/components';
 import { registerPlugin } from '@wordpress/plugins';
+import { OnboardingModal } from './modal';
 
-const OnboardingModal = () => {
+const ModalFill = () => {
 	return (
 		<Fill name="__EXPERIMENTAL__WcAdminSettingsPaymentsSlots">
-			<p>Onboarding Modal</p>
+			<OnboardingModal
+				isOpen={ true }
+				onClose={ () => {
+					// TODO: Implement later
+				} }
+			/>
 		</Fill>
 	);
 };
 
 registerPlugin( 'woopayments-onboarding-modal', {
-	render: OnboardingModal,
+	render: ModalFill,
 	scope: 'woocommerce-settings-payment-woopayments',
 } );
