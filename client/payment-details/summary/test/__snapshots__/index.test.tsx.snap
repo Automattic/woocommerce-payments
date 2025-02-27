@@ -2264,7 +2264,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
                     data-link-type="external"
                     href="https://example.com/subscription/246"
                   >
-                    246
+                    custom-246
                   </a>
                 </span>
               </div>

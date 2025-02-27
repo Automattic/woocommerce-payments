@@ -9,6 +9,7 @@ import debounce from '../debounce';
  * External dependencies
  */
 import { addFilter, doAction } from '@wordpress/hooks';
+import { getExpressCheckoutData } from 'wcpay/tokenized-express-checkout/utils';
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {
@@ -19,6 +20,10 @@ jQuery( ( $ ) => {
 // Block the payment request button as soon as an "input" event is fired, to avoid sync issues
 // when the customer clicks on the button before the debounced event is processed.
 jQuery( ( $ ) => {
+	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
+		return;
+	}
+
 	const $quantityInput = $( '.quantity' );
 	const handleQuantityChange = () => {
 		expressCheckoutButtonUi.blockButton();

@@ -64,24 +64,59 @@ const fetchNewCartData = async () => {
 	return cartData;
 };
 
-const getServerSideExpressCheckoutProductData = () => {
-	const displayItems = (
-		getExpressCheckoutData( 'product' )?.displayItems ?? []
-	).map( ( { label, amount } ) => ( {
-		name: label,
-		amount,
-	} ) );
+const getTotalAmount = () => {
+	if ( cachedCartData ) {
+		return transformPrice(
+			parseInt( cachedCartData.totals.total_price, 10 ) -
+				parseInt( cachedCartData.totals.total_refund || 0, 10 ),
+			cachedCartData.totals
+		);
+	}
 
-	return {
-		total: getExpressCheckoutData( 'product' )?.total.amount,
-		currency: getExpressCheckoutData( 'product' )?.currency,
-		requestShipping:
-			getExpressCheckoutData( 'product' )?.needs_shipping ?? false,
-		requestPhone:
-			getExpressCheckoutData( 'checkout' )?.needs_payer_phone ?? false,
-		displayItems,
-	};
+	if (
+		getExpressCheckoutData( 'button_context' ) === 'product' &&
+		getExpressCheckoutData( 'product' )
+	) {
+		return getExpressCheckoutData( 'product' )?.total.amount;
+	}
 };
+
+const getOnClickOptions = () => {
+	if ( cachedCartData ) {
+		return {
+			// pay-for-order should never display the shipping selection.
+			shippingAddressRequired:
+				getExpressCheckoutData( 'button_context' ) !==
+					'pay_for_order' && cachedCartData.needs_shipping,
+			shippingRates: transformCartDataForShippingRates( cachedCartData ),
+			phoneNumberRequired:
+				getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
+				false,
+			lineItems: transformCartDataForDisplayItems( cachedCartData ),
+		};
+	}
+
+	if (
+		getExpressCheckoutData( 'button_context' ) === 'product' &&
+		getExpressCheckoutData( 'product' )
+	) {
+		return {
+			shippingAddressRequired:
+				getExpressCheckoutData( 'product' )?.needs_shipping ?? false,
+			phoneNumberRequired:
+				getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
+				false,
+			lineItems: (
+				getExpressCheckoutData( 'product' )?.displayItems ?? []
+			).map( ( { label, amount } ) => ( {
+				name: label,
+				amount,
+			} ) ),
+		};
+	}
+};
+
+let elements;
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -173,15 +208,16 @@ jQuery( ( $ ) => {
 		/**
 		 * Starts the Express Checkout Element
 		 *
-		 * @param {Object} options ECE options.
+		 * @param {Object} creationOptions ECE initialization options.
 		 */
-		startExpressCheckoutElement: async ( options ) => {
+		startExpressCheckoutElement: async ( creationOptions ) => {
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
-			const elements = stripe.elements( {
+			// https://docs.stripe.com/js/elements_object/create_without_intent
+			elements = stripe.elements( {
 				mode: 'payment',
-				amount: options.total,
-				currency: options.currency,
+				amount: creationOptions.total,
+				currency: creationOptions.currency,
 				paymentMethodCreation: 'manual',
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
@@ -247,9 +283,12 @@ jQuery( ( $ ) => {
 					} );
 				}
 
+				const options = getOnClickOptions();
 				const shippingOptionsWithFallback =
-					! options.shippingRates || // server-side data on the product page initialization doesn't provide any shipping rates.
-					options.shippingRates.length === 0 // but it can also happen that there are no rates in the array.
+					// server-side data on the product page initialization doesn't provide any shipping rates.
+					! options.shippingRates ||
+					// but it can also happen that there are no rates in the array.
+					options.shippingRates.length === 0
 						? [
 								// fallback for initialization (and initialization _only_), before an address is provided by the ECE.
 								{
@@ -263,8 +302,9 @@ jQuery( ( $ ) => {
 						  ]
 						: options.shippingRates;
 
-				const clickOptions = {
-					// `options.displayItems`, `options.requestShipping`, `options.requestPhone`, `options.shippingRates`,
+				onClickHandler( event );
+				event.resolve( {
+					// `options.displayItems`, `options.shippingAddressRequired`, `options.requestPhone`, `options.shippingRates`,
 					// are all coming from prior of the initialization.
 					// The "real" values will be updated once the button loads.
 					// They are preemptively initialized because the `event.resolve({})`
@@ -272,20 +312,15 @@ jQuery( ( $ ) => {
 					business: {
 						name: getExpressCheckoutData( 'store_name' ),
 					},
-					lineItems: options.displayItems,
 					emailRequired: true,
-					shippingAddressRequired: options.requestShipping,
-					phoneNumberRequired: options.requestPhone,
-					shippingRates: options.requestShipping
+					...options,
+					shippingRates: options.shippingAddressRequired
 						? shippingOptionsWithFallback
 						: undefined,
 					allowedShippingCountries: getExpressCheckoutData(
 						'checkout'
 					).allowed_shipping_countries,
-				};
-
-				onClickHandler( event );
-				event.resolve( clickOptions );
+				} );
 			} );
 
 			eceButton.on( 'shippingaddresschange', async ( event ) => {
@@ -333,11 +368,69 @@ jQuery( ( $ ) => {
 					expressCheckoutButtonUi.getButtonSeparator().show();
 				}
 			} );
+		},
 
+		/**
+		 * Initialize event handlers and UI state
+		 */
+		init: async () => {
 			removeAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout'
 			);
+
+			// on product pages, we should be able to have `getExpressCheckoutData( 'product' )` from the backend,
+			// which saves us some AJAX calls.
+			if (
+				getExpressCheckoutData( 'button_context' ) === 'product' &&
+				getExpressCheckoutData( 'product' )?.product_type === 'bundle'
+			) {
+				// server-side data for bundled products is not reliable.
+				wcpayExpressCheckoutParams.product = undefined;
+			}
+
+			if ( ! getExpressCheckoutData( 'product' ) && ! cachedCartData ) {
+				try {
+					cachedCartData = await fetchNewCartData();
+				} catch ( e ) {}
+			}
+
+			// once (and if) cart data has been fetched, we can safely clear product data from the backend.
+			if ( cachedCartData ) {
+				wcpayExpressCheckoutParams.product = undefined;
+			}
+
+			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
+				// on product pages, we need to interact with an anonymous cart to check out the product,
+				// so that we don't affect the products in the main cart.
+				// On cart, checkout, place order pages we instead use the cart itself.
+				getCartApiHandler().useSeparateCart();
+			}
+
+			const total = getTotalAmount();
+			if ( total === 0 ) {
+				expressCheckoutButtonUi.hideContainer();
+				expressCheckoutButtonUi.getButtonSeparator().hide();
+			} else if ( cachedCartData ) {
+				// If this is the cart page, or checkout page, or pay-for-order page, we need to request the cart details.
+				// but if the data is not available, we can't render the button.
+				await wcpayECE.startExpressCheckoutElement( {
+					total,
+					currency: cachedCartData.totals.currency_code.toLowerCase(),
+				} );
+			} else if (
+				getExpressCheckoutData( 'button_context' ) === 'product' &&
+				getExpressCheckoutData( 'product' )
+			) {
+				await wcpayECE.startExpressCheckoutElement( {
+					total,
+					currency: getExpressCheckoutData( 'product' )?.currency,
+				} );
+			} else {
+				expressCheckoutButtonUi.hideContainer();
+				expressCheckoutButtonUi.getButtonSeparator().hide();
+			}
+
 			addAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
@@ -360,6 +453,8 @@ jQuery( ( $ ) => {
 					try {
 						expressCheckoutButtonUi.blockButton();
 
+						const prevTotal = getTotalAmount();
+
 						cachedCartData = await fetchNewCartData();
 
 						// We need to re init the payment request button to ensure the shipping options & taxes are re-fetched.
@@ -367,92 +462,29 @@ jQuery( ( $ ) => {
 						// instead of the `product` attributes.
 						wcpayExpressCheckoutParams.product = null;
 
-						await wcpayECE.init();
-
 						expressCheckoutButtonUi.unblockButton();
+
+						// since the "total" is part of the initialization of the Stripe elements (and not part of the ECE button),
+						// if the totals change, we might need to update it on the element itself.
+						const newTotal = getTotalAmount();
+						if ( ! elements ) {
+							wcpayECE.init();
+						} else if ( newTotal !== prevTotal && newTotal > 0 ) {
+							elements.update( { amount: newTotal } );
+						}
+
+						if ( newTotal === 0 ) {
+							expressCheckoutButtonUi.hideContainer();
+							expressCheckoutButtonUi.getButtonSeparator().hide();
+						} else {
+							expressCheckoutButtonUi.showContainer();
+							expressCheckoutButtonUi.getButtonSeparator().show();
+						}
 					} catch ( e ) {
 						expressCheckoutButtonUi.hideContainer();
 					}
 				}
 			);
-		},
-
-		/**
-		 * Initialize event handlers and UI state
-		 */
-		init: async () => {
-			// on product pages, we should be able to have `getExpressCheckoutData( 'product' )` from the backend,
-			// which saves us some AJAX calls.
-			if (
-				getExpressCheckoutData( 'button_context' ) === 'product' &&
-				getExpressCheckoutData( 'product' )?.product_type === 'bundle'
-			) {
-				// server-side data for bundled products is not reliable.
-				wcpayExpressCheckoutParams.product = undefined;
-			}
-
-			if ( ! getExpressCheckoutData( 'product' ) && ! cachedCartData ) {
-				try {
-					cachedCartData = await fetchNewCartData();
-				} catch ( e ) {
-					// if something fails here, we can likely fall back on `getExpressCheckoutData( 'product' )`.
-				}
-			}
-
-			// once (and if) cart data has been fetched, we can safely clear product data from the backend.
-			if ( cachedCartData ) {
-				wcpayExpressCheckoutParams.product = undefined;
-			}
-
-			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				// on product pages, we need to interact with an anonymous cart to check out the product,
-				// so that we don't affect the products in the main cart.
-				// On cart, checkout, place order pages we instead use the cart itself.
-				getCartApiHandler().useSeparateCart();
-			}
-
-			if ( cachedCartData ) {
-				// If this is the cart page, or checkout page, or pay-for-order page, we need to request the cart details.
-				// but if the data is not available, we can't render the button.
-				const total = transformPrice(
-					parseInt( cachedCartData.totals.total_price, 10 ) -
-						parseInt( cachedCartData.totals.total_refund || 0, 10 ),
-					cachedCartData.totals
-				);
-				if ( total === 0 ) {
-					expressCheckoutButtonUi.hideContainer();
-					expressCheckoutButtonUi.getButtonSeparator().hide();
-				} else {
-					await wcpayECE.startExpressCheckoutElement( {
-						total,
-						currency: cachedCartData.totals.currency_code.toLowerCase(),
-						// pay-for-order should never display the shipping selection.
-						requestShipping:
-							getExpressCheckoutData( 'button_context' ) !==
-								'pay_for_order' &&
-							cachedCartData.needs_shipping,
-						shippingRates: transformCartDataForShippingRates(
-							cachedCartData
-						),
-						requestPhone:
-							getExpressCheckoutData( 'checkout' )
-								?.needs_payer_phone ?? false,
-						displayItems: transformCartDataForDisplayItems(
-							cachedCartData
-						),
-					} );
-				}
-			} else if (
-				getExpressCheckoutData( 'button_context' ) === 'product' &&
-				getExpressCheckoutData( 'product' )
-			) {
-				await wcpayECE.startExpressCheckoutElement(
-					getServerSideExpressCheckoutProductData()
-				);
-			} else {
-				expressCheckoutButtonUi.hideContainer();
-				expressCheckoutButtonUi.getButtonSeparator().hide();
-			}
 		},
 	};
 

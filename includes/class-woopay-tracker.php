@@ -344,6 +344,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$properties['blog_url']  = $site_url;
 		$properties['blog_id']   = \Jetpack_Options::get_option( 'id' );
 		$properties['user_lang'] = $user->get( 'WPLANG' );
+		$properties['store_id']  = $this->get_wc_store_id();
 
 		// Add event property for test mode vs. live mode events.
 		$properties['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
@@ -377,6 +378,19 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 				]
 			)
 		);
+	}
+
+	/**
+	 * Returns WC store_id value, if available.
+	 * store_id introduced in WC 8.4.
+	 *
+	 * @return string|null
+	 */
+	public function get_wc_store_id() {
+		if ( defined( '\WC_Install::STORE_ID_OPTION' ) ) {
+			return get_option( \WC_Install::STORE_ID_OPTION, null );
+		}
+		return null;
 	}
 
 	/**
