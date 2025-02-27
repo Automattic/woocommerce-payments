@@ -24,8 +24,8 @@ jobs:
       - name: Create script
         run: |
           cat > check-feature-pairs.js << 'EOL'
-          const fs = require('fs');
-          const { Octokit } = require('@octokit/rest');
+          import fs from 'fs';
+          import { Octokit } from '@octokit/rest';
 
           async function run() {
             try {
@@ -121,7 +121,7 @@ jobs:
           EOL
 
       - name: Run feature pair check
-        run: node check-feature-pairs.js
+        run: node --experimental-json-modules check-feature-pairs.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }} 
