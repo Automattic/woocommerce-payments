@@ -10,8 +10,10 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
  * Internal dependencies
  */
 import './modal.scss';
+import '../style.scss';
 import { OnboardingSidebar } from './sidebar';
-import OnboardingKycPage from '../kyc';
+import { OnboardingContextProvider } from '../context';
+import BusinessDetails from '../steps/business-details';
 
 interface OnboardingModalProps {
 	/**
@@ -28,6 +30,13 @@ export const OnboardingModal = ( {
 	isOpen,
 	onClose,
 }: OnboardingModalProps ) => {
+	const initialData = {
+		business_name: wcSettings?.siteTitle,
+		mcc: '12312',
+		url: 'https://wcpay.test',
+		country: 'US',
+	};
+
 	return (
 		<>
 			{ isOpen && (
@@ -47,7 +56,15 @@ export const OnboardingModal = ( {
 								<Routes>
 									<Route
 										path="/"
-										element={ <OnboardingKycPage /> }
+										element={
+											<div className="woocommerce-woopayments-onboarding-modal__content-wrapper">
+												<OnboardingContextProvider
+													initialData={ initialData }
+												>
+													<BusinessDetails />
+												</OnboardingContextProvider>
+											</div>
+										}
 									/>
 									<Route
 										path="/payment-methods"

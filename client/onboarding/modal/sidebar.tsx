@@ -14,7 +14,7 @@ export const OnboardingSidebar = () => {
 		<div className="woocommerce-woopayments-onboarding-modal__sidebar">
 			<h2>{ __( 'Set up WooPayments', 'woocommerce' ) }</h2>
 
-			<ul className="woocommerce-woopayments-onboarding-modal__sidebar--navigation">
+			<ul className="woocommerce-woopayments-onboarding-modal__sidebar-navigation">
 				<li>
 					<Link to="/">
 						{ __( 'Choose your payment methods', 'woocommerce' ) }

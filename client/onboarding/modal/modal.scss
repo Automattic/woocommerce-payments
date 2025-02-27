@@ -17,6 +17,25 @@
 
 	&__sidebar {
 		width: 280px;
+
+		h2 {
+			margin-left: 24px;
+			margin-top: 60px;
+		}
+
+		&-navigation {
+			margin: 0 20px;
+
+			li {
+				background: $gray-200;
+				padding: 6px 8px;
+
+				a {
+					color: #000;
+					text-decoration: none;
+				}
+			}
+		}
 	}
 
 	&__content {
@@ -24,6 +43,11 @@
 		margin: 16px;
 		margin-left: 0;
 		box-shadow: none;
+
+		&-wrapper {
+			width: 700px;
+			margin: 20px auto;
+		}
 	}
 
 	& > .components-modal__content {
