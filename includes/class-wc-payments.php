@@ -348,6 +348,7 @@ class WC_Payments {
 		}
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
+		add_action( 'admin_init', [ __CLASS__, 'remove_deprecated_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
@@ -1501,9 +1502,6 @@ class WC_Payments {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
-			WC_Payments_Notes_Qualitative_Feedback::possibly_add_note();
-
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 
@@ -1517,6 +1515,19 @@ class WC_Payments {
 		}
 
 		add_filter( 'admin_notices', [ __CLASS__, 'wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic' ] );
+	}
+
+	/**
+	 * Removes deprecated notes i.e. no longer required notes.
+	 *
+	 * @return void
+	 */
+	public static function remove_deprecated_notes() {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
+			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
+
+		}
 	}
 
 	/**
