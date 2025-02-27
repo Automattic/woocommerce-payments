@@ -42,6 +42,11 @@ class WC_Payments_Order_Success_Page {
 	 * @param int $order_id The order ID.
 	 */
 	public function maybe_render_multibanco_payment_instructions( $order_id ) {
+		if ( is_order_received_page() && current_filter() === 'woocommerce_order_details_before_order_table' ) {
+			// Prevent rendering twice on order received page.
+			return;
+		}
+
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order || $order->get_payment_method() !== 'woocommerce_payments_' . Payment_Method::MULTIBANCO || 'on-hold' !== $order->get_status() ) {
