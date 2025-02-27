@@ -563,6 +563,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function init_hooks() {
 		add_action( 'init', [ $this, 'maybe_update_properties_with_country' ] );
+		add_action( 'init', [ $this, 'disable_woopay' ] );
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
@@ -4433,6 +4434,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	private function upe_needs_redirection( $payment_methods ) {
 		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
 	}
+
+
+	/**
+	 * Disable WooPay.
+	 *
+	 * This function disables WooPay by updating the option to 'no'
+	 * once the 'disable_woopay' filter is called.
+	 *
+	 * @return boolean False, indicating WooPay is disabled.
+	 */
+	public function disable_woopay() {
+		// Filter: disable_woopay.
+		$disable = apply_filters( 'disable_woopay', true );
+
+		// disable WooPay by updating the option to 'no'.
+		if ( $disable ) {
+			$this->update_option( 'platform_checkout', 'no' );
+		}
+
+		return false;
+	}
+
 
 	/**
 	 * Handles the shipping requirement for Afterpay payments.
