@@ -2028,6 +2028,13 @@ class WC_Payments {
 			WCPAY_VERSION_NUMBER,
 			true
 		);
+
+		wp_enqueue_style(
+			'wcpay-onboarding-modal',
+			plugins_url( 'dist/onboarding-modal.css', WCPAY_PLUGIN_FILE ),
+			[],
+			self::get_file_version( 'dist/onboarding-modal.css' ),
+		);
 	}
 
 	/**
