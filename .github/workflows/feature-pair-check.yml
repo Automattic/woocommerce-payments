@@ -19,7 +19,9 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: npm install @octokit/rest
+        run: |
+          npm install @octokit/rest
+          echo '{"type": "module"}' > package.json
 
       - name: Create script
         run: |
@@ -121,7 +123,7 @@ jobs:
           EOL
 
       - name: Run feature pair check
-        run: node --experimental-json-modules check-feature-pairs.js
+        run: node check-feature-pairs.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }} 
