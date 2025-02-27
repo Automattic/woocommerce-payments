@@ -186,8 +186,8 @@ const PhoneNumberInput = ( {
 				name={ inputProps.name }
 				className={
 					inputInstance && ! inputInstance.isValidNumber()
-						? 'phone-input input-text has-error'
-						: 'phone-input input-text'
+						? 'phone-input input-text has-error iti__tel-input has-error'
+						: 'phone-input input-text has-error iti__tel-input'
 				}
 				{ ...props }
 			/>
