@@ -168,6 +168,7 @@ class WC_Payments_Admin {
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
 		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_onboarding_modal_script' ] );
 	}
 
 	/**
@@ -639,6 +640,38 @@ class WC_Payments_Admin {
 			[ 'wp-components', 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/plugins-page.css' ),
 			'all'
+		);
+	}
+
+	/**
+	 * Enqueue onboarding modal scripts
+	 */
+	public function enqueue_onboarding_modal_script() {
+		// Only load on WooCommerce payment settings pages.
+		$screen = get_current_screen();
+		if ( ! is_admin() || ! $screen || 'woocommerce_page_wc-settings' !== $screen->id ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'wcpay-onboarding-modal',
+			plugins_url( 'dist/onboarding-modal.js', WCPAY_PLUGIN_FILE ),
+			[ 'wp-hooks', 'wp-element', 'wp-components', 'wp-plugins' ], // dependencies.
+			WCPAY_VERSION_NUMBER,
+			true
+		);
+
+		wp_localize_script(
+			'wcpay-onboarding-modal',
+			'wcpaySettings',
+			$this->get_js_settings()
+		);
+
+		wp_enqueue_style(
+			'wcpay-onboarding-modal',
+			plugins_url( 'dist/onboarding-modal.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/onboarding-modal.css' ),
 		);
 	}
 

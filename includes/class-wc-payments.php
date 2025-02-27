@@ -757,7 +757,6 @@ class WC_Payments {
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
-		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_onboarding_modal_script' ] );
 
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
 
@@ -2008,32 +2007,6 @@ class WC_Payments {
 			[
 				'url' => plugins_url( '/dist/', WCPAY_PLUGIN_FILE ),
 			]
-		);
-	}
-
-	/**
-	 * Enqueue onboarding modal scripts
-	 */
-	public static function enqueue_onboarding_modal_script() {
-		// Only load on WooCommerce payment settings pages.
-		$screen = get_current_screen();
-		if ( ! is_admin() || ! $screen || 'woocommerce_page_wc-settings' !== $screen->id ) {
-			return;
-		}
-
-		wp_enqueue_script(
-			'wcpay-onboarding-modal',
-			plugins_url( 'dist/onboarding-modal.js', WCPAY_PLUGIN_FILE ),
-			[ 'wp-hooks', 'wp-element', 'wp-components', 'wp-plugins' ], // dependencies.
-			WCPAY_VERSION_NUMBER,
-			true
-		);
-
-		wp_enqueue_style(
-			'wcpay-onboarding-modal',
-			plugins_url( 'dist/onboarding-modal.css', WCPAY_PLUGIN_FILE ),
-			[],
-			self::get_file_version( 'dist/onboarding-modal.css' ),
 		);
 	}
 
