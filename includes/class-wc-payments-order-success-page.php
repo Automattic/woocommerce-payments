@@ -66,7 +66,12 @@ class WC_Payments_Order_Success_Page {
 						<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/multibanco-instructions.svg', WCPAY_PLUGIN_FILE ) ); ?>" alt="<?php esc_attr_e( 'Multibanco', 'woocommerce-payments' ); ?>">
 					</div>
 					<div class="payment-details">
-						<div class="payment-header"><?php echo $formatted_order_total; ?></div>
+						<div class="payment-header">
+							<?php
+							/* translators: %s: order number */
+							printf( esc_html__( 'Order #%s', 'woocommerce-payments' ), $order->get_order_number() );
+							?>
+						</div>
 						<div class="payment-expiry">
 						<?php
 							printf(
