@@ -660,7 +660,7 @@ class WC_Payments_Admin {
 				$this->get_js_settings()
 			);
 
-			$payment_method_definitions = rawurlencode( wp_json_encode( PaymentMethodUtils::get_payment_method_definitions_json() ) );
+			$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
 			wp_add_inline_script(
 				'WCPAY_ADMIN_SETTINGS',
 				"const woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
@@ -692,7 +692,7 @@ class WC_Payments_Admin {
 				$this->get_js_settings()
 			);
 
-			$payment_method_definitions = rawurlencode( wp_json_encode( PaymentMethodUtils::get_payment_method_definitions_json() ) );
+			$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
 			wp_add_inline_script(
 				'WCPAY_DASH_APP',
 				"const woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
