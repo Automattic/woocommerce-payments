@@ -1676,22 +1676,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( Intent_Status::REQUIRES_ACTION === $status ) {
-				if ( $this->is_changing_payment_method_for_subscription() ) {
-					// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here.
-					if ( isset( $_POST['update_all_subscriptions_payment_method'] ) && wc_clean( wp_unslash( $_POST['update_all_subscriptions_payment_method'] ) ) ) {
-						$order->update_meta_data( '_delayed_update_payment_method_all', wc_clean( $_POST['payment_method'] ) );
-						$order->save();
-					}
-					$redirect_url = sprintf(
-						'#wcpay-confirm-%s:%s:%s:%s',
-						$payment_needed ? 'pi' : 'si',
-						$order_id,
-						$client_secret,
-						wp_create_nonce( 'wcpay_update_order_status_nonce' )
-					);
-					wp_safe_redirect( $redirect_url );
-					exit;
-				}
 				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
 					$response = [
 						'result'   => 'success',
@@ -1737,6 +1721,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
 		if ( isset( $response ) ) {
+			if ( $this->is_changing_payment_method_for_subscription() ) {
+				if ( isset( $_POST['update_all_subscriptions_payment_method'] ) && wc_clean( wp_unslash( $_POST['update_all_subscriptions_payment_method'] ) ) ) {
+					$order->update_meta_data( '_delayed_update_payment_method_all', wc_clean( $_POST['payment_method'] ) );
+					$order->save();
+				}
+
+				wp_safe_redirect( $response['redirect'] );
+				exit;
+			}
 			return $response;
 		}
 
@@ -3454,12 +3447,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// the AJAX request. We are about to use the status of the intent saved in
 			// the order, so we need to make sure the intent that was used for authentication
 			// is the same as the one we're using to update the status.
-			// if ( $intent_id !== $intent_id_received ) {
-			// throw new Intent_Authentication_Exception(
-			// __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-			// 'intent_id_mismatch'
-			// );
-			// }
+			if ( $intent_id !== $intent_id_received ) {
+				throw new Intent_Authentication_Exception(
+				__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+				'intent_id_mismatch'
+				);
+			}
 
 			$amount                 = $order->get_total();
 			$payment_method_details = false;
