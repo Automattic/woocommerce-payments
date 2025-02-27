@@ -73,13 +73,12 @@ const PaymentElements = ( { api, ...props } ) => {
 		props.paymentMethodId,
 	] );
 
-	if ( ! stripeForUPE ) {
-		return <LoadableBlock isLoading numLines={ 3 }></LoadableBlock>;
-	}
-
 	return (
-		<div ref={ containerRef }>
-			<LoadableBlock isLoading={ ! appearance } numLines={ 3 }>
+		<>
+			<LoadableBlock
+				isLoading={ ! appearance || ! stripeForUPE }
+				numLines={ 3 }
+			>
 				<Elements
 					stripe={ stripeForUPE }
 					options={ {
@@ -114,7 +113,8 @@ const PaymentElements = ( { api, ...props } ) => {
 					/>
 				</Elements>
 			</LoadableBlock>
-		</div>
+			<div ref={ containerRef } />
+		</>
 	);
 };
 
