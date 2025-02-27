@@ -32,16 +32,18 @@ describe( 'Getting styles for automated theming', () => {
 	};
 
 	test( 'getFieldStyles returns correct styles for inputs', () => {
-		jest.spyOn( document, 'querySelector' ).mockImplementation( () => {
-			return mockElement;
-		} );
-		jest.spyOn( window, 'getComputedStyle' ).mockImplementation( () => {
-			return mockCSStyleDeclaration;
-		} );
+		const scope = {
+			querySelector: jest.fn( () => mockElement ),
+			defaultView: {
+				getComputedStyle: jest.fn( () => mockCSStyleDeclaration ),
+			},
+		};
 
 		const fieldStyles = upeStyles.getFieldStyles(
 			'.woocommerce-checkout .form-row input',
-			'.Input'
+			'.Input',
+			null,
+			scope
 		);
 		expect( fieldStyles ).toEqual( {
 			backgroundColor: 'rgba(0, 0, 0, 0)',
@@ -55,13 +57,15 @@ describe( 'Getting styles for automated theming', () => {
 	} );
 
 	test( 'getFieldStyles returns empty object if it can not find the element', () => {
-		jest.spyOn( document, 'querySelector' ).mockImplementation( () => {
-			return undefined;
-		} );
+		const scope = {
+			querySelector: jest.fn( () => undefined ),
+		};
 
 		const fieldStyles = upeStyles.getFieldStyles(
 			'.i-do-not-exist',
-			'.Input'
+			'.Input',
+			null,
+			scope
 		);
 		expect( fieldStyles ).toEqual( {} );
 	} );
@@ -103,25 +107,31 @@ describe( 'Getting styles for automated theming', () => {
 			},
 			1: { href: null },
 		};
-		jest.spyOn( document, 'styleSheets', 'get' ).mockReturnValue(
-			mockStyleSheets
-		);
+		const scope = {
+			styleSheets: {
+				get: jest.fn( () => mockStyleSheets ),
+			},
+		};
 
-		const fontRules = upeStyles.getFontRulesFromPage();
+		const fontRules = upeStyles.getFontRulesFromPage( scope );
 		expect( fontRules ).toEqual( [] );
 	} );
 
 	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', () => {
-		jest.spyOn( document, 'querySelector' ).mockImplementation( () => {
-			return mockElement;
-		} );
-		jest.spyOn( window, 'getComputedStyle' ).mockImplementation( () => {
-			return mockCSStyleDeclaration;
-		} );
+		const scope = {
+			querySelector: jest.fn( () => mockElement ),
+			createElement: jest.fn( ( htmlTag ) =>
+				document.createElement( htmlTag )
+			),
+			defaultView: {
+				getComputedStyle: jest.fn( () => mockCSStyleDeclaration ),
+			},
+		};
 
 		const appearance = upeStyles.getAppearance(
 			'shortcode_checkout',
-			true
+			true,
+			scope
 		);
 		expect( appearance ).toEqual( {
 			variables: {
@@ -285,23 +295,24 @@ describe( 'Getting styles for automated theming', () => {
 			],
 		},
 	].forEach( ( { elementsLocation, expectedSelectors } ) => {
-		afterEach( () => {
-			document.querySelector.mockClear();
-		} );
-
 		describe( `when elementsLocation is ${ elementsLocation }`, () => {
 			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
-				jest.spyOn( document, 'querySelector' ).mockImplementation(
-					() => mockElement
-				);
-				jest.spyOn( window, 'getComputedStyle' ).mockImplementation(
-					() => mockCSStyleDeclaration
-				);
+				const scope = {
+					querySelector: jest.fn( () => mockElement ),
+					createElement: jest.fn( ( htmlTag ) =>
+						document.createElement( htmlTag )
+					),
+					defaultView: {
+						getComputedStyle: jest.fn(
+							() => mockCSStyleDeclaration
+						),
+					},
+				};
 
-				upeStyles.getAppearance( elementsLocation );
+				upeStyles.getAppearance( elementsLocation, false, scope );
 
 				expectedSelectors.forEach( ( selector ) => {
-					expect( document.querySelector ).toHaveBeenCalledWith(
+					expect( scope.querySelector ).toHaveBeenCalledWith(
 						selector
 					);
 				} );
