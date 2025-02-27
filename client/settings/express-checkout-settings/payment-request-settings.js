@@ -15,7 +15,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
 } from 'wcpay/data';
-import GooglePayTestModeCompatibilityNotice from '../google-play-test-mode-compatibility-notice';
+import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 
 const PaymentRequestSettings = ( { section } ) => {
 	const [

@@ -7,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import GooglePayTestModeCompatibilityNotice from '../google-play-test-mode-compatibility-notice';
+import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 import { useTestMode, usePaymentRequestEnabledSettings } from 'wcpay/data';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
