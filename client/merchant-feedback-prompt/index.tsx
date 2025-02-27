@@ -24,7 +24,11 @@ import './style.scss';
  * A react portal for the merchant feedback prompt.
  * This is used to render the custom snackbar prompt in the WC footer component, consistent with where WC notices (snackbars) are rendered.
  *
- * This is a temporary solution until Gutenberg Snackbar component accepts two actions and WooPayments can render dual-action snackbars using `createNotice`.
+ * HACK: This is a temporary solution until Gutenberg Snackbar component and `createNotice` accept two actions.
+ *
+ * This temporary workaround will remain in place until either:
+ * - Gutenberg Snackbar component is updated to accept two actions and we can use `core/notices` `createNotice()` to render the snackbar, or
+ * - The campaign for this prompt is complete and we can remove this code entirely.
  */
 const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 	const portalRoot = document.getElementsByClassName(
@@ -48,9 +52,6 @@ interface MerchantFeedbackPromptProps {
  *
  * This is used to gather feedback from merchants about their experience with WooPayments.
  * Only renders if there are no core notices and the prompt has not been dismissed.
- *
- * Note that this includes a customised React component for the snackbar,
- * because the Snackbar component doesn't accept two actions. See comment below for more details.
  */
 const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	dismissPrompt,
@@ -88,9 +89,11 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 						id: 'wcpay-merchant-feedback-prompt',
 						className: 'wcpay-merchant-feedback-prompt',
 						/**
-						 * The custom content for the snackbar is required because the Snackbar / Snackbar component doesn't accept two actions.
-						 * Once this is resolved in Gutenberg and available for WooPayments, we can remove this custom React content,
-						 * and provide the actions to the `actions` prop, using `createNotice` to add the snackbar without requiring a custom React component or portal.
+						 * HACK: This custom content for the snackbar is required because the Snackbar / Snackbar component doesn't accept two actions.
+						 *
+						 * This temporary workaround will remain in place until either:
+						 * - Gutenberg Snackbar component is updated to accept two actions and we can use `core/notices` `createNotice()` to render the snackbar, or
+						 * - The campaign for this prompt is complete and we can remove this code entirely.
 						 *
 						 * See https://github.com/WordPress/gutenberg/blob/c300edfebb48f79f6f0f6643ce04dd73303c5fcb/packages/components/src/snackbar/index.tsx#L119-L126
 						 */
