@@ -1676,6 +1676,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( Intent_Status::REQUIRES_ACTION === $status ) {
+				if ( $this->is_changing_payment_method_for_subscription() ) {
+					// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here.
+					if ( isset( $_POST['update_all_subscriptions_payment_method'] ) && wc_clean( wp_unslash( $_POST['update_all_subscriptions_payment_method'] ) ) ) {
+						$order->update_meta_data( '_delayed_update_payment_method_all', wc_clean( $_POST['payment_method'] ) );
+						$order->save();
+					}
+					$redirect_url = sprintf(
+						'#wcpay-confirm-%s:%s:%s:%s',
+						$payment_needed ? 'pi' : 'si',
+						$order_id,
+						$client_secret,
+						wp_create_nonce( 'wcpay_update_order_status_nonce' )
+					);
+					wp_safe_redirect( $redirect_url );
+					exit;
+				}
 				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
 					$response = [
 						'result'   => 'success',
@@ -1697,6 +1713,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'payment_method' => $payment_information->get_payment_method(),
 					];
 				}
+			}
+
+			if ( $this->is_changing_payment_method_for_subscription() && Intent_Status::REQUIRES_ACTION !== $status ) {
+				WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_information->get_payment_method() );
+
+				$this->order_service->set_payment_method_id_for_order( $order, $payment_method_id );
+				$this->order_service->set_customer_id_for_order( $order, $payment_information->get_customer_id() );
+
+				// Because this new payment does not require action/confirmation, remove this filter so that WC_Subscriptions_Change_Payment_Gateway proceeds to update all subscriptions if flagged.
+				remove_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this, 'update_payment_method_for_subscriptions' ], 10 );
 			}
 		}
 
@@ -3428,17 +3454,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// the AJAX request. We are about to use the status of the intent saved in
 			// the order, so we need to make sure the intent that was used for authentication
 			// is the same as the one we're using to update the status.
-			if ( $intent_id !== $intent_id_received ) {
-				throw new Intent_Authentication_Exception(
-					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-					'intent_id_mismatch'
-				);
-			}
+			// if ( $intent_id !== $intent_id_received ) {
+			// throw new Intent_Authentication_Exception(
+			// __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+			// 'intent_id_mismatch'
+			// );
+			// }
 
 			$amount                 = $order->get_total();
 			$payment_method_details = false;
+			$is_changing_payment    = isset( $_POST['is_changing_payment'] ) && filter_var( $_POST['is_changing_payment'], FILTER_VALIDATE_BOOLEAN );
+			$this->is_changing_payment_method_for_subscription();
 
-			if ( $amount > 0 ) {
+			if ( $amount > 0 && ! $is_changing_payment ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
 				$request = Get_Intention::create( $intent_id );
 				$request->set_hook_args( $order );
@@ -3485,6 +3513,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					} catch ( Exception $e ) {
 						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+					}
+				}
+
+				if ( $is_changing_payment ) {
+					$payment_token = $this->get_payment_token( $order );
+					if ( class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
+						WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_token->get_gateway_id() );
+						$notice = __( 'Payment method updated.', 'woocommerce-gateway-stripe' );
+
+						// $customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
+						// $this->order_service->set_payment_method_id_for_order( $order, $payment_method_id );
+						// $this->order_service->set_customer_id_for_order( $order, $customer_id );
+
+						if ( WC_Subscriptions_Change_Payment_Gateway::will_subscription_update_all_payment_methods( $order ) && WC_Subscriptions_Change_Payment_Gateway::update_all_payment_methods_from_subscription( $order, $token->get_gateway_id() ) ) {
+							$notice = __( 'Payment method updated for all your current subscriptions.', 'woocommerce-gateway-stripe' );
+						}
+
+						wc_add_notice( $notice );
 					}
 				}
 

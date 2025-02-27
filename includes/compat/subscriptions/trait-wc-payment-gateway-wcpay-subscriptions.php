@@ -225,6 +225,29 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// Update subscriptions token when user sets a default payment method.
 		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
+		add_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this, 'update_payment_method_for_subscriptions' ], 10, 3 );
+	}
+
+	/**
+	 * Stops WC Subscriptions from updating the payment method for subscriptions.
+	 *
+	 * @param bool $update_payment_method
+	 * @param string $new_payment_method
+	 * @param WC_Subscription $subscription
+	 * @return bool
+	 */
+	public function update_payment_method_for_subscriptions( $update_payment_method, $new_payment_method, $subscription ) {
+		// Avoid interfering with use-cases not related to updating payment method for subscriptions.
+		if ( ! $this->is_changing_payment_method_for_subscription() ) {
+			return $update_payment_method;
+		}
+
+		// Avoid interfering with other payment gateways' operations.
+		if ( $new_payment_method !== $this->id ) {
+			return $update_payment_method;
+		}
+
+		return false;
 	}
 
 	/**

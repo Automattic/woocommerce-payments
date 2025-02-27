@@ -207,6 +207,8 @@ export default class WCPayAPI {
 			} );
 		};
 
+		const isChangingPayment = getConfig( 'isChangingPayment' );
+
 		return (
 			confirmPaymentOrSetup()
 				// ToDo: Switch to an async function once it works with webpack.
@@ -236,6 +238,7 @@ export default class WCPayAPI {
 						should_save_payment_method: shouldSavePaymentMethod
 							? 'true'
 							: 'false',
+						is_changing_payment: isChangingPayment,
 					} );
 
 					return [ ajaxCall, result.error ];
