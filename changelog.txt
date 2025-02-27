@@ -1,5 +1,60 @@
 *** WooPayments Changelog ***
 
+= 9.0.0 - 2025-02-26 =
+* Add - Add E2E tests for currency switching at checkout.
+* Add - Add GrabPay payment method details to the View Transaction page.
+* Add - Add GrabPay to the settings page when eligible.
+* Add - Add loader indication for Stripe notifications banner component
+* Add - Add payment method logos to checkout block card label.
+* Add - Adds store_id property to body of WooPay tracker events.
+* Add - Add Stripe embedded account notifications component on the Overview page
+* Add - Add WeChat Pay settings.
+* Add - Add WeChat Pay support to checkout.
+* Add - feat: add initial support for Alipay settings
+* Add - feat: add order notes to tokenized ECE GooglePay/ApplePay on blocks checkout
+* Add - Implement checkout for GrabPay payments.
+* Add - Pass the business name to the express checkout handler.
+* Fix - Avoid duplicated payment methods detection notice on new stores.
+* Fix - Avoid PMME init for unavailable BNPL use-cases.
+* Fix - Ensure multi-currency widget markup getter don't throw errors.
+* Fix - Ensures that the tokenised cart for ECE implementation is disabled by default.
+* Fix - fix: attribute selection from PDPs with tokenized ECE
+* Fix - fix: tokenized ECE improvements with WC Deposits, Bookings, Bundles.
+* Fix - Fixed an issue with the copy test card number on Astra theme
+* Fix - Fixes incorrect defined statement for WC_Install::STORE_ID_OPTION constant.
+* Fix - Fixes thrown PHP warning in checkout config.
+* Fix - Fix Stripe KYC flow Woo color
+* Fix - Fix the default value of the FRT advanced options.
+* Fix - Improve how Stripe Billing integration is loaded to prevent unnecessary queries on every page load.
+* Fix - Prevent fatal errors when subscription is deactivated due outdated version.
+* Fix - Set orderby to `none` for order queries where checking if order exists.
+* Fix - Update the size of Woo logo on the test drive onboarding page.
+* Update - Add a notice indicating that overview page needs to be reloaded after completing the requirements in the embedded component.
+* Update - Add JSON-formatted minimum amount details to the amount too small error message.
+* Update - feat: GooglePay/ApplePay refactor to leverage Store API is enabled by default - second try.
+* Update - Improve CSV export experience and deliver consistent reports via async transact platform service-based CSV exports.
+* Update - Remove the receipt details tab in the card readers page.
+* Update - update: add payment method functionality to honor WC rate limit.
+* Update - update: tokenized ECE to exclude itemized items on rounding discrepancies of totals.
+* Update - Update copy in the Woopayments Reset account modal for incomplete onboarding accounts
+* Update - Update Credit Card / Debit Card label to Cards
+* Update - Update handling for 0 feeAmount to be consistent with details page.
+* Update - Update handling for refund processing in case of insufficient funds.
+* Update - Update handling of PR as a country in the terminal locations endpoint.
+* Update - Update the copy in the existing modal for resetting a WooPayments account.
+* Dev - Add critical tag to tests that are part of the critical flows.
+* Dev - Add new E2E tests to make sure a non-admin user, such as an editor, can access the wp-admin without errors.
+* Dev - Add Slack integration to Playwright E2E tests.
+* Dev - Cache calls to wc_get_orders in the incentives class
+* Dev - Extract the Account Session logic from Embedded components onboarding into a reusable utility hook.
+* Dev - Fix potential flakiness while creating a page with the checkout block.
+* Dev - Remove Puppeteer references.
+* Dev - Remove routing to the partially re-engineered payment process"
+* Dev - Update E2E NPM scripts.
+* Dev - Update E2E readme doc.
+* Dev - Update E2E setup scripts to avoid conflicts with other containers and permissions.
+* Dev - Update Github actions and workflows. Change e2e tests directory structure.
+
 = 8.9.2 - 2025-02-21 =
 * Fix - Fixed WooPay opt-in race condition
 

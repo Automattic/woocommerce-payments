@@ -287,7 +287,7 @@ describe( 'PaymentDetailsSummary', () => {
 		if ( charge.order ) {
 			charge.order.subscriptions = [
 				{
-					number: 246,
+					number: 'custom-246',
 					url: 'https://example.com/subscription/246',
 				},
 			];

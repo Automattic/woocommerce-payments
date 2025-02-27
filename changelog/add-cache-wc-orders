@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Cache calls to wc_get_orders in the incentives class
