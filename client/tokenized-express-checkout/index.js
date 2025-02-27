@@ -65,6 +65,9 @@ const fetchNewCartData = async () => {
 };
 
 const getTotalAmount = () => {
+	if ( false ) {
+		return;
+	}
 	if ( cachedCartData ) {
 		return transformPrice(
 			parseInt( cachedCartData.totals.total_price, 10 ) -

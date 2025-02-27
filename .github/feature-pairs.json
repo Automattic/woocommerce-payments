@@ -1,0 +1,12 @@
+{
+  "pairs": [
+    {
+      "name": "Express Checkout Implementation",
+      "paths": [
+        "client/express-checkout",
+        "client/tokenized-express-checkout"
+      ],
+      "description": "These are parallel implementations of Express Checkout. The tokenized version will eventually replace the original version, so changes should typically be applied to both."
+    }
+  ]
+} 

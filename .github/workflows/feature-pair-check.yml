@@ -1,0 +1,105 @@
+name: Feature Pair Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-feature-pairs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install @actions/core @actions/github
+
+      - name: Check feature pairs
+        id: check-pairs
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Load feature pairs configuration
+            const pairsConfig = JSON.parse(fs.readFileSync('.github/feature-pairs.json', 'utf8'));
+            
+            // Get the list of files changed in this PR
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const changedFiles = files.map(file => file.filename);
+            
+            // Check each pair of features
+            let commentBody = '';
+            
+            for (const pair of pairsConfig.pairs) {
+              const pathsWithChanges = [];
+              const pathsWithoutChanges = [];
+              
+              // Check which paths in the pair have changes
+              for (const featurePath of pair.paths) {
+                const hasChanges = changedFiles.some(file => file.startsWith(featurePath));
+                if (hasChanges) {
+                  pathsWithChanges.push(featurePath);
+                } else {
+                  pathsWithoutChanges.push(featurePath);
+                }
+              }
+              
+              // If some paths have changes but others don't, add to the comment
+              if (pathsWithChanges.length > 0 && pathsWithoutChanges.length > 0) {
+                commentBody += `## ${pair.name}\n\n`;
+                commentBody += `${pair.description}\n\n`;
+                commentBody += `- ✅ Changes detected in: \`${pathsWithChanges.join('`, `')}\`\n`;
+                commentBody += `- ❓ No changes detected in: \`${pathsWithoutChanges.join('`, `')}\`\n\n`;
+                commentBody += `Please verify if the changes in \`${pathsWithChanges.join('`, `')}\` should also be applied to \`${pathsWithoutChanges.join('`, `')}\`.\n\n`;
+              }
+            }
+            
+            // If we have something to comment about, post a comment on the PR
+            if (commentBody) {
+              commentBody = `# Feature Pair Check\n\nThis PR contains changes to one part of a feature pair but not to its counterpart(s).\n\n${commentBody}`;
+              
+              // Check if we've already commented on this PR
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number
+              });
+              
+              const botComment = comments.find(comment => 
+                comment.user.login === 'github-actions[bot]' && 
+                comment.body.includes('Feature Pair Check')
+              );
+              
+              if (botComment) {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: commentBody
+                });
+              } else {
+                // Create new comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: commentBody
+                });
+              }
+            } 
