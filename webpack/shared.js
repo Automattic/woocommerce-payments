@@ -41,6 +41,7 @@ module.exports = {
 			'cart-block': './client/cart/blocks/index.js',
 			'plugins-page': './client/plugins-page/index.js',
 			'frontend-tracks': './client/frontend-tracks/index.js',
+			'onboarding-modal': './client/onboarding/modal/index.tsx',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.

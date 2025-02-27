@@ -25,3 +25,7 @@ declare module 'dompurify' {
 declare module '@woocommerce/settings' {
 	const getSetting: ( key: string ) => string;
 }
+
+declare module '@wordpress/plugins' {
+	export function registerPlugin( name: string, settings: any ): void;
+}
