@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Avoid PMME init for unavailable BNPL use-cases.
