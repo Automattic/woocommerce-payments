@@ -1575,8 +1575,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				if ( $intent_meta_order_id !== $order_id ) {
 					throw new Order_ID_Mismatch_Exception(
-						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-						'order_id_mismatch'
+							__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+							'order_id_mismatch'
 					);
 				}
 			} else {
