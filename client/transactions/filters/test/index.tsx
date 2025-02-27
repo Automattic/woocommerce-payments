@@ -356,7 +356,7 @@ describe( 'Transactions filters', () => {
 		let ruleSelector: HTMLElement;
 
 		beforeEach( () => {
-			addAdvancedFilter( 'Sales Channel' );
+			addAdvancedFilter( 'Sales channel' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction sales channel filter/i,
 			} );

@@ -442,7 +442,7 @@ export const getAdvancedFilters = (
 			},
 			channel: {
 				labels: {
-					add: __( 'Sales Channel', 'woocommerce-payments' ),
+					add: __( 'Sales channel', 'woocommerce-payments' ),
 					remove: __(
 						'Remove transaction sales channel filter',
 						'woocommerce-payments'
@@ -451,15 +451,14 @@ export const getAdvancedFilters = (
 						'Select a transaction sales channel filter match',
 						'woocommerce-payments'
 					),
-					/* translators: A sentence describing a Transaction Sales Channel filter. */
 					title:
 						wooCommerceVersion < 7.8
 							? __(
-									'{{title}}Sales Channel{{/title}} {{rule /}} {{filter /}}',
+									'{{title}}Sales channel{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
 							  )
 							: __(
-									'<title>Sales Channel</title> <rule /> <filter />',
+									'<title>Sales channel</title> <rule /> <filter />',
 									'woocommerce-payments'
 							  ),
 					filter: __(
@@ -473,7 +472,7 @@ export const getAdvancedFilters = (
 						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction sales channel type. */
 						label: _x(
 							'Is',
-							'Sales Channel',
+							'Sales channel',
 							'woocommerce-payments'
 						),
 					},
@@ -482,7 +481,7 @@ export const getAdvancedFilters = (
 						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction sales channel type. */
 						label: _x(
 							'Is not',
-							'Sales Channel',
+							'Sales channel',
 							'woocommerce-payments'
 						),
 					},

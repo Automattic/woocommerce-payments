@@ -31,7 +31,7 @@ export const sourceDevice = {
 
 // Mapping of transaction channel type string.
 export const channel = {
-	online: __( 'Online Store', 'woocommerce-payments' ),
+	online: __( 'Online store', 'woocommerce-payments' ),
 	in_person: __( 'In-Person', 'woocommerce-payments' ),
 	in_person_pos: __( 'In-Person (POS)', 'woocommerce-payments' ),
 };

@@ -159,8 +159,8 @@ const getColumns = (
 		},
 		{
 			key: 'channel',
-			label: __( 'Sales Channel', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Sales Channel', 'woocommerce-payments' ),
+			label: __( 'Sales channel', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Sales channel', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 		},
