@@ -152,13 +152,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -508,13 +508,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -868,13 +868,13 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -1179,13 +1179,13 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -1504,13 +1504,13 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -1829,13 +1829,13 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -2177,13 +2177,13 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -2506,13 +2506,13 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -2774,13 +2774,13 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -3078,13 +3078,13 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>
@@ -3403,7 +3403,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
@@ -3728,13 +3728,13 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
                 <span
                   class="woocommerce-list__item-title"
                 >
-                  Channel
+                  Sales channel
                 </span>
                 <span
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Online
+                    Online store
                   </span>
                 </span>
               </div>

@@ -19,10 +19,12 @@ import {
 	usePaymentRequestButtonTheme,
 	useWooPayEnabledSettings,
 } from '../../../data';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 jest.mock( '../../../data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePaymentRequestLocations: jest.fn(),
+	useTestMode: jest.fn().mockReturnValue( [ false ] ),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonBorderRadius: jest.fn().mockReturnValue( [ 4 ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
@@ -63,6 +65,15 @@ const getMockPaymentRequestLocations = (
 	updatePaymentRequestLocationsHandler,
 ];
 
+const renderWithSettingsProvider = ( ui ) =>
+	render(
+		<WCPaySettingsContext.Provider
+			value={ { accountStatus: {}, featureFlags: {} } }
+		>
+			{ ui }
+		</WCPaySettingsContext.Provider>
+	);
+
 describe( 'PaymentRequestSettings', () => {
 	beforeEach( () => {
 		usePaymentRequestEnabledSettings.mockReturnValue(
@@ -79,7 +90,9 @@ describe( 'PaymentRequestSettings', () => {
 	} );
 
 	it( 'renders enable settings with defaults', () => {
-		render( <PaymentRequestSettings section="enable" /> );
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
 
 		// confirm there is a heading
 		expect(
@@ -104,7 +117,9 @@ describe( 'PaymentRequestSettings', () => {
 			)
 		);
 
-		render( <PaymentRequestSettings section="enable" /> );
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
 
 		expect( updateIsPaymentRequestEnabledHandler ).not.toHaveBeenCalled();
 
@@ -119,7 +134,9 @@ describe( 'PaymentRequestSettings', () => {
 	} );
 
 	it( 'renders general settings with defaults', () => {
-		render( <PaymentRequestSettings section="general" /> );
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="general" />
+		);
 
 		// confirm settings headings
 		expect(
@@ -163,7 +180,9 @@ describe( 'PaymentRequestSettings', () => {
 				updatePaymentRequestLocationsHandler
 			)
 		);
-		render( <PaymentRequestSettings section="enable" /> );
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
 
 		expect( updatePaymentRequestLocationsHandler ).not.toHaveBeenCalled();
 
@@ -201,7 +220,9 @@ describe( 'PaymentRequestSettings', () => {
 			setButtonThemeMock,
 		] );
 
-		render( <PaymentRequestSettings section="general" /> );
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="general" />
+		);
 
 		expect( setButtonTypeMock ).not.toHaveBeenCalled();
 		expect( setButtonSizeMock ).not.toHaveBeenCalled();
@@ -237,7 +258,9 @@ describe( 'PaymentRequestSettings', () => {
 			)
 		);
 
-		render( <PaymentRequestSettings section="enable" /> );
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
 		userEvent.click( screen.getByText( 'Product Page' ) );
