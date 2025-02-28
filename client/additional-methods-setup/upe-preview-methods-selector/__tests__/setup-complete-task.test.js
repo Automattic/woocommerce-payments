@@ -10,6 +10,7 @@ import WizardTaskContext from '../../wizard/task/context';
 import SetupComplete from '../setup-complete-task';
 import WizardContext from '../../wizard/wrapper/context';
 import { useEnabledPaymentMethodIds } from '../../../data';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
@@ -18,16 +19,24 @@ jest.mock( '../../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 } ) );
 
+const renderWithSettingsProvider = ( ui ) =>
+	render(
+		<WCPaySettingsContext.Provider value={ global.wcpaySettings }>
+			{ ui }
+		</WCPaySettingsContext.Provider>
+	);
+
 describe( 'SetupComplete', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'card', 'bancontact', 'eps', 'ideal', 'p24', 'sepa_debit' ],
 			() => null,
 		] );
+		global.wcpaySettings = { featureFlags: { multiCurrency: true } };
 	} );
 
 	it( 'renders setup complete messaging when context value is undefined', () => {
-		render(
+		renderWithSettingsProvider(
 			<WizardContext.Provider value={ { completedTasks: {} } }>
 				<WizardTaskContext.Provider value={ { isActive: true } }>
 					<SetupComplete />
@@ -41,9 +50,11 @@ describe( 'SetupComplete', () => {
 	} );
 
 	it( 'renders setup complete messaging when context value is `true`', () => {
-		render(
+		renderWithSettingsProvider(
 			<WizardContext.Provider
-				value={ { completedTasks: { 'add-payment-methods': true } } }
+				value={ {
+					completedTasks: { 'add-payment-methods': true },
+				} }
 			>
 				<WizardTaskContext.Provider value={ { isActive: true } }>
 					<SetupComplete />
@@ -57,7 +68,7 @@ describe( 'SetupComplete', () => {
 	} );
 
 	it( 'renders setup complete messaging when context value says that methods have not changed', () => {
-		render(
+		renderWithSettingsProvider(
 			<WizardContext.Provider
 				value={ {
 					completedTasks: {
@@ -90,7 +101,7 @@ describe( 'SetupComplete', () => {
 			[ 'card', 'ideal' ],
 			() => null,
 		] );
-		render(
+		renderWithSettingsProvider(
 			<WizardContext.Provider
 				value={ {
 					completedTasks: {
@@ -123,7 +134,7 @@ describe( 'SetupComplete', () => {
 			[ 'card', 'ideal' ],
 			() => null,
 		] );
-		render(
+		renderWithSettingsProvider(
 			<WizardContext.Provider
 				value={ {
 					completedTasks: {
@@ -156,7 +167,7 @@ describe( 'SetupComplete', () => {
 			[ 'card', ...additionalMethods ],
 			() => null,
 		] );
-		render(
+		renderWithSettingsProvider(
 			<WizardContext.Provider
 				value={ {
 					completedTasks: {
