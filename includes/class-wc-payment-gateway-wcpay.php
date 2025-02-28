@@ -1697,7 +1697,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'payment_method' => $payment_information->get_payment_method(),
 					];
 				}
-			} elseif ( $this->is_changing_payment_method_for_subscription() ) {
+			} elseif ( $this->is_changing_payment_method_for_subscription() && class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
 				// Update the payment method for subscription if the payment intent is not requiring action.
 				WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_information->get_payment_method() );
 
@@ -3507,15 +3507,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
+				$return_url = $this->get_return_url( $order );
+
 				if ( $is_changing_payment ) {
 					$payment_token = $this->get_payment_token( $order );
 					if ( class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
 						WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_token->get_gateway_id() );
 						$notice = __( 'Payment method updated.', 'woocommerce-gateway-stripe' );
-
-						// $customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
-						// $this->order_service->set_payment_method_id_for_order( $order, $payment_method_id );
-						// $this->order_service->set_customer_id_for_order( $order, $customer_id );
 
 						if ( WC_Subscriptions_Change_Payment_Gateway::will_subscription_update_all_payment_methods( $order ) && WC_Subscriptions_Change_Payment_Gateway::update_all_payment_methods_from_subscription( $order, $token->get_gateway_id() ) ) {
 							$notice = __( 'Payment method updated for all your current subscriptions.', 'woocommerce-gateway-stripe' );
@@ -3523,9 +3521,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 						wc_add_notice( $notice );
 					}
+					$return_url = $order->get_view_order_url();
 				}
-
-				$return_url = $is_changing_payment ? $order->get_view_order_url() : $this->get_return_url( $order );
 
 				// Send back redirect URL in the successful case.
 				echo wp_json_encode(
