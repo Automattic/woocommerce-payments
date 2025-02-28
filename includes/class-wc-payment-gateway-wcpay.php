@@ -1716,16 +1716,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
-		if ( isset( $response ) ) {
-			if ( $this->is_changing_payment_method_for_subscription() ) {
-				if ( isset( $_POST['update_all_subscriptions_payment_method'] ) && wc_clean( wp_unslash( $_POST['update_all_subscriptions_payment_method'] ) ) ) {
-					$order->update_meta_data( '_delayed_update_payment_method_all', wc_clean( $_POST['payment_method'] ) );
-					$order->save();
-				}
-
-				wp_safe_redirect( $response['redirect'] );
-				exit;
+		if ( isset($status) && Intent_Status::REQUIRES_ACTION === $status && $this->is_changing_payment_method_for_subscription() ) {
+			// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here
+			if ( isset( $_POST['update_all_subscriptions_payment_method'] ) && wc_clean( wp_unslash( $_POST['update_all_subscriptions_payment_method'] ) ) ) {
+				$order->update_meta_data( '_delayed_update_payment_method_all', wc_clean( $_POST['payment_method'] ) );
+				$order->save();
 			}
+
+			wp_safe_redirect( $response['redirect'] );
+			exit;
+		}
+
+		if ( isset( $response ) ) {
 			return $response;
 		}
 

@@ -901,12 +901,13 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order                                                          $order The order.
 	 * @param WC_Payments_API_Payment_Intention|WC_Payments_API_Setup_Intention $intent The payment or setup intention object.
+	 * @param bool                                                            $is_changing_payment Whether the payment is being changed for a subscription.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_intent_info_to_order( WC_Order $order, $intent, $is_changing_payment = false ) {
+	public function attach_intent_info_to_order( WC_Order $order, $intent, $is_changing_payment_method_for_subscription = false ) {
 		// We don't want to allow metadata for a successful payment to be disrupted.
-		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) && ! $is_changing_payment ) {
+		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) && ! $is_changing_payment_method_for_subscription ) {
 			return;
 		}
 		// first, let's prepare all the metadata needed for refunds, required for status change etc.
