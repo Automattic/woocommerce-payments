@@ -5,12 +5,17 @@ HTMLOptionsCollection [
   <option
     value="online"
   >
-    Online
+    Online store
   </option>,
   <option
     value="in_person"
   >
     In-Person
+  </option>,
+  <option
+    value="in_person_pos"
+  >
+    In-Person (POS)
   </option>,
 ]
 `;

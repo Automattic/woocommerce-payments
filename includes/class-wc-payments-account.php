@@ -351,6 +351,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'status'                => $account['status'],
 			'created'               => $account['created'] ?? '',
 			'testDrive'             => $account['is_test_drive'] ?? false,
+			'isLive'                => $account['is_live'] ?? false,
 			'paymentsEnabled'       => $account['payments_enabled'],
 			'detailsSubmitted'      => $account['details_submitted'] ?? true,
 			'deposits'              => $account['deposits'] ?? [],
