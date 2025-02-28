@@ -663,7 +663,7 @@ class WC_Payments_Admin {
 			$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
 			wp_add_inline_script(
 				'WCPAY_ADMIN_SETTINGS',
-				"const woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
+				"window.woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
 				'before'
 			);
 
