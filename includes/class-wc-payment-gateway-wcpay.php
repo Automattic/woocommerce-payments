@@ -1697,7 +1697,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'payment_method' => $payment_information->get_payment_method(),
 					];
 				}
-			} elseif ( $this->is_changing_payment_method_for_subscription() && class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
+			} elseif ( class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) && $this->is_changing_payment_method_for_subscription() ) {
 				// Update the payment method for subscription if the payment intent is not requiring action.
 				WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_information->get_payment_method() );
 
