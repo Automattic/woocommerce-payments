@@ -1697,9 +1697,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'payment_method' => $payment_information->get_payment_method(),
 					];
 				}
-			} elseif ( class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) && $this->is_changing_payment_method_for_subscription() ) {
-				// Update the payment method for subscription if the payment intent is not requiring action.
-				WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_information->get_payment_method() );
+			} elseif ( $this->is_changing_payment_method_for_subscription() ) {
+				// Only attempt to use WC_Subscriptions_Change_Payment_Gateway if it exists.
+				if ( class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
+					// Update the payment method for subscription if the payment intent is not requiring action.
+					WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_information->get_payment_method() );
+				}
 
 				// Because this new payment does not require action/confirmation, remove this filter so that WC_Subscriptions_Change_Payment_Gateway proceeds to update all subscriptions if flagged.
 				remove_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this, 'update_payment_method_for_subscriptions' ], 10 );
