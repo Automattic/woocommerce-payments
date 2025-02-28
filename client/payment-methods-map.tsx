@@ -39,7 +39,9 @@ const PaymentMethodDefinitions =
 		? woopaymentsPaymentMethodDefinitions
 		: {};
 
-const convertedPaymentMethodDefinitions = Object.fromEntries(
+const convertedPaymentMethodDefinitions = Object.fromEntries<
+	PaymentMethodMapEntry
+>(
 	Object.entries( PaymentMethodDefinitions ).map( ( [ key, value ] ) => [
 		key,
 		{
@@ -61,7 +63,7 @@ const convertedPaymentMethodDefinitions = Object.fromEntries(
 			allows_manual_capture: value.allows_manual_capture,
 			allows_pay_later: value.allows_pay_later,
 			accepts_only_domestic_payment: value.accepts_only_domestic_payment,
-		} as PaymentMethodMapEntry,
+		},
 	] )
 );
 
