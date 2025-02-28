@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Update handling for 0 feeAmount to be consistent with details page.

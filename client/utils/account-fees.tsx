@@ -114,7 +114,7 @@ export const getCurrentBaseFee = (
 };
 
 export const formatMethodFeesTooltip = (
-	accountFees: FeeStructure
+	accountFees?: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
 
