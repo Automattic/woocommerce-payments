@@ -6,7 +6,6 @@ import {
 	getIsWCPayEnabled,
 	getEnabledPaymentMethodIds,
 	getIsManualCaptureEnabled,
-	getAccountStatementDescriptor,
 	isSavingSettings,
 	getPaymentRequestLocations,
 	getIsPaymentRequestEnabled,
@@ -132,31 +131,6 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
 			expect( getIsManualCaptureEnabled( state ) ).toBeFalsy();
-		} );
-	} );
-
-	describe( 'getAccountStatementDescriptor()', () => {
-		test( 'returns the value of state.settings.data.account_statement_descriptor', () => {
-			const state = {
-				settings: {
-					data: {
-						account_statement_descriptor: 'my account statement',
-					},
-				},
-			};
-
-			expect( getAccountStatementDescriptor( state ) ).toEqual(
-				'my account statement'
-			);
-		} );
-
-		test.each( [
-			[ undefined ],
-			[ {} ],
-			[ { settings: {} } ],
-			[ { settings: { data: {} } } ],
-		] )( 'returns false if missing (tested state: %j)', ( state ) => {
-			expect( getAccountStatementDescriptor( state ) ).toEqual( '' );
 		} );
 	} );
 

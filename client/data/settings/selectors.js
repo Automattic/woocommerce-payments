@@ -53,18 +53,6 @@ export const isDirty = ( state ) => {
 	return getSettingsState( state ).isDirty || false;
 };
 
-export const getAccountStatementDescriptor = ( state ) => {
-	return getSettings( state ).account_statement_descriptor || '';
-};
-
-export const getAccountStatementDescriptorKanji = ( state ) => {
-	return getSettings( state ).account_statement_descriptor_kanji || '';
-};
-
-export const getAccountStatementDescriptorKana = ( state ) => {
-	return getSettings( state ).account_statement_descriptor_kana || '';
-};
-
 export const getAccountBusinessName = ( state ) => {
 	return getSettings( state ).account_business_name || '';
 };

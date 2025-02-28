@@ -7,7 +7,6 @@ import { useSelect, useDispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import {
-	useAccountStatementDescriptor,
 	useEnabledPaymentMethodIds,
 	useIsWCPayEnabled,
 	useManualCapture,
@@ -109,34 +108,6 @@ describe( 'Settings hooks tests', () => {
 			expect( actions.updateIsWCPayEnabled ).toHaveBeenCalledWith(
 				false
 			);
-		} );
-	} );
-
-	describe( 'useAccountStatementDescriptor()', () => {
-		test( 'returns the statement description value and a function', () => {
-			actions = {
-				updateAccountStatementDescriptor: jest.fn(),
-			};
-
-			selectors = {
-				getAccountStatementDescriptor: jest
-					.fn()
-					.mockReturnValue( 'statement value' ),
-			};
-
-			const [
-				statementDescriptor,
-				setStatementDescriptor,
-			] = useAccountStatementDescriptor();
-
-			expect( statementDescriptor ).toEqual( 'statement value' );
-			expect( setStatementDescriptor ).toHaveBeenCalledTimes( 0 );
-
-			setStatementDescriptor( 'statement value update' );
-
-			expect(
-				actions.updateAccountStatementDescriptor
-			).toHaveBeenCalledWith( 'statement value update' );
 		} );
 	} );
 

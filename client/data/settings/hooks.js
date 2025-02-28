@@ -121,42 +121,6 @@ export const useWCPaySubscriptions = () => {
 	];
 };
 
-export const useAccountStatementDescriptor = () => {
-	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
-
-	const accountStatementDescriptor = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountStatementDescriptor()
-	);
-
-	return [ accountStatementDescriptor, updateAccountStatementDescriptor ];
-};
-
-export const useAccountStatementDescriptorKanji = () => {
-	const { updateAccountStatementDescriptorKanji } = useDispatch( STORE_NAME );
-
-	const accountStatementDescriptorKanji = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountStatementDescriptorKanji()
-	);
-
-	return [
-		accountStatementDescriptorKanji,
-		updateAccountStatementDescriptorKanji,
-	];
-};
-
-export const useAccountStatementDescriptorKana = () => {
-	const { updateAccountStatementDescriptorKana } = useDispatch( STORE_NAME );
-
-	const accountStatementDescriptorKana = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountStatementDescriptorKana()
-	);
-
-	return [
-		accountStatementDescriptorKana,
-		updateAccountStatementDescriptorKana,
-	];
-};
-
 export const useAccountBusinessName = () => {
 	const { updateAccountBusinessName } = useDispatch( STORE_NAME );
 
