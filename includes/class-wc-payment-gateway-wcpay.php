@@ -3527,10 +3527,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				}
 
+				$return_url = $is_changing_payment ? $order->get_view_order_url() : $this->get_return_url( $order );
+
 				// Send back redirect URL in the successful case.
 				echo wp_json_encode(
 					[
-						'return_url' => $this->get_return_url( $order ),
+						'return_url' => $return_url,
 					]
 				);
 				wp_die();
