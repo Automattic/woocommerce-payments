@@ -238,6 +238,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 						{ __( 'Failure reason: ', 'woocommerce-payments' ) }
 					</strong>
 					{ payoutFailureMessages[ deposit.failure_code ] ||
+						deposit.failure_message ||
 						__( 'Unknown', 'woocommerce-payments' ) }
 				</BannerNotice>
 			) }

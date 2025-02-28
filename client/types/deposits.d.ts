@@ -33,6 +33,7 @@ export interface CachedDeposit {
 	automatic: boolean;
 	bank_reference_key: string;
 	failure_code: PayoutFailureCode;
+	failure_message: string;
 }
 
 export interface DepositsSummaryCache {
