@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Updated React and React-DOM from v17.0.2 to v18.2.0 to support the usage of react-dom/client
