@@ -10,8 +10,10 @@ import { render, screen, within } from '@testing-library/react';
  */
 import ExpressCheckoutSettings from '..';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 jest.mock( '../../../data', () => ( {
+	useTestMode: jest.fn().mockReturnValue( [] ),
 	useGetSettings: jest.fn().mockReturnValue( {} ),
 	useSettings: jest.fn().mockReturnValue( {} ),
 	usePaymentRequestEnabledSettings: jest
@@ -66,9 +68,17 @@ jest.mock( '@woocommerce/components', () => ( {
 		) ),
 } ) );
 
+const renderWithSettingsProvider = ( ui ) =>
+	render(
+		<WCPaySettingsContext.Provider value={ global.wcpaySettings }>
+			{ ui }
+		</WCPaySettingsContext.Provider>
+	);
+
 describe( 'ExpressCheckoutSettings', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
+			accountStatus: {},
 			restUrl: 'http://example.com/wp-json/',
 			featureFlags: {
 				woopayExpressCheckout: true,
@@ -77,7 +87,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	} );
 
 	test( 'renders error message for invalid method IDs', () => {
-		render( <ExpressCheckoutSettings methodId="foo" /> );
+		renderWithSettingsProvider(
+			<ExpressCheckoutSettings methodId="foo" />
+		);
 
 		const errorMessage = screen.queryByText(
 			'Invalid express checkout method ID specified.'
@@ -86,7 +98,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	} );
 
 	test( 'renders payment request breadcrumbs', () => {
-		render( <ExpressCheckoutSettings methodId="payment_request" /> );
+		renderWithSettingsProvider(
+			<ExpressCheckoutSettings methodId="payment_request" />
+		);
 
 		const linkToPayments = screen.getByRole( 'link', {
 			name: 'WooPayments',
@@ -100,7 +114,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	} );
 
 	test( 'renders payment request title and description', () => {
-		render( <ExpressCheckoutSettings methodId="payment_request" /> );
+		renderWithSettingsProvider(
+			<ExpressCheckoutSettings methodId="payment_request" />
+		);
 
 		const heading = screen.queryByRole( 'heading', {
 			name: 'Settings',
@@ -109,7 +125,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	} );
 
 	test( 'renders payment request enable setting and confirm its checkbox label', () => {
-		render( <ExpressCheckoutSettings methodId="payment_request" /> );
+		renderWithSettingsProvider(
+			<ExpressCheckoutSettings methodId="payment_request" />
+		);
 
 		const label = screen.getByRole( 'checkbox', {
 			name: 'Enable Apple Pay / Google Pay',
@@ -118,7 +136,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	} );
 
 	test( 'renders payment request general setting and confirm its first heading', () => {
-		render( <ExpressCheckoutSettings methodId="payment_request" /> );
+		renderWithSettingsProvider(
+			<ExpressCheckoutSettings methodId="payment_request" />
+		);
 
 		expect(
 			screen.queryByRole( 'heading', {
@@ -128,7 +148,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	} );
 
 	test( 'renders woopay breadcrumbs', () => {
-		render( <ExpressCheckoutSettings methodId="woopay" /> );
+		renderWithSettingsProvider(
+			<ExpressCheckoutSettings methodId="woopay" />
+		);
 
 		const linkToPayments = screen.getByRole( 'link', {
 			name: 'WooPayments',
@@ -140,7 +162,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	} );
 
 	test( 'renders woopay settings and confirm its checkbox label', () => {
-		render( <ExpressCheckoutSettings methodId="woopay" /> );
+		renderWithSettingsProvider(
+			<ExpressCheckoutSettings methodId="woopay" />
+		);
 
 		const label = screen.getByRole( 'checkbox', {
 			name: 'Enable WooPay',
@@ -149,7 +173,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	} );
 
 	test( 'renders WooPay express button appearance settings if feature flag is enabled and confirm its first heading', () => {
-		render( <ExpressCheckoutSettings methodId="woopay" /> );
+		renderWithSettingsProvider(
+			<ExpressCheckoutSettings methodId="woopay" />
+		);
 
 		expect(
 			screen.queryByRole( 'heading', {
@@ -161,7 +187,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	test( 'does not render WooPay express button appearance settings if feature flag is disabled', () => {
 		global.wcpaySettings.featureFlags.woopayExpressCheckout = false;
 
-		render( <ExpressCheckoutSettings methodId="woopay" /> );
+		renderWithSettingsProvider(
+			<ExpressCheckoutSettings methodId="woopay" />
+		);
 
 		expect(
 			screen.queryByRole( 'heading', {

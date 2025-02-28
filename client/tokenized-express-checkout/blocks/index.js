@@ -39,9 +39,7 @@ export const tokenizedExpressCheckoutElementApplePay = ( api ) => ( {
 			return false;
 		}
 
-		return new Promise( ( resolve ) => {
-			checkPaymentMethodIsAvailable( 'applePay', cart, resolve );
-		} );
+		return checkPaymentMethodIsAvailable( 'applePay', cart );
 	},
 } );
 
@@ -77,9 +75,7 @@ export const tokenizedExpressCheckoutElementGooglePay = ( api ) => {
 				return false;
 			}
 
-			return new Promise( ( resolve ) => {
-				checkPaymentMethodIsAvailable( 'googlePay', cart, resolve );
-			} );
+			return checkPaymentMethodIsAvailable( 'googlePay', cart );
 		},
 	};
 };

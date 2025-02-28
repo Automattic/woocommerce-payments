@@ -499,14 +499,14 @@ describe( 'Charge utilities / get channel string', () => {
 			expect( result ).toBe( 'In-Person' );
 		} );
 
-		test( 'should return "Online" for online channel', () => {
+		test( 'should return "Online store" for online channel', () => {
 			const result = utils.getTransactionChannel( 'online' );
-			expect( result ).toBe( 'Online' );
+			expect( result ).toBe( 'Online store' );
 		} );
 
-		test( 'should return "Online" for null channel', () => {
+		test( 'should return "Online store" for null channel', () => {
 			const result = utils.getTransactionChannel( null );
-			expect( result ).toBe( 'Online' );
+			expect( result ).toBe( 'Online store' );
 		} );
 	} );
 
@@ -530,11 +530,11 @@ describe( 'Charge utilities / get channel string', () => {
 			expect( result ).toBe( 'In-Person' );
 		} );
 
-		test( 'should return "Online" for online type', () => {
+		test( 'should return "Online store" for online type', () => {
 			const result = utils.getChargeChannel( 'online', {
 				ipp_channel: 'mobile_pos',
 			} );
-			expect( result ).toBe( 'Online' );
+			expect( result ).toBe( 'Online store' );
 		} );
 	} );
 } );

@@ -120,7 +120,7 @@ const composePaymentSummaryItems = ( {
 				: '–',
 		},
 		{
-			title: __( 'Channel', 'woocommerce-payments' ),
+			title: __( 'Sales channel', 'woocommerce-payments' ),
 			content: (
 				<span>
 					{ isTapToPay( metadata?.reader_model )
