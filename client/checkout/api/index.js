@@ -264,17 +264,11 @@ export default class WCPayAPI {
 							: 'false',
 					} );
 
-					return [ ajaxCall, paymentError || result.error ];
+					return [ ajaxCall, paymentError, result.error ];
 				} )
-				.then( ( res ) => {
-					const [
-						verificationCall,
-						paymentError,
-						originalError,
-					] = res;
-
-					if ( originalError ) {
-						throw originalError;
+				.then( ( [ verificationCall, paymentError, resultError ] ) => {
+					if ( resultError ) {
+						throw resultError;
 					}
 
 					return verificationCall.then( ( response ) => {
