@@ -11,11 +11,10 @@ import '@wordpress/jest-console';
 /**
  * Internal dependencies
  */
-import type { Charge } from 'wcpay/types/charges';
-import type { Dispute } from 'wcpay/types/disputes';
 import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 // Mock dateI18n
 jest.mock( '@wordpress/date', () => ( {
@@ -25,28 +24,6 @@ jest.mock( '@wordpress/date', () => ( {
 			.dateI18n( format, date, 'UTC' ); // Ensure UTC is used
 	} ),
 } ) );
-
-declare const global: {
-	wcSettings: {
-		locale: {
-			siteLocale: string;
-		};
-	};
-	wcpaySettings: {
-		isSubscriptionsActive: boolean;
-		shouldUseExplicitPrice: boolean;
-		zeroDecimalCurrencies: string[];
-		currencyData: Record< string, any >;
-		connect: {
-			country: string;
-		};
-		featureFlags: {
-			isAuthAndCaptureEnabled: boolean;
-		};
-		dateFormat: string;
-		timeFormat: string;
-	};
-};
 
 const mockDisputeDoAccept = jest.fn();
 
@@ -76,88 +53,84 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-const mockUseAuthorization = useAuthorization as jest.MockedFunction<
-	typeof useAuthorization
->;
+const mockUseAuthorization = useAuthorization;
 
-const getBaseCharge = (): Charge =>
-	( {
-		id: 'ch_38jdHA39KKA',
-		payment_intent: 'pi_abc',
-		/* Stripe data comes in seconds, instead of the default Date milliseconds */
-		created: 1568913840,
+const getBaseCharge = () => ( {
+	id: 'ch_38jdHA39KKA',
+	payment_intent: 'pi_abc',
+	/* Stripe data comes in seconds, instead of the default Date milliseconds */
+	created: 1568913840,
+	amount: 2000,
+	amount_refunded: 0,
+	application_fee_amount: 70,
+	disputed: false,
+	dispute: null,
+	currency: 'usd',
+	type: 'charge',
+	status: 'succeeded',
+	paid: true,
+	captured: true,
+	balance_transaction: {
 		amount: 2000,
-		amount_refunded: 0,
-		application_fee_amount: 70,
-		disputed: false,
-		dispute: null,
 		currency: 'usd',
-		type: 'charge',
-		status: 'succeeded',
-		paid: true,
-		captured: true,
-		balance_transaction: {
-			amount: 2000,
+		fee: 70,
+	},
+	refunds: {
+		data: [],
+	},
+	order: {
+		number: 45981,
+		url: 'https://somerandomorderurl.com/?edit_order=45981',
+	},
+	billing_details: {
+		name: 'Customer name',
+		email: 'mock@example.com',
+	},
+	payment_method_details: {
+		card: {
+			brand: 'visa',
+			last4: '4242',
+		},
+		type: 'card',
+	},
+	outcome: {
+		risk_level: 'normal',
+	},
+} );
+
+const getBaseDispute = () => ( {
+	id: 'dp_1',
+	amount: 2000,
+	charge: 'ch_38jdHA39KKA',
+	order: null,
+	balance_transactions: [
+		{
+			amount: -2000,
 			currency: 'usd',
-			fee: 70,
+			fee: 1500,
+			reporting_category: 'dispute',
 		},
-		refunds: {
-			data: [],
-		},
-		order: {
-			number: 45981,
-			url: 'https://somerandomorderurl.com/?edit_order=45981',
-		},
-		billing_details: {
-			name: 'Customer name',
-			email: 'mock@example.com',
-		},
-		payment_method_details: {
-			card: {
-				brand: 'visa',
-				last4: '4242',
-			},
-			type: 'card',
-		},
-		outcome: {
-			risk_level: 'normal',
-		},
-	} as any );
-
-const getBaseDispute = (): Dispute =>
-	( {
-		id: 'dp_1',
-		amount: 2000,
-		charge: 'ch_38jdHA39KKA',
-		order: null,
-		balance_transactions: [
-			{
-				amount: -2000,
-				currency: 'usd',
-				fee: 1500,
-				reporting_category: 'dispute',
-			},
-		],
-		created: 1693453017,
-		currency: 'usd',
-		evidence: {
-			billing_address: '123 test address',
-			customer_email_address: 'test@email.com',
-			customer_name: 'Test customer',
-			shipping_address: '123 test address',
-		},
-		evidence_details: {
-			due_by: 1694303999,
-			has_evidence: false,
-			past_due: false,
-			submission_count: 0,
-		},
-		issuer_evidence: null,
-		metadata: {},
-		payment_intent: 'pi_1',
-		reason: 'fraudulent',
-		status: 'needs_response',
-	} as Dispute );
+	],
+	created: 1693453017,
+	currency: 'usd',
+	evidence: {
+		billing_address: '123 test address',
+		customer_email_address: 'test@email.com',
+		customer_name: 'Test customer',
+		shipping_address: '123 test address',
+	},
+	evidence_details: {
+		due_by: 1694303999,
+		has_evidence: false,
+		past_due: false,
+		submission_count: 0,
+	},
+	issuer_evidence: null,
+	metadata: {},
+	payment_intent: 'pi_1',
+	reason: 'fraudulent',
+	status: 'needs_response',
+} );
 
 const getBaseMetadata = () => ( {
 	platform: 'ios',
@@ -165,19 +138,16 @@ const getBaseMetadata = () => ( {
 	reader_model: 'COTS_DEVICE',
 } );
 
-function renderCharge(
-	charge: Charge,
-	metadata = {},
-	isLoading = false,
-	props = {}
-) {
+function renderCharge( charge, metadata = {}, isLoading = false, props = {} ) {
 	const { container } = render(
-		<PaymentDetailsSummary
-			charge={ charge }
-			metadata={ metadata }
-			isLoading={ isLoading }
-			{ ...props }
-		/>
+		<WCPaySettingsContext.Provider value={ global.wcpaySettings }>
+			<PaymentDetailsSummary
+				charge={ charge }
+				metadata={ metadata }
+				isLoading={ isLoading }
+				{ ...props }
+			/>
+		</WCPaySettingsContext.Provider>
 	);
 	return container;
 }
@@ -233,6 +203,7 @@ describe( 'PaymentDetailsSummary', () => {
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		expect( console ).toHaveWarnedWith(
+			// eslint-disable-next-line max-len
 			'List with items prop is deprecated is deprecated and will be removed in version 9.0.0. Note: See ExperimentalList / ExperimentalListItem for the new API that will replace this component in future versions.'
 		);
 	} );
@@ -251,7 +222,7 @@ describe( 'PaymentDetailsSummary', () => {
 			balance_transaction: {
 				amount: -charge.amount_refunded,
 				currency: 'usd',
-			} as any,
+			},
 		} );
 
 		expect( renderCharge( charge ) ).toMatchSnapshot();
@@ -265,7 +236,7 @@ describe( 'PaymentDetailsSummary', () => {
 			balance_transaction: {
 				amount: -charge.amount_refunded,
 				currency: 'usd',
-			} as any,
+			},
 		} );
 
 		const container = renderCharge( charge );
@@ -297,7 +268,7 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	test( 'renders loading state', () => {
-		expect( renderCharge( {} as any, true ) ).toMatchSnapshot();
+		expect( renderCharge( {}, true ) ).toMatchSnapshot();
 	} );
 
 	describe( 'capture notification and fraud buttons', () => {
@@ -545,7 +516,7 @@ describe( 'PaymentDetailsSummary', () => {
 						reporting_category: 'dispute',
 					},
 				],
-			} as Dispute,
+			},
 		};
 
 		renderCharge( charge );
