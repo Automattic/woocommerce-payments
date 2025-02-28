@@ -442,43 +442,46 @@ export const getAdvancedFilters = (
 			},
 			channel: {
 				labels: {
-					add: __( 'Channel', 'woocommerce-payments' ),
+					add: __( 'Sales channel', 'woocommerce-payments' ),
 					remove: __(
-						'Remove transaction channel filter',
+						'Remove transaction sales channel filter',
 						'woocommerce-payments'
 					),
 					rule: __(
-						'Select a transaction channel filter match',
+						'Select a transaction sales channel filter match',
 						'woocommerce-payments'
 					),
-					/* translators: A sentence describing a Transaction Channel filter. */
 					title:
 						wooCommerceVersion < 7.8
 							? __(
-									'{{title}}Channel{{/title}} {{rule /}} {{filter /}}',
+									'{{title}}Sales channel{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
 							  )
 							: __(
-									'<title>Channel</title> <rule /> <filter />',
+									'<title>Sales channel</title> <rule /> <filter />',
 									'woocommerce-payments'
 							  ),
 					filter: __(
-						'Select a transaction channel',
+						'Select a transaction sales channel',
 						'woocommerce-payments'
 					),
 				},
 				rules: [
 					{
 						value: 'is',
-						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction channel type. */
-						label: _x( 'Is', 'Channel', 'woocommerce-payments' ),
+						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction sales channel type. */
+						label: _x(
+							'Is',
+							'Sales channel',
+							'woocommerce-payments'
+						),
 					},
 					{
 						value: 'is_not',
-						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction channel type. */
+						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction sales channel type. */
 						label: _x(
 							'Is not',
-							'Channel',
+							'Sales channel',
 							'woocommerce-payments'
 						),
 					},

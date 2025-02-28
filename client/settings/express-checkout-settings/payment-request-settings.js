@@ -15,6 +15,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
 } from 'wcpay/data';
+import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 
 const PaymentRequestSettings = ( { section } ) => {
 	const [
@@ -44,6 +45,7 @@ const PaymentRequestSettings = ( { section } ) => {
 		<Card>
 			{ section === 'enable' && (
 				<CardBody>
+					<GooglePayTestModeCompatibilityNotice />
 					<CheckboxControl
 						checked={ isPaymentRequestEnabled }
 						onChange={ updateIsPaymentRequestEnabled }
