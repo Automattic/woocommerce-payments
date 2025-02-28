@@ -1716,10 +1716,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
-		if ( isset($status) && Intent_Status::REQUIRES_ACTION === $status && $this->is_changing_payment_method_for_subscription() ) {
-			// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here
-			if ( isset( $_POST['update_all_subscriptions_payment_method'] ) && wc_clean( wp_unslash( $_POST['update_all_subscriptions_payment_method'] ) ) ) {
-				$order->update_meta_data( '_delayed_update_payment_method_all', wc_clean( $_POST['payment_method'] ) );
+		if ( isset( $status ) && Intent_Status::REQUIRES_ACTION === $status && $this->is_changing_payment_method_for_subscription() ) {
+			// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here.
+			if ( isset( $_POST['update_all_subscriptions_payment_method'] ) && wc_clean( wp_unslash( $_POST['update_all_subscriptions_payment_method'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$order->update_meta_data( '_delayed_update_payment_method_all', wc_clean( wp_unslash( $_POST['payment_method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$order->save();
 			}
 
@@ -3447,14 +3447,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// is the same as the one we're using to update the status.
 			if ( $intent_id !== $intent_id_received ) {
 				throw new Intent_Authentication_Exception(
-				__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
-				'intent_id_mismatch'
+					__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+					'intent_id_mismatch'
 				);
 			}
 
 			$amount                 = $order->get_total();
 			$payment_method_details = false;
-			$is_changing_payment    = isset( $_POST['is_changing_payment'] ) && filter_var( $_POST['is_changing_payment'], FILTER_VALIDATE_BOOLEAN );
+			$is_changing_payment    = isset( $_POST['is_changing_payment'] ) && filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN );
 			$this->is_changing_payment_method_for_subscription();
 
 			if ( $amount > 0 && ! $is_changing_payment ) {
@@ -3513,10 +3513,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_token = $this->get_payment_token( $order );
 					if ( class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
 						WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_token->get_gateway_id() );
-						$notice = __( 'Payment method updated.', 'woocommerce-gateway-stripe' );
+						$notice = __( 'Payment method updated.', 'woocommerce-payments' );
 
 						if ( WC_Subscriptions_Change_Payment_Gateway::will_subscription_update_all_payment_methods( $order ) && WC_Subscriptions_Change_Payment_Gateway::update_all_payment_methods_from_subscription( $order, $token->get_gateway_id() ) ) {
-							$notice = __( 'Payment method updated for all your current subscriptions.', 'woocommerce-gateway-stripe' );
+							$notice = __( 'Payment method updated for all your current subscriptions.', 'woocommerce-payments' );
 						}
 
 						wc_add_notice( $notice );

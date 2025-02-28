@@ -901,7 +901,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order                                                          $order The order.
 	 * @param WC_Payments_API_Payment_Intention|WC_Payments_API_Setup_Intention $intent The payment or setup intention object.
-	 * @param bool                                                            $is_changing_payment Whether the payment is being changed for a subscription.
+	 * @param bool                                                              $is_changing_payment_method_for_subscription Whether the payment is being changed for a subscription.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */

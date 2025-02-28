@@ -231,14 +231,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	/**
 	 * Stops WC Subscriptions from updating the payment method for subscriptions.
 	 *
-	 * @param bool $update_payment_method
-	 * @param string $new_payment_method
-	 * @param WC_Subscription $subscription
+	 * @param bool            $update_payment_method Whether to update the payment method.
+	 * @param string          $new_payment_method The new payment method.
+	 * @param WC_Subscription $subscription The subscription.
 	 * @return bool
 	 */
 	public function update_payment_method_for_subscriptions( $update_payment_method, $new_payment_method, $subscription ) {
 		// Skip if the change payment method request was not made yet.
-		if ( ! isset( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) ) {
+		if ( ! isset( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce'] ), 'wcs_change_payment_method' ) ) {
 			return $update_payment_method;
 		}
 
