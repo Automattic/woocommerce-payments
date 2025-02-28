@@ -32,12 +32,13 @@ import { CopyButton } from 'components/copy-button';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice } from 'components/test-mode-notice';
+import BannerNotice from 'components/banner-notice';
 import InlineNotice from 'components/inline-notice';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
 } from 'multi-currency/interface/functions';
-import { depositStatusLabels } from '../strings';
+import { depositStatusLabels, payoutFailureMessages } from '../strings';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
@@ -226,6 +227,19 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 						/>,
 					] }
 				</SummaryList>
+			) }
+			{ deposit.status === 'failed' && (
+				<BannerNotice
+					status="error"
+					isDismissible={ false }
+					key="payout-failure-notice"
+				>
+					<strong>
+						{ __( 'Failure reason: ', 'woocommerce-payments' ) }
+					</strong>
+					{ payoutFailureMessages[ deposit.failure_code ] ||
+						__( 'Unknown', 'woocommerce-payments' ) }
+				</BannerNotice>
 			) }
 			<Card>
 				<CardHeader>

@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 
-import type { DepositStatus } from 'wcpay/types/deposits';
+import type { DepositStatus, PayoutFailureCode } from 'wcpay/types/deposits';
 
 export const displayType = {
 	deposit: __( 'Payout', 'woocommerce-payments' ),
@@ -36,7 +36,7 @@ export const depositStatusLabels: Record<
 /**
  * Mapping of payout failure code to display string.
  */
-export const payoutFailureCodeDisplayStrings: Record< string, string > = {
+export const payoutFailureMessages: Record< PayoutFailureCode, string > = {
 	insufficient_funds: __(
 		'Your account has insufficient funds to cover the transfer.',
 		'woocommerce-payments'
