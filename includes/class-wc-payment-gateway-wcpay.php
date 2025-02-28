@@ -4446,7 +4446,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function disable_woopay() {
 		// Filter: disable_woopay.
-		$disable = apply_filters( 'disable_woopay', true );
+		$disable = apply_filters( 'disable_woopay', false );
 
 		// disable WooPay by updating the option to 'no'.
 		if ( $disable ) {
