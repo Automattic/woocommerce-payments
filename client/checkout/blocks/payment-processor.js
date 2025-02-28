@@ -1,11 +1,7 @@
 /**
  * External dependencies
  */
-import {
-	PaymentElement,
-	useElements,
-	useStripe,
-} from '@stripe/react-stripe-js';
+import { PaymentElement, useElements } from '@stripe/react-stripe-js';
 import {
 	getPaymentMethods,
 	// eslint-disable-next-line import/no-unresolved
@@ -70,7 +66,6 @@ const PaymentProcessor = ( {
 	onLoadError = noop,
 	theme,
 } ) => {
-	const stripe = useStripe();
 	const elements = useElements();
 	const hasLoadErrorRef = useRef( false );
 	const linkCleanupRef = useRef( null );
@@ -269,8 +264,6 @@ const PaymentProcessor = ( {
 
 	usePaymentCompleteHandler(
 		api,
-		stripe,
-		elements,
 		onCheckoutSuccess,
 		emitResponse,
 		shouldSavePayment
