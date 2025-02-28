@@ -3521,7 +3521,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 						wc_add_notice( $notice );
 					}
-					$return_url = $order->get_view_order_url();
+					$return_url = method_exists( $order, 'get_view_order_url' ) ? $order->get_view_order_url() : $this->get_return_url( $order );
 				}
 
 				// Send back redirect URL in the successful case.
