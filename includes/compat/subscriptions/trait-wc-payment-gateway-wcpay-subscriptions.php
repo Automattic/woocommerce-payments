@@ -237,6 +237,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool
 	 */
 	public function update_payment_method_for_subscriptions( $update_payment_method, $new_payment_method, $subscription ) {
+		// Skip if the change payment method request was not made yet.
+		if ( ! isset( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( $_POST['_wcsnonce'], 'wcs_change_payment_method' ) ) {
+			return $update_payment_method;
+		}
+
 		// Avoid interfering with use-cases not related to updating payment method for subscriptions.
 		if ( ! $this->is_changing_payment_method_for_subscription() ) {
 			return $update_payment_method;
