@@ -89,7 +89,7 @@ declare global {
 				 */
 				wporgReview2025: boolean;
 			};
-		};
+		} >;
 		accountLoans: {
 			has_active_loan: boolean;
 			has_past_loans: boolean;
