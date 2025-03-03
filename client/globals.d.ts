@@ -225,6 +225,10 @@ declare global {
 		siteTitle: string;
 	};
 
+	const wcpayPluginSettings: {
+		exitSurveyLastShown: string | null;
+	};
+
 	interface WcSettings {
 		ece_data?: WCPayExpressCheckoutParams;
 		woocommerce_payments_data: typeof wcpaySettings;
@@ -245,5 +249,6 @@ declare global {
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
+		wcpayPluginSettings?: typeof wcpayPluginSettings;
 	}
 }
