@@ -32,7 +32,7 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
-import MerchantFeedbackPrompt from 'wcpay/merchant-feedback-prompt';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import useAccountSession from 'wcpay/utils/embedded-components/account-session';
 import appearance from 'wcpay/utils/embedded-components/appearance';
 import {
@@ -263,7 +263,7 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
-			<MerchantFeedbackPrompt />
+			<MaybeShowMerchantFeedbackPrompt />
 			<OverviewPageError />
 			<JetpackIdcNotice />
 			{ showLoanOfferError && (
