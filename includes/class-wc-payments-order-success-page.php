@@ -22,6 +22,7 @@ class WC_Payments_Order_Success_Page {
 		add_action( 'woocommerce_before_thankyou', [ $this, 'register_payment_method_override' ] );
 		add_action( 'woocommerce_before_thankyou', [ $this, 'maybe_render_multibanco_payment_instructions' ] );
 		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'unregister_payment_method_override' ] );
+		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'maybe_render_multibanco_payment_instructions' ] );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_successful_intent' ], 11 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
@@ -41,6 +42,11 @@ class WC_Payments_Order_Success_Page {
 	 * @param int $order_id The order ID.
 	 */
 	public function maybe_render_multibanco_payment_instructions( $order_id ) {
+		if ( is_order_received_page() && current_filter() === 'woocommerce_order_details_before_order_table' ) {
+			// Prevent rendering twice on order received page.
+			return;
+		}
+
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order || $order->get_payment_method() !== 'woocommerce_payments_' . Payment_Method::MULTIBANCO || 'on-hold' !== $order->get_status() ) {
@@ -65,7 +71,12 @@ class WC_Payments_Order_Success_Page {
 						<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/multibanco-instructions.svg', WCPAY_PLUGIN_FILE ) ); ?>" alt="<?php esc_attr_e( 'Multibanco', 'woocommerce-payments' ); ?>">
 					</div>
 					<div class="payment-details">
-						<div class="payment-header"><?php echo $formatted_order_total; ?></div>
+						<div class="payment-header">
+							<?php
+							/* translators: %s: order number */
+							printf( esc_html__( 'Order #%s', 'woocommerce-payments' ), $order->get_order_number() );
+							?>
+						</div>
 						<div class="payment-expiry">
 						<?php
 							printf(
@@ -345,7 +356,7 @@ class WC_Payments_Order_Success_Page {
 	 * Enqueue style to the order success page
 	 */
 	public function enqueue_scripts() {
-		if ( ! is_order_received_page() ) {
+		if ( ! is_order_received_page() && ! is_view_order_page() ) {
 			return;
 		}
 
