@@ -45,7 +45,6 @@ const PhoneNumberInput = ( {
 	const inputRef = useRef< HTMLInputElement >( null );
 
 	const handlePhoneNumberInputChange = () => {
-		// console.log( 'changed!' );
 		if ( inputInstance ) {
 			onValueChange( inputInstance.getNumber() );
 			onValidationChange( inputInstance.isValidNumber() );
@@ -53,7 +52,6 @@ const PhoneNumberInput = ( {
 	};
 
 	const removeInternationalPrefix = ( phone: string ) => {
-		// console.log(inputInstance);
 		if ( inputInstance ) {
 			return phone.replace(
 				'+' + inputInstance.getSelectedCountryData().dialCode,
@@ -72,7 +70,18 @@ const PhoneNumberInput = ( {
 			if ( iti && ( focusLost || iti.getNumber() ) ) {
 				onValueChange( iti.getNumber() );
 				onValidationChange( iti.isValidNumber() );
+				const currentInput = inputRef.current;
+				if ( currentInput ) {
+					currentInput.value = currentInput?.value.replace(
+						'+' + iti.getSelectedCountryData().dialCode,
+						''
+					);
+				}
 			}
+		};
+
+		const phoneOptions = {
+			formatAsYouType: false,
 		};
 
 		let phoneCountries = {
@@ -98,16 +107,10 @@ const PhoneNumberInput = ( {
 			iti = intlTelInput( currentRef, {
 				customPlaceholder: () => '',
 				separateDialCode: true,
-				// hiddenInput: function() {
-				// 	return {
-				// 		phone: "full_phone",
-				// 		country: "country_code"
-				// 	};
-				// },
 				utilsScript: utils,
-				// dropdownContainer: document.body,
 				formatOnDisplay: false,
 				...phoneCountries,
+				...phoneOptions,
 			} );
 			setInputInstance( iti );
 
@@ -177,7 +180,12 @@ const PhoneNumberInput = ( {
 				onBlur={ () => {
 					setFocusLost( true );
 				} }
-				onChange={ handlePhoneNumberInputChange }
+				onChange={ () => {
+					handlePhoneNumberInputChange();
+				} }
+				onKeyUp={ () => {
+					handlePhoneNumberInputChange();
+				} }
 				placeholder={ __( 'Mobile number', 'woocommerce-payments' ) }
 				aria-label={
 					inputProps.ariaLabel ||
