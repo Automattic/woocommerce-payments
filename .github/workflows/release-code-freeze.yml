@@ -141,3 +141,42 @@ jobs:
                 }
               ]
             }
+
+  notify-product-ambassadors:
+    name: "Notify Product Ambassadors"
+    needs: [check-code-freeze, create-release-pr]
+    if: needs.check-code-freeze.outputs.freeze == 1 && needs.create-release-pr.outputs.release-pr-id != ''
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
+    steps:
+      - name: "Ping Product Ambassadors on Release PR"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const prNumber = parseInt('${{ needs.create-release-pr.outputs.release-pr-id }}');
+              const productAmbassadors = '${{ secrets.PRODUCT_AMBASSADOR_GITHUB_HANDLE }}';
+
+              const commentBody = `
+              👋 Hey ${productAmbassadors}!
+
+              This is an automated notification for the release ${process.env.RELEASE_VERSION}. Could you please:
+              1. Review the scope of changes in this release from a Happiness Engineer's perspective
+              2. Let us know if any additional actions are needed to prepare HEs for this upcoming release
+              3. Provide your final checkoff, confirming whether anything needs to be announced to other HEs
+
+              Thanks for helping ensure our HE team is well-prepared for this release! 🙌`;
+
+              const response = await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: commentBody
+              });
+
+              console.log(`Product Ambassador notification posted at: ${response.data.html_url}`);
+            } catch (error) {
+              core.setFailed(`Failed to notify Product Ambassador: ${error.message}`);
+            }
