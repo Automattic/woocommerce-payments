@@ -906,7 +906,7 @@ class WC_Payments_Order_Service {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function attach_intent_info_to_order( WC_Order $order, $intent, $allow_update_on_success = false ) {
-		// We don't want to allow metadata for a successful payment to be disrupted (except for when changing payment method for subscription).
+		// We don't want to allow metadata for a successful payment to be disrupted (except for when changing payment method for subscription or renewing subscription).
 		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) && ! $allow_update_on_success ) {
 			return;
 		}
