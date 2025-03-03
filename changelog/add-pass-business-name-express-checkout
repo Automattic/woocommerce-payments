@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Pass the business name to the express checkout handler.

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Ensures that the tokenised cart for ECE implementation is disabled by default.
