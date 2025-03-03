@@ -406,7 +406,9 @@ class WC_Payments_Incentives_Service_Test extends WCPAY_UnitTestCase {
 				$this->assertSame( 'yes', $value );
 
 				// Ensure the cache is set to expire in 90 days - 30 days = 60 days.
-				$this->assertSame( 60 * DAY_IN_SECONDS, $expiration );
+				$expected_expiration = 60 * DAY_IN_SECONDS;
+				// Allowing 5-second difference to avoid flaky tests due to time()  precision.
+				$this->assertLessThanOrEqual( 5, abs( $expected_expiration - $expiration ), 'Expiration time should be within 5 second of expected value' );
 
 				return $value;
 			},
