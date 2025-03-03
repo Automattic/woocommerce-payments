@@ -62,17 +62,13 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 			select( 'core/notices' ).getNotices() as NoticeList.Notice[]
 	);
 
-	// Create a ref to track if the view event has been recorded to prevent multiple recordings on a single screen.
-	const hasRecordedViewEvent = useRef( false );
-
 	// Only render the prompt if there are no core notices.
 	const shouldShowPrompt = coreNotices?.length === 0;
 
 	useEffect( () => {
-		// Record the event when the prompt is rendered, but only once per screen.
-		if ( shouldShowPrompt && ! hasRecordedViewEvent.current ) {
+		// Record the 'view' event when the prompt is rendered.
+		if ( shouldShowPrompt ) {
 			recordEvent( 'wcpay_merchant_feedback_prompt_view' );
-			hasRecordedViewEvent.current = true;
 		}
 	}, [ shouldShowPrompt ] );
 
