@@ -3458,7 +3458,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$amount                 = $order->get_total();
 			$payment_method_details = false;
 			$is_changing_payment    = isset( $_POST['is_changing_payment'] ) && filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN );
-			$this->is_changing_payment_method_for_subscription();
 
 			if ( $amount > 0 && ! $is_changing_payment ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
