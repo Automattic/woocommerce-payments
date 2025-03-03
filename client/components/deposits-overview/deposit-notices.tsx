@@ -205,7 +205,7 @@ export const DepositFailureNotice: React.FC< {
 	/**
 	 * The link to update the account details.
 	 */
-	updateAccountLink: string;
+	updateAccountLink?: string;
 } > = ( { updateAccountLink } ) => {
 	const accountLinkWithSource = updateAccountLink
 		? addQueryArgs( updateAccountLink, {
