@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import {
 	Button,
