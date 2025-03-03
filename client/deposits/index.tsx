@@ -22,7 +22,7 @@ import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import { recordEvent } from 'wcpay/tracks';
-import MerchantFeedbackPrompt from 'wcpay/merchant-feedback-prompt';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 
 const useNextDepositNoticeState = () => {
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
@@ -149,7 +149,7 @@ const DepositsPage: React.FC = () => {
 
 	return (
 		<Page>
-			<MerchantFeedbackPrompt />
+			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="deposits" />
 			<NextDepositNotice />
 			<DepositFailureNotice />

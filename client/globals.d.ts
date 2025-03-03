@@ -13,6 +13,9 @@ declare global {
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
+			woopay: boolean;
+			documents: boolean;
+			woopayExpressCheckout: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
@@ -21,7 +24,9 @@ declare global {
 			 * The development feature flag for the merchant feedback prompt.
 			 */
 			isMerchantFeedbackPromptDevFlagEnabled: boolean;
+			multiCurrency?: boolean;
 		};
+		accountFees: Record< string, any >;
 		fraudServices: unknown[];
 		testMode: boolean;
 		testModeOnboarding: boolean;
@@ -30,9 +35,10 @@ declare global {
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
 		isAccountValid: boolean;
-		accountStatus: {
+		accountStatus: Partial< {
 			email?: string;
 			created: string;
+			isLive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -83,7 +89,7 @@ declare global {
 				 */
 				wporgReview2025: boolean;
 			};
-		};
+		} >;
 		accountLoans: {
 			has_active_loan: boolean;
 			has_past_loans: boolean;

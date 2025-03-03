@@ -44,7 +44,7 @@ import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
 import { useDispatch } from '@wordpress/data';
-import MerchantFeedbackPrompt from 'wcpay/merchant-feedback-prompt';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -447,7 +447,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			<MerchantFeedbackPrompt />
+			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard

@@ -173,14 +173,14 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 };
 
 /**
- * Displays the transaction's channel: Online | In-Person | In-Person (POS).
+ * Displays the transaction's sales channel: Online store | In-Person | In-Person (POS).
  * This method is called on the list of transactions page.
  *
  * In the list of transactions, the type holds the brand of the payment method, so we aren't passing it.
  * Instead, we pass the transaction.channel directly, which might be in_person|in_person_pos|online.
  *
  * @param {string} channel The transaction channel.
- * @return {string} Online, In-Person, or In-Person (POS).
+ * @return {string} Online store, In-Person, or In-Person (POS).
  */
 export const getTransactionChannel = ( channel: string ): string => {
 	switch ( channel ) {
@@ -189,12 +189,12 @@ export const getTransactionChannel = ( channel: string ): string => {
 		case 'in_person_pos':
 			return __( 'In-Person (POS)', 'woocommerce-payments' );
 		default:
-			return __( 'Online', 'woocommerce-payments' );
+			return __( 'Online store', 'woocommerce-payments' );
 	}
 };
 
 /**
- * Displays the channel based on the charge data from Stripe and metadata for a transaction: Online | In-Person | In-Person (POS).
+ * Displays the sales channel based on the charge data from Stripe and metadata for a transaction: Online store | In-Person | In-Person (POS).
  * This method is called in the individual transaction page.
  *
  * In the individual transaction page, we are getting the data from Stripe, so we pass the charge.type
@@ -204,8 +204,7 @@ export const getTransactionChannel = ( channel: string ): string => {
  *
  * @param {string} type The transaction charge type, which can be card_present or interac_present for In-Person payments.
  * @param {Record<string, any>} metadata The transaction metadata, which may include ipp_channel indicating the channel source.
- * @return {string} Returns 'Online', 'In-Person', or 'In-Person (POS)' based on the transaction type and metadata.
- *
+ * @return {string} Returns 'Online store', 'In-Person', or 'In-Person (POS)' based on the transaction type and metadata.
  */
 export const getChargeChannel = (
 	type: string,
@@ -218,5 +217,5 @@ export const getChargeChannel = (
 		return __( 'In-Person', 'woocommerce-payments' );
 	}
 
-	return __( 'Online', 'woocommerce-payments' );
+	return __( 'Online store', 'woocommerce-payments' );
 };

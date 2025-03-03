@@ -8,7 +8,7 @@ import { select } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import MerchantFeedbackPrompt from '../';
+import { MaybeShowMerchantFeedbackPrompt } from '../index';
 import { recordEvent } from 'wcpay/tracks';
 
 // Mock the WordPress data module
@@ -114,7 +114,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 			},
 		};
 
-		render( <MerchantFeedbackPrompt /> );
+		render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// The prompt should not be rendered
 		expect(
@@ -134,7 +134,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 			},
 		};
 
-		render( <MerchantFeedbackPrompt /> );
+		render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// The prompt should not be rendered
 		expect(
@@ -143,7 +143,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 	} );
 
 	it( 'renders the feedback prompt when there are no core notices', () => {
-		render( <MerchantFeedbackPrompt /> );
+		render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// Check if the prompt text is rendered
 		const promptElement = screen.getByText(
@@ -169,7 +169,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 			getNotices: jest.fn().mockReturnValue( [ { id: 'test-notice' } ] ),
 		} ) );
 
-		render( <MerchantFeedbackPrompt /> );
+		render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// The prompt should not be rendered
 		expect(
@@ -182,7 +182,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 
 	it( 'does not render after being dismissed', async () => {
 		// First render
-		const { rerender } = render( <MerchantFeedbackPrompt /> );
+		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// Verify prompt is initially rendered
 		expect(
@@ -211,7 +211,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 
 	it( 'records event when Yes button is clicked', () => {
 		// First render
-		const { rerender } = render( <MerchantFeedbackPrompt /> );
+		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// Click the Yes button
 		const yesButton = screen.getByText( 'Yes', {
@@ -235,7 +235,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 
 	it( 'records event when No button is clicked', () => {
 		// First render
-		const { rerender } = render( <MerchantFeedbackPrompt /> );
+		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// Click the No button
 		const noButton = screen.getByText( 'No', {
