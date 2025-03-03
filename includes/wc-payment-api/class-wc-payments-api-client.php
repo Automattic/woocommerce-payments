@@ -2564,9 +2564,16 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @return array
 	 */
 	private function add_order_info_to_charge_object( $charge_id, $object ) {
-		$order  = $this->wcpay_db->order_from_charge_id( $charge_id );
-		$object = $this->add_order_info_to_object( $order, $object );
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+		if ( false === $order && isset( $object['metadata'] ) ) {
+			// Try to find the order_id from the charge metadata.
+			$order_id = $object['metadata']['order_id'] ?? null;
+			if ( $order_id ) {
+				$order = $this->wcpay_db->order_from_order_id( $order_id );
+			}
+		}
 
+		$object = $this->add_order_info_to_object( $order, $object );
 		return $object;
 	}
 
