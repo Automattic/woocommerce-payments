@@ -84,33 +84,13 @@ const BusinessDetails: React.FC = () => {
 
 	return (
 		<>
-			{ selectedCountry && (
-				<InlineNotice
-					isDismissible={ false }
-					buttonVariant={ 'link' }
-					actions={ [
-						{
-							label: strings.inlineNotice.action,
-							onClick: () => handleTiedChange( 'country', null ),
-						},
-					] }
-					status="info"
-				>
-					<div className="wcpay-inline-notice__content__title">
-						{ strings.inlineNotice.title }{ ' ' }
-						<b>{ selectedCountry.name }</b>
-					</div>
-				</InlineNotice>
-			) }
-			{ ! selectedCountry && (
-				<span data-testid={ 'country-select' }>
-					<OnboardingSelectField
-						name="country"
-						options={ countries }
-						onChange={ handleTiedChange }
-					/>
-				</span>
-			) }
+			<span data-testid={ 'country-select' }>
+				<OnboardingSelectField
+					name="country"
+					options={ countries }
+					onChange={ handleTiedChange }
+				/>
+			</span>
 			{ selectedCountry && selectedCountry.types.length > 0 && (
 				<span data-testid={ 'business-type-select' }>
 					<OnboardingSelectField
