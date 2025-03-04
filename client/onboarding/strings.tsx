@@ -61,7 +61,7 @@ export default {
 	},
 	fields: {
 		country: __(
-			'Where is your business legally registered?',
+			'Where is your business located?',
 			'woocommerce-payments'
 		),
 		business_type: __(
