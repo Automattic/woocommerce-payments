@@ -18,6 +18,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { recordEvent } from 'wcpay/tracks';
+import { NegativeFeedbackModal } from './negative-modal';
 import './style.scss';
 
 /**
@@ -54,6 +55,8 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 interface MerchantFeedbackPromptProps {
 	/** A function to be called when the user dismisses the prompt and it is to be removed. */
 	dismissPrompt: () => void;
+	/** A function to be called when the user clicks the "No" button and the negative feedback modal is to be shown. */
+	showNegativeFeedbackModal: () => void;
 }
 
 /**
@@ -64,6 +67,7 @@ interface MerchantFeedbackPromptProps {
  */
 const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	dismissPrompt,
+	showNegativeFeedbackModal,
 } ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
 	const coreNotices = useSelect(
@@ -139,6 +143,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											recordEvent(
 												'wcpay_merchant_feedback_prompt_no_click'
 											);
+											showNegativeFeedbackModal();
 											dismissPrompt();
 										} }
 									>
@@ -193,7 +198,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 };
 
 /**
- * A wrapper component that conditionally renders the merchant feedback prompt.
+ * A wrapper component that conditionally renders the merchant feedback prompt, including the positive and negative feedback modals.
  *
  * This is used to ensure the prompt is only rendered if the account is eligible for the campaign and the user has not dismissed the prompt.
  */
@@ -205,6 +210,19 @@ export function MaybeShowMerchantFeedbackPrompt() {
 		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
 		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
 
+	const [
+		isNegativeFeedbackModalOpen,
+		setIsNegativeFeedbackModalOpen,
+	] = useState( false );
+
+	if ( isNegativeFeedbackModalOpen ) {
+		return (
+			<NegativeFeedbackModal
+				onRequestClose={ () => setIsNegativeFeedbackModalOpen( false ) }
+			/>
+		);
+	}
+
 	if ( hasUserDismissed || ! isAccountEligible ) {
 		return null;
 	}
@@ -212,6 +230,9 @@ export function MaybeShowMerchantFeedbackPrompt() {
 	return (
 		<MerchantFeedbackPrompt
 			dismissPrompt={ () => setHasUserDismissed( true ) }
+			showNegativeFeedbackModal={ () =>
+				setIsNegativeFeedbackModalOpen( true )
+			}
 		/>
 	);
 }

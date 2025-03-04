@@ -15,7 +15,7 @@ interface NegativeFeedbackModalProps {
 	onRequestClose: () => void;
 }
 
-const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
+export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 	onRequestClose,
 } ) => {
 	const [ isLoading, setIsLoading ] = useState( true );
@@ -45,5 +45,3 @@ const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 		</Modal>
 	);
 };
-
-export default NegativeFeedbackModal;
