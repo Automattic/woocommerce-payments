@@ -15,6 +15,7 @@ import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
+import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const id = 'apple_pay_google_pay';
@@ -171,6 +172,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
+			<GooglePayTestModeCompatibilityNotice />
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }

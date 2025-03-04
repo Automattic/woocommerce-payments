@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix potential flakiness while creating a page with the checkout block.
