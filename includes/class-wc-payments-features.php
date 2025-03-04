@@ -397,9 +397,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks if the merchant feedback prompt development feature flag is enabled.
-	 *
-	 * This is a temporary development flag that will be removed once the feature is ready for production.
+	 * This is a temporary development flag for the merchant feedback prompt (see issue #10323) that will be removed once the feature is ready for production.
 	 *
 	 * @return bool
 	 */
