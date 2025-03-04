@@ -874,13 +874,19 @@ class WC_Payments {
 	 * @return array Modified ordering.
 	 */
 	public static function set_gateway_top_of_list( $ordering ) {
-		$ordering = (array) $ordering;
-		$id       = self::get_gateway()->id;
-		// Only tweak the ordering if the list hasn't been reordered with WooPayments in it already.
-		if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
-			$ordering[ $id ] = empty( $ordering ) ? 0 : ( min( $ordering ) - 1 );
+		try {
+			require_once __DIR__ . '/util/class-gateway-orderer.php';
+
+			if ( class_exists( 'WC_Pay_Gateway_Orderer' ) ) {
+				$gateway_orderer = new WC_Pay_Gateway_Orderer( $ordering, self::get_woopayments_gateway_ids(), self::get_gateway()->id );
+				return $gateway_orderer->order_gateways();
+			}
+		} catch ( Exception $e ) {
+			if ( function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				$logger->warning( 'Failed to use Gateway Orderer: ' . $e->getMessage(), [ 'source' => 'woocommerce-payments' ] );
+			}
 		}
-		return $ordering;
 	}
 
 	/**
@@ -1242,6 +1248,19 @@ class WC_Payments {
 			return false;
 		}
 		return self::$payment_gateway_map[ $payment_method_id ];
+	}
+
+	/**
+	 * Returns the WooPayments gateway IDs.
+	 *
+	 * @return array
+	 */
+	public static function get_woopayments_gateway_ids() {
+		$wcpay_gateway_ids = [];
+		foreach ( self::get_payment_gateway_map() as $gateway ) {
+			$wcpay_gateway_ids[] = $gateway->id;
+		}
+		return $wcpay_gateway_ids;
 	}
 
 	/**
