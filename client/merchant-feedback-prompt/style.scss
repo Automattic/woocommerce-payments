@@ -1,0 +1,25 @@
+// This is a temporary style to ensure the prompt is rendered in the WC footer.
+// It will be removed once the campaign is complete (paJDYF-gvt-p2).
+
+.wcpay-merchant-feedback-prompt-wrap {
+	// Borrowed from https://github.com/woocommerce/woocommerce/blob/7e7916106abc835c16388ac24097ba390a5f8d41/plugins/woocommerce/client/admin/client/layout/transient-notices/style.scss
+	position: absolute;
+	left: $gap;
+	bottom: 100%;
+	margin-bottom: $gap-small;
+	width: auto;
+
+	.wcpay-merchant-feedback-prompt {
+		&__action.components-button {
+			color: inherit;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+		}
+
+		&__action-label {
+			margin-left: 0.3em;
+			text-decoration: underline;
+		}
+	}
+}
