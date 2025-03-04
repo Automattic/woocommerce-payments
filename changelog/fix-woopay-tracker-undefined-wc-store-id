@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixes incorrect defined statement for WC_Install::STORE_ID_OPTION constant.

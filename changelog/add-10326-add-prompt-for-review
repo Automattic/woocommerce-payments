@@ -1,5 +1,0 @@
-Significance: patch
-Type: add
-Comment: Behind a feature flag: Add a prompt asking merchants if they're satisfied with WooPayments, with placeholder actions to provide positive or negative feedback.
-
-

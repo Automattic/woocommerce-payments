@@ -1,5 +1,16 @@
 *** WooPayments Changelog ***
 
+= 9.1.0-test-1 - 2025-xx-xx =
+* Fix - Add an order note when a recurring payment fails or when updating the payment method fails due to a missing or invalid payment token.
+* Fix - fix: GooglePay/ApplePay script dependencies with WooCommerce 9.7
+* Fix - Init PMME container in cart block so that it can be dynamically rendered once the requirements are met.
+* Fix - Manual capture fails in the transaction detail screen with a customized order number
+* Fix - Properly extract styles when using the site editor.
+* Fix - Show Express Checkout button previews in template editor
+* Update - Change wording for Sales Channel, Online Store, In-Person, and In-Person (POS)
+* Update - feat: add compatibility notice for Google Pay with live mode accounts.
+* Update - update: tokenize ECE initialization and update flow on pricing change.
+
 = 9.0.0 - 2025-02-26 =
 * Add - Add E2E tests for currency switching at checkout.
 * Add - Add GrabPay payment method details to the View Transaction page.
