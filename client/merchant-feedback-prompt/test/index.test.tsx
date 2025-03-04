@@ -201,7 +201,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 		);
 
 		// Re-render the component to verify it's no longer shown
-		rerender( <MerchantFeedbackPrompt /> );
+		rerender( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// The prompt should no longer be rendered
 		expect(
@@ -225,7 +225,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 		);
 
 		// Re-render the component to verify it's no longer shown
-		rerender( <MerchantFeedbackPrompt /> );
+		rerender( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// The prompt should no longer be rendered
 		expect(
@@ -249,7 +249,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 		);
 
 		// Re-render the component to verify it's no longer shown
-		rerender( <MerchantFeedbackPrompt /> );
+		rerender( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// The prompt should no longer be rendered
 		expect(
