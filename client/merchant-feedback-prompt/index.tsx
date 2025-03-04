@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import {
 	Button,
@@ -22,14 +22,23 @@ import { useMerchantFeedbackPromptState } from './hooks';
 import './style.scss';
 
 /**
+ * HACK: This file contains temporary workarounds to allow us to render a snackbar with two actions and a dismiss button.
+ *
+ * Workarounds include:
+ * - Using a React portal to render a custom Snackbar within a SnackbarList consistently with other core WP-admin notices – needed because `core/notices` `createNotice()` doesn't accept two actions.
+ *   - See https://github.com/WordPress/gutenberg/blob/c300edfebb48f79f6f0f6643ce04dd73303c5fcb/packages/components/src/snackbar/index.tsx#L119-L126
+ * - Adding a dismiss button to the custom Snackbar component – needed because the Snackbar component bundled by WooPayments doesn't have an `explicitDismiss` prop.
+ *   - See https://github.com/WordPress/gutenberg/blob/c300edfebb48f79f6f0f6643ce04dd73303c5fcb/packages/components/src/snackbar/index.tsx#L166-L177
+ * - Checking for the presence of WP-admin core notices to ensure that this prompt is not rendered if there are other notices being displayed.
+ *
+ * These temporary workarounds will remain in place until either:
+ * - This code is removed at the end of the campaign (paJDYF-gvt-p2), or
+ * - Gutenberg Snackbar component is updated to accept two actions and we can use `core/notices` `createNotice()` to render the snackbar.
+ */
+
+/**
  * A react portal for the merchant feedback prompt.
  * This is used to render the custom snackbar prompt in the WC footer component, consistent with where WC notices (snackbars) are rendered.
- *
- * HACK: This is a temporary solution until Gutenberg Snackbar component and `createNotice` accept two actions.
- *
- * This temporary workaround will remain in place until either:
- * - Gutenberg Snackbar component is updated to accept two actions and we can use `core/notices` `createNotice()` to render the snackbar, or
- * - The campaign for this prompt is complete and we can remove this code entirely.
  */
 const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 	const portalRoot = document.getElementsByClassName(
@@ -85,15 +94,6 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 					{
 						id: 'wcpay-merchant-feedback-prompt',
 						className: 'wcpay-merchant-feedback-prompt',
-						/**
-						 * HACK: This custom content for the snackbar is required because the Snackbar / Snackbar component doesn't accept two actions.
-						 *
-						 * This temporary workaround will remain in place until either:
-						 * - Gutenberg Snackbar component is updated to accept two actions and we can use `core/notices` `createNotice()` to render the snackbar, or
-						 * - The campaign for this prompt is complete and we can remove this code entirely.
-						 *
-						 * See https://github.com/WordPress/gutenberg/blob/c300edfebb48f79f6f0f6643ce04dd73303c5fcb/packages/components/src/snackbar/index.tsx#L119-L126
-						 */
 						content: (
 							<Flex
 								gap={ 3 }
@@ -159,11 +159,6 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 									</Button>
 								</FlexItem>
 
-								{ /*
-									Explicit dismiss button, in place of missing `explicitDismiss` prop.
-									We need to implement manually because we use an outdated bundled SnackbarList component which doesn't have the `explicitDismiss` prop.
-									See https://github.com/WordPress/gutenberg/blob/c300edfebb48f79f6f0f6643ce04dd73303c5fcb/packages/components/src/snackbar/index.tsx#L166-L177
-								*/ }
 								<FlexItem>
 									<span
 										role="button"
