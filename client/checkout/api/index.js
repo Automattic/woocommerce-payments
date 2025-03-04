@@ -142,7 +142,7 @@ export default class WCPayAPI {
 	 */
 	confirmIntent( redirectUrl, shouldSavePaymentMethod = false ) {
 		const partials = redirectUrl.match(
-			/#wcpay-confirm-(pi|si):(.+):(.+):(.+):(.+)$/
+			/#wcpay-confirm-(pi|si):(.+):(.+):(.+)$/
 		);
 
 		if ( ! partials ) {
@@ -153,7 +153,6 @@ export default class WCPayAPI {
 		let orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
 		const nonce = partials[ 4 ];
-		const paymentMethodType = partials[ 5 ];
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
 		const isOrderPage = orderPayIndex > -1;
 
@@ -197,18 +196,6 @@ export default class WCPayAPI {
 					locale,
 					accountIdForIntentConfirmation
 				).confirmCardPayment( clientSecret );
-			}
-
-			if ( paymentMethodType === 'wechat_pay' ) {
-				const confirmPayment = await stripe.confirmWechatPayPayment(
-					clientSecret,
-					{
-						payment_method_options: {
-							wechat_pay: { client: 'web' },
-						},
-					}
-				);
-				return confirmPayment;
 			}
 
 			// When not dealing with a setup intent or woopay we need to force an account
