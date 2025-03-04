@@ -44,9 +44,28 @@ const PhoneNumberInput = ( {
 	] = useState< intlTelInput.Plugin | null >( null );
 	const inputRef = useRef< HTMLInputElement >( null );
 
+	// We add the dial code to the testing number,
+	// In this version of the tel library, getNumber does not return the phone number with the dial code
+	// for the testing numbers
+	const handlePhoneNumber = (
+		phoneNumber: string,
+		dialCode: string
+	): string => {
+		if ( phoneNumber === '0000000000' ) {
+			phoneNumber = '+' + dialCode + phoneNumber;
+		}
+
+		return phoneNumber;
+	};
+
 	const handlePhoneNumberInputChange = () => {
 		if ( inputInstance ) {
-			onValueChange( inputInstance.getNumber() );
+			onValueChange(
+				handlePhoneNumber(
+					inputInstance.getNumber(),
+					inputInstance.getSelectedCountryData().dialCode
+				)
+			);
 			onValidationChange( inputInstance.isValidNumber() );
 		}
 	};
@@ -68,7 +87,12 @@ const PhoneNumberInput = ( {
 
 		const handleCountryChange = () => {
 			if ( iti && ( focusLost || iti.getNumber() ) ) {
-				onValueChange( iti.getNumber() );
+				onValueChange(
+					handlePhoneNumber(
+						iti.getNumber(),
+						iti.getSelectedCountryData().dialCode
+					)
+				);
 				onValidationChange( iti.isValidNumber() );
 				const currentInput = inputRef.current;
 				if ( currentInput ) {
@@ -88,7 +112,6 @@ const PhoneNumberInput = ( {
 			initialCountry: 'US',
 			onlyCountries: [],
 		};
-
 		//if in admin panel
 		if ( 'undefined' !== typeof wcpaySettings ) {
 			const accountCountry = wcpaySettings?.accountStatus?.country ?? '';
@@ -104,6 +127,8 @@ const PhoneNumberInput = ( {
 		}
 
 		if ( currentRef ) {
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
 			iti = intlTelInput( currentRef, {
 				customPlaceholder: () => '',
 				separateDialCode: true,
@@ -113,7 +138,6 @@ const PhoneNumberInput = ( {
 				...phoneOptions,
 			} );
 			setInputInstance( iti );
-
 			currentRef.addEventListener( 'countrychange', handleCountryChange );
 
 			const countryList = currentRef
@@ -194,8 +218,8 @@ const PhoneNumberInput = ( {
 				name={ inputProps.name }
 				className={
 					inputInstance && ! inputInstance.isValidNumber()
-						? 'phone-input input-text has-error iti__tel-input has-error'
-						: 'phone-input input-text has-error iti__tel-input'
+						? 'phone-input input-text iti__tel-input has-error'
+						: 'phone-input input-text iti__tel-input'
 				}
 				{ ...props }
 			/>

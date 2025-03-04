@@ -43,7 +43,7 @@ describe( 'PhoneNumberInput', () => {
 			/>
 		);
 		expect(
-			screen.queryByRole( 'combobox', { name: 'United States: +1' } )
+			screen.queryByRole( 'combobox', { title: 'United States: +1' } )
 		).toBeInTheDocument();
 	} );
 
@@ -59,9 +59,11 @@ describe( 'PhoneNumberInput', () => {
 		expect( handlePhoneNumberChangeMock ).not.toHaveBeenCalled();
 
 		const input = screen.queryByLabelText( 'Mobile phone number' ); // The label text for our input.
-		fireEvent.change( input, { target: { value: '201' } } );
+		fireEvent.change( input, { target: { value: '0000000000' } } );
 
-		expect( handlePhoneNumberChangeMock ).toHaveBeenCalledWith( '+1201' );
+		expect( handlePhoneNumberChangeMock ).toHaveBeenCalledWith(
+			'+10000000000'
+		);
 	} );
 
 	it( 'should call the onValidationChange with true if value is valid', () => {
