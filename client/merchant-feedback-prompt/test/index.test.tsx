@@ -202,7 +202,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'records event when No button is clicked', () => {
+	it( 'opens the negative feedback modal and records event when No button is clicked', () => {
 		render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// Click the No button
@@ -218,5 +218,8 @@ describe( 'MerchantFeedbackPrompt', () => {
 		expect(
 			screen.queryByText( 'Are you satisfied with WooPayments?' )
 		).not.toBeInTheDocument();
+
+		// The negative feedback modal should be rendered
+		expect( screen.getByText( 'Share your feedback' ) ).toBeInTheDocument();
 	} );
 } );
