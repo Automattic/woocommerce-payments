@@ -660,7 +660,6 @@ class WC_Payments {
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
-		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
 		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
@@ -928,39 +927,6 @@ class WC_Payments {
 			}
 			return $ordering;
 		}
-	}
-
-	/**
-	 * Replace the main WCPay gateway with all WCPay payment methods
-	 * when retrieving the "woocommerce_gateway_order" option.
-	 *
-	 * @param array $ordering Gateway order.
-	 *
-	 * @return array
-	 */
-	public static function replace_wcpay_gateway_with_payment_methods( $ordering ) {
-		$ordering    = (array) $ordering;
-		$wcpay_index = array_search(
-			self::get_gateway()->id,
-			array_keys( $ordering ),
-			true
-		);
-
-		if ( false === $wcpay_index ) {
-			// The main WCPay gateway isn't on the list.
-			return $ordering;
-		}
-
-		$method_order = self::get_gateway()->get_option( 'payment_method_order', [] );
-
-		if ( empty( $method_order ) ) {
-			return $ordering;
-		}
-
-		$ordering = array_keys( $ordering );
-
-		array_splice( $ordering, $wcpay_index, 1, $method_order );
-		return array_flip( $ordering );
 	}
 
 	/**
