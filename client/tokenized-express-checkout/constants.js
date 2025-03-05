@@ -1,0 +1,1 @@
+export const SHIPPING_RATES_UPPER_LIMIT_COUNT = 9;
