@@ -50,7 +50,7 @@ const convertedPaymentMethodDefinitions = Object.fromEntries<
 			description: value.description,
 			icon: ( { className } ) => (
 				<img
-					src={ value.icon }
+					src={ value.settings_icon_url }
 					alt={ value.title }
 					className={ classNames(
 						'payment-method__icon',
@@ -59,7 +59,7 @@ const convertedPaymentMethodDefinitions = Object.fromEntries<
 				/>
 			),
 			currencies: value.currencies,
-			stripe_key: value.stripeId,
+			stripe_key: value.stripe_key,
 			allows_manual_capture: value.allows_manual_capture,
 			allows_pay_later: value.allows_pay_later,
 			accepts_only_domestic_payment: value.accepts_only_domestic_payment,

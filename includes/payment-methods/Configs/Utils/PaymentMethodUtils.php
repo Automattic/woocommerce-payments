@@ -119,9 +119,10 @@ class PaymentMethodUtils {
 		foreach ( $registry->get_available_definitions() as $payment_method_definition ) {
 			$payment_method_definitions[ $payment_method_definition::get_id() ] = [
 				'id'                            => $payment_method_definition::get_id(),
+				'stripe_key'                    => $payment_method_definition::get_stripe_id(),
 				'title'                         => $payment_method_definition::get_title(),
 				'description'                   => $payment_method_definition::get_description(),
-				'icon'                          => $payment_method_definition::get_settings_icon_url(),
+				'settings_icon_url'             => $payment_method_definition::get_settings_icon_url(),
 				'currencies'                    => $payment_method_definition::get_supported_currencies(),
 				'allows_manual_capture'         => $payment_method_definition::allows_manual_capture(),
 				'allows_pay_later'              => $payment_method_definition::is_bnpl(),
