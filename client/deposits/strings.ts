@@ -50,7 +50,7 @@ export const payoutFailureMessages: Record< PayoutFailureCode, string > = {
 		'woocommerce-payments'
 	),
 	invalid_card: __(
-		'The card used was invalid. This usually means the card number is invalid or the account has been closed. Please verify card details before retrying.',
+		'The card used was invalid. This usually means the card number is invalid or the account has been closed. Please verify the card details before retrying.',
 		'woocommerce-payments'
 	),
 	declined: __(
@@ -87,11 +87,11 @@ export const payoutFailureMessages: Record< PayoutFailureCode, string > = {
 		'woocommerce-payments'
 	),
 	invalid_account_number: __(
-		'The bank account details on file are probably incorrect. The routing number seems correct, but the account number is invalid.',
+		'The bank account details on file are probably incorrect. While the routing number appears correct, the account number is invalid.',
 		'woocommerce-payments'
 	),
 	incorrect_account_holder_name: __(
-		'The bank account details on file are probably incorrect.',
+		'The bank account holder name on file appears to be incorrect.',
 		'woocommerce-payments'
 	),
 	account_closed: __(
