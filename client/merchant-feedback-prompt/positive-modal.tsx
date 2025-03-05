@@ -38,7 +38,6 @@ export const PositiveFeedbackModal: React.FC< PositiveFeedbackModalProps > = ( {
 			shouldCloseOnClickOutside
 			shouldCloseOnEsc
 			onRequestClose={ () => {
-				// Record tracks event
 				recordEvent(
 					'wcpay_merchant_feedback_prompt_positive_modal_close_click'
 				);
@@ -132,7 +131,6 @@ export const PositiveFeedbackModal: React.FC< PositiveFeedbackModalProps > = ( {
 				<Button
 					variant="tertiary"
 					onClick={ () => {
-						// Record tracks event
 						recordEvent(
 							'wcpay_merchant_feedback_prompt_positive_modal_close_click'
 						);
@@ -146,7 +144,6 @@ export const PositiveFeedbackModal: React.FC< PositiveFeedbackModalProps > = ( {
 					href="https://wordpress.org/support/plugin/woocommerce-payments/reviews/"
 					target="_blank"
 					onClick={ () => {
-						// Record tracks event
 						recordEvent(
 							'wcpay_merchant_feedback_prompt_positive_modal_leave_review_click'
 						);
