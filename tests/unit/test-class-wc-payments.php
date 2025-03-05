@@ -153,7 +153,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			'other_gateway_2' => 1,
 		];
 
-		$result = WC_Payments::set_gateway_top_of_list( $initial_ordering );
+		$result = WC_Payments::order_woopayments_gateways( $initial_ordering );
 
 		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
 		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
@@ -170,7 +170,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 			'other_gateway_2' => 2,
 		];
 
-		$result = WC_Payments::set_gateway_top_of_list( $initial_ordering );
+		$result = WC_Payments::order_woopayments_gateways( $initial_ordering );
 
 		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
 		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
@@ -182,7 +182,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$woopayments_gateway_ids = WC_Payments::get_woopayments_gateway_ids();
 		$initial_ordering        = [];
 
-		$result = WC_Payments::set_gateway_top_of_list( $initial_ordering );
+		$result = WC_Payments::order_woopayments_gateways( $initial_ordering );
 
 		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
 		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
@@ -193,7 +193,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	 * Assert that all WooPayments gateways are in the result
 	 *
 	 * @param array $gateways Expected gateway IDs
-	 * @param array $result   Result from set_gateway_top_of_list
+	 * @param array $result   Result from order_woopayments_gateways
 	 */
 	private function assertContainsAllGateways( $gateways, $result ) {
 		foreach ( $gateways as $gateway_id ) {
@@ -205,7 +205,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	 * Assert that the WooPayments gateways are in sequential order
 	 *
 	 * @param array $gateways Expected gateway IDs
-	 * @param array $result   Result from set_gateway_top_of_list
+	 * @param array $result   Result from order_woopayments_gateways
 	 */
 	private function assertSequentialOrdering( $gateways, $result ) {
 		$positions = [];

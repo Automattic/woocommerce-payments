@@ -658,8 +658,8 @@ class WC_Payments {
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
-		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
-		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
+		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 2 );
+		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
 		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
@@ -872,7 +872,7 @@ class WC_Payments {
 	 *
 	 * @return array Modified ordering.
 	 */
-	public static function set_gateway_top_of_list( $ordering ) {
+	public static function order_woopayments_gateways( $ordering ) {
 		try {
 			$ordering                = (array) $ordering;
 			$woopayments_gateway_ids = self::get_woopayments_gateway_ids();
